@@ -13,9 +13,15 @@ class Note:
     Manages notes and annotations in the OpenCTI platform.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
+        """Initialize the Note instance.
+
+        :param opencti: OpenCTI API client instance
+        :type opencti: OpenCTIApiClient
+        """
         self.opencti = opencti
         self.properties = """
             id
@@ -208,7 +214,7 @@ class Note:
                         }
                         ... on StixCyberObservable {
                             observable_value
-                        }                        
+                        }
                         ... on StixCoreRelationship {
                             standard_id
                             spec_version
@@ -221,7 +227,7 @@ class Note:
                             spec_version
                             created_at
                             updated_at
-                        }                        
+                        }
                     }
                 }
             }
@@ -271,6 +277,11 @@ class Note:
                     x_opencti_firstname
                     x_opencti_lastname
                 }
+            }
+            objectOrganization {
+                id
+                standard_id
+                name
             }
             objectMarking {
                 id
@@ -425,7 +436,7 @@ class Note:
                         }
                         ... on StixCyberObservable {
                             observable_value
-                        }                        
+                        }
                         ... on StixCoreRelationship {
                             standard_id
                             spec_version
@@ -438,7 +449,7 @@ class Note:
                             spec_version
                             created_at
                             updated_at
-                        }                        
+                        }
                     }
                 }
             }
@@ -459,6 +470,16 @@ class Note:
 
     @staticmethod
     def generate_id(created, content):
+        """Generate a STIX ID for a Note.
+
+        :param created: The creation date of the note
+        :type created: datetime or str or None
+        :param content: The content of the note (required)
+        :type content: str
+        :return: STIX ID for the note
+        :rtype: str
+        :raises ValueError: If content is None
+        """
         if content is None:
             raise ValueError("content is required")
         if created is not None:
@@ -473,19 +494,41 @@ class Note:
 
     @staticmethod
     def generate_id_from_data(data):
+        """Generate a STIX ID from note data.
+
+        :param data: Dictionary containing 'content' and optionally 'created' keys
+        :type data: dict
+        :return: STIX ID for the note
+        :rtype: str
+        """
         return Note.generate_id(data.get("created"), data["content"])
 
-    """
-        List Note objects
+    def list(self, **kwargs):
+        """List Note objects.
 
         :param filters: the filters to apply
+        :type filters: dict
         :param search: the search keyword
+        :type search: str
         :param first: return the first n rows from the after ID (or the beginning if not set)
+        :type first: int
         :param after: ID of the first row for pagination
-        :return List of Note objects
-    """
-
-    def list(self, **kwargs):
+        :type after: str
+        :param orderBy: field to order results by
+        :type orderBy: str
+        :param orderMode: ordering mode (asc/desc)
+        :type orderMode: str
+        :param customAttributes: custom attributes to return
+        :type customAttributes: list
+        :param getAll: whether to retrieve all results
+        :type getAll: bool
+        :param withPagination: whether to include pagination info
+        :type withPagination: bool
+        :param withFiles: whether to include files
+        :type withFiles: bool
+        :return: List of Note objects
+        :rtype: list
+        """
         filters = kwargs.get("filters", None)
         search = kwargs.get("search", None)
         first = kwargs.get("first", 100)
@@ -563,15 +606,20 @@ class Note:
                 result["data"]["notes"], with_pagination
             )
 
-    """
-        Read a Note object
+    def read(self, **kwargs):
+        """Read a Note object.
 
         :param id: the id of the Note
+        :type id: str
         :param filters: the filters to apply if no id provided
-        :return Note object
-    """
-
-    def read(self, **kwargs):
+        :type filters: dict
+        :param customAttributes: custom attributes to return
+        :type customAttributes: list
+        :param withFiles: whether to include files
+        :type withFiles: bool
+        :return: Note object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
@@ -601,14 +649,22 @@ class Note:
                 return result[0]
             else:
                 return None
-
-    """
-        Check if a note already contains a STIX entity
-
-        :return Boolean
-    """
+        else:
+            self.opencti.app_logger.error(
+                "[opencti_note] Missing parameters: id or filters"
+            )
+            return None
 
     def contains_stix_object_or_stix_relationship(self, **kwargs):
+        """Check if a note already contains a STIX entity.
+
+        :param id: the id of the Note
+        :type id: str
+        :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
+        :type stixObjectOrStixRelationshipId: str
+        :return: Boolean
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         stix_object_or_stix_relationship_id = kwargs.get(
             "stixObjectOrStixRelationshipId", None
@@ -638,15 +694,60 @@ class Note:
             self.opencti.app_logger.error(
                 "[opencti_note] Missing parameters: id or entity_id"
             )
-
-    """
-        Create a Note object
-
-        :param name: the name of the Note
-        :return Note object
-    """
+            return None
 
     def create(self, **kwargs):
+        """Create a Note object.
+
+        :param stix_id: (optional) the STIX ID
+        :type stix_id: str
+        :param createdBy: (optional) the author ID
+        :type createdBy: str
+        :param objects: (optional) list of STIX object IDs
+        :type objects: list
+        :param objectMarking: (optional) list of marking definition IDs
+        :type objectMarking: list
+        :param objectLabel: (optional) list of label IDs
+        :type objectLabel: list
+        :param externalReferences: (optional) list of external reference IDs
+        :type externalReferences: list
+        :param revoked: (optional) whether the note is revoked
+        :type revoked: bool
+        :param confidence: (optional) confidence level (0-100)
+        :type confidence: int
+        :param lang: (optional) language
+        :type lang: str
+        :param created: (optional) creation date
+        :type created: datetime
+        :param modified: (optional) modification date
+        :type modified: datetime
+        :param abstract: (optional) abstract summary
+        :type abstract: str
+        :param content: the content of the Note (required)
+        :type content: str
+        :param authors: (optional) list of authors
+        :type authors: list
+        :param note_types: (optional) list of note types
+        :type note_types: list
+        :param likelihood: (optional) likelihood value
+        :type likelihood: int
+        :param x_opencti_stix_ids: (optional) list of additional STIX IDs
+        :type x_opencti_stix_ids: list
+        :param objectOrganization: (optional) list of organization IDs
+        :type objectOrganization: list
+        :param x_opencti_workflow_id: (optional) workflow ID
+        :type x_opencti_workflow_id: str
+        :param x_opencti_modified_at: (optional) custom modification date
+        :type x_opencti_modified_at: datetime
+        :param update: (optional) whether to update if exists (default: False)
+        :type update: bool
+        :param files: (optional) list of File objects to attach
+        :type files: list
+        :param filesMarkings: (optional) list of lists of marking definition IDs for each file
+        :type filesMarkings: list
+        :return: Note object
+        :rtype: dict or None
+        """
         stix_id = kwargs.get("stix_id", None)
         created_by = kwargs.get("createdBy", None)
         objects = kwargs.get("objects", None)
@@ -668,6 +769,9 @@ class Note:
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
         x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         update = kwargs.get("update", False)
+        files = kwargs.get("files", None)
+        files_markings = kwargs.get("filesMarkings", None)
+        upsert_operations = kwargs.get("upsert_operations", None)
 
         if content is not None:
             self.opencti.app_logger.info("Creating Note", {"content": content})
@@ -681,47 +785,48 @@ class Note:
                     }
                 }
             """
-            result = self.opencti.query(
-                query,
-                {
-                    "input": {
-                        "stix_id": stix_id,
-                        "createdBy": created_by,
-                        "objectMarking": object_marking,
-                        "objectLabel": object_label,
-                        "objectOrganization": granted_refs,
-                        "objects": objects,
-                        "externalReferences": external_references,
-                        "revoked": revoked,
-                        "confidence": confidence,
-                        "lang": lang,
-                        "created": created,
-                        "modified": modified,
-                        "attribute_abstract": abstract,
-                        "content": content,
-                        "authors": authors,
-                        "note_types": note_types,
-                        "likelihood": likelihood,
-                        "x_opencti_stix_ids": x_opencti_stix_ids,
-                        "x_opencti_workflow_id": x_opencti_workflow_id,
-                        "x_opencti_modified_at": x_opencti_modified_at,
-                        "update": update,
-                    }
-                },
-            )
+            input_variables = {
+                "stix_id": stix_id,
+                "createdBy": created_by,
+                "objectMarking": object_marking,
+                "objectLabel": object_label,
+                "objectOrganization": granted_refs,
+                "objects": objects,
+                "externalReferences": external_references,
+                "revoked": revoked,
+                "confidence": confidence,
+                "lang": lang,
+                "created": created,
+                "modified": modified,
+                "attribute_abstract": abstract,
+                "content": content,
+                "authors": authors,
+                "note_types": note_types,
+                "likelihood": likelihood,
+                "x_opencti_stix_ids": x_opencti_stix_ids,
+                "x_opencti_workflow_id": x_opencti_workflow_id,
+                "x_opencti_modified_at": x_opencti_modified_at,
+                "update": update,
+                "files": files,
+                "filesMarkings": files_markings,
+                "upsertOperations": upsert_operations,
+            }
+            result = self.opencti.query(query, {"input": input_variables})
             return self.opencti.process_multiple_fields(result["data"]["noteAdd"])
         else:
             self.opencti.app_logger.error("[opencti_note] Missing parameters: content")
-
-    """
-        Add a Stix-Entity object to Note object (object_refs)
-
-        :param id: the id of the Note
-        :param entity_id: the id of the Stix-Entity
-        :return Boolean
-    """
+            return None
 
     def add_stix_object_or_stix_relationship(self, **kwargs):
+        """Add a Stix-Entity object to Note object (object_refs).
+
+        :param id: the id of the Note
+        :type id: str
+        :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
+        :type stixObjectOrStixRelationshipId: str
+        :return: Boolean
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         stix_object_or_stix_relationship_id = kwargs.get(
             "stixObjectOrStixRelationshipId", None
@@ -765,15 +870,16 @@ class Note:
             )
             return False
 
-    """
-        Remove a Stix-Entity object to Note object (object_refs)
+    def remove_stix_object_or_stix_relationship(self, **kwargs):
+        """Remove a Stix-Entity object from Note object (object_refs).
 
         :param id: the id of the Note
-        :param entity_id: the id of the Stix-Entity
-        :return Boolean
-    """
-
-    def remove_stix_object_or_stix_relationship(self, **kwargs):
+        :type id: str
+        :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
+        :type stixObjectOrStixRelationshipId: str
+        :return: Boolean
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         stix_object_or_stix_relationship_id = kwargs.get(
             "stixObjectOrStixRelationshipId", None
@@ -787,7 +893,7 @@ class Note:
                 },
             )
             query = """
-               mutation NotetEditRelationDelete($id: ID!, $toId: StixRef!, $relationship_type: String!) {
+               mutation NoteEditRelationDelete($id: ID!, $toId: StixRef!, $relationship_type: String!) {
                    noteEdit(id: $id) {
                         relationDelete(toId: $toId, relationship_type: $relationship_type) {
                             id
@@ -810,14 +916,18 @@ class Note:
             )
             return False
 
-    """
-        Import a Note object from a STIX2 object
+    def import_from_stix2(self, **kwargs):
+        """Import a Note object from a STIX2 object.
 
         :param stixObject: the Stix-Object Note
-        :return Note object
-    """
-
-    def import_from_stix2(self, **kwargs):
+        :type stixObject: dict
+        :param extras: extra dict
+        :type extras: dict
+        :param update: set the update flag on import
+        :type update: bool
+        :return: Note object
+        :rtype: dict or None
+        """
         stix_object = kwargs.get("stixObject", None)
         extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)
@@ -838,6 +948,12 @@ class Note:
             if "x_opencti_modified_at" not in stix_object:
                 stix_object["x_opencti_modified_at"] = (
                     self.opencti.get_attribute_in_extension("modified_at", stix_object)
+                )
+            if "opencti_upsert_operations" not in stix_object:
+                stix_object["opencti_upsert_operations"] = (
+                    self.opencti.get_attribute_in_extension(
+                        "opencti_upsert_operations", stix_object
+                    )
                 )
 
             return self.create(
@@ -904,8 +1020,16 @@ class Note:
                     else None
                 ),
                 update=update,
+                files=extras.get("files"),
+                filesMarkings=extras.get("filesMarkings"),
+                upsert_operations=(
+                    stix_object["opencti_upsert_operations"]
+                    if "opencti_upsert_operations" in stix_object
+                    else None
+                ),
             )
         else:
             self.opencti.app_logger.error(
                 "[opencti_note] Missing parameters: stixObject"
             )
+            return None

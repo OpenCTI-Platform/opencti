@@ -14,9 +14,15 @@ class Identity:
     Manages individual, organization, and system identities in OpenCTI.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
+        """Initialize the Identity instance.
+
+        :param opencti: OpenCTI API client instance
+        :type opencti: OpenCTIApiClient
+        """
         self.opencti = opencti
         self.properties = """
             id
@@ -294,16 +300,27 @@ class Identity:
         """List Identity objects.
 
         :param types: the list of types
+        :type types: list
         :param filters: the filters to apply
+        :type filters: dict
         :param search: the search keyword
+        :type search: str
         :param first: return the first n rows from the after ID (or the beginning if not set)
+        :type first: int
         :param after: ID of the first row for pagination
+        :type after: str
         :param orderBy: field to order results by
+        :type orderBy: str
         :param orderMode: ordering mode (asc/desc)
+        :type orderMode: str
         :param customAttributes: custom attributes to return
+        :type customAttributes: str
         :param getAll: whether to retrieve all results
+        :type getAll: bool
         :param withPagination: whether to include pagination info
+        :type withPagination: bool
         :param withFiles: whether to include files
+        :type withFiles: bool
         :return: List of Identity objects
         :rtype: list
         """
@@ -370,6 +387,7 @@ class Identity:
                 result = self.opencti.query(
                     query,
                     {
+                        "types": types,
                         "filters": filters,
                         "search": search,
                         "first": first,
@@ -386,15 +404,20 @@ class Identity:
                 result["data"]["identities"], with_pagination
             )
 
-    """
-        Read a Identity object
+    def read(self, **kwargs):
+        """Read an Identity object.
 
         :param id: the id of the Identity
+        :type id: str
         :param filters: the filters to apply if no id provided
-        :return Identity object
-    """
-
-    def read(self, **kwargs):
+        :type filters: dict
+        :param customAttributes: custom attributes to return
+        :type customAttributes: str
+        :param withFiles: whether to include files
+        :type withFiles: bool
+        :return: Identity object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
@@ -430,14 +453,44 @@ class Identity:
             )
             return None
 
-    """
-        Create a Identity object
-
-        :param name: the name of the Identity
-        :return Identity object
-    """
-
     def create(self, **kwargs):
+        """Create an Identity object.
+
+        :param type: the type of identity (Organization, Individual, System, etc.) (required)
+        :param stix_id: (optional) the STIX ID
+        :param createdBy: (optional) the author ID
+        :param objectMarking: (optional) list of marking definition IDs
+        :param objectLabel: (optional) list of label IDs
+        :param externalReferences: (optional) list of external reference IDs
+        :param revoked: (optional) whether the identity is revoked
+        :param confidence: (optional) confidence level (0-100)
+        :param lang: (optional) language
+        :param created: (optional) creation date
+        :param modified: (optional) modification date
+        :param name: the name of the Identity (required)
+        :param description: (optional) description
+        :param contact_information: (optional) contact information
+        :param roles: (optional) list of roles
+        :param x_opencti_aliases: (optional) list of aliases
+        :param security_platform_type: (optional) type of security platform
+        :param x_opencti_organization_type: (optional) organization type
+        :param x_opencti_reliability: (optional) reliability level
+        :param x_opencti_score: (optional) score
+        :param x_opencti_firstname: (optional) first name for individuals
+        :param x_opencti_lastname: (optional) last name for individuals
+        :param x_opencti_stix_ids: (optional) list of additional STIX IDs
+        :param objectOrganization: (optional) list of organization IDs
+        :param x_opencti_workflow_id: (optional) workflow ID
+        :param x_opencti_modified_at: (optional) custom modification date
+        :param update: (optional) whether to update if exists (default: False)
+        :type update: bool
+        :param files: (optional) list of File objects to attach
+        :type files: list
+        :param filesMarkings: (optional) list of lists of marking definition IDs for each file
+        :type filesMarkings: list
+        :return: Identity object
+        :rtype: dict or None
+        """
         type = kwargs.get("type", None)
         stix_id = kwargs.get("stix_id", None)
         created_by = kwargs.get("createdBy", None)
@@ -465,6 +518,9 @@ class Identity:
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
         x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         update = kwargs.get("update", False)
+        files = kwargs.get("files", None)
+        files_markings = kwargs.get("filesMarkings", None)
+        upsert_operations = kwargs.get("upsert_operations", None)
 
         if type is not None and name is not None:
             self.opencti.app_logger.info("Creating Identity", {"name": name})
@@ -488,6 +544,9 @@ class Identity:
                 "x_opencti_workflow_id": x_opencti_workflow_id,
                 "x_opencti_modified_at": x_opencti_modified_at,
                 "update": update,
+                "files": files,
+                "filesMarkings": files_markings,
+                "upsertOperations": upsert_operations,
             }
             if type == IdentityTypes.ORGANIZATION.value:
                 query = """
@@ -580,17 +639,22 @@ class Identity:
             )
         else:
             self.opencti.app_logger.error(
-                "Missing parameters: type, name and description"
+                "[opencti_identity] Missing parameters: type and name"
             )
-
-    """
-        Import an Identity object from a STIX2 object
-
-        :param stixObject: the Stix-Object Identity
-        :return Identity object
-    """
+            return None
 
     def import_from_stix2(self, **kwargs):
+        """Import an Identity object from a STIX2 object.
+
+        :param stixObject: the STIX2 Identity object
+        :type stixObject: dict
+        :param extras: extra parameters including created_by_id, object_marking_ids, etc.
+        :type extras: dict
+        :param update: whether to update if the entity already exists
+        :type update: bool
+        :return: Identity object
+        :rtype: dict or None
+        """
         stix_object = kwargs.get("stixObject", None)
         extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)
@@ -631,12 +695,6 @@ class Identity:
                 stix_object["x_opencti_score"] = (
                     self.opencti.get_attribute_in_extension("score", stix_object)
                 )
-            if "x_opencti_organization_type" not in stix_object:
-                stix_object["x_opencti_organization_type"] = (
-                    self.opencti.get_attribute_in_extension(
-                        "organization_type", stix_object
-                    )
-                )
             if "x_opencti_firstname" not in stix_object:
                 stix_object["x_opencti_firstname"] = (
                     self.opencti.get_attribute_in_extension("firstname", stix_object)
@@ -661,7 +719,12 @@ class Identity:
                 stix_object["x_opencti_modified_at"] = (
                     self.opencti.get_attribute_in_extension("modified_at", stix_object)
                 )
-
+            if "opencti_upsert_operations" not in stix_object:
+                stix_object["opencti_upsert_operations"] = (
+                    self.opencti.get_attribute_in_extension(
+                        "opencti_upsert_operations", stix_object
+                    )
+                )
             return self.create(
                 type=type,
                 stix_id=stix_object["id"],
@@ -754,8 +817,16 @@ class Identity:
                     else None
                 ),
                 update=update,
+                files=extras.get("files"),
+                filesMarkings=extras.get("filesMarkings"),
+                upsert_operations=(
+                    stix_object["opencti_upsert_operations"]
+                    if "opencti_upsert_operations" in stix_object
+                    else None
+                ),
             )
         else:
             self.opencti.app_logger.error(
                 "[opencti_identity] Missing parameters: stixObject"
             )
+            return None

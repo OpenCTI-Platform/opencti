@@ -2157,6 +2157,22 @@ export const buildChanges = async (context, user, entityType, inputs) => {
   return changes;
 };
 
+const resolveRefsForInputs = async (context, user, type, updateInputs) => {
+  // endregion
+  const metaKeys = [...schemaRelationsRefDefinition.getStixNames(type), ...schemaRelationsRefDefinition.getInputNames(type)];
+  const meta = updateInputs.filter((e) => metaKeys.includes(e.key));
+  const metaIds = R.uniq(meta.map((i) => i.value ?? []).flat());
+  const metaDependencies = await elFindByIds(context, user, metaIds, { toMap: true, mapWithAllIds: true });
+  const revolvedInputs = updateInputs.map((input) => {
+    if (metaKeys.includes(input.key)) {
+      const resolvedValues = (input.value ?? []).map((refId) => metaDependencies[refId]).filter((o) => isNotEmptyField(o));
+      return { ...input, value: resolvedValues };
+    }
+    return input;
+  });
+  return revolvedInputs;
+};
+
 export const updateAttributeMetaResolved = async (context, user, initial, inputs, opts = {}) => {
   const { locks = [], impactStandardId = true } = opts;
   const updates = Array.isArray(inputs) ? inputs : [inputs];
@@ -2565,17 +2581,8 @@ export const updateAttributeFromLoadedWithRefs = async (context, user, initial, 
   }
   const newInputs = adaptUpdateInputsConfidence(user, inputs, initial);
   // endregion
-  const metaKeys = [...schemaRelationsRefDefinition.getStixNames(initial.entity_type), ...schemaRelationsRefDefinition.getInputNames(initial.entity_type)];
-  const meta = newInputs.filter((e) => metaKeys.includes(e.key));
-  const metaIds = R.uniq(meta.map((i) => i.value ?? []).flat());
-  const metaDependencies = await elFindByIds(context, user, metaIds, { toMap: true, mapWithAllIds: true });
-  const revolvedInputs = newInputs.map((input) => {
-    if (metaKeys.includes(input.key)) {
-      const resolvedValues = (input.value ?? []).map((refId) => metaDependencies[refId]).filter((o) => isNotEmptyField(o));
-      return { ...input, value: resolvedValues };
-    }
-    return input;
-  });
+  const revolvedInputs = await resolveRefsForInputs(context, user, initial.entity_type, newInputs);
+
   return updateAttributeMetaResolved(context, user, initial, revolvedInputs, opts);
 };
 
@@ -2847,6 +2854,11 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
   const confidenceForUpsert = controlUpsertInputWithUserConfidence(user, basePatch, resolvedElement);
 
   const updatePatch = buildUpdatePatchForUpsert(user, resolvedElement, type, basePatch, confidenceForUpsert);
+
+  // upsertOperations : resolve refs
+  if (updatePatch.upsertOperations?.length > 0) {
+    updatePatch.upsertOperations = await resolveRefsForInputs(context, user, type, updatePatch.upsertOperations);
+  }
 
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const validEnterpriseEdition = settings.valid_enterprise_edition;
@@ -3338,24 +3350,43 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
     }
     // Create the object
     const dataEntity = await buildEntityData(context, user, resolvedInput, type, opts);
-    // If file directly attached
+    // Handle multiple files upload (new plural form)
+    const filesToUpload = [];
+    if (!isEmptyField(resolvedInput.files) && Array.isArray(resolvedInput.files)) {
+      const filesMarkings = resolvedInput.filesMarkings || [];
+      for (let i = 0; i < resolvedInput.files.length; i += 1) {
+        const fileInput = resolvedInput.files[i];
+        const fileMarking = filesMarkings[i] || resolvedInput.objectMarking?.map(({ id }) => id);
+        filesToUpload.push({ file: fileInput, markings: fileMarking });
+      }
+    }
+    // Handle single file upload (backward compatibility)
     if (!isEmptyField(resolvedInput.file)) {
-      const { filename } = await resolvedInput.file;
+      const file_markings = isNotEmptyField(resolvedInput.fileMarkings) ? resolvedInput.fileMarkings : resolvedInput.objectMarking?.map(({ id }) => id);
+      filesToUpload.push({ file: resolvedInput.file, markings: file_markings });
+    }
+    // Process all files to upload
+    if (filesToUpload.length > 0) {
       const isAutoExternal = entitySetting?.platform_entity_files_ref;
       const path = `import/${type}/${dataEntity.element[ID_INTERNAL]}`;
-      const key = `${path}/${filename}`;
-      const meta = isAutoExternal ? { external_reference_id: generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, { url: `/storage/get/${key}` }) } : {};
-      const file_markings = resolvedInput.objectMarking?.map(({ id }) => id);
-      const { upload: file } = await uploadToStorage(context, user, path, input.file, { entity: dataEntity.element, file_markings, meta });
-      dataEntity.element = { ...dataEntity.element, x_opencti_files: [storeFileConverter(user, file)] };
-      // Add external references from files if necessary
-      if (isAutoExternal) {
-        // Create external ref + link to current entity
-        const createExternal = { source_name: file.name, url: `/storage/get/${file.id}`, fileId: file.id };
-        const externalRef = await createEntity(context, user, createExternal, ENTITY_TYPE_EXTERNAL_REFERENCE);
-        const newRefRel = buildInnerRelation(dataEntity.element, externalRef, RELATION_EXTERNAL_REFERENCE);
-        dataEntity.relations.push(...newRefRel);
+      const uploadedFiles = [];
+      for (let i = 0; i < filesToUpload.length; i += 1) {
+        const { file: fileInput, markings: file_markings } = filesToUpload[i];
+        const { filename } = await fileInput;
+        const key = `${path}/${filename}`;
+        const meta = isAutoExternal ? { external_reference_id: generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, { url: `/storage/get/${key}` }) } : {};
+        const { upload: uploadedFile } = await uploadToStorage(context, user, path, fileInput, { entity: dataEntity.element, file_markings, meta });
+        uploadedFiles.push(storeFileConverter(user, uploadedFile));
+        // Add external references from files if necessary
+        if (isAutoExternal) {
+          // Create external ref + link to current entity
+          const createExternal = { source_name: uploadedFile.name, url: `/storage/get/${uploadedFile.id}`, fileId: uploadedFile.id };
+          const externalRef = await createEntity(context, user, createExternal, ENTITY_TYPE_EXTERNAL_REFERENCE);
+          const newRefRel = buildInnerRelation(dataEntity.element, externalRef, RELATION_EXTERNAL_REFERENCE);
+          dataEntity.relations.push(...newRefRel);
+        }
       }
+      dataEntity.element = { ...dataEntity.element, x_opencti_files: uploadedFiles };
     }
     if (opts.restore === true) {
       dataMessage = generateRestoreMessage(dataEntity.element);

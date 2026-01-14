@@ -11,23 +11,39 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import os
+import re
 import sys
 
-sys.path.insert(0, os.path.abspath(".."))
+# Add the client-python directory to the path for pycti module discovery
+# This works both when building from client-python/ locally and from repo root via ReadTheDocs
+docs_dir = os.path.dirname(os.path.abspath(__file__))
+client_python_dir = os.path.dirname(docs_dir)
+sys.path.insert(0, client_python_dir)
 
 
 # -- Project information -----------------------------------------------------
 
-project = "OpenCTI client for Python"
+project = "OpenCTI Python Client"
 copyright = "2025, Filigran"
 author = "OpenCTI Project"
 
+
 # The full version, including alpha/beta/rc tags
-release = "6.0.7"
+# Read version from pycti/__init__.py without importing (avoids dependency issues)
+def get_version():
+    init_path = os.path.join(client_python_dir, "pycti", "__init__.py")
+    with open(init_path, "r") as f:
+        content = f.read()
+    match = re.search(r'^__version__\s*=\s*["\']([^"\']+)["\']', content, re.MULTILINE)
+    if match:
+        return match.group(1)
+    return "unknown"
+
+
+release = get_version()
+version = release
 
 master_doc = "index"
-
-autoapi_modules = {"pycti": {"prune": True}}
 
 pygments_style = "sphinx"
 
@@ -38,9 +54,79 @@ pygments_style = "sphinx"
 # ones.
 extensions = [
     "sphinx.ext.autodoc",
+    "sphinx.ext.viewcode",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.graphviz",
     "sphinx.ext.inheritance_diagram",
-    "autoapi.sphinx",
+    "autoapi.extension",
     "sphinx_autodoc_typehints",
+]
+
+# Graphviz configuration
+graphviz_output_format = "svg"
+inheritance_graph_attrs = {
+    "rankdir": "TB",
+    "size": '"6.0, 8.0"',
+}
+inheritance_node_attrs = {
+    "shape": "box",
+    "fontsize": 10,
+    "height": 0.25,
+    "style": '"setlinewidth(0.5),filled"',
+    "fillcolor": "white",
+}
+
+# Napoleon settings for Google/NumPy style docstrings
+napoleon_google_docstring = True
+napoleon_numpy_docstring = True
+napoleon_include_init_with_doc = True
+napoleon_include_private_with_doc = False
+napoleon_include_special_with_doc = True
+napoleon_use_admonition_for_examples = False
+napoleon_use_admonition_for_notes = False
+napoleon_use_admonition_for_references = False
+napoleon_use_ivar = False
+napoleon_use_param = True
+napoleon_use_rtype = True
+napoleon_type_aliases = None
+
+# AutoAPI configuration for sphinx-autoapi
+autoapi_type = "python"
+autoapi_dirs = [os.path.join(client_python_dir, "pycti")]
+autoapi_options = [
+    "members",
+    "undoc-members",
+    "show-inheritance",
+    "show-module-summary",
+    "special-members",
+]
+autoapi_python_class_content = (
+    "both"  # Include both class docstring and __init__ docstring
+)
+autoapi_member_order = "bysource"
+autoapi_keep_files = False
+autoapi_add_toctree_entry = True
+# Ignore top-level __init__.py to prevent "Undocumented" for re-exported classes
+# Classes will be documented in their original modules with proper docstrings
+autoapi_ignore = ["*/pycti/__init__.py"]
+
+# Mock imports for modules that can't be installed on ReadTheDocs
+autodoc_mock_imports = [
+    "magic",
+    "pika",
+    "stix2",
+    "pydantic",
+    "yaml",
+    "requests",
+    "cachetools",
+    "prometheus_client",
+    "opentelemetry",
+    "deprecation",
+    "fastapi",
+    "uvicorn",
+    "sseclient",
+    "datefinder",
+    "python_json_logger",
 ]
 
 # Add any paths that contain templates here, relative to this directory.

@@ -277,6 +277,97 @@ describe('check safeRenderClient error handling and worker termination detection
   });
 });
 
+describe('check safeRender with escape function', () => {
+  it('should allow escape function in templates when provided via options', () => {
+    // Use <%- %> (raw output) to avoid double-escaping when escape() is called explicitly
+    const template = '<% function parseLink(text) { return escape(text); } %><%- parseLink("<script>alert(1)</script>") %>';
+    const data = {};
+    const escapeFunc = (str: any) => String(str).replace(/[&<>"']/g, (char) => {
+      const escapeMap: Record<string, string> = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      };
+      return escapeMap[char] || char;
+    });
+
+    const result = safeRender(template, data, { escape: escapeFunc });
+    expect(result).toContain('&lt;script&gt;');
+    expect(result).toContain('&lt;/script&gt;');
+    expect(result).not.toContain('<script>');
+  });
+
+  it('should work with parseMarkdownLink function pattern from simplified email template', () => {
+    // Use <%- %> (raw output) to avoid double-escaping when escape() is called explicitly
+    const template = `
+      <% function parseMarkdownLink(text) {
+        if (!text) return '';
+        const regex = /(.*)\\[(.*?)\\]\\((.*?)\\)/;
+        const match = text.match(regex);
+        if (match) {
+          const prefix = match[1];
+          const linkText = match[2].split(' ').map((e) => escape(e)).join(' ');
+          const linkUrl = match[3].split(' ').map((e) => escape(e)).join(' ');
+          return prefix + '<a href="' + linkUrl +'">' + linkText + '</a>';
+        }
+        return text;
+      } %>
+      <%- parseMarkdownLink('Check this [link](http://example.com)') %>
+    `;
+    const data = {};
+    const escapeFunc = (str: any) => String(str).replace(/[&<>"']/g, (char) => {
+      const escapeMap: Record<string, string> = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      };
+      return escapeMap[char] || char;
+    });
+
+    const result = safeRender(template, data, { escape: escapeFunc });
+    expect(result).toContain('<a href="http://example.com">link</a>');
+  });
+
+  it('should work with parseMarkdownLink and special characters', () => {
+    // Use <%- %> (raw output) to avoid double-escaping when escape() is called explicitly
+    const template = `
+      <% function parseMarkdownLink(text) {
+        if (!text) return '';
+        const regex = /(.*)\\[(.*?)\\]\\((.*?)\\)/;
+        const match = text.match(regex);
+        if (match) {
+          const prefix = match[1];
+          const linkText = match[2].split(' ').map((e) => escape(e)).join(' ');
+          const linkUrl = match[3].split(' ').map((e) => escape(e)).join(' ');
+          return prefix + '<a href="' + linkUrl +'">' + linkText + '</a>';
+        }
+        return text;
+      } %>
+      <%- parseMarkdownLink('[<script>malicious</script>](javascript:alert(1))') %>
+    `;
+    const data = {};
+    const escapeFunc = (str: any) => String(str).replace(/[&<>"']/g, (char) => {
+      const escapeMap: Record<string, string> = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      };
+      return escapeMap[char] || char;
+    });
+
+    const result = safeRender(template, data, { escape: escapeFunc });
+    // The escape function should escape the special characters
+    expect(result).not.toContain('<script>');
+    expect(result).toContain('&lt;script&gt;');
+  });
+});
+
 describe('check safeRender on real files', () => {
   const data = {
     content: [

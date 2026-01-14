@@ -188,7 +188,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
     const fieldsObj: Record<string, unknown> = {};
     mainEntityFields.forEach((field) => {
       if (field.type === 'checkbox' || field.type === 'toggle') {
-        fieldsObj[field.name] = false;
+        fieldsObj[field.name] = field.defaultValue !== undefined ? field.defaultValue : false;
       } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'externalReferences' || field.type === 'files') {
         fieldsObj[field.name] = field.defaultValue || [];
       } else if (field.type === 'datetime') {
@@ -203,7 +203,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
     const fieldGroup: Record<string, unknown> = {};
     mainEntityFields.forEach((field) => {
       if (field.type === 'checkbox' || field.type === 'toggle') {
-        fieldGroup[field.name] = false;
+        fieldGroup[field.name] = field.defaultValue !== undefined ? field.defaultValue : false;
       } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'externalReferences' || field.type === 'files') {
         fieldGroup[field.name] = field.defaultValue || [];
       } else if (field.type === 'datetime') {
@@ -217,7 +217,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
     // Single entity mode
     mainEntityFields.forEach((field) => {
       if (field.type === 'checkbox' || field.type === 'toggle') {
-        initialValues[field.name] = false;
+        initialValues[field.name] = field.defaultValue !== undefined ? field.defaultValue : false;
       } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'externalReferences' || field.type === 'files') {
         initialValues[field.name] = field.defaultValue || [];
       } else if (field.type === 'datetime') {
@@ -237,7 +237,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
         const relationshipFields: Record<string, unknown> = {};
         relationship.fields.forEach((field) => {
           if (field.type === 'checkbox' || field.type === 'toggle') {
-            relationshipFields[field.name] = false;
+            relationshipFields[field.name] = field.defaultValue !== undefined ? field.defaultValue : false;
           } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'externalReferences') {
             relationshipFields[field.name] = field.defaultValue || [];
           } else if (field.type === 'datetime') {
@@ -270,7 +270,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
         const fieldsObj: Record<string, unknown> = {};
         entityFields.forEach((field) => {
           if (field.type === 'checkbox' || field.type === 'toggle') {
-            fieldsObj[field.name] = false;
+            fieldsObj[field.name] = field.defaultValue !== undefined ? field.defaultValue : false;
           } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'externalReferences' || field.type === 'files') {
             fieldsObj[field.name] = field.defaultValue || [];
           } else if (field.type === 'datetime') {
@@ -290,7 +290,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
           const fieldGroup: Record<string, unknown> = {};
           entityFields.forEach((field) => {
             if (field.type === 'checkbox' || field.type === 'toggle') {
-              fieldGroup[field.name] = false;
+              fieldGroup[field.name] = field.defaultValue !== undefined ? field.defaultValue : false;
             } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'externalReferences' || field.type === 'files') {
               fieldGroup[field.name] = field.defaultValue || [];
             } else if (field.type === 'datetime') {

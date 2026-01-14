@@ -3,7 +3,7 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
     id: ID! # internal_id
     standard_id: String!
     entity_type: String!
-    parent_types: [String]!
+    parent_types: [String!]!
     metrics:[Metric]
     # Stix Object
     representative: Representative!
@@ -194,8 +194,12 @@ input DataSourceAddInput {
     collection_layers: [String!]
     dataComponents: [String]
     file: Upload
+    fileMarkings: [String]
+    files: [Upload]
+    filesMarkings: [[String]]
     x_opencti_workflow_id: String
     x_opencti_modified_at: DateTime
+    upsertOperations: [EditInput!]
 }
 
 type Mutation {

@@ -10,7 +10,7 @@ const StartTrialBanner = () => {
 
   if (!settings || isEmptyField(settings?.platform_xtmhub_url) || !settings.platform_demo) return <></>;
 
-  const freeTrialUrl = `${settings?.platform_xtmhub_url}/redirect/free-trial`;
+  const freeTrialUrl = `${settings?.platform_xtmhub_url}/cybersecurity-solutions/free-trial`;
   const createFreeTrialUrl = `${settings?.platform_xtmhub_url}/redirect/create-free-trial`;
 
   const text = (

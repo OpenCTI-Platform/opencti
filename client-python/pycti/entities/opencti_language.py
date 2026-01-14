@@ -12,9 +12,15 @@ class Language:
     Manages language entities in the OpenCTI platform.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
+        """Initialize the Language instance.
+
+        :param opencti: OpenCTI API client instance
+        :type opencti: OpenCTIApiClient
+        """
         self.opencti = opencti
         self.properties = """
             id
@@ -61,6 +67,11 @@ class Language:
                     x_opencti_firstname
                     x_opencti_lastname
                 }
+            }
+            objectOrganization {
+                id
+                standard_id
+                name
             }
             objectMarking {
                 id
@@ -173,6 +184,11 @@ class Language:
                     x_opencti_lastname
                 }
             }
+            objectOrganization {
+                id
+                standard_id
+                name
+            }
             objectMarking {
                 id
                 standard_id
@@ -241,6 +257,13 @@ class Language:
 
     @staticmethod
     def generate_id(name):
+        """Generate a STIX ID for a Language.
+
+        :param name: the name of the Language
+        :type name: str
+        :return: STIX ID for the Language
+        :rtype: str
+        """
         name = name.lower().strip()
         data = {"name": name}
         data = canonicalize(data, utf8=False)
@@ -249,19 +272,29 @@ class Language:
 
     @staticmethod
     def generate_id_from_data(data):
+        """Generate a STIX ID from Language data.
+
+        :param data: Dictionary containing a 'name' key
+        :type data: dict
+        :return: STIX ID for the Language
+        :rtype: str
+        """
         return Language.generate_id(data["name"])
 
-    """
-        List Language objects
+    def list(self, **kwargs):
+        """List Language objects.
 
         :param filters: the filters to apply
+        :type filters: dict
         :param search: the search keyword
+        :type search: str
         :param first: return the first n rows from the after ID (or the beginning if not set)
+        :type first: int
         :param after: ID of the first row for pagination
-        :return List of Language objects
-    """
-
-    def list(self, **kwargs):
+        :type after: str
+        :return: List of Language objects
+        :rtype: list
+        """
         filters = kwargs.get("filters", None)
         search = kwargs.get("search", None)
         first = kwargs.get("first", 100)
@@ -339,15 +372,20 @@ class Language:
                 result["data"]["languages"], with_pagination
             )
 
-    """
-        Read a Language object
+    def read(self, **kwargs):
+        """Read a Language object.
 
         :param id: the id of the Language
+        :type id: str
         :param filters: the filters to apply if no id provided
-        :return Language object
-    """
-
-    def read(self, **kwargs):
+        :type filters: dict
+        :param customAttributes: custom attributes to return
+        :type customAttributes: str
+        :param withFiles: whether to include files
+        :type withFiles: bool
+        :return: Language object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
@@ -383,14 +421,46 @@ class Language:
             )
             return None
 
-    """
-        Create a Language object
-
-        :param name: the name of the Language
-        :return Language object
-    """
-
     def create(self, **kwargs):
+        """Create a Language object.
+
+        :param stix_id: (optional) the STIX ID
+        :type stix_id: str
+        :param createdBy: (optional) the author ID
+        :type createdBy: str
+        :param objectMarking: (optional) list of marking definition IDs
+        :type objectMarking: list
+        :param objectLabel: (optional) list of label IDs
+        :type objectLabel: list
+        :param externalReferences: (optional) list of external reference IDs
+        :type externalReferences: list
+        :param revoked: (optional) whether the language is revoked
+        :type revoked: bool
+        :param confidence: (optional) confidence level (0-100)
+        :type confidence: int
+        :param lang: (optional) language code
+        :type lang: str
+        :param created: (optional) creation date
+        :type created: str
+        :param modified: (optional) modification date
+        :type modified: str
+        :param name: the name of the Language (required)
+        :type name: str
+        :param aliases: (optional) list of aliases
+        :type aliases: list
+        :param x_opencti_stix_ids: (optional) list of additional STIX IDs
+        :type x_opencti_stix_ids: list
+        :param x_opencti_modified_at: (optional) custom modification date
+        :type x_opencti_modified_at: str
+        :param update: (optional) whether to update if exists (default: False)
+        :type update: bool
+        :param files: (optional) list of File objects to attach
+        :type files: list
+        :param filesMarkings: (optional) list of lists of marking definition IDs for each file
+        :type filesMarkings: list
+        :return: Language object
+        :rtype: dict or None
+        """
         stix_id = kwargs.get("stix_id", None)
         created_by = kwargs.get("createdBy", None)
         object_marking = kwargs.get("objectMarking", None)
@@ -406,6 +476,8 @@ class Language:
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         update = kwargs.get("update", False)
+        files = kwargs.get("files", None)
+        files_markings = kwargs.get("filesMarkings", None)
 
         if name is not None:
             self.opencti.app_logger.info("Creating Language", {"name": name})
@@ -438,21 +510,28 @@ class Language:
                         "x_opencti_stix_ids": x_opencti_stix_ids,
                         "x_opencti_modified_at": x_opencti_modified_at,
                         "update": update,
+                        "files": files,
+                        "filesMarkings": files_markings,
                     }
                 },
             )
             return self.opencti.process_multiple_fields(result["data"]["languageAdd"])
         else:
             self.opencti.app_logger.error("[opencti_language] Missing parameters: name")
-
-    """
-        Import an Language object from a STIX2 object
-
-        :param stixObject: the Stix-Object Language
-        :return Language object
-    """
+            return None
 
     def import_from_stix2(self, **kwargs):
+        """Import a Language object from a STIX2 object.
+
+        :param stixObject: the STIX2 Language object
+        :type stixObject: dict
+        :param extras: extra parameters including created_by_id, object_marking_ids, etc.
+        :type extras: dict
+        :param update: whether to update if the entity already exists
+        :type update: bool
+        :return: Language object
+        :rtype: dict or None
+        """
         stix_object = kwargs.get("stixObject", None)
         extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)
@@ -471,7 +550,7 @@ class Language:
                     self.opencti.get_attribute_in_extension("modified_at", stix_object)
                 )
 
-            return self.opencti.language.create(
+            return self.create(
                 stix_id=stix_object["id"],
                 createdBy=(
                     extras["created_by_id"] if "created_by_id" in extras else None
@@ -509,8 +588,11 @@ class Language:
                     else None
                 ),
                 update=update,
+                files=extras.get("files"),
+                filesMarkings=extras.get("filesMarkings"),
             )
         else:
             self.opencti.app_logger.error(
                 "[opencti_language] Missing parameters: stixObject"
             )
+            return None

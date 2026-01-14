@@ -1,11 +1,34 @@
 class OpenCTIApiDraft:
-    """OpenCTIApiDraft"""
+    """OpenCTI Draft API class.
+
+    Manages draft workspace operations.
+
+    :param api: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type api: OpenCTIApiClient
+    """
 
     def __init__(self, api):
+        """Initialize the OpenCTIApiDraft instance.
+
+        :param api: OpenCTI API client instance
+        :type api: OpenCTIApiClient
+        """
         self.api = api
 
     def delete(self, **kwargs):
-        id = kwargs.get("id", None)
+        """Delete a draft workspace.
+
+        :param id: the draft workspace id
+        :type id: str
+        :return: None
+        :rtype: None
+        """
+        draft_id = kwargs.get("id", None)
+        if draft_id is None:
+            self.api.app_logger.error(
+                "[opencti_draft] Cannot delete draft workspace, missing parameter: id"
+            )
+            return None
         query = """
             mutation DraftWorkspaceDelete($id: ID!) {
                 draftWorkspaceDelete(id: $id)
@@ -14,6 +37,6 @@ class OpenCTIApiDraft:
         self.api.query(
             query,
             {
-                "id": id,
+                "id": draft_id,
             },
         )

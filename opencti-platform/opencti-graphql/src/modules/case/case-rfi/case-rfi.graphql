@@ -7,7 +7,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -250,12 +250,16 @@ input CaseRfiAddInput {
   x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
   clientMutationId: String
   update: Boolean
   information_types: [String!]
   caseTemplates: [String!]
   authorized_members: [MemberAccessInput!]
   x_opencti_request_access: String
+  upsertOperations: [EditInput!]
 }
 
 type Mutation {

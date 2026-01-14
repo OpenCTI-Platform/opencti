@@ -2,7 +2,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -246,9 +246,13 @@ input CaseIncidentAddInput {
   x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
   clientMutationId: String
   update: Boolean
   authorized_members: [MemberAccessInput!]
+  upsertOperations: [EditInput!]
 }
 
 type Mutation {

@@ -12,9 +12,15 @@ class StixCoreRelationship:
     Manages STIX relationships between entities in the OpenCTI platform.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
+        """Initialize the StixCoreRelationship instance.
+
+        :param opencti: OpenCTI API client instance
+        :type opencti: OpenCTIApiClient
+        """
         self.opencti = opencti
         self.properties = """
             id
@@ -347,6 +353,21 @@ class StixCoreRelationship:
     def generate_id(
         relationship_type, source_ref, target_ref, start_time=None, stop_time=None
     ):
+        """Generate a STIX ID for a relationship.
+
+        :param relationship_type: The type of relationship
+        :type relationship_type: str
+        :param source_ref: The source entity reference ID
+        :type source_ref: str
+        :param target_ref: The target entity reference ID
+        :type target_ref: str
+        :param start_time: (optional) The start time of the relationship
+        :type start_time: str or datetime.datetime or None
+        :param stop_time: (optional) The stop time of the relationship
+        :type stop_time: str or datetime.datetime or None
+        :return: STIX ID for the relationship
+        :rtype: str
+        """
         if isinstance(start_time, datetime.datetime):
             start_time = start_time.isoformat()
         if isinstance(stop_time, datetime.datetime):
@@ -377,23 +398,15 @@ class StixCoreRelationship:
         id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
         return "relationship--" + id
 
-    """
-        List stix_core_relationship objects
-
-        :param fromId: the id of the source entity of the relation
-        :param toId: the id of the target entity of the relation
-        :param relationship_type: the relation type
-        :param startTimeStart: the start_time date start filter
-        :param startTimeStop: the start_time date stop filter
-        :param stopTimeStart: the stop_time date start filter
-        :param stopTimeStop: the stop_time date stop filter
-        :param first: return the first n rows from the after ID (or the beginning if not set)
-        :param after: ID of the first row for pagination
-        :return List of stix_core_relationship objects
-    """
-
     @staticmethod
     def generate_id_from_data(data):
+        """Generate a STIX ID from relationship data.
+
+        :param data: Dictionary containing relationship_type, source_ref, target_ref, and optionally start_time/stop_time
+        :type data: dict
+        :return: STIX ID for the relationship
+        :rtype: str
+        """
         return StixCoreRelationship.generate_id(
             data["relationship_type"],
             data["source_ref"],
@@ -403,6 +416,51 @@ class StixCoreRelationship:
         )
 
     def list(self, **kwargs):
+        """List stix_core_relationship objects.
+
+        :param fromOrToId: the id of an entity (source or target)
+        :type fromOrToId: str
+        :param elementWithTargetTypes: filter by target types
+        :type elementWithTargetTypes: list
+        :param fromId: the id of the source entity of the relation
+        :type fromId: str
+        :param fromTypes: filter by source entity types
+        :type fromTypes: list
+        :param toId: the id of the target entity of the relation
+        :type toId: str
+        :param toTypes: filter by target entity types
+        :type toTypes: list
+        :param relationship_type: the relation type
+        :type relationship_type: str
+        :param startTimeStart: the start_time date start filter
+        :type startTimeStart: str
+        :param startTimeStop: the start_time date stop filter
+        :type startTimeStop: str
+        :param stopTimeStart: the stop_time date start filter
+        :type stopTimeStart: str
+        :param stopTimeStop: the stop_time date stop filter
+        :type stopTimeStop: str
+        :param filters: additional filters to apply
+        :type filters: dict
+        :param first: return the first n rows from the after ID (or the beginning if not set)
+        :type first: int
+        :param after: ID of the first row for pagination
+        :type after: str
+        :param orderBy: field to order results by
+        :type orderBy: str
+        :param orderMode: ordering mode (asc/desc)
+        :type orderMode: str
+        :param customAttributes: custom attributes to return
+        :type customAttributes: str
+        :param getAll: whether to retrieve all results
+        :type getAll: bool
+        :param withPagination: whether to include pagination info
+        :type withPagination: bool
+        :param search: search keyword
+        :type search: str
+        :return: List of stix_core_relationship objects
+        :rtype: list
+        """
         from_or_to_id = kwargs.get("fromOrToId", None)
         element_with_target_types = kwargs.get("elementWithTargetTypes", None)
         from_id = kwargs.get("fromId", None)
@@ -489,7 +547,7 @@ class StixCoreRelationship:
             final_data = final_data + data
             while result["data"]["stixCoreRelationships"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["stixCoreRelationships"]["pageInfo"]["endCursor"]
-                self.opencti.app_logger.info(
+                self.opencti.app_logger.debug(
                     "Listing StixCoreRelationships", {"after": after}
                 )
                 result = self.opencti.query(
@@ -511,6 +569,7 @@ class StixCoreRelationship:
                         "after": after,
                         "orderBy": order_by,
                         "orderMode": order_mode,
+                        "search": search,
                     },
                 )
                 data = self.opencti.process_multiple(
@@ -523,22 +582,34 @@ class StixCoreRelationship:
                 result["data"]["stixCoreRelationships"], with_pagination
             )
 
-    """
-        Read a stix_core_relationship object
+    def read(self, **kwargs):
+        """Read a stix_core_relationship object.
 
         :param id: the id of the stix_core_relationship
-        :param fromOrToId: the id of the entity of the relation
+        :type id: str
+        :param fromOrToId: the id of an entity (source or target)
+        :type fromOrToId: str
         :param fromId: the id of the source entity of the relation
+        :type fromId: str
         :param toId: the id of the target entity of the relation
+        :type toId: str
         :param relationship_type: the relation type
+        :type relationship_type: str
         :param startTimeStart: the start_time date start filter
+        :type startTimeStart: str
         :param startTimeStop: the start_time date stop filter
+        :type startTimeStop: str
         :param stopTimeStart: the stop_time date start filter
+        :type stopTimeStart: str
         :param stopTimeStop: the stop_time date stop filter
-        :return stix_core_relationship object
-    """
-
-    def read(self, **kwargs):
+        :type stopTimeStop: str
+        :param filters: filters to apply
+        :type filters: dict
+        :param customAttributes: custom attributes to return
+        :type customAttributes: str
+        :return: stix_core_relationship object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         from_or_to_id = kwargs.get("fromOrToId", None)
         from_id = kwargs.get("fromId", None)
@@ -596,14 +667,58 @@ class StixCoreRelationship:
             self.opencti.app_logger.error("Missing parameters: id or from_id and to_id")
             return None
 
-    """
-        Create a stix_core_relationship object
-
-        :param name: the name of the Attack Pattern
-        :return stix_core_relationship object
-    """
-
     def create(self, **kwargs):
+        """Create a stix_core_relationship object.
+
+        :param fromId: the id of the source entity
+        :type fromId: str
+        :param toId: the id of the target entity
+        :type toId: str
+        :param stix_id: (optional) the STIX ID
+        :type stix_id: str
+        :param relationship_type: the type of relationship
+        :type relationship_type: str
+        :param description: (optional) description
+        :type description: str
+        :param start_time: (optional) start time of the relationship
+        :type start_time: str
+        :param stop_time: (optional) stop time of the relationship
+        :type stop_time: str
+        :param revoked: (optional) whether the relationship is revoked
+        :type revoked: bool
+        :param confidence: (optional) confidence level (0-100)
+        :type confidence: int
+        :param lang: (optional) language
+        :type lang: str
+        :param created: (optional) creation date
+        :type created: str
+        :param modified: (optional) modification date
+        :type modified: str
+        :param createdBy: (optional) the author ID
+        :type createdBy: str
+        :param objectMarking: (optional) list of marking definition IDs
+        :type objectMarking: list
+        :param objectLabel: (optional) list of label IDs
+        :type objectLabel: list
+        :param externalReferences: (optional) list of external reference IDs
+        :type externalReferences: list
+        :param killChainPhases: (optional) list of kill chain phase IDs
+        :type killChainPhases: list
+        :param objectOrganization: (optional) list of organization IDs
+        :type objectOrganization: list
+        :param x_opencti_workflow_id: (optional) workflow ID
+        :type x_opencti_workflow_id: str
+        :param x_opencti_stix_ids: (optional) list of additional STIX IDs
+        :type x_opencti_stix_ids: list
+        :param x_opencti_modified_at: (optional) custom modification date
+        :type x_opencti_modified_at: str
+        :param coverage_information: (optional) coverage information
+        :type coverage_information: list
+        :param update: (optional) whether to update if exists (default: False)
+        :type update: bool
+        :return: stix_core_relationship object
+        :rtype: dict or None
+        """
         from_id = kwargs.get("fromId", None)
         to_id = kwargs.get("toId", None)
         stix_id = kwargs.get("stix_id", None)
@@ -627,6 +742,7 @@ class StixCoreRelationship:
         x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         coverage_information = kwargs.get("coverage_information", None)
         update = kwargs.get("update", False)
+        upsert_operations = kwargs.get("upsert_operations", None)
 
         self.opencti.app_logger.info(
             "Creating stix_core_relationship",
@@ -673,6 +789,7 @@ class StixCoreRelationship:
                     "x_opencti_modified_at": x_opencti_modified_at,
                     "coverage_information": coverage_information,
                     "update": update,
+                    "upsertOperations": upsert_operations,
                 }
             },
         )
@@ -680,15 +797,16 @@ class StixCoreRelationship:
             result["data"]["stixCoreRelationshipAdd"]
         )
 
-    """
-        Update a stix_core_relationship object field
+    def update_field(self, **kwargs):
+        """Update a stix_core_relationship object field.
 
         :param id: the stix_core_relationship id
+        :type id: str
         :param input: the input of the field
-        :return The updated stix_core_relationship object
-    """
-
-    def update_field(self, **kwargs):
+        :type input: list
+        :return: The updated stix_core_relationship object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         input = kwargs.get("input", None)
         if id is not None and input is not None:
@@ -716,18 +834,17 @@ class StixCoreRelationship:
             )
         else:
             self.opencti.app_logger.error(
-                "[opencti_stix_core_relationship] Missing parameters: id and key and value",
+                "[opencti_stix_core_relationship] Missing parameters: id and input",
             )
             return None
 
-    """
-        Delete a stix_core_relationship
+    def delete(self, **kwargs):
+        """Delete a stix_core_relationship.
 
         :param id: the stix_core_relationship id
-        :return void
-    """
-
-    def delete(self, **kwargs):
+        :type id: str
+        :return: None
+        """
         id = kwargs.get("id", None)
         if id is not None:
             self.opencti.app_logger.info("Deleting stix_core_relationship", {"id": id})
@@ -745,15 +862,16 @@ class StixCoreRelationship:
             )
             return None
 
-    """
-        Add a Marking-Definition object to stix_core_relationship object (object_marking_refs)
+    def add_marking_definition(self, **kwargs):
+        """Add a Marking-Definition object to stix_core_relationship object (object_marking_refs).
 
         :param id: the id of the stix_core_relationship
+        :type id: str
         :param marking_definition_id: the id of the Marking-Definition
-        :return Boolean
-    """
-
-    def add_marking_definition(self, **kwargs):
+        :type marking_definition_id: str
+        :return: True if successful, False otherwise
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         marking_definition_id = kwargs.get("marking_definition_id", None)
         if id is not None and marking_definition_id is not None:
@@ -812,15 +930,16 @@ class StixCoreRelationship:
             )
             return False
 
-    """
-        Remove a Marking-Definition object to stix_core_relationship
+    def remove_marking_definition(self, **kwargs):
+        """Remove a Marking-Definition object from stix_core_relationship.
 
         :param id: the id of the stix_core_relationship
+        :type id: str
         :param marking_definition_id: the id of the Marking-Definition
-        :return Boolean
-    """
-
-    def remove_marking_definition(self, **kwargs):
+        :type marking_definition_id: str
+        :return: True if successful, False otherwise
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         marking_definition_id = kwargs.get("marking_definition_id", None)
         if id is not None and marking_definition_id is not None:
@@ -847,18 +966,23 @@ class StixCoreRelationship:
             )
             return True
         else:
-            self.opencti.app_logger.error("Missing parameters: id and label_id")
+            self.opencti.app_logger.error(
+                "Missing parameters: id and marking_definition_id"
+            )
             return False
 
-    """
-        Add a Label object to stix_core_relationship(labelging)
+    def add_label(self, **kwargs):
+        """Add a Label object to stix_core_relationship (labeling).
 
         :param id: the id of the stix_core_relationship
+        :type id: str
         :param label_id: the id of the Label
-        :return Boolean
-    """
-
-    def add_label(self, **kwargs):
+        :type label_id: str
+        :param label_name: (optional) the name of the Label (will create if not exists)
+        :type label_name: str
+        :return: True if successful, False otherwise
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         label_id = kwargs.get("label_id", None)
         label_name = kwargs.get("label_name", None)
@@ -904,15 +1028,18 @@ class StixCoreRelationship:
             self.opencti.app_logger.error("Missing parameters: id and label_id")
             return False
 
-    """
-        Remove a Label object to stix_core_relationship
+    def remove_label(self, **kwargs):
+        """Remove a Label object from stix_core_relationship.
 
         :param id: the id of the stix_core_relationship
+        :type id: str
         :param label_id: the id of the Label
-        :return Boolean
-    """
-
-    def remove_label(self, **kwargs):
+        :type label_id: str
+        :param label_name: (optional) the name of the Label
+        :type label_name: str
+        :return: True if successful, False otherwise
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         label_id = kwargs.get("label_id", None)
         label_name = kwargs.get("label_name", None)
@@ -953,15 +1080,16 @@ class StixCoreRelationship:
             self.opencti.app_logger.error("Missing parameters: id and label_id")
             return False
 
-    """
-        Add a External-Reference object to stix_core_relationship (external-reference)
+    def add_external_reference(self, **kwargs):
+        """Add an External-Reference object to stix_core_relationship.
 
         :param id: the id of the stix_core_relationship
-        :param marking_definition_id: the id of the Marking-Definition
-        :return Boolean
-    """
-
-    def add_external_reference(self, **kwargs):
+        :type id: str
+        :param external_reference_id: the id of the External-Reference
+        :type external_reference_id: str
+        :return: True if successful, False otherwise
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         external_reference_id = kwargs.get("external_reference_id", None)
         if id is not None and external_reference_id is not None:
@@ -995,15 +1123,16 @@ class StixCoreRelationship:
             )
             return False
 
-    """
-        Remove a External-Reference object to stix_core_relationship object
+    def remove_external_reference(self, **kwargs):
+        """Remove an External-Reference object from stix_core_relationship.
 
         :param id: the id of the stix_core_relationship
+        :type id: str
         :param external_reference_id: the id of the External-Reference
-        :return Boolean
-    """
-
-    def remove_external_reference(self, **kwargs):
+        :type external_reference_id: str
+        :return: True if successful, False otherwise
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         external_reference_id = kwargs.get("external_reference_id", None)
         if id is not None and external_reference_id is not None:
@@ -1030,18 +1159,21 @@ class StixCoreRelationship:
             )
             return True
         else:
-            self.opencti.app_logger.error("Missing parameters: id and label_id")
+            self.opencti.app_logger.error(
+                "Missing parameters: id and external_reference_id"
+            )
             return False
 
-    """
-        Add a Kill-Chain-Phase object to stix_core_relationship object (kill_chain_phases)
+    def add_kill_chain_phase(self, **kwargs):
+        """Add a Kill-Chain-Phase object to stix_core_relationship object (kill_chain_phases).
 
         :param id: the id of the stix_core_relationship
+        :type id: str
         :param kill_chain_phase_id: the id of the Kill-Chain-Phase
-        :return Boolean
-    """
-
-    def add_kill_chain_phase(self, **kwargs):
+        :type kill_chain_phase_id: str
+        :return: True if successful, False otherwise
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         kill_chain_phase_id = kwargs.get("kill_chain_phase_id", None)
         if id is not None and kill_chain_phase_id is not None:
@@ -1075,15 +1207,16 @@ class StixCoreRelationship:
             )
             return False
 
-    """
-        Remove a Kill-Chain-Phase object to stix_core_relationship object
+    def remove_kill_chain_phase(self, **kwargs):
+        """Remove a Kill-Chain-Phase object from stix_core_relationship.
 
         :param id: the id of the stix_core_relationship
+        :type id: str
         :param kill_chain_phase_id: the id of the Kill-Chain-Phase
-        :return Boolean
-    """
-
-    def remove_kill_chain_phase(self, **kwargs):
+        :type kill_chain_phase_id: str
+        :return: True if successful, False otherwise
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         kill_chain_phase_id = kwargs.get("kill_chain_phase_id", None)
         if id is not None and kill_chain_phase_id is not None:
@@ -1110,20 +1243,21 @@ class StixCoreRelationship:
             )
             return True
         else:
-            self.opencti.app_loggererror(
+            self.opencti.app_logger.error(
                 "[stix_core_relationship] Missing parameters: id and kill_chain_phase_id"
             )
             return False
 
-    """
-        Update the Identity author of a stix_core_relationship object (created_by)
+    def update_created_by(self, **kwargs):
+        """Update the Identity author of a stix_core_relationship (created_by).
 
         :param id: the id of the stix_core_relationship
+        :type id: str
         :param identity_id: the id of the Identity
-        :return Boolean
-    """
-
-    def update_created_by(self, **kwargs):
+        :type identity_id: str
+        :return: True if successful, False otherwise
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         identity_id = kwargs.get("identity_id", None)
         if id is not None:
@@ -1197,14 +1331,20 @@ class StixCoreRelationship:
             self.opencti.app_logger.error("Missing parameters: id")
             return False
 
-    """
-        Import an Indicator object from a STIX2 object
-
-        :param stixObject: the Stix-Object Indicator
-        :return Indicator object
-    """
-
     def import_from_stix2(self, **kwargs):
+        """Import a stix_core_relationship from a STIX2 object.
+
+        :param stixRelation: the STIX2 relationship object
+        :type stixRelation: dict
+        :param extras: extra parameters including created_by_id, object_marking_ids, etc.
+        :type extras: dict
+        :param update: whether to update if the entity already exists
+        :type update: bool
+        :param defaultDate: default date to use for start/stop times
+        :type defaultDate: str or bool
+        :return: stix_core_relationship object
+        :rtype: dict or None
+        """
         stix_relation = kwargs.get("stixRelation", None)
         extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)
@@ -1231,6 +1371,12 @@ class StixCoreRelationship:
                 stix_relation["x_opencti_modified_at"] = (
                     self.opencti.get_attribute_in_extension(
                         "modified_at", stix_relation
+                    )
+                )
+            if "opencti_upsert_operations" not in stix_relation:
+                stix_relation["opencti_upsert_operations"] = (
+                    self.opencti.get_attribute_in_extension(
+                        "opencti_upsert_operations", stix_relation
                     )
                 )
 
@@ -1327,21 +1473,29 @@ class StixCoreRelationship:
                     else None
                 ),
                 update=update,
+                upsert_operations=(
+                    stix_relation["opencti_upsert_operations"]
+                    if "opencti_upsert_operations" in stix_relation
+                    else None
+                ),
             )
         else:
             self.opencti.app_logger.error(
                 "[opencti_stix_core_relationship] Missing parameters: stixObject"
             )
-
-    """
-        Share element to multiple organizations
-
-        :param entity_id: the stix_core_relationship id
-        :param organization_id:s the organization to share with
-        :return void
-    """
+            return None
 
     def organization_share(self, entity_id, organization_ids, sharing_direct_container):
+        """Share element to multiple organizations.
+
+        :param entity_id: the stix_core_relationship id
+        :type entity_id: str
+        :param organization_ids: the organization IDs to share with
+        :type organization_ids: list
+        :param sharing_direct_container: whether to share direct container
+        :type sharing_direct_container: bool
+        :return: None
+        """
         query = """
                 mutation StixCoreRelationshipEdit($id: ID!, $organizationId: [ID!]!, $directContainerSharing: Boolean) {
                     stixCoreRelationshipEdit(id: $id) {
@@ -1360,17 +1514,19 @@ class StixCoreRelationship:
             },
         )
 
-    """
-        Unshare element from multiple organizations
-    
-        :param entity_id: the stix_core_relationship id
-        :param organization_id:s the organization to share with
-        :return void
-    """
-
     def organization_unshare(
         self, entity_id, organization_ids, sharing_direct_container
     ):
+        """Unshare element from multiple organizations.
+
+        :param entity_id: the stix_core_relationship id
+        :type entity_id: str
+        :param organization_ids: the organization IDs to unshare from
+        :type organization_ids: list
+        :param sharing_direct_container: whether to unshare direct container
+        :type sharing_direct_container: bool
+        :return: None
+        """
         query = """
                 mutation StixCoreRelationshipEdit($id: ID!, $organizationId: [ID!]!, $directContainerSharing: Boolean) {
                     stixCoreRelationshipEdit(id: $id) {
@@ -1389,14 +1545,13 @@ class StixCoreRelationship:
             },
         )
 
-    """
-        Remove a stix_core_relationship object from draft (revert)
+    def remove_from_draft(self, **kwargs):
+        """Remove a stix_core_relationship object from draft (revert).
 
         :param id: the stix_core_relationship id
-        :return void
-    """
-
-    def remove_from_draft(self, **kwargs):
+        :type id: str
+        :return: None
+        """
         id = kwargs.get("id", None)
         if id is not None:
             self.opencti.app_logger.info(
@@ -1412,6 +1567,6 @@ class StixCoreRelationship:
             self.opencti.query(query, {"id": id})
         else:
             self.opencti.app_logger.error(
-                "[stix_core_relationship] Cant remove from draft, missing parameters: id"
+                "[stix_core_relationship] Cannot remove from draft, missing parameters: id"
             )
             return None

@@ -7,9 +7,15 @@ class StixObjectOrStixRelationship:
     Manages generic STIX objects and relationships in the OpenCTI platform.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
+        """Initialize the StixObjectOrStixRelationship instance.
+
+        :param opencti: OpenCTI API client instance
+        :type opencti: OpenCTIApiClient
+        """
         self.opencti = opencti
         self.properties = """
             ... on StixObject {
@@ -521,14 +527,18 @@ class StixObjectOrStixRelationship:
             }
         """
 
-    """
-        Read a StixObjectOrStixRelationship object
+    def read(self, **kwargs):
+        """Read a StixObjectOrStixRelationship object.
 
         :param id: the id of the StixObjectOrStixRelationship
-        :return StixObjectOrStixRelationship object
-    """
-
-    def read(self, **kwargs):
+        :type id: str
+        :param customAttributes: custom attributes to return
+        :type customAttributes: str
+        :param filters: the filters to apply
+        :type filters: dict
+        :return: StixObjectOrStixRelationship object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         custom_attributes = kwargs.get("customAttributes", None)
         filters = kwargs.get("filters", None)
@@ -566,6 +576,25 @@ class StixObjectOrStixRelationship:
             return None
 
     def list(self, **kwargs):
+        """List StixObjectOrStixRelationship objects.
+
+        :param filters: the filters to apply
+        :type filters: dict
+        :param search: the search keyword
+        :type search: str
+        :param first: return the first n rows from the after ID (or the beginning if not set)
+        :type first: int
+        :param after: ID of the first row for pagination
+        :type after: str
+        :param getAll: whether to retrieve all results
+        :type getAll: bool
+        :param with_pagination: whether to include pagination info
+        :type with_pagination: bool
+        :param customAttributes: custom attributes to return
+        :type customAttributes: str
+        :return: List of StixObjectOrStixRelationship objects
+        :rtype: list
+        """
         filters = kwargs.get("filters", None)
         search = kwargs.get("search", None)
         first = kwargs.get("first", 100)
@@ -623,7 +652,7 @@ class StixObjectOrStixRelationship:
                 after = result["data"]["stixObjectOrStixRelationships"]["pageInfo"][
                     "endCursor"
                 ]
-                self.opencti.app_logger.info(
+                self.opencti.app_logger.debug(
                     "Listing stixObjectOrStixRelationships", {"after": after}
                 )
                 after_variables = {**variables, **{"after": after}}

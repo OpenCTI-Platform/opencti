@@ -12,9 +12,15 @@ class CaseRft:
     Manages RFT cases in the OpenCTI platform.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
+        """Initialize the CaseRft instance.
+
+        :param opencti: OpenCTI API client instance
+        :type opencti: OpenCTIApiClient
+        """
         self.opencti = opencti
         self.properties = """
             id
@@ -474,6 +480,15 @@ class CaseRft:
 
     @staticmethod
     def generate_id(name, created):
+        """Generate a STIX ID for a Case RFT object.
+
+        :param name: the name of the Case RFT
+        :type name: str
+        :param created: the creation date of the Case RFT
+        :type created: str or datetime.datetime
+        :return: STIX ID for the Case RFT
+        :rtype: str
+        """
         name = name.lower().strip()
         if isinstance(created, datetime.datetime):
             created = created.isoformat()
@@ -484,19 +499,41 @@ class CaseRft:
 
     @staticmethod
     def generate_id_from_data(data):
+        """Generate a STIX ID from Case RFT data.
+
+        :param data: Dictionary containing 'name' and 'created' keys
+        :type data: dict
+        :return: STIX ID for the Case RFT
+        :rtype: str
+        """
         return CaseRft.generate_id(data["name"], data["created"])
 
-    """
-        List Case Rft objects
+    def list(self, **kwargs):
+        """List Case RFT objects.
 
         :param filters: the filters to apply
+        :type filters: dict
         :param search: the search keyword
+        :type search: str
         :param first: return the first n rows from the after ID (or the beginning if not set)
+        :type first: int
         :param after: ID of the first row for pagination
-        :return List of Case Rft objects
-    """
-
-    def list(self, **kwargs):
+        :type after: str
+        :param orderBy: field to order results by
+        :type orderBy: str
+        :param orderMode: ordering mode (asc/desc)
+        :type orderMode: str
+        :param customAttributes: custom attributes to return
+        :type customAttributes: str
+        :param getAll: whether to retrieve all results
+        :type getAll: bool
+        :param withPagination: whether to include pagination info
+        :type withPagination: bool
+        :param withFiles: whether to include files
+        :type withFiles: bool
+        :return: List of Case RFT objects
+        :rtype: list
+        """
         filters = kwargs.get("filters", None)
         search = kwargs.get("search", None)
         first = kwargs.get("first", 500)
@@ -573,15 +610,20 @@ class CaseRft:
                 result["data"]["caseRfts"], with_pagination
             )
 
-    """
-        Read a Case Rft object
-
-        :param id: the id of the Case Rft
-        :param filters: the filters to apply if no id provided
-        :return Case Rft object
-    """
-
     def read(self, **kwargs):
+        """Read a Case RFT object.
+
+        :param id: the id of the Case RFT
+        :type id: str
+        :param filters: the filters to apply if no id provided
+        :type filters: dict
+        :param customAttributes: custom attributes to return
+        :type customAttributes: str
+        :param withFiles: whether to include files
+        :type withFiles: bool
+        :return: Case RFT object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
@@ -612,16 +654,20 @@ class CaseRft:
             else:
                 return None
 
-    """
-        Read a Case Rft object by stix_id or name
-
-        :param type: the Stix-Domain-Entity type
-        :param stix_id: the STIX ID of the Stix-Domain-Entity
-        :param name: the name of the Stix-Domain-Entity
-        :return Stix-Domain-Entity object
-    """
-
     def get_by_stix_id_or_name(self, **kwargs):
+        """Read a Case RFT object by stix_id or name.
+
+        :param stix_id: the STIX ID of the Case RFT
+        :type stix_id: str
+        :param name: the name of the Case RFT
+        :type name: str
+        :param created: the creation date
+        :type created: str
+        :param customAttributes: custom attributes to return
+        :type customAttributes: str
+        :return: Case RFT object
+        :rtype: dict or None
+        """
         stix_id = kwargs.get("stix_id", None)
         name = kwargs.get("name", None)
         created = kwargs.get("created", None)
@@ -644,15 +690,16 @@ class CaseRft:
             )
         return object_result
 
-    """
-        Check if a case rft already contains a thing (Stix Object or Stix Relationship)
-
-        :param id: the id of the Case Rft
-        :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
-        :return Boolean
-    """
-
     def contains_stix_object_or_stix_relationship(self, **kwargs):
+        """Check if a Case RFT already contains a STIX Object or Relationship.
+
+        :param id: the id of the Case RFT
+        :type id: str
+        :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
+        :type stixObjectOrStixRelationshipId: str
+        :return: Boolean indicating if the entity is contained
+        :rtype: bool or None
+        """
         id = kwargs.get("id", None)
         stix_object_or_stix_relationship_id = kwargs.get(
             "stixObjectOrStixRelationshipId", None
@@ -680,17 +727,68 @@ class CaseRft:
             return result["data"]["caseRftContainsStixObjectOrStixRelationship"]
         else:
             self.opencti.app_logger.error(
-                "[opencti_caseRft] Missing parameters: id or stixObjectOrStixRelationshipId"
+                "[opencti_case_rft] Missing parameters: id or stixObjectOrStixRelationshipId"
             )
-
-    """
-        Create a Case Rft object
-
-        :param name: the name of the Case Rft
-        :return Case Rft object
-    """
+            return None
 
     def create(self, **kwargs):
+        """Create a Case RFT (Request for Takedown) object.
+
+        :param stix_id: (optional) the STIX ID
+        :type stix_id: str
+        :param createdBy: (optional) the author ID
+        :type createdBy: str
+        :param objects: (optional) list of STIX object IDs contained in the case
+        :type objects: list
+        :param objectMarking: (optional) list of marking definition IDs
+        :type objectMarking: list
+        :param objectLabel: (optional) list of label IDs
+        :type objectLabel: list
+        :param objectAssignee: (optional) list of assignee IDs
+        :type objectAssignee: list
+        :param objectParticipant: (optional) list of participant IDs
+        :type objectParticipant: list
+        :param externalReferences: (optional) list of external reference IDs
+        :type externalReferences: list
+        :param revoked: (optional) whether the case is revoked
+        :type revoked: bool
+        :param severity: (optional) severity level
+        :type severity: str
+        :param priority: (optional) priority level
+        :type priority: str
+        :param confidence: (optional) confidence level (0-100)
+        :type confidence: int
+        :param lang: (optional) language
+        :type lang: str
+        :param content: (optional) content
+        :type content: str
+        :param created: (optional) creation date
+        :type created: str
+        :param modified: (optional) modification date
+        :type modified: str
+        :param name: the name of the Case RFT (required)
+        :type name: str
+        :param description: (optional) description
+        :type description: str
+        :param x_opencti_stix_ids: (optional) list of additional STIX IDs
+        :type x_opencti_stix_ids: list
+        :param objectOrganization: (optional) list of organization IDs
+        :type objectOrganization: list
+        :param x_opencti_workflow_id: (optional) workflow ID
+        :type x_opencti_workflow_id: str
+        :param x_opencti_modified_at: (optional) custom modification date
+        :type x_opencti_modified_at: str
+        :param update: (optional) whether to update if exists (default: False)
+        :type update: bool
+        :param takedown_types: (optional) list of takedown types
+        :type takedown_types: list
+        :param files: (optional) list of File objects to attach
+        :type files: list
+        :param filesMarkings: (optional) list of lists of marking definition IDs for each file
+        :type filesMarkings: list
+        :return: Case RFT object
+        :rtype: dict or None
+        """
         stix_id = kwargs.get("stix_id", None)
         created_by = kwargs.get("createdBy", None)
         objects = kwargs.get("objects", None)
@@ -715,6 +813,9 @@ class CaseRft:
         x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         update = kwargs.get("update", False)
         takedown_types = kwargs.get("takedown_types", None)
+        files = kwargs.get("files", None)
+        files_markings = kwargs.get("filesMarkings", None)
+        upsert_operations = kwargs.get("upsert_operations", None)
 
         if name is not None:
             self.opencti.app_logger.info("Creating Case Rft", {"name": name})
@@ -728,50 +829,51 @@ class CaseRft:
                     }
                 }
             """
-            result = self.opencti.query(
-                query,
-                {
-                    "input": {
-                        "stix_id": stix_id,
-                        "createdBy": created_by,
-                        "objectMarking": object_marking,
-                        "objectLabel": object_label,
-                        "objectOrganization": granted_refs,
-                        "objectAssignee": object_assignee,
-                        "objectParticipant": object_participant,
-                        "objects": objects,
-                        "externalReferences": external_references,
-                        "revoked": revoked,
-                        "severity": severity,
-                        "priority": priority,
-                        "content": content,
-                        "confidence": confidence,
-                        "lang": lang,
-                        "created": created,
-                        "modified": modified,
-                        "name": name,
-                        "description": description,
-                        "x_opencti_stix_ids": x_opencti_stix_ids,
-                        "x_opencti_workflow_id": x_opencti_workflow_id,
-                        "x_opencti_modified_at": x_opencti_modified_at,
-                        "update": update,
-                        "takedown_types": takedown_types,
-                    }
-                },
-            )
+            input_variables = {
+                "stix_id": stix_id,
+                "createdBy": created_by,
+                "objectMarking": object_marking,
+                "objectLabel": object_label,
+                "objectOrganization": granted_refs,
+                "objectAssignee": object_assignee,
+                "objectParticipant": object_participant,
+                "objects": objects,
+                "externalReferences": external_references,
+                "revoked": revoked,
+                "severity": severity,
+                "priority": priority,
+                "content": content,
+                "confidence": confidence,
+                "lang": lang,
+                "created": created,
+                "modified": modified,
+                "name": name,
+                "description": description,
+                "x_opencti_stix_ids": x_opencti_stix_ids,
+                "x_opencti_workflow_id": x_opencti_workflow_id,
+                "x_opencti_modified_at": x_opencti_modified_at,
+                "update": update,
+                "takedown_types": takedown_types,
+                "files": files,
+                "filesMarkings": files_markings,
+                "upsertOperations": upsert_operations,
+            }
+            result = self.opencti.query(query, {"input": input_variables})
             return self.opencti.process_multiple_fields(result["data"]["caseRftAdd"])
         else:
-            self.opencti.app_logger.error("[opencti_caseRft] Missing parameters: name")
-
-        """
-        Add a Stix-Entity object to Case Rft object (object_refs)
-
-        :param id: the id of the Case Rft
-        :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
-        :return Boolean
-    """
+            self.opencti.app_logger.error("[opencti_case_rft] Missing parameters: name")
+            return None
 
     def add_stix_object_or_stix_relationship(self, **kwargs):
+        """Add a Stix-Entity object to Case RFT object (object_refs).
+
+        :param id: the id of the Case RFT
+        :type id: str
+        :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
+        :type stixObjectOrStixRelationshipId: str
+        :return: Boolean indicating success
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         stix_object_or_stix_relationship_id = kwargs.get(
             "stixObjectOrStixRelationshipId", None
@@ -805,20 +907,21 @@ class CaseRft:
             )
             return True
         else:
-            self.opencti.app_logger.info(
-                "[opencti_caseRft] Missing parameters: id and stixObjectOrStixRelationshipId"
+            self.opencti.app_logger.error(
+                "[opencti_case_rft] Missing parameters: id and stixObjectOrStixRelationshipId"
             )
             return False
 
-    """
-        Remove a Stix-Entity object to Case Rft object (object_refs)
-
-        :param id: the id of the Case Rft
-        :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
-        :return Boolean
-    """
-
     def remove_stix_object_or_stix_relationship(self, **kwargs):
+        """Remove a Stix-Entity object from Case RFT object (object_refs).
+
+        :param id: the id of the Case RFT
+        :type id: str
+        :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
+        :type stixObjectOrStixRelationshipId: str
+        :return: Boolean indicating success
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         stix_object_or_stix_relationship_id = kwargs.get(
             "stixObjectOrStixRelationshipId", None
@@ -851,18 +954,22 @@ class CaseRft:
             return True
         else:
             self.opencti.app_logger.error(
-                "[opencti_caseRft] Missing parameters: id and stixObjectOrStixRelationshipId"
+                "[opencti_case_rft] Missing parameters: id and stixObjectOrStixRelationshipId"
             )
             return False
 
-        """
-        Import a Case Rft object from a STIX2 object
-
-        :param stixObject: the Stix-Object Case Rft
-        :return Case Rft object
-        """
-
     def import_from_stix2(self, **kwargs):
+        """Import a Case RFT object from a STIX2 object.
+
+        :param stixObject: the STIX2 Case RFT object
+        :type stixObject: dict
+        :param extras: extra parameters including created_by_id, object_marking_ids, etc.
+        :type extras: dict
+        :param update: whether to update if the entity already exists
+        :type update: bool
+        :return: Case RFT object
+        :rtype: dict or None
+        """
         stix_object = kwargs.get("stixObject", None)
         extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)
@@ -900,6 +1007,12 @@ class CaseRft:
             if "x_opencti_modified_at" not in stix_object:
                 stix_object["x_opencti_modified_at"] = (
                     self.opencti.get_attribute_in_extension("modified_at", stix_object)
+                )
+            if "opencti_upsert_operations" not in stix_object:
+                stix_object["opencti_upsert_operations"] = (
+                    self.opencti.get_attribute_in_extension(
+                        "opencti_upsert_operations", stix_object
+                    )
                 )
             return self.create(
                 stix_id=stix_object["id"],
@@ -976,13 +1089,27 @@ class CaseRft:
                     else None
                 ),
                 update=update,
+                files=extras.get("files"),
+                filesMarkings=extras.get("filesMarkings"),
+                upsert_operations=(
+                    stix_object["opencti_upsert_operations"]
+                    if "opencti_upsert_operations" in stix_object
+                    else None
+                ),
             )
         else:
             self.opencti.app_logger.error(
-                "[opencti_caseRft] Missing parameters: stixObject"
+                "[opencti_case_rft] Missing parameters: stixObject"
             )
+            return None
 
     def delete(self, **kwargs):
+        """Delete a Case RFT object.
+
+        :param id: the id of the Case RFT to delete
+        :type id: str
+        :return: None
+        """
         id = kwargs.get("id", None)
         if id is not None:
             self.opencti.app_logger.info("Deleting Case RFT", {"id": id})

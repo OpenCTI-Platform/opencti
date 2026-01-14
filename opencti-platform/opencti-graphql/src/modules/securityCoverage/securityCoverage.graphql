@@ -7,7 +7,7 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -215,6 +215,10 @@ input SecurityCoverageAddInput {
   x_opencti_modified_at: DateTime
   external_uri: String
   externalReferences: [String]
+  file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
   update: Boolean
   # coverage specific
   auto_enrichment_disable: Boolean!

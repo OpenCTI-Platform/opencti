@@ -13,9 +13,15 @@ class Grouping:
     Manages STIX grouping objects in the OpenCTI platform.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
+        """Initialize the Grouping instance.
+
+        :param opencti: OpenCTI API client instance
+        :type opencti: OpenCTIApiClient
+        """
         self.opencti = opencti
         self.properties = """
             id
@@ -186,7 +192,7 @@ class Grouping:
                         }
                         ... on StixCyberObservable {
                             observable_value
-                        }                        
+                        }
                         ... on StixCoreRelationship {
                             standard_id
                             spec_version
@@ -386,7 +392,7 @@ class Grouping:
                         }
                         ... on StixCyberObservable {
                             observable_value
-                        }                        
+                        }
                         ... on StixCoreRelationship {
                             standard_id
                             spec_version
@@ -420,6 +426,17 @@ class Grouping:
 
     @staticmethod
     def generate_id(name, context, created=None):
+        """Generate a STIX ID for a Grouping.
+
+        :param name: The name of the grouping
+        :type name: str
+        :param context: The grouping context
+        :type context: str
+        :param created: Optional creation date
+        :type created: datetime or str or None
+        :return: STIX ID for the grouping
+        :rtype: str
+        """
         name = name.lower().strip()
         context = context.lower().strip()
         if isinstance(created, datetime.datetime):
@@ -434,19 +451,41 @@ class Grouping:
 
     @staticmethod
     def generate_id_from_data(data):
+        """Generate a STIX ID from grouping data.
+
+        :param data: Dictionary containing 'name', 'context', and 'created' keys
+        :type data: dict
+        :return: STIX ID for the grouping
+        :rtype: str
+        """
         return Grouping.generate_id(data["name"], data["context"], data["created"])
 
-    """
-        List Grouping objects
+    def list(self, **kwargs):
+        """List Grouping objects.
 
         :param filters: the filters to apply
+        :type filters: dict
         :param search: the search keyword
+        :type search: str
         :param first: return the first n rows from the after ID (or the beginning if not set)
+        :type first: int
         :param after: ID of the first row for pagination
-        :return List of Grouping objects
-    """
-
-    def list(self, **kwargs):
+        :type after: str
+        :param orderBy: field to order results by
+        :type orderBy: str
+        :param orderMode: ordering mode (asc/desc)
+        :type orderMode: str
+        :param customAttributes: custom attributes to return
+        :type customAttributes: list
+        :param getAll: whether to retrieve all results
+        :type getAll: bool
+        :param withPagination: whether to include pagination info
+        :type withPagination: bool
+        :param withFiles: whether to include files
+        :type withFiles: bool
+        :return: List of Grouping objects
+        :rtype: list
+        """
         filters = kwargs.get("filters", None)
         search = kwargs.get("search", None)
         first = kwargs.get("first", 100)
@@ -524,15 +563,20 @@ class Grouping:
                 result["data"]["groupings"], with_pagination
             )
 
-    """
-        Read a Grouping object
+    def read(self, **kwargs):
+        """Read a Grouping object.
 
         :param id: the id of the Grouping
+        :type id: str
         :param filters: the filters to apply if no id provided
-        :return Grouping object
-    """
-
-    def read(self, **kwargs):
+        :type filters: dict
+        :param customAttributes: custom attributes to return
+        :type customAttributes: list
+        :param withFiles: whether to include files
+        :type withFiles: bool
+        :return: Grouping object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
@@ -562,17 +606,26 @@ class Grouping:
                 return result[0]
             else:
                 return None
-
-    """
-        Read a Grouping object by stix_id or name
-
-        :param type: the Stix-Domain-Entity type
-        :param stix_id: the STIX ID of the Stix-Domain-Entity
-        :param name: the name of the Stix-Domain-Entity
-        :return Stix-Domain-Entity object
-    """
+        else:
+            self.opencti.app_logger.error(
+                "[opencti_grouping] Missing parameters: id or filters"
+            )
+            return None
 
     def get_by_stix_id_or_name(self, **kwargs):
+        """Read a Grouping object by stix_id or name.
+
+        :param stix_id: the STIX ID of the Grouping
+        :type stix_id: str
+        :param name: the name of the Grouping
+        :type name: str
+        :param context: the context of the Grouping
+        :type context: str
+        :param customAttributes: custom attributes to return
+        :type customAttributes: list
+        :return: Grouping object
+        :rtype: dict or None
+        """
         stix_id = kwargs.get("stix_id", None)
         name = kwargs.get("name", None)
         context = kwargs.get("context", None)
@@ -594,15 +647,16 @@ class Grouping:
             )
         return object_result
 
-    """
-        Check if a grouping already contains a thing (Stix Object or Stix Relationship)
+    def contains_stix_object_or_stix_relationship(self, **kwargs):
+        """Check if a grouping already contains a thing (Stix Object or Stix Relationship).
 
         :param id: the id of the Grouping
+        :type id: str
         :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
-        :return Boolean
-    """
-
-    def contains_stix_object_or_stix_relationship(self, **kwargs):
+        :type stixObjectOrStixRelationshipId: str
+        :return: Boolean
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         stix_object_or_stix_relationship_id = kwargs.get(
             "stixObjectOrStixRelationshipId", None
@@ -629,15 +683,60 @@ class Grouping:
             self.opencti.app_logger.error(
                 "[opencti_grouping] Missing parameters: id or stixObjectOrStixRelationshipId"
             )
-
-    """
-        Create a Grouping object
-
-        :param name: the name of the Grouping
-        :return Grouping object
-    """
+            return None
 
     def create(self, **kwargs):
+        """Create a Grouping object.
+
+        :param stix_id: (optional) the STIX ID
+        :type stix_id: str
+        :param createdBy: (optional) the author ID
+        :type createdBy: str
+        :param objects: (optional) list of STIX object IDs
+        :type objects: list
+        :param objectMarking: (optional) list of marking definition IDs
+        :type objectMarking: list
+        :param objectLabel: (optional) list of label IDs
+        :type objectLabel: list
+        :param externalReferences: (optional) list of external reference IDs
+        :type externalReferences: list
+        :param revoked: (optional) whether the grouping is revoked
+        :type revoked: bool
+        :param confidence: (optional) confidence level (0-100)
+        :type confidence: int
+        :param lang: (optional) language
+        :type lang: str
+        :param created: (optional) creation date
+        :type created: datetime
+        :param modified: (optional) modification date
+        :type modified: datetime
+        :param name: the name of the Grouping (required)
+        :type name: str
+        :param context: the grouping context (required)
+        :type context: str
+        :param content: (optional) content
+        :type content: str
+        :param description: (optional) description
+        :type description: str
+        :param x_opencti_aliases: (optional) list of aliases
+        :type x_opencti_aliases: list
+        :param x_opencti_stix_ids: (optional) list of additional STIX IDs
+        :type x_opencti_stix_ids: list
+        :param objectOrganization: (optional) list of organization IDs
+        :type objectOrganization: list
+        :param x_opencti_workflow_id: (optional) workflow ID
+        :type x_opencti_workflow_id: str
+        :param x_opencti_modified_at: (optional) custom modification date
+        :type x_opencti_modified_at: datetime
+        :param update: (optional) whether to update if exists (default: False)
+        :type update: bool
+        :param files: (optional) list of File objects to attach
+        :type files: list
+        :param filesMarkings: (optional) list of lists of marking definition IDs for each file
+        :type filesMarkings: list
+        :return: Grouping object
+        :rtype: dict or None
+        """
         stix_id = kwargs.get("stix_id", None)
         created_by = kwargs.get("createdBy", None)
         objects = kwargs.get("objects", None)
@@ -659,6 +758,9 @@ class Grouping:
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
         x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         update = kwargs.get("update", False)
+        files = kwargs.get("files", None)
+        files_markings = kwargs.get("filesMarkings", None)
+        upsert_operations = kwargs.get("upsert_operations", None)
 
         if name is not None and context is not None:
             self.opencti.app_logger.info("Creating Grouping", {"name": name})
@@ -672,49 +774,50 @@ class Grouping:
                     }
                 }
             """
-            result = self.opencti.query(
-                query,
-                {
-                    "input": {
-                        "stix_id": stix_id,
-                        "createdBy": created_by,
-                        "objectMarking": object_marking,
-                        "objectLabel": object_label,
-                        "objectOrganization": granted_refs,
-                        "objects": objects,
-                        "externalReferences": external_references,
-                        "revoked": revoked,
-                        "confidence": confidence,
-                        "lang": lang,
-                        "created": created,
-                        "modified": modified,
-                        "name": name,
-                        "context": context,
-                        "content": content,
-                        "description": description,
-                        "x_opencti_aliases": x_opencti_aliases,
-                        "x_opencti_stix_ids": x_opencti_stix_ids,
-                        "x_opencti_workflow_id": x_opencti_workflow_id,
-                        "x_opencti_modified_at": x_opencti_modified_at,
-                        "update": update,
-                    }
-                },
-            )
+            input_variables = {
+                "stix_id": stix_id,
+                "createdBy": created_by,
+                "objectMarking": object_marking,
+                "objectLabel": object_label,
+                "objectOrganization": granted_refs,
+                "objects": objects,
+                "externalReferences": external_references,
+                "revoked": revoked,
+                "confidence": confidence,
+                "lang": lang,
+                "created": created,
+                "modified": modified,
+                "name": name,
+                "context": context,
+                "content": content,
+                "description": description,
+                "x_opencti_aliases": x_opencti_aliases,
+                "x_opencti_stix_ids": x_opencti_stix_ids,
+                "x_opencti_workflow_id": x_opencti_workflow_id,
+                "x_opencti_modified_at": x_opencti_modified_at,
+                "update": update,
+                "files": files,
+                "filesMarkings": files_markings,
+                "upsertOperations": upsert_operations,
+            }
+            result = self.opencti.query(query, {"input": input_variables})
             return self.opencti.process_multiple_fields(result["data"]["groupingAdd"])
         else:
             self.opencti.app_logger.error(
-                "[opencti_grouping] Missing parameters: name and description and context"
+                "[opencti_grouping] Missing parameters: name and context"
             )
-
-    """
-        Add a Stix-Entity object to Grouping object (object_refs)
-
-        :param id: the id of the Grouping
-        :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
-        :return Boolean
-    """
+            return None
 
     def add_stix_object_or_stix_relationship(self, **kwargs):
+        """Add a Stix-Entity object to Grouping object (object_refs).
+
+        :param id: the id of the Grouping
+        :type id: str
+        :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
+        :type stixObjectOrStixRelationshipId: str
+        :return: Boolean
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         stix_object_or_stix_relationship_id = kwargs.get(
             "stixObjectOrStixRelationshipId", None
@@ -748,22 +851,23 @@ class Grouping:
             )
             return False
 
-    """
-        Remove a Stix-Entity object to Grouping object (object_refs)
+    def remove_stix_object_or_stix_relationship(self, **kwargs):
+        """Remove a Stix-Entity object from Grouping object (object_refs).
 
         :param id: the id of the Grouping
+        :type id: str
         :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
-        :return Boolean
-    """
-
-    def remove_stix_object_or_stix_relationship(self, **kwargs):
+        :type stixObjectOrStixRelationshipId: str
+        :return: Boolean
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         stix_object_or_stix_relationship_id = kwargs.get(
             "stixObjectOrStixRelationshipId", None
         )
         if id is not None and stix_object_or_stix_relationship_id is not None:
             self.opencti.app_logger.info(
-                "Removing StixObjectOrStixRelationship to Grouping",
+                "Removing StixObjectOrStixRelationship from Grouping",
                 {"id": stix_object_or_stix_relationship_id, "grouping": id},
             )
             query = """
@@ -788,14 +892,18 @@ class Grouping:
             )
             return False
 
-    """
-        Import a Grouping object from a STIX2 object
+    def import_from_stix2(self, **kwargs):
+        """Import a Grouping object from a STIX2 object.
 
         :param stixObject: the Stix-Object Grouping
-        :return Grouping object
-    """
-
-    def import_from_stix2(self, **kwargs):
+        :type stixObject: dict
+        :param extras: extra dict
+        :type extras: dict
+        :param update: set the update flag on import
+        :type update: bool
+        :return: Grouping object
+        :rtype: dict or None
+        """
         stix_object = kwargs.get("stixObject", None)
         extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)
@@ -828,7 +936,12 @@ class Grouping:
                 stix_object["x_opencti_modified_at"] = (
                     self.opencti.get_attribute_in_extension("modified_at", stix_object)
                 )
-
+            if "opencti_upsert_operations" not in stix_object:
+                stix_object["opencti_upsert_operations"] = (
+                    self.opencti.get_attribute_in_extension(
+                        "opencti_upsert_operations", stix_object
+                    )
+                )
             return self.create(
                 stix_id=stix_object["id"],
                 createdBy=(
@@ -889,8 +1002,16 @@ class Grouping:
                     else None
                 ),
                 update=update,
+                files=extras.get("files"),
+                filesMarkings=extras.get("filesMarkings"),
+                upsert_operations=(
+                    stix_object["opencti_upsert_operations"]
+                    if "opencti_upsert_operations" in stix_object
+                    else None
+                ),
             )
         else:
             self.opencti.app_logger.error(
                 "[opencti_grouping] Missing parameters: stixObject"
             )
+            return None

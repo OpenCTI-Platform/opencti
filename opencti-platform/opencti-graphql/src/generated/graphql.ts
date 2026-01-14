@@ -134,7 +134,7 @@ export type AdministrativeArea = BasicObject & Location & StixCoreObject & StixD
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
   precision?: Maybe<Scalars['Float']['output']>;
@@ -316,6 +316,9 @@ export type AdministrativeAreaAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   latitude?: InputMaybe<Scalars['Float']['input']>;
   longitude?: InputMaybe<Scalars['Float']['input']>;
@@ -327,6 +330,7 @@ export type AdministrativeAreaAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
@@ -477,7 +481,7 @@ export type Artifact = BasicObject & HashedObservable & StixCoreObject & StixCyb
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   payload_bin?: Maybe<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -653,9 +657,13 @@ export type ArtifactAddInput = {
   decryption_key?: InputMaybe<Scalars['String']['input']>;
   encryption_algorithm?: InputMaybe<Scalars['String']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   hashes?: InputMaybe<Array<InputMaybe<HashInput>>>;
   mime_type?: InputMaybe<Scalars['String']['input']>;
   payload_bin?: InputMaybe<Scalars['String']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   url?: InputMaybe<Scalars['String']['input']>;
   x_opencti_additional_names?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
@@ -726,7 +734,7 @@ export type AttackPattern = BasicObject & StixCoreObject & StixDomainObject & St
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
   parentAttackPatterns?: Maybe<AttackPatternConnection>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -942,6 +950,9 @@ export type AttackPatternAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   killChainPhases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
@@ -952,6 +963,7 @@ export type AttackPatternAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_mitre_detection?: InputMaybe<Scalars['String']['input']>;
   x_mitre_id?: InputMaybe<Scalars['String']['input']>;
   x_mitre_permissions_required?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -1181,7 +1193,7 @@ export type AutonomousSystem = BasicObject & StixCoreObject & StixCyberObservabl
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
@@ -1353,9 +1365,13 @@ export type AutonomousSystemToStixArgs = {
 
 export type AutonomousSystemAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   name?: InputMaybe<Scalars['String']['input']>;
   number: Scalars['Int']['input'];
   rir?: InputMaybe<Scalars['String']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
 };
 
 export type BackgroundTask = {
@@ -1512,7 +1528,7 @@ export type BankAccount = BasicObject & StixCoreObject & StixCyberObservable & S
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
@@ -1686,14 +1702,18 @@ export type BankAccountAddInput = {
   account_number?: InputMaybe<Scalars['String']['input']>;
   bic?: InputMaybe<Scalars['String']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   iban?: InputMaybe<Scalars['String']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
 };
 
 export type BasicObject = {
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   metrics?: Maybe<Array<Maybe<Metric>>>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
 };
 
@@ -1704,7 +1724,7 @@ export type BasicRelationship = {
   fromRole?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   metrics?: Maybe<Array<Maybe<Metric>>>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   standard_id: Scalars['String']['output'];
   toRole?: Maybe<Scalars['String']['output']>;
@@ -1771,7 +1791,7 @@ export type Campaign = BasicObject & StixCoreObject & StixDomainObject & StixObj
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -1953,6 +1973,9 @@ export type CampaignAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   first_seen?: InputMaybe<Scalars['DateTime']['input']>;
   lang?: InputMaybe<Scalars['String']['input']>;
   last_seen?: InputMaybe<Scalars['DateTime']['input']>;
@@ -1966,6 +1989,7 @@ export type CampaignAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -2093,7 +2117,7 @@ export type Capability = BasicObject & InternalObject & {
   id: Scalars['ID']['output'];
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   standard_id: Scalars['String']['output'];
   updated_at: Scalars['DateTime']['output'];
@@ -2155,7 +2179,7 @@ export type Case = {
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -2421,7 +2445,7 @@ export type CaseIncident = BasicObject & Case & Container & StixCoreObject & Sti
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
   priority?: Maybe<Scalars['String']['output']>;
@@ -2647,6 +2671,9 @@ export type CaseIncidentAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
@@ -2662,6 +2689,7 @@ export type CaseIncidentAddInput = {
   severity?: InputMaybe<Scalars['String']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -2743,7 +2771,7 @@ export type CaseRfi = BasicObject & Case & Container & StixCoreObject & StixDoma
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
   priority?: Maybe<Scalars['String']['output']>;
@@ -2969,6 +2997,9 @@ export type CaseRfiAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   information_types?: InputMaybe<Array<Scalars['String']['input']>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
@@ -2984,6 +3015,7 @@ export type CaseRfiAddInput = {
   severity?: InputMaybe<Scalars['String']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_request_access?: InputMaybe<Scalars['String']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
@@ -3064,7 +3096,7 @@ export type CaseRft = BasicObject & Case & Container & StixCoreObject & StixDoma
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
   priority?: Maybe<Scalars['String']['output']>;
@@ -3288,6 +3320,9 @@ export type CaseRftAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
@@ -3303,6 +3338,7 @@ export type CaseRftAddInput = {
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   takedown_types?: InputMaybe<Array<Scalars['String']['input']>>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -3347,7 +3383,7 @@ export type CaseTemplate = BasicObject & InternalObject & {
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
   tasks: TaskTemplateConnection;
 };
@@ -3476,7 +3512,7 @@ export type Channel = BasicObject & StixCoreObject & StixDomainObject & StixObje
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -3658,6 +3694,9 @@ export type ChannelAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
@@ -3667,6 +3706,7 @@ export type ChannelAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -3757,7 +3797,7 @@ export type City = BasicObject & Location & StixCoreObject & StixDomainObject & 
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
   precision?: Maybe<Scalars['Float']['output']>;
@@ -3939,6 +3979,9 @@ export type CityAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   latitude?: InputMaybe<Scalars['Float']['input']>;
   longitude?: InputMaybe<Scalars['Float']['input']>;
@@ -3951,6 +3994,7 @@ export type CityAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
@@ -4082,7 +4126,7 @@ export type Connector = BasicObject & InternalObject & {
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   only_contextual?: Maybe<Scalars['Boolean']['output']>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   playbook_compatible?: Maybe<Scalars['Boolean']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   standard_id: Scalars['String']['output'];
@@ -4164,7 +4208,7 @@ export type ConnectorManager = BasicObject & InternalObject & {
   last_sync_execution?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   public_key: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
 };
@@ -4244,7 +4288,7 @@ export type Container = {
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   relatedContainers?: Maybe<ContainerConnection>;
   reports?: Maybe<ReportConnection>;
@@ -4550,7 +4594,7 @@ export type Country = BasicObject & Location & StixCoreObject & StixDomainObject
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
   precision?: Maybe<Scalars['Float']['output']>;
@@ -4733,6 +4777,9 @@ export type CountryAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   latitude?: InputMaybe<Scalars['Float']['input']>;
   longitude?: InputMaybe<Scalars['Float']['input']>;
@@ -4744,6 +4791,7 @@ export type CountryAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
@@ -4833,7 +4881,7 @@ export type CourseOfAction = BasicObject & StixCoreObject & StixDomainObject & S
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -5017,6 +5065,9 @@ export type CourseOfActionAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
@@ -5026,6 +5077,7 @@ export type CourseOfActionAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_mitre_id?: InputMaybe<Scalars['String']['input']>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
@@ -5146,7 +5198,7 @@ export type Credential = BasicObject & StixCoreObject & StixCyberObservable & St
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
@@ -5322,6 +5374,10 @@ export type CredentialToStixArgs = {
 
 export type CredentialAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -5355,7 +5411,7 @@ export type CryptocurrencyWallet = BasicObject & StixCoreObject & StixCyberObser
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
@@ -5527,6 +5583,10 @@ export type CryptocurrencyWalletToStixArgs = {
 
 export type CryptocurrencyWalletAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -5560,7 +5620,7 @@ export type CryptographicKey = BasicObject & StixCoreObject & StixCyberObservabl
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
@@ -5732,6 +5792,10 @@ export type CryptographicKeyToStixArgs = {
 
 export type CryptographicKeyAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -5925,7 +5989,7 @@ export type DataComponent = BasicObject & StixCoreObject & StixDomainObject & St
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -6107,6 +6171,9 @@ export type DataComponentAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
@@ -6116,6 +6183,7 @@ export type DataComponentAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -6184,7 +6252,7 @@ export type DataSource = BasicObject & StixCoreObject & StixDomainObject & StixO
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -6368,6 +6436,9 @@ export type DataSourceAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
@@ -6377,6 +6448,7 @@ export type DataSourceAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_mitre_platforms?: InputMaybe<Array<Scalars['String']['input']>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
@@ -6426,7 +6498,7 @@ export type DecayExclusionRule = BasicObject & InternalObject & {
   id: Scalars['ID']['output'];
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
 };
 
@@ -6486,7 +6558,7 @@ export type DecayRule = BasicObject & InternalObject & {
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   order: Scalars['Int']['output'];
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   standard_id: Scalars['String']['output'];
   updated_at: Scalars['DateTime']['output'];
@@ -6654,7 +6726,7 @@ export type Directory = BasicObject & StixCoreObject & StixCyberObservable & Sti
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   path: Scalars['String']['output'];
   path_enc?: Maybe<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
@@ -6829,9 +6901,13 @@ export type DirectoryAddInput = {
   atime?: InputMaybe<Scalars['DateTime']['input']>;
   ctime?: InputMaybe<Scalars['DateTime']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   mtime?: InputMaybe<Scalars['DateTime']['input']>;
   path: Scalars['String']['input'];
   path_enc?: InputMaybe<Scalars['String']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
 };
 
 export type Display = {
@@ -6861,7 +6937,7 @@ export type DisseminationList = BasicObject & InternalObject & {
   id: Scalars['ID']['output'];
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   standard_id: Scalars['String']['output'];
   updated_at: Scalars['DateTime']['output'];
@@ -6941,7 +7017,7 @@ export type DomainName = BasicObject & StixCoreObject & StixCyberObservable & St
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
@@ -7113,6 +7189,10 @@ export type DomainNameToStixArgs = {
 
 export type DomainNameAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   value: Scalars['String']['input'];
 };
 
@@ -7293,7 +7373,7 @@ export type EmailAddr = BasicObject & StixCoreObject & StixCyberObservable & Sti
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
@@ -7466,6 +7546,10 @@ export type EmailAddrToStixArgs = {
 export type EmailAddrAddInput = {
   display_name?: InputMaybe<Scalars['String']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -7504,7 +7588,7 @@ export type EmailMessage = BasicObject & StixCoreObject & StixCyberObservable & 
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   received_lines?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -7680,10 +7764,14 @@ export type EmailMessageAddInput = {
   body?: InputMaybe<Scalars['String']['input']>;
   content_type?: InputMaybe<Scalars['String']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   is_multipart?: InputMaybe<Scalars['Boolean']['input']>;
   message_id?: InputMaybe<Scalars['String']['input']>;
   received_lines?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   subject?: InputMaybe<Scalars['String']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
 };
 
 export type EmailMimePartType = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
@@ -7719,7 +7807,7 @@ export type EmailMimePartType = BasicObject & StixCoreObject & StixCyberObservab
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
@@ -7893,6 +7981,10 @@ export type EmailMimePartTypeAddInput = {
   content_disposition?: InputMaybe<Scalars['String']['input']>;
   content_type?: InputMaybe<Scalars['String']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
 };
 
 export type EmailTemplate = BasicObject & InternalObject & {
@@ -7903,7 +7995,7 @@ export type EmailTemplate = BasicObject & InternalObject & {
   id: Scalars['ID']['output'];
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   sender_email: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   template_body: Scalars['String']['output'];
@@ -8024,7 +8116,7 @@ export type Event = BasicObject & StixCoreObject & StixDomainObject & StixObject
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -8208,6 +8300,9 @@ export type EventAddInput = {
   event_types?: InputMaybe<Array<Scalars['String']['input']>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
@@ -8218,6 +8313,7 @@ export type EventAddInput = {
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   stop_time?: InputMaybe<Scalars['DateTime']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -8263,7 +8359,7 @@ export type ExclusionList = BasicObject & InternalObject & {
   id: Scalars['ID']['output'];
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
 };
 
@@ -8339,7 +8435,7 @@ export type ExternalReference = BasicObject & StixMetaObject & StixObject & {
   jobs?: Maybe<Array<Maybe<Work>>>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles: FileConnection;
   references?: Maybe<StixObjectOrStixRelationshipConnection>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -8401,6 +8497,9 @@ export type ExternalReferenceAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   external_id?: InputMaybe<Scalars['String']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   hash?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   source_name: Scalars['String']['input'];
@@ -8606,7 +8705,7 @@ export type Feedback = BasicObject & Case & Container & StixCoreObject & StixDom
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
   rating?: Maybe<Scalars['Int']['output']>;
@@ -8826,6 +8925,9 @@ export type FeedbackAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
@@ -8838,6 +8940,7 @@ export type FeedbackAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -9009,7 +9112,7 @@ export type FintelDesign = BasicObject & InternalObject & {
   id: Scalars['ID']['output'];
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
   textColor?: Maybe<Scalars['String']['output']>;
 };
@@ -9050,7 +9153,7 @@ export type FintelTemplate = BasicObject & InternalObject & {
   instance_filters?: Maybe<Scalars['String']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   settings_types: Array<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
   start_date?: Maybe<Scalars['DateTime']['output']>;
@@ -9185,7 +9288,7 @@ export type Group = BasicObject & InternalObject & {
   name: Scalars['String']['output'];
   no_creators?: Maybe<Scalars['Boolean']['output']>;
   not_shareable_marking_types: Array<Scalars['String']['output']>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   restrict_delete?: Maybe<Scalars['Boolean']['output']>;
   roles?: Maybe<RoleConnection>;
@@ -9315,7 +9418,7 @@ export type Grouping = BasicObject & Container & StixCoreObject & StixDomainObje
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -9537,6 +9640,9 @@ export type GroupingAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
@@ -9547,6 +9653,7 @@ export type GroupingAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
@@ -9600,6 +9707,7 @@ export type Hash = {
 export type HashInput = {
   algorithm: Scalars['String']['input'];
   hash: Scalars['String']['input'];
+  upsertOperations?: InputMaybe<Array<EditInput>>;
 };
 
 export type HashedObservable = {
@@ -9632,7 +9740,7 @@ export type HashedObservable = {
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
@@ -9842,7 +9950,7 @@ export type Hostname = BasicObject & StixCoreObject & StixCyberObservable & Stix
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
@@ -10014,6 +10122,10 @@ export type HostnameToStixArgs = {
 
 export type HostnameAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -10048,7 +10160,7 @@ export type IPv4Addr = BasicObject & StixCoreObject & StixCyberObservable & Stix
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
@@ -10221,7 +10333,11 @@ export type IPv4AddrToStixArgs = {
 export type IPv4AddrAddInput = {
   belongsTo?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   resolvesTo?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -10256,7 +10372,7 @@ export type IPv6Addr = BasicObject & StixCoreObject & StixCyberObservable & Stix
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
@@ -10428,6 +10544,10 @@ export type IPv6AddrToStixArgs = {
 
 export type IPv6AddrAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -10478,7 +10598,7 @@ export type Identity = {
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
@@ -10654,6 +10774,10 @@ export type IdentityAddInput = {
   createdBy?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
@@ -10664,6 +10788,7 @@ export type IdentityAddInput = {
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   type: IdentityType;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
@@ -10782,7 +10907,7 @@ export type Incident = BasicObject & StixCoreObject & StixDomainObject & StixObj
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -10966,6 +11091,9 @@ export type IncidentAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   first_seen?: InputMaybe<Scalars['DateTime']['input']>;
   incident_type?: InputMaybe<Scalars['String']['input']>;
   lang?: InputMaybe<Scalars['String']['input']>;
@@ -10983,6 +11111,7 @@ export type IncidentAddInput = {
   source?: InputMaybe<Scalars['String']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -11127,7 +11256,7 @@ export type Indicator = BasicObject & StixCoreObject & StixDomainObject & StixOb
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pattern?: Maybe<Scalars['String']['output']>;
   pattern_type?: Maybe<Scalars['String']['output']>;
   pattern_version?: Maybe<Scalars['String']['output']>;
@@ -11324,6 +11453,9 @@ export type IndicatorAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<Scalars['String']['input']>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   indicator_types?: InputMaybe<Array<Scalars['String']['input']>>;
   killChainPhases?: InputMaybe<Array<Scalars['String']['input']>>;
   lang?: InputMaybe<Scalars['String']['input']>;
@@ -11338,6 +11470,7 @@ export type IndicatorAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   valid_from?: InputMaybe<Scalars['DateTime']['input']>;
   valid_until?: InputMaybe<Scalars['DateTime']['input']>;
   x_mitre_platforms?: InputMaybe<Array<Scalars['String']['input']>>;
@@ -11447,7 +11580,7 @@ export type Individual = BasicObject & Identity & StixCoreObject & StixDomainObj
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
   organizations?: Maybe<OrganizationConnection>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -11633,6 +11766,9 @@ export type IndividualAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
@@ -11643,6 +11779,7 @@ export type IndividualAddInput = {
   roles?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_firstname?: InputMaybe<Scalars['String']['input']>;
   x_opencti_lastname?: InputMaybe<Scalars['String']['input']>;
@@ -11763,7 +11900,7 @@ export type Infrastructure = BasicObject & StixCoreObject & StixDomainObject & S
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -11944,6 +12081,9 @@ export type InfrastructureAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   first_seen?: InputMaybe<Scalars['DateTime']['input']>;
   infrastructure_types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   killChainPhases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -11957,6 +12097,7 @@ export type InfrastructureAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -12049,7 +12190,7 @@ export type IngestionCsv = BasicObject & InternalObject & {
   markings?: Maybe<Array<Scalars['String']['output']>>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   scheduling_period?: Maybe<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
@@ -12135,7 +12276,7 @@ export type IngestionJson = BasicObject & InternalObject & {
   pagination_with_sub_page?: Maybe<Scalars['Boolean']['output']>;
   pagination_with_sub_page_attribute_path?: Maybe<Scalars['String']['output']>;
   pagination_with_sub_page_query_verb?: Maybe<Scalars['String']['output']>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   query_attributes?: Maybe<Array<IngestionQueryAttribute>>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   scheduling_period?: Maybe<Scalars['String']['output']>;
@@ -12385,7 +12526,7 @@ export type InternalRelationship = BasicRelationship & {
   fromRole?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   metrics?: Maybe<Array<Maybe<Metric>>>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   standard_id: Scalars['String']['output'];
   to?: Maybe<InternalObject>;
@@ -12446,7 +12587,7 @@ export type IntrusionSet = BasicObject & StixCoreObject & StixDomainObject & Sti
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
   primary_motivation?: Maybe<Scalars['String']['output']>;
@@ -12631,6 +12772,9 @@ export type IntrusionSetAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   first_seen?: InputMaybe<Scalars['DateTime']['input']>;
   goals?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
@@ -12647,6 +12791,7 @@ export type IntrusionSetAddInput = {
   secondary_motivations?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -12837,7 +12982,7 @@ export type KillChainPhase = BasicObject & StixMetaObject & StixObject & {
   kill_chain_name: Scalars['String']['output'];
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   phase_name: Scalars['String']['output'];
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   representative: Representative;
@@ -12930,7 +13075,7 @@ export type Label = BasicObject & StixMetaObject & StixObject & {
   is_inferred: Scalars['Boolean']['output'];
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   representative: Representative;
   spec_version: Scalars['String']['output'];
@@ -13037,7 +13182,7 @@ export type Language = BasicObject & StixCoreObject & StixDomainObject & StixObj
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -13217,6 +13362,10 @@ export type LanguageAddInput = {
   createdBy?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
@@ -13324,7 +13473,7 @@ export type Location = {
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   precision?: Maybe<Scalars['Float']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -13498,6 +13647,10 @@ export type LocationAddInput = {
   createdBy?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   latitude?: InputMaybe<Scalars['Float']['input']>;
   longitude?: InputMaybe<Scalars['Float']['input']>;
@@ -13510,6 +13663,7 @@ export type LocationAddInput = {
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   type: Scalars['String']['input'];
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
@@ -13657,7 +13811,7 @@ export type MacAddr = BasicObject & StixCoreObject & StixCyberObservable & StixO
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
@@ -13829,6 +13983,10 @@ export type MacAddrToStixArgs = {
 
 export type MacAddrAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -13878,7 +14036,7 @@ export type Malware = BasicObject & StixCoreObject & StixDomainObject & StixObje
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -14062,6 +14220,9 @@ export type MalwareAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   first_seen?: InputMaybe<Scalars['DateTime']['input']>;
   implementation_languages?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   is_family?: InputMaybe<Scalars['Boolean']['input']>;
@@ -14079,6 +14240,7 @@ export type MalwareAddInput = {
   samples?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -14143,7 +14305,7 @@ export type MalwareAnalysis = BasicObject & StixCoreObject & StixDomainObject & 
   operatingSystem?: Maybe<Software>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
   product: Scalars['String']['output'];
@@ -14335,6 +14497,9 @@ export type MalwareAnalysisAddInput = {
   createdBy?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   hostVm?: InputMaybe<Scalars['String']['input']>;
   installedSoftware?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
@@ -14352,6 +14517,7 @@ export type MalwareAnalysisAddInput = {
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   submitted?: InputMaybe<Scalars['DateTime']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   version?: InputMaybe<Scalars['String']['input']>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
@@ -14450,7 +14616,7 @@ export type ManagedConnector = BasicObject & InternalObject & {
   manager_requested_status: Scalars['String']['output'];
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
 };
 
@@ -14527,7 +14693,7 @@ export type MarkingDefinition = BasicObject & StixMetaObject & StixObject & {
   is_inferred: Scalars['Boolean']['output'];
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   representative: Representative;
   spec_version: Scalars['String']['output'];
@@ -14730,7 +14896,7 @@ export type MediaContent = BasicObject & StixCoreObject & StixCyberObservable & 
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   publication_date?: Maybe<Scalars['DateTime']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -14905,9 +15071,13 @@ export type MediaContentToStixArgs = {
 export type MediaContentAddInput = {
   content?: InputMaybe<Scalars['String']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   media_category?: InputMaybe<Scalars['String']['input']>;
   publication_date?: InputMaybe<Scalars['DateTime']['input']>;
   title?: InputMaybe<Scalars['String']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   url: Scalars['String']['input'];
 };
 
@@ -15645,6 +15815,7 @@ export type MutationAiVictimGenerateReportArgs = {
 export type MutationArtifactImportArgs = {
   createdBy?: InputMaybe<Scalars['String']['input']>;
   file: Scalars['Upload']['input'];
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_description?: InputMaybe<Scalars['String']['input']>;
@@ -17469,6 +17640,7 @@ export type MutationStixCyberObservableAddArgs = {
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   type: Scalars['String']['input'];
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_description?: InputMaybe<Scalars['String']['input']>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_score?: InputMaybe<Scalars['Int']['input']>;
@@ -18031,7 +18203,7 @@ export type Mutex = BasicObject & StixCoreObject & StixCyberObservable & StixObj
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
@@ -18202,7 +18374,11 @@ export type MutexToStixArgs = {
 
 export type MutexAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   name?: InputMaybe<Scalars['String']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
 };
 
 export type NlqResponse = {
@@ -18252,7 +18428,7 @@ export type Narrative = BasicObject & StixCoreObject & StixDomainObject & StixOb
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
   parentNarratives?: Maybe<NarrativeConnection>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -18434,6 +18610,9 @@ export type NarrativeAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
@@ -18444,6 +18623,7 @@ export type NarrativeAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -18511,7 +18691,7 @@ export type NetworkTraffic = BasicObject & StixCoreObject & StixCyberObservable 
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   protocols?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -18692,6 +18872,9 @@ export type NetworkTrafficAddInput = {
   dst_port?: InputMaybe<Scalars['Int']['input']>;
   end?: InputMaybe<Scalars['DateTime']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   is_active?: InputMaybe<Scalars['Boolean']['input']>;
   networkDst?: InputMaybe<Scalars['String']['input']>;
   networkSrc?: InputMaybe<Scalars['String']['input']>;
@@ -18700,6 +18883,7 @@ export type NetworkTrafficAddInput = {
   src_packets?: InputMaybe<Scalars['Int']['input']>;
   src_port?: InputMaybe<Scalars['Int']['input']>;
   start?: InputMaybe<Scalars['DateTime']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
 };
 
 export type Note = BasicObject & Container & StixCoreObject & StixDomainObject & StixObject & {
@@ -18748,7 +18932,7 @@ export type Note = BasicObject & Container & StixCoreObject & StixDomainObject &
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -18966,6 +19150,9 @@ export type NoteAddInput = {
   createdBy?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   likelihood?: InputMaybe<Scalars['Int']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
@@ -18977,6 +19164,7 @@ export type NoteAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -19073,7 +19261,7 @@ export type Notification = BasicObject & InternalObject & {
   name: Scalars['String']['output'];
   notification_content: Array<NotificationContent>;
   notification_type: Scalars['String']['output'];
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   standard_id: Scalars['String']['output'];
   updated_at?: Maybe<Scalars['DateTime']['output']>;
@@ -19130,7 +19318,7 @@ export type Notifier = BasicObject & InternalObject & {
   notifier_configuration: Scalars['String']['output'];
   notifier_connector: NotifierConnector;
   notifier_connector_id: Scalars['String']['output'];
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
 };
 
@@ -19248,7 +19436,7 @@ export type ObservedData = BasicObject & Container & StixCoreObject & StixDomain
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -19463,6 +19651,9 @@ export type ObservedDataAddInput = {
   createdBy?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   first_observed: Scalars['DateTime']['input'];
   lang?: InputMaybe<Scalars['String']['input']>;
   last_observed: Scalars['DateTime']['input'];
@@ -19475,6 +19666,7 @@ export type ObservedDataAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -19594,7 +19786,7 @@ export type Opinion = BasicObject & Container & StixCoreObject & StixDomainObjec
   opinion: Scalars['String']['output'];
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -19811,6 +20003,9 @@ export type OpinionAddInput = {
   explanation?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -19967,7 +20162,7 @@ export type Organization = BasicObject & Identity & StixCoreObject & StixDomainO
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
   parentOrganizations?: Maybe<OrganizationConnection>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -20166,6 +20361,9 @@ export type OrganizationAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
@@ -20175,6 +20373,7 @@ export type OrganizationAddInput = {
   roles?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_organization_type?: InputMaybe<Scalars['String']['input']>;
@@ -20304,7 +20503,7 @@ export type PaymentCard = BasicObject & StixCoreObject & StixCyberObservable & S
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
@@ -20478,7 +20677,11 @@ export type PaymentCardAddInput = {
   cvv?: InputMaybe<Scalars['Int']['input']>;
   expiration_date?: InputMaybe<Scalars['DateTime']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   holder_name?: InputMaybe<Scalars['String']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
 };
 
 export type Persona = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
@@ -20511,7 +20714,7 @@ export type Persona = BasicObject & StixCoreObject & StixCyberObservable & StixO
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   persona_name: Scalars['String']['output'];
   persona_type: Scalars['String']['output'];
@@ -20683,8 +20886,13 @@ export type PersonaToStixArgs = {
 };
 
 export type PersonaAddInput = {
+  file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   persona_name: Scalars['String']['input'];
   persona_type: Scalars['String']['input'];
+  upsertOperations?: InputMaybe<Array<EditInput>>;
 };
 
 export type PhoneNumber = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
@@ -20717,7 +20925,7 @@ export type PhoneNumber = BasicObject & StixCoreObject & StixCyberObservable & S
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
@@ -20889,6 +21097,10 @@ export type PhoneNumberToStixArgs = {
 
 export type PhoneNumberAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -21014,7 +21226,7 @@ export type PirRelationship = BasicRelationship & {
   fromType: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   metrics?: Maybe<Array<Maybe<Metric>>>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pir_explanation?: Maybe<Array<PirExplanation>>;
   pir_score?: Maybe<Scalars['Int']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -21270,7 +21482,7 @@ export type Position = BasicObject & Location & StixCoreObject & StixDomainObjec
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
   postal_code?: Maybe<Scalars['String']['output']>;
@@ -21454,6 +21666,9 @@ export type PositionAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   latitude?: InputMaybe<Scalars['Float']['input']>;
   longitude?: InputMaybe<Scalars['Float']['input']>;
@@ -21467,6 +21682,7 @@ export type PositionAddInput = {
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   street_address?: InputMaybe<Scalars['String']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
@@ -21578,7 +21794,7 @@ export type Process = BasicObject & StixCoreObject & StixCyberObservable & StixO
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
   owner_sid?: Maybe<Scalars['String']['output']>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pid?: Maybe<Scalars['Int']['output']>;
   priority?: Maybe<Scalars['String']['output']>;
@@ -21766,6 +21982,9 @@ export type ProcessAddInput = {
   display_name?: InputMaybe<Scalars['String']['input']>;
   environment_variables?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   group_name?: InputMaybe<Scalars['String']['input']>;
   integrity_level?: InputMaybe<Scalars['String']['input']>;
   is_hidden?: InputMaybe<Scalars['Boolean']['input']>;
@@ -21778,6 +21997,7 @@ export type ProcessAddInput = {
   service_type?: InputMaybe<Scalars['String']['input']>;
   start_type?: InputMaybe<Scalars['String']['input']>;
   startup_info?: InputMaybe<Array<InputMaybe<DictionaryInput>>>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   window_title?: InputMaybe<Scalars['String']['input']>;
   x_opencti_description?: InputMaybe<Scalars['String']['input']>;
 };
@@ -25397,7 +25617,7 @@ export type Region = BasicObject & Location & StixCoreObject & StixDomainObject 
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
   parentRegions?: Maybe<RegionConnection>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
   precision?: Maybe<Scalars['Float']['output']>;
@@ -25580,6 +25800,9 @@ export type RegionAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   latitude?: InputMaybe<Scalars['Float']['input']>;
   longitude?: InputMaybe<Scalars['Float']['input']>;
@@ -25591,6 +25814,7 @@ export type RegionAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
@@ -25725,7 +25949,7 @@ export type Report = BasicObject & Container & StixCoreObject & StixDomainObject
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
   published?: Maybe<Scalars['DateTime']['output']>;
@@ -25948,6 +26172,9 @@ export type ReportAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
@@ -25962,6 +26189,7 @@ export type ReportAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_reliability?: InputMaybe<Scalars['String']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
@@ -26192,7 +26420,7 @@ export type Role = BasicObject & InternalObject & {
   id: Scalars['ID']['output'];
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   standard_id: Scalars['String']['output'];
   updated_at: Scalars['DateTime']['output'];
@@ -26334,7 +26562,7 @@ export type SshKey = BasicObject & StixCoreObject & StixCyberObservable & StixOb
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   public_key?: Maybe<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -26508,11 +26736,16 @@ export type SshKeyAddInput = {
   comment?: InputMaybe<Scalars['String']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   expiration_date?: InputMaybe<Scalars['DateTime']['input']>;
+  file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   fingerprint_md5?: InputMaybe<Scalars['String']['input']>;
   fingerprint_sha256: Scalars['String']['input'];
   key_length?: InputMaybe<Scalars['String']['input']>;
   key_type?: InputMaybe<Scalars['String']['input']>;
   public_key?: InputMaybe<Scalars['String']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
 };
 
 export type SavedFilter = BasicObject & InternalObject & {
@@ -26522,7 +26755,7 @@ export type SavedFilter = BasicObject & InternalObject & {
   id: Scalars['ID']['output'];
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   scope: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
 };
@@ -26603,7 +26836,7 @@ export type Sector = BasicObject & Identity & StixCoreObject & StixDomainObject 
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
   parentSectors?: Maybe<SectorConnection>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -26789,6 +27022,9 @@ export type SectorAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
@@ -26798,6 +27034,7 @@ export type SectorAddInput = {
   roles?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
@@ -26908,7 +27145,7 @@ export type SecurityCoverage = BasicObject & StixCoreObject & StixDomainObject &
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   periodicity?: Maybe<Scalars['String']['output']>;
   pirInformation?: Maybe<PirInformation>;
@@ -27101,6 +27338,10 @@ export type SecurityCoverageAddInput = {
   duration?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   external_uri?: InputMaybe<Scalars['String']['input']>;
+  file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
   objectCovered: Scalars['String']['input'];
@@ -27186,7 +27427,7 @@ export type SecurityPlatform = BasicObject & Identity & StixCoreObject & StixDom
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -27368,6 +27609,10 @@ export type SecurityPlatformAddInput = {
   createdBy?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -27376,6 +27621,7 @@ export type SecurityPlatformAddInput = {
   security_platform_type?: InputMaybe<Scalars['String']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -27577,7 +27823,7 @@ export type Software = BasicObject & StixCoreObject & StixCyberObservable & Stix
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
@@ -27754,9 +28000,13 @@ export type SoftwareToStixArgs = {
 export type SoftwareAddInput = {
   cpe?: InputMaybe<Scalars['String']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   languages?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   name?: InputMaybe<Scalars['String']['input']>;
   swid?: InputMaybe<Scalars['String']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   vendor?: InputMaybe<Scalars['String']['input']>;
   version?: InputMaybe<Scalars['String']['input']>;
   x_opencti_product?: InputMaybe<Scalars['String']['input']>;
@@ -27884,7 +28134,7 @@ export type StixCoreObject = {
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
@@ -28270,7 +28520,7 @@ export type StixCoreRelationship = BasicRelationship & StixRelationship & {
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   objectOrganization?: Maybe<Array<Organization>>;
   opinions?: Maybe<OpinionConnection>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   relationship_type: Scalars['String']['output'];
   reports?: Maybe<ReportConnection>;
@@ -28381,6 +28631,7 @@ export type StixCoreRelationshipAddInput = {
   stop_time?: InputMaybe<Scalars['DateTime']['input']>;
   toId: Scalars['StixRef']['input'];
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -28565,7 +28816,7 @@ export type StixCyberObservable = {
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
@@ -28869,7 +29120,7 @@ export type StixDomainObject = {
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -29269,7 +29520,7 @@ export type StixFile = BasicObject & HashedObservable & StixCoreObject & StixCyb
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
@@ -29444,6 +29695,9 @@ export type StixFileAddInput = {
   atime?: InputMaybe<Scalars['DateTime']['input']>;
   ctime?: InputMaybe<Scalars['DateTime']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   hashes?: InputMaybe<Array<InputMaybe<HashInput>>>;
   magic_number_hex?: InputMaybe<Scalars['String']['input']>;
   mime_type?: InputMaybe<Scalars['String']['input']>;
@@ -29452,6 +29706,7 @@ export type StixFileAddInput = {
   name_enc?: InputMaybe<Scalars['String']['input']>;
   obsContent?: InputMaybe<Scalars['ID']['input']>;
   size?: InputMaybe<Scalars['Int']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_additional_names?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
@@ -29476,7 +29731,7 @@ export type StixMetaObject = {
   is_inferred: Scalars['Boolean']['output'];
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
@@ -29514,7 +29769,7 @@ export type StixObject = {
   id: Scalars['ID']['output'];
   is_inferred: Scalars['Boolean']['output'];
   metrics?: Maybe<Array<Maybe<Metric>>>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   representative: Representative;
   spec_version: Scalars['String']['output'];
@@ -29595,7 +29850,7 @@ export type StixRefRelationship = BasicRelationship & StixRelationship & {
   notes?: Maybe<NoteConnection>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   opinions?: Maybe<OpinionConnection>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   relationship_type: Scalars['String']['output'];
   reports?: Maybe<ReportConnection>;
@@ -29654,6 +29909,9 @@ export type StixRefRelationshipAddInput = {
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   fromId?: InputMaybe<Scalars['StixRef']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -29736,7 +29994,7 @@ export type StixRelationship = {
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   relationship_type: Scalars['String']['output'];
   representative: Representative;
@@ -29864,7 +30122,7 @@ export type StixSightingRelationship = BasicRelationship & StixRelationship & {
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   objectOrganization?: Maybe<Array<Organization>>;
   opinions?: Maybe<OpinionConnection>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   relationship_type: Scalars['String']['output'];
   reports?: Maybe<ReportConnection>;
@@ -29944,6 +30202,7 @@ export type StixSightingRelationshipAddInput = {
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   toId: Scalars['StixRef']['input'];
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_negative?: InputMaybe<Scalars['Boolean']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
@@ -30307,7 +30566,7 @@ export type SupportPackage = BasicObject & InternalObject & {
   package_status: PackageStatus;
   package_upload_dir?: Maybe<Scalars['String']['output']>;
   package_url?: Maybe<Scalars['String']['output']>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
 };
 
@@ -30447,7 +30706,7 @@ export type System = BasicObject & Identity & StixCoreObject & StixDomainObject 
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
   organizations?: Maybe<OrganizationConnection>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -30633,6 +30892,9 @@ export type SystemAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
@@ -30643,6 +30905,7 @@ export type SystemAddInput = {
   roles?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_firstname?: InputMaybe<Scalars['String']['input']>;
   x_opencti_lastname?: InputMaybe<Scalars['String']['input']>;
@@ -30753,7 +31016,7 @@ export type Task = BasicObject & Container & StixCoreObject & StixDomainObject &
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -30966,6 +31229,10 @@ export type TaskAddInput = {
   createdBy?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   due_date?: InputMaybe<Scalars['DateTime']['input']>;
+  file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   name: Scalars['String']['input'];
   objectAssignee?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -30974,6 +31241,7 @@ export type TaskAddInput = {
   objectParticipant?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   objects?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
 };
@@ -30999,7 +31267,7 @@ export type TaskTemplate = BasicObject & InternalObject & {
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
 };
 
@@ -31147,7 +31415,7 @@ export type Text = BasicObject & StixCoreObject & StixCyberObservable & StixObje
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
@@ -31319,6 +31587,10 @@ export type TextToStixArgs = {
 
 export type TextAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -31425,7 +31697,7 @@ export type ThreatActor = {
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   personal_motivations?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   pirInformation?: Maybe<PirInformation>;
@@ -31659,7 +31931,7 @@ export type ThreatActorGroup = BasicObject & StixCoreObject & StixDomainObject &
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   personal_motivations?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   pirInformation?: Maybe<PirInformation>;
@@ -31847,6 +32119,9 @@ export type ThreatActorGroupAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   first_seen?: InputMaybe<Scalars['DateTime']['input']>;
   goals?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
@@ -31867,6 +32142,7 @@ export type ThreatActorGroupAddInput = {
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   threat_actor_types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -31969,7 +32245,7 @@ export type ThreatActorIndividual = BasicObject & StixCoreObject & StixDomainObj
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   personal_motivations?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   pirInformation?: Maybe<PirInformation>;
@@ -32163,6 +32439,9 @@ export type ThreatActorIndividualAddInput = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   eye_color?: InputMaybe<Scalars['String']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   first_seen?: InputMaybe<Scalars['DateTime']['input']>;
   gender?: InputMaybe<Scalars['String']['input']>;
   goals?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -32188,6 +32467,7 @@ export type ThreatActorIndividualAddInput = {
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   threat_actor_types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   weight?: InputMaybe<Array<MeasureInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
@@ -32287,7 +32567,7 @@ export type Tool = BasicObject & StixCoreObject & StixDomainObject & StixObject 
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -32470,6 +32750,9 @@ export type ToolAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   killChainPhases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
@@ -32482,6 +32765,7 @@ export type ToolAddInput = {
   tool_types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   tool_version?: InputMaybe<Scalars['String']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -32573,7 +32857,7 @@ export type TrackingNumber = BasicObject & StixCoreObject & StixCyberObservable 
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
@@ -32749,6 +33033,10 @@ export type TrackingNumberToStixArgs = {
 
 export type TrackingNumberAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -32768,7 +33056,7 @@ export type Trigger = BasicObject & InternalObject & {
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notifiers?: Maybe<Array<Notifier>>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   period?: Maybe<DigestPeriod>;
   recipients?: Maybe<Array<Member>>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -32917,7 +33205,7 @@ export type Url = BasicObject & StixCoreObject & StixCyberObservable & StixObjec
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
@@ -33089,6 +33377,10 @@ export type UrlToStixArgs = {
 
 export type UrlAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -33124,7 +33416,7 @@ export type User = BasicObject & InternalObject & {
   otp_activated?: Maybe<Scalars['Boolean']['output']>;
   otp_mandatory?: Maybe<Scalars['Boolean']['output']>;
   otp_qr?: Maybe<Scalars['String']['output']>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   personal_notifiers?: Maybe<Array<Notifier>>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   restrict_delete?: Maybe<Scalars['Boolean']['output']>;
@@ -33211,7 +33503,7 @@ export type UserAccount = BasicObject & StixCoreObject & StixCyberObservable & S
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
@@ -33393,9 +33685,13 @@ export type UserAccountAddInput = {
   credential_last_changed?: InputMaybe<Scalars['DateTime']['input']>;
   display_name?: InputMaybe<Scalars['String']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   is_disabled?: InputMaybe<Scalars['Boolean']['input']>;
   is_privileged?: InputMaybe<Scalars['Boolean']['input']>;
   is_service_account?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   user_id?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -33452,7 +33748,7 @@ export type UserAgent = BasicObject & StixCoreObject & StixCyberObservable & Sti
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
@@ -33624,6 +33920,10 @@ export type UserAgentToStixArgs = {
 
 export type UserAgentAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -33764,7 +34064,7 @@ export type Vocabulary = BasicObject & StixMetaObject & StixObject & {
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   order?: Maybe<Scalars['Int']['output']>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   representative: Representative;
   spec_version: Scalars['String']['output'];
@@ -33927,7 +34227,7 @@ export type Vulnerability = BasicObject & StixCoreObject & StixDomainObject & St
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   pirInformation?: Maybe<PirInformation>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -34166,6 +34466,9 @@ export type VulnerabilityAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
@@ -34175,6 +34478,7 @@ export type VulnerabilityAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_cisa_kev?: InputMaybe<Scalars['Boolean']['input']>;
   x_opencti_cvss_attack_complexity?: InputMaybe<Scalars['String']['input']>;
@@ -34372,7 +34676,7 @@ export type WindowsRegistryKey = BasicObject & StixCoreObject & StixCyberObserva
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
@@ -34544,8 +34848,12 @@ export type WindowsRegistryKeyToStixArgs = {
 export type WindowsRegistryKeyAddInput = {
   attribute_key?: InputMaybe<Scalars['String']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   modified_time?: InputMaybe<Scalars['DateTime']['input']>;
   number_of_subkeys?: InputMaybe<Scalars['Int']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
 };
 
 export type WindowsRegistryValueType = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
@@ -34581,7 +34889,7 @@ export type WindowsRegistryValueType = BasicObject & StixCoreObject & StixCyberO
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
@@ -34754,7 +35062,11 @@ export type WindowsRegistryValueTypeAddInput = {
   data?: InputMaybe<Scalars['String']['input']>;
   data_type?: InputMaybe<Scalars['String']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   name?: InputMaybe<Scalars['String']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
 };
 
 export type Work = {
@@ -34976,7 +35288,7 @@ export type X509Certificate = BasicObject & HashedObservable & StixCoreObject & 
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   policy_constraints?: Maybe<Scalars['String']['output']>;
   policy_mappings?: Maybe<Scalars['String']['output']>;
@@ -35168,6 +35480,9 @@ export type X509CertificateAddInput = {
   crl_distribution_points?: InputMaybe<Scalars['String']['input']>;
   extended_key_usage?: InputMaybe<Scalars['String']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   hashes?: InputMaybe<Array<InputMaybe<HashInput>>>;
   inhibit_any_policy?: InputMaybe<Scalars['String']['input']>;
   is_self_signed?: InputMaybe<Scalars['Boolean']['input']>;
@@ -35188,6 +35503,7 @@ export type X509CertificateAddInput = {
   subject_public_key_algorithm?: InputMaybe<Scalars['String']['input']>;
   subject_public_key_exponent?: InputMaybe<Scalars['Int']['input']>;
   subject_public_key_modulus?: InputMaybe<Scalars['String']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   validity_not_after?: InputMaybe<Scalars['DateTime']['input']>;
   validity_not_before?: InputMaybe<Scalars['DateTime']['input']>;
   version?: InputMaybe<Scalars['String']['input']>;
@@ -38034,7 +38350,7 @@ export type AdministrativeAreaResolvers<ContextType = any, ParentType extends Re
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<AdministrativeAreaObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<AdministrativeAreaOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<AdministrativeAreaPendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<AdministrativeAreaPirInformationArgs, 'pirId'>>;
   precision?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
@@ -38171,7 +38487,7 @@ export type ArtifactResolvers<ContextType = any, ParentType extends ResolversPar
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<ArtifactObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<ArtifactOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   payload_bin?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ArtifactPendingFilesArgs>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -38252,7 +38568,7 @@ export type AttackPatternResolvers<ContextType = any, ParentType extends Resolve
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<AttackPatternOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   parentAttackPatterns?: Resolver<Maybe<ResolversTypes['AttackPatternConnection']>, ParentType, ContextType, Partial<AttackPatternParentAttackPatternsArgs>>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<AttackPatternPendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<AttackPatternPirInformationArgs, 'pirId'>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -38406,7 +38722,7 @@ export type AutonomousSystemResolvers<ContextType = any, ParentType extends Reso
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<AutonomousSystemObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<AutonomousSystemOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<AutonomousSystemPendingFilesArgs>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<AutonomousSystemReportsArgs>>;
@@ -38502,7 +38818,7 @@ export type BankAccountResolvers<ContextType = any, ParentType extends Resolvers
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<BankAccountObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<BankAccountOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<BankAccountPendingFilesArgs>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<BankAccountReportsArgs>>;
@@ -38527,7 +38843,7 @@ export type BasicObjectResolvers<ContextType = any, ParentType extends Resolvers
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
@@ -38539,7 +38855,7 @@ export type BasicRelationshipResolvers<ContextType = any, ParentType extends Res
   fromRole?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   toRole?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -38598,7 +38914,7 @@ export type CampaignResolvers<ContextType = any, ParentType extends ResolversPar
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<CampaignObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<CampaignOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CampaignPendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<CampaignPirInformationArgs, 'pirId'>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -38650,7 +38966,7 @@ export type CapabilityResolvers<ContextType = any, ParentType extends ResolversP
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -38712,7 +39028,7 @@ export type CaseResolvers<ContextType = any, ParentType extends ResolversParentT
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<CaseObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<CaseOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CasePendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<CasePirInformationArgs, 'pirId'>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -38790,7 +39106,7 @@ export type CaseIncidentResolvers<ContextType = any, ParentType extends Resolver
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<CaseIncidentObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<CaseIncidentOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CaseIncidentPendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<CaseIncidentPirInformationArgs, 'pirId'>>;
   priority?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -38875,7 +39191,7 @@ export type CaseRfiResolvers<ContextType = any, ParentType extends ResolversPare
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<CaseRfiObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<CaseRfiOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CaseRfiPendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<CaseRfiPirInformationArgs, 'pirId'>>;
   priority?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -38959,7 +39275,7 @@ export type CaseRftResolvers<ContextType = any, ParentType extends ResolversPare
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<CaseRftObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<CaseRftOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CaseRftPendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<CaseRftPirInformationArgs, 'pirId'>>;
   priority?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -39005,7 +39321,7 @@ export type CaseTemplateResolvers<ContextType = any, ParentType extends Resolver
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   tasks?: Resolver<ResolversTypes['TaskTemplateConnection'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -39089,7 +39405,7 @@ export type ChannelResolvers<ContextType = any, ParentType extends ResolversPare
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<ChannelObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<ChannelOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ChannelPendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<ChannelPirInformationArgs, 'pirId'>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -39166,7 +39482,7 @@ export type CityResolvers<ContextType = any, ParentType extends ResolversParentT
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<CityObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<CityOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CityPendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<CityPirInformationArgs, 'pirId'>>;
   precision?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
@@ -39274,7 +39590,7 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   only_contextual?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   playbook_compatible?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -39332,7 +39648,7 @@ export type ConnectorManagerResolvers<ContextType = any, ParentType extends Reso
   last_sync_execution?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   public_key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -39390,7 +39706,7 @@ export type ContainerResolvers<ContextType = any, ParentType extends ResolversPa
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<ContainerObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<ContainerOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<ContainerRelatedContainersArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<ContainerReportsArgs>>;
@@ -39485,7 +39801,7 @@ export type CountryResolvers<ContextType = any, ParentType extends ResolversPare
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<CountryObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<CountryOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CountryPendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<CountryPirInformationArgs, 'pirId'>>;
   precision?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
@@ -39567,7 +39883,7 @@ export type CourseOfActionResolvers<ContextType = any, ParentType extends Resolv
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<CourseOfActionObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<CourseOfActionOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CourseOfActionPendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<CourseOfActionPirInformationArgs, 'pirId'>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -39665,7 +39981,7 @@ export type CredentialResolvers<ContextType = any, ParentType extends ResolversP
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<CredentialObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<CredentialOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CredentialPendingFilesArgs>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<CredentialReportsArgs>>;
@@ -39715,7 +40031,7 @@ export type CryptocurrencyWalletResolvers<ContextType = any, ParentType extends 
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletPendingFilesArgs>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletReportsArgs>>;
@@ -39765,7 +40081,7 @@ export type CryptographicKeyResolvers<ContextType = any, ParentType extends Reso
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<CryptographicKeyObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<CryptographicKeyOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CryptographicKeyPendingFilesArgs>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<CryptographicKeyReportsArgs>>;
@@ -39910,7 +40226,7 @@ export type DataComponentResolvers<ContextType = any, ParentType extends Resolve
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<DataComponentObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<DataComponentOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<DataComponentPendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<DataComponentPirInformationArgs, 'pirId'>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -39982,7 +40298,7 @@ export type DataSourceResolvers<ContextType = any, ParentType extends ResolversP
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<DataSourceObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<DataSourceOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<DataSourcePendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<DataSourcePirInformationArgs, 'pirId'>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -40037,7 +40353,7 @@ export type DecayExclusionRuleResolvers<ContextType = any, ParentType extends Re
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -40080,7 +40396,7 @@ export type DecayRuleResolvers<ContextType = any, ParentType extends ResolversPa
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   order?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -40193,7 +40509,7 @@ export type DirectoryResolvers<ContextType = any, ParentType extends ResolversPa
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<DirectoryObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<DirectoryOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   path?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   path_enc?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<DirectoryPendingFilesArgs>>;
@@ -40239,7 +40555,7 @@ export type DisseminationListResolvers<ContextType = any, ParentType extends Res
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -40295,7 +40611,7 @@ export type DomainNameResolvers<ContextType = any, ParentType extends ResolversP
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<DomainNameObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<DomainNameOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<DomainNamePendingFilesArgs>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<DomainNameReportsArgs>>;
@@ -40423,7 +40739,7 @@ export type EmailAddrResolvers<ContextType = any, ParentType extends ResolversPa
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<EmailAddrObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<EmailAddrOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<EmailAddrPendingFilesArgs>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<EmailAddrReportsArgs>>;
@@ -40478,7 +40794,7 @@ export type EmailMessageResolvers<ContextType = any, ParentType extends Resolver
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<EmailMessageObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<EmailMessageOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<EmailMessagePendingFilesArgs>>;
   received_lines?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -40532,7 +40848,7 @@ export type EmailMimePartTypeResolvers<ContextType = any, ParentType extends Res
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<EmailMimePartTypeObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<EmailMimePartTypeOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<EmailMimePartTypePendingFilesArgs>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<EmailMimePartTypeReportsArgs>>;
@@ -40559,7 +40875,7 @@ export type EmailTemplateResolvers<ContextType = any, ParentType extends Resolve
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   sender_email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   template_body?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -40649,7 +40965,7 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<EventObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<EventOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<EventPendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<EventPirInformationArgs, 'pirId'>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -40696,7 +41012,7 @@ export type ExclusionListResolvers<ContextType = any, ParentType extends Resolve
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -40741,7 +41057,7 @@ export type ExternalReferenceResolvers<ContextType = any, ParentType extends Res
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ExternalReferenceJobsArgs>>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<ResolversTypes['FileConnection'], ParentType, ContextType, Partial<ExternalReferencePendingFilesArgs>>;
   references?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipConnection']>, ParentType, ContextType, Partial<ExternalReferenceReferencesArgs>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -40859,7 +41175,7 @@ export type FeedbackResolvers<ContextType = any, ParentType extends ResolversPar
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<FeedbackObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<FeedbackOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<FeedbackPendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<FeedbackPirInformationArgs, 'pirId'>>;
   rating?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -40977,7 +41293,7 @@ export type FintelDesignResolvers<ContextType = any, ParentType extends Resolver
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   textColor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -41001,7 +41317,7 @@ export type FintelTemplateResolvers<ContextType = any, ParentType extends Resolv
   instance_filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   settings_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   start_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -41083,7 +41399,7 @@ export type GroupResolvers<ContextType = any, ParentType extends ResolversParent
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   no_creators?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   not_shareable_marking_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   restrict_delete?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   roles?: Resolver<Maybe<ResolversTypes['RoleConnection']>, ParentType, ContextType, Partial<GroupRolesArgs>>;
@@ -41157,7 +41473,7 @@ export type GroupingResolvers<ContextType = any, ParentType extends ResolversPar
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<GroupingObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<GroupingOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<GroupingPendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<GroupingPirInformationArgs, 'pirId'>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -41229,7 +41545,7 @@ export type HashedObservableResolvers<ContextType = any, ParentType extends Reso
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<HashedObservableObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<HashedObservableOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<HashedObservablePendingFilesArgs>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<HashedObservableReportsArgs>>;
@@ -41276,7 +41592,7 @@ export type HostnameResolvers<ContextType = any, ParentType extends ResolversPar
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<HostnameObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<HostnameOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<HostnamePendingFilesArgs>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<HostnameReportsArgs>>;
@@ -41327,7 +41643,7 @@ export type IPv4AddrResolvers<ContextType = any, ParentType extends ResolversPar
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<IPv4AddrObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<IPv4AddrOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IPv4AddrPendingFilesArgs>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<IPv4AddrReportsArgs>>;
@@ -41378,7 +41694,7 @@ export type IPv6AddrResolvers<ContextType = any, ParentType extends ResolversPar
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<IPv6AddrObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<IPv6AddrOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IPv6AddrPendingFilesArgs>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<IPv6AddrReportsArgs>>;
@@ -41437,7 +41753,7 @@ export type IdentityResolvers<ContextType = any, ParentType extends ResolversPar
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<IdentityObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<IdentityOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IdentityPendingFilesArgs>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<IdentityReportsArgs>>;
@@ -41526,7 +41842,7 @@ export type IncidentResolvers<ContextType = any, ParentType extends ResolversPar
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<IncidentObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<IncidentOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IncidentPendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<IncidentPirInformationArgs, 'pirId'>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -41641,7 +41957,7 @@ export type IndicatorResolvers<ContextType = any, ParentType extends ResolversPa
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<IndicatorObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<IndicatorOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pattern?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   pattern_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   pattern_version?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -41739,7 +42055,7 @@ export type IndividualResolvers<ContextType = any, ParentType extends ResolversP
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<IndividualOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   organizations?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IndividualPendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<IndividualPirInformationArgs, 'pirId'>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -41838,7 +42154,7 @@ export type InfrastructureResolvers<ContextType = any, ParentType extends Resolv
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<InfrastructureObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<InfrastructureOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<InfrastructurePendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<InfrastructurePirInformationArgs, 'pirId'>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -41897,7 +42213,7 @@ export type IngestionCsvResolvers<ContextType = any, ParentType extends Resolver
   markings?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   scheduling_period?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -41943,7 +42259,7 @@ export type IngestionJsonResolvers<ContextType = any, ParentType extends Resolve
   pagination_with_sub_page?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   pagination_with_sub_page_attribute_path?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   pagination_with_sub_page_query_verb?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   query_attributes?: Resolver<Maybe<Array<ResolversTypes['IngestionQueryAttribute']>>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   scheduling_period?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -42089,7 +42405,7 @@ export type InternalRelationshipResolvers<ContextType = any, ParentType extends 
   fromRole?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   to?: Resolver<Maybe<ResolversTypes['InternalObject']>, ParentType, ContextType>;
@@ -42145,7 +42461,7 @@ export type IntrusionSetResolvers<ContextType = any, ParentType extends Resolver
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<IntrusionSetObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<IntrusionSetOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IntrusionSetPendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<IntrusionSetPirInformationArgs, 'pirId'>>;
   primary_motivation?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -42295,7 +42611,7 @@ export type KillChainPhaseResolvers<ContextType = any, ParentType extends Resolv
   kill_chain_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   phase_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
@@ -42340,7 +42656,7 @@ export type LabelResolvers<ContextType = any, ParentType extends ResolversParent
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -42407,7 +42723,7 @@ export type LanguageResolvers<ContextType = any, ParentType extends ResolversPar
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<LanguageObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<LanguageOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<LanguagePendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<LanguagePirInformationArgs, 'pirId'>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -42498,7 +42814,7 @@ export type LocationResolvers<ContextType = any, ParentType extends ResolversPar
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<LocationObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<LocationOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<LocationPendingFilesArgs>>;
   precision?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -42604,7 +42920,7 @@ export type MacAddrResolvers<ContextType = any, ParentType extends ResolversPare
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<MacAddrObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<MacAddrOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<MacAddrPendingFilesArgs>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<MacAddrReportsArgs>>;
@@ -42670,7 +42986,7 @@ export type MalwareResolvers<ContextType = any, ParentType extends ResolversPare
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<MalwareObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<MalwareOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<MalwarePendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<MalwarePirInformationArgs, 'pirId'>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -42738,7 +43054,7 @@ export type MalwareAnalysisResolvers<ContextType = any, ParentType extends Resol
   operatingSystem?: Resolver<Maybe<ResolversTypes['Software']>, ParentType, ContextType>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<MalwareAnalysisOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<MalwareAnalysisPendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<MalwareAnalysisPirInformationArgs, 'pirId'>>;
   product?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -42813,7 +43129,7 @@ export type ManagedConnectorResolvers<ContextType = any, ParentType extends Reso
   manager_requested_status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -42877,7 +43193,7 @@ export type MarkingDefinitionResolvers<ContextType = any, ParentType extends Res
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -43020,7 +43336,7 @@ export type MediaContentResolvers<ContextType = any, ParentType extends Resolver
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<MediaContentObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<MediaContentOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<MediaContentPendingFilesArgs>>;
   publication_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -43617,7 +43933,7 @@ export type MutexResolvers<ContextType = any, ParentType extends ResolversParent
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<MutexObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<MutexOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<MutexPendingFilesArgs>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<MutexReportsArgs>>;
@@ -43682,7 +43998,7 @@ export type NarrativeResolvers<ContextType = any, ParentType extends ResolversPa
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<NarrativeOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   parentNarratives?: Resolver<Maybe<ResolversTypes['NarrativeConnection']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<NarrativePendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<NarrativePirInformationArgs, 'pirId'>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -43752,7 +44068,7 @@ export type NetworkTrafficResolvers<ContextType = any, ParentType extends Resolv
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<NetworkTrafficObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<NetworkTrafficOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<NetworkTrafficPendingFilesArgs>>;
   protocols?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -43823,7 +44139,7 @@ export type NoteResolvers<ContextType = any, ParentType extends ResolversParentT
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<NoteObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<NoteOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<NotePendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<NotePirInformationArgs, 'pirId'>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -43876,7 +44192,7 @@ export type NotificationResolvers<ContextType = any, ParentType extends Resolver
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notification_content?: Resolver<Array<ResolversTypes['NotificationContent']>, ParentType, ContextType>;
   notification_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -43922,7 +44238,7 @@ export type NotifierResolvers<ContextType = any, ParentType extends ResolversPar
   notifier_configuration?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notifier_connector?: Resolver<ResolversTypes['NotifierConnector'], ParentType, ContextType>;
   notifier_connector_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -44012,7 +44328,7 @@ export type ObservedDataResolvers<ContextType = any, ParentType extends Resolver
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<ObservedDataObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<ObservedDataOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ObservedDataPendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<ObservedDataPirInformationArgs, 'pirId'>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -44107,7 +44423,7 @@ export type OpinionResolvers<ContextType = any, ParentType extends ResolversPare
   opinion?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<OpinionOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<OpinionPendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<OpinionPirInformationArgs, 'pirId'>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -44204,7 +44520,7 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<OrganizationOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   parentOrganizations?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<OrganizationPendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<OrganizationPirInformationArgs, 'pirId'>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -44323,7 +44639,7 @@ export type PaymentCardResolvers<ContextType = any, ParentType extends Resolvers
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<PaymentCardObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<PaymentCardOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<PaymentCardPendingFilesArgs>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<PaymentCardReportsArgs>>;
@@ -44372,7 +44688,7 @@ export type PersonaResolvers<ContextType = any, ParentType extends ResolversPare
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<PersonaObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<PersonaOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<PersonaPendingFilesArgs>>;
   persona_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   persona_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -44423,7 +44739,7 @@ export type PhoneNumberResolvers<ContextType = any, ParentType extends Resolvers
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<PhoneNumberObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<PhoneNumberOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<PhoneNumberPendingFilesArgs>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<PhoneNumberReportsArgs>>;
@@ -44509,7 +44825,7 @@ export type PirRelationshipResolvers<ContextType = any, ParentType extends Resol
   fromType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pir_explanation?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType>;
   pir_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -44687,7 +45003,7 @@ export type PositionResolvers<ContextType = any, ParentType extends ResolversPar
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<PositionObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<PositionOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<PositionPendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<PositionPirInformationArgs, 'pirId'>>;
   postal_code?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -44775,7 +45091,7 @@ export type ProcessResolvers<ContextType = any, ParentType extends ResolversPare
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<ProcessOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   owner_sid?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ProcessPendingFilesArgs>>;
   pid?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   priority?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -45371,7 +45687,7 @@ export type RegionResolvers<ContextType = any, ParentType extends ResolversParen
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<RegionOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   parentRegions?: Resolver<Maybe<ResolversTypes['RegionConnection']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<RegionPendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<RegionPirInformationArgs, 'pirId'>>;
   precision?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
@@ -45468,7 +45784,7 @@ export type ReportResolvers<ContextType = any, ParentType extends ResolversParen
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<ReportObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<ReportOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ReportPendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<ReportPirInformationArgs, 'pirId'>>;
   published?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -45601,7 +45917,7 @@ export type RoleResolvers<ContextType = any, ParentType extends ResolversParentT
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -45703,7 +46019,7 @@ export type SshKeyResolvers<ContextType = any, ParentType extends ResolversParen
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<SshKeyObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<SshKeyOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SshKeyPendingFilesArgs>>;
   public_key?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -45730,7 +46046,7 @@ export type SavedFilterResolvers<ContextType = any, ParentType extends Resolvers
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   scope?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -45796,7 +46112,7 @@ export type SectorResolvers<ContextType = any, ParentType extends ResolversParen
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<SectorOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   parentSectors?: Resolver<Maybe<ResolversTypes['SectorConnection']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SectorPendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<SectorPirInformationArgs, 'pirId'>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -45890,7 +46206,7 @@ export type SecurityCoverageResolvers<ContextType = any, ParentType extends Reso
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<SecurityCoverageObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<SecurityCoverageOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SecurityCoveragePendingFilesArgs>>;
   periodicity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<SecurityCoveragePirInformationArgs, 'pirId'>>;
@@ -45969,7 +46285,7 @@ export type SecurityPlatformResolvers<ContextType = any, ParentType extends Reso
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<SecurityPlatformObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<SecurityPlatformOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SecurityPlatformPendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<SecurityPlatformPirInformationArgs, 'pirId'>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -46141,7 +46457,7 @@ export type SoftwareResolvers<ContextType = any, ParentType extends ResolversPar
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<SoftwareObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<SoftwareOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SoftwarePendingFilesArgs>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<SoftwareReportsArgs>>;
@@ -46243,7 +46559,7 @@ export type StixCoreObjectResolvers<ContextType = any, ParentType extends Resolv
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<StixCoreObjectObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<StixCoreObjectOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<StixCoreObjectPendingFilesArgs>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<StixCoreObjectReportsArgs>>;
@@ -46324,7 +46640,7 @@ export type StixCoreRelationshipResolvers<ContextType = any, ParentType extends 
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<Array<ResolversTypes['Organization']>>, ParentType, ContextType>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<StixCoreRelationshipOpinionsArgs>>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   relationship_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<StixCoreRelationshipReportsArgs>>;
@@ -46402,7 +46718,7 @@ export type StixCyberObservableResolvers<ContextType = any, ParentType extends R
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<StixCyberObservableObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<StixCyberObservableOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<StixCyberObservablePendingFilesArgs>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<StixCyberObservableReportsArgs>>;
@@ -46480,7 +46796,7 @@ export type StixDomainObjectResolvers<ContextType = any, ParentType extends Reso
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<StixDomainObjectObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<StixDomainObjectOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<StixDomainObjectPendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<StixDomainObjectPirInformationArgs, 'pirId'>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -46571,7 +46887,7 @@ export type StixFileResolvers<ContextType = any, ParentType extends ResolversPar
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<StixFileObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<StixFileOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<StixFilePendingFilesArgs>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<StixFileReportsArgs>>;
@@ -46617,7 +46933,7 @@ export type StixMetaObjectResolvers<ContextType = any, ParentType extends Resolv
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -46644,7 +46960,7 @@ export type StixObjectResolvers<ContextType = any, ParentType extends ResolversP
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -46711,7 +47027,7 @@ export type StixRefRelationshipResolvers<ContextType = any, ParentType extends R
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<StixRefRelationshipNotesArgs>>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<StixRefRelationshipOpinionsArgs>>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   relationship_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<StixRefRelationshipReportsArgs>>;
@@ -46761,7 +47077,7 @@ export type StixRelationshipResolvers<ContextType = any, ParentType extends Reso
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   relationship_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
@@ -46835,7 +47151,7 @@ export type StixSightingRelationshipResolvers<ContextType = any, ParentType exte
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<Array<ResolversTypes['Organization']>>, ParentType, ContextType>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<StixSightingRelationshipOpinionsArgs>>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   relationship_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<StixSightingRelationshipReportsArgs>>;
@@ -46980,7 +47296,7 @@ export type SupportPackageResolvers<ContextType = any, ParentType extends Resolv
   package_status?: Resolver<ResolversTypes['PackageStatus'], ParentType, ContextType>;
   package_upload_dir?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   package_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -47065,7 +47381,7 @@ export type SystemResolvers<ContextType = any, ParentType extends ResolversParen
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<SystemOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   organizations?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SystemPendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<SystemPirInformationArgs, 'pirId'>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -47156,7 +47472,7 @@ export type TaskResolvers<ContextType = any, ParentType extends ResolversParentT
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<TaskObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<TaskOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<TaskPendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<TaskPirInformationArgs, 'pirId'>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -47198,7 +47514,7 @@ export type TaskTemplateResolvers<ContextType = any, ParentType extends Resolver
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -47279,7 +47595,7 @@ export type TextResolvers<ContextType = any, ParentType extends ResolversParentT
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<TextObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<TextOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<TextPendingFilesArgs>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<TextReportsArgs>>;
@@ -47382,7 +47698,7 @@ export type ThreatActorResolvers<ContextType = any, ParentType extends Resolvers
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<ThreatActorObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<ThreatActorOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ThreatActorPendingFilesArgs>>;
   personal_motivations?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<ThreatActorPirInformationArgs, 'pirId'>>;
@@ -47463,7 +47779,7 @@ export type ThreatActorGroupResolvers<ContextType = any, ParentType extends Reso
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<ThreatActorGroupObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<ThreatActorGroupOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ThreatActorGroupPendingFilesArgs>>;
   personal_motivations?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<ThreatActorGroupPirInformationArgs, 'pirId'>>;
@@ -47563,7 +47879,7 @@ export type ThreatActorIndividualResolvers<ContextType = any, ParentType extends
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<ThreatActorIndividualObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<ThreatActorIndividualOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ThreatActorIndividualPendingFilesArgs>>;
   personal_motivations?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<ThreatActorIndividualPirInformationArgs, 'pirId'>>;
@@ -47648,7 +47964,7 @@ export type ToolResolvers<ContextType = any, ParentType extends ResolversParentT
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<ToolObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<ToolOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ToolPendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<ToolPirInformationArgs, 'pirId'>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -47721,7 +48037,7 @@ export type TrackingNumberResolvers<ContextType = any, ParentType extends Resolv
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<TrackingNumberObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<TrackingNumberOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<TrackingNumberPendingFilesArgs>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<TrackingNumberReportsArgs>>;
@@ -47757,7 +48073,7 @@ export type TriggerResolvers<ContextType = any, ParentType extends ResolversPare
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notifiers?: Resolver<Maybe<Array<ResolversTypes['Notifier']>>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   period?: Resolver<Maybe<ResolversTypes['DigestPeriod']>, ParentType, ContextType>;
   recipients?: Resolver<Maybe<Array<ResolversTypes['Member']>>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -47826,7 +48142,7 @@ export type UrlResolvers<ContextType = any, ParentType extends ResolversParentTy
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<UrlObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<UrlOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<UrlPendingFilesArgs>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<UrlReportsArgs>>;
@@ -47878,7 +48194,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   otp_activated?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   otp_mandatory?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   otp_qr?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   personal_notifiers?: Resolver<Maybe<Array<ResolversTypes['Notifier']>>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   restrict_delete?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -47939,7 +48255,7 @@ export type UserAccountResolvers<ContextType = any, ParentType extends Resolvers
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<UserAccountObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<UserAccountOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<UserAccountPendingFilesArgs>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<UserAccountReportsArgs>>;
@@ -47989,7 +48305,7 @@ export type UserAgentResolvers<ContextType = any, ParentType extends ResolversPa
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<UserAgentObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<UserAgentOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<UserAgentPendingFilesArgs>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<UserAgentReportsArgs>>;
@@ -48063,7 +48379,7 @@ export type VocabularyResolvers<ContextType = any, ParentType extends ResolversP
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   order?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -48135,7 +48451,7 @@ export type VulnerabilityResolvers<ContextType = any, ParentType extends Resolve
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<VulnerabilityObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<VulnerabilityOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<VulnerabilityPendingFilesArgs>>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<VulnerabilityPirInformationArgs, 'pirId'>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -48313,7 +48629,7 @@ export type WindowsRegistryKeyResolvers<ContextType = any, ParentType extends Re
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<WindowsRegistryKeyObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<WindowsRegistryKeyOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<WindowsRegistryKeyPendingFilesArgs>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<WindowsRegistryKeyReportsArgs>>;
@@ -48365,7 +48681,7 @@ export type WindowsRegistryValueTypeResolvers<ContextType = any, ParentType exte
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<WindowsRegistryValueTypeObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<WindowsRegistryValueTypeOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<WindowsRegistryValueTypePendingFilesArgs>>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<WindowsRegistryValueTypeReportsArgs>>;
@@ -48515,7 +48831,7 @@ export type X509CertificateResolvers<ContextType = any, ParentType extends Resol
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<X509CertificateObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<X509CertificateOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<X509CertificatePendingFilesArgs>>;
   policy_constraints?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   policy_mappings?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

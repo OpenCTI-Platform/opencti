@@ -9,10 +9,18 @@ from stix2.canonicalization.Canonicalize import canonicalize
 class Campaign:
     """Main Campaign class for OpenCTI
 
+    Manages threat campaigns in the OpenCTI platform.
+
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
+        """Initialize the Campaign instance.
+
+        :param opencti: OpenCTI API client instance
+        :type opencti: OpenCTIApiClient
+        """
         self.opencti = opencti
         self.properties = """
             id
@@ -259,15 +267,25 @@ class Campaign:
         """List Campaign objects.
 
         :param filters: the filters to apply
+        :type filters: dict
         :param search: the search keyword
+        :type search: str
         :param first: return the first n rows from the after ID (or the beginning if not set)
+        :type first: int
         :param after: ID of the first row for pagination
+        :type after: str
         :param orderBy: field to order results by
+        :type orderBy: str
         :param orderMode: ordering mode (asc/desc)
+        :type orderMode: str
         :param customAttributes: custom attributes to return
+        :type customAttributes: str
         :param getAll: whether to retrieve all results
+        :type getAll: bool
         :param withPagination: whether to include pagination info
+        :type withPagination: bool
         :param withFiles: whether to include files
+        :type withFiles: bool
         :return: List of Campaign objects
         :rtype: list
         """
@@ -348,15 +366,20 @@ class Campaign:
                 result["data"]["campaigns"], with_pagination
             )
 
-    """
-        Read a Campaign object
+    def read(self, **kwargs):
+        """Read a Campaign object.
 
         :param id: the id of the Campaign
+        :type id: str
         :param filters: the filters to apply if no id provided
-        :return Campaign object
-    """
-
-    def read(self, **kwargs):
+        :type filters: dict
+        :param customAttributes: custom attributes to return
+        :type customAttributes: str
+        :param withFiles: whether to include files
+        :type withFiles: bool
+        :return: Campaign object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
@@ -392,14 +415,58 @@ class Campaign:
             )
             return None
 
-    """
-        Create a Campaign object
-
-        :param name: the name of the Campaign
-        :return Campaign object
-    """
-
     def create(self, **kwargs):
+        """Create a Campaign object.
+
+        :param stix_id: (optional) the STIX ID
+        :type stix_id: str
+        :param createdBy: (optional) the author ID
+        :type createdBy: str
+        :param objectMarking: (optional) list of marking definition IDs
+        :type objectMarking: list
+        :param objectLabel: (optional) list of label IDs
+        :type objectLabel: list
+        :param externalReferences: (optional) list of external reference IDs
+        :type externalReferences: list
+        :param revoked: (optional) whether the campaign is revoked
+        :type revoked: bool
+        :param confidence: (optional) confidence level (0-100)
+        :type confidence: int
+        :param lang: (optional) language
+        :type lang: str
+        :param created: (optional) creation date
+        :type created: str
+        :param modified: (optional) modification date
+        :type modified: str
+        :param name: the name of the Campaign (required)
+        :type name: str
+        :param description: (optional) description
+        :type description: str
+        :param aliases: (optional) list of aliases
+        :type aliases: list
+        :param first_seen: (optional) first seen date
+        :type first_seen: str
+        :param last_seen: (optional) last seen date
+        :type last_seen: str
+        :param objective: (optional) objective of the campaign
+        :type objective: str
+        :param objectOrganization: (optional) list of organization IDs
+        :type objectOrganization: list
+        :param x_opencti_stix_ids: (optional) list of additional STIX IDs
+        :type x_opencti_stix_ids: list
+        :param x_opencti_workflow_id: (optional) workflow ID
+        :type x_opencti_workflow_id: str
+        :param x_opencti_modified_at: (optional) custom modification date
+        :type x_opencti_modified_at: str
+        :param update: (optional) whether to update if exists (default: False)
+        :type update: bool
+        :param files: (optional) list of File objects to attach
+        :type files: list
+        :param filesMarkings: (optional) list of lists of marking definition IDs for each file
+        :type filesMarkings: list
+        :return: Campaign object
+        :rtype: dict or None
+        """
         stix_id = kwargs.get("stix_id", None)
         created_by = kwargs.get("createdBy", None)
         object_marking = kwargs.get("objectMarking", None)
@@ -421,6 +488,9 @@ class Campaign:
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
         x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         update = kwargs.get("update", False)
+        files = kwargs.get("files", None)
+        files_markings = kwargs.get("filesMarkings", None)
+        upsert_operations = kwargs.get("upsert_operations", None)
 
         if name is not None:
             self.opencti.app_logger.info("Creating Campaign", {"name": name})
@@ -459,23 +529,29 @@ class Campaign:
                         "x_opencti_workflow_id": x_opencti_workflow_id,
                         "x_opencti_modified_at": x_opencti_modified_at,
                         "x_opencti_stix_ids": x_opencti_stix_ids,
+                        "files": files,
+                        "filesMarkings": files_markings,
+                        "upsertOperations": upsert_operations,
                     }
                 },
             )
             return self.opencti.process_multiple_fields(result["data"]["campaignAdd"])
         else:
-            self.opencti.app_logger.error(
-                "[opencti_campaign] Missing parameters: name and description"
-            )
-
-    """
-        Import a Campaign object from a STIX2 object
-
-        :param stixObject: the Stix-Object Campaign
-        :return Campaign object
-    """
+            self.opencti.app_logger.error("[opencti_campaign] Missing parameters: name")
+            return None
 
     def import_from_stix2(self, **kwargs):
+        """Import a Campaign object from a STIX2 object.
+
+        :param stixObject: the STIX2 Campaign object
+        :type stixObject: dict
+        :param extras: extra parameters including created_by_id, object_marking_ids, etc.
+        :type extras: dict
+        :param update: whether to update if the entity already exists
+        :type update: bool
+        :return: Campaign object
+        :rtype: dict or None
+        """
         stix_object = kwargs.get("stixObject", None)
         extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)
@@ -497,7 +573,12 @@ class Campaign:
                 stix_object["x_opencti_modified_at"] = (
                     self.opencti.get_attribute_in_extension("modified_at", stix_object)
                 )
-
+            if "opencti_upsert_operations" not in stix_object:
+                stix_object["opencti_upsert_operations"] = (
+                    self.opencti.get_attribute_in_extension(
+                        "opencti_upsert_operations", stix_object
+                    )
+                )
             return self.create(
                 stix_id=stix_object["id"],
                 createdBy=(
@@ -560,8 +641,16 @@ class Campaign:
                     else None
                 ),
                 update=update,
+                files=extras.get("files"),
+                filesMarkings=extras.get("filesMarkings"),
+                upsert_operations=(
+                    stix_object["opencti_upsert_operations"]
+                    if "opencti_upsert_operations" in stix_object
+                    else None
+                ),
             )
         else:
             self.opencti.app_logger.error(
                 "[opencti_campaign] Missing parameters: stixObject"
             )
+            return None

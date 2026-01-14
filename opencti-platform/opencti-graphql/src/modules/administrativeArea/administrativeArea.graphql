@@ -2,7 +2,7 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
     id: ID! # internal_id
     standard_id: String!
     entity_type: String!
-    parent_types: [String]!
+    parent_types: [String!]!
     metrics:[Metric]
     # StixObject
     representative: Representative!
@@ -198,6 +198,10 @@ input AdministrativeAreaAddInput {
     x_opencti_modified_at: DateTime
     update: Boolean
     file: Upload
+    fileMarkings: [String]
+    files: [Upload]
+    filesMarkings: [[String]]
+    upsertOperations: [EditInput!]
 }
 
 type Mutation {

@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import moment from 'moment/moment';
-import { INTERNAL_USERS, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT } from './access';
+import { INTERNAL_USERS, isBypassUser, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT } from './access';
 import { logApp } from '../config/conf';
 import { storeFileConverter, uploadToStorage } from '../database/file-storage';
 import { computeDateFromEventId, utcDate } from './format';
@@ -15,6 +15,7 @@ import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA } from '../schema/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_GRANTED_TO } from '../schema/stixRefRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
+import { FunctionalError } from '../config/errors';
 
 const ALIGN_OLDEST = 'oldest';
 const ALIGN_NEWEST = 'newest';
@@ -191,6 +192,122 @@ const generateFileInputsForUpsert = async (context, user, resolvedElement, updat
   return [];
 };
 
+const mergeUpsertOperations = (upsertKey, elementCurrentValue, upsertOperations) => {
+  let currentValueArray = elementCurrentValue ?? [];
+  let mergedUpsertOperationValue = [...currentValueArray];
+  let mergedUpsertOperationOperation;
+  for (let i = 0; i < upsertOperations.length; i++) {
+    const { operation: currentUpsertOperation, value: currentUpsertValue } = upsertOperations[i];
+    if (currentUpsertOperation === 'remove') {
+      // filter values to remove from current values in DB
+      mergedUpsertOperationValue = mergedUpsertOperationValue.filter((e) =>
+        !currentUpsertValue?.includes(e) && (!e?.id || !currentUpsertValue?.some((u) => u?.id === e?.id)),
+      );
+      mergedUpsertOperationOperation = 'replace';
+    } else if (currentUpsertOperation === 'replace') {
+      // replace current values in DB with upsert values
+      mergedUpsertOperationValue = [...(currentUpsertValue ?? [])];
+      mergedUpsertOperationOperation = 'replace';
+    } else if (currentUpsertOperation === 'add') {
+      // add upsert operation values to final patch values first
+      mergedUpsertOperationValue.push(...(currentUpsertValue ?? []));
+      mergedUpsertOperationOperation = (!mergedUpsertOperationOperation || mergedUpsertOperationOperation === 'add') ? 'add' : 'replace';
+    }
+  }
+  return { key: upsertKey, operation: mergedUpsertOperationOperation, value: mergedUpsertOperationValue };
+};
+
+export const mergeUpsertInput = (elementCurrentValue, upsertValue, updatePatchInput, upsertOperation) => {
+  const finalPatchInput = { ...updatePatchInput };
+  // for now we only handle 'add' operations coming from updatePatchInput for multiple attributes
+  // we need to first apply the upsertOperation on element then the updatePatchInput
+  if (updatePatchInput.operation === 'add' && upsertOperation?.operation) {
+    let currentValueArray = elementCurrentValue ?? [];
+    currentValueArray = Array.isArray(currentValueArray) ? currentValueArray : [currentValueArray];
+    let finalPatchValue = [...currentValueArray];
+    if (upsertOperation.operation === 'remove') {
+      // filter values to remove from current values in DB
+      finalPatchValue = finalPatchValue.filter((e) => !upsertOperation.value?.includes(e) && (!e?.id || !upsertOperation.value?.some((u) => u?.id === e?.id)));
+      finalPatchInput.operation = 'replace';
+    } else if (upsertOperation.operation === 'replace') {
+      // replace current values in DB with upsert values
+      finalPatchValue = [...(upsertOperation?.value ?? [])];
+      finalPatchInput.operation = 'replace';
+    } else if (upsertOperation.operation === 'add') {
+      // add upsert operation values to final patch values first
+      finalPatchValue = [...(upsertOperation.value ?? [])];
+      finalPatchInput.operation = 'add';
+    }
+    // add updatePatchInput values coming from upsert
+    if (updatePatchInput.value?.length > 0) {
+      finalPatchValue.push(...updatePatchInput.value);
+    }
+    // keep only unique values
+    let finalDedupedPatchValuesMap = new Map();
+    for (let i = 0; i < finalPatchValue.length; i++) {
+      const currentPatchValue = finalPatchValue[i];
+      if (!finalDedupedPatchValuesMap.has(currentPatchValue) && !finalDedupedPatchValuesMap.has(currentPatchValue?.id)) {
+        if (currentPatchValue?.id) {
+          finalDedupedPatchValuesMap.set(currentPatchValue.id, currentPatchValue);
+        } else {
+          finalDedupedPatchValuesMap.set(currentPatchValue, currentPatchValue);
+        }
+      }
+    }
+    // we replace current values
+    finalPatchInput.value = Array.from(finalDedupedPatchValuesMap.values());
+  }
+  return finalPatchInput;
+};
+
+/**
+ * should return a merged inputs list with only one element per key
+ *
+ * @param resolvedElement (element from DB)
+ * @param updatePatch (element from bundle)
+ * @param updatePatchInputs : array inputs generated from updatePatch (from element in bundle)
+ * @param upsertOperations : array inputs from upsertOperations in bundle
+ */
+export const mergeUpsertInputs = (resolvedElement, updatePatch, updatePatchInputs, upsertOperations) => {
+  // we want only to call this method for remove or replace operations that should happen on arrays
+  if (!upsertOperations || upsertOperations.length === 0) {
+    return updatePatchInputs;
+  }
+
+  const updatePatchInputsMap = new Map(updatePatchInputs.map((input) => [input.key, input]));
+  const upsertOperationsByKeyMap = new Map();
+  for (let i = 0; i < upsertOperations.length; i += 1) {
+    const currentUpsertOperation = upsertOperations[i];
+    if (upsertOperationsByKeyMap.has(currentUpsertOperation.key)) {
+      upsertOperationsByKeyMap.get(currentUpsertOperation.key).push(currentUpsertOperation);
+    } else {
+      upsertOperationsByKeyMap.set(currentUpsertOperation.key, [currentUpsertOperation]);
+    }
+  }
+  const upsertOperationsKeys = Array.from(upsertOperationsByKeyMap.keys());
+  for (let i = 0; i < upsertOperationsKeys.length; i += 1) {
+    const upsertOperationKey = upsertOperationsKeys[i];
+    const elementCurrentValue = resolvedElement[upsertOperationKey];
+    const upsertOperationValues = upsertOperationsByKeyMap.get(upsertOperationKey);
+    let finalUpsertOperation;
+    if (upsertOperationValues.length > 1) {
+      finalUpsertOperation = mergeUpsertOperations(upsertOperationKey, elementCurrentValue, upsertOperationValues);
+    } else {
+      finalUpsertOperation = upsertOperationValues[0];
+    }
+    if (updatePatchInputsMap.has(upsertOperationKey)) {
+      const updatePatchInput = updatePatchInputsMap.get(upsertOperationKey);
+      const elementCurrentValue = resolvedElement[upsertOperationKey];
+      const upsertValue = updatePatch[upsertOperationKey];
+      const mergedInput = mergeUpsertInput(elementCurrentValue, upsertValue, updatePatchInput, finalUpsertOperation);
+      updatePatchInputsMap.set(upsertOperationKey, mergedInput); // replace updatePatchInput
+    } else {
+      updatePatchInputsMap.set(upsertOperationKey, finalUpsertOperation); // just add the upsert operation
+    }
+  }
+  return Array.from(updatePatchInputsMap.values());
+};
+
 export const generateAttributesInputsForUpsert = (context, _user, resolvedElement, type, updatePatch, confidenceForUpsert) => {
   const { isConfidenceMatch } = confidenceForUpsert;
   // -- Upsert attributes
@@ -302,5 +419,11 @@ export const generateInputsForUpsert = async (context, user, resolvedElement, ty
   const refsInputs = generateRefsInputsForUpsert(context, user, resolvedElement, type, updatePatch, confidenceForUpsert, validEnterpriseEdition);
   inputs.push(...refsInputs);
 
-  return inputs;
+  // -- merge inputs with upsertOperations
+  if (updatePatch.upsertOperations?.length > 0 && !isBypassUser(user)) {
+    throw FunctionalError('User has insufficient rights to use upsertOperations', { user_id: user.id, element_id: resolvedElement.id });
+  }
+  const finalInputs = mergeUpsertInputs(resolvedElement, updatePatch, inputs, updatePatch.upsertOperations);
+
+  return finalInputs;
 };

@@ -23,28 +23,47 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
     Note: Deprecated methods are available through StixCyberObservableDeprecatedMixin.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
-    :param file: file handling configuration
+    :type opencti: OpenCTIApiClient
     """
 
-    def __init__(self, opencti, file):
+    def __init__(self, opencti):
+        """Initialize the StixCyberObservable instance.
 
+        :param opencti: OpenCTI API client instance
+        :type opencti: OpenCTIApiClient
+        """
         self.opencti = opencti
-        self.file = file
         self.properties = SCO_PROPERTIES
         self.properties_with_files = SCO_PROPERTIES_WITH_FILES
 
-    """
-        List StixCyberObservable objects
+    def list(self, **kwargs):
+        """List StixCyberObservable objects.
 
         :param types: the array of types
+        :type types: list
         :param filters: the filters to apply
+        :type filters: dict
         :param search: the search keyword
+        :type search: str
         :param first: return the first n rows from the after ID (or the beginning if not set)
-        :param after: ID of the first row
-        :return List of StixCyberObservable objects
-    """
-
-    def list(self, **kwargs):
+        :type first: int
+        :param after: ID of the first row for pagination
+        :type after: str
+        :param orderBy: field to order results by
+        :type orderBy: str
+        :param orderMode: ordering mode (asc/desc)
+        :type orderMode: str
+        :param customAttributes: custom attributes to return
+        :type customAttributes: str
+        :param getAll: whether to retrieve all results
+        :type getAll: bool
+        :param withPagination: whether to include pagination info
+        :type withPagination: bool
+        :param withFiles: whether to include files
+        :type withFiles: bool
+        :return: List of StixCyberObservable objects
+        :rtype: list
+        """
         types = kwargs.get("types", None)
         filters = kwargs.get("filters", None)
         search = kwargs.get("search", None)
@@ -131,15 +150,20 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                 result["data"]["stixCyberObservables"], with_pagination
             )
 
-    """
-        Read a StixCyberObservable object
+    def read(self, **kwargs):
+        """Read a StixCyberObservable object.
 
         :param id: the id of the StixCyberObservable
+        :type id: str
         :param filters: the filters to apply if no id provided
-        :return StixCyberObservable object
-    """
-
-    def read(self, **kwargs):
+        :type filters: dict
+        :param customAttributes: custom attributes to return
+        :type customAttributes: str
+        :param withFiles: whether to include files
+        :type withFiles: bool
+        :return: StixCyberObservable object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
@@ -177,16 +201,28 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
             )
             return None
 
-    """
-        Upload a file in this Observable
+    def add_file(self, **kwargs):
+        """Upload a file in this Observable.
 
         :param id: the Stix-Cyber-Observable id
-        :param file_name
-        :param data
-        :return void
-    """
-
-    def add_file(self, **kwargs):
+        :type id: str
+        :param file_name: name of the file to upload
+        :type file_name: str
+        :param data: the file data
+        :type data: bytes or str
+        :param fileMarkings: list of marking definition IDs for the file
+        :type fileMarkings: list
+        :param version: file version
+        :type version: str
+        :param mime_type: MIME type of the file (default: text/plain)
+        :type mime_type: str
+        :param no_trigger_import: whether to skip import trigger
+        :type no_trigger_import: bool
+        :param embedded: whether the file is embedded
+        :type embedded: bool
+        :return: updated StixCyberObservable object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         file_name = kwargs.get("file_name", None)
         data = kwargs.get("data", None)
@@ -221,7 +257,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                 query,
                 {
                     "id": id,
-                    "file": (self.file(final_file_name, data, mime_type)),
+                    "file": (self.opencti.file(final_file_name, data, mime_type)),
                     "fileMarkings": file_markings,
                     "version": version,
                     "noTriggerImport": (
@@ -234,18 +270,46 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
             )
         else:
             self.opencti.app_logger.error(
-                "[opencti_stix_cyber_observable Missing parameters: id or file_name"
+                "[opencti_stix_cyber_observable] Missing parameters: id or file_name"
             )
             return None
 
-    """
-        Create a Stix-Observable object
+    def create(self, **kwargs):
+        """Create a Stix-Cyber-Observable object.
 
         :param observableData: the data of the observable (STIX2 structure)
-        :return Stix-Observable object
-    """
-
-    def create(self, **kwargs):
+        :type observableData: dict
+        :param simple_observable_id: (optional) simple observable STIX ID
+        :type simple_observable_id: str
+        :param simple_observable_key: (optional) simple observable key (e.g., "IPv4-Addr.value")
+        :type simple_observable_key: str
+        :param simple_observable_value: (optional) simple observable value
+        :type simple_observable_value: str
+        :param simple_observable_description: (optional) simple observable description
+        :type simple_observable_description: str
+        :param x_opencti_score: (optional) score (0-100)
+        :type x_opencti_score: int
+        :param createdBy: (optional) the author ID
+        :type createdBy: str
+        :param objectMarking: (optional) list of marking definition IDs
+        :type objectMarking: list
+        :param objectLabel: (optional) list of label IDs
+        :type objectLabel: list
+        :param externalReferences: (optional) list of external reference IDs
+        :type externalReferences: list
+        :param objectOrganization: (optional) list of organization IDs
+        :type objectOrganization: list
+        :param update: (optional) whether to update if exists (default: False)
+        :type update: bool
+        :param resolve_result_indicators: (optional) resolve result indicators (default: True)
+        :type resolve_result_indicators: bool
+        :param files: (optional) list of File objects to attach
+        :type files: list
+        :param filesMarkings: (optional) list of lists of marking definition IDs for each file
+        :type filesMarkings: list
+        :return: Stix-Cyber-Observable object
+        :rtype: dict or None
+        """
         observable_data = kwargs.get("observableData", {})
         simple_observable_id = kwargs.get("simple_observable_id", None)
         simple_observable_key = kwargs.get("simple_observable_key", None)
@@ -261,6 +325,9 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
         granted_refs = kwargs.get("objectOrganization", None)
         update = kwargs.get("update", False)
         resolve_result_indicators = kwargs.get("resolve_result_indicators", True)
+        files = kwargs.get("files", None)
+        files_markings = kwargs.get("filesMarkings", None)
+        upsert_operations = kwargs.get("upsert_operations", None)
 
         create_indicator = (
             observable_data["x_opencti_create_indicator"]
@@ -377,6 +444,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                 "objectLabel": object_label,
                 "externalReferences": external_references,
                 "update": update,
+                "upsertOperations": upsert_operations,
             }
             query = (
                 """
@@ -392,6 +460,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         $objectOrganization: [String],
                         $externalReferences: [String],
                         $update: Boolean,
+                        $upsertOperations: [EditInput!],
                         $AutonomousSystem: AutonomousSystemAddInput,
                         $Directory: DirectoryAddInput,
                         $DomainName: DomainNameAddInput,
@@ -436,6 +505,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                             objectMarking: $objectMarking,
                             objectLabel: $objectLabel,
                             update: $update,
+                            upsertOperations: $upsertOperations,
                             externalReferences: $externalReferences,
                             objectOrganization: $objectOrganization,
                             AutonomousSystem: $AutonomousSystem,
@@ -505,6 +575,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         observable_data["name"] if "name" in observable_data else None
                     ),
                     "rir": observable_data["rir"] if "rir" in observable_data else None,
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Directory":
                 input_variables["Directory"] = {
@@ -523,9 +595,15 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     "atime": (
                         observable_data["atime"] if "atime" in observable_data else None
                     ),
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Domain-Name":
-                input_variables["DomainName"] = {"value": observable_data["value"]}
+                input_variables["DomainName"] = {
+                    "value": observable_data["value"],
+                    "files": files,
+                    "filesMarkings": files_markings,
+                }
                 if attribute is not None:
                     input_variables["DomainName"][attribute] = simple_observable_value
             elif type == "Email-Addr":
@@ -536,6 +614,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         if "display_name" in observable_data
                         else None
                     ),
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Email-Message":
                 input_variables["EmailMessage"] = {
@@ -565,6 +645,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     "body": (
                         observable_data["body"] if "body" in observable_data else None
                     ),
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Email-Mime-Part-Type":
                 input_variables["EmailMimePartType"] = {
@@ -581,6 +663,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         if "content_disposition" in observable_data
                         else None
                     ),
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Artifact":
                 if (
@@ -618,6 +702,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         if "x_opencti_additional_names" in observable_data
                         else None
                     ),
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "StixFile":
                 if (
@@ -669,6 +755,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         if "x_opencti_additional_names" in observable_data
                         else None
                     ),
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "X509-Certificate":
                 input_variables["X509Certificate"] = {
@@ -808,6 +896,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         if "policy_mappings" in observable_data
                         else None
                     ),
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "SSH-Key" or type.lower() == "ssh-key":
                 input_variables["SSHKey"] = {
@@ -851,30 +941,40 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         if "expiration_date" in observable_data
                         else None
                     ),
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "IPv4-Addr":
                 input_variables["IPv4Addr"] = {
                     "value": (
                         observable_data["value"] if "value" in observable_data else None
                     ),
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "IPv6-Addr":
                 input_variables["IPv6Addr"] = {
                     "value": (
                         observable_data["value"] if "value" in observable_data else None
                     ),
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Mac-Addr":
                 input_variables["MacAddr"] = {
                     "value": (
                         observable_data["value"] if "value" in observable_data else None
                     ),
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Mutex":
                 input_variables["Mutex"] = {
                     "name": (
                         observable_data["name"] if "name" in observable_data else None
                     ),
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Network-Traffic":
                 input_variables["NetworkTraffic"] = {
@@ -932,6 +1032,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         if "dst_packets" in observable_data
                         else None
                     ),
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Process":
                 input_variables["Process"] = {
@@ -957,6 +1059,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         if "environment_variables" in observable_data
                         else None
                     ),
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Software":
                 if (
@@ -999,12 +1103,16 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         if "x_opencti_product" in observable_data
                         else None
                     ),
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Url":
                 input_variables["Url"] = {
                     "value": (
                         observable_data["value"] if "value" in observable_data else None
                     ),
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "User-Account":
                 input_variables["UserAccount"] = {
@@ -1078,6 +1186,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         if "account_last_login" in observable_data
                         else None
                     ),
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Windows-Registry-Key":
                 input_variables["WindowsRegistryKey"] = {
@@ -1094,6 +1204,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         if "number_of_subkeys" in observable_data
                         else None
                     ),
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Windows-Registry-Value-Type":
                 input_variables["WindowsRegistryValueType"] = {
@@ -1108,30 +1220,40 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         if "data_type" in observable_data
                         else None
                     ),
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "User-Agent":
                 input_variables["UserAgent"] = {
                     "value": (
                         observable_data["value"] if "value" in observable_data else None
                     ),
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Cryptographic-Key":
                 input_variables["CryptographicKey"] = {
                     "value": (
                         observable_data["value"] if "value" in observable_data else None
                     ),
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Hostname":
                 input_variables["Hostname"] = {
                     "value": (
                         observable_data["value"] if "value" in observable_data else None
                     ),
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Text":
                 input_variables["Text"] = {
                     "value": (
                         observable_data["value"] if "value" in observable_data else None
                     ),
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Bank-Account":
                 input_variables["BankAccount"] = {
@@ -1144,12 +1266,16 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         if "account_number" in observable_data
                         else None
                     ),
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Phone-Number":
                 input_variables["PhoneNumber"] = {
                     "value": (
                         observable_data["value"] if "value" in observable_data else None
                     ),
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Payment-Card":
                 input_variables["PaymentCard"] = {
@@ -1169,6 +1295,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         if "holder_name" in observable_data
                         else None
                     ),
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Media-Content":
                 input_variables["MediaContent"] = {
@@ -1191,6 +1319,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         if "publication_date" in observable_data
                         else None
                     ),
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Persona":
                 input_variables["Persona"] = {
@@ -1204,6 +1334,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         if "persona_type" in observable_data
                         else None
                     ),
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Payment-Card" or type.lower() == "x-opencti-payment-card":
                 input_variables["PaymentCard"] = {
@@ -1223,6 +1355,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         if "holder_name" in observable_data
                         else None
                     ),
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif (
                 type == "Cryptocurrency-Wallet"
@@ -1232,12 +1366,16 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     "value": (
                         observable_data["value"] if "value" in observable_data else None
                     ),
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Credential" or type.lower() == "x-opencti-credential":
                 input_variables["Credential"] = {
                     "value": (
                         observable_data["value"] if "value" in observable_data else None
                     ),
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif (
                 type == "Tracking-Number" or type.lower() == "x-opencti-tracking-number"
@@ -1246,6 +1384,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     "value": (
                         observable_data["value"] if "value" in observable_data else None
                     ),
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             result = self.opencti.query(query, input_variables)
             if "payload_bin" in observable_data and "mime_type" in observable_data:
@@ -1265,15 +1405,30 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
             )
         else:
             self.opencti.app_logger.error("Missing parameters: type")
-
-    """
-        Upload an artifact
-
-        :param file_path: the file path
-        :return Stix-Observable object
-    """
+            return None
 
     def upload_artifact(self, **kwargs):
+        """Upload an artifact.
+
+        :param file_name: the file name or path
+        :type file_name: str
+        :param data: the file data (optional, reads from file_name if not provided)
+        :type data: bytes
+        :param mime_type: the MIME type (default: text/plain)
+        :type mime_type: str
+        :param x_opencti_description: description for the artifact
+        :type x_opencti_description: str
+        :param createdBy: the author ID
+        :type createdBy: str
+        :param objectMarking: list of marking definition IDs
+        :type objectMarking: list
+        :param objectLabel: list of label IDs
+        :type objectLabel: list
+        :param createIndicator: whether to create an indicator (default: False)
+        :type createIndicator: bool
+        :return: Stix-Observable object
+        :rtype: dict or None
+        """
         file_name = kwargs.get("file_name", None)
         data = kwargs.get("data", None)
         mime_type = kwargs.get("mime_type", "text/plain")
@@ -1403,7 +1558,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
             result = self.opencti.query(
                 query,
                 {
-                    "file": (self.file(final_file_name, data, mime_type)),
+                    "file": (self.opencti.file(final_file_name, data, mime_type)),
                     "x_opencti_description": x_opencti_description,
                     "createdBy": created_by,
                     "objectMarking": object_marking,
@@ -1415,16 +1570,18 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
             )
         else:
             self.opencti.app_logger.error("Missing parameters: type")
-
-    """
-        Update a Stix-Observable object field
-
-        :param id: the Stix-Observable id
-        :param input: the input of the field
-        :return The updated Stix-Observable object
-    """
+            return None
 
     def update_field(self, **kwargs):
+        """Update a Stix-Observable object field.
+
+        :param id: the Stix-Observable id
+        :type id: str
+        :param input: the input of the field to update
+        :type input: list
+        :return: The updated Stix-Observable object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         input = kwargs.get("input", None)
         if id is not None and input is not None:
@@ -1456,14 +1613,16 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
             )
             return None
 
-    """
-        Promote a Stix-Observable to an Indicator
+    def promote_to_indicator_v2(self, **kwargs):
+        """Promote a Stix-Observable to an Indicator.
 
         :param id: the Stix-Observable id
-        :return the newly created indicator
-    """
-
-    def promote_to_indicator_v2(self, **kwargs):
+        :type id: str
+        :param customAttributes: custom attributes to return for the indicator
+        :type customAttributes: str
+        :return: The newly created indicator
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
@@ -1495,14 +1654,14 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
             )
             return None
 
-    """
-        Delete a Stix-Observable
+    def delete(self, **kwargs):
+        """Delete a Stix-Observable.
 
         :param id: the Stix-Observable id
-        :return void
-    """
-
-    def delete(self, **kwargs):
+        :type id: str
+        :return: None
+        :rtype: None
+        """
         id = kwargs.get("id", None)
         if id is not None:
             self.opencti.app_logger.info("Deleting Stix-Observable", {"id": id})
@@ -1520,15 +1679,16 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
             )
             return None
 
-    """
-        Update the Identity author of a Stix-Cyber-Observable object (created_by)
+    def update_created_by(self, **kwargs):
+        """Update the Identity author of a Stix-Cyber-Observable object (created_by).
 
         :param id: the id of the Stix-Cyber-Observable
+        :type id: str
         :param identity_id: the id of the Identity
-        :return Boolean
-    """
-
-    def update_created_by(self, **kwargs):
+        :type identity_id: str
+        :return: True on success, False on failure
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         identity_id = kwargs.get("identity_id", None)
         if id is not None:
@@ -1602,15 +1762,16 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
             self.opencti.app_logger.error("Missing parameters: id")
             return False
 
-    """
-        Add a Marking-Definition object to Stix-Cyber-Observable object (object_marking_refs)
+    def add_marking_definition(self, **kwargs):
+        """Add a Marking-Definition object to Stix-Cyber-Observable object (object_marking_refs).
 
         :param id: the id of the Stix-Cyber-Observable
+        :type id: str
         :param marking_definition_id: the id of the Marking-Definition
-        :return Boolean
-    """
-
-    def add_marking_definition(self, **kwargs):
+        :type marking_definition_id: str
+        :return: True on success, False on failure
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         marking_definition_id = kwargs.get("marking_definition_id", None)
         if id is not None and marking_definition_id is not None:
@@ -1666,15 +1827,16 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
             )
             return False
 
-    """
-        Remove a Marking-Definition object to Stix-Cyber-Observable object
+    def remove_marking_definition(self, **kwargs):
+        """Remove a Marking-Definition object from Stix-Cyber-Observable object.
 
         :param id: the id of the Stix-Cyber-Observable
+        :type id: str
         :param marking_definition_id: the id of the Marking-Definition
-        :return Boolean
-    """
-
-    def remove_marking_definition(self, **kwargs):
+        :type marking_definition_id: str
+        :return: True on success, False on failure
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         marking_definition_id = kwargs.get("marking_definition_id", None)
         if id is not None and marking_definition_id is not None:
@@ -1701,18 +1863,23 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
             )
             return True
         else:
-            self.opencti.app_logger.error("Missing parameters: id and label_id")
+            self.opencti.app_logger.error(
+                "Missing parameters: id and marking_definition_id"
+            )
             return False
 
-    """
-        Add a Label object to Stix-Cyber-Observable object
+    def add_label(self, **kwargs):
+        """Add a Label object to Stix-Cyber-Observable object.
 
         :param id: the id of the Stix-Cyber-Observable
+        :type id: str
         :param label_id: the id of the Label
-        :return Boolean
-    """
-
-    def add_label(self, **kwargs):
+        :type label_id: str
+        :param label_name: the name of the Label (will create if not exists)
+        :type label_name: str
+        :return: True on success, False on failure
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         label_id = kwargs.get("label_id", None)
         label_name = kwargs.get("label_name", None)
@@ -1758,15 +1925,18 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
             self.opencti.app_logger.error("Missing parameters: id and label_id")
             return False
 
-    """
-        Remove a Label object to Stix-Cyber-Observable object
+    def remove_label(self, **kwargs):
+        """Remove a Label object from Stix-Cyber-Observable object.
 
         :param id: the id of the Stix-Cyber-Observable
+        :type id: str
         :param label_id: the id of the Label
-        :return Boolean
-    """
-
-    def remove_label(self, **kwargs):
+        :type label_id: str
+        :param label_name: the name of the Label (alternative to label_id)
+        :type label_name: str
+        :return: True on success, False on failure
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         label_id = kwargs.get("label_id", None)
         label_name = kwargs.get("label_name", None)
@@ -1807,15 +1977,16 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
             self.opencti.app_logger.error("Missing parameters: id and label_id")
             return False
 
-    """
-        Add a External-Reference object to Stix-Cyber-Observable object (object_marking_refs)
+    def add_external_reference(self, **kwargs):
+        """Add an External-Reference object to Stix-Cyber-Observable object.
 
         :param id: the id of the Stix-Cyber-Observable
-        :param marking_definition_id: the id of the Marking-Definition
-        :return Boolean
-    """
-
-    def add_external_reference(self, **kwargs):
+        :type id: str
+        :param external_reference_id: the id of the External-Reference
+        :type external_reference_id: str
+        :return: True on success, False on failure
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         external_reference_id = kwargs.get("external_reference_id", None)
         if id is not None and external_reference_id is not None:
@@ -1877,15 +2048,16 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
             )
             return False
 
-    """
-        Remove a Label object to Stix-Cyber-Observable object
+    def remove_external_reference(self, **kwargs):
+        """Remove an External-Reference object from Stix-Cyber-Observable object.
 
         :param id: the id of the Stix-Cyber-Observable
-        :param label_id: the id of the Label
-        :return Boolean
-    """
-
-    def remove_external_reference(self, **kwargs):
+        :type id: str
+        :param external_reference_id: the id of the External-Reference
+        :type external_reference_id: str
+        :return: True on success, False on failure
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         external_reference_id = kwargs.get("external_reference_id", None)
         if id is not None and external_reference_id is not None:
@@ -1912,7 +2084,9 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
             )
             return True
         else:
-            self.opencti.app_logger.error("Missing parameters: id and label_id")
+            self.opencti.app_logger.error(
+                "Missing parameters: id and external_reference_id"
+            )
             return False
 
     def push_list_export(
@@ -1925,6 +2099,25 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
         list_filters="",
         mime_type=None,
     ):
+        """Push a list export for Stix-Cyber-Observables.
+
+        :param entity_id: the entity ID
+        :type entity_id: str
+        :param entity_type: the entity type
+        :type entity_type: str
+        :param file_name: the file name
+        :type file_name: str
+        :param file_markings: list of marking definition IDs for the file
+        :type file_markings: list
+        :param data: the file data
+        :type data: bytes
+        :param list_filters: the list filters (default: "")
+        :type list_filters: str
+        :param mime_type: the MIME type (optional)
+        :type mime_type: str
+        :return: None
+        :rtype: None
+        """
         query = """
             mutation StixCyberObservablesExportPush(
                 $entity_id: String,
@@ -1943,9 +2136,9 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
             }
         """
         if mime_type is None:
-            file = self.file(file_name, data)
+            file = self.opencti.file(file_name, data)
         else:
-            file = self.file(file_name, data, mime_type)
+            file = self.opencti.file(file_name, data, mime_type)
         self.opencti.query(
             query,
             {
@@ -1958,6 +2151,15 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
         )
 
     def ask_for_enrichment(self, **kwargs) -> str:
+        """Ask for enrichment of a Stix-Cyber-Observable.
+
+        :param id: the id of the Stix-Cyber-Observable
+        :type id: str
+        :param connector_id: the id of the enrichment connector
+        :type connector_id: str
+        :return: The work ID
+        :rtype: str
+        """
         id = kwargs.get("id", None)
         connector_id = kwargs.get("connector_id", None)
 
@@ -1985,14 +2187,14 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
         # return work_id
         return result["data"]["stixCoreObjectEdit"]["askEnrichment"]["id"]
 
-    """
-        Get the reports about a Stix-Cyber-Observable object
+    def reports(self, **kwargs):
+        """Get the reports about a Stix-Cyber-Observable object.
 
         :param id: the id of the Stix-Cyber-Observable
-        :return List of reports
-    """
-
-    def reports(self, **kwargs):
+        :type id: str
+        :return: List of reports
+        :rtype: list or None
+        """
         id = kwargs.get("id", None)
         if id is not None:
             self.opencti.app_logger.info(
@@ -2112,14 +2314,14 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
             self.opencti.app_logger.error("Missing parameters: id")
             return None
 
-    """
-        Get the notes about a Stix-Cyber-Observable object
+    def notes(self, **kwargs):
+        """Get the notes about a Stix-Cyber-Observable object.
 
         :param id: the id of the Stix-Cyber-Observable
-        :return List of notes
-    """
-
-    def notes(self, **kwargs):
+        :type id: str
+        :return: List of notes
+        :rtype: list or None
+        """
         id = kwargs.get("id", None)
         if id is not None:
             self.opencti.app_logger.info(
@@ -2240,14 +2442,14 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
             self.opencti.app_logger.error("Missing parameters: id")
             return None
 
-    """
-        Get the observed data of a Stix-Cyber-Observable object
+    def observed_data(self, **kwargs):
+        """Get the observed data of a Stix-Cyber-Observable object.
 
         :param id: the id of the Stix-Cyber-Observable
-        :return List of observed data
-    """
-
-    def observed_data(self, **kwargs):
+        :type id: str
+        :return: List of observed data
+        :rtype: list or None
+        """
         id = kwargs.get("id", None)
         if id is not None:
             self.opencti.app_logger.info(

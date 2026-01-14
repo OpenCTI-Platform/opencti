@@ -12,9 +12,15 @@ class Task:
     Manages tasks and to-do items in the OpenCTI platform.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
+        """Initialize the Task instance.
+
+        :param opencti: OpenCTI API client instance
+        :type opencti: OpenCTIApiClient
+        """
         self.opencti = opencti
         self.properties = """
             id
@@ -241,6 +247,15 @@ class Task:
 
     @staticmethod
     def generate_id(name, created):
+        """Generate a STIX ID for a Task object.
+
+        :param name: the name of the Task
+        :type name: str
+        :param created: the creation date of the Task
+        :type created: str or datetime.datetime
+        :return: STIX ID for the Task
+        :rtype: str
+        """
         if isinstance(created, datetime.datetime):
             created = created.isoformat()
         data = {"name": name.lower().strip(), "created": created}
@@ -250,19 +265,29 @@ class Task:
 
     @staticmethod
     def generate_id_from_data(data):
+        """Generate a STIX ID from Task data.
+
+        :param data: Dictionary containing 'name' and 'created' keys
+        :type data: dict
+        :return: STIX ID for the Task
+        :rtype: str
+        """
         return Task.generate_id(data["name"], data["created"])
 
-    """
-        List Task objects
-        
-        :param filters: the filters to apply
-        :param search: the search keyword
-        :param first: return the first n rows from the after ID (or the beginning if not set)
-        :param after: ID of the first row for pagination
-        :return List of Task objects
-    """
-
     def list(self, **kwargs):
+        """List Task objects.
+
+        :param filters: the filters to apply
+        :type filters: dict
+        :param search: the search keyword
+        :type search: str
+        :param first: return the first n rows from the after ID (or the beginning if not set)
+        :type first: int
+        :param after: ID of the first row for pagination
+        :type after: str
+        :return: List of Task objects
+        :rtype: list
+        """
         filters = kwargs.get("filters", None)
         search = kwargs.get("search", None)
         first = kwargs.get("first", 500)
@@ -335,15 +360,16 @@ class Task:
                 result["data"]["tasks"], with_pagination
             )
 
-    """
-        Read a Task object
+    def read(self, **kwargs):
+        """Read a Task object.
 
         :param id: the id of the Task
+        :type id: str
         :param filters: the filters to apply if no id provided
-        :return Task object
-    """
-
-    def read(self, **kwargs):
+        :type filters: dict
+        :return: Task object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
@@ -372,17 +398,24 @@ class Task:
                 return result[0]
             else:
                 return None
-
-    """
-        Read a Task object by stix_id or name
-
-        :param type: the Stix-Domain-Entity type
-        :param stix_id: the STIX ID of the Stix-Domain-Entity
-        :param name: the name of the Stix-Domain-Entity
-        :return Stix-Domain-Entity object
-    """
+        else:
+            self.opencti.app_logger.error(
+                "[opencti_task] Missing parameters: id or filters"
+            )
+            return None
 
     def get_by_stix_id_or_name(self, **kwargs):
+        """Read a Task object by stix_id or name.
+
+        :param stix_id: the STIX ID of the Task
+        :type stix_id: str
+        :param name: the name of the Task
+        :type name: str
+        :param created: the creation date of the Task
+        :type created: str
+        :return: Task object
+        :rtype: dict or None
+        """
         stix_id = kwargs.get("stix_id", None)
         name = kwargs.get("name", None)
         created = kwargs.get("created", None)
@@ -405,15 +438,16 @@ class Task:
             )
         return object_result
 
-    """
-        Check if a task already contains a thing (Stix Object or Stix Relationship)
+    def contains_stix_object_or_stix_relationship(self, **kwargs):
+        """Check if a task already contains a thing (Stix Object or Stix Relationship).
 
         :param id: the id of the Task
+        :type id: str
         :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
-        :return Boolean
-    """
-
-    def contains_stix_object_or_stix_relationship(self, **kwargs):
+        :type stixObjectOrStixRelationshipId: str
+        :return: True if the task contains the entity, False otherwise
+        :rtype: bool or None
+        """
         id = kwargs.get("id", None)
         stix_object_or_stix_relationship_id = kwargs.get(
             "stixObjectOrStixRelationshipId", None
@@ -441,17 +475,30 @@ class Task:
             return result["data"]["taskContainsStixObjectOrStixRelationship"]
         else:
             self.opencti.app_logger.error(
-                "[opencti_Task] Missing parameters: id or stixObjectOrStixRelationshipId"
+                "[opencti_task] Missing parameters: id or stixObjectOrStixRelationshipId"
             )
-
-    """
-        Create a Task object
-
-        :param name: the name of the Task
-        :return Task object
-    """
+            return None
 
     def create(self, **kwargs):
+        """Create a Task object.
+
+        :param name: the name of the Task
+        :type name: str
+        :param description: the description of the Task
+        :type description: str
+        :param due_date: the due date of the Task
+        :type due_date: str
+        :param createdBy: the creator of the Task
+        :type createdBy: str
+        :param update: (optional) whether to update if exists (default: False)
+        :type update: bool
+        :param files: (optional) list of File objects to attach
+        :type files: list
+        :param filesMarkings: (optional) list of lists of marking definition IDs for each file
+        :type filesMarkings: list
+        :return: Task object
+        :rtype: dict or None
+        """
         objects = kwargs.get("objects", None)
         created = kwargs.get("created", None)
         name = kwargs.get("name", None)
@@ -466,6 +513,9 @@ class Task:
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
         x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         update = kwargs.get("update", False)
+        files = kwargs.get("files", None)
+        files_markings = kwargs.get("filesMarkings", None)
+        upsert_operations = kwargs.get("upsert_operations", None)
 
         if name is not None:
             self.opencti.app_logger.info("Creating Task", {"name": name})
@@ -497,14 +547,27 @@ class Task:
                         "x_opencti_workflow_id": x_opencti_workflow_id,
                         "x_opencti_modified_at": x_opencti_modified_at,
                         "update": update,
+                        "files": files,
+                        "filesMarkings": files_markings,
+                        "upsertOperations": upsert_operations,
                     }
                 },
             )
             return self.opencti.process_multiple_fields(result["data"]["taskAdd"])
         else:
             self.opencti.app_logger.error("[opencti_task] Missing parameters: name")
+            return None
 
     def update_field(self, **kwargs):
+        """Update a field of a Task object.
+
+        :param id: the id of the Task
+        :type id: str
+        :param input: the input containing field(s) to update
+        :type input: list
+        :return: Task object
+        :rtype: dict or None
+        """
         self.opencti.app_logger.info("Updating Task", {"data": json.dumps(kwargs)})
         id = kwargs.get("id", None)
         input = kwargs.get("input", None)
@@ -524,19 +587,20 @@ class Task:
             )
         else:
             self.opencti.app_logger.error(
-                "[opencti_Task] Missing parameters: id and key and value"
+                "[opencti_task] Missing parameters: id and input"
             )
             return None
 
-    """
-        Add a Stix-Entity object to Task object (object_refs)
+    def add_stix_object_or_stix_relationship(self, **kwargs):
+        """Add a Stix-Entity object to Task object (object_refs).
 
         :param id: the id of the Task
+        :type id: str
         :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
-        :return Boolean
-    """
-
-    def add_stix_object_or_stix_relationship(self, **kwargs):
+        :type stixObjectOrStixRelationshipId: str
+        :return: True if successful, None if parameters are missing
+        :rtype: bool or None
+        """
         id = kwargs.get("id", None)
         stix_object_or_stix_relationship_id = kwargs.get(
             "stixObjectOrStixRelationshipId", None
@@ -573,15 +637,16 @@ class Task:
             )
             return False
 
-    """
-        Remove a Stix-Entity object to Task object (object_refs)
+    def remove_stix_object_or_stix_relationship(self, **kwargs):
+        """Remove a Stix-Entity object from Task object (object_refs).
 
         :param id: the id of the Task
+        :type id: str
         :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
-        :return Boolean
-    """
-
-    def remove_stix_object_or_stix_relationship(self, **kwargs):
+        :type stixObjectOrStixRelationshipId: str
+        :return: True if successful, False otherwise
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         stix_object_or_stix_relationship_id = kwargs.get(
             "stixObjectOrStixRelationshipId", None
@@ -596,7 +661,7 @@ class Task:
             )
             query = """
                mutation taskEditRelationDelete($id: ID!, $toId: StixRef!, $relationship_type: String!) {
-                   taskRelationAdd(id: $id, toId: $toId, relationship_type: $relationship_type) {
+                   taskRelationDelete(id: $id, toId: $toId, relationship_type: $relationship_type) {
                         id
                    }
                }
@@ -616,14 +681,18 @@ class Task:
             )
             return False
 
-    """
-        Import a Task object from a STIX2 object
+    def import_from_stix2(self, **kwargs):
+        """Import a Task object from a STIX2 object.
 
         :param stixObject: the Stix-Object Task
-        :return Task object
-    """
-
-    def import_from_stix2(self, **kwargs):
+        :type stixObject: dict
+        :param extras: additional parameters like created_by_id, object_marking_ids
+        :type extras: dict
+        :param update: whether to update existing object
+        :type update: bool
+        :return: Task object
+        :rtype: dict or None
+        """
         stix_object = kwargs.get("stixObject", None)
         extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)
@@ -654,6 +723,12 @@ class Task:
             if "x_opencti_modified_at" not in stix_object:
                 stix_object["x_opencti_modified_at"] = (
                     self.opencti.get_attribute_in_extension("modified_at", stix_object)
+                )
+            if "opencti_upsert_operations" not in stix_object:
+                stix_object["opencti_upsert_operations"] = (
+                    self.opencti.get_attribute_in_extension(
+                        "opencti_upsert_operations", stix_object
+                    )
                 )
             return self.create(
                 stix_id=stix_object["id"],
@@ -703,13 +778,27 @@ class Task:
                     else None
                 ),
                 update=update,
+                files=extras.get("files"),
+                filesMarkings=extras.get("filesMarkings"),
+                upsert_operations=(
+                    stix_object["opencti_upsert_operations"]
+                    if "opencti_upsert_operations" in stix_object
+                    else None
+                ),
             )
         else:
             self.opencti.app_logger.error(
                 "[opencti_task] Missing parameters: stixObject"
             )
+            return None
 
     def delete(self, **kwargs):
+        """Delete a Task object.
+
+        :param id: the id of the Task to delete
+        :type id: str
+        :return: None
+        """
         id = kwargs.get("id", None)
         if id is not None:
             self.opencti.app_logger.info("Deleting Task", {"id": id})

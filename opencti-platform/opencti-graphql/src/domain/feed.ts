@@ -4,16 +4,15 @@ import { createEntity, deleteElementById } from '../database/middleware';
 import { pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { FeedAddInput, MemberAccessInput, QueryFeedsArgs } from '../generated/graphql';
+import { FilterMode } from '../generated/graphql';
 import type { BasicStoreEntityFeed } from '../types/store';
 import { elReplace } from '../database/engine';
-import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { FunctionalError, UnsupportedError, ValidationError } from '../config/errors';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { isStixDomainObject } from '../schema/stixDomainObject';
 import type { DomainFindById } from './domainTypes';
 import { publishUserAction } from '../listener/UserActionListener';
 import { isUserHasCapability, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../utils/access';
-import { FilterMode } from '../generated/graphql';
 import { TAXIIAPI } from './user';
 
 const checkFeedIntegrity = (input: FeedAddInput) => {
@@ -71,7 +70,7 @@ export const editFeed = async (context: AuthContext, user: AuthUser, id: string,
     finalInput = { ...finalInput, restricted_members: finalInput.authorized_members } as FeedAddInput & { restricted_members: MemberAccessInput[] };
     delete finalInput.authorized_members;
   }
-  await elReplace(INDEX_INTERNAL_OBJECTS, id, { doc: finalInput });
+  await elReplace(feed._index, feed.internal_id, { doc: finalInput });
   await publishUserAction({
     user,
     event_type: 'mutation',

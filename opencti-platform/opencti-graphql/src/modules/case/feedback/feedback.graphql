@@ -2,7 +2,7 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -236,9 +236,13 @@ input FeedbackAddInput {
   x_opencti_workflow_id: String
   x_opencti_modified_at: DateTime
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
   clientMutationId: String
   update: Boolean
   rating: Int
+  upsertOperations: [EditInput!]
 }
 
 type Mutation {

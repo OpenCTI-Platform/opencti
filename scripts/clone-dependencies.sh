@@ -26,13 +26,23 @@ clone_for_pr_build() {
     gh repo clone https://github.com/OpenCTI-Platform/connectors ${CONNECTOR_DIR} -- --depth=1
 
     cd ${WORKSPACE}
-    CHANGES_OUSTIDE_FRONT_COUNT=$(gh pr diff ${PR_NUMBER} --name-only | grep -v "opencti-platform/opencti-front" | wc -l)
-    if [[ ${CHANGES_OUSTIDE_FRONT_COUNT} -eq 0 ]]
+    DIFF_OUTPUT=$(gh pr diff ${PR_NUMBER} --name-only 2>&1)
+    DIFF_EXIT_CODE=$?
+    
+    # Check if diff failed (non-zero exit OR error message in output indicating diff too large)
+    if [[ ${DIFF_EXIT_CODE} -ne 0 ]] || echo "${DIFF_OUTPUT}" | grep -qi "too_large\|exceeded the maximum\|HTTP 406"
     then
-        echo "[CLONE-DEPS][BUILD] Only frontend changes on this PR, api-test can be skipped."
-        touch "${WORKSPACE}/api-test.skip"
+        echo "[CLONE-DEPS][BUILD] Failed to get PR diff (possibly too large), assuming non-frontend changes exist. api-test will be run."
+        echo "[CLONE-DEPS][BUILD] gh pr diff output: ${DIFF_OUTPUT}"
     else
-        echo "[CLONE-DEPS][BUILD] There is more than frontend changes, api-test will be run."
+        CHANGES_OUSTIDE_FRONT_COUNT=$(echo "${DIFF_OUTPUT}" | grep -v "opencti-platform/opencti-front" | wc -l)
+        if [[ ${CHANGES_OUSTIDE_FRONT_COUNT} -eq 0 ]]
+        then
+            echo "[CLONE-DEPS][BUILD] Only frontend changes on this PR, api-test can be skipped."
+            touch "${WORKSPACE}/api-test.skip"
+        else
+            echo "[CLONE-DEPS][BUILD] There is more than frontend changes, api-test will be run."
+        fi
     fi
 }
 

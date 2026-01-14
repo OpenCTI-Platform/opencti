@@ -454,6 +454,7 @@ export const convertFormBuilderDataToSchema = (
       required: field.required,
       isMandatory: field.isMandatory, // Preserve mandatory flag
       width: field.width, // Preserve field width configuration
+      multiple: field.multiple, // For openvocab, select/multiselect, and files fields
       options: field.options,
       attributeMapping: field.attributeMapping,
       defaultValue: field.defaultValue,

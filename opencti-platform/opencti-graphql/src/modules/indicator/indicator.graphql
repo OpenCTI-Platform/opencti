@@ -69,7 +69,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -251,7 +251,11 @@ input IndicatorAddInput {
   x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
   basedOn: [String!]
+  upsertOperations: [EditInput!]
 }
 
 type Query {

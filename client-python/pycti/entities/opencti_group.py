@@ -19,9 +19,17 @@ class Group:
 
     See the properties attribute to understand what properties are fetched by
     default from GraphQL queries.
+
+    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
+        """Initialize the Group instance.
+
+        :param opencti: OpenCTI API client instance
+        :type opencti: OpenCTIApiClient
+        """
         self.opencti = opencti
         self.properties = """
             id
@@ -327,7 +335,7 @@ class Group:
         id = kwargs.get("id", None)
         if id is None:
             self.opencti.admin_logger.error(
-                "[opencti_group] Cant delete group, missing parameter: id"
+                "[opencti_group] Cannot delete group, missing parameter: id"
             )
             return None
         self.opencti.admin_logger.info("Deleting group", {"id": id})
@@ -716,6 +724,13 @@ class Group:
         )
 
     def process_multiple_fields(self, data):
+        """Process and normalize fields in group data.
+
+        :param data: the group data dictionary to process
+        :type data: dict
+        :return: the processed group data with normalized fields
+        :rtype: dict
+        """
         if "roles" in data:
             data["roles"] = self.opencti.process_multiple(data["roles"])
             data["rolesIds"] = self.opencti.process_multiple_ids(data["roles"])

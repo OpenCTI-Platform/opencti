@@ -12,9 +12,15 @@ class StixSightingRelationship:
     Manages STIX sighting relationships in the OpenCTI platform.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
+        """Initialize the StixSightingRelationship instance.
+
+        :param opencti: OpenCTI API client instance
+        :type opencti: OpenCTIApiClient
+        """
         self.opencti = opencti
         self.properties = """
             id
@@ -283,6 +289,19 @@ class StixSightingRelationship:
         first_seen=None,
         last_seen=None,
     ):
+        """Generate a STIX ID for a Sighting relationship.
+
+        :param sighting_of_ref: The STIX ID of the entity being sighted
+        :type sighting_of_ref: str
+        :param where_sighted_refs: The STIX IDs of where the sighting occurred
+        :type where_sighted_refs: list
+        :param first_seen: (optional) The first seen date
+        :type first_seen: str or datetime.datetime or None
+        :param last_seen: (optional) The last seen date
+        :type last_seen: str or datetime.datetime or None
+        :return: STIX ID for the sighting
+        :rtype: str
+        """
         if isinstance(first_seen, datetime.datetime):
             first_seen = first_seen.isoformat()
         if isinstance(last_seen, datetime.datetime):
@@ -315,6 +334,13 @@ class StixSightingRelationship:
 
     @staticmethod
     def generate_id_from_data(data):
+        """Generate a STIX ID from sighting data.
+
+        :param data: Dictionary containing sighting_of_ref, where_sighted_refs, and optionally first_seen/last_seen
+        :type data: dict
+        :return: STIX ID for the sighting
+        :rtype: str
+        """
         return StixSightingRelationship.generate_id(
             data["sighting_of_ref"],
             data["where_sighted_refs"],
@@ -322,21 +348,48 @@ class StixSightingRelationship:
             data.get("last_seen"),
         )
 
-    """
-        List stix_sightings objects
-
-        :param fromId: the id of the source entity of the relation
-        :param toId: the id of the target entity of the relation
-        :param firstSeenStart: the first_seen date start filter
-        :param firstSeenStop: the first_seen date stop filter
-        :param lastSeenStart: the last_seen date start filter
-        :param lastSeenStop: the last_seen date stop filter
-        :param first: return the first n rows from the after ID (or the beginning if not set)
-        :param after: ID of the first row for pagination
-        :return List of stix_sighting objects
-    """
-
     def list(self, **kwargs):
+        """List stix_sighting_relationship objects.
+
+        :param fromOrToId: the id of an entity (source or target)
+        :type fromOrToId: str
+        :param fromId: the id of the source entity of the relation
+        :type fromId: str
+        :param fromTypes: filter by source entity types
+        :type fromTypes: list
+        :param toId: the id of the target entity of the relation
+        :type toId: str
+        :param toTypes: filter by target entity types
+        :type toTypes: list
+        :param firstSeenStart: the first_seen date start filter
+        :type firstSeenStart: str
+        :param firstSeenStop: the first_seen date stop filter
+        :type firstSeenStop: str
+        :param lastSeenStart: the last_seen date start filter
+        :type lastSeenStart: str
+        :param lastSeenStop: the last_seen date stop filter
+        :type lastSeenStop: str
+        :param filters: additional filters to apply
+        :type filters: dict
+        :param first: return the first n rows from the after ID (or the beginning if not set)
+        :type first: int
+        :param after: ID of the first row for pagination
+        :type after: str
+        :param orderBy: field to order results by
+        :type orderBy: str
+        :param orderMode: ordering mode (asc/desc)
+        :type orderMode: str
+        :param customAttributes: custom attributes to return
+        :type customAttributes: str
+        :param getAll: whether to retrieve all results
+        :type getAll: bool
+        :param withPagination: whether to include pagination info
+        :type withPagination: bool
+        :param search: search keyword
+        :type search: str
+        :return: List of stix_sighting_relationship objects
+        :rtype: list
+        """
         from_or_to_id = kwargs.get("fromOrToId", None)
         from_id = kwargs.get("fromId", None)
         from_types = kwargs.get("fromTypes", None)
@@ -414,7 +467,7 @@ class StixSightingRelationship:
                 after = result["data"]["stixSightingRelationships"]["pageInfo"][
                     "endCursor"
                 ]
-                self.opencti.app_logger.info(
+                self.opencti.app_logger.debug(
                     "Listing StixSightingRelationships", {"after": after}
                 )
                 result = self.opencti.query(
@@ -434,6 +487,7 @@ class StixSightingRelationship:
                         "after": after,
                         "orderBy": order_by,
                         "orderMode": order_mode,
+                        "search": search,
                     },
                 )
                 data = self.opencti.process_multiple(
@@ -446,20 +500,32 @@ class StixSightingRelationship:
                 result["data"]["stixSightingRelationships"], with_pagination
             )
 
-    """
-        Read a stix_sighting object
-
-        :param id: the id of the stix_sighting
-        :param fromId: the id of the source entity of the relation
-        :param toId: the id of the target entity of the relation
-        :param firstSeenStart: the first_seen date start filter
-        :param firstSeenStop: the first_seen date stop filter
-        :param lastSeenStart: the last_seen date start filter
-        :param lastSeenStop: the last_seen date stop filter
-        :return stix_sighting object
-    """
-
     def read(self, **kwargs):
+        """Read a stix_sighting_relationship object.
+
+        :param id: the id of the stix_sighting_relationship
+        :type id: str
+        :param fromOrToId: the id of an entity (source or target)
+        :type fromOrToId: str
+        :param fromId: the id of the source entity of the relation
+        :type fromId: str
+        :param toId: the id of the target entity of the relation
+        :type toId: str
+        :param firstSeenStart: the first_seen date start filter
+        :type firstSeenStart: str
+        :param firstSeenStop: the first_seen date stop filter
+        :type firstSeenStop: str
+        :param lastSeenStart: the last_seen date start filter
+        :type lastSeenStart: str
+        :param lastSeenStop: the last_seen date stop filter
+        :type lastSeenStop: str
+        :param customAttributes: custom attributes to return
+        :type customAttributes: str
+        :param filters: filters to apply
+        :type filters: dict
+        :return: stix_sighting_relationship object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         from_or_to_id = kwargs.get("fromOrToId", None)
         from_id = kwargs.get("fromId", None)
@@ -515,14 +581,52 @@ class StixSightingRelationship:
             self.opencti.app_logger.error("Missing parameters: id or from_id and to_id")
             return None
 
-    """
-        Create a stix_sighting object
-
-        :param name: the name of the Attack Pattern
-        :return stix_sighting object
-    """
-
     def create(self, **kwargs):
+        """Create a stix_sighting_relationship object.
+
+        :param fromId: the id of the source entity
+        :type fromId: str
+        :param toId: the id of the target entity
+        :type toId: str
+        :param stix_id: (optional) the STIX ID
+        :type stix_id: str
+        :param description: (optional) description
+        :type description: str
+        :param first_seen: (optional) first seen date
+        :type first_seen: str
+        :param last_seen: (optional) last seen date
+        :type last_seen: str
+        :param count: (optional) sighting count
+        :type count: int
+        :param x_opencti_negative: (optional) whether this is a negative sighting
+        :type x_opencti_negative: bool
+        :param created: (optional) creation date
+        :type created: str
+        :param modified: (optional) modification date
+        :type modified: str
+        :param confidence: (optional) confidence level (0-100)
+        :type confidence: int
+        :param createdBy: (optional) the author ID
+        :type createdBy: str
+        :param objectMarking: (optional) list of marking definition IDs
+        :type objectMarking: list
+        :param objectLabel: (optional) list of label IDs
+        :type objectLabel: list
+        :param externalReferences: (optional) list of external reference IDs
+        :type externalReferences: list
+        :param x_opencti_stix_ids: (optional) list of additional STIX IDs
+        :type x_opencti_stix_ids: list
+        :param x_opencti_workflow_id: (optional) workflow ID
+        :type x_opencti_workflow_id: str
+        :param x_opencti_modified_at: (optional) custom modification date
+        :type x_opencti_modified_at: str
+        :param objectOrganization: (optional) list of organization IDs
+        :type objectOrganization: list
+        :param update: (optional) whether to update if exists (default: False)
+        :type update: bool
+        :return: stix_sighting_relationship object
+        :rtype: dict or None
+        """
         from_id = kwargs.get("fromId", None)
         to_id = kwargs.get("toId", None)
         stix_id = kwargs.get("stix_id", None)
@@ -543,6 +647,7 @@ class StixSightingRelationship:
         x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         granted_refs = kwargs.get("objectOrganization", None)
         update = kwargs.get("update", False)
+        upsert_operations = kwargs.get("upsert_operations", None)
 
         self.opencti.app_logger.info(
             "Creating stix_sighting", {"from_id": from_id, "to_id": to_id}
@@ -581,6 +686,7 @@ class StixSightingRelationship:
                     "x_opencti_modified_at": x_opencti_modified_at,
                     "objectOrganization": granted_refs,
                     "update": update,
+                    "upsertOperations": upsert_operations,
                 }
             },
         )
@@ -588,15 +694,16 @@ class StixSightingRelationship:
             result["data"]["stixSightingRelationshipAdd"]
         )
 
-    """
-        Update a stix_sighting object field
-
-        :param id: the stix_sighting id
-        :param input: the input of the field
-        :return The updated stix_sighting object
-    """
-
     def update_field(self, **kwargs):
+        """Update a stix_sighting_relationship object field.
+
+        :param id: the stix_sighting_relationship id
+        :type id: str
+        :param input: the input of the field
+        :type input: list
+        :return: The updated stix_sighting_relationship object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         input = kwargs.get("input", None)
         if id is not None and input is not None:
@@ -622,19 +729,20 @@ class StixSightingRelationship:
             )
         else:
             self.opencti.app_logger.error(
-                "[opencti_stix_sighting] Missing parameters: id and key and value"
+                "[opencti_stix_sighting] Missing parameters: id and input"
             )
             return None
 
-    """
-        Add a Marking-Definition object to stix_sighting_relationship object (object_marking_refs)
+    def add_marking_definition(self, **kwargs):
+        """Add a Marking-Definition object to stix_sighting_relationship object (object_marking_refs).
 
         :param id: the id of the stix_sighting_relationship
+        :type id: str
         :param marking_definition_id: the id of the Marking-Definition
-        :return Boolean
-    """
-
-    def add_marking_definition(self, **kwargs):
+        :type marking_definition_id: str
+        :return: True if successful, False otherwise
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         marking_definition_id = kwargs.get("marking_definition_id", None)
         if id is not None and marking_definition_id is not None:
@@ -693,15 +801,16 @@ class StixSightingRelationship:
             )
             return False
 
-    """
-        Remove a Marking-Definition object to stix_sighting_relationship
+    def remove_marking_definition(self, **kwargs):
+        """Remove a Marking-Definition object from stix_sighting_relationship.
 
         :param id: the id of the stix_sighting_relationship
+        :type id: str
         :param marking_definition_id: the id of the Marking-Definition
-        :return Boolean
-    """
-
-    def remove_marking_definition(self, **kwargs):
+        :type marking_definition_id: str
+        :return: True if successful, False otherwise
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         marking_definition_id = kwargs.get("marking_definition_id", None)
         if id is not None and marking_definition_id is not None:
@@ -728,18 +837,21 @@ class StixSightingRelationship:
             )
             return True
         else:
-            self.opencti.app_logger.error("Missing parameters: id and label_id")
+            self.opencti.app_logger.error(
+                "Missing parameters: id and marking_definition_id"
+            )
             return False
 
-    """
-        Update the Identity author of a stix_sighting_relationship object (created_by)
+    def update_created_by(self, **kwargs):
+        """Update the Identity author of a stix_sighting_relationship object (created_by).
 
         :param id: the id of the stix_sighting_relationship
+        :type id: str
         :param identity_id: the id of the Identity
-        :return Boolean
-    """
-
-    def update_created_by(self, **kwargs):
+        :type identity_id: str
+        :return: True if successful, False otherwise
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         identity_id = kwargs.get("identity_id", None)
         if id is not None:
@@ -813,15 +925,17 @@ class StixSightingRelationship:
             self.opencti.app_logger.error("Missing parameters: id")
             return False
 
-    """
-        Share element to multiple organizations
-
-        :param entity_id: the stix_sighting id
-        :param organization_id:s the organization to share with
-        :return void
-    """
-
     def organization_share(self, entity_id, organization_ids, sharing_direct_container):
+        """Share element to multiple organizations.
+
+        :param entity_id: the stix_sighting_relationship id
+        :type entity_id: str
+        :param organization_ids: the organization IDs to share with
+        :type organization_ids: list
+        :param sharing_direct_container: whether to share direct container
+        :type sharing_direct_container: bool
+        :return: None
+        """
         query = """
                 mutation StixSightingRelationshipEdit($id: ID!, $organizationId: [ID!]!, $directContainerSharing: Boolean) {
                     stixSightingRelationshipEdit(id: $id) {
@@ -840,17 +954,19 @@ class StixSightingRelationship:
             },
         )
 
-    """
-        Unshare element from multiple organizations
-    
-        :param entity_id: the stix_sighting id
-        :param organization_id:s the organization to share with
-        :return void
-    """
-
     def organization_unshare(
         self, entity_id, organization_ids, sharing_direct_container
     ):
+        """Unshare element from multiple organizations.
+
+        :param entity_id: the stix_sighting_relationship id
+        :type entity_id: str
+        :param organization_ids: the organization IDs to unshare from
+        :type organization_ids: list
+        :param sharing_direct_container: whether to unshare direct container
+        :type sharing_direct_container: bool
+        :return: None
+        """
         query = """
                 mutation StixSightingRelationshipEdit($id: ID!, $organizationId: [ID!]!, $directContainerSharing: Boolean) {
                     stixSightingRelationshipEdit(id: $id) {
@@ -869,14 +985,13 @@ class StixSightingRelationship:
             },
         )
 
-    """
-        Remove a stix_sighting object from draft (revert)
-
-        :param id: the stix_sighting id
-        :return void
-    """
-
     def remove_from_draft(self, **kwargs):
+        """Remove a stix_sighting_relationship object from draft (revert).
+
+        :param id: the stix_sighting_relationship id
+        :type id: str
+        :return: None
+        """
         id = kwargs.get("id", None)
         if id is not None:
             self.opencti.app_logger.info("Draft remove stix_sighting", {"id": id})
@@ -890,18 +1005,17 @@ class StixSightingRelationship:
             self.opencti.query(query, {"id": id})
         else:
             self.opencti.app_logger.error(
-                "[stix_sighting] Cant remove from draft, missing parameters: id"
+                "[stix_sighting] Cannot remove from draft, missing parameters: id"
             )
             return None
 
-    """
-        Delete a stix_sighting
-
-        :param id: the stix_sighting id
-        :return void
-    """
-
     def delete(self, **kwargs):
+        """Delete a stix_sighting_relationship.
+
+        :param id: the stix_sighting_relationship id
+        :type id: str
+        :return: None
+        """
         id = kwargs.get("id", None)
         if id is not None:
             self.opencti.app_logger.info("Deleting stix_sighting", {"id": id})

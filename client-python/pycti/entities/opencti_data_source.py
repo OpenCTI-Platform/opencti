@@ -12,9 +12,15 @@ class DataSource:
     Manages MITRE ATT&CK data sources in the OpenCTI platform.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
+        """Initialize the DataSource instance.
+
+        :param opencti: OpenCTI API client instance
+        :type opencti: OpenCTIApiClient
+        """
         self.opencti = opencti
         self.properties = """
             id
@@ -61,6 +67,11 @@ class DataSource:
                     x_opencti_firstname
                     x_opencti_lastname
                 }
+            }
+            objectOrganization {
+                id
+                standard_id
+                name
             }
             objectMarking {
                 id
@@ -150,6 +161,11 @@ class DataSource:
                     x_opencti_lastname
                 }
             }
+            objectOrganization {
+                id
+                standard_id
+                name
+            }
             objectMarking {
                 id
                 standard_id
@@ -221,6 +237,13 @@ class DataSource:
 
     @staticmethod
     def generate_id(name):
+        """Generate a STIX ID for a Data Source.
+
+        :param name: the name of the Data Source
+        :type name: str
+        :return: STIX ID for the Data Source
+        :rtype: str
+        """
         name = name.lower().strip()
         data = {"name": name}
         data = canonicalize(data, utf8=False)
@@ -229,19 +252,41 @@ class DataSource:
 
     @staticmethod
     def generate_id_from_data(data):
+        """Generate a STIX ID from Data Source data.
+
+        :param data: Dictionary containing a 'name' key
+        :type data: dict
+        :return: STIX ID for the Data Source
+        :rtype: str
+        """
         return DataSource.generate_id(data["name"])
 
-    """
-        List Data-Source objects
+    def list(self, **kwargs):
+        """List Data Source objects.
 
         :param filters: the filters to apply
+        :type filters: dict
         :param search: the search keyword
+        :type search: str
         :param first: return the first n rows from the after ID (or the beginning if not set)
+        :type first: int
         :param after: ID of the first row for pagination
-        :return List of Data-Source objects
-    """
-
-    def list(self, **kwargs):
+        :type after: str
+        :param orderBy: field to order results by
+        :type orderBy: str
+        :param orderMode: ordering mode (asc/desc)
+        :type orderMode: str
+        :param customAttributes: custom attributes to return
+        :type customAttributes: str
+        :param getAll: whether to retrieve all results
+        :type getAll: bool
+        :param withPagination: whether to include pagination info
+        :type withPagination: bool
+        :param withFiles: whether to include files
+        :type withFiles: bool
+        :return: List of Data Source objects
+        :rtype: list
+        """
         filters = kwargs.get("filters", None)
         search = kwargs.get("search", None)
         first = kwargs.get("first", 500)
@@ -319,15 +364,20 @@ class DataSource:
                 result["data"]["dataSources"], with_pagination
             )
 
-    """
-        Read a Data-Source object
-
-        :param id: the id of the Data-Source
-        :param filters: the filters to apply if no id provided
-        :return Data-Source object
-    """
-
     def read(self, **kwargs):
+        """Read a Data Source object.
+
+        :param id: the id of the Data Source
+        :type id: str
+        :param filters: the filters to apply if no id provided
+        :type filters: dict
+        :param customAttributes: custom attributes to return
+        :type customAttributes: str
+        :param withFiles: whether to include files
+        :type withFiles: bool
+        :return: Data Source object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
@@ -363,14 +413,56 @@ class DataSource:
             )
             return None
 
-    """
-        Create a Data Source object
-
-        :param name: the name of the Data Source
-        :return Data Source object
-    """
-
     def create(self, **kwargs):
+        """Create a Data Source object.
+
+        :param stix_id: (optional) the STIX ID
+        :type stix_id: str
+        :param createdBy: (optional) the author ID
+        :type createdBy: str
+        :param objectMarking: (optional) list of marking definition IDs
+        :type objectMarking: list
+        :param objectLabel: (optional) list of label IDs
+        :type objectLabel: list
+        :param externalReferences: (optional) list of external reference IDs
+        :type externalReferences: list
+        :param revoked: (optional) whether the data source is revoked
+        :type revoked: bool
+        :param confidence: (optional) confidence level (0-100)
+        :type confidence: int
+        :param lang: (optional) language
+        :type lang: str
+        :param created: (optional) creation date
+        :type created: str
+        :param modified: (optional) modification date
+        :type modified: str
+        :param name: the name of the Data Source (required)
+        :type name: str
+        :param description: (optional) description
+        :type description: str
+        :param aliases: (optional) list of aliases
+        :type aliases: list
+        :param platforms: (optional) list of platforms
+        :type platforms: list
+        :param collection_layers: (optional) list of collection layers
+        :type collection_layers: list
+        :param x_opencti_stix_ids: (optional) list of additional STIX IDs
+        :type x_opencti_stix_ids: list
+        :param objectOrganization: (optional) list of organization IDs
+        :type objectOrganization: list
+        :param x_opencti_workflow_id: (optional) workflow ID
+        :type x_opencti_workflow_id: str
+        :param x_opencti_modified_at: (optional) custom modification date
+        :type x_opencti_modified_at: str
+        :param update: (optional) whether to update if exists (default: False)
+        :type update: bool
+        :param files: (optional) list of File objects to attach
+        :type files: list
+        :param filesMarkings: (optional) list of lists of marking definition IDs for each file
+        :type filesMarkings: list
+        :return: Data Source object
+        :rtype: dict or None
+        """
         stix_id = kwargs.get("stix_id", None)
         created_by = kwargs.get("createdBy", None)
         object_marking = kwargs.get("objectMarking", None)
@@ -391,10 +483,12 @@ class DataSource:
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
         x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         update = kwargs.get("update", False)
+        files = kwargs.get("files", None)
+        files_markings = kwargs.get("filesMarkings", None)
+        upsert_operations = kwargs.get("upsert_operations", None)
 
         if name is not None:
             self.opencti.app_logger.info("Creating Data Source", {"name": name})
-            self.opencti.app_logger.info("Creating Data Source", {"data": str(kwargs)})
             query = """
                 mutation DataSourceAdd($input: DataSourceAddInput!) {
                     dataSourceAdd(input: $input) {
@@ -405,47 +499,51 @@ class DataSource:
                     }
                 }
             """
-            result = self.opencti.query(
-                query,
-                {
-                    "input": {
-                        "stix_id": stix_id,
-                        "createdBy": created_by,
-                        "objectMarking": object_marking,
-                        "objectLabel": object_label,
-                        "objectOrganization": granted_refs,
-                        "externalReferences": external_references,
-                        "revoked": revoked,
-                        "confidence": confidence,
-                        "lang": lang,
-                        "created": created,
-                        "modified": modified,
-                        "name": name,
-                        "description": description,
-                        "aliases": aliases,
-                        "x_mitre_platforms": platforms,
-                        "collection_layers": collection_layers,
-                        "x_opencti_stix_ids": x_opencti_stix_ids,
-                        "x_opencti_workflow_id": x_opencti_workflow_id,
-                        "x_opencti_modified_at": x_opencti_modified_at,
-                        "update": update,
-                    }
-                },
-            )
+            input_variables = {
+                "stix_id": stix_id,
+                "createdBy": created_by,
+                "objectMarking": object_marking,
+                "objectLabel": object_label,
+                "objectOrganization": granted_refs,
+                "externalReferences": external_references,
+                "revoked": revoked,
+                "confidence": confidence,
+                "lang": lang,
+                "created": created,
+                "modified": modified,
+                "name": name,
+                "description": description,
+                "aliases": aliases,
+                "x_mitre_platforms": platforms,
+                "collection_layers": collection_layers,
+                "x_opencti_stix_ids": x_opencti_stix_ids,
+                "x_opencti_workflow_id": x_opencti_workflow_id,
+                "x_opencti_modified_at": x_opencti_modified_at,
+                "update": update,
+                "files": files,
+                "filesMarkings": files_markings,
+                "upsertOperations": upsert_operations,
+            }
+            result = self.opencti.query(query, {"input": input_variables})
             return self.opencti.process_multiple_fields(result["data"]["dataSourceAdd"])
         else:
             self.opencti.app_logger.error(
-                "[opencti_data_source] Missing parameters: name and description"
+                "[opencti_data_source] Missing parameters: name"
             )
-
-    """
-        Import an Data-Source object from a STIX2 object
-
-        :param stixObject: the Stix-Object Data-Source
-        :return Data-Source object
-    """
+            return None
 
     def import_from_stix2(self, **kwargs):
+        """Import a Data Source object from a STIX2 object.
+
+        :param stixObject: the STIX2 Data Source object
+        :type stixObject: dict
+        :param extras: extra parameters including created_by_id, object_marking_ids, etc.
+        :type extras: dict
+        :param update: whether to update if the entity already exists
+        :type update: bool
+        :return: Data Source object
+        :rtype: dict or None
+        """
         stix_object = kwargs.get("stixObject", None)
         extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)
@@ -482,8 +580,13 @@ class DataSource:
                 stix_object["x_opencti_modified_at"] = (
                     self.opencti.get_attribute_in_extension("modified_at", stix_object)
                 )
-
-            return self.opencti.data_source.create(
+            if "opencti_upsert_operations" not in stix_object:
+                stix_object["opencti_upsert_operations"] = (
+                    self.opencti.get_attribute_in_extension(
+                        "opencti_upsert_operations", stix_object
+                    )
+                )
+            return self.create(
                 stix_id=stix_object["id"],
                 createdBy=(
                     extras["created_by_id"] if "created_by_id" in extras else None
@@ -544,8 +647,16 @@ class DataSource:
                     else None
                 ),
                 update=update,
+                files=extras.get("files"),
+                filesMarkings=extras.get("filesMarkings"),
+                upsert_operations=(
+                    stix_object["opencti_upsert_operations"]
+                    if "opencti_upsert_operations" in stix_object
+                    else None
+                ),
             )
         else:
             self.opencti.app_logger.error(
                 "[opencti_data_source] Missing parameters: stixObject"
             )
+            return None

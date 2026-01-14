@@ -1361,7 +1361,7 @@ interface BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
 }
 
@@ -1636,7 +1636,7 @@ type Group implements InternalObject & BasicObject {
   standard_id: String!
   entity_type: String!
   auto_integration_assignation: [String]!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   name: String!
   default_assignation: Boolean
@@ -1830,7 +1830,7 @@ type User implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   user_email: String!
   api_token: String!
@@ -2015,7 +2015,7 @@ type Role implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   name: String!
   description: String
@@ -2049,7 +2049,7 @@ type Capability implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   name: String!
   description: String
@@ -2350,7 +2350,7 @@ type Connector implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   name: String!
   title: String!
@@ -2397,7 +2397,7 @@ type ManagedConnector implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   name: String!
   connector_user_id: ID
@@ -2425,7 +2425,7 @@ type ConnectorManager implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   name: String!
   public_key: String!
@@ -2500,7 +2500,7 @@ interface StixObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -2539,7 +2539,7 @@ interface StixMetaObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
@@ -2578,7 +2578,7 @@ type MarkingDefinition implements BasicObject & StixObject & StixMetaObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -2650,7 +2650,7 @@ type Label implements BasicObject & StixObject & StixMetaObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -2710,7 +2710,7 @@ type ExternalReference implements BasicObject & StixObject & StixMetaObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -2750,6 +2750,9 @@ input ExternalReferenceAddInput {
   url: String
   hash: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
   external_id: String
   created: DateTime
   modified: DateTime
@@ -2783,7 +2786,7 @@ type KillChainPhase implements BasicObject & StixObject & StixMetaObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -2873,7 +2876,7 @@ interface StixCoreObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -2974,7 +2977,7 @@ interface StixDomainObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -3078,7 +3081,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -3171,6 +3174,10 @@ input AttackPatternAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type AttackPatternForMatrix {
@@ -3230,7 +3237,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -3316,6 +3323,10 @@ input CampaignAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 enum ContainersOrdering {
@@ -3347,7 +3358,7 @@ interface Container {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -3424,7 +3435,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -3514,6 +3525,10 @@ input NoteAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 input NoteUserAddInput {
@@ -3568,7 +3583,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -3653,6 +3668,10 @@ input ObservedDataAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 enum OpinionsOrdering {
@@ -3683,7 +3702,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -3769,6 +3788,9 @@ input OpinionAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
 }
 
 input OpinionUserAddInput {
@@ -3821,7 +3843,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -3919,7 +3941,11 @@ input ReportAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
   authorized_members: [MemberAccessInput!]
+  upsertOperations: [EditInput!]
 }
 
 enum CoursesOfActionOrdering {
@@ -3948,7 +3974,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -4031,6 +4057,10 @@ input CourseOfActionAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 enum IdentitiesOrdering {
@@ -4064,7 +4094,7 @@ interface Identity {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -4143,7 +4173,12 @@ input IdentityAddInput {
   clientMutationId: String
   created: DateTime
   modified: DateTime
+  file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
   update: Boolean
+  upsertOperations: [EditInput!]
 }
 
 enum IndividualsOrdering {
@@ -4171,7 +4206,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -4262,6 +4297,10 @@ input IndividualAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 enum SectorsOrdering {
@@ -4290,7 +4329,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -4377,6 +4416,10 @@ input SectorAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 enum SystemsOrdering {
@@ -4404,7 +4447,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -4494,6 +4537,10 @@ input SystemAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 enum InfrastructuresOrdering {
@@ -4527,7 +4574,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -4613,6 +4660,10 @@ input InfrastructureAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 enum IntrusionSetsOrdering {
@@ -4643,7 +4694,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -4736,6 +4787,10 @@ input IntrusionSetAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 enum LocationsOrdering {
@@ -4765,7 +4820,7 @@ interface Location {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -4845,6 +4900,11 @@ input LocationAddInput {
   x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   update: Boolean
+  file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 enum PositionsOrdering {
@@ -4873,7 +4933,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -4961,6 +5021,10 @@ input PositionAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 enum CitiesOrdering {
@@ -4990,7 +5054,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -5076,6 +5140,10 @@ input CityAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 enum CountriesOrdering {
@@ -5102,7 +5170,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -5186,6 +5254,10 @@ input CountryAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 enum RegionsOrdering {
@@ -5212,7 +5284,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -5298,6 +5370,10 @@ input RegionAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 enum MalwaresOrdering {
@@ -5336,7 +5412,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -5433,6 +5509,10 @@ input MalwareAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 enum ThreatActorsOrdering {
@@ -5464,7 +5544,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -5545,7 +5625,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -5646,6 +5726,10 @@ input ThreatActorGroupAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 enum ToolsOrdering {
@@ -5673,7 +5757,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -5757,6 +5841,10 @@ input ToolAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 enum VulnerabilitiesOrdering {
@@ -5788,7 +5876,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -5963,6 +6051,10 @@ input VulnerabilityAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 enum IncidentsOrdering {
@@ -5998,7 +6090,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -6091,6 +6183,10 @@ input IncidentAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 enum StixCyberObservablesOrdering {
@@ -6118,7 +6214,7 @@ interface StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -6165,7 +6261,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -6217,13 +6313,17 @@ input AutonomousSystemAddInput {
   name: String
   rir: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -6279,13 +6379,17 @@ input DirectoryAddInput {
   mtime: DateTime
   atime: DateTime
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -6333,13 +6437,17 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
 input DomainNameAddInput {
   value: String!
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -6389,13 +6497,17 @@ input EmailAddrAddInput {
   value: String
   display_name: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -6455,13 +6567,17 @@ input EmailMessageAddInput {
   received_lines: [String]
   body: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -6513,6 +6629,10 @@ input EmailMimePartTypeAddInput {
   content_type: String
   content_disposition: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 input HashInput {
@@ -6521,6 +6641,7 @@ input HashInput {
 
   "*Constraints:*\n* Minimal length: `5`\n"
   hash: String!
+  upsertOperations: [EditInput!]
 }
 
 type Hash {
@@ -6542,7 +6663,7 @@ interface HashedObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -6590,7 +6711,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -6650,13 +6771,17 @@ input ArtifactAddInput {
   decryption_key: String
   x_opencti_additional_names: [String]
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberObservable & HashedObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -6725,13 +6850,17 @@ input StixFileAddInput {
   x_opencti_additional_names: [String]
   obsContent: ID
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type X509Certificate implements BasicObject & StixObject & StixCoreObject & StixCyberObservable & HashedObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -6833,13 +6962,17 @@ input X509CertificateAddInput {
   certificate_policies: String
   policy_mappings: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -6890,13 +7023,17 @@ input IPv4AddrAddInput {
   belongsTo: [String]
   resolvesTo: [String]
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -6945,13 +7082,17 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
 input IPv6AddrAddInput {
   value: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -6999,13 +7140,17 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
 input MacAddrAddInput {
   value: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -7053,13 +7198,17 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
 input MutexAddInput {
   name: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -7130,13 +7279,17 @@ input NetworkTrafficAddInput {
   src_packets: Int
   dst_packets: Int
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -7226,13 +7379,17 @@ input ProcessAddInput {
   service_type: String
   service_status: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type Software implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -7303,13 +7460,17 @@ input SoftwareAddInput {
   version: String
   x_opencti_product: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -7357,13 +7518,17 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
 input UrlAddInput {
   value: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -7438,13 +7603,17 @@ input UserAccountAddInput {
   account_first_login: DateTime
   account_last_login: DateTime
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -7495,14 +7664,18 @@ input WindowsRegistryKeyAddInput {
   attribute_key: String
   modified_time: DateTime
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
   number_of_subkeys: Int
+  upsertOperations: [EditInput!]
 }
 
 type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -7554,13 +7727,17 @@ input WindowsRegistryValueTypeAddInput {
   data: String
   data_type: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type CryptographicKey implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -7608,13 +7785,17 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
 input CryptographicKeyAddInput {
   value: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -7662,13 +7843,17 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
 input CryptocurrencyWalletAddInput {
   value: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -7716,13 +7901,17 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
 input HostnameAddInput {
   value: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -7770,13 +7959,17 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
 input TextAddInput {
   value: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -7824,13 +8017,17 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
 input UserAgentAddInput {
   value: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -7882,13 +8079,17 @@ input BankAccountAddInput {
   bic: String
   account_number: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type TrackingNumber implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -7936,13 +8137,17 @@ type TrackingNumber implements BasicObject & StixObject & StixCoreObject & StixC
 input TrackingNumberAddInput {
   value: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type Credential implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -7990,13 +8195,17 @@ type Credential implements BasicObject & StixObject & StixCoreObject & StixCyber
 input CredentialAddInput {
   value: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -8044,13 +8253,17 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
 input PhoneNumberAddInput {
   value: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -8104,13 +8317,17 @@ input PaymentCardAddInput {
   cvv: Int
   holder_name: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -8167,13 +8384,17 @@ input MediaContentAddInput {
   url: String!
   publication_date: DateTime
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type Persona implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -8223,13 +8444,18 @@ input PersonaAddInput {
   "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   persona_name: String!
   persona_type: String!
+  file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type SSHKey implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -8294,13 +8520,18 @@ input SSHKeyAddInput {
   comment: String
   created: DateTime
   expiration_date: DateTime
+  file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 interface BasicRelationship {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   fromRole: String
   toRole: String
@@ -8314,7 +8545,7 @@ type InternalRelationship implements BasicRelationship {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   fromRole: String
   toRole: String
@@ -8414,7 +8645,7 @@ interface StixRelationship {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   fromRole: String
   toRole: String
@@ -8492,7 +8723,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   fromRole: String
   toRole: String
@@ -8573,6 +8804,7 @@ input StixCoreRelationshipAddInput {
   coverage_information: [SecurityCoverageExpectation!]
   clientMutationId: String
   update: Boolean
+  upsertOperations: [EditInput!]
 }
 
 enum StixSightingRelationshipsOrdering {
@@ -8610,7 +8842,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   fromRole: String
   toRole: String
@@ -8680,6 +8912,7 @@ input StixSightingRelationshipAddInput {
   update: Boolean
   x_opencti_workflow_id: String
   x_opencti_modified_at: DateTime
+  upsertOperations: [EditInput!]
 }
 
 enum StixRefRelationshipsOrdering {
@@ -8715,7 +8948,7 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   fromRole: String
   toRole: String
@@ -8774,6 +9007,9 @@ input StixRefRelationshipAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
 }
 
 input StixRefRelationshipsAddInput {
@@ -9801,11 +10037,11 @@ type Mutation {
   vulnerabilityEdit(id: ID!): VulnerabilityEditMutations
   incidentAdd(input: IncidentAddInput!): Incident
   incidentEdit(id: ID!): IncidentEditMutations
-  stixCyberObservableAdd(type: String!, stix_id: StixId, x_opencti_score: Int, x_opencti_description: String, x_opencti_modified_at: DateTime, createIndicator: Boolean, createdBy: String, objectMarking: [String], objectLabel: [String], objectOrganization: [String], externalReferences: [String], clientMutationId: String, update: Boolean, AutonomousSystem: AutonomousSystemAddInput, Directory: DirectoryAddInput, DomainName: DomainNameAddInput, EmailAddr: EmailAddrAddInput, EmailMessage: EmailMessageAddInput, EmailMimePartType: EmailMimePartTypeAddInput, Artifact: ArtifactAddInput, StixFile: StixFileAddInput, X509Certificate: X509CertificateAddInput, IPv4Addr: IPv4AddrAddInput, IPv6Addr: IPv6AddrAddInput, MacAddr: MacAddrAddInput, Mutex: MutexAddInput, NetworkTraffic: NetworkTrafficAddInput, Process: ProcessAddInput, Software: SoftwareAddInput, Url: UrlAddInput, UserAccount: UserAccountAddInput, WindowsRegistryKey: WindowsRegistryKeyAddInput, WindowsRegistryValueType: WindowsRegistryValueTypeAddInput, CryptographicKey: CryptographicKeyAddInput, CryptocurrencyWallet: CryptocurrencyWalletAddInput, Hostname: HostnameAddInput, Text: TextAddInput, UserAgent: UserAgentAddInput, BankAccount: BankAccountAddInput, Credential: CredentialAddInput, TrackingNumber: TrackingNumberAddInput, PhoneNumber: PhoneNumberAddInput, PaymentCard: PaymentCardAddInput, MediaContent: MediaContentAddInput, Persona: PersonaAddInput, SSHKey: SSHKeyAddInput): StixCyberObservable
+  stixCyberObservableAdd(type: String!, stix_id: StixId, x_opencti_score: Int, x_opencti_description: String, x_opencti_modified_at: DateTime, createIndicator: Boolean, createdBy: String, objectMarking: [String], objectLabel: [String], objectOrganization: [String], externalReferences: [String], clientMutationId: String, update: Boolean, upsertOperations: [EditInput!], AutonomousSystem: AutonomousSystemAddInput, Directory: DirectoryAddInput, DomainName: DomainNameAddInput, EmailAddr: EmailAddrAddInput, EmailMessage: EmailMessageAddInput, EmailMimePartType: EmailMimePartTypeAddInput, Artifact: ArtifactAddInput, StixFile: StixFileAddInput, X509Certificate: X509CertificateAddInput, IPv4Addr: IPv4AddrAddInput, IPv6Addr: IPv6AddrAddInput, MacAddr: MacAddrAddInput, Mutex: MutexAddInput, NetworkTraffic: NetworkTrafficAddInput, Process: ProcessAddInput, Software: SoftwareAddInput, Url: UrlAddInput, UserAccount: UserAccountAddInput, WindowsRegistryKey: WindowsRegistryKeyAddInput, WindowsRegistryValueType: WindowsRegistryValueTypeAddInput, CryptographicKey: CryptographicKeyAddInput, CryptocurrencyWallet: CryptocurrencyWalletAddInput, Hostname: HostnameAddInput, Text: TextAddInput, UserAgent: UserAgentAddInput, BankAccount: BankAccountAddInput, Credential: CredentialAddInput, TrackingNumber: TrackingNumberAddInput, PhoneNumber: PhoneNumberAddInput, PaymentCard: PaymentCardAddInput, MediaContent: MediaContentAddInput, Persona: PersonaAddInput, SSHKey: SSHKeyAddInput): StixCyberObservable
   stixCyberObservableEdit(id: ID!): StixCyberObservableEditMutations
   stixCyberObservablesExportAsk(input: StixCyberObservablesExportAskInput!): [File!]
   stixCyberObservablesExportPush(entity_id: String, entity_type: String!, file: Upload!, file_markings: [String]!, listFilters: String): Boolean
-  artifactImport(file: Upload!, x_opencti_description: String, createdBy: String, objectMarking: [String], objectLabel: [String]): Artifact
+  artifactImport(file: Upload!, fileMarkings: [String], x_opencti_description: String, createdBy: String, objectMarking: [String], objectLabel: [String]): Artifact
   stixRelationshipEdit(id: ID!): StixRelationshipEditMutations
   stixCoreRelationshipAdd(input: StixCoreRelationshipAddInput, reversedReturn: Boolean): StixCoreRelationship
   stixCoreRelationshipEdit(id: ID!): StixCoreRelationshipEditMutations
@@ -10103,7 +10339,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -10207,6 +10443,10 @@ input ChannelAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type Catalog implements InternalObject & BasicObject {
@@ -10244,7 +10484,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -10342,13 +10582,17 @@ input LanguageAddInput {
   x_opencti_workflow_id: String
   x_opencti_modified_at: DateTime
   update: Boolean
+  file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
 }
 
 type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -10456,13 +10700,17 @@ input EventAddInput {
   x_opencti_modified_at: DateTime
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -10581,14 +10829,18 @@ input GroupingAddInput {
   x_opencti_modified_at: DateTime
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
   authorized_members: [MemberAccessInput!]
+  upsertOperations: [EditInput!]
 }
 
 type Narrative implements BasicObject & StixCoreObject & StixDomainObject & StixObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -10692,8 +10944,12 @@ input NarrativeAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
   x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
+  upsertOperations: [EditInput!]
 }
 
 type ResolvedInstanceFilter {
@@ -10755,7 +11011,7 @@ type Trigger implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   created: DateTime
   modified: DateTime
@@ -10845,7 +11101,7 @@ type Notification implements InternalObject & BasicObject {
   created: DateTime
   name: String!
   notification_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   notification_content: [NotificationContent!]!
   is_read: Boolean!
@@ -10869,7 +11125,7 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -10969,15 +11225,19 @@ input DataComponentAddInput {
   aliases: [String]
   dataSource: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
   x_opencti_workflow_id: String
   x_opencti_modified_at: DateTime
+  upsertOperations: [EditInput!]
 }
 
 type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -11080,8 +11340,12 @@ input DataSourceAddInput {
   collection_layers: [String!]
   dataComponents: [String]
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
   x_opencti_workflow_id: String
   x_opencti_modified_at: DateTime
+  upsertOperations: [EditInput!]
 }
 
 enum VocabularyCategory {
@@ -11152,7 +11416,7 @@ type Vocabulary implements BasicObject & StixObject & StixMetaObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   creators: [Creator!]
@@ -11214,7 +11478,7 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -11320,13 +11584,17 @@ input AdministrativeAreaAddInput {
   x_opencti_modified_at: DateTime
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type Task implements Container & StixDomainObject & StixCoreObject & StixObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -11432,13 +11700,18 @@ input TaskAddInput {
   x_opencti_workflow_id: String
   x_opencti_modified_at: DateTime
   update: Boolean
+  file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type TaskTemplate implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   created: DateTime
   modified: DateTime
@@ -11477,7 +11750,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -11570,7 +11843,7 @@ type CaseTemplate implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   created: DateTime
   modified: DateTime
@@ -11608,7 +11881,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -11734,9 +12007,13 @@ input CaseIncidentAddInput {
   x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
   clientMutationId: String
   update: Boolean
   authorized_members: [MemberAccessInput!]
+  upsertOperations: [EditInput!]
 }
 
 type RfiRequestAccessConfiguration {
@@ -11748,7 +12025,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -11872,19 +12149,23 @@ input CaseRfiAddInput {
   x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
   clientMutationId: String
   update: Boolean
   information_types: [String!]
   caseTemplates: [String!]
   authorized_members: [MemberAccessInput!]
   x_opencti_request_access: String
+  upsertOperations: [EditInput!]
 }
 
 type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container & Case {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -12004,6 +12285,9 @@ input CaseRftAddInput {
   created: DateTime
   modified: DateTime
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
   clientMutationId: String
   x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
@@ -12011,13 +12295,14 @@ input CaseRftAddInput {
   takedown_types: [String!]
   caseTemplates: [String!]
   authorized_members: [MemberAccessInput!]
+  upsertOperations: [EditInput!]
 }
 
 type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container & Case {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -12132,9 +12417,13 @@ input FeedbackAddInput {
   x_opencti_workflow_id: String
   x_opencti_modified_at: DateTime
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
   clientMutationId: String
   update: Boolean
   rating: Int
+  upsertOperations: [EditInput!]
 }
 
 type DefaultValue {
@@ -12292,7 +12581,7 @@ type MalwareAnalysis implements BasicObject & StixCoreObject & StixDomainObject 
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -12419,6 +12708,10 @@ input MalwareAnalysisAddInput {
   x_opencti_modified_at: DateTime
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type ManagerConfiguration implements InternalObject & BasicObject {
@@ -12459,7 +12752,7 @@ type Notifier implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   created: DateTime
   modified: DateTime
@@ -12511,7 +12804,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -12658,6 +12951,10 @@ input ThreatActorIndividualAddInput {
   x_opencti_modified_at: DateTime
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type PlayBookExecutionStep {
@@ -12954,7 +13251,7 @@ type IngestionCsv implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
   standard_id: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   created_at: DateTime
   updated_at: DateTime
@@ -13060,7 +13357,7 @@ type IngestionJson implements InternalObject & BasicObject {
   entity_type: String!
   connector_id: String!
   standard_id: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   created_at: DateTime
   updated_at: DateTime
@@ -13216,7 +13513,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -13326,14 +13623,18 @@ input IndicatorAddInput {
   x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
   basedOn: [String!]
+  upsertOperations: [EditInput!]
 }
 
 type DecayRule implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   created_at: DateTime!
   updated_at: DateTime!
@@ -13389,7 +13690,7 @@ type DecayExclusionRule implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   created_at: DateTime!
   name: String!
@@ -13426,7 +13727,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -13551,6 +13852,10 @@ input OrganizationAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type MeOrganization {
@@ -14053,7 +14358,7 @@ type SupportPackage implements InternalObject & BasicObject {
   name: String!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   created_at: DateTime!
   package_status: PackageStatus!
@@ -14102,7 +14407,7 @@ type ExclusionList implements InternalObject & BasicObject {
   description: String
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   created_at: DateTime!
   enabled: Boolean!
@@ -14209,7 +14514,7 @@ type FintelTemplate implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   name: String!
   settings_types: [String!]!
@@ -14257,7 +14562,7 @@ type DisseminationList implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   created_at: DateTime!
   updated_at: DateTime!
@@ -14302,7 +14607,7 @@ type SavedFilter implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   name: String!
   filters: String!
@@ -14430,7 +14735,7 @@ type PirRelationship implements BasicRelationship {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   fromRole: String
   toRole: String
@@ -14537,7 +14842,7 @@ type FintelDesign implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   name: String!
   description: String
@@ -14577,7 +14882,7 @@ type SecurityPlatform implements BasicObject & StixObject & StixCoreObject & Sti
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -14676,6 +14981,11 @@ input SecurityPlatformAddInput {
   x_opencti_modified_at: DateTime
   externalReferences: [String]
   update: Boolean
+  file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type CoverageResult {
@@ -14687,7 +14997,7 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -14800,6 +15110,10 @@ input SecurityCoverageAddInput {
   x_opencti_modified_at: DateTime
   external_uri: String
   externalReferences: [String]
+  file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
   update: Boolean
   auto_enrichment_disable: Boolean!
   periodicity: String
@@ -14840,7 +15154,7 @@ type EmailTemplate implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   name: String!
   description: String

@@ -19,3 +19,4 @@ node_modules/
 .venv
 venv
 /licenses/
+opencti-platform/opencti-front/.yarnrc.yml
