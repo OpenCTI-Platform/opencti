@@ -160,7 +160,7 @@ const SAMLConfig = ({ updateField }: Props) => {
         {({ push, remove, form }) => (
           <>
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              <Typography variant="h2">Add more fields</Typography>
+              <Typography variant="h2">{t_i18n('Add more fields')}</Typography>
               <IconButton
                 color="secondary"
                 aria-label="Add"
