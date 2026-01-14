@@ -10,10 +10,7 @@ import { UserContext } from '../utils/hooks/useAuth';
 
 const SubscriptionAvatarsStyles = () => ({
   avatars: {
-    float: 'right',
     display: 'flex',
-    marginLeft: 'auto',
-    marginRight: ' 20px',
   },
   avatarsGraph: {
     float: 'right',
@@ -23,7 +20,6 @@ const SubscriptionAvatarsStyles = () => ({
   avatar: {
     width: 28,
     height: 28,
-    marginLeft: 10,
     textTransform: 'uppercase',
   },
 });

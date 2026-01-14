@@ -1,32 +1,16 @@
-import React from 'react';
-import { createFragmentContainer, graphql } from 'react-relay';
-import Typography from '@mui/material/Typography';
-import IconButton from '@common/button/IconButton';
-import { Close } from '@mui/icons-material';
+import DrawerHeader from '@common/drawer/DrawerHeader';
 import makeStyles from '@mui/styles/makeStyles';
+import { createFragmentContainer, graphql } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
-import StixCyberObservableEditionOverview from './StixCyberObservableEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
+import StixCyberObservableEditionOverview from './StixCyberObservableEditionOverview';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
-  header: {
-    backgroundColor: theme.palette.background.default,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
+const useStyles = makeStyles(() => ({
   container: {
     padding: '10px 20px 20px 20px',
-  },
-  title: {
-    float: 'left',
   },
 }));
 
@@ -38,21 +22,12 @@ const StixCyberObservableEditionContainer = (props) => {
 
   return (
     <div>
-      <div className={classes.header}>
-        <IconButton
-          aria-label="Close"
-          className={classes.closeButton}
-          onClick={handleClose}
-          color="primary"
-        >
-          <Close fontSize="small" color="primary" />
-        </IconButton>
-        <Typography variant="subtitle2" classes={{ root: classes.title }}>
-          {t_i18n('Update an observable')}
-        </Typography>
-        <SubscriptionAvatars context={editContext} />
-        <div className="clearfix" />
-      </div>
+      <DrawerHeader
+        title={t_i18n('Update an observable')}
+        onClose={handleClose}
+        endContent={<SubscriptionAvatars context={editContext} />}
+      />
+
       <div className={classes.container}>
         <StixCyberObservableEditionOverview
           stixCyberObservable={stixCyberObservable}

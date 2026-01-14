@@ -83,20 +83,8 @@ const StixCoreRelationshipCreationFromEntityHeader: FunctionComponent<
         title={t_i18n('Create a relationship')}
         open={open}
         onClose={handleClose}
-        header={(
-          // Create entity and/or observable buttons; only appear in first step
-          <StixCoreRelationshipCreationHeaderButtons
-            show={step < 1}
-            showSDOs={targetStixDomainObjectTypes.length > 0}
-            showSCOs={targetStixCyberObservableTypes.length > 0}
-            actualTypeFilterValues={[
-              ...targetStixDomainObjectTypes,
-              ...targetStixCyberObservableTypes,
-            ]}
-            searchPaginationOptions={searchPaginationOptions}
-          />
-        )}
       >
+
         {step === 0
           ? (
               <StixCoreRelationshipCreationSelectEntityStage
@@ -108,6 +96,18 @@ const StixCoreRelationshipCreationFromEntityHeader: FunctionComponent<
                 virtualEntityTypes={stixCoreObjectTypes}
                 handleClose={handleClose}
                 setSearchPaginationOptions={setSearchPaginationOptions}
+                additionalHeaderButtons={[(
+                  <StixCoreRelationshipCreationHeaderButtons
+                    key="headerButton"
+                    showSDOs={targetStixDomainObjectTypes.length > 0}
+                    showSCOs={targetStixCyberObservableTypes.length > 0}
+                    actualTypeFilterValues={[
+                      ...targetStixDomainObjectTypes,
+                      ...targetStixCyberObservableTypes,
+                    ]}
+                    searchPaginationOptions={searchPaginationOptions}
+                  />
+                )]}
               />
             ) : (
               <StixCoreRelationshipCreationFormStage
@@ -118,6 +118,7 @@ const StixCoreRelationshipCreationFromEntityHeader: FunctionComponent<
               />
             )
         }
+
       </Drawer>
     </>
   );

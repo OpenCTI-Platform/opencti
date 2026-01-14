@@ -270,6 +270,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
               )}
               <div className={classes.buttons}>
                 <Button
+                  variant="secondary"
                   onClick={handleReset}
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}
@@ -277,7 +278,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                   {t_i18n('Cancel')}
                 </Button>
                 <Button
-                  color="secondary"
+                  variant="secondary"
                   onClick={() => handleVerify(formValues)}
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}

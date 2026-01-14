@@ -1,56 +1,41 @@
-import React, { FunctionComponent } from 'react';
-import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
-import { Field, Form, Formik } from 'formik';
-import Typography from '@mui/material/Typography';
-import IconButton from '@common/button/IconButton';
-import { Close } from '@mui/icons-material';
-import * as Yup from 'yup';
 import makeStyles from '@mui/styles/makeStyles';
+import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
-import { buildDate, formatDate } from '../../../../utils/Time';
-import { useFormatter } from '../../../../components/i18n';
-import TextField from '../../../../components/TextField';
-import { SubscriptionAvatars, SubscriptionFocus } from '../../../../components/Subscription';
-import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import CreatedByField from '../../common/form/CreatedByField';
-import ConfidenceField from '../../common/form/ConfidenceField';
-import SwitchField from '../../../../components/fields/SwitchField';
-import MarkdownField from '../../../../components/fields/MarkdownField';
-import StatusField from '../../common/form/StatusField';
-import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
+import { FunctionComponent } from 'react';
+import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
+import * as Yup from 'yup';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import DrawerHeader from '../../../../components/common/drawer/DrawerHeader';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
+import ErrorNotFound from '../../../../components/ErrorNotFound';
+import MarkdownField from '../../../../components/fields/MarkdownField';
+import SwitchField from '../../../../components/fields/SwitchField';
+import { useFormatter } from '../../../../components/i18n';
+import { SubscriptionAvatars, SubscriptionFocus } from '../../../../components/Subscription';
+import TextField from '../../../../components/TextField';
+import type { Theme } from '../../../../components/Theme';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useIsEnforceReference, useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaEditionValidation, useIsEnforceReference, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { adaptFieldValue } from '../../../../utils/String';
-import ErrorNotFound from '../../../../components/ErrorNotFound';
+import { buildDate, formatDate } from '../../../../utils/Time';
+import CommitMessage from '../../common/form/CommitMessage';
+import ConfidenceField from '../../common/form/ConfidenceField';
+import CreatedByField from '../../common/form/CreatedByField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
+import StatusField from '../../common/form/StatusField';
 import {
   StixSightingRelationshipEditionOverview_stixSightingRelationship$data,
   StixSightingRelationshipEditionOverview_stixSightingRelationship$key,
 } from './__generated__/StixSightingRelationshipEditionOverview_stixSightingRelationship.graphql';
-import CommitMessage from '../../common/form/CommitMessage';
-import type { Theme } from '../../../../components/Theme';
 import { StixSightingRelationshipEditionOverviewQuery } from './__generated__/StixSightingRelationshipEditionOverviewQuery.graphql';
-import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
+const useStyles = makeStyles<Theme>(() => ({
   container: {
     padding: '10px 20px 20px 20px',
-  },
-  title: {
-    float: 'left',
   },
 }));
 
@@ -273,21 +258,12 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
 
   return (
     <>
-      <div className={classes.header}>
-        <IconButton
-          aria-label="Close"
-          className={classes.closeButton}
-          onClick={handleClose}
-          color="primary"
-        >
-          <Close fontSize="small" color="primary" />
-        </IconButton>
-        <Typography variant="h6" classes={{ root: classes.title }}>
-          {t_i18n('Update a sighting')}
-        </Typography>
-        <SubscriptionAvatars context={editContext} />
-        <div className="clearfix" />
-      </div>
+      <DrawerHeader
+        title={t_i18n('Update a sighting')}
+        endContent={<SubscriptionAvatars context={editContext} />}
+        onClose={handleClose}
+      />
+
       <div className={classes.container}>
         <Formik
           enableReinitialize={true}

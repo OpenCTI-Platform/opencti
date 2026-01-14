@@ -1,16 +1,16 @@
-import React, { CSSProperties, useEffect, useState, forwardRef } from 'react';
+import DrawerHeader from '@common/drawer/DrawerHeader';
+import { Add, Edit } from '@mui/icons-material';
 import DrawerMUI from '@mui/material/Drawer';
-import makeStyles from '@mui/styles/makeStyles';
-import IconButton from '@common/button/IconButton';
-import { Add, Close, Edit } from '@mui/icons-material';
-import Typography from '@mui/material/Typography';
 import Fab from '@mui/material/Fab';
+import { createStyles, useTheme } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles';
 import classNames from 'classnames';
-import { createStyles } from '@mui/styles';
-import { GenericContext } from '../model/GenericContextModel';
+import React, { CSSProperties, forwardRef, useEffect, useState } from 'react';
+import { SubscriptionAvatars } from '../../../../components/Subscription';
 import type { Theme } from '../../../../components/Theme';
 import useAuth from '../../../../utils/hooks/useAuth';
-import { SubscriptionAvatars } from '../../../../components/Subscription';
+import { GenericContext } from '../model/GenericContextModel';
+import { SxProps } from '@mui/material';
 
 export enum DrawerVariant {
   create = 'create',
@@ -20,26 +20,11 @@ export enum DrawerVariant {
   updateWithPanel = 'updateWithPanel',
 }
 
+export type DrawerSize = 'small' | 'medium' | 'large' | 'extraLarge';
+
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => createStyles({
-  drawerPaper: {
-    minHeight: '100vh',
-    [theme.breakpoints.up('xl')]: {
-      width: '50%',
-    },
-    [theme.breakpoints.down('xl')]: {
-      width: '75%',
-    },
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    paddingTop: ({ bannerHeightNumber }) => `${bannerHeightNumber}px`,
-    paddingBottom: ({ bannerHeightNumber }) => `${bannerHeightNumber}px`,
-  },
   header: {
     backgroundColor: theme.palette.mode === 'light' ? theme.palette.background.default : theme.palette.background.nav,
     padding: '10px 0',
@@ -47,7 +32,7 @@ const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => c
     alignItems: 'center',
   },
   container: {
-    padding: theme.spacing(2),
+    padding: theme.spacing(3),
     height: '100%',
     overflowY: 'auto',
   },
@@ -86,10 +71,21 @@ interface DrawerProps {
   controlledDial?: DrawerControlledDialType;
   containerStyle?: CSSProperties;
   disabled?: boolean;
+  size?: DrawerSize;
+  sx?: SxProps;
 }
 
+const getDrawerWidth = (size: DrawerSize) => {
+  switch (size) {
+    case 'small': return '420px';
+    case 'medium': return '640px';
+    case 'large': return '960px';
+    case 'extraLarge': return '90vw';
+  }
+};
+
 // eslint-disable-next-line react/display-name
-const Drawer = forwardRef(({
+const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
   title,
   children,
   open: defaultOpen = false,
@@ -100,10 +96,13 @@ const Drawer = forwardRef(({
   controlledDial,
   containerStyle,
   disabled = false,
+  size = 'large',
 }: DrawerProps, ref) => {
   const {
     bannerSettings: { bannerHeightNumber },
   } = useAuth();
+
+  const theme = useTheme<Theme>();
   const classes = useStyles({ bannerHeightNumber });
   const [open, setOpen] = useState(defaultOpen);
   useEffect(() => {
@@ -163,25 +162,48 @@ const Drawer = forwardRef(({
         open={open}
         anchor="right"
         elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
         onClick={(e) => e.stopPropagation()}
-        PaperProps={{ ref }}
+        sx={{
+          zIndex: 1202,
+        }}
+        slotProps={{
+          paper: {
+            ref,
+            sx: {
+              minHeight: '100vh',
+              width: getDrawerWidth(size),
+              position: 'fixed',
+              overflow: 'auto',
+              transition: theme.transitions.create('width', {
+                easing: theme.transitions.easing.sharp,
+                duration: theme.transitions.duration.enteringScreen,
+              }),
+              paddingTop: `${bannerHeightNumber}px`,
+              paddingBottom: `${bannerHeightNumber}px`,
+            },
+          },
+        }}
       >
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            onClick={handleClose}
-            color="primary"
-          >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="subtitle2" style={{ textWrap: 'nowrap' }}>{title}</Typography>
-          {context && <SubscriptionAvatars context={context} />}
-          {header}
+        <DrawerHeader
+          title={title}
+          endContent={(
+            <>
+              {context && <SubscriptionAvatars context={context} />}
+              {header}
+            </>
+          )}
+          onClose={handleClose}
+        />
+        <div
+          className={classes.container}
+          style={{
+            ...containerStyle,
+            backgroundColor: theme.palette.background.drawer,
+          }}
+        >
+          {component}
         </div>
-        <div className={classes.container} style={containerStyle}>{component}</div>
       </DrawerMUI>
     </>
   );

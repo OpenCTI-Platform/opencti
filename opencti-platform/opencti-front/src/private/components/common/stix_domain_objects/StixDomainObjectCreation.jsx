@@ -776,7 +776,7 @@ const StixDomainPanel = ({
       onClose={onClose}
       fullWidth={true}
     >
-      <DialogTitle style={{ display: 'flex' }}>
+      <DialogTitle style={{ display: 'flex', justifyContent: 'space-between' }}>
         {t_i18n('Create an entity')}
         {!isFromBulkRelation && (
           <BulkTextModalButton

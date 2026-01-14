@@ -65,6 +65,7 @@ declare module '@mui/material/styles' {
       secondary: string;
       nav: string;
       popoverItem: string;
+      drawer: string;
     };
     severity?: {
       critical: string;
@@ -99,6 +100,7 @@ declare module '@mui/material/styles' {
       secondary?: string;
       nav?: string;
       popoverItem?: string;
+      drawer?: string;
     };
     severity?: {
       critical?: string;
@@ -173,6 +175,7 @@ interface ExtendedBackground extends TypeBackground {
     start: string;
     end: string;
   };
+  drawer: string;
 }
 
 interface ExtendedText extends TypeText {

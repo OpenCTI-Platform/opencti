@@ -30,6 +30,7 @@ import StixSightingRelationshipCreationForm from './StixSightingRelationshipCrea
 import { useFormatter } from '../../../../components/i18n';
 import { insertNode } from '../../../../utils/store';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import DrawerHeader from '@common/drawer/DrawerHeader';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -357,27 +358,21 @@ const StixSightingRelationshipCreationFromEntity = ({
   const renderSelectEntity = () => {
     return (
       <div style={{ height: '100%' }}>
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleClose}
-          >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6" style={{ float: 'left' }}>
-            {t_i18n('Create a sighting')}
-          </Typography>
-          <StixDomainObjectCreation
-            display={open}
-            inputValue={search}
-            paginationOptions={stixDomainObjectsPaginationOptions}
-            stixDomainObjectTypes={stixCoreObjectTypes}
-            controlledDialStyles={{ float: 'right' }}
-            controlledDialSize="small"
-          />
-          <div className="clearfix" />
-        </div>
+        <DrawerHeader
+          title={t_i18n('Create a sighting')}
+          onClose={handleClose}
+          endContent={(
+            <StixDomainObjectCreation
+              display={open}
+              inputValue={search}
+              paginationOptions={stixDomainObjectsPaginationOptions}
+              stixDomainObjectTypes={stixCoreObjectTypes}
+              controlledDialStyles={{ float: 'right' }}
+              controlledDialSize="small"
+            />
+          )}
+        />
+
         <div className={classes.container}>
           {search.length === 0 && (
             <Alert

@@ -1,66 +1,54 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Field, Form, Formik } from 'formik';
-import Drawer from '@mui/material/Drawer';
-import Typography from '@mui/material/Typography';
 import Button from '@common/button/Button';
-import IconButton from '@common/button/IconButton';
-import Fab from '@mui/material/Fab';
+import { Add } from '@mui/icons-material';
 import Alert from '@mui/lab/Alert';
-import { Add, Close } from '@mui/icons-material';
-import { dissoc, filter, fromPairs, includes, map, pipe, pluck, propOr, toPairs } from 'ramda';
-import * as Yup from 'yup';
-import { graphql } from 'react-relay';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
+import { ListItemButton } from '@mui/material';
 import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import Drawer from '@components/common/drawer/Drawer';
+import Fab from '@mui/material/Fab';
 import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
-import makeStyles from '@mui/styles/makeStyles';
-import { ListItemButton } from '@mui/material';
-import PropTypes from 'prop-types';
 import { useTheme } from '@mui/styles';
-import { handleErrorInForm, QueryRenderer } from '../../../../relay/environment';
+import makeStyles from '@mui/styles/makeStyles';
+import { Field, Form, Formik } from 'formik';
+import PropTypes from 'prop-types';
+import { dissoc, filter, fromPairs, includes, map, pipe, pluck, propOr, toPairs } from 'ramda';
+import React, { useEffect, useMemo, useState } from 'react';
+import { graphql } from 'react-relay';
+import * as Yup from 'yup';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
+import ProgressBar from '../../../../components/ProgressBar';
 import TextField from '../../../../components/TextField';
+import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
+import BulkTextModal from '../../../../components/fields/BulkTextField/BulkTextModal';
+import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
+import MarkdownField from '../../../../components/fields/MarkdownField';
 import SwitchField from '../../../../components/fields/SwitchField';
+import { useFormatter } from '../../../../components/i18n';
+import { handleErrorInForm, QueryRenderer } from '../../../../relay/environment';
+import { splitMultilines } from '../../../../utils/String';
+import { parse } from '../../../../utils/Time';
+import { convertMarking } from '../../../../utils/edition';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useAttributes from '../../../../utils/hooks/useAttributes';
+import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
+import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory';
+import { insertNode } from '../../../../utils/store';
+import CustomFileUploader from '../../common/files/CustomFileUploader';
+import ArtifactField from '../../common/form/ArtifactField';
 import CreatedByField from '../../common/form/CreatedByField';
+import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import { stixCyberObservablesLinesAttributesQuery, stixCyberObservablesLinesSubTypesQuery } from './StixCyberObservablesLines';
-import { parse } from '../../../../utils/Time';
-import MarkdownField from '../../../../components/fields/MarkdownField';
-import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import DateTimePickerField from '../../../../components/DateTimePickerField';
-import ArtifactField from '../../common/form/ArtifactField';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { insertNode } from '../../../../utils/store';
-import { useFormatter } from '../../../../components/i18n';
-import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory';
-import { convertMarking } from '../../../../utils/edition';
-import CustomFileUploader from '../../common/files/CustomFileUploader';
-import useAttributes from '../../../../utils/hooks/useAttributes';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
-import BulkTextModal from '../../../../components/fields/BulkTextField/BulkTextModal';
-import { splitMultilines } from '../../../../utils/String';
-import ProgressBar from '../../../../components/ProgressBar';
-import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
-import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
+import { stixCyberObservablesLinesAttributesQuery, stixCyberObservablesLinesSubTypesQuery } from './StixCyberObservablesLines';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles((theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
   createButton: {
     position: 'fixed',
     bottom: 30,
@@ -81,18 +69,7 @@ const useStyles = makeStyles((theme) => ({
     textAlign: 'right',
   },
   button: {
-    marginLeft: theme.spacing(2),
-  },
-  header: {
-    backgroundColor: theme.palette.mode === 'light' ? theme.palette.background.default : theme.palette.background.nav,
-    padding: '10px 0',
-    paddingLeft: '5px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '5px',
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
+    marginLeft: theme.spacing(1),
   },
 }));
 
@@ -486,7 +463,7 @@ const StixCyberObservableCreation = ({
               .sort((a, b) => a.tlabel.toLowerCase().localeCompare(b.tlabel.toLowerCase()));
 
             return (
-              <List>
+              <List disablePadding>
                 {translatedOrderedList.map((subType) => (
                   <ListItemButton
                     key={subType.label}
@@ -966,7 +943,7 @@ const StixCyberObservableCreation = ({
                       <div className={classes.buttons}>
                         {!isFromBulkRelation && (
                           <Button
-                            variant={contextual ? 'tertiary' : 'default'}
+                            variant={contextual ? 'secondary' : 'default'}
                             onClick={() => selectType(null)}
                             disabled={isSubmitting}
                             classes={{ root: classes.button }}
@@ -975,7 +952,7 @@ const StixCyberObservableCreation = ({
                           </Button>
                         )}
                         <Button
-                          variant={contextual ? 'tertiary' : 'default'}
+                          variant={contextual ? 'secondary' : 'default'}
                           onClick={handleReset}
                           disabled={isSubmitting}
                           classes={{ root: classes.button }}
@@ -983,8 +960,7 @@ const StixCyberObservableCreation = ({
                           {t_i18n('Cancel')}
                         </Button>
                         <Button
-                          variant={contextual ? 'tertiary' : 'default'}
-                          color="secondary"
+                          variant={contextual ? 'primary' : 'default'}
                           onClick={submitForm}
                           disabled={isSubmitting}
                           classes={{ root: classes.button }}
@@ -1015,22 +991,13 @@ const StixCyberObservableCreation = ({
         />
         <Drawer
           open={status.open}
-          anchor="right"
-          sx={{ zIndex: 1202 }}
-          elevation={1}
-          classes={{ paper: classes.drawerPaper }}
           onClose={localHandleClose}
-        >
-          <div className={classes.header}>
-            <IconButton
-              aria-label="Close"
-              className={classes.closeButton}
-              onClick={localHandleClose}
-            >
-              <Close fontSize="small" color="primary" />
-            </IconButton>
-            <Typography variant="subtitle2">{t_i18n('Create an observable')}</Typography>
-            {!isFromBulkRelation && status.type
+          title={t_i18n('Create an observable')}
+          sx={{
+            width: '50%',
+          }}
+          header={
+            !isFromBulkRelation && status.type
               ? (
                   <BulkTextModalButton
                     onClick={() => setBulkOpen(true)}
@@ -1039,11 +1006,9 @@ const StixCyberObservableCreation = ({
                   />
                 )
               : <></>
-            }
-          </div>
-          <div className={classes.container}>
-            {!status.type ? renderList() : renderForm()}
-          </div>
+          }
+        >
+          {!status.type ? renderList() : renderForm()}
         </Drawer>
       </>
     );
@@ -1083,7 +1048,7 @@ const StixCyberObservableCreation = ({
           onClose={speeddial ? handleClose : localHandleClose}
           fullWidth={true}
         >
-          <DialogTitle style={{ display: 'flex' }}>
+          <DialogTitle style={{ display: 'flex', justifyContent: 'space-between' }}>
             {t_i18n('Create an observable')}
             {!isFromBulkRelation && status.type
               ? (

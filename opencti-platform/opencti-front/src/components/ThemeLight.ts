@@ -82,6 +82,7 @@ const ThemeLight = (
         start: '#ECECF2',
         end: '#F7F7F7',
       },
+      drawer: '#f4f1f1',
     },
     text: {
       secondary: '#494A50',
@@ -170,10 +171,10 @@ const ThemeLight = (
       },
     },
     h5: {
-      fontWeight: 400,
-      fontSize: 13,
-      marginTop: -4,
+      fontWeight: 700,
+      fontSize: 16,
       color: text_color,
+      fontFamily: '"Geologica", sans-serif',
       textTransform: 'lowercase',
       '&::first-letter': {
         textTransform: 'uppercase',

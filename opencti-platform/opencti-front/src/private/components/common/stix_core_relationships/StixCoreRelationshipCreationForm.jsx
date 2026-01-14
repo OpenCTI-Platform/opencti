@@ -355,6 +355,7 @@ const StixCoreRelationshipCreationForm = ({
             {typeof handleResetSelection === 'function' && (
               <div className={classes.buttonBack}>
                 <Button
+                  variant="secondary"
                   onClick={handleResetSelection}
                   disabled={isSubmitting}
                 >
@@ -364,6 +365,7 @@ const StixCoreRelationshipCreationForm = ({
             )}
             <div className={classes.buttons}>
               <Button
+                variant="secondary"
                 onClick={handleClose}
                 disabled={isSubmitting}
                 classes={{ root: classes.button }}
@@ -371,7 +373,6 @@ const StixCoreRelationshipCreationForm = ({
                 {t_i18n('Cancel')}
               </Button>
               <Button
-                // color="secondary"
                 onClick={submitForm}
                 disabled={isSubmitting}
                 classes={{ root: classes.button }}

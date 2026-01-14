@@ -1,25 +1,23 @@
-import React, { useState } from 'react';
-import { Field, Form, Formik } from 'formik';
-import Drawer from '@mui/material/Drawer';
-import Typography from '@mui/material/Typography';
 import Button from '@common/button/Button';
-import IconButton from '@common/button/IconButton';
-import { Close } from '@mui/icons-material';
-import * as Yup from 'yup';
-import { graphql } from 'react-relay';
-import * as R from 'ramda';
+import DrawerHeader from '@common/drawer/DrawerHeader';
+import Drawer from '@mui/material/Drawer';
 import makeStyles from '@mui/styles/makeStyles';
+import { Field, Form, Formik } from 'formik';
+import * as R from 'ramda';
+import { useState } from 'react';
+import { graphql } from 'react-relay';
+import * as Yup from 'yup';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import MarkdownField from '../../../../components/fields/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { insertNode } from '../../../../utils/store';
+import CustomFileUploader from '../../common/files/CustomFileUploader';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import MarkdownField from '../../../../components/fields/MarkdownField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { insertNode } from '../../../../utils/store';
-import CustomFileUploader from '../../common/files/CustomFileUploader';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -40,16 +38,6 @@ const useStyles = makeStyles((theme) => ({
   },
   button: {
     marginLeft: theme.spacing(2),
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
   },
   container: {
     padding: '10px 20px 20px 20px',
@@ -151,17 +139,10 @@ const ArtifactCreation = ({
         classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
       >
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleClose}
-            color="primary"
-          >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6">{t_i18n('Create an artifact')}</Typography>
-        </div>
+        <DrawerHeader
+          title={t_i18n('Create an artifact')}
+          onClose={handleClose}
+        />
         <div className={classes.container}>
           <Formik
             initialValues={{

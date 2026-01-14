@@ -1,25 +1,25 @@
-import { IconButton, Tooltip, Typography } from '@mui/material';
-import React, { FunctionComponent, Suspense, useState } from 'react';
-import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Button from '@common/button/Button';
 import { Add } from '@mui/icons-material';
+import { IconButton, Tooltip } from '@mui/material';
 import { useTheme } from '@mui/styles';
+import { FunctionComponent, Suspense, useState } from 'react';
+import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
-import Drawer from '../drawer/Drawer';
-import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
+import { DataColumns } from '../../../../components/list_lines';
 import ListLines from '../../../../components/list_lines/ListLines';
-import { PaginationLocalStorage, usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import type { Theme } from '../../../../components/Theme';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import useAuth from '../../../../utils/hooks/useAuth';
-import { removeEmptyFields } from '../../../../utils/utils';
-import { ContainerAddStixCoreObjectsLinesQuery, ContainerAddStixCoreObjectsLinesQuery$variables } from './__generated__/ContainerAddStixCoreObjectsLinesQuery.graphql';
-import ContainerAddStixCoreObjectsLines, { containerAddStixCoreObjectsLinesQuery } from './ContainerAddStixCoreObjectsLines';
-import { ContainerStixDomainObjectsLinesQuery$variables } from './__generated__/ContainerStixDomainObjectsLinesQuery.graphql';
-import { ContainerStixCyberObservablesLinesQuery$variables } from './__generated__/ContainerStixCyberObservablesLinesQuery.graphql';
-import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
-import type { Theme } from '../../../../components/Theme';
+import { PaginationLocalStorage, usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { DataColumns } from '../../../../components/list_lines';
+import { removeEmptyFields } from '../../../../utils/utils';
+import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
+import Drawer from '../drawer/Drawer';
+import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
+import { ContainerAddStixCoreObjectsLinesQuery, ContainerAddStixCoreObjectsLinesQuery$variables } from './__generated__/ContainerAddStixCoreObjectsLinesQuery.graphql';
+import { ContainerStixCyberObservablesLinesQuery$variables } from './__generated__/ContainerStixCyberObservablesLinesQuery.graphql';
+import { ContainerStixDomainObjectsLinesQuery$variables } from './__generated__/ContainerStixDomainObjectsLinesQuery.graphql';
+import ContainerAddStixCoreObjectsLines, { containerAddStixCoreObjectsLinesQuery } from './ContainerAddStixCoreObjectsLines';
 
 interface ControlledDialProps {
   onOpen: () => void;
@@ -72,7 +72,7 @@ interface ContainerAddStixCreObjectsInLineLoaderProps {
   handleSelect: (o: { id: string }) => void;
   handleDeselect: (o: { id: string }) => void;
   helpers: PaginationLocalStorage['helpers'];
-  containerRef: HTMLInputElement;
+  containerRef: HTMLDivElement;
   enableReferences?: boolean;
 }
 
@@ -167,7 +167,7 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
     filters,
     numberOfElements,
   } = viewStorage;
-  const [containerRef, setRef] = useState<HTMLInputElement>();
+  const [containerRef, setRef] = useState<HTMLDivElement | null>(null);
   const [selectedElements, setSelectedElements] = useState<scoEdge[]>(containerStixCoreObjects as scoEdge[]);
   const handleSelect = (node: { id: string }) => {
     setSelectedElements([
@@ -222,42 +222,25 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
     const [openCreateObservable, setOpenCreateObservable] = useState<boolean>(false);
     return (
       <>
-        <div
-          style={{
-            width: '100%',
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <Typography variant="subtitle2">
-            {showSDOCreation ? t_i18n('Add entities') : t_i18n('Add observables')}
-          </Typography>
-          <div style={{ marginRight: '10px' }}>
-            {showSDOCreation && (
-              <Button
-                disableElevation
-                size="small"
-                aria-label={t_i18n('Create an entity')}
-                onClick={() => setOpenCreateEntity(true)}
-              >
-                {t_i18n('Create an entity')}
-              </Button>
-            )}
-            {showSCOCreation && (
-              <Button
-                style={{ fontSize: 'small', marginLeft: '3px' }}
-                disableElevation
-                size="small"
-                aria-label={t_i18n('Create an observable')}
-                onClick={() => setOpenCreateObservable(true)}
-              >
-                {t_i18n('Create an observable')}
-              </Button>
-            )}
-          </div>
-        </div>
+        {showSDOCreation && (
+          <Button
+            disableElevation
+            aria-label={t_i18n('Create an entity')}
+            onClick={() => setOpenCreateEntity(true)}
+          >
+            {t_i18n('Create an entity')}
+          </Button>
+        )}
+        {showSCOCreation && (
+          <Button
+            disableElevation
+            aria-label={t_i18n('Create an observable')}
+            onClick={() => setOpenCreateObservable(true)}
+          >
+            {t_i18n('Create an observable')}
+          </Button>
+        )}
+
         <StixDomainObjectCreation
           display={true}
           inputValue=""
@@ -296,9 +279,9 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
 
   return (
     <Drawer
-      title="" // Defined in custom header prop
       controlledDial={knowledgeGraph ? GraphControlledDial : Dial}
       header={<Header />}
+      title={showSDOCreation ? t_i18n('Add entities') : t_i18n('Add observables')}
       ref={setRef}
     >
       <ListLines
