@@ -6,6 +6,7 @@ import { useFormatter } from '../../../../../components/i18n';
 import { StatusScopeEnum } from '../../../../../utils/statusConstants';
 import ItemStatusTemplate from '../../../../../components/ItemStatusTemplate';
 import { GlobalWorkflowSettings_global$key } from './__generated__/GlobalWorkflowSettings_global.graphql';
+import WorkflowStatusTemplate from '../../../../../components/WorkflowStatusTemplate';
 
 const globalWorkflowSettingsFragment = graphql`
     fragment GlobalWorkflowSettings_global on SubType {
@@ -49,6 +50,10 @@ const GlobalWorkflowSettings = ({ subTypeId, data, workflowEnabled }: GlobalWork
         </Typography>
       </div>
       <ItemStatusTemplate
+        statuses={statusList}
+        disabled={!workflowEnabled}
+      />
+      <WorkflowStatusTemplate
         statuses={statusList}
         disabled={!workflowEnabled}
       />
