@@ -99,7 +99,7 @@ const ThemeLight = (
     },
     text: {
       secondary: '#494A50',
-      light: '#F2F2F3',
+      light: '#494A50',
     },
     leftBar: {
       header: {
