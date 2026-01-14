@@ -70,10 +70,6 @@ const AskArianeButton = () => {
     }
   };
 
-  const chatIconStyle: React.CSSProperties = {
-    color: isCGUStatusPending ? theme.palette.action?.disabled : undefined,
-  };
-
   return (
     <>
       <EETooltip
@@ -84,7 +80,7 @@ const AskArianeButton = () => {
           gradient
           gradientVariant="ai"
           onClick={toggleChatbot}
-          startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" style={chatIconStyle} />}
+          startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" />}
         >
           {t_i18n('Ask Ariane')}
           <EEChip />
