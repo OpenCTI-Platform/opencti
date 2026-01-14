@@ -18,7 +18,6 @@ import ItemCopy from '../../../../components/ItemCopy';
 import type { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
-import IngestionTooltip from '../../../../components/IngestionTooltip';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -42,11 +41,12 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-interface IngestionTaxiiLineProps {
+export interface IngestionTaxiiLineProps {
   node: IngestionTaxiiLine_node$key;
   dataColumns: DataColumns;
   onLabelClick: HandleAddFilter;
   paginationOptions?: IngestionTaxiiLinesPaginationQuery$variables;
+  onOpenHistory: (id: string) => void;
 }
 
 const ingestionTaxiiLineFragment = graphql`
@@ -60,8 +60,8 @@ const ingestionTaxiiLineFragment = graphql`
         added_after_start
         current_state_cursor
         last_execution_date
+        last_execution_status
         confidence_to_score
-        ingestionLogs
     }
 `;
 
@@ -69,6 +69,7 @@ export const IngestionTaxiiLineLineComponent: FunctionComponent<IngestionTaxiiLi
   dataColumns,
   node,
   paginationOptions,
+  onOpenHistory,
 }) => {
   const { t_i18n, nsdt } = useFormatter();
   const classes = useStyles();
@@ -121,9 +122,11 @@ export const IngestionTaxiiLineLineComponent: FunctionComponent<IngestionTaxiiLi
               className={classes.bodyItem}
               style={{ width: dataColumns.last_execution_date.width }}
             >
-              <IngestionTooltip logs={data.ingestionLogs}>
-                {nsdt(data.last_execution_date) || '-'}
-              </IngestionTooltip>
+              <span
+                style={{ cursor: 'pointer', color: data.last_execution_status === 'error' ? 'red' : 'green' }}
+                onClick={() => onOpenHistory(data.id)}
+              >{nsdt(data.last_execution_date) || '-'}
+              </span>
             </div>
             <div
               className={classes.bodyItem}

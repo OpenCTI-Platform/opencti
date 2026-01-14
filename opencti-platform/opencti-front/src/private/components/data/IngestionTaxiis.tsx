@@ -19,6 +19,7 @@ import { isNotEmptyField } from '../../../utils/utils';
 import GradientButton from '../../../components/GradientButton';
 import { PaginationOptions } from '../../../components/list_lines';
 import { IngestionTaxiiLinesPaginationQuery } from '@components/data/ingestionTaxii/__generated__/IngestionTaxiiLinesPaginationQuery.graphql';
+import IngestionHistoryDrawer from './ingestion/IngestionHistoryDrawer';
 
 const LOCAL_STORAGE_KEY = 'ingestionTaxii';
 
@@ -99,6 +100,20 @@ const IngestionTaxii = () => {
     );
   }
 
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+  const [displayHistory, setDisplayHistory] = React.useState<boolean>(false);
+  const [selectedIngestionId, setSelectedIngestionId] = React.useState<string | null>(null);
+
+  const handleOpenHistory = (id: string) => {
+    setSelectedIngestionId(id);
+    setDisplayHistory(true);
+  };
+
+  const handleCloseHistory = () => {
+    setDisplayHistory(false);
+    setSelectedIngestionId(null);
+  };
+
   return (
     <div className={classes.container} data-testid="taxii-feeds-page">
       <Breadcrumbs
@@ -151,10 +166,16 @@ const IngestionTaxii = () => {
               refetchPaginationOptions={{ count: 200, ...paginationOptions }}
               dataColumns={dataColumns}
               initialLoading={props === null}
+              onOpenHistory={handleOpenHistory}
             />
           )}
         />
       </ListLines>
+      <IngestionHistoryDrawer
+        open={displayHistory}
+        onClose={handleCloseHistory}
+        ingestionId={selectedIngestionId}
+      />
     </div>
   );
 };

@@ -2531,6 +2531,24 @@ type MarkingDefinitionConnection {
   edges: [MarkingDefinitionEdge!]!
 }
 
+type IngestionEntry {
+  timestamp: DateTime!
+  status: String!
+  messages: [String!]!
+  count: Int
+}
+
+interface Ingestion {
+  id: ID!
+  entity_type: String!
+  name: String!
+  description: String
+  ingestion_running: Boolean
+  last_execution_date: DateTime
+  last_execution_status: String
+  ingestionLogs: [IngestionEntry]
+}
+
 type MarkingDefinitionEdge {
   cursor: String!
   node: MarkingDefinition!
@@ -9354,6 +9372,7 @@ type Query {
   playbooks(first: Int, after: ID, orderBy: PlaybooksOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): PlaybookConnection
   playbookComponents: [PlaybookComponent]!
   playbooksForEntity(id: String!): [Playbook]
+  ingestionHistory(id: String!): [IngestionEntry]
   ingestionRss(id: String!): IngestionRss
   ingestionRsss(first: Int, after: ID, orderBy: IngestionRssOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionRssConnection
   ingestionTaxii(id: String!): IngestionTaxii
@@ -13099,7 +13118,7 @@ input PlaybookAddLinkInput {
   to_node: String!
 }
 
-type IngestionRss implements InternalObject & BasicObject {
+type IngestionRss implements InternalObject & BasicObject & Ingestion {
   id: ID!
   entity_type: String!
   standard_id: String!
@@ -13118,8 +13137,9 @@ type IngestionRss implements InternalObject & BasicObject {
   report_types: [String!]
   current_state_date: DateTime
   last_execution_date: DateTime
+  last_execution_status: String
   ingestion_running: Boolean
-  ingestionLogs: [String!]!
+  ingestionLogs: [IngestionEntry]
 }
 
 enum IngestionRssOrdering {
@@ -13169,7 +13189,7 @@ enum IngestionAuthType {
   certificate
 }
 
-type IngestionTaxii implements InternalObject & BasicObject {
+type IngestionTaxii implements InternalObject & BasicObject & Ingestion {
   id: ID!
   entity_type: String!
   standard_id: String!
@@ -13191,9 +13211,10 @@ type IngestionTaxii implements InternalObject & BasicObject {
   added_after_start: DateTime
   ingestion_running: Boolean
   last_execution_date: DateTime
+  last_execution_status: String
   confidence_to_score: Boolean
   toConfigurationExport: String!
-  ingestionLogs: [String!]!
+  ingestionLogs: [IngestionEntry]
 }
 
 enum IngestionTaxiiOrdering {
@@ -13252,7 +13273,7 @@ input IngestionTaxiiAddAutoUserInput {
   confidence_level: Int!
 }
 
-type IngestionTaxiiCollection implements InternalObject & BasicObject {
+type IngestionTaxiiCollection implements InternalObject & BasicObject & Ingestion {
   id: ID!
   entity_type: String!
   standard_id: String!
@@ -13268,6 +13289,9 @@ type IngestionTaxiiCollection implements InternalObject & BasicObject {
   user_id: String
   user: Creator
   authorized_members: [MemberAccess!]
+  last_execution_date: DateTime
+  last_execution_status: String
+  ingestionLogs: [IngestionEntry]
 }
 
 enum IngestionTaxiiCollectionOrdering {
@@ -13296,7 +13320,7 @@ input IngestionTaxiiCollectionAddInput {
   authorized_members: [MemberAccessInput!]!
 }
 
-type IngestionCsv implements InternalObject & BasicObject {
+type IngestionCsv implements InternalObject & BasicObject & Ingestion {
   id: ID!
   entity_type: String!
   standard_id: String!
@@ -13319,10 +13343,11 @@ type IngestionCsv implements InternalObject & BasicObject {
   current_state_hash: String
   current_state_date: DateTime
   last_execution_date: DateTime
+  last_execution_status: String
   markings: [String!]
   toConfigurationExport: String!
   duplicateCsvMapper: CsvMapper!
-  ingestionLogs: [String!]!
+  ingestionLogs: [IngestionEntry]
 }
 
 enum IngestionCsvOrdering {
@@ -13402,7 +13427,7 @@ type IngestionQueryAttribute {
   exposed: String
 }
 
-type IngestionJson implements InternalObject & BasicObject {
+type IngestionJson implements InternalObject & BasicObject & Ingestion {
   id: ID!
   entity_type: String!
   connector_id: String!
@@ -13428,10 +13453,11 @@ type IngestionJson implements InternalObject & BasicObject {
   authentication_value: String
   user_id: String!
   user: Creator
+  markings: [String!]
   ingestion_running: Boolean
   last_execution_date: DateTime
-  markings: [String!]
-  ingestionLogs: [String!]!
+  last_execution_status: String
+  ingestionLogs: [IngestionEntry]
 }
 
 enum IngestionJsonOrdering {

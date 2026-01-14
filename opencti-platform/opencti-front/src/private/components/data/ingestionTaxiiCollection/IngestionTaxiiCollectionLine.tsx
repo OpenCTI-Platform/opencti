@@ -49,6 +49,7 @@ interface IngestionTaxiiCollectionLineProps {
   dataColumns: DataColumns;
   onLabelClick: HandleAddFilter;
   paginationOptions?: IngestionTaxiiCollectionLinesPaginationQuery$variables;
+  onOpenHistory: (id: string) => void;
 }
 
 const ingestionTaxiiCollectionLineFragment = graphql`
@@ -57,6 +58,8 @@ const ingestionTaxiiCollectionLineFragment = graphql`
         name
         description
         ingestion_running
+        last_execution_status
+        last_execution_date
     }
 `;
 
@@ -64,9 +67,10 @@ export const IngestionTaxiiCollectionLineLineComponent: FunctionComponent<Ingest
   dataColumns,
   node,
   paginationOptions,
+  onOpenHistory,
 }) => {
-  const { t_i18n } = useFormatter();
   const classes = useStyles();
+  const { t_i18n, nsdt } = useFormatter();
   const data = useFragment(ingestionTaxiiCollectionLineFragment, node);
 
   return (
@@ -89,10 +93,7 @@ export const IngestionTaxiiCollectionLineLineComponent: FunctionComponent<Ingest
       <ListItemText
         primary={(
           <div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.name.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
               {data.name}
             </div>
             <div
@@ -100,6 +101,13 @@ export const IngestionTaxiiCollectionLineLineComponent: FunctionComponent<Ingest
               style={{ width: dataColumns.id.width, paddingRight: 10 }}
             >
               <ItemCopy content={`${window.location.origin}${APP_BASE_PATH}/taxii2/root/collections/${data.id}/objects/`} variant="inLine" />
+            </div>
+            <div className={classes.bodyItem} style={{ width: dataColumns.last_execution_date.width }}>
+              <span
+                style={{ cursor: 'pointer', color: data.last_execution_status === 'error' ? 'red' : 'green' }}
+                onClick={() => onOpenHistory(data.id)}
+              >{nsdt(data.last_execution_date) || '-'}
+              </span>
             </div>
             <div
               className={classes.bodyItem}

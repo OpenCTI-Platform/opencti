@@ -18,7 +18,6 @@ import type { Theme } from '../../../../components/Theme';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
-import IngestionTooltip from '../../../../components/IngestionTooltip';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -44,11 +43,12 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-interface IngestionJsonLineProps {
+export interface IngestionJsonLineProps {
   node: IngestionJsonLine_node$key;
   dataColumns: DataColumns;
   onLabelClick: HandleAddFilter;
   paginationOptions?: IngestionJsonLinesPaginationQuery$variables;
+  onOpenHistory: (id: string) => void;
 }
 
 const ingestionJsonLineFragment = graphql`
@@ -59,7 +59,7 @@ const ingestionJsonLineFragment = graphql`
     connector_id
     ingestion_running
     last_execution_date
-    ingestionLogs
+    last_execution_status
   }
 `;
 
@@ -67,6 +67,7 @@ export const IngestionJsonLineComponent: FunctionComponent<IngestionJsonLineProp
   dataColumns,
   node,
   paginationOptions,
+  onOpenHistory,
 }) => {
   const classes = useStyles();
   const { t_i18n, nsdt } = useFormatter();
@@ -117,9 +118,11 @@ export const IngestionJsonLineComponent: FunctionComponent<IngestionJsonLineProp
               className={classes.bodyItem}
               style={{ width: dataColumns.connector.width }}
             >
-              <IngestionTooltip logs={data.ingestionLogs}>
-                {nsdt(data.last_execution_date) || '-'}
-              </IngestionTooltip>
+              <span
+                style={{ cursor: 'pointer', color: data.last_execution_status === 'error' ? 'red' : 'green' }}
+                onClick={() => onOpenHistory(data.id)}
+              >{nsdt(data.last_execution_date) || '-'}
+              </span>
             </div>
             <div
               className={classes.bodyItem}

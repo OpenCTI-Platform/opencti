@@ -1,7 +1,7 @@
 import {
   addIngestion,
-  findTaxiiIngestionPaginated,
   findById,
+  findTaxiiIngestionPaginated,
   ingestionDelete,
   ingestionEditField,
   ingestionTaxiiResetState,
@@ -10,7 +10,8 @@ import {
   taxiiFeedExport,
 } from './ingestion-taxii-domain';
 import type { Resolvers } from '../../generated/graphql';
-import { getIngestionLogs } from './ingestion-taxii-collection-domain';
+import { type BasicStoreEntityIngestionTaxii } from './ingestion-types';
+import { redisGetConnectorHistory } from '../../database/redis';
 import { loadCreator } from '../../database/members';
 
 const ingestionTaxiiResolvers: Resolvers = {
@@ -20,9 +21,9 @@ const ingestionTaxiiResolvers: Resolvers = {
     taxiiFeedAddInputFromImport: (_, { file }) => taxiiFeedAddInputFromImport(file),
   },
   IngestionTaxii: {
-    user: (ingestionTaxii, _, context) => loadCreator(context, context.user, ingestionTaxii.user_id),
-    toConfigurationExport: (ingestionTaxii) => taxiiFeedExport(ingestionTaxii),
-    ingestionLogs: (ingestionTaxii) => getIngestionLogs(ingestionTaxii),
+    user: (ingestionTaxii: BasicStoreEntityIngestionTaxii, _, context) => loadCreator(context, context.user, ingestionTaxii.user_id),
+    toConfigurationExport: (ingestionTaxii: BasicStoreEntityIngestionTaxii) => taxiiFeedExport(ingestionTaxii),
+    ingestionLogs: (ingestionTaxii: BasicStoreEntityIngestionTaxii) => redisGetConnectorHistory(ingestionTaxii.internal_id),
   },
   Mutation: {
     ingestionTaxiiAdd: (_, { input }, context) => {

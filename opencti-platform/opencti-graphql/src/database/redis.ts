@@ -701,7 +701,15 @@ export const redisGetManagerEventState = async (managerName: string) => {
 };
 // endregion
 
+// endregion
+
 // region connector logs
+export interface ConnectorLog {
+  timestamp: string;
+  status: 'success' | 'error';
+  messages: string[];
+  count?: number;
+}
 export const redisSetConnectorLogs = async (connectorId: string, logs: string[]) => {
   const data = JSON.stringify(logs);
   await getClientBase().set(`connector-${connectorId}-logs`, data, 'EX', FIVE_MINUTES);
@@ -709,6 +717,43 @@ export const redisSetConnectorLogs = async (connectorId: string, logs: string[])
 export const redisGetConnectorLogs = async (connectorId: string): Promise<string[]> => {
   const rawLogs = await getClientBase().get(`connector-${connectorId}-logs`);
   return rawLogs ? JSON.parse(rawLogs) : [];
+};
+
+export const redisPushIngestionLog = async (connectorId: string, log: ConnectorLog) => {
+  const data = JSON.stringify(log);
+  const clientBase = getClientBase();
+  const key = `ingestion-${connectorId}-history`;
+  await redisTx(clientBase, async (tx) => {
+    await tx.lpush(key, data);
+    await tx.ltrim(key, 0, 19); // Keep last 20 entries
+  });
+};
+export const redisAddIngestionHistory = async (connectorId: string, log: ConnectorLog) => {
+  const clientBase = getClientBase();
+  const key = `ingestion-${connectorId}-history`;
+  const latestLogData = await clientBase.lindex(key, 0);
+  let isRateLimited = false;
+  if (latestLogData) {
+    const latestLog: ConnectorLog = JSON.parse(latestLogData);
+    // Simple comparison of relevant fields for deduplication
+    // We compare status, message and error_details
+    const isSameStatus = latestLog.status === log.status;
+    const isSameMessage = latestLog.messages.toString() === log.messages.toString();
+    const count = latestLog.count ?? 0;
+    if (isSameStatus && isSameMessage && count < 100) {
+      isRateLimited = true;
+      // Increment count and update timestamp
+      const updatedLog: ConnectorLog = { ...latestLog, count: count + 1, timestamp: log.timestamp };
+      await clientBase.lset(key, 0, JSON.stringify(updatedLog));
+    }
+  }
+  if (!isRateLimited) {
+    await redisPushIngestionLog(connectorId, log);
+  }
+};
+export const redisGetConnectorHistory = async (connectorId: string): Promise<ConnectorLog[]> => {
+  const rawLogs = await getClientBase().lrange(`ingestion-${connectorId}-history`, 0, -1);
+  return rawLogs.map((l) => JSON.parse(l));
 };
 // endregion
 

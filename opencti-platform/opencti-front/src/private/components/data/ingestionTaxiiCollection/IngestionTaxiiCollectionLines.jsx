@@ -36,7 +36,7 @@ class IngestionTaxiiCollectionLines extends Component {
           ['ingestionTaxiiCollections', 'pageInfo', 'globalCount'],
           this.props.data,
         )}
-        LineComponent={<IngestionTaxiiCollectionLineLineComponent />}
+        LineComponent={<IngestionTaxiiCollectionLineLineComponent onOpenHistory={this.props.onOpenHistory} />}
         DummyLineComponent={<IngestionTaxiiCollectionLineDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
@@ -55,6 +55,7 @@ IngestionTaxiiCollectionLines.propTypes = {
   relay: PropTypes.object,
   killChainPhases: PropTypes.object,
   initialLoading: PropTypes.bool,
+  onOpenHistory: PropTypes.func,
 };
 
 export const IngestionTaxiiCollectionLinesQuery = graphql`

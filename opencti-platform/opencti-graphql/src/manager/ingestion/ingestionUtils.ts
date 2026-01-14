@@ -146,8 +146,7 @@ export const buildIngestFailureMessages = (e: Error) => {
       }
     }
   } else {
-    messages.push(`Error fetching feed / ${nowTime()}`);
-    messages.push(`Content: ${e.name} - ${e.message}`);
+    messages.push(`${e.name} - ${e.message}`);
   }
   return messages;
 };

@@ -11,7 +11,7 @@ enum IngestionAuthType {
     certificate
 }
 
-type IngestionTaxii implements InternalObject & BasicObject {
+type IngestionTaxii implements InternalObject & BasicObject & Ingestion {
     id: ID!
     entity_type: String!
     standard_id: String!
@@ -33,9 +33,10 @@ type IngestionTaxii implements InternalObject & BasicObject {
     added_after_start: DateTime
     ingestion_running: Boolean
     last_execution_date: DateTime
+    last_execution_status: String
     confidence_to_score: Boolean
     toConfigurationExport: String!
-    ingestionLogs: [String!]!
+    ingestionLogs: [IngestionEntry]
 }
 enum IngestionTaxiiOrdering {
     name
