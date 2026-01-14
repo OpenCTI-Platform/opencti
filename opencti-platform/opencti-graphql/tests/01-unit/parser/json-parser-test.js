@@ -9,6 +9,7 @@ import { domains_data, domains_mapper } from './json-mapper-domains';
 import { indicators_data, indicators_mapper } from './json-mapper-indicators';
 import { complex_data, complex_identifier_mapper } from './json-mapper-complex-identifier';
 import { STIX_EXT_OCTI_SCO } from '../../../src/types/stix-2-1-extensions';
+import { groupings_data, groupings_mapper } from './json-mapper-groupings';
 
 const buildMaps = (objects) => {
   const mapById = new Map();
@@ -153,7 +154,7 @@ describe('JSON mapper testing', () => {
     const identities = mapByType.get('identity');
     const sector = identities.find((i) => i.name === 'Consumer Electronics');
     expect(sector).toBeDefined();
-
+    expect(report.object_refs.length).toBe(2);
     expect(report.object_refs).toContain(country.id);
     expect(report.object_refs).toContain(sector.id);
   });
@@ -182,6 +183,25 @@ describe('JSON mapper testing', () => {
     expect(indicator1.external_references[0].url).toBe('https://abuse.ch/domain/malicious.com');
     expect(indicator2.external_references.length).toBe(1);
     expect(indicator2.external_references[0].url).toBe('https://abuse.ch/domain/malicious2.com');
+  });
+  it('should groupings correctly parsed', async () => {
+    const stixBundle = await jsonMappingExecution(testContext, ADMIN_USER, groupings_data, groupings_mapper);
+    const { mapByType } = buildMaps(stixBundle);
+    expect(stixBundle.objects.length).toBe(10);
+    expect(mapByType.get('indicator').length).toBe(3);
+    expect(mapByType.get('grouping').length).toBe(2);
+    expect(mapByType.get('location').length).toBe(5); // 5 countries
+
+    const groupings = mapByType.get('grouping');
+    const ohio = groupings.find((i) => i.name === 'Ohio');
+    expect(ohio.object_refs.length).toBe(3);
+    expect(ohio.object_refs.filter((r) => r.startsWith('location--')).length).toBe(2);
+    expect(ohio.object_refs.filter((r) => r.startsWith('indicator--')).length).toBe(1);
+
+    const florida = groupings.find((i) => i.name === 'Florida');
+    expect(florida.object_refs.length).toBe(5);
+    expect(florida.object_refs.filter((r) => r.startsWith('location--')).length).toBe(3);
+    expect(florida.object_refs.filter((r) => r.startsWith('indicator--')).length).toBe(2);
   });
   it('should complex identifiers correctly parsed', async () => {
     const stixBundle = await jsonMappingExecution(testContext, ADMIN_USER, complex_data, complex_identifier_mapper);

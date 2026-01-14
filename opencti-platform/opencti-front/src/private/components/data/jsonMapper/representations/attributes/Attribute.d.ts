@@ -14,6 +14,11 @@ export interface JsonAttrPathConfiguration {
   timezone: string | null | undefined;
 }
 
+export type BasedOnType = {
+  identifier?: { identifier: string; representation: string | null }[] | null;
+  representations?: string[] | undefined | null;
+} | null;
+
 export interface JsonMapperRepresentationAttributeFormData {
   key: string;
   mode: string; // 'simple' | ' complex' | 'base'
@@ -25,9 +30,6 @@ export interface JsonMapperRepresentationAttributeFormData {
   complex_path?: {
     formula: string;
   };
-  based_on?: {
-    identifier?: { identifier: string; representation: string | null }[] | null;
-    representations?: string[] | undefined | null;
-  } | null;
+  based_on?: BasedOnType;
   default_values?: DefaultValues;
 }
