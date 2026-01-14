@@ -11155,6 +11155,7 @@ export type Indicator = BasicObject & StixCoreObject & StixDomainObject & StixOb
   x_opencti_main_observable_type?: Maybe<Scalars['String']['output']>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
   x_opencti_observable_values?: Maybe<Array<ObservablesValues>>;
+  x_opencti_reliability?: Maybe<Scalars['String']['output']>;
   x_opencti_score?: Maybe<Scalars['Int']['output']>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
 };
@@ -11344,6 +11345,7 @@ export type IndicatorAddInput = {
   x_opencti_detection?: InputMaybe<Scalars['Boolean']['input']>;
   x_opencti_main_observable_type?: InputMaybe<Scalars['String']['input']>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
+  x_opencti_reliability?: InputMaybe<Scalars['String']['input']>;
   x_opencti_score?: InputMaybe<Scalars['Int']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<Scalars['StixId']['input']>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -41669,6 +41671,7 @@ export type IndicatorResolvers<ContextType = any, ParentType extends ResolversPa
   x_opencti_main_observable_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   x_opencti_observable_values?: Resolver<Maybe<Array<ResolversTypes['ObservablesValues']>>, ParentType, ContextType>;
+  x_opencti_reliability?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

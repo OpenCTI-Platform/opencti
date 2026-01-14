@@ -179,6 +179,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   x_opencti_detection: Boolean
   x_opencti_main_observable_type: String
   x_opencti_observable_values: [ObservablesValues!]
+  x_opencti_reliability: String
   x_mitre_platforms: [String]
   killChainPhases: [KillChainPhase!]
   observables(first: Int): StixCyberObservableConnection
@@ -236,6 +237,7 @@ input IndicatorAddInput {
   x_opencti_score: Int @constraint(min: 0, max: 100)
   x_opencti_detection: Boolean
   x_opencti_main_observable_type: String
+  x_opencti_reliability: String
   x_mitre_platforms: [String!]
   killChainPhases: [String!]
   createdBy: String

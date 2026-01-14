@@ -1,19 +1,28 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import IndicatorEditionOverview from './IndicatorEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import Drawer from '../../common/drawer/Drawer';
+import Drawer, { DrawerControlledDialType } from '../../common/drawer/Drawer';
+import { IndicatorEditionContainer_indicator$data } from '@components/observations/indicators/__generated__/IndicatorEditionContainer_indicator.graphql';
 
-const IndicatorEditionContainer = (props) => {
+interface IndicatorEditionContainerProps {
+  handleClose: () => void;
+  indicator: IndicatorEditionContainer_indicator$data;
+  controlledDial?: DrawerControlledDialType;
+}
+
+const IndicatorEditionContainer: FunctionComponent<IndicatorEditionContainerProps> = ({
+  handleClose,
+  indicator,
+  controlledDial,
+}) => {
   const { t_i18n } = useFormatter();
-  const { handleClose, indicator, open, controlledDial } = props;
   const { editContext } = indicator;
 
   return (
     <Drawer
       title={t_i18n('Update an indicator')}
-      open={open}
       onClose={handleClose}
       context={editContext}
       controlledDial={controlledDial}

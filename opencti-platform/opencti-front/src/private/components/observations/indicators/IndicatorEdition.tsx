@@ -1,10 +1,11 @@
-import React from 'react';
-import { graphql } from 'react-relay';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
+import React, { FunctionComponent } from 'react';
+import { commitMutation, graphql } from 'react-relay';
+import { environment, QueryRenderer } from '../../../../relay/environment';
 import IndicatorEditionContainer from './IndicatorEditionContainer';
 import { indicatorEditionOverviewFocus } from './IndicatorEditionOverview';
-import Loader from '../../../../components/Loader';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
+import { IndicatorEditionContainerQuery$data } from '@components/observations/indicators/__generated__/IndicatorEditionContainerQuery.graphql';
 
 export const indicatorEditionQuery = graphql`
   query IndicatorEditionContainerQuery($id: String!) {
@@ -14,9 +15,15 @@ export const indicatorEditionQuery = graphql`
   }
 `;
 
-const IndicatorEdition = ({ indicatorId }) => {
+interface IndicatorEditionProps {
+  indicatorId: string;
+}
+
+const IndicatorEdition: FunctionComponent<IndicatorEditionProps> = ({
+  indicatorId,
+}) => {
   const handleClose = () => {
-    commitMutation({
+    commitMutation(environment, {
       mutation: indicatorEditionOverviewFocus,
       variables: {
         id: indicatorId,
@@ -29,8 +36,8 @@ const IndicatorEdition = ({ indicatorId }) => {
     <QueryRenderer
       query={indicatorEditionQuery}
       variables={{ id: indicatorId }}
-      render={({ props }) => {
-        if (props) {
+      render={({ props }: { props: IndicatorEditionContainerQuery$data }) => {
+        if (props && props.indicator) {
           return (
             <IndicatorEditionContainer
               indicator={props.indicator}
@@ -39,7 +46,7 @@ const IndicatorEdition = ({ indicatorId }) => {
             />
           );
         }
-        return <Loader variant="inline" />;
+        return <Loader variant={LoaderVariant.inline} />;
       }}
     />
   );

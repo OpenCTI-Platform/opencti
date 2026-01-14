@@ -249,6 +249,7 @@ const IndicatorDetails = createFragmentContainer(IndicatorDetailsComponent, {
       x_opencti_score
       x_opencti_detection
       x_opencti_main_observable_type
+      x_opencti_reliability
       x_mitre_platforms
       indicator_types
       decay_base_score

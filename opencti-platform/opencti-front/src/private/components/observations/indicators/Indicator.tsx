@@ -18,6 +18,7 @@ const indicatorFragment = graphql`
     standard_id
     entity_type
     x_opencti_stix_ids
+    x_opencti_reliability
     spec_version
     revoked
     confidence
