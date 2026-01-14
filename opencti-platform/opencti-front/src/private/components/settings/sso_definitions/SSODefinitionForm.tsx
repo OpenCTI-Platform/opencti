@@ -152,7 +152,7 @@ const SSODefinitionForm = ({
     initialValues.entryPoint = entryPointField?.value ?? '';
     initialValues.forceReauthentication = forceReauthenticationField ? forceReauthenticationField?.value === 'true' : false;
     initialValues.enableDebugMode = enableDebugModeField ? enableDebugModeField?.value === 'true' : false;
-    initialValues.advancedConfigurations = advancedConfigurations;
+    initialValues.advancedConfigurations = advancedConfigurations ?? [];
     initialValues.groups_attributes = groupsAttributes ?? [];
     initialValues.groups_mapping = groupsMapping ?? [];
     initialValues.organizations_path = organizationsPath ?? [];

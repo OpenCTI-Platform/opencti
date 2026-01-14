@@ -19,10 +19,16 @@ const samlConfigKeys = [
   'entryPoint',
 ];
 
-export const getAdvancedConfigFromData = (config: ConfigurationTypeInput[]) => {
+type configType = ReadonlyArray<{
+  key: string;
+  value: string;
+  type: string;
+}>
+
+export const getAdvancedConfigFromData = (config: configType): ConfigurationTypeInput[] => {
   return config.filter((item) => !samlConfigKeys.includes(item.key))
 }
 
-export const getConfigFromData = (config: ConfigurationTypeInput[]) => {
+export const getConfigFromData = (config: configType): ConfigurationTypeInput[] => {
   return config.filter((item) => samlConfigKeys.includes(item.key))
 }

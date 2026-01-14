@@ -5,8 +5,8 @@ import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { SSODefinitionQuery } from './__generated__/SSODefinitionQuery.graphql';
-import SSODefinitionOverview from '@components/settings/sso_definitions/SSODefinitionOverview';
-import SSODefinitionHeader from '@components/settings/sso_definitions/SSODefinitionHeader';
+import SSODefinitionOverview from './SSODefinitionOverview';
+import SSODefinitionHeader from './SSODefinitionHeader';
 
 export const ssoDefinitionQuery = graphql`
   query SSODefinitionQuery($id: String!) {

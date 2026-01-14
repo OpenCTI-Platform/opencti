@@ -83,7 +83,7 @@ const SSODefinitionEdition = ({
     if (field === 'advancedConfigurations') {
       input.key = 'configuration';
       const config = getConfigFromData(sso.configuration ?? []);
-      input.value = [...config, ...value];
+      input.value = Array.isArray(value) ? [...config, ...value] : [...config];
     }
 
     if (groupManagementKeyList.includes(field)) {
