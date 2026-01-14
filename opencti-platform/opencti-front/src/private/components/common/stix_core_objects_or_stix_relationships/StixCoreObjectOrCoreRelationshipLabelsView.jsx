@@ -6,6 +6,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
+import { Box } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { Label as MdiLabel } from 'mdi-material-ui';
@@ -46,6 +47,7 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const {
+    sx,
     labels,
     mutationRelationsAdd,
     mutationRelationDelete,
@@ -147,9 +149,8 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
   const onReset = () => setOpenAdd(false);
 
   return (
-    <>
+    <Box sx={sx}>
       <Label
-        sx={{ marginTop: '20px' }}
         action={(
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <IconButton
@@ -328,7 +329,7 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
           </Dialog>
         )}
       </Formik>
-    </>
+    </Box>
   );
 };
 

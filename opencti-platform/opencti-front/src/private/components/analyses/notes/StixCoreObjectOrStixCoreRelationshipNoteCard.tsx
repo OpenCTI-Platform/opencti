@@ -87,7 +87,7 @@ const StixCoreObjectOrStixCoreRelationshipNoteCard: FunctionComponent<
         justifyContent="space-between"
         sx={{
           borderBottom: '1px solid',
-          borderColor: '#2B3447',
+          borderColor: theme.palette.border.main,
           pb: 2,
           mb: 2,
         }}
