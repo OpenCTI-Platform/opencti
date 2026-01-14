@@ -111,6 +111,9 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
               mr: 1,
               opacity: iconOpacity,
               color: iconColor,
+              '& svg': {
+                fontSize: '16px!important',
+              },
             }}
           >
             {itemIcon}
@@ -165,10 +168,12 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
     return {
       px: 2,
       pr: 1,
-      py: 1,
-      minHeight: '36px',
+      py: 0,
+      height: '36px',
       borderLeft: selected ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
       backgroundColor: selected ? alpha(theme.palette.primary.main || '#00FF00', 0.1) : 'transparent',
+      display: 'flex',
+      alignItems: 'center',
       '&:hover': {
         backgroundColor: selected
           ? theme.palette.action?.selected
@@ -205,7 +210,7 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
           sx={getMenuStyles(isParentSelected)}
         >
           {renderMenuItem(icon, label, isParentSelected)}
-          {isMenuOpen ? <ArrowDropUp /> : <ArrowDropDown />}
+          {isMenuOpen ? <ArrowDropUp sx={{ fontSize: '20px' }} /> : <ArrowDropDown sx={{ fontSize: '20px' }} />}
         </MenuItem>
 
         <Collapse in={isMenuOpen} timeout="auto" unmountOnExit>
