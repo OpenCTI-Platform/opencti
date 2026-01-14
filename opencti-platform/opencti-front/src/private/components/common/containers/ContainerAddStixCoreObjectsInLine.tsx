@@ -72,7 +72,7 @@ interface ContainerAddStixCreObjectsInLineLoaderProps {
   handleSelect: (o: { id: string }) => void;
   handleDeselect: (o: { id: string }) => void;
   helpers: PaginationLocalStorage['helpers'];
-  containerRef: HTMLInputElement;
+  containerRef: HTMLDivElement;
   enableReferences?: boolean;
 }
 
@@ -167,7 +167,7 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
     filters,
     numberOfElements,
   } = viewStorage;
-  const [containerRef, setRef] = useState<HTMLInputElement>();
+  const [containerRef, setRef] = useState<HTMLDivElement | null>(null);
   const [selectedElements, setSelectedElements] = useState<scoEdge[]>(containerStixCoreObjects as scoEdge[]);
   const handleSelect = (node: { id: string }) => {
     setSelectedElements([

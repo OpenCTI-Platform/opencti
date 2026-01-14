@@ -164,7 +164,6 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
         elevation={1}
         onClose={handleClose}
         onClick={(e) => e.stopPropagation()}
-        // PaperProps={{ ref }}
         sx={{
           zIndex: 1202,
         }}
