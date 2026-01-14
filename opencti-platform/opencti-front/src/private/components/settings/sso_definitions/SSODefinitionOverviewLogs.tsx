@@ -18,7 +18,6 @@ const SSODefinitionOverviewLogs = (
       <Card
         title="LOGS"
       >
-        TEST
       </Card>
     </Grid>
   );

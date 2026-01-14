@@ -18,7 +18,6 @@ const SSODefinitionOverviewMapping = (
       <Card
         title="SSO Mapping"
       >
-        TEST
       </Card>
     </Grid>
   );

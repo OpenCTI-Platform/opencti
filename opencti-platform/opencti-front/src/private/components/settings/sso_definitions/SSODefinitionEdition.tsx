@@ -7,6 +7,7 @@ import SSODefinitionForm, { SSOEditionFormInputKeys } from '@components/settings
 import { SSODefinitionEditionMutation } from '@components/settings/sso_definitions/__generated__/SSODefinitionEditionMutation.graphql';
 import { SSODefinitionEditionFragment$key } from '@components/settings/sso_definitions/__generated__/SSODefinitionEditionFragment.graphql';
 import { getConfigFromData } from '@components/settings/sso_definitions/utils/getConfigAndAdvancedConfigFromData';
+import { getStrategyConfigSelected } from '@components/settings/sso_definitions/utils/useStrategicConfig';
 
 export const ssoDefinitionEditionMutation = graphql`
   mutation SSODefinitionEditionMutation($id: ID!, $input: [EditInput!]!) {
@@ -107,20 +108,15 @@ const SSODefinitionEdition = ({
     });
   };
 
-  const strategyConfig = selectedStrategy === 'SamlStrategy' ? 'SAML'
-    : selectedStrategy === 'OpenIDConnectStrategy' ? 'OpenID'
-      : selectedStrategy === 'HeaderStrategy' ? 'Header'
-        : selectedStrategy === 'ClientCertStrategy' ? 'ClientCert'
-          : selectedStrategy === 'LdapStrategy' ? 'Ldap'
-            : selectedStrategy === 'LocalStrategy' ? 'LocalAuth' : null;
+  const strategyConfigSelected = getStrategyConfigSelected(selectedStrategy);
 
   return (
     <Drawer
-      title={t_i18n(`Update a ${strategyConfig} SSO`)}
+      title={t_i18n(`Update a ${strategyConfigSelected} SSO`)}
       open={isOpen}
       onClose={onClose}
     >
-      <SSODefinitionForm onCancel={onClose} onSubmitField={onEdit} data={sso} selectedStrategy={strategyConfig} />
+      <SSODefinitionForm onCancel={onClose} onSubmitField={onEdit} data={sso} selectedStrategy={strategyConfigSelected} />
     </Drawer>
   );
 };

@@ -264,7 +264,7 @@ const groupsQuery = graphql`
 
 export type EntityValue = FilterOptionValue;
 
-const INTERNAL_TYPES_IN_ACTIVITY = ['User', 'Group', 'Workspace', 'Label', 'Marking-Definition', 'Pir', 'DisseminationList', 'ExclusionList', 'DecayRule', 'EmailTemplate', 'CsvMapper', 'JsonMapper', 'StatusTemplate', 'TaxiiCollection', 'StreamCollection', 'Feed', 'Notifier', 'FintelDesign', 'RetentionRule, SSODefinition'];
+const INTERNAL_TYPES_IN_ACTIVITY = ['User', 'Group', 'Workspace', 'Label', 'Marking-Definition', 'Pir', 'DisseminationList', 'ExclusionList', 'DecayRule', 'EmailTemplate', 'CsvMapper', 'JsonMapper', 'StatusTemplate', 'TaxiiCollection', 'StreamCollection', 'Feed', 'Notifier', 'FintelDesign', 'RetentionRule', 'SSODefinition'];
 
 const useSearchEntities = ({
   availableEntityTypes,

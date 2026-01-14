@@ -10,6 +10,7 @@ import CreateSplitControlledDial from '../../../../components/CreateSplitControl
 
 import useFormikToSSOConfig from './utils/useFormikToSSOConfig';
 import SSODefinitionForm, { SSODefinitionFormValues } from '@components/settings/sso_definitions/SSODefinitionForm';
+import { getStrategyConfigEnum } from '@components/settings/sso_definitions/utils/useStrategicConfig';
 
 const ssoDefinitionMutation = graphql`
   mutation SSODefinitionCreationMutation(
@@ -80,12 +81,8 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
         });
       }
     });
-    const strategyConfig = selectedStrategy === 'SAML' ? 'SamlStrategy'
-      : selectedStrategy === 'OpenID' ? 'OpenIDConnectStrategy'
-        : selectedStrategy === 'Header' ? 'HeaderStrategy'
-          : selectedStrategy === 'ClientCert' ? 'ClientCertStrategy'
-            : selectedStrategy === 'Ldap' ? 'LdapStrategy'
-              : selectedStrategy === 'LocalAuth' ? 'LocalStrategy' : null;
+
+    const strategyEnum = getStrategyConfigEnum(selectedStrategy);
 
     const groups_management = {
       groups_attributes: values.groups_attributes || null,
@@ -103,7 +100,7 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
       identifier: values.identifier,
       label: values.label,
       enabled: values.enabled,
-      strategy: strategyConfig,
+      strategy: strategyEnum,
       configuration,
       groups_management,
       organizations_management,

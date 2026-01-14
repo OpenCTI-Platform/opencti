@@ -254,10 +254,10 @@ const SSODefinitionForm = ({
                         marginTop: 20,
                       }}
                     >
-                      <Typography variant="h2">Add a group mapping</Typography>
+                      <Typography variant="h2">{t_i18n('Add a group mapping')}</Typography>
                       <IconButton
                         color="secondary"
-                        aria-label="Add a new value"
+                        aria-label={t_i18n('Add a new value')}
                         size="large"
                         style={{ marginBottom: 12 }}
                         onClick={() => push('')}
@@ -359,10 +359,10 @@ const SSODefinitionForm = ({
                         marginTop: 20,
                       }}
                     >
-                      <Typography variant="h2">Add a new value</Typography>
+                      <Typography variant="h2">{t_i18n('Add a new value')}</Typography>
                       <IconButton
                         color="secondary"
-                        aria-label="Add a new value"
+                        aria-label={t_i18n('Add a new value')}
                         size="large"
                         style={{ marginBottom: 12 }}
                         onClick={() => push('')}
