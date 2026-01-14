@@ -331,7 +331,7 @@ export const generateAttributesInputsForUpsert = (context, _user, resolvedElemen
       const canBeUpsert = isConfidenceMatch && attribute.upsert && isInputWithData;
       // Upsert will be done if upsert is well-defined but also in full synchro mode or if the current value is empty
       if (!isOutDatedModification) {
-        if (isStructuralUpsert || canBeUpsert || isFullSync || isCurrentlyEmpty) {
+        if (isStructuralUpsert || canBeUpsert || (isFullSync && isConfidenceMatch) || isCurrentlyEmpty) {
           inputs.push(...buildAttributeUpdate(isFullSync, attribute, resolvedElement[attributeKey], inputData));
         }
       } else {
