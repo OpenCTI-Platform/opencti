@@ -53,7 +53,7 @@ export interface DrawerControlledDialProps {
   onOpen: () => void;
   onClose?: () => void;
 }
-export type DrawerControlledDialType = ({ onOpen, onClose, sx }: DrawerControlledDialProps) => React.ReactElement;
+export type DrawerControlledDialType = ({ onOpen, onClose }: DrawerControlledDialProps) => React.ReactElement;
 
 interface DrawerProps {
   title: string;
