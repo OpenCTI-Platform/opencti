@@ -20,7 +20,11 @@ const Connectors = () => {
       <PageContainer withRightMenu withGap>
         <Breadcrumbs
           variant="list"
-          elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('Monitoring'), current: true }]}
+          elements={[
+            { label: t_i18n('Data') },
+            { label: t_i18n('Ingestion') },
+            { label: t_i18n('Monitoring'), current: true },
+          ]}
           noMargin
         />
         <QueryRenderer
@@ -29,9 +33,7 @@ const Connectors = () => {
             return <WorkersStatus data={props} />;
           }}
         />
-        <div style={{ marginTop: 24 }}>
-          <ConnectorsStatus />
-        </div>
+        <ConnectorsStatus />
       </PageContainer>
     </div>
   );

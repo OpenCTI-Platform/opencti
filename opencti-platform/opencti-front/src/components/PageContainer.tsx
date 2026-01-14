@@ -27,7 +27,7 @@ const PageContainer: FunctionComponent<PageContainerProps> = ({
           paddingRight: withRightMenu ? '200px' : undefined,
           display: 'flex',
           flexDirection: 'column',
-          gap: withGap ? theme.spacing(2) : undefined,
+          gap: withGap ? theme.spacing(3) : undefined,
           ...style,
         }}
       >

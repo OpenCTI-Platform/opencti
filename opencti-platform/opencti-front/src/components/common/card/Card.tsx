@@ -1,6 +1,6 @@
 import { PropsWithChildren, ReactNode } from 'react';
 import { useTheme } from '@mui/styles';
-import { Stack, SxProps, Card as CardMui, CardActionArea } from '@mui/material';
+import { Stack, SxProps, Card as CardMui, CardActionArea, StackProps } from '@mui/material';
 import CardTitle from './CardTitle';
 import { Theme } from '../../Theme';
 import { Link } from 'react-router-dom';
@@ -11,6 +11,7 @@ export interface CardProps extends PropsWithChildren {
   padding?: 'none' | 'small' | 'horizontal' | 'default';
   sx?: SxProps;
   titleSx?: SxProps;
+  titleAlignItems?: StackProps['alignItems'];
   fullHeight?: boolean;
   onClick?: () => void;
   to?: string;
@@ -26,6 +27,7 @@ const Card = ({
   padding = 'default',
   sx = {},
   titleSx,
+  titleAlignItems,
   fullHeight = true,
   onClick,
   to,
@@ -95,7 +97,11 @@ const Card = ({
   return (
     <Stack sx={{ height: '100%' }}>
       {title && (
-        <CardTitle action={action} sx={titleSx}>
+        <CardTitle
+          action={action}
+          sx={titleSx}
+          alignItems={titleAlignItems}
+        >
           {title}
         </CardTitle>
       )}

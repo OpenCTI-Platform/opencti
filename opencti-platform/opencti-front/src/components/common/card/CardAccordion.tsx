@@ -35,12 +35,14 @@ const CardAccordion = ({
   const summarySx: SxProps = {
     padding: 0,
     minHeight: 0,
+    '&.MuiAccordionSummary-root.Mui-expanded': {
+      minHeight: 0,
+    },
     '.MuiAccordionSummary-content': {
       margin: 0,
     },
-    '&.MuiAccordionSummary-root.Mui-expanded': {
+    '.MuiAccordionSummary-content.Mui-expanded': {
       margin: 0,
-      minHeight: 0,
     },
   };
 
