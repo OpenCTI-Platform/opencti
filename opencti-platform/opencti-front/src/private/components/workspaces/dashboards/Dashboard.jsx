@@ -89,7 +89,6 @@ const DashboardComponent = ({ data, noToolbar = false }) => {
   // or dimension of widgets.
   const [widgetsLayouts, setWidgetsLayouts] = useState({});
 
-  console.log('[debug dashboards] render Dashboard');
   // Deserialized manifest, refreshed when workspace is updated.
   const manifest = useMemo(() => {
     return workspace.manifest && workspace.manifest.length > 0

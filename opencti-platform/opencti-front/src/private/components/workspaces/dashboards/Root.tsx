@@ -23,8 +23,6 @@ const RootDashboardComponent = ({ queryRef }: RootDashboardComponentProps) => {
   const { workspace } = usePreloadedQuery(dashboardQuery, queryRef);
   if (!workspace) return <ErrorNotFound />;
 
-  console.log('[debug dashboards] render RootDashboardComponent');
-
   return (
     <div
       data-testid="dashboard-details-page"
