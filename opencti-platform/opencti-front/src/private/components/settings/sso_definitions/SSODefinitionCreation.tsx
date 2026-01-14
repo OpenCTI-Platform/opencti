@@ -85,7 +85,7 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
     const strategyEnum = getStrategyConfigEnum(selectedStrategy);
 
     const groups_management = {
-      groups_attributes: values.groups_attributes || null,
+      group_attributes: values.group_attributes || null,
       groups_mapping: values.groups_mapping.filter((v) => v && v.trim() !== ''),
       read_userinfo: values.read_userinfo,
     };

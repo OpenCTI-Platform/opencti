@@ -53,7 +53,7 @@ export interface SSODefinitionFormValues {
     value: string;
     type: string;
   }[];
-  groups_attributes: string[];
+  group_attributes: string[];
   groups_mapping: string[];
   organizations_path: string[];
   organizations_mapping: string[];
@@ -105,7 +105,7 @@ const SSODefinitionForm = ({
     enableDebugMode: false,
     entryPoint: '',
     advancedConfigurations: [],
-    groups_attributes: [],
+    group_attributes: [],
     groups_mapping: [],
     read_userinfo: false,
     organizations_path: [],
@@ -152,7 +152,7 @@ const SSODefinitionForm = ({
     initialValues.forceReauthentication = forceReauthenticationField ? forceReauthenticationField?.value === 'true' : false;
     initialValues.enableDebugMode = enableDebugModeField ? enableDebugModeField?.value === 'true' : false;
     initialValues.advancedConfigurations = advancedConfigurations ?? [];
-    initialValues.groups_attributes = groupsAttributes;
+    initialValues.group_attributes = groupsAttributes;
     initialValues.groups_mapping = groupsMapping;
     initialValues.organizations_path = organizationsPath;
     initialValues.organizations_mapping = organizationsMapping;
