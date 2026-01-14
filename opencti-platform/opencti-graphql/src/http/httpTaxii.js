@@ -234,7 +234,7 @@ const initTaxiiApi = (app) => {
     // Authentication is checked in this method, keep it first but inside try block.
       const context = await checkAuthenticationFromRequest(req, res);
       const { id } = req.params;
-      const { objects = [] } = req.body;
+      const { objects = [] } = req.body ?? {};
       // Find and validate the collection
       const ingestion = await findTaxiiCollection(context, context.user, id);
       if (!ingestion) {
@@ -278,7 +278,7 @@ const initTaxiiApi = (app) => {
         const messages = buildIngestFailureMessages(e);
         const historyLog = { timestamp: now(), messages, status: 'error' };
         await redisAddIngestionHistory(id, historyLog);
-        throw Error(e); // Propagate the error
+        throw e; // Propagate the error
       }
     } catch (e) {
       const errorDetail = errorConverter(e);
