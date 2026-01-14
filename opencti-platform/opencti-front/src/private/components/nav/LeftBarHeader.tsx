@@ -5,7 +5,7 @@ import { useTheme } from '@mui/styles';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useFormatter } from '../../../components/i18n';
-import logoOpenBAS from '../../../static/images/logo_open_bas.svg';
+import logoOpenAEV from '../../../static/images/logo_open_aev.svg';
 import logoXTMHub from '../../../static/images/logo_xtm_hub.svg';
 import { isNotEmptyField } from '../../../utils/utils';
 import { Theme } from '../../../components/Theme';
@@ -193,7 +193,7 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
           <Tooltip title={isNotEmptyField(openAEVUrl) ? t_i18n('Platform connected') : t_i18n('Get OpenAEV now')}>
             <span>
               <PopoverListItem
-                logoSrc={logoOpenBAS}
+                logoSrc={logoOpenAEV}
                 href={openAEVUrl}
                 external
                 onClick={handleMouseLeave}
