@@ -126,6 +126,42 @@ interface AIInsightProps {
   isContainer?: boolean;
 }
 
+interface AiInsightButtonProps {
+  onlyIcon?: boolean;
+  floating?: boolean;
+  onClick: () => void;
+}
+
+const AiInsightButton = ({ onlyIcon = false, floating = false, onClick }: AiInsightButtonProps) => {
+  const { t_i18n } = useFormatter();
+  const { bannerSettings: { bannerHeightNumber } } = useAuth();
+  const classes = useStyles({ bannerHeightNumber });
+
+  return (
+    <Tooltip title={t_i18n('AI Insights')}>
+      {onlyIcon ? (
+        <IconButton
+          size="small"
+          onClick={onClick}
+          className={floating ? classes.chipFloating : classes.chip}
+        >
+          <FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" />
+        </IconButton>
+      ) : (
+        <Button
+          variant="tertiary"
+          size="small"
+          onClick={onClick}
+          color="ai"
+          startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" />}
+        >
+          {t_i18n('AI Insights')}
+        </Button>
+      )}
+    </Tooltip>
+  );
+};
+
 const AIInsights = ({
   id,
   tabs = ['activity', 'containers', 'forecast', 'history'],
@@ -180,27 +216,11 @@ const AIInsights = ({
   if (!isEnterpriseEdition && enabled) {
     return (
       <>
-        <Tooltip title={t_i18n('AI Insights')}>
-          {onlyIcon ? (
-            <IconButton
-              size="small"
-              onClick={() => setDisplayEEDialog(true)}
-              className={floating ? classes.chipFloating : classes.chip}
-            >
-              <FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" />
-            </IconButton>
-          ) : (
-            <Button
-              variant="secondary"
-              size="small"
-              onClick={() => setDisplayEEDialog(true)}
-              className={floating ? classes.chipFloating : classes.chip}
-              startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" />}
-            >
-              {t_i18n('AI Insights')}
-            </Button>
-          )}
-        </Tooltip>
+        <AiInsightButton
+          onlyIcon={onlyIcon}
+          onClick={() => setDisplayEEDialog(true)}
+        />
+
         {isAdmin ? (
           <EnterpriseEditionAgreement
             open={displayEEDialog}
@@ -222,27 +242,10 @@ const AIInsights = ({
   if (isEnterpriseEdition && !fullyActive) {
     return (
       <>
-        <Tooltip title={t_i18n('AI Insights')}>
-          {onlyIcon ? (
-            <IconButton
-              size="small"
-              onClick={() => setDisplayAIDialog(true)}
-              className={floating ? classes.chipFloating : classes.chip}
-            >
-              <FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" />
-            </IconButton>
-          ) : (
-            <Button
-              variant="secondary"
-              size="small"
-              onClick={() => setDisplayAIDialog(true)}
-              className={floating ? classes.chipFloating : classes.chip}
-              startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" />}
-            >
-              {t_i18n('AI Insights')}
-            </Button>
-          )}
-        </Tooltip>
+        <AiInsightButton
+          onlyIcon={onlyIcon}
+          onClick={() => setDisplayAIDialog(true)}
+        />
         <Dialog
           slotProps={{ paper: { elevation: 1 } }}
           open={displayAIDialog}
@@ -263,29 +266,13 @@ const AIInsights = ({
       </>
     );
   }
+
   return (
     <>
-      <Tooltip title={t_i18n('AI Insights')}>
-        {onlyIcon ? (
-          <IconButton
-            size="small"
-            onClick={() => setDisplay(true)}
-            className={floating ? classes.chipFloating : classes.chip}
-          >
-            <FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" />
-          </IconButton>
-        ) : (
-          <Button
-            variant="secondary"
-            size="small"
-            onClick={() => setDisplay(true)}
-            className={floating ? classes.chipFloating : classes.chip}
-            startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" />}
-          >
-            {t_i18n('AI Insights')}
-          </Button>
-        )}
-      </Tooltip>
+      <AiInsightButton
+        onlyIcon={onlyIcon}
+        onClick={() => setDisplay(true)}
+      />
       <Drawer
         open={display}
         anchor="right"
