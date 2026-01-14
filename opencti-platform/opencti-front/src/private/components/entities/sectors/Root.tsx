@@ -162,6 +162,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
                 </Security>
               )}
               redirectToContent={true}
+              enableEnrollPlaybook={true}
             />
             <Box
               sx={{

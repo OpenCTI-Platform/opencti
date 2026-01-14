@@ -172,6 +172,7 @@ const RootIncidentComponent = ({ queryRef }) => {
               enableQuickSubscription={true}
               redirectToContent={true}
               enableEnricher={true}
+              enableEnrollPlaybook={true}
             />
             <Box
               sx={{

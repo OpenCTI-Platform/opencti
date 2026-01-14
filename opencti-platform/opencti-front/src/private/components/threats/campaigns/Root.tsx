@@ -169,6 +169,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
               enableEnricher={true}
               enableQuickSubscription={true}
               redirectToContent={true}
+              enableEnrollPlaybook={true}
             />
             <Box
               sx={{

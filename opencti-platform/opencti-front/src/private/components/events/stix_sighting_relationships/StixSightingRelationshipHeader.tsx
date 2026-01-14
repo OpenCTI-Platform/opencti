@@ -1,27 +1,33 @@
 import { Box, Button, Tooltip } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import MenuItem from '@mui/material/MenuItem';
-import React from 'react';
+import React, { useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import { truncate } from '../../../../utils/String';
 import PopoverMenu from '../../../../components/PopoverMenu';
 import Security from '../../../../utils/Security';
-import useGranted, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import useGranted, { AUTOMATION, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
+import StixCoreObjectEnrollPlaybook from '@components/common/stix_core_objects/StixCoreObjectEnrollPlaybook';
+import StixCoreObjectMenuItemUnderEE from '@components/common/stix_core_objects/StixCoreObjectMenuItemUnderEE';
 
 interface StixSightingRelationshipHeaderProps {
   headerName?: string;
   onOpenDelete: () => void;
   onOpenEdit: () => void;
+  enableEnrollPlaybook?: boolean;
+  stixSightingId: string;
 }
 
 const StixSightingRelationshipHeader = ({
   headerName,
   onOpenDelete,
   onOpenEdit,
+  enableEnrollPlaybook,
+  stixSightingId,
 }: StixSightingRelationshipHeaderProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
@@ -30,6 +36,12 @@ const StixSightingRelationshipHeader = ({
   const currentAccessRight = useGetCurrentUserAccessRight(draftContext?.currentUserAccessRight);
   const canEdit = !draftContext || currentAccessRight.canEdit;
   const canDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]) && canEdit;
+  const [openEnrollPlaybook, setOpenEnrollPlaybook] = useState(false);
+  const handleCloseEnrollPlaybook = () => {
+    setOpenEnrollPlaybook(false);
+  };
+  const displayEnrollPlaybook = enableEnrollPlaybook;
+  console.log('stixSightingId', stixSightingId);
 
   return (
     <div style={{
@@ -53,10 +65,28 @@ const StixSightingRelationshipHeader = ({
         </Tooltip>
       </div>
       <div style={{ display: 'flex', alignItems: 'center' }}>
+        {displayEnrollPlaybook
+          && (
+            <StixCoreObjectEnrollPlaybook
+              stixCoreObjectId={stixSightingId}
+              open={openEnrollPlaybook}
+              handleClose={handleCloseEnrollPlaybook}
+            />
+          )
+        }
         {canDelete && (
           <PopoverMenu>
             {({ closeMenu }) => (
               <Box>
+                {displayEnrollPlaybook && (
+                  <StixCoreObjectMenuItemUnderEE
+                    title={t_i18n('Enroll in playbook')}
+                    setOpen={setOpenEnrollPlaybook}
+                    handleCloseMenu={closeMenu}
+                    needs={[AUTOMATION]}
+                    matchAll
+                  />
+                )}
                 <MenuItem onClick={() => {
                   onOpenDelete();
                   closeMenu();

@@ -124,6 +124,7 @@ class RootCourseOfAction extends Component {
                       )}
                       isOpenctiAlias={true}
                       redirectToContent={true}
+                      enableEnrollPlaybook={true}
                     />
                     <Box
                       sx={{

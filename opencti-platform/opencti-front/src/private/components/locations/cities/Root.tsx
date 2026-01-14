@@ -154,6 +154,7 @@ const RootCityComponent = ({ queryRef, cityId }) => {
               )}
               enableQuickSubscription={true}
               isOpenctiAlias={true}
+              enableEnrollPlaybook={true}
               redirectToContent={true}
             />
             <Box
