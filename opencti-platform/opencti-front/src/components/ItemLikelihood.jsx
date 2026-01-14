@@ -6,7 +6,7 @@ import Tag from '@common/tag/Tag';
 import inject18n from './i18n';
 import { alpha } from '@mui/material';
 
-const ItemLikelihood = ({ likelihood, classes, variant, t, theme }) => {
+const ItemLikelihood = ({ likelihood, t, theme }) => {
   const inlineStyles = {
     white: {
       backgroundColor: alpha(theme.palette.common.white, 0.08),
@@ -33,7 +33,7 @@ const ItemLikelihood = ({ likelihood, classes, variant, t, theme }) => {
       color: theme.palette.severity.high,
     },
   };
-  const style = variant === 'inList' ? classes.chipInList : classes.chip;
+
   if (!likelihood) {
     return (
       <Tag
