@@ -16,6 +16,7 @@ import { SecurityCoverageVulnerabilities_securityCoverage$data } from './__gener
 import SecurityCoverageInformation from './SecurityCoverageInformation';
 import ItemIcon from '../../../../components/ItemIcon';
 import StixCoreRelationshipPopover from '../../common/stix_core_relationships/StixCoreRelationshipPopover';
+import Label from '../../../../components/common/label/Label';
 
 interface SecurityCoverageVulnerabilitiesProps {
   securityCoverage: SecurityCoverageVulnerabilities_securityCoverage$data;
@@ -33,15 +34,17 @@ const SecurityCoverageVulnerabilitiesComponent: FunctionComponent<SecurityCovera
     toTypes: ['Vulnerability'],
   };
   return (
-    <div style={{ marginTop: 20 }}>
-      <div style={{ display: 'flex', flexDirection: 'row' }}>
-        <Typography variant="h3" gutterBottom={true}>
-          {t_i18n('Vulnerabilities')}
-        </Typography>
-        <AddVulnerabilities securityCoverage={securityCoverage} paginationOptions={paginationOptions} />
-      </div>
-      <div className="clearfix" />
-      <List style={{ marginTop: -10 }}>
+    <div>
+      <Label action={(
+        <AddVulnerabilities
+          securityCoverage={securityCoverage}
+          paginationOptions={paginationOptions}
+        />
+      )}
+      >
+        {t_i18n('Vulnerabilities')}
+      </Label>
+      <List>
         <FieldOrEmpty source={securityCoverage.vulnerabilities?.edges}>
           {securityCoverage.vulnerabilities?.edges?.map((vulnerabilityEdge) => {
             const vulnerability = vulnerabilityEdge.node.to;

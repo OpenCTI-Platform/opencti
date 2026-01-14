@@ -1,7 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -26,6 +25,7 @@ import obasDark from '../../../../static/images/xtm/obas_dark.png';
 import obasLight from '../../../../static/images/xtm/obas_light.png';
 import ExternalLinkPopover from '../../../../components/ExternalLinkPopover';
 import Card from '../../../../components/common/card/Card';
+import Label from '../../../../components/common/label/Label';
 
 const securityCoverageDetailsFragment = graphql`
   fragment SecurityCoverageDetails_securityCoverage on SecurityCoverage {
@@ -68,23 +68,23 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
   return (
     <div style={{ height: '100%' }}>
       <Card title={t_i18n('Entity details')}>
-        <Grid container={true} spacing={3}>
+        <Grid container={true} spacing={2}>
           <Grid item xs={12}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('Name')}
-            </Typography>
+            </Label>
             {data.name || '-'}
           </Grid>
           <Grid item xs={12}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('Description')}
-            </Typography>
+            </Label>
             <ExpandableMarkdown source={data.description} limit={300} />
           </Grid>
           <Grid item xs={12}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('Coverage information')}
-            </Typography>
+            </Label>
             {isNotEmptyField(data.external_uri) && (
               <Button
                 startIcon={(
@@ -106,15 +106,15 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
             </Paper>
           </Grid>
           <Grid item xs={6}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('Last result')}
-            </Typography>
+            </Label>
             {data.coverage_last_result ? fndt(data.coverage_last_result) : '-'}
           </Grid>
           <Grid item xs={6}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('Covered entity')}
-            </Typography>
+            </Label>
             <List style={{ marginTop: -10 }}>
               <FieldOrEmpty source={data.objectCovered}>
                 {data.objectCovered && (
@@ -138,15 +138,15 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
             </List>
           </Grid>
           <Grid item xs={6}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('Valid from')}
-            </Typography>
+            </Label>
             {data.coverage_valid_from ? fndt(data.coverage_valid_from) : '-'}
           </Grid>
           <Grid item xs={6}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('Valid until')}
-            </Typography>
+            </Label>
             {data.coverage_valid_to ? fndt(data.coverage_valid_to) : '-'}
           </Grid>
           <Grid item xs={12}>

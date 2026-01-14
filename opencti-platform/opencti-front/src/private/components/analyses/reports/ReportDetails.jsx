@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Chip from '@mui/material/Chip';
-import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import Divider from '@mui/material/Divider';
@@ -12,6 +11,7 @@ import { useFormatter } from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
+import Label from '../../../../components/common/label/Label';
 
 const useStyles = makeStyles((theme) => ({
   chip: {
@@ -83,19 +83,11 @@ const ReportDetails = ({ report }) => {
   return (
     <div style={{ height: '100%' }} data-testid="report-overview">
       <Card title={t_i18n('Entity details')}>
-        <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
+        <Grid container={true} spacing={3}>
           <Grid item xs={6} ref={ref}>
-            <Typography variant="h3" gutterBottom={true}>
-              {t_i18n('Description')}
-            </Typography>
+            <Label>{t_i18n('Description')}</Label>
             <ExpandableMarkdown source={reportData.description} limit={400} />
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
-            >
-              {t_i18n('Report types')}
-            </Typography>
+            <Label sx={{ mt: 2 }}>{t_i18n('Report types')}</Label>
             <FieldOrEmpty source={reportData.report_types}>
               {reportData.report_types?.map((reportType) => (
                 <Chip
@@ -105,13 +97,7 @@ const ReportDetails = ({ report }) => {
                 />
               ))}
             </FieldOrEmpty>
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
-            >
-              {t_i18n('Publication date')}
-            </Typography>
+            <Label sx={{ mt: 2 }}>{t_i18n('Publication date')}</Label>
             {fldt(reportData.published)}
           </Grid>
           <Grid
@@ -132,7 +118,7 @@ const ReportDetails = ({ report }) => {
             />
           </Grid>
         </Grid>
-        <Divider style={{ marginTop: 30 }} />
+        <Divider sx={{ marginTop: 3 }} />
         <RelatedContainers
           relatedContainers={reportData.relatedContainers}
           containerId={reportData.id}

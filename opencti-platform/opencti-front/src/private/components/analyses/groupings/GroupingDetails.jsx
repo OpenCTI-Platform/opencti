@@ -4,7 +4,6 @@ import * as R from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Chip from '@mui/material/Chip';
-import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import Divider from '@mui/material/Divider';
 import Card from '@common/card/Card';
@@ -13,6 +12,7 @@ import StixRelationshipsHorizontalBars from '../../common/stix_relationships/Sti
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
+import Label from '../../../../components/common/label/Label';
 
 const styles = (theme) => ({
   chip: {
@@ -103,19 +103,15 @@ const GroupingDetailsComponent = (props) => {
   return (
     <div style={{ height: '100%' }}>
       <Card title={t('Entity details')}>
-        <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
+        <Grid container={true} spacing={3}>
           <Grid item xs={6} ref={ref}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t('Description')}
-            </Typography>
+            </Label>
             <ExpandableMarkdown source={grouping.description} limit={400} />
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
-            >
+            <Label sx={{ marginTop: 2 }}>
               {t('Context')}
-            </Typography>
+            </Label>
             <Chip classes={{ root: classes.chip }} label={grouping.context} />
           </Grid>
           <Grid item xs={6} style={{ minHeight: 200, maxHeight: height }}>
@@ -132,7 +128,7 @@ const GroupingDetailsComponent = (props) => {
             />
           </Grid>
         </Grid>
-        <Divider style={{ marginTop: 30 }} />
+        <Divider sx={{ marginTop: 3 }} />
         <RelatedContainers
           relatedContainers={grouping.relatedContainers}
           containerId={grouping.id}

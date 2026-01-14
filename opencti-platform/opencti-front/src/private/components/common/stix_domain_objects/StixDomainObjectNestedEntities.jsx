@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
-import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import StixNestedRefRelationshipCreationFromEntityContainer from '../stix_nested_ref_relationships/StixNestedRefRelationshipCreationFromEntityContainer';
 import inject18n from '../../../../components/i18n';
@@ -10,6 +9,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { QueryRenderer } from '../../../../relay/environment';
 import StixDomainObjectNestedEntitiesLines, { stixDomainObjectNestedEntitiesLinesQuery } from './StixDomainObjectNestedEntitiesLines';
+import Label from '../../../../components/common/label/Label';
 
 const styles = (theme) => ({
   paper: {
@@ -73,23 +73,23 @@ class StixDomainObjectNestedEntities extends Component {
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
-      <div style={{ marginTop: 20 }}>
-        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {t('Nested objects')}
-        </Typography>
-        <Security
-          needs={[KNOWLEDGE_KNUPDATE]}
-          placeholder={<div style={{ height: 29 }} />}
+      <div>
+        <Label
+          sx={{ marginTop: 2 }}
+          action={(
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <StixNestedRefRelationshipCreationFromEntityContainer
+                paginationOptions={paginationOptions}
+                entityId={entityId}
+                variant="inLine"
+                entityType={entityType}
+              />
+            </Security>
+          )}
         >
-          <StixNestedRefRelationshipCreationFromEntityContainer
-            paginationOptions={paginationOptions}
-            entityId={entityId}
-            variant="inLine"
-            entityType={entityType}
-          />
-        </Security>
-        <div className="clearfix" />
-        <List style={{ marginTop: -10 }}>
+          {t('Nested objects')}
+        </Label>
+        <List sx={{ py: 0 }}>
           <QueryRenderer
             query={stixDomainObjectNestedEntitiesLinesQuery}
             variables={{ count: 25, ...paginationOptions }}
