@@ -1,12 +1,11 @@
 import Button from '@common/button/Button';
-import DrawerHeader from '@common/drawer/DrawerHeader';
 import { Add } from '@mui/icons-material';
 import Alert from '@mui/lab/Alert';
 import { ListItemButton } from '@mui/material';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import Drawer from '@mui/material/Drawer';
+import Drawer from '@components/common/drawer/Drawer';
 import Fab from '@mui/material/Fab';
 import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
@@ -50,16 +49,6 @@ import { stixCyberObservablesLinesAttributesQuery, stixCyberObservablesLinesSubT
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles((theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
   createButton: {
     position: 'fixed',
     bottom: 30,
@@ -81,9 +70,6 @@ const useStyles = makeStyles((theme) => ({
   },
   button: {
     marginLeft: theme.spacing(1),
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
   },
 }));
 
@@ -477,7 +463,7 @@ const StixCyberObservableCreation = ({
               .sort((a, b) => a.tlabel.toLowerCase().localeCompare(b.tlabel.toLowerCase()));
 
             return (
-              <List>
+              <List disablePadding>
                 {translatedOrderedList.map((subType) => (
                   <ListItemButton
                     key={subType.label}
@@ -1005,30 +991,24 @@ const StixCyberObservableCreation = ({
         />
         <Drawer
           open={status.open}
-          anchor="right"
-          sx={{ zIndex: 1202 }}
-          elevation={1}
-          classes={{ paper: classes.drawerPaper }}
           onClose={localHandleClose}
+          title={t_i18n('Create an observable')}
+          sx={{
+            width: '50%',
+          }}
+          header={
+            !isFromBulkRelation && status.type
+              ? (
+                  <BulkTextModalButton
+                    onClick={() => setBulkOpen(true)}
+                    title={t_i18n('Create multiple observables')}
+                    disabled={!bulkConf}
+                  />
+                )
+              : <></>
+          }
         >
-          <DrawerHeader
-            title={t_i18n('Create an observable')}
-            onClose={localHandleClose}
-            endContent={
-              !isFromBulkRelation && status.type
-                ? (
-                    <BulkTextModalButton
-                      onClick={() => setBulkOpen(true)}
-                      title={t_i18n('Create multiple observables')}
-                      disabled={!bulkConf}
-                    />
-                  )
-                : <></>
-            }
-          />
-          <div className={classes.container}>
-            {!status.type ? renderList() : renderForm()}
-          </div>
+          {!status.type ? renderList() : renderForm()}
         </Drawer>
       </>
     );

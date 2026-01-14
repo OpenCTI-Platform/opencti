@@ -10,6 +10,7 @@ import { SubscriptionAvatars } from '../../../../components/Subscription';
 import type { Theme } from '../../../../components/Theme';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { GenericContext } from '../model/GenericContextModel';
+import { SxProps } from '@mui/material';
 
 export enum DrawerVariant {
   create = 'create',
@@ -22,23 +23,6 @@ export enum DrawerVariant {
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => createStyles({
-  drawerPaper: {
-    minHeight: '100vh',
-    [theme.breakpoints.up('xl')]: {
-      width: '50%',
-    },
-    [theme.breakpoints.down('xl')]: {
-      width: '75%',
-    },
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    paddingTop: ({ bannerHeightNumber }) => `${bannerHeightNumber}px`,
-    paddingBottom: ({ bannerHeightNumber }) => `${bannerHeightNumber}px`,
-  },
   header: {
     backgroundColor: theme.palette.mode === 'light' ? theme.palette.background.default : theme.palette.background.nav,
     padding: '10px 0',
@@ -69,7 +53,7 @@ export interface DrawerControlledDialProps {
   onOpen: () => void;
   onClose?: () => void;
 }
-export type DrawerControlledDialType = ({ onOpen, onClose }: DrawerControlledDialProps) => React.ReactElement;
+export type DrawerControlledDialType = ({ onOpen, onClose, sx }: DrawerControlledDialProps) => React.ReactElement;
 
 interface DrawerProps {
   title: string;
@@ -85,6 +69,7 @@ interface DrawerProps {
   controlledDial?: DrawerControlledDialType;
   containerStyle?: CSSProperties;
   disabled?: boolean;
+  sx?: SxProps;
 }
 
 // eslint-disable-next-line react/display-name
@@ -99,6 +84,7 @@ const Drawer = forwardRef(({
   controlledDial,
   containerStyle,
   disabled = false,
+  sx = {},
 }: DrawerProps, ref) => {
   const {
     bannerSettings: { bannerHeightNumber },
@@ -164,11 +150,32 @@ const Drawer = forwardRef(({
         open={open}
         anchor="right"
         elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
         onClick={(e) => e.stopPropagation()}
         PaperProps={{ ref }}
+        sx={{
+          zIndex: 1202,
+        }}
+        slotProps={{
+          paper: {
+            sx: {
+              minHeight: '100vh',
+              width: {
+                xl: '50%',
+                xs: '75%',
+              },
+              position: 'fixed',
+              overflow: 'auto',
+              transition: theme.transitions.create('width', {
+                easing: theme.transitions.easing.sharp,
+                duration: theme.transitions.duration.enteringScreen,
+              }),
+              paddingTop: `${bannerHeightNumber}px`,
+              paddingBottom: `${bannerHeightNumber}px`,
+              ...sx,
+            },
+          },
+        }}
       >
         <DrawerHeader
           title={title}
