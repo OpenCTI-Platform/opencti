@@ -1,6 +1,4 @@
-import {
-  ConfigurationTypeInput
-} from '@components/settings/sso_definitions/__generated__/SSODefinitionCreationMutation.graphql';
+import { ConfigurationTypeInput } from '../__generated__/SSODefinitionCreationMutation.graphql';
 
 const samlConfigKeys = [
   'privateKey',
@@ -23,12 +21,12 @@ type configType = ReadonlyArray<{
   key: string;
   value: string;
   type: string;
-}>
+}>;
 
 export const getAdvancedConfigFromData = (config: configType): ConfigurationTypeInput[] => {
-  return config.filter((item) => !samlConfigKeys.includes(item.key))
-}
+  return config.filter((item) => !samlConfigKeys.includes(item.key));
+};
 
 export const getConfigFromData = (config: configType): ConfigurationTypeInput[] => {
-  return config.filter((item) => samlConfigKeys.includes(item.key))
-}
+  return config.filter((item) => samlConfigKeys.includes(item.key));
+};

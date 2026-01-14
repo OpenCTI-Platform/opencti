@@ -224,8 +224,8 @@ const SAMLConfig = ({ updateField }: Props) => {
                       onClick={() => {
                         remove(index);
                         const advancedConfigurations = [...form.values.advancedConfigurations];
-                        advancedConfigurations.splice(index,1)
-                        updateField('advancedConfigurations', advancedConfigurations)
+                        advancedConfigurations.splice(index, 1);
+                        updateField('advancedConfigurations', advancedConfigurations);
                       }} // Delete
                     >
                       <Delete fontSize="small" />

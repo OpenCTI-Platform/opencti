@@ -6,7 +6,7 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import SwitchField from '../../../../components/fields/SwitchField';
 import Typography from '@mui/material/Typography';
-import { IconButton, InputAdornment  } from '@mui/material';
+import { IconButton } from '@mui/material';
 import { Add, Delete } from '@mui/icons-material';
 import Button from '@mui/material/Button';
 import React, { useState } from 'react';
@@ -131,7 +131,6 @@ const SSODefinitionForm = ({
   const groupsMapping = Array.from(data?.groups_management?.groups_mapping ?? []);
   const organizationsPath = Array.from(data?.organizations_management?.organizations_path ?? []);
   const organizationsMapping = Array.from(data?.organizations_management?.organizations_mapping ?? []);
-
 
   if (data) {
     initialValues.name = data.name;
@@ -314,14 +313,14 @@ const SSODefinitionForm = ({
                             >
                               <Delete fontSize="small" />
                             </IconButton>
-                            {/*<Field*/}
-                            {/*  component={SwitchField}*/}
-                            {/*  variant="standard"*/}
-                            {/*  type="checkbox"*/}
-                            {/*  name="auto_create_group"*/}
-                            {/*  label={t_i18n('auto-create group')}*/}
-                            {/*  containerstyle={{ marginTop: 10 }}*/}
-                            {/*/>*/}
+                            {/* <Field */}
+                            {/*  component={SwitchField} */}
+                            {/*  variant="standard" */}
+                            {/*  type="checkbox" */}
+                            {/*  name="auto_create_group" */}
+                            {/*  label={t_i18n('auto-create group')} */}
+                            {/*  containerstyle={{ marginTop: 10 }} */}
+                            {/* /> */}
                           </div>
                         ),
                       )}
