@@ -11,6 +11,7 @@ interface TagProps extends Omit<ChipProps, 'color'> {
   icon?: React.ReactElement;
   tooltipTitle?: string;
   disableTooltip?: boolean;
+  applyLabelTextTransform?: boolean;
 }
 
 const Tag = ({
@@ -22,6 +23,7 @@ const Tag = ({
   icon,
   tooltipTitle,
   disableTooltip = false,
+  applyLabelTextTransform = true,
   sx,
   ...chipProps
 }: TagProps) => {
@@ -50,6 +52,7 @@ const Tag = ({
       display: 'block',
       paddingLeft: icon ? '8px' : '4px',
       paddingRight: onDelete ? '4px' : '12px',
+      textTransform: applyLabelTextTransform ? 'inherit' : 'none',
     },
     ...(icon && {
       '& .MuiChip-icon': {
