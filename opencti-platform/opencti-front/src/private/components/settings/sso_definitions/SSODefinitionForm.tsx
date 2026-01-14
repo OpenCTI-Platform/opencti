@@ -53,7 +53,7 @@ export interface SSODefinitionFormValues {
     value: string;
     type: string;
   }[];
-  groups_path: string[];
+  groups_attributes: string[];
   groups_mapping: string[];
   organizations_path: string[];
   organizations_mapping: string[];
@@ -105,7 +105,7 @@ const SSODefinitionForm = ({
     enableDebugMode: false,
     entryPoint: '',
     advancedConfigurations: [],
-    groups_path: [],
+    groups_attributes: [],
     groups_mapping: [],
     read_userinfo: false,
     organizations_path: [],
@@ -127,7 +127,7 @@ const SSODefinitionForm = ({
   const enableDebugModeField = data?.configuration?.find((e) => e.key === 'enableDebugMode');
   const entryPointField = data?.configuration?.find((e) => e.key === 'entryPoint');
   const advancedConfigurations = getAdvancedConfigFromData((data?.configuration ?? []) as ConfigurationTypeInput[]);
-  const groupsPath = data?.groups_management?.groups_path;
+  const groupsAttributes = data?.groups_management?.group_attributes;
   const groupsMapping = data?.groups_management?.groups_mapping;
   const organizationsPath = data?.organizations_management?.organizations_path;
   const organizationsMapping = data?.organizations_management?.organizations_mapping;
@@ -153,7 +153,7 @@ const SSODefinitionForm = ({
     initialValues.forceReauthentication = forceReauthenticationField ? forceReauthenticationField?.value === 'true' : false;
     initialValues.enableDebugMode = enableDebugModeField ? enableDebugModeField?.value === 'true' : false;
     initialValues.advancedConfigurations = advancedConfigurations;
-    initialValues.groups_path = groupsPath ?? [];
+    initialValues.groups_attributes = groupsAttributes ?? [];
     initialValues.groups_mapping = groupsMapping ?? [];
     initialValues.organizations_path = organizationsPath ?? [];
     initialValues.organizations_mapping = organizationsMapping ?? [];
@@ -238,7 +238,7 @@ const SSODefinitionForm = ({
                 <Field
                   component={TextField}
                   variant="standard"
-                  name="groups_path"
+                  name="group_attributes"
                   onSubmit={updateField}
                   label={t_i18n('Attribute/path in token')}
                   containerstyle={{ marginTop: 12 }}

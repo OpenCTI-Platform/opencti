@@ -88,12 +88,12 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
               : selectedStrategy === 'LocalAuth' ? 'LocalStrategy' : null;
 
     const groups_management = {
-      groups_path: values.groups_path || null,
+      groups_attributes: values.groups_attributes || null,
       groups_mapping: values.groups_mapping.filter((v) => v && v.trim() !== ''),
       read_userinfo: values.read_userinfo,
     };
     const organizations_management = {
-      organizations_path: values.organizations_path || null,
+      groups_attributes: values.groups_attributes || null,
       organizations_mapping: values.organizations_mapping.filter(
         (v) => v && v.trim() !== '',
       ),
