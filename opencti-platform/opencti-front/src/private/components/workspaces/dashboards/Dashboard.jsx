@@ -58,7 +58,7 @@ const dashboardFragment = graphql`
   }
 `;
 
-const DashboardComponent = ({ data, noToolbar }) => {
+const DashboardComponent = ({ data, noToolbar = false }) => {
   const [commitWidgetImportMutation] = useApiMutation(dashboardImportWidgetMutation);
 
   const workspace = useFragment(dashboardFragment, data);
@@ -94,20 +94,21 @@ const DashboardComponent = ({ data, noToolbar }) => {
     return workspace.manifest && workspace.manifest.length > 0
       ? deserializeDashboardManifestForFrontend(fromB64(workspace.manifest))
       : { widgets: {}, config: {} };
-  }, [workspace]);
+  }, [workspace.manifest]);
 
   // Array of all widgets, refreshed when workspace is updated.
   const widgetsArray = useMemo(() => {
-    const widgets = Object.values(manifest.widgets).map((widget) => widget);
-    // Sync our local layouts.
+    return Object.values(manifest.widgets);
+  }, [manifest]);
+
+  useEffect(() => {
     setWidgetsLayouts(
-      widgets.reduce((res, widget) => {
+      widgetsArray.reduce((res, widget) => {
         res[widget.id] = widget.layout;
         return res;
       }, {}),
     );
-    return widgets;
-  }, [manifest]);
+  }, [widgetsArray]);
 
   /**
    * Merge a manifest with some layouts and transform it in base64.
@@ -251,17 +252,17 @@ const DashboardComponent = ({ data, noToolbar }) => {
   };
 
   const onLayoutChange = (layouts) => {
-    if (!deleting) {
-      const newLayouts = layouts.reduce((res, layout) => {
-        res[layout.i] = layout;
-        return res;
-      }, {});
-      setWidgetsLayouts(newLayouts);
-      // Triggering a manifest save with the same manifest.
-      // As this function makes a sync between manifest and local layouts
-      // it will make the update of layouts modification.
-      saveManifest(manifest, { layouts: newLayouts, noRefresh: true });
-    }
+    if (deleting) return;
+
+    const newLayouts = layouts.reduce((res, layout) => {
+      res[layout.i] = layout;
+      return res;
+    }, {});
+
+    if (R.equals(newLayouts, widgetsLayouts)) return; // ⛔ prevent loop
+
+    setWidgetsLayouts(newLayouts);
+    saveManifest(manifest, { layouts: newLayouts, noRefresh: true });
   };
 
   const paperStyle = {

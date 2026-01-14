@@ -3,9 +3,11 @@ import { buildFiltersAndOptionsForWidgets } from '../../../../../utils/filters/f
 import WidgetContainer from '../../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../../components/dashboard/WidgetNoData';
 import WidgetHorizontalBars from '../../../../../components/dashboard/WidgetHorizontalBars';
-import Loader, { LoaderVariant } from '../../../../../components/Loader';
-import { graphql, useLazyLoadQuery } from 'react-relay';
+import Loader from '../../../../../components/Loader';
+import { graphql, usePreloadedQuery } from 'react-relay';
 import { useStixRelationshipsMultiHorizontalBars } from './useStixRelationshipsMultiHorizontalBars';
+import { Suspense } from 'react';
+import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 
 const stixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery = graphql`
   query StixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery(
@@ -343,6 +345,47 @@ const stixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery = graphq
   }
 `;
 
+const StixRelationshipsMultiHorizontalBarsComponent = ({
+  queryRef,
+  parameters = {},
+  withExportPopover = false,
+  isReadOnly = false,
+  queryToCall,
+  subSelection,
+  finalSubDistributionField,
+  finalField,
+}) => {
+  const { stixRelationshipsDistribution } = usePreloadedQuery(queryToCall, queryRef);
+  if (!stixRelationshipsDistribution || stixRelationshipsDistribution.length === 0) {
+    return <WidgetNoData />;
+  }
+
+  const {
+    chartData,
+    redirectionUtils,
+    categories,
+  } = useStixRelationshipsMultiHorizontalBars(
+    subSelection,
+    stixRelationshipsDistribution,
+    finalSubDistributionField,
+    finalField,
+  );
+
+  return (
+    <WidgetHorizontalBars
+      series={chartData}
+      distributed={parameters.distributed}
+      withExport={withExportPopover}
+      readonly={isReadOnly}
+      redirectionUtils={redirectionUtils}
+      stacked
+      total
+      legend
+      categories={categories}
+    />
+  );
+};
+
 const StixRelationshipsMultiHorizontalBars = ({
   title,
   variant,
@@ -356,104 +399,76 @@ const StixRelationshipsMultiHorizontalBars = ({
   isReadOnly = false,
 }) => {
   const { t_i18n } = useFormatter();
-  const renderContent = () => {
-    let selection = {};
-    let filtersAndOptions;
-    let subDistributionFiltersAndOptions;
-    let subSelection = {};
-    let subDistributionTypes = null;
-    if (dataSelection) {
-      selection = dataSelection[0];
-      filtersAndOptions = buildFiltersAndOptionsForWidgets(selection.filters, { isKnowledgeRelationshipWidget: true });
-      if (dataSelection.length > 1) {
-        subSelection = dataSelection[1];
-        subDistributionFiltersAndOptions = buildFiltersAndOptionsForWidgets(subSelection.filters, { isKnowledgeRelationshipWidget: true });
-        if (subSelection.perspective === 'entities') {
-          subDistributionTypes = ['Stix-Core-Object'];
-        }
+
+  let selection = {};
+  let filtersAndOptions;
+  let subDistributionFiltersAndOptions;
+  let subSelection = {};
+  let subDistributionTypes = null;
+  if (dataSelection) {
+    selection = dataSelection[0];
+    filtersAndOptions = buildFiltersAndOptionsForWidgets(selection.filters, { isKnowledgeRelationshipWidget: true });
+    if (dataSelection.length > 1) {
+      subSelection = dataSelection[1];
+      subDistributionFiltersAndOptions = buildFiltersAndOptionsForWidgets(subSelection.filters, { isKnowledgeRelationshipWidget: true });
+      if (subSelection.perspective === 'entities') {
+        subDistributionTypes = ['Stix-Core-Object'];
       }
     }
+  }
 
-    const finalField = selection.attribute || field || 'entity_type';
-    const finalSubDistributionField = subSelection.attribute || field || 'entity_type';
+  const finalField = selection.attribute || field || 'entity_type';
+  const finalSubDistributionField = subSelection.attribute || field || 'entity_type';
 
-    let variables = {
-      field: finalField,
-      operation: 'count',
-      startDate,
-      endDate,
-      dateAttribute: selection.date_attribute ?? 'created_at',
-      limit: selection.number ?? 10,
-      filters: filtersAndOptions?.filters,
-      isTo: selection.isTo,
-      dynamicFrom: selection.dynamicFrom,
-      dynamicTo: selection.dynamicTo,
-    };
-
-    if (subSelection.perspective === 'entities') {
-      variables = {
-        ...variables,
-        subDistributionField: finalSubDistributionField,
-        subDistributionStartDate: startDate,
-        subDistributionEndDate: endDate,
-        subDistributionDateAttribute:
-          subSelection.date_attribute && subSelection.date_attribute.length > 0
-            ? subSelection.date_attribute
-            : 'created_at',
-        subDistributionOperation: 'count',
-        subDistributionLimit: subSelection.number ?? 15,
-        subDistributionTypes,
-        subDistributionFilters: subDistributionFiltersAndOptions?.filters,
-      };
-    } else {
-      variables = {
-        ...variables,
-        subDistributionField: finalSubDistributionField,
-        subDistributionOperation: 'count',
-        subDistributionStartDate: startDate,
-        subDistributionEndDate: endDate,
-        subDistributionDateAttribute:
-          subSelection.date_attribute && subSelection.date_attribute.length > 0
-            ? subSelection.date_attribute
-            : 'created_at',
-        subDistributionIsTo: subSelection.isTo,
-        subDistributionLimit: subSelection.number ?? 15,
-        subDistributionFilters: subDistributionFiltersAndOptions?.filters,
-      };
-    }
-
-    const queryToCall = subSelection.perspective === 'entities'
-      ? stixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery
-      : stixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery;
-
-    const dataFromQuery = useLazyLoadQuery(queryToCall, variables);
-
-    const {
-      chartData,
-      redirectionUtils,
-      categories,
-    } = useStixRelationshipsMultiHorizontalBars(subSelection, dataFromQuery.stixRelationshipsDistribution, finalSubDistributionField, finalField);
-
-    if (dataFromQuery.stixRelationshipsDistribution && dataFromQuery.stixRelationshipsDistribution.length > 0) {
-      return (
-        <WidgetHorizontalBars
-          series={chartData}
-          distributed={parameters.distributed}
-          withExport={withExportPopover}
-          readonly={isReadOnly}
-          redirectionUtils={redirectionUtils}
-          stacked
-          total
-          legend
-          categories={categories}
-        />
-      );
-    }
-    if (dataFromQuery) {
-      return <WidgetNoData />;
-    }
-    return <Loader variant={LoaderVariant.inElement} />;
+  let variables = {
+    field: finalField,
+    operation: 'count',
+    startDate,
+    endDate,
+    dateAttribute: selection.date_attribute ?? 'created_at',
+    limit: selection.number ?? 10,
+    filters: filtersAndOptions?.filters,
+    isTo: selection.isTo,
+    dynamicFrom: selection.dynamicFrom,
+    dynamicTo: selection.dynamicTo,
   };
+
+  if (subSelection.perspective === 'entities') {
+    variables = {
+      ...variables,
+      subDistributionField: finalSubDistributionField,
+      subDistributionStartDate: startDate,
+      subDistributionEndDate: endDate,
+      subDistributionDateAttribute:
+        subSelection.date_attribute && subSelection.date_attribute.length > 0
+          ? subSelection.date_attribute
+          : 'created_at',
+      subDistributionOperation: 'count',
+      subDistributionLimit: subSelection.number ?? 15,
+      subDistributionTypes,
+      subDistributionFilters: subDistributionFiltersAndOptions?.filters,
+    };
+  } else {
+    variables = {
+      ...variables,
+      subDistributionField: finalSubDistributionField,
+      subDistributionOperation: 'count',
+      subDistributionStartDate: startDate,
+      subDistributionEndDate: endDate,
+      subDistributionDateAttribute:
+        subSelection.date_attribute && subSelection.date_attribute.length > 0
+          ? subSelection.date_attribute
+          : 'created_at',
+      subDistributionIsTo: subSelection.isTo,
+      subDistributionLimit: subSelection.number ?? 15,
+      subDistributionFilters: subDistributionFiltersAndOptions?.filters,
+    };
+  }
+
+  const queryToCall = subSelection.perspective === 'entities'
+    ? stixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery
+    : stixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery;
+  const queryRef = useQueryLoading(queryToCall, variables);
 
   return (
     <WidgetContainer
@@ -461,7 +476,20 @@ const StixRelationshipsMultiHorizontalBars = ({
       title={parameters.title ?? title ?? t_i18n('Distribution of entities')}
       variant={variant}
     >
-      {renderContent()}
+      <Suspense fallback={<Loader />}>
+        {queryRef && (
+          <StixRelationshipsMultiHorizontalBarsComponent
+            queryRef={queryRef}
+            isReadOnly={isReadOnly}
+            parameters={parameters}
+            finalField={finalField}
+            queryToCall={queryToCall}
+            subSelection={subSelection}
+            withExportPopover={withExportPopover}
+            finalSubDistributionField={finalSubDistributionField}
+          />
+        )}
+      </Suspense>
     </WidgetContainer>
   );
 };
