@@ -58,7 +58,7 @@ const dashboardFragment = graphql`
   }
 `;
 
-const DashboardComponent = ({ data, noToolbar }) => {
+const DashboardComponent = ({ data, noToolbar = false }) => {
   const [commitWidgetImportMutation] = useApiMutation(dashboardImportWidgetMutation);
 
   const workspace = useFragment(dashboardFragment, data);
@@ -89,10 +89,9 @@ const DashboardComponent = ({ data, noToolbar }) => {
   // or dimension of widgets.
   const [widgetsLayouts, setWidgetsLayouts] = useState({});
 
-  console.log('Dashboard rerender');
+  console.log('[debug dashboards] render Dashboard');
   // Deserialized manifest, refreshed when workspace is updated.
   const manifest = useMemo(() => {
-    console.log('In manifest useMemo', { workspace });
     return workspace.manifest && workspace.manifest.length > 0
       ? deserializeDashboardManifestForFrontend(fromB64(workspace.manifest))
       : { widgets: {}, config: {} };
@@ -100,12 +99,10 @@ const DashboardComponent = ({ data, noToolbar }) => {
 
   // Array of all widgets, refreshed when workspace is updated.
   const widgetsArray = useMemo(() => {
-    console.log('In widgetsArray useMemo');
     return Object.values(manifest.widgets);
   }, [manifest]);
 
   useEffect(() => {
-    console.log('In widgetsArray userEffect');
     setWidgetsLayouts(
       widgetsArray.reduce((res, widget) => {
         res[widget.id] = widget.layout;
@@ -144,14 +141,12 @@ const DashboardComponent = ({ data, noToolbar }) => {
 
   const saveManifest = (newManifest, opts = { layouts: widgetsLayouts, noRefresh: false }) => {
     const { layouts, noRefresh } = opts;
-    console.log('In saveManifest');
     const newManifestEncoded = prepareManifest(newManifest, layouts);
     // Sometimes (in case of layout adjustment) we do not want to re-fetch
     // all the manifest because widgets data is still the same, and it's costly
     // in performance.
     const mutation = noRefresh ? dashboardLayoutMutation : workspaceMutationFieldPatch;
     if (workspace.manifest !== newManifestEncoded) {
-      console.log('Sending manifest');
       commitMutation({
         mutation,
         variables: {
@@ -258,7 +253,6 @@ const DashboardComponent = ({ data, noToolbar }) => {
   };
 
   const onLayoutChange = (layouts) => {
-    console.log('In onLayoutChange');
     if (deleting) return;
 
     const newLayouts = layouts.reduce((res, layout) => {
