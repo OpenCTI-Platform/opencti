@@ -20,6 +20,8 @@ export enum DrawerVariant {
   updateWithPanel = 'updateWithPanel',
 }
 
+export type DrawerSize = 'small' | 'medium' | 'large' | 'extraLarge';
+
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => createStyles({
@@ -69,8 +71,18 @@ interface DrawerProps {
   controlledDial?: DrawerControlledDialType;
   containerStyle?: CSSProperties;
   disabled?: boolean;
+  size?: DrawerSize;
   sx?: SxProps;
 }
+
+const getDrawerWidth = (size: DrawerSize) => {
+  switch (size) {
+    case 'small': return '420px';
+    case 'medium': return '640px';
+    case 'large': return '960px';
+    case 'extraLarge': return '90vw';
+  }
+};
 
 // eslint-disable-next-line react/display-name
 const Drawer = forwardRef(({
@@ -84,6 +96,7 @@ const Drawer = forwardRef(({
   controlledDial,
   containerStyle,
   disabled = false,
+  size = 'large',
   sx = {},
 }: DrawerProps, ref) => {
   const {
@@ -160,10 +173,12 @@ const Drawer = forwardRef(({
           paper: {
             sx: {
               minHeight: '100vh',
-              width: {
-                xl: '50%',
-                xs: '75%',
-              },
+              width: getDrawerWidth(size),
+              // width: {
+
+              //   xl: '50%',
+              //   xs: '75%',
+              // },
               position: 'fixed',
               overflow: 'auto',
               transition: theme.transitions.create('width', {
