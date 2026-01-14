@@ -15,6 +15,7 @@ import inject18n from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import Security from '../../../../utils/Security';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
+import IngestionLastRun from '@components/data/ingestion/IngestionLastRun';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -111,11 +112,12 @@ class IngestionRssLineLineComponent extends Component {
                 />
               </div>
               <div className={classes.bodyItem} style={{ width: dataColumns.last_execution_date.width }}>
-                <span
-                  style={{ cursor: 'pointer', color: node.last_execution_status === 'error' ? 'red' : 'green' }}
-                  onClick={() => this.props.onOpenHistory(node.id)}
-                >{nsdt(node.last_execution_date) || '-'}
-                </span>
+                <IngestionLastRun
+                  ingestion_id={node.id}
+                  last_execution_date={node.last_execution_date}
+                  last_execution_status={node.last_execution_status}
+                  onOpenHistory={this.props.onOpenHistory}
+                />
               </div>
               <div
                 className={classes.bodyItem}

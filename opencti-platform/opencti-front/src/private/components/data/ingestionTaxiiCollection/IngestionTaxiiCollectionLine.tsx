@@ -21,6 +21,7 @@ import { DataColumns } from '../../../../components/list_lines';
 import IngestionTaxiiCollectionPopover from './IngestionTaxiiCollectionPopover';
 import { APP_BASE_PATH } from '../../../../relay/environment';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
+import IngestionLastRun from '@components/data/ingestion/IngestionLastRun';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -70,7 +71,7 @@ export const IngestionTaxiiCollectionLineLineComponent: FunctionComponent<Ingest
   onOpenHistory,
 }) => {
   const classes = useStyles();
-  const { t_i18n, nsdt } = useFormatter();
+  const { t_i18n } = useFormatter();
   const data = useFragment(ingestionTaxiiCollectionLineFragment, node);
 
   return (
@@ -103,11 +104,12 @@ export const IngestionTaxiiCollectionLineLineComponent: FunctionComponent<Ingest
               <ItemCopy content={`${window.location.origin}${APP_BASE_PATH}/taxii2/root/collections/${data.id}/objects/`} variant="inLine" />
             </div>
             <div className={classes.bodyItem} style={{ width: dataColumns.last_execution_date.width }}>
-              <span
-                style={{ cursor: 'pointer', color: data.last_execution_status === 'error' ? 'red' : 'green' }}
-                onClick={() => onOpenHistory(data.id)}
-              >{nsdt(data.last_execution_date) || '-'}
-              </span>
+              <IngestionLastRun
+                ingestion_id={data.id}
+                last_execution_date={data.last_execution_date}
+                last_execution_status={data.last_execution_status}
+                onOpenHistory={onOpenHistory}
+              />
             </div>
             <div
               className={classes.bodyItem}

@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 // noinspection ExceptionCaughtLocallyJS
 
 import * as R from 'ramda';
@@ -18,7 +17,9 @@ import { computeWorkStatus } from '../domain/connector';
 import { ENTITY_TYPE_INGESTION_TAXII_COLLECTION } from '../modules/ingestion/ingestion-types';
 import { TAXIIAPI } from '../domain/user';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
-import { handleConfidenceToScoreTransformation, pushBundleToConnectorQueue } from '../manager/ingestion/ingestionUtils';
+import { buildIngestFailureMessages, buildIngestSuccessMessages, handleConfidenceToScoreTransformation, pushBundleToConnectorQueue } from '../manager/ingestion/ingestionUtils';
+import { redisAddIngestionHistory } from '../database/redis';
+import { patchAttribute } from '../database/middleware';
 
 const TAXII_REQUEST_ALLOWED_CONTENT_TYPE = ['application/taxii+json', 'application/vnd.oasis.stix+json'];
 const TAXII_VERSION = '2.1';
@@ -232,38 +233,53 @@ const initTaxiiApi = (app) => {
     try {
     // Authentication is checked in this method, keep it first but inside try block.
       const context = await checkAuthenticationFromRequest(req, res);
-      if (!isValidTaxiiPostContentType(req)) {
-        throw TaxiiError('Content-Type in request is missing or invalid', 400);
-      }
-
       const { id } = req.params;
       const { objects = [] } = req.body;
-
-      if (objects.length === 0) {
-        throw UnsupportedError('Objects required');
-      }
       // Find and validate the collection
       const ingestion = await findTaxiiCollection(context, context.user, id);
       if (!ingestion) {
         throw TaxiiError('Collection not found', 404);
       }
-      if (ingestion.ingestion_running !== true) {
-        throw TaxiiError('Collection not found', 404);
+      // Functional checks
+      try {
+        if (!isValidTaxiiPostContentType(req)) {
+          throw TaxiiError('Content-Type in request is missing or invalid', 400);
+        }
+        if (objects.length === 0) {
+          throw UnsupportedError('Objects required');
+        }
+        if (ingestion.ingestion_running !== true) {
+          throw TaxiiError('Collection not found', 404);
+        }
+        const stixObjects = handleConfidenceToScoreTransformation(ingestion, objects);
+        // Push the bundle in queue, return the job id
+        const bundle = { type: 'bundle', spec_version: '2.1', id: `bundle--${uuidv4()}`, objects: stixObjects };
+        // Push the bundle to absorption queue
+        const workId = await pushBundleToConnectorQueue(context, ingestion, bundle);
+        // Patch information
+        const patch = { last_execution_date: now(), last_execution_status: 'success' };
+        await patchAttribute(context, SYSTEM_USER, id, ingestion.entity_type, patch);
+        const messages = buildIngestSuccessMessages(stixObjects.length);
+        const historyLog = { timestamp: now(), messages, status: 'success' };
+        await redisAddIngestionHistory(ingestion.internal_id, historyLog);
+        // Return response
+        sendJsonResponse(res, {
+          id: workId,
+          status: 'pending',
+          request_timestamp: now(),
+          total_count: objects.length,
+          success_count: 0,
+          failure_count: 0,
+          pending_count: objects.length,
+        });
+      } catch (e) {
+        const patch = { last_execution_date: now(), last_execution_status: 'error' };
+        await patchAttribute(context, SYSTEM_USER, id, ingestion.entity_type, patch);
+        const messages = buildIngestFailureMessages(e);
+        const historyLog = { timestamp: now(), messages, status: 'error' };
+        await redisAddIngestionHistory(id, historyLog);
+        throw Error(e); // Propagate the error
       }
-      const stixObjects = handleConfidenceToScoreTransformation(ingestion, objects);
-      // Push the bundle in queue, return the job id
-      const bundle = { type: 'bundle', spec_version: '2.1', id: `bundle--${uuidv4()}`, objects: stixObjects };
-      // Push the bundle to absorption queue
-      const workId = await pushBundleToConnectorQueue(context, ingestion, bundle);
-      sendJsonResponse(res, {
-        id: workId,
-        status: 'pending',
-        request_timestamp: now(),
-        total_count: objects.length,
-        success_count: 0,
-        failure_count: 0,
-        pending_count: objects.length,
-      });
     } catch (e) {
       const errorDetail = errorConverter(e);
       res.status(errorDetail.http_status).send(errorDetail);
