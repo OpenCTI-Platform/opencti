@@ -27,6 +27,7 @@ const AI_AZURE_DEPLOYMENT = conf.get('ai:ai_azure_deployment');
 let AI_ENABLED = true;
 let client: Mistral | OpenAI | AzureOpenAI | null = null;
 let nlqChat: ChatOpenAI | ChatMistralAI | AzureChatOpenAI | null = null;
+let clientsUpdate: Promise<void> = Promise.resolve();
 
 const resetClients = () => {
   client = null;
@@ -116,17 +117,38 @@ const initClients = () => {
   }
 };
 
+const ensureClientsInitialized = async () => {
+  clientsUpdate = clientsUpdate.then(() => {
+    if (!AI_ENABLED) {
+      return;
+    }
+    initClients();
+  });
+  try {
+    await clientsUpdate;
+  } catch (err) {
+    logApp.error('[AI] Failed to initialize AI clients', { cause: err });
+    throw UnknownError('Failed to initialize AI clients', { cause: err });
+  }
+};
+
 export const setAiEnabled = (enabled: boolean) => {
   AI_ENABLED = enabled;
-  if (!AI_ENABLED) {
-    resetClients();
-    return;
-  }
-  initClients();
+  clientsUpdate = clientsUpdate.then(() => {
+    if (!AI_ENABLED) {
+      resetClients();
+      return;
+    }
+    initClients();
+  });
 };
 
 if (AI_ENABLED && AI_TOKEN) {
-  initClients();
+  try {
+    initClients();
+  } catch (err) {
+    logApp.error('[AI] Failed to initialize AI clients', { cause: err });
+  }
 }
 
 // Query MistralAI (Streaming)
@@ -134,15 +156,7 @@ export const queryMistralAi = async (busId: string | null, systemMessage: string
   if (!AI_ENABLED) {
     throw UnsupportedError('AI is disabled in platform settings');
   }
-  // Initialize AI clients only if not already initialized, and handle initialization errors explicitly.
-  if (!client) {
-    try {
-      initClients();
-    } catch (err) {
-      logApp.error('[AI] Failed to initialize AI clients before querying MistralAI', { cause: err });
-      throw UnknownError('AI client initialization failed');
-    }
-  }
+  await ensureClientsInitialized();
   if (!client) {
     throw UnsupportedError('Incorrect AI configuration', { type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
   }
@@ -186,12 +200,7 @@ export const queryChatGpt = async (busId: string | null, developerMessage: strin
   if (!AI_ENABLED) {
     throw UnsupportedError('AI is disabled in platform settings');
   }
-  try {
-    initClients();
-  } catch (err) {
-    logApp.error('[AI] Failed to initialize AI clients', { cause: err });
-    throw UnknownError('Failed to initialize AI clients for OpenAI', { cause: err });
-  }
+  await ensureClientsInitialized();
   if (!client) {
     throw UnsupportedError('Incorrect AI configuration', { type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
   }
@@ -253,12 +262,7 @@ export const queryNLQAi = async (promptValue: ChatPromptValueInterface) => {
   if (!AI_ENABLED) {
     throw UnsupportedError('AI is disabled in platform settings');
   }
-  try {
-    initClients();
-  } catch (err) {
-    logApp.error('[AI] Failed to initialize AI clients', { cause: err });
-    throw err;
-  }
+  await ensureClientsInitialized();
   if (!nlqChat) {
     throw badAiConfigError;
   }
