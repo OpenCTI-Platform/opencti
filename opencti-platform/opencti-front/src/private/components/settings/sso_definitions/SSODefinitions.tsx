@@ -8,8 +8,8 @@ import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../..
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../../components/dataGrid/DataTable';
-import { SSODefinitionsLinesPaginationQuery } from '@components/settings/__generated__/SSODefinitionsLinesPaginationQuery.graphql';
-import { SSODefinitionsLines_data$data } from '@components/settings/__generated__/SSODefinitionsLines_data.graphql';
+import { SSODefinitionsLinesPaginationQuery } from './__generated__/SSODefinitionsLinesPaginationQuery.graphql';
+import { SSODefinitionsLines_data$data } from './__generated__/SSODefinitionsLines_data.graphql';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import SSODefinitionCreation from '@components/settings/sso_definitions/SSODefinitionCreation';
 

@@ -84,7 +84,7 @@ const SSODefinitionForm = ({
     entryPoint: Yup.string().required(t_i18n('This field is required')),
   });
 
-  const initialValues = {
+  const initialValues: SSODefinitionFormValues = {
     name: '',
     identifier: '',
     label: '',
@@ -127,10 +127,10 @@ const SSODefinitionForm = ({
   const enableDebugModeField = data?.configuration?.find((e) => e.key === 'enableDebugMode');
   const entryPointField = data?.configuration?.find((e) => e.key === 'entryPoint');
   const advancedConfigurations = getAdvancedConfigFromData((data?.configuration ?? []) as ConfigurationTypeInput[]);
-  const groupsAttributes = data?.groups_management?.group_attributes;
-  const groupsMapping = data?.groups_management?.groups_mapping;
-  const organizationsPath = data?.organizations_management?.organizations_path;
-  const organizationsMapping = data?.organizations_management?.organizations_mapping;
+  const groupsAttributes = Array.from(data?.groups_management?.group_attributes ?? []);
+  const groupsMapping = Array.from(data?.groups_management?.groups_mapping ?? []);
+  const organizationsPath = Array.from(data?.organizations_management?.organizations_path ?? []);
+  const organizationsMapping = Array.from(data?.organizations_management?.organizations_mapping ?? []);
 
 
   if (data) {
@@ -153,10 +153,10 @@ const SSODefinitionForm = ({
     initialValues.forceReauthentication = forceReauthenticationField ? forceReauthenticationField?.value === 'true' : false;
     initialValues.enableDebugMode = enableDebugModeField ? enableDebugModeField?.value === 'true' : false;
     initialValues.advancedConfigurations = advancedConfigurations ?? [];
-    initialValues.groups_attributes = groupsAttributes ?? [];
-    initialValues.groups_mapping = groupsMapping ?? [];
-    initialValues.organizations_path = organizationsPath ?? [];
-    initialValues.organizations_mapping = organizationsMapping ?? [];
+    initialValues.groups_attributes = groupsAttributes;
+    initialValues.groups_mapping = groupsMapping;
+    initialValues.organizations_path = organizationsPath;
+    initialValues.organizations_mapping = organizationsMapping;
   }
 
   const updateField = async (field: SSOEditionFormInputKeys, value: unknown) => {
