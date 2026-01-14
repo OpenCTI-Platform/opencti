@@ -6,7 +6,7 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import SwitchField from '../../../../components/fields/SwitchField';
 import Typography from '@mui/material/Typography';
-import { IconButton, InputAdornment  } from '@mui/material';
+import { IconButton } from '@mui/material';
 import { Add, Delete } from '@mui/icons-material';
 import Button from '@mui/material/Button';
 import React, { useState } from 'react';
@@ -16,9 +16,7 @@ import { SSODefinitionEditionFragment$data } from '@components/settings/sso_defi
 import TextField from '../../../../components/TextField';
 import { getAdvancedConfigFromData } from '@components/settings/sso_definitions/utils/getConfigAndAdvancedConfigFromData';
 import SAMLConfig from '@components/settings/sso_definitions/SAMLConfig';
-import {
-  ConfigurationTypeInput
-} from '@components/settings/sso_definitions/__generated__/SSODefinitionCreationMutation.graphql';
+import { ConfigurationTypeInput } from '@components/settings/sso_definitions/__generated__/SSODefinitionCreationMutation.graphql';
 
 interface SSODefinitionFormProps {
   onCancel: () => void;
@@ -68,7 +66,7 @@ const SSODefinitionForm = ({
   onCancel,
   onSubmit,
   selectedStrategy,
-  onSubmitField
+  onSubmitField,
 }: SSODefinitionFormProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -129,11 +127,10 @@ const SSODefinitionForm = ({
   const enableDebugModeField = data?.configuration?.find((e) => e.key === 'enableDebugMode');
   const entryPointField = data?.configuration?.find((e) => e.key === 'entryPoint');
   const advancedConfigurations = getAdvancedConfigFromData((data?.configuration ?? []) as ConfigurationTypeInput[]);
-  const groupsPath = data?.groups_management.groups_path
-  const groupsMapping = data?.groups_management.groups_mapping;
-  const organizationsPath = data?.organizations_management.organizations_path
-  const organizationsMapping = data?.organizations_management.organizations_mapping;
-
+  const groupsPath = data?.groups_management?.groups_path;
+  const groupsMapping = data?.groups_management?.groups_mapping;
+  const organizationsPath = data?.organizations_management?.organizations_path;
+  const organizationsMapping = data?.organizations_management?.organizations_mapping;
 
   if (data) {
     initialValues.name = data.name;
@@ -310,20 +307,20 @@ const SSODefinitionForm = ({
                               onClick={() => {
                                 remove(index);
                                 const groupsMapping = [...form.values.groups_mapping];
-                                groupsMapping.splice(index,1)
-                                updateField('groups_mapping', groupsMapping)
+                                groupsMapping.splice(index, 1);
+                                updateField('groups_mapping', groupsMapping);
                               }} // Delete
                             >
                               <Delete fontSize="small" />
                             </IconButton>
-                            {/*<Field*/}
-                            {/*  component={SwitchField}*/}
-                            {/*  variant="standard"*/}
-                            {/*  type="checkbox"*/}
-                            {/*  name="auto_create_group"*/}
-                            {/*  label={t_i18n('auto-create group')}*/}
-                            {/*  containerstyle={{ marginTop: 10 }}*/}
-                            {/*/>*/}
+                            {/* <Field */}
+                            {/*  component={SwitchField} */}
+                            {/*  variant="standard" */}
+                            {/*  type="checkbox" */}
+                            {/*  name="auto_create_group" */}
+                            {/*  label={t_i18n('auto-create group')} */}
+                            {/*  containerstyle={{ marginTop: 10 }} */}
+                            {/* /> */}
                           </div>
                         ),
                       )}
@@ -410,11 +407,11 @@ const SSODefinitionForm = ({
                               aria-label={t_i18n('Delete')}
                               style={{ marginTop: 30, marginLeft: 50 }}
                               onClick={() => {
-                                remove(index)
+                                remove(index);
                                 remove(index);
                                 const organizationsMapping = [...form.values.organizations_mapping];
-                                organizationsMapping.splice(index,1)
-                                updateField('organizations_mapping', organizationsMapping)
+                                organizationsMapping.splice(index, 1);
+                                updateField('organizations_mapping', organizationsMapping);
                               }}
                             >
                               <Delete fontSize="small" />
