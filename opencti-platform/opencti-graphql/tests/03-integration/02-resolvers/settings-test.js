@@ -154,33 +154,34 @@ describe('Settings resolver standard behavior', () => {
   it('should block AI operations when platform AI is disabled', async () => {
     const settingsInternalId = await settingsId();
     const initialSettingsResult = await queryAsAdmin({ query: READ_QUERY, variables: {} });
-    const initialAiEnabled = initialSettingsResult.data.settings.platform_ai_enabled === true;
-    if (!initialAiEnabled) {
-      await queryAsAdmin({
-        query: UPDATE_SETTINGS_QUERY,
-        variables: { id: settingsInternalId, input: [{ key: 'platform_ai_enabled', value: [true] }] },
-      });
-      resetCacheForEntity(ENTITY_TYPE_SETTINGS);
-    }
+    const initialAiEnabled = initialSettingsResult.data.settings.platform_ai_enabled !== false;
     await queryAsAdmin({
       query: UPDATE_SETTINGS_QUERY,
-      variables: { id: settingsInternalId, input: [{ key: 'platform_ai_enabled', value: [false] }] },
+      variables: { id: settingsInternalId, input: [{ key: 'platform_ai_enabled', value: [true] }] },
     });
     resetCacheForEntity(ENTITY_TYPE_SETTINGS);
 
-    const aiResult = await queryAsAdmin({
-      query: AI_FIX_SPELLING_MUTATION,
-      variables: { id: 'ai-test', content: 'Some content to check.' },
-    });
-    expect(aiResult).not.toBeNull();
-    expect(aiResult.errors.length).toEqual(1);
-    expect(aiResult.errors.at(0).message).toEqual('AI is disabled in platform settings');
-  } finally {
-    await queryAsAdmin({
-      query: UPDATE_SETTINGS_QUERY,
-      variables: { id: settingsInternalId, input: [{ key: 'platform_ai_enabled', value: [initialAiEnabled] }] },
-    });
-    resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+    try {
+      await queryAsAdmin({
+        query: UPDATE_SETTINGS_QUERY,
+        variables: { id: settingsInternalId, input: [{ key: 'platform_ai_enabled', value: [false] }] },
+      });
+      resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+
+      const aiResult = await queryAsAdmin({
+        query: AI_FIX_SPELLING_MUTATION,
+        variables: { id: 'ai-test', content: 'Some content to check.' },
+      });
+      expect(aiResult).not.toBeNull();
+      expect(aiResult.errors.length).toEqual(1);
+      expect(aiResult.errors.at(0).message).toEqual('AI is disabled in platform settings');
+    } finally {
+      await queryAsAdmin({
+        query: UPDATE_SETTINGS_QUERY,
+        variables: { id: settingsInternalId, input: [{ key: 'platform_ai_enabled', value: [initialAiEnabled] }] },
+      });
+      resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+    }
   });
 });
 
