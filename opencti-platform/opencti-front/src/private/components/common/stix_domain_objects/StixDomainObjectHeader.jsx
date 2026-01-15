@@ -483,7 +483,7 @@ const StixDomainObjectHeader = (props) => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: theme.spacing(3) }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
           <Tooltip title={getMainRepresentative(stixDomainObject)}>
-            <TitleMainEntity>
+            <TitleMainEntity preserveCase>
               {truncate(getMainRepresentative(stixDomainObject), 80)}
             </TitleMainEntity>
           </Tooltip>

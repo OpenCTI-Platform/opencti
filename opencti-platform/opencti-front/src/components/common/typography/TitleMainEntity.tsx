@@ -2,9 +2,11 @@ import { PropsWithChildren } from 'react';
 import { Typography } from '@mui/material';
 import { PropsWithSx } from '../../../utils/props';
 
-type TitleMainEntityProps = PropsWithChildren & PropsWithSx;
+type TitleMainEntityProps = {
+  preserveCase?: boolean;
+} & PropsWithChildren & PropsWithSx;
 
-const TitleMainEntity = ({ children, sx }: TitleMainEntityProps) => {
+const TitleMainEntity = ({ children, sx, preserveCase = false }: TitleMainEntityProps) => {
   return (
     <Typography
       variant="h1"
@@ -12,6 +14,12 @@ const TitleMainEntity = ({ children, sx }: TitleMainEntityProps) => {
         marginBottom: 0,
         lineHeight: '36px',
         fontSize: 28,
+        ...(preserveCase && {
+          textTransform: 'none',
+          '&::first-letter': {
+            textTransform: 'none',
+          },
+        }),
         ...sx,
       }}
     >

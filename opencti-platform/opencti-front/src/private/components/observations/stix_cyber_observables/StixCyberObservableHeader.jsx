@@ -38,7 +38,10 @@ const StixCyberObservableHeaderComponent = ({ stixCyberObservable, DeleteCompone
 
   return (
     <Stack direction="row" alignItems="center" marginBottom={3}>
-      <TitleMainEntity sx={{ flex: 1 }}>
+      <TitleMainEntity
+        preserveCase
+        sx={{ flex: 1 }}
+      >
         {truncate(stixCyberObservable.observable_value, 50)}
       </TitleMainEntity>
 
