@@ -104,7 +104,7 @@ const WorkspaceHeader = ({
             canEdit={canEdit}
           />
         </div>
-        <div style={{ display: 'flex' }}>
+        <div style={{ display: 'flex', gap: '8px' }}>
           <ExportButtons
             domElementId="container"
             name={workspace.name}
@@ -130,7 +130,6 @@ const WorkspaceHeader = ({
           <Security needs={[EXPLORE_EXUPDATE]} hasAccess={canEdit}>
             <Button
               disableElevation
-              sx={{ marginLeft: 1 }}
               onClick={handleOpenEdit}
             >
               {t_i18n('Update')}

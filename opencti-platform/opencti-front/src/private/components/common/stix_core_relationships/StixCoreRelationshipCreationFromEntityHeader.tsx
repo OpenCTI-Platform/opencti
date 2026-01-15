@@ -74,7 +74,6 @@ const StixCoreRelationshipCreationFromEntityHeader: FunctionComponent<
       <Button
         onClick={handleOpen}
         variant="secondary"
-        style={{ marginLeft: '6px' }}
       >
         {t_i18n('Create Relationship')}
       </Button>

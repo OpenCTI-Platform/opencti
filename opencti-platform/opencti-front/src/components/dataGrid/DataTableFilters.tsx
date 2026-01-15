@@ -160,9 +160,6 @@ const DataTableFilters = ({
                 helpers.handleChangeView(value);
               }
             }}
-            sx={{
-              gap: 1,
-            }}
           >
             {additionalHeaderButtons && [...additionalHeaderButtons]}
             {!exportDisabled && (

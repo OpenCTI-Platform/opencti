@@ -493,7 +493,6 @@ const StixCoreObjectQuickSubscription: FunctionComponent<
           onClick={() => !disabledInDraft && (triggerUpdate ? handleOpen() : createInstanceTrigger())}
           value="quick-subscription"
           size="small"
-          style={{ marginRight: 3 }}
         >
           <NotificationsOutlined
             fontSize="small"

@@ -47,54 +47,52 @@ const StixCyberObservableHeaderComponent = ({ stixCyberObservable, DeleteCompone
 
       {stixCyberObservable.draftVersion && <DraftChip />}
 
-      <div>
-        <div style={{ display: 'flex' }}>
-          <StixCoreObjectSharingList data={stixCyberObservable} />
+      <Stack direction="row" gap={1}>
+        <StixCoreObjectSharingList data={stixCyberObservable} />
 
-          {isKnowledgeUpdater && (
-            <StixCoreObjectContainer elementId={stixCyberObservable.id} />
+        {isKnowledgeUpdater && (
+          <StixCoreObjectContainer elementId={stixCyberObservable.id} />
+        )}
+        {isKnowledgeEnricher && (
+          <StixCoreObjectEnrichment stixCoreObjectId={stixCyberObservable.id} />
+        )}
+        <StixCoreObjectEnrollPlaybook stixCoreObjectId={stixCyberObservable.id} />
+
+        <PopoverMenu>
+          {({ closeMenu }) => (
+            <Box>
+              <StixCoreObjectMenuItemUnderEE
+                setOpen={setOpenSharing}
+                title={t_i18n('Share with an organization')}
+                handleCloseMenu={closeMenu}
+                needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}
+              />
+              {canDelete && (
+                <MenuItem onClick={() => {
+                  handleOpenDelete();
+                  closeMenu();
+                }}
+                >
+                  {t_i18n('Delete')}
+                </MenuItem>
+              )}
+            </Box>
           )}
-          {isKnowledgeEnricher && (
-            <StixCoreObjectEnrichment stixCoreObjectId={stixCyberObservable.id} />
-          )}
-          <StixCoreObjectEnrollPlaybook stixCoreObjectId={stixCyberObservable.id} />
-
-          <PopoverMenu>
-            {({ closeMenu }) => (
-              <Box>
-                <StixCoreObjectMenuItemUnderEE
-                  setOpen={setOpenSharing}
-                  title={t_i18n('Share with an organization')}
-                  handleCloseMenu={closeMenu}
-                  needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}
-                />
-                {canDelete && (
-                  <MenuItem onClick={() => {
-                    handleOpenDelete();
-                    closeMenu();
-                  }}
-                  >
-                    {t_i18n('Delete')}
-                  </MenuItem>
-                )}
-              </Box>
-            )}
-          </PopoverMenu>
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <StixCyberObservableEdition
-              stixCyberObservableId={stixCyberObservable.id}
-            />
-          </Security>
-          <DeleteComponent isOpen={openDelete} onClose={handleCloseDelete} />
-
-          <StixCoreObjectSharing
-            elementId={stixCyberObservable.id}
-            open={openSharing}
-            variant="header"
-            handleClose={() => setOpenSharing(false)}
+        </PopoverMenu>
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <StixCyberObservableEdition
+            stixCyberObservableId={stixCyberObservable.id}
           />
-        </div>
-      </div>
+        </Security>
+        <DeleteComponent isOpen={openDelete} onClose={handleCloseDelete} />
+
+        <StixCoreObjectSharing
+          elementId={stixCyberObservable.id}
+          open={openSharing}
+          variant="header"
+          handleClose={() => setOpenSharing(false)}
+        />
+      </Stack>
       <div className="clearfix" />
     </Stack>
   );

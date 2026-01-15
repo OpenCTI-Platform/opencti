@@ -20,7 +20,6 @@ const EditEntityControlledDial = ({
   const draftContext = useDraftContext();
   const currentAccessRight = useGetCurrentUserAccessRight(draftContext?.currentUserAccessRight);
   const canDisplayButton = !draftContext || currentAccessRight.canEdit;
-
   return canDisplayButton ? (
     <Button
       onClick={onOpen}
@@ -28,7 +27,7 @@ const EditEntityControlledDial = ({
       variant={variant}
       size={size}
       aria-label={buttonLabel}
-      style={style ?? { marginLeft: '4px' }}
+      style={style}
       disabled={disabled}
     >
       {buttonLabel}

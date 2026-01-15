@@ -31,7 +31,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
-import { useTheme } from '@mui/material';
+import { Stack, useTheme } from '@mui/material';
 
 interface ContentBlocProps {
   title: ReactNode;
@@ -246,7 +246,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
         title={t_i18n('Files')}
         actions={(
           <Security needs={[KNOWLEDGE_KNUPLOAD]}>
-            <>
+            <Stack direction="row" gap={1}>
               <FileUploader
                 entityId={stixCoreObjectId}
                 onUploadSuccess={onFileChange}
@@ -260,7 +260,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
               >
                 <AddOutlined />
               </IconButton>
-            </>
+            </Stack>
           </Security>
         )}
       >
