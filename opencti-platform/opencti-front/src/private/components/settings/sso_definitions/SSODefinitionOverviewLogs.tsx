@@ -18,6 +18,7 @@ const SSODefinitionOverviewLogs = (
       <Card
         title="LOGS"
       >
+        WIP
       </Card>
     </Grid>
   );
