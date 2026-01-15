@@ -54,11 +54,14 @@ const styles = (theme) => ({
 class StixDomainObjectNestedEntitiesLinesComponent extends Component {
   render() {
     const { stixDomainObjectId, fsd, paginationOptions, data, classes } = this.props;
+    const stixNestedObjectsNodes = data?.stixNestedRefRelationships.edges.filter((e) => {
+      const stixCoreObject = e.node.from.id === stixDomainObjectId ? e.node.to : e.node.from;
+      return stixCoreObject;
+    });
     return (
       <div>
-        {data
-          && data.stixNestedRefRelationships
-          && data.stixNestedRefRelationships.edges.map((edge) => {
+        {stixNestedObjectsNodes
+          && stixNestedObjectsNodes.map((edge) => {
             const { node } = edge;
             const stixCoreObject = node.from.id === stixDomainObjectId ? node.to : node.from;
             const link = `${resolveLink(stixCoreObject.entity_type)}/${
