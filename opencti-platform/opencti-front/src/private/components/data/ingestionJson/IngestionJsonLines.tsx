@@ -1,6 +1,6 @@
 import { graphql, PreloadedQuery } from 'react-relay';
 import React, { FunctionComponent } from 'react';
-import { IngestionJsonLineComponent, IngestionJsonLineDummy } from '@components/data/ingestionJson/IngestionJsonLine';
+import { IngestionJsonLineComponent, IngestionJsonLineDummy, IngestionJsonLineProps } from '@components/data/ingestionJson/IngestionJsonLine';
 import {
   IngestionJsonLinesPaginationQuery,
   IngestionJsonLinesPaginationQuery$variables,
@@ -18,6 +18,7 @@ interface IngestionJsonLinesProps {
   dataColumns: DataColumns;
   paginationOptions?: IngestionJsonLinesPaginationQuery$variables;
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
+  onOpenHistory: (id: string) => void;
 }
 
 export const ingestionJsonLinesQuery = graphql`
@@ -80,6 +81,7 @@ const IngestionJsonLines: FunctionComponent<IngestionJsonLinesProps> = ({
   queryRef,
   dataColumns,
   paginationOptions,
+  onOpenHistory,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
     IngestionJsonLinesPaginationQuery,
@@ -100,7 +102,12 @@ const IngestionJsonLines: FunctionComponent<IngestionJsonLinesProps> = ({
       hasMore={hasMore}
       dataList={ingestionJsons}
       globalCount={globalCount ?? nbOfRowsToLoad}
-      LineComponent={IngestionJsonLineComponent}
+      LineComponent={(props: IngestionJsonLineProps) => (
+        <IngestionJsonLineComponent
+          {...props}
+          onOpenHistory={onOpenHistory}
+        />
+      )}
       DummyLineComponent={IngestionJsonLineDummy}
       dataColumns={dataColumns}
       nbOfRowsToLoad={nbOfRowsToLoad}

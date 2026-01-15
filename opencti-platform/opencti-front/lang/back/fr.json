@@ -497,6 +497,7 @@
   "Last event id": "Dernier événement id",
   "Last execution": "Dernière exécution",
   "Last execution date": "Date de la dernière exécution",
+  "Last execution status": "Dernier état d'exécution",
   "Last ingestion run": "Dernier cycle d'ingestion",
   "Last modification date": "Date de la dernière modification",
   "Last modification since": "Dernière modification depuis",

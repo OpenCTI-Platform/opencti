@@ -119,6 +119,7 @@ import './managerConfiguration/managerConfiguration-graphql';
 import './notifier/notifier-graphql';
 import './threatActorIndividual/threatActorIndividual-graphql';
 import './playbook/playbook-graphql';
+import './ingestion/ingestion-graphql';
 import './ingestion/ingestion-rss-graphql';
 import './ingestion/ingestion-taxii-graphql';
 import './ingestion/ingestion-taxii-collection-graphql';

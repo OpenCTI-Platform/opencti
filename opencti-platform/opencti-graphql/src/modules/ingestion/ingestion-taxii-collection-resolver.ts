@@ -1,6 +1,8 @@
 import { addIngestion, findTaxiiCollectionPaginated, findById, ingestionDelete, ingestionEditField } from './ingestion-taxii-collection-domain';
 import type { Resolvers } from '../../generated/graphql';
 import { getAuthorizedMembers } from '../../utils/authorizedMembers';
+import { redisGetConnectorHistory } from '../../database/redis';
+import { type BasicStoreEntityIngestionTaxiiCollection } from './ingestion-types';
 
 const ingestionTaxiiCollectionResolvers: Resolvers = {
   Query: {
@@ -8,8 +10,9 @@ const ingestionTaxiiCollectionResolvers: Resolvers = {
     ingestionTaxiiCollections: (_, args, context) => findTaxiiCollectionPaginated(context, context.user, args),
   },
   IngestionTaxiiCollection: {
-    user: (ingestionTaxiiCollection, _, context) => context.batch.creatorBatchLoader.load(ingestionTaxiiCollection.user_id),
-    authorized_members: (ingestionTaxiiCollection, _, context) => getAuthorizedMembers(context, context.user, ingestionTaxiiCollection),
+    user: (ingestionTaxiiCollection: BasicStoreEntityIngestionTaxiiCollection, _, context) => context.batch.creatorBatchLoader.load(ingestionTaxiiCollection.user_id),
+    authorized_members: (ingestionTaxiiCollection: BasicStoreEntityIngestionTaxiiCollection, _, context) => getAuthorizedMembers(context, context.user, ingestionTaxiiCollection),
+    ingestionLogs: (ingestionTaxiiCollection: BasicStoreEntityIngestionTaxiiCollection) => redisGetConnectorHistory(ingestionTaxiiCollection.internal_id),
   },
   Mutation: {
     ingestionTaxiiCollectionAdd: (_, { input }, context) => {

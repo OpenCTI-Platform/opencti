@@ -34,6 +34,7 @@ import { INGESTION_SETINGESTIONS } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import IngestionHistoryDrawer from './ingestion/IngestionHistoryDrawer';
 
 const LOCAL_STORAGE_KEY = 'ingestionJsons';
 
@@ -140,6 +141,7 @@ const IngestionJson = () => {
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               setNumberOfElements={helpers.handleSetNumberOfElements}
+              onOpenHistory={handleOpenHistory}
             />
           </React.Suspense>
         )}
@@ -157,11 +159,30 @@ const IngestionJson = () => {
     );
   }
 
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+  const [displayHistory, setDisplayHistory] = React.useState<boolean>(false);
+  const [selectedIngestionId, setSelectedIngestionId] = React.useState<string | null>(null);
+
+  const handleOpenHistory = (id: string) => {
+    setSelectedIngestionId(id);
+    setDisplayHistory(true);
+  };
+
+  const handleCloseHistory = () => {
+    setDisplayHistory(false);
+    setSelectedIngestionId(null);
+  };
+
   return (
     <div className={classes.container} data-testid="json-feeds-page">
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('JSON Feeds'), current: true }]} />
       <IngestionMenu />
       <>{renderLines()}</>
+      <IngestionHistoryDrawer
+        open={displayHistory}
+        onClose={handleCloseHistory}
+        ingestionId={selectedIngestionId}
+      />
     </div>
   );
 };

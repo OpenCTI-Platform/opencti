@@ -2,7 +2,7 @@ import { graphql, PreloadedQuery } from 'react-relay';
 import React, { FunctionComponent } from 'react';
 import { IngestionCsvLinesPaginationQuery, IngestionCsvLinesPaginationQuery$variables } from '@components/data/ingestionCsv/__generated__/IngestionCsvLinesPaginationQuery.graphql';
 import { IngestionCsvLines_data$key } from '@components/data/ingestionCsv/__generated__/IngestionCsvLines_data.graphql';
-import { IngestionCsvLineComponent, IngestionCsvLineDummy } from '@components/data/ingestionCsv/IngestionCsvLine';
+import { IngestionCsvLineComponent, IngestionCsvLineDummy, IngestionCsvLineProps } from '@components/data/ingestionCsv/IngestionCsvLine';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import { DataColumns } from '../../../../components/list_lines';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
@@ -15,6 +15,7 @@ interface IngestionCsvLinesProps {
   dataColumns: DataColumns;
   paginationOptions?: IngestionCsvLinesPaginationQuery$variables;
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
+  onOpenHistory: (ingestionId: string) => void;
 }
 
 export const ingestionCsvLinesQuery = graphql`
@@ -73,31 +74,36 @@ const ingestionCsvLinesFragment = graphql`
 `;
 
 const IngestionCsvLines: FunctionComponent<IngestionCsvLinesProps> = ({
-  setNumberOfElements,
   queryRef,
   dataColumns,
   paginationOptions,
+  setNumberOfElements,
+  onOpenHistory,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
     IngestionCsvLinesPaginationQuery,
-    IngestionCsvLines_data$key>({
-    queryRef,
+    IngestionCsvLines_data$key
+  >({
     linesQuery: ingestionCsvLinesQuery,
     linesFragment: ingestionCsvLinesFragment,
+    queryRef,
     nodePath: ['ingestionCsvs', 'pageInfo', 'globalCount'],
     setNumberOfElements,
   });
-  const ingestionCsvs = data?.ingestionCsvs?.edges ?? [];
-  const globalCount = data?.ingestionCsvs?.pageInfo?.globalCount;
+
+  const { ingestionCsvs } = data;
+
   return (
     <ListLinesContent
       initialLoading={!data}
-      isLoading={isLoadingMore}
       loadMore={loadMore}
       hasMore={hasMore}
-      dataList={ingestionCsvs}
-      globalCount={globalCount ?? nbOfRowsToLoad}
-      LineComponent={IngestionCsvLineComponent}
+      isLoading={isLoadingMore}
+      dataList={ingestionCsvs?.edges ?? []}
+      globalCount={ingestionCsvs?.pageInfo?.globalCount ?? nbOfRowsToLoad}
+      LineComponent={(props: IngestionCsvLineProps) => (
+        <IngestionCsvLineComponent {...props} onOpenHistory={onOpenHistory} />
+      )}
       DummyLineComponent={IngestionCsvLineDummy}
       dataColumns={dataColumns}
       nbOfRowsToLoad={nbOfRowsToLoad}

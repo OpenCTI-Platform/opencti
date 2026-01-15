@@ -5,6 +5,7 @@ import { QueryRenderer } from '../../../relay/environment';
 import ListLines from '../../../components/list_lines/ListLines';
 import IngestionRssLines, { IngestionRssLinesQuery } from './ingestionRss/IngestionRssLines';
 import IngestionRssCreation from './ingestionRss/IngestionRssCreation';
+import IngestionHistoryDrawer from './ingestion/IngestionHistoryDrawer';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useAuth from '../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../components/i18n';
@@ -78,6 +79,7 @@ const IngestionRss = () => {
       </div>
     );
   }
+  const [displayHistory, setDisplayHistory] = React.useState(null);
   return (
     <div className={classes.container} data-testid="rss-feeds-page">
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('RSS feeds'), current: true }]} />
@@ -108,10 +110,16 @@ const IngestionRss = () => {
               refetchPaginationOptions={{ count: 200, ...paginationOptions }}
               dataColumns={dataColumns}
               initialLoading={props === null}
+              onOpenHistory={setDisplayHistory}
             />
           )}
         />
       </ListLines>
+      <IngestionHistoryDrawer
+        open={displayHistory !== null}
+        ingestionId={displayHistory}
+        onClose={() => setDisplayHistory(null)}
+      />
     </div>
   );
 };
