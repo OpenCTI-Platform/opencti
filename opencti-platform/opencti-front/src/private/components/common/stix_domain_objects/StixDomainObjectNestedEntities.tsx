@@ -5,21 +5,34 @@ import StixNestedRefRelationshipCreationFromEntityContainer from '../stix_nested
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import { QueryRenderer } from '../../../../relay/environment';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import { StixDomainObjectNestedEntitiesLinesQuery, StixDomainObjectNestedEntitiesLinesQuery$variables } from './__generated__/StixDomainObjectNestedEntitiesLinesQuery.graphql';
 import StixDomainObjectNestedEntitiesLines, { stixDomainObjectNestedEntitiesLinesQuery } from './StixDomainObjectNestedEntitiesLines';
+
+interface StixDomainObjectNestedEntitiesProps {
+  entityId: string;
+  entityType: string;
+}
 
 const StixDomainObjectNestedEntities = ({
   entityId,
   entityType,
-}) => {
+}: StixDomainObjectNestedEntitiesProps) => {
   const { t_i18n } = useFormatter();
 
-  const paginationOptions = {
+  const paginationOptions: StixDomainObjectNestedEntitiesLinesQuery$variables = {
     fromOrToId: entityId,
     search: '',
     orderBy: null,
     orderMode: 'desc',
+    count: 25,
   };
+
+  const queryRef = useQueryLoading<StixDomainObjectNestedEntitiesLinesQuery>(
+    stixDomainObjectNestedEntitiesLinesQuery,
+    paginationOptions,
+  );
   return (
     <div style={{ marginTop: 20 }}>
       <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
@@ -38,17 +51,15 @@ const StixDomainObjectNestedEntities = ({
       </Security>
       <div className="clearfix" />
       <List style={{ marginTop: -10 }}>
-        <QueryRenderer
-          query={stixDomainObjectNestedEntitiesLinesQuery}
-          variables={{ count: 25, ...paginationOptions }}
-          render={({ props }) => (
+        {queryRef && (
+          <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
             <StixDomainObjectNestedEntitiesLines
               stixDomainObjectId={entityId}
               paginationOptions={paginationOptions}
-              data={props}
+              queryRef={queryRef}
             />
-          )}
-        />
+          </React.Suspense>
+        )}
       </List>
     </div>
   );
