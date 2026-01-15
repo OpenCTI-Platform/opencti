@@ -62,7 +62,17 @@ const computeConfiguration = (envConfiguration: any, strategy: StrategyType) => 
         const currentValue = mappedConfig[configKey];
         logApp.info('[SSO MIGRATION] groups management configured', currentValue);
 
-        const { group_attributes, group_attribute, groups_mapping, groups_path, groups_scope, read_userinfo, token_reference } = currentValue;
+        const {
+          group_attributes,
+          group_attribute,
+          groups_mapping,
+          groups_path,
+          groups_scope,
+          read_userinfo,
+          token_reference,
+          groups_splitter,
+          groups_header,
+        } = currentValue;
         groups_management = {};
 
         // SAML, OpenId and LDAP
@@ -103,12 +113,32 @@ const computeConfiguration = (envConfiguration: any, strategy: StrategyType) => 
         } else if (strategy === StrategyType.LdapStrategy) {
           groups_management['group_attribute'] = 'cn';
         }
+        // CERT only
+        if (groups_splitter) {
+          groups_management['groups_splitter'] = groups_splitter;
+        } else if (strategy === StrategyType.ClientCertStrategy) {
+          groups_management['groups_splitter'] = ',';
+        }
+        // CERT only
+        if (groups_header) {
+          groups_management['groups_header'] = groups_header;
+        } else if (strategy === StrategyType.ClientCertStrategy) {
+          groups_management['groups_header'] = '';
+        }
       } else if (configKey === ORG_MANAGEMENT_KEY) {
       // 3. Extract organization management
         const currentValue = mappedConfig[configKey];
         logApp.info('[SSO MIGRATION] organizations management configured', currentValue);
 
-        const { organizations_path, organizations_mapping, organizations_scope, read_userinfo, token_reference } = currentValue;
+        const {
+          organizations_path,
+          organizations_mapping,
+          organizations_scope,
+          read_userinfo,
+          token_reference,
+          organizations_splitter,
+          organizations_header,
+        } = currentValue;
         organizations_management = {};
 
         // SAML, OpenId and LDAP
@@ -132,6 +162,18 @@ const computeConfiguration = (envConfiguration: any, strategy: StrategyType) => 
           organizations_management['token_reference'] = token_reference;
         } else if (strategy === StrategyType.OpenIdConnectStrategy) {
           organizations_management['token_reference'] = 'access_token';
+        }
+        // CERT only
+        if (organizations_splitter) {
+          organizations_management['organizations_splitter'] = organizations_splitter;
+        } else if (strategy === StrategyType.ClientCertStrategy) {
+          organizations_management['organizations_splitter'] = ',';
+        }
+        // CERT only
+        if (organizations_header) {
+          organizations_management['organizations_header'] = organizations_header;
+        } else if (strategy === StrategyType.ClientCertStrategy) {
+          organizations_management['organizations_header'] = '';
         }
 
         organizations_management['organizations_mapping'] = organizations_mapping ?? [];
@@ -244,6 +286,24 @@ const parseLDAPStrategyConfiguration = (ssoKey: string, envConfiguration: any, d
   return authEntity;
 };
 
+const parseCERTStrategyConfiguration = (ssoKey: string, envConfiguration: any, dryRun: boolean) => {
+  const { configuration, groups_management, organizations_management } = computeConfiguration(envConfiguration, StrategyType.ClientCertStrategy);
+  const identifier = envConfiguration?.identifier || 'cert';
+
+  const authEntity: SingleSignOnAddInput = {
+    identifier,
+    strategy: StrategyType.ClientCertStrategy,
+    name: computeAuthenticationName(ssoKey, envConfiguration, identifier),
+    label: computeAuthenticationLabel(ssoKey, envConfiguration),
+    description: `${StrategyType.ClientCertStrategy} Automatically ${dryRun ? 'detected' : 'created'} from ${ssoKey} at ${now()}`,
+    enabled: computeEnabled(envConfiguration),
+    configuration,
+    groups_management,
+    organizations_management,
+  };
+  return authEntity;
+};
+
 const parseLocalStrategyConfiguration = (ssoKey: string, envConfiguration: any, dryRun: boolean) => {
   const authEntity: SingleSignOnAddInput = {
     strategy: StrategyType.LocalStrategy,
@@ -285,7 +345,8 @@ export const parseSingleSignOnRunConfiguration = async (context: AuthContext, us
             authenticationStrategiesInput.push(parseLDAPStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
             break;
           case EnvStrategyType.STRATEGY_CERT:
-            logApp.warn(`[SSO MIGRATION] NOT IMPLEMENTED ${currentSSOconfig.strategy} detected.`);
+            logApp.info('[SSO MIGRATION] Looking at CERT migration');
+            authenticationStrategiesInput.push(parseCERTStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
             break;
           case EnvStrategyType.STRATEGY_HEADER:
             logApp.warn(`[SSO MIGRATION] NOT IMPLEMENTED ${currentSSOconfig.strategy} detected.`);
