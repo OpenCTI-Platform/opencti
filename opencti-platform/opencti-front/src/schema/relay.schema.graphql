@@ -870,6 +870,7 @@ type Synchronizer {
   ssl_verify: Boolean
   synchronized: Boolean
   queue_messages: Int!
+  toConfigurationExport: String!
 }
 
 type SynchronizerEdge {
@@ -8968,6 +8969,17 @@ input StixRefRelationshipsAddInput {
   toIds: [StixRef!]!
 }
 
+type SynchronizerAddInputFromImport {
+  name: String!
+  uri: String!
+  stream_id: String!
+  current_state_date: DateTime
+  listen_deletion: Boolean!
+  ssl_verify: Boolean!
+  no_dependencies: Boolean!
+  synchronized: Boolean!
+}
+
 type Query {
   stix(id: String!): String
   enrichmentConnectors(type: String!): [Connector]
@@ -9046,6 +9058,7 @@ type Query {
   rules: [Rule]
   ruleManagerInfo: RuleManager
   synchronizer(id: String!): Synchronizer
+  synchronizerAddInputFromImport(file: Upload!): SynchronizerAddInputFromImport!
   synchronizers(first: Int, after: ID, orderBy: SynchronizersOrdering, orderMode: OrderingMode, search: String): SynchronizerConnection
   synchronizerFetch(input: SynchronizerFetchInput): [RemoteStreamCollection]
   stixMetaObject(id: String!): StixMetaObject
