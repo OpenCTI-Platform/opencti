@@ -353,8 +353,7 @@ const StixDomainObjectNestedEntitiesLines = ({
       {stixNestedObjectsNodes
         && stixNestedObjectsNodes.map((edge) => {
           const { node } = edge;
-          const stixCoreObject = node.from?.id === stixDomainObjectId ? node.to : node.from;
-          if (!stixCoreObject) return;
+          const stixCoreObject = (node.from?.id === stixDomainObjectId ? node.to : node.from)!;
           const link = `${resolveLink(stixCoreObject.entity_type)}/${stixCoreObject.id}`;
           return (
             <ListItem
