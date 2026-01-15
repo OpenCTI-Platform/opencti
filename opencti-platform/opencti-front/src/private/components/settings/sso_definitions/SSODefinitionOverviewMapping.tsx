@@ -74,7 +74,7 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
     const rows: Row[] = [
       { key: 'name', value: name, mandatory: true },
       { key: 'identifier', value: identifier, mandatory: true },
-      { key: 'label', value: label, mandatory: true },
+      { key: 'label', value: label, mandatory: false },
       { key: 'description', value: description, mandatory: false },
       { key: 'enabled', value: enabled, mandatory: true },
       { key: 'strategy', value: strategy, mandatory: true },

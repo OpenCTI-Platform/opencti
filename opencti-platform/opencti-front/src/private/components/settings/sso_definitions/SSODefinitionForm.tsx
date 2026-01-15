@@ -211,15 +211,6 @@ const SSODefinitionForm = ({
                 />
               </div>
               <Field
-                component={TextField}
-                variant="standard"
-                name="label"
-                onSubmit={updateField}
-                label={t_i18n('Login Button Name')}
-                fullWidth
-                style={{ marginTop: 20 }}
-              />
-              <Field
                 component={SwitchField}
                 variant="standard"
                 name="enabled"
@@ -227,6 +218,15 @@ const SSODefinitionForm = ({
                 onChange={updateField}
                 label={t_i18n('Enable SAML authentication')}
                 containerstyle={{ marginLeft: 2, marginTop: 20 }}
+              />
+              <Field
+                component={TextField}
+                variant="standard"
+                name="label"
+                onSubmit={updateField}
+                label={t_i18n('Login Button Name')}
+                fullWidth
+                style={{ marginTop: 10 }}
               />
               {selectedStrategy === 'SAML' && <SAMLConfig updateField={updateField} />}
             </>
