@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { v4 as uuidv4 } from 'uuid';
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/dynamic';
 import * as R from 'ramda';
@@ -14,7 +13,7 @@ import { elList } from '../database/engine';
 import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, INPUT_OBJECTS, RULE_PREFIX } from '../schema/general';
 import { executionContext, isUserInPlatformOrganization, RULE_MANAGER_USER, SYSTEM_USER } from '../utils/access';
-import { buildEntityFilters, internalFindByIds, internalLoadById, fullRelationsList } from '../database/middleware-loader';
+import { buildEntityFilters, fullRelationsList, internalFindByIds, internalLoadById } from '../database/middleware-loader';
 import { getRule } from '../domain/rules';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
@@ -63,6 +62,7 @@ import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { getEntityFromCache } from '../database/cache';
 import { objects as getContainerObjects } from '../domain/container';
+import { ruleApply } from './ruleManager';
 import { doYield } from '../utils/eventloop-utils';
 
 // Task manager responsible to execute long manual tasks
@@ -262,16 +262,15 @@ const sendResultToQueue = async (context, user, task, objects, opts = {}) => {
     no_split: opts.forceNoSplit ?? false,
   });
 };
-
-const buildBundleElement = (element, actionType, operations) => {
+const buildBaseBundleElement = (element, additionalOCTIExtensions, standard_id) => {
   const baseObject = {
-    id: element.standard_id,
+    id: standard_id ?? element.standard_id,
     type: convertTypeToStixType(element.entity_type),
     extensions: {
       [STIX_EXT_OCTI]: {
         id: element.internal_id,
         type: element.entity_type,
-        ...baseOperationBuilder(actionType, operations, element),
+        ...additionalOCTIExtensions,
       },
     },
   };
@@ -284,6 +283,10 @@ const buildBundleElement = (element, actionType, operations) => {
     baseObject.target_ref = element.toId;
   }
   return baseObject;
+};
+const buildBundleElement = (element, actionType, operations) => {
+  const additionalExtensions = baseOperationBuilder(actionType, operations, element);
+  return buildBaseBundleElement(element, additionalExtensions);
 };
 
 const standardOperationCallback = async (context, user, task, actionType, operations) => {
@@ -514,6 +517,47 @@ const sharingOperationCallback = async (context, user, task, actionType, operati
   };
 };
 
+const RULE_APPLY_MAX_BUNDLE_SIZE = 1000;
+const ruleApplyCallback = async (context, user, task, ruleId) => {
+  return async (elements) => {
+    for (let index = 0; index < elements.length; index += 1) {
+      let inferredObjectsBundle = [];
+      let bundlesSent = 0;
+      const element = elements[index];
+      const addObjectToBundle = async (input, isRel = false) => {
+        const additionalExtensions = {
+          opencti_operation: isRel ? 'inferred_rel' : 'inferred_entity',
+          opencti_inferred_input: JSON.stringify(input),
+        };
+        const inferredEntityObject = buildBaseBundleElement(element, additionalExtensions, `${element.standard_id}_e_${inferredObjectsBundle.length}`);
+        inferredObjectsBundle.push(inferredEntityObject);
+        if (inferredObjectsBundle.length > RULE_APPLY_MAX_BUNDLE_SIZE) {
+          bundlesSent += 1;
+          await sendResultToQueue(context, user, task, inferredObjectsBundle);
+          inferredObjectsBundle = [];
+        }
+      };
+      // in case of rule apply we need to fake the apply of the rule and get the resulting inferred creations
+      const createInferredEntityCallback = async (_context, input, ruleContent, type) => {
+        await addObjectToBundle({ input, ruleContent, type });
+      };
+      const createInferredRelationCallback = async (_context, input, ruleContent, opts) => {
+        await addObjectToBundle({ input, ruleContent, opts }, true);
+      };
+      await ruleApply(context, user, element.internal_id, ruleId, createInferredEntityCallback, createInferredRelationCallback);
+      // Send inferred to queue
+      if (inferredObjectsBundle.length > 0) {
+        await sendResultToQueue(context, user, task, inferredObjectsBundle);
+      } else if (task.task_processed_number === 0 && bundlesSent === 0) {
+        // If not objects are created, we want to mark the work as processed
+        await updateProcessedTime(context, user, task.work_id, 'No inferred to create');
+      }
+    }
+    // Update task
+    await updateTask(context, task.id, { task_processed_number: task.task_processed_number + elements.length });
+  };
+};
+
 const computeOperationCallback = async (context, user, task, actionType, operations) => {
   // Handle specific case of adding elements in container
   if (actionType === 'KNOWLEDGE_CONTAINER') {
@@ -530,6 +574,11 @@ const computeOperationCallback = async (context, user, task, actionType, operati
   // Handle specific sharing operation, as container must share inner object
   if (isShareAction(actionType) || isUnshareAction(actionType)) {
     return sharingOperationCallback(context, user, task, actionType, operations);
+  }
+  // Handle specific case of rule apply: we must resolve all inferred objects that result from the rule apply
+  if (actionType === ACTION_TYPE_RULE_APPLY) {
+    const { rule } = task;
+    return ruleApplyCallback(context, RULE_MANAGER_USER, task, rule);
   }
   // If not, return standard callback
   return standardOperationCallback(context, user, task, actionType, operations);
