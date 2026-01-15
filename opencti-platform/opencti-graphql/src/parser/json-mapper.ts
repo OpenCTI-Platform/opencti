@@ -476,7 +476,7 @@ const jsonMappingExecution = async (context: AuthContext, user: AuthUser, data: 
 
   const bundle: StixBundle = {
     id: `bundle--${uuidv4()}`,
-    spec_version: STIX_SPEC_VERSION ?? '2.1',
+    spec_version: STIX_SPEC_VERSION,
     type: 'bundle',
     objects: finalObjects,
   };
