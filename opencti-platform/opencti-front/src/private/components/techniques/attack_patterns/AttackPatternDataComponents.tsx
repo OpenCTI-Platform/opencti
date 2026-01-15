@@ -1,6 +1,5 @@
 import { createFragmentContainer, graphql } from 'react-relay';
 import React, { FunctionComponent } from 'react';
-import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -17,6 +16,7 @@ import { addDataComponentsMutationRelationDelete } from './AddDataComponentsLine
 import { deleteNodeFromEdge } from '../../../../utils/store';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import Label from '../../../../components/common/label/Label';
 
 const AttackPatternDataComponentsComponent: FunctionComponent<{
   attackPattern: AttackPatternDataComponents_attackPattern$data;
@@ -48,13 +48,14 @@ const AttackPatternDataComponentsComponent: FunctionComponent<{
       }}
     >
       <div style={{ display: 'flex', flexDirection: 'row' }}>
-        <Typography variant="h3" gutterBottom={true}>
+        <Label action={(
+          <AddDataComponents attackPattern={attackPattern} />
+        )}
+        >
           {t_i18n('Data components')}
-        </Typography>
-        <AddDataComponents attackPattern={attackPattern} />
-        <div className="clearfix" />
+        </Label>
       </div>
-      <List style={{ marginTop: -10, paddingTop: 0 }}>
+      <List style={{ paddingTop: 0 }}>
         <FieldOrEmpty source={attackPattern.dataComponents?.edges}>
           {attackPattern.dataComponents?.edges
             ?.map((dataComponentEdge) => dataComponentEdge?.node)

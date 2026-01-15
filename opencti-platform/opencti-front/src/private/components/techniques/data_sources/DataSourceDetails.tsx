@@ -1,6 +1,5 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
@@ -9,6 +8,7 @@ import DataSourceDataComponents from './DataSourceDataComponents';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import Card from '../../../../components/common/card/Card';
+import Label from '../../../../components/common/label/Label';
 
 const DataSourceDetailsFragment = graphql`
   fragment DataSourceDetails_dataSource on DataSource {
@@ -43,19 +43,19 @@ const DataSourceDetailsComponent: FunctionComponent<DataSourceDetailsProps> = ({
   return (
     <div style={{ height: '100%' }}>
       <Card title={t_i18n('Details')}>
-        <Grid container={true} spacing={3}>
+        <Grid container={true} spacing={2}>
           <Grid item xs={6}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('Description')}
-            </Typography>
+            </Label>
             <FieldOrEmpty source={data.description}>
               <ExpandableMarkdown source={data.description} limit={300} />
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('Platforms')}
-            </Typography>
+            </Label>
             <FieldOrEmpty source={data.x_mitre_platforms}>
               {data.x_mitre_platforms?.map((platform) => (
                 <ItemOpenVocab
@@ -66,13 +66,11 @@ const DataSourceDetailsComponent: FunctionComponent<DataSourceDetailsProps> = ({
                 />
               ))}
             </FieldOrEmpty>
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
+            <Label
+              sx={{ marginTop: 2 }}
             >
               {t_i18n('Layers')}
-            </Typography>
+            </Label>
             <FieldOrEmpty source={data.collection_layers}>
               {data.collection_layers?.map((layer) => (
                 <ItemOpenVocab

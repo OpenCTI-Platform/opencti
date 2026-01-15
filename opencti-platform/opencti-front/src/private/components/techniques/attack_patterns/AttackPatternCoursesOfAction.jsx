@@ -1,6 +1,5 @@
 import React from 'react';
 import { filter } from 'ramda';
-import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -16,6 +15,7 @@ import { addCoursesOfActionMutationRelationDelete } from './AddCoursesOfActionLi
 import { commitMutation } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import Label from '../../../../components/common/label/Label';
 
 const AttackPatternCoursesOfActionComponent = ({ attackPattern }) => {
   const { t_i18n } = useFormatter();
@@ -45,16 +45,17 @@ const AttackPatternCoursesOfActionComponent = ({ attackPattern }) => {
   return (
     <div style={{ marginTop: 20 }}>
       <div style={{ display: 'flex', flexDirection: 'row' }}>
-        <Typography variant="h3" gutterBottom={true}>
+        <Label action={(
+          <AddCoursesOfAction
+            attackPattern={attackPattern}
+            attackPatternCoursesOfAction={attackPattern.coursesOfAction.edges}
+          />
+        )}
+        >
           {t_i18n('Courses of action')}
-        </Typography>
-        <AddCoursesOfAction
-          attackPattern={attackPattern}
-          attackPatternCoursesOfAction={attackPattern.coursesOfAction.edges}
-        />
+        </Label>
       </div>
-      <div className="clearfix" />
-      <List style={{ marginTop: -10 }}>
+      <List>
         <FieldOrEmpty source={attackPattern.coursesOfAction.edges}>
           {attackPattern.coursesOfAction.edges.map((courseOfActionEdge) => {
             const courseOfAction = courseOfActionEdge.node;

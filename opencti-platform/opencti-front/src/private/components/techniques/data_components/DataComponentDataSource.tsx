@@ -1,6 +1,5 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -15,6 +14,7 @@ import { DataComponentDataSources_dataComponent$data, DataComponentDataSources_d
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import Label from '../../../../components/common/label/Label';
 
 const dataComponentDataSourcesRemoveMutation = graphql`
   mutation DataComponentDataSourcesRemoveMutation(
@@ -68,12 +68,10 @@ const DataComponentDataSource: FunctionComponent<
 
   return (
     <div>
-      <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
+      <Label action={!dataSourceId && <AddDataSources dataComponentId={data.id} />}>
         {t_i18n('Data source')}
-      </Typography>
-      {!dataSourceId && <AddDataSources dataComponentId={data.id} />}
-      <div className="clearfix" />
-      <List style={{ marginTop: -10 }}>
+      </Label>
+      <List sx={{ py: 0 }}>
         {dataSourceId && (
           <ListItem
             key={data.dataSource?.id}

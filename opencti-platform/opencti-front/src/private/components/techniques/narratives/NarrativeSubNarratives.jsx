@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, filter } from 'ramda';
-import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -17,6 +16,7 @@ import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import Label from '../../../../components/common/label/Label';
 
 class NarrativeSubNarrativesComponent extends Component {
   removeSubNarrative(subNarrativeEdge) {
@@ -45,17 +45,18 @@ class NarrativeSubNarrativesComponent extends Component {
     const { t, narrative } = this.props;
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
+        <Label action={(
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <AddSubNarrative
+              narrative={narrative}
+              narrativeSubNarratives={narrative.subNarratives.edges}
+            />
+          </Security>
+        )}
+        >
           {t('Subnarratives')}
-        </Typography>
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <AddSubNarrative
-            narrative={narrative}
-            narrativeSubNarratives={narrative.subNarratives.edges}
-          />
-        </Security>
-        <div className="clearfix" />
-        <List style={{ marginTop: -10 }}>
+        </Label>
+        <List sx={{ py: 0 }}>
           {narrative.subNarratives.edges.map((subNarrativeEdge) => {
             const subNarrative = subNarrativeEdge.node;
             return (

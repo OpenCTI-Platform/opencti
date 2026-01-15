@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
 import IconButton from '@common/button/IconButton';
 import { Add } from '@mui/icons-material';
 import Drawer from '../../common/drawer/Drawer';
@@ -10,52 +9,6 @@ import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
 import AddSubAttackPatternsLines, { addSubAttackPatternsLinesQuery } from './AddSubAttackPatternsLines';
 import AttackPatternCreation from './AttackPatternCreation';
-
-const styles = (theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
-  createButton: {
-    float: 'left',
-    marginTop: -15,
-  },
-  title: {
-    float: 'left',
-  },
-  search: {
-    marginLeft: 'auto',
-    marginRight: ' 20px',
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  container: {
-    padding: 0,
-  },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.grey[700],
-  },
-  avatar: {
-    width: 24,
-    height: 24,
-  },
-});
 
 class AddSubAttackPattern extends Component {
   constructor(props) {
@@ -76,7 +29,7 @@ class AddSubAttackPattern extends Component {
   }
 
   render() {
-    const { t, classes, attackPattern, attackPatternSubAttackPatterns } = this.props;
+    const { t, attackPattern, attackPatternSubAttackPatterns } = this.props;
     const paginationOptions = {
       search: this.state.search,
     };
@@ -86,7 +39,6 @@ class AddSubAttackPattern extends Component {
           color="primary"
           aria-label="Add"
           onClick={this.handleOpen.bind(this)}
-          classes={{ root: classes.createButton }}
         >
           <Add fontSize="small" />
         </IconButton>
@@ -150,4 +102,4 @@ AddSubAttackPattern.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(AddSubAttackPattern);
+export default compose(inject18n)(AddSubAttackPattern);
