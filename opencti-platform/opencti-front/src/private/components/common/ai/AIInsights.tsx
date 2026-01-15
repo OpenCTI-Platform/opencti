@@ -166,7 +166,6 @@ const AIInsights = ({
   id,
   tabs = ['activity', 'containers', 'forecast', 'history'],
   defaultTab = 'activity',
-  floating = false,
   onlyIcon = false,
   isContainer = false,
 }: AIInsightProps) => {
