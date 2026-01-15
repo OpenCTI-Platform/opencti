@@ -4,13 +4,13 @@ import { compose } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import Card from '@common/card/Card';
 import inject18n from '../../../../components/i18n';
 import ItemLikelihood from '../../../../components/ItemLikelihood';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import Label from '../../../../components/common/label/Label';
 
 const styles = (theme) => ({
   chip: {
@@ -32,20 +32,18 @@ class NoteDetailsComponent extends Component {
         <Card title={t('Entity details')}>
           <Grid container={true} spacing={3}>
             <Grid item xs={9}>
-              <Typography variant="h3" gutterBottom={true}>
+              <Label>
                 {t('Abstract')}
-              </Typography>
+              </Label>
               <MarkdownDisplay
                 content={note.attribute_abstract}
                 remarkGfmPlugin={true}
               />
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
+              <Label
+                sx={{ marginTop: 2 }}
               >
                 {t('Content')}
-              </Typography>
+              </Label>
               <MarkdownDisplay
                 content={note.content}
                 remarkGfmPlugin={true}
@@ -53,9 +51,9 @@ class NoteDetailsComponent extends Component {
               />
             </Grid>
             <Grid item xs={3}>
-              <Typography variant="h3" gutterBottom={true}>
+              <Label>
                 {t('Note types')}
-              </Typography>
+              </Label>
               <FieldOrEmpty source={note.note_types}>
                 {note.note_types?.map((noteType) => (
                   <Chip
@@ -66,13 +64,11 @@ class NoteDetailsComponent extends Component {
                   />
                 ))}
               </FieldOrEmpty>
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
+              <Label
+                sx={{ marginTop: 2 }}
               >
                 {t('Likelihood')}
-              </Typography>
+              </Label>
               <ItemLikelihood likelihood={note.likelihood} />
             </Grid>
           </Grid>

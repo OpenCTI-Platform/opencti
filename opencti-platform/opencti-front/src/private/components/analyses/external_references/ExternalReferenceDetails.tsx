@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import { OpenInBrowserOutlined } from '@mui/icons-material';
 import IconButton from '@common/button/IconButton';
@@ -16,6 +15,7 @@ import { useFormatter } from '../../../../components/i18n';
 import ItemCreators from '../../../../components/ItemCreators';
 import Transition from '../../../../components/Transition';
 import Card from '../../../../components/common/card/Card';
+import Label from '../../../../components/common/label/Label';
 
 interface ExternalReferenceDetailsComponentProps {
   externalReference: ExternalReferenceDetails_externalReference$data;
@@ -50,23 +50,21 @@ const ExternalReferenceDetailsComponent = ({
       <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={3}>
           <Grid item xs={6}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('External ID')}
-            </Typography>
+            </Label>
             {externalReference.external_id ?? '-'}
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
+            <Label
+              sx={{ marginTop: 2 }}
             >
               {t_i18n('Creators')}
-            </Typography>
+            </Label>
             <ItemCreators creators={externalReference.creators ?? []} />
           </Grid>
           <Grid item xs={6}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('URL')}
-            </Typography>
+            </Label>
             <pre style={{ position: 'relative', minHeight: 35 }}>
               {externalReference.url}
               <Tooltip title={t_i18n('Browse the link')}>
