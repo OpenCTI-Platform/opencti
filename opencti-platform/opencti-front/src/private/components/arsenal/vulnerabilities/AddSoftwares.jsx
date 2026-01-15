@@ -12,10 +12,6 @@ import StixCyberObservableCreation from '../../observations/stix_cyber_observabl
 import Drawer from '../../common/drawer/Drawer';
 
 const styles = (theme) => ({
-  createButton: {
-    float: 'left',
-    marginTop: -15,
-  },
   title: {
     float: 'left',
   },
@@ -76,7 +72,6 @@ class AddSoftwares extends Component {
           color="primary"
           aria-label="Add"
           onClick={this.handleOpen.bind(this)}
-          classes={{ root: classes.createButton }}
         >
           <Add fontSize="small" />
         </IconButton>

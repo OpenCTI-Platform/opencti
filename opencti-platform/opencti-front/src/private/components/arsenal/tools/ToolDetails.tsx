@@ -3,7 +3,6 @@ import { graphql, useFragment } from 'react-relay';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import Tooltip from '@mui/material/Tooltip';
 import { ToolDetails_tool$key } from '@components/arsenal/tools/__generated__/ToolDetails_tool.graphql';
@@ -14,6 +13,7 @@ import { truncate } from '../../../../utils/String';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import Card from '../../../../components/common/card/Card';
+import Label from '../../../../components/common/label/Label';
 
 const ToolDetailsFragment = graphql`
  fragment ToolDetails_tool on Tool {
@@ -46,17 +46,15 @@ const ToolDetails: FunctionComponent<ToolDetailsProps> = ({ tools }) => {
       <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={3}>
           <Grid item xs={6}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('Description')}
-            </Typography>
+            </Label>
             <ExpandableMarkdown source={tool.description} limit={400} />
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
+            <Label
+              sx={{ marginTop: 2 }}
             >
               {t_i18n('Tool version')}
-            </Typography>
+            </Label>
             <FieldOrEmpty source={tool.tool_version}>
               <Tooltip title={tool.tool_version}>
                 <span>{truncate(tool.tool_version, 20)}</span>
@@ -64,9 +62,9 @@ const ToolDetails: FunctionComponent<ToolDetailsProps> = ({ tools }) => {
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('Tool types')}
-            </Typography>
+            </Label>
             {(tool.tool_types && tool.tool_types.length > 0) ? (
               <List>
                 {tool.tool_types.map((tool_type) => (

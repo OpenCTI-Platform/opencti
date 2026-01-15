@@ -45,7 +45,7 @@ const StixCoreObjectKillChainPhasesView = ({
         {t_i18n('Kill chain phases')}
       </Label>
       <FieldOrEmpty source={killChainPhases}>
-        <List>
+        <List sx={{ py: 0 }}>
           {killChainPhases.map((killChainPhase) => {
             return (
               <ListItem
