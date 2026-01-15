@@ -313,7 +313,7 @@ describe('Migration of SSO environment test coverage', () => {
       });
     });
   });
-  describe.todo('Dry run of OpenId migrations', () => {
+  describe('Dry run of OpenId migrations', () => {
     it('should OpenId minimal configuration works', async () => {
       const configuration = {
         oic_minimal: {
@@ -333,13 +333,12 @@ describe('Migration of SSO environment test coverage', () => {
       const minimalOpenIdConfiguration = result[0];
 
       expect(minimalOpenIdConfiguration.strategy).toBe('OpenIDConnectStrategy');
-      expect(minimalOpenIdConfiguration.name).toMatch(/oic_minimal-*/);
       expect(minimalOpenIdConfiguration.label).toBe('oic_minimal');
       expect(minimalOpenIdConfiguration.enabled).toBeTruthy();
       expect(minimalOpenIdConfiguration.configuration).toStrictEqual([
         { key: 'issuer', type: 'string', value: 'http://localhost:9999/realms/master' },
-        { key: 'clientID', type: 'string', value: 'openctioid' },
-        { key: 'clientSecret', type: 'string', value: 'youShallNotPass' },
+        { key: 'client_id', type: 'string', value: 'openctioid' },
+        { key: 'client_secret', type: 'string', value: 'youShallNotPass' },
         { key: 'redirect_uris', type: 'array', value: '["http://localhost:4000/auth/oic/callback"]' },
       ]);
     });
@@ -364,15 +363,15 @@ describe('Migration of SSO environment test coverage', () => {
 
       const allTypesOpenIdConfiguration = result[0];
 
-      expect(allTypesOpenIdConfiguration.strategy).toBe('OpenIdStrategy');
-      expect(allTypesOpenIdConfiguration.name).toMatch(/My test OpenId with Types-*/);
-      expect(allTypesOpenIdConfiguration.label).toBe('My test OpenId with Types');
+      expect(allTypesOpenIdConfiguration.strategy).toBe('OpenIDConnectStrategy');
+      expect(allTypesOpenIdConfiguration.label).toBe('My test oic with Types');
       expect(allTypesOpenIdConfiguration.enabled).toBeTruthy();
       expect(allTypesOpenIdConfiguration.configuration).toStrictEqual([
         { key: 'issuer', type: 'string', value: 'http://localhost:9999/realms/master' },
-        { key: 'clientID', type: 'string', value: 'openctioid' },
-        { key: 'clientSecret', type: 'string', value: 'youShallNotPass' },
+        { key: 'client_id', type: 'string', value: 'openctioid' },
+        { key: 'client_secret', type: 'string', value: 'youShallNotPass' },
         { key: 'redirect_uris', type: 'array', value: '["http://localhost:4000/auth/oic/callback"]' },
+        { key: 'entry_point', type: 'string', value: 'http://localhost:7777/realms/master/protocol/oic' },
       ]);
     });
 
@@ -389,7 +388,6 @@ describe('Migration of SSO environment test coverage', () => {
             logout_remote: true,
             prevent_default_groups: false,
             groups_management: {
-              groups_attributes: ['roles'],
               groups_path: ['realm_access.roles'],
               groups_mapping: ['default-roles-master:Connectors'],
               read_userinfo: false,
@@ -398,56 +396,28 @@ describe('Migration of SSO environment test coverage', () => {
             },
           },
         },
-        oic_groups2: {
-          identifier: 'oic_groups_default',
-          strategy: 'OpenIDConnectStrategy',
-          config: {
-            label: 'My test OpenId with Groups Mapping empty',
-            issuer: 'http://localhost:9999/realms/master',
-            client_id: 'openctioid',
-            client_secret: 'youShallNotPass',
-            redirect_uris: ['http://localhost:4000/auth/oic/callback'],
-            groups_management: {
-            },
-          },
-        },
       };
 
       const result = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
-
       const groupManagementOpenIdConfiguration = result[0];
       expect(groupManagementOpenIdConfiguration.strategy).toBe('OpenIDConnectStrategy');
-      expect(groupManagementOpenIdConfiguration.name).toMatch(/My test OpenId with Groups-*/);
-      expect(groupManagementOpenIdConfiguration.label).toBe('My test OpenId with Groups');
+      expect(groupManagementOpenIdConfiguration.label).toBe('oic_groups');
       expect(groupManagementOpenIdConfiguration.enabled).toBeTruthy();
       expect(groupManagementOpenIdConfiguration.configuration).toStrictEqual([
         { key: 'issuer', type: 'string', value: 'http://localhost:9999/realms/master' },
-        { key: 'clientID', type: 'string', value: 'openctioid' },
-        { key: 'clientSecret', type: 'string', value: 'youShallNotPass' },
+        { key: 'client_id', type: 'string', value: 'openctioid' },
+        { key: 'client_secret', type: 'string', value: 'youShallNotPass' },
         { key: 'redirect_uris', type: 'array', value: '["http://localhost:4000/auth/oic/callback"]' },
+        { key: 'logout_remote', type: 'boolean', value: 'true' },
+        { key: 'prevent_default_groups', type: 'boolean', value: 'false' },
       ]);
 
       expect(groupManagementOpenIdConfiguration.groups_management).toStrictEqual({
-        group_attributes: ['oicgroup1', 'oicgroup2'],
-        groups_path: ['groups'],
-        groups_mapping: ['group1:Administrators', 'group2:Connectors'],
-      });
-
-      const groupManagementEmptyConfiguration = result[1];
-      expect(groupManagementEmptyConfiguration.strategy).toBe('OpenIDConnectStrategy');
-      expect(groupManagementEmptyConfiguration.name).toMatch(/My test OpenId with Groups Mapping empty-*/);
-      expect(groupManagementEmptyConfiguration.label).toBe('My test OpenId with Groups Mapping empty');
-      expect(groupManagementEmptyConfiguration.enabled).toBeTruthy();
-      expect(groupManagementEmptyConfiguration.configuration).toStrictEqual([
-        { key: 'issuer', type: 'string', value: 'http://localhost:9999/realms/master' },
-        { key: 'clientID', type: 'string', value: 'openctioid' },
-        { key: 'clientSecret', type: 'string', value: 'youShallNotPass' },
-        { key: 'redirect_uris', type: 'array', value: '["http://localhost:4000/auth/oic/callback"]' },
-      ]);
-
-      expect(groupManagementEmptyConfiguration.groups_management).toStrictEqual({
-        group_attributes: ['groups'],
-        groups_mapping: [],
+        groups_mapping: ['default-roles-master:Connectors'],
+        groups_path: ['realm_access.roles'],
+        read_userinfo: false,
+        token_reference: 'token',
+        groups_scope: 'groupsScope',
       });
     });
 
@@ -478,23 +448,21 @@ describe('Migration of SSO environment test coverage', () => {
       const multiOicConfigurations = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
 
       expect(multiOicConfigurations[0].strategy).toBe('OpenIDConnectStrategy');
-      expect(multiOicConfigurations[0].name).toMatch(/oic_1-*/);
       expect(multiOicConfigurations[0].label).toBe('oic_1');
       expect(multiOicConfigurations[0].enabled).toBeTruthy();
       expect(multiOicConfigurations[0].configuration).toStrictEqual([
         { key: 'issuer', type: 'string', value: 'http://localhost:9999/realms/master' },
-        { key: 'clientID', type: 'string', value: 'openctioid' },
-        { key: 'clientSecret', type: 'string', value: 'youShallNotPass' },
+        { key: 'client_id', type: 'string', value: 'openctioid' },
+        { key: 'client_secret', type: 'string', value: 'youShallNotPass' },
         { key: 'redirect_uris', type: 'array', value: '["http://localhost:4000/auth/oic/callback"]' },
       ]);
       expect(multiOicConfigurations[1].strategy).toBe('OpenIDConnectStrategy');
-      expect(multiOicConfigurations[1].name).toMatch(/oic_2-*/);
       expect(multiOicConfigurations[1].label).toBe('oic_2');
       expect(multiOicConfigurations[1].enabled).toBeTruthy();
       expect(multiOicConfigurations[1].configuration).toStrictEqual([
         { key: 'issuer', type: 'string', value: 'http://localhost:9999/realms/master' },
-        { key: 'clientID', type: 'string', value: 'openctioid' },
-        { key: 'clientSecret', type: 'string', value: 'youShallNotPass' },
+        { key: 'client_id', type: 'string', value: 'openctioid' },
+        { key: 'client_secret', type: 'string', value: 'youShallNotPass' },
         { key: 'redirect_uris', type: 'array', value: '["http://localhost:4000/auth/oic/callback"]' },
       ]);
     });
@@ -521,102 +489,202 @@ describe('Migration of SSO environment test coverage', () => {
       const result = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
       const defaultValuesConfiguration = result[0];
       expect(defaultValuesConfiguration.strategy).toBe('OpenIDConnectStrategy');
-      expect(defaultValuesConfiguration.name).toMatch(/My test OpenId with default values*/);
       expect(defaultValuesConfiguration.label).toBe('My test OpenId with default values');
       expect(defaultValuesConfiguration.enabled).toBeTruthy();
       expect(defaultValuesConfiguration.configuration).toStrictEqual([
         { key: 'issuer', type: 'string', value: 'http://localhost:9999/realms/master' },
-        { key: 'clientID', type: 'string', value: 'openctioid' },
-        { key: 'clientSecret', type: 'string', value: 'youShallNotPass' },
+        { key: 'client_id', type: 'string', value: 'openctioid' },
+        { key: 'client_secret', type: 'string', value: 'youShallNotPass' },
         { key: 'redirect_uris', type: 'array', value: '["http://localhost:4000/auth/oic/callback"]' },
       ]);
 
       expect(defaultValuesConfiguration.groups_management).toStrictEqual({
-        group_attributes: ['groups'],
+        groups_path: ['groups'],
         groups_mapping: [],
+        read_userinfo: false,
+        token_reference: 'access_token',
       });
       expect(defaultValuesConfiguration.organizations_management).toStrictEqual({
-        organizations_mapping: [],
         organizations_path: ['organizations'],
+        organizations_mapping: [],
+        read_userinfo: false,
+        token_reference: 'access_token',
       });
     });
-
-    it.todo('should OpenID configuration works', async () => {
+  });
+  describe('Dry run of LDAP migrations', () => {
+    it('should LDAP minimal configuration works', async () => {
       const configuration = {
-        oic_simple: {
-          identifier: 'oic_simple',
-          strategy: 'OpenIDConnectStrategy',
+        ldap_minimal: {
+          identifier: 'ldap_minimal',
+          strategy: 'LdapStrategy',
           config: {
-            issuer: 'http://localhost:9999/realms/master',
-            client_id: 'openctioid',
-            client_secret: 'youShallNotPass',
-            redirect_uris: ['http://localhost:4000/auth/oic/callback'],
-            logout_remote: true,
-            prevent_default_groups: false,
-          },
-        },
-        oic_groups: {
-          identifier: 'oic_groups',
-          strategy: 'OpenIDConnectStrategy',
-          config: {
-            label: 'OpenID for migration test with groups',
-            issuer: 'http://localhost:9999/realms/master',
-            client_id: 'openctioid',
-            client_secret: 'youShallNotPass',
-            redirect_uris: ['http://localhost:4000/auth/oic/callback'],
-            logout_remote: true,
-            prevent_default_groups: false,
-            groups_management: {
-              groups_attributes: ['roles'],
-              groups_path: ['realm_access.roles'],
-              groups_mapping: ['default-roles-master:Connectors'],
-              read_userinfo: false,
-              token_reference: 'token',
-            },
-          },
-        },
-        oic_orgs: {
-          identifier: 'oic_orgs',
-          strategy: 'OpenIDConnectStrategy',
-          config: {
-            label: 'OpenID for migration test with organizations',
-            issuer: 'http://localhost:9999/realms/master',
-            client_id: 'openctioid',
-            client_secret: 'youShallNotPass',
-            redirect_uris: ['http://localhost:4000/auth/oic/callback'],
-            logout_remote: true,
-            prevent_default_groups: false,
-            organizations_management: {
-              organizations_path: ['Role'],
-              organizations_mapping: ['manage-authorization:Filigran', 'create-realm:Filigran', 'uma_authorization:Filigran', 'offline_access:Filigran'],
-            },
+            url: 'ldap://51.178.68.23:390',
+            bind_dn: 'CN=user1,DC=fr',
+            bind_credentials: 'credentials',
+            search_base: 'CN=user1',
+            search_filter: '(cn={{username}})',
+            mail_attribute: 'userPrincipalName',
           },
         },
       };
 
       const result = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
 
-      const simpleOpenIdConfiguration = result[0];
-      const groupManagementOpenIdConfiguration = result[1];
-      const orgManagementOpenIdConfiguration = result[2];
+      const minimalLDAPConfiguration = result[0];
 
-      expect(simpleOpenIdConfiguration.strategy).toBe('OpenIDConnectStrategy');
-      expect(simpleOpenIdConfiguration.name).toMatch(/oic_simple-*/);
-      expect(simpleOpenIdConfiguration.enabled).toBeTruthy();
+      expect(minimalLDAPConfiguration.strategy).toBe('LdapStrategy');
+      expect(minimalLDAPConfiguration.label).toBe('ldap_minimal');
+      expect(minimalLDAPConfiguration.enabled).toBeTruthy();
+      expect(minimalLDAPConfiguration.configuration).toStrictEqual([
+        { key: 'url', type: 'string', value: 'ldap://51.178.68.23:390' },
+        { key: 'bindDN', type: 'string', value: 'CN=user1,DC=fr' },
+        { key: 'bindCredentials', type: 'string', value: 'credentials' },
+        { key: 'searchBase', type: 'string', value: 'CN=user1' },
+        { key: 'searchFilter', type: 'string', value: '(cn={{username}})' },
+        { key: 'mail_attribute', type: 'string', value: 'userPrincipalName' },
+      ]);
+    });
 
-      expect(groupManagementOpenIdConfiguration.strategy).toBe('OpenIDConnectStrategy');
-      expect(groupManagementOpenIdConfiguration.name).toMatch(/OpenID for migration test with groups-*/);
-      expect(groupManagementOpenIdConfiguration.enabled).toBeTruthy();
-      expect(groupManagementOpenIdConfiguration.groups_management?.token_reference).toBe('token');
+    it('should LDAP with groups mapping in configuration works', async () => {
+      const configuration = {
+        ldap_groups: {
+          identifier: 'ldap_groups',
+          strategy: 'LdapStrategy',
+          config: {
+            url: 'ldap://51.178.68.23:390',
+            bind_dn: 'CN=user1,DC=fr',
+            bind_credentials: 'credentials',
+            search_base: 'CN=user1',
+            search_filter: '(cn={{username}})',
+            mail_attribute: 'userPrincipalName',
+            groups_management: {
+              groups_path: ['realm_access.roles'],
+              groups_mapping: ['default-roles-master:Connectors'],
+            },
+          },
+        },
+      };
 
-      expect(orgManagementOpenIdConfiguration.strategy).toBe('OpenIDConnectStrategy');
-      expect(orgManagementOpenIdConfiguration.name).toMatch(/OpenID for migration test with organizations-*/);
-      expect(orgManagementOpenIdConfiguration.enabled).toBeTruthy();
+      const result = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
+      const groupManagementLDAPConfiguration = result[0];
+      expect(groupManagementLDAPConfiguration.strategy).toBe('LdapStrategy');
+      expect(groupManagementLDAPConfiguration.label).toBe('ldap_groups');
+      expect(groupManagementLDAPConfiguration.enabled).toBeTruthy();
+      expect(groupManagementLDAPConfiguration.configuration).toStrictEqual([
+        { key: 'url', type: 'string', value: 'ldap://51.178.68.23:390' },
+        { key: 'bindDN', type: 'string', value: 'CN=user1,DC=fr' },
+        { key: 'bindCredentials', type: 'string', value: 'credentials' },
+        { key: 'searchBase', type: 'string', value: 'CN=user1' },
+        { key: 'searchFilter', type: 'string', value: '(cn={{username}})' },
+        { key: 'mail_attribute', type: 'string', value: 'userPrincipalName' },
+      ]);
 
-      expect(result.length).toBe(3);
+      expect(groupManagementLDAPConfiguration.groups_management).toStrictEqual({
+        group_attribute: 'cn',
+        groups_mapping: ['default-roles-master:Connectors'],
+        groups_path: ['realm_access.roles'],
+      });
+    });
+
+    it('should LDAP with several LDAP config works', async () => {
+      const configuration = {
+        ldap_1: {
+          identifier: 'ldap_1',
+          strategy: 'LdapStrategy',
+          config: {
+            url: 'ldap://51.178.68.23:390',
+            bind_dn: 'CN=user1,DC=fr',
+            bind_credentials: 'credentials',
+            search_base: 'CN=user1',
+            search_filter: '(cn={{username}})',
+            mail_attribute: 'userPrincipalName',
+          },
+        },
+        ldap_2: {
+          identifier: 'ldap_2',
+          strategy: 'LdapStrategy',
+          config: {
+            url: 'ldap://51.178.68.23:390',
+            bind_dn: 'CN=user2,DC=fr',
+            bind_credentials: 'credentials',
+            search_base: 'CN=user2',
+            search_filter: '(cn={{username}})',
+            mail_attribute: 'userPrincipalName',
+          },
+        },
+      };
+
+      const multiOicConfigurations = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
+
+      expect(multiOicConfigurations[0].strategy).toBe('LdapStrategy');
+      expect(multiOicConfigurations[0].label).toBe('ldap_1');
+      expect(multiOicConfigurations[0].enabled).toBeTruthy();
+      expect(multiOicConfigurations[0].configuration).toStrictEqual([
+        { key: 'url', type: 'string', value: 'ldap://51.178.68.23:390' },
+        { key: 'bindDN', type: 'string', value: 'CN=user1,DC=fr' },
+        { key: 'bindCredentials', type: 'string', value: 'credentials' },
+        { key: 'searchBase', type: 'string', value: 'CN=user1' },
+        { key: 'searchFilter', type: 'string', value: '(cn={{username}})' },
+        { key: 'mail_attribute', type: 'string', value: 'userPrincipalName' },
+      ]);
+      expect(multiOicConfigurations[1].strategy).toBe('LdapStrategy');
+      expect(multiOicConfigurations[1].label).toBe('ldap_2');
+      expect(multiOicConfigurations[1].enabled).toBeTruthy();
+      expect(multiOicConfigurations[1].configuration).toStrictEqual([
+        { key: 'url', type: 'string', value: 'ldap://51.178.68.23:390' },
+        { key: 'bindDN', type: 'string', value: 'CN=user2,DC=fr' },
+        { key: 'bindCredentials', type: 'string', value: 'credentials' },
+        { key: 'searchBase', type: 'string', value: 'CN=user2' },
+        { key: 'searchFilter', type: 'string', value: '(cn={{username}})' },
+        { key: 'mail_attribute', type: 'string', value: 'userPrincipalName' },
+      ]);
+    });
+
+    it('should LDAP with default values works', async () => {
+      const configuration = {
+        ldap_default: {
+          identifier: 'ldap_default',
+          strategy: 'LdapStrategy',
+          config: {
+            url: 'ldap://51.178.68.23:390',
+            bind_dn: 'CN=user1,DC=fr',
+            bind_credentials: 'credentials',
+            search_base: 'CN=user1',
+            search_filter: '(cn={{username}})',
+            mail_attribute: 'userPrincipalName',
+            groups_management: {
+            },
+            organizations_management: {
+            },
+          },
+        },
+      };
+
+      const result = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
+      const defaultValuesConfiguration = result[0];
+      expect(defaultValuesConfiguration.strategy).toBe('LdapStrategy');
+      expect(defaultValuesConfiguration.label).toBe('ldap_default');
+      expect(defaultValuesConfiguration.enabled).toBeTruthy();
+      expect(defaultValuesConfiguration.configuration).toStrictEqual([
+        { key: 'url', type: 'string', value: 'ldap://51.178.68.23:390' },
+        { key: 'bindDN', type: 'string', value: 'CN=user1,DC=fr' },
+        { key: 'bindCredentials', type: 'string', value: 'credentials' },
+        { key: 'searchBase', type: 'string', value: 'CN=user1' },
+        { key: 'searchFilter', type: 'string', value: '(cn={{username}})' },
+        { key: 'mail_attribute', type: 'string', value: 'userPrincipalName' },
+      ]);
+
+      expect(defaultValuesConfiguration.groups_management).toStrictEqual({
+        group_attribute: 'cn',
+        groups_mapping: [],
+      });
+      expect(defaultValuesConfiguration.organizations_management).toStrictEqual({
+        organizations_path: ['organizations'],
+        organizations_mapping: [],
+      });
     });
   });
-
   describe('Actual run of migrations', () => {
     it('should SAML configuration works', async () => {
       const configuration = {

@@ -9703,6 +9703,7 @@ export enum GroupingsOrdering {
 
 export type GroupsManagement = {
   __typename?: 'GroupsManagement';
+  group_attribute?: Maybe<Scalars['String']['output']>;
   group_attributes?: Maybe<Array<Scalars['String']['output']>>;
   groups_mapping?: Maybe<Array<Scalars['String']['output']>>;
   groups_path?: Maybe<Array<Scalars['String']['output']>>;
@@ -9712,9 +9713,11 @@ export type GroupsManagement = {
 };
 
 export type GroupsManagementInput = {
+  group_attribute?: InputMaybe<Scalars['String']['input']>;
   group_attributes?: InputMaybe<Array<Scalars['String']['input']>>;
   groups_mapping?: InputMaybe<Array<Scalars['String']['input']>>;
   groups_path?: InputMaybe<Array<Scalars['String']['input']>>;
+  groups_scope?: InputMaybe<Scalars['String']['input']>;
   read_userinfo?: InputMaybe<Scalars['Boolean']['input']>;
   token_reference?: InputMaybe<Scalars['String']['input']>;
 };
@@ -20460,12 +20463,17 @@ export type OrganizationsManagement = {
   organizations_mapping: Array<Scalars['String']['output']>;
   organizations_path?: Maybe<Array<Scalars['String']['output']>>;
   organizations_scope?: Maybe<Scalars['String']['output']>;
+  read_userinfo?: Maybe<Scalars['Boolean']['output']>;
+  token_reference?: Maybe<Scalars['String']['output']>;
 };
 
 export type OrganizationsManagementInput = {
   organizations_default?: InputMaybe<Array<Scalars['String']['input']>>;
   organizations_mapping?: InputMaybe<Array<Scalars['String']['input']>>;
   organizations_path?: InputMaybe<Array<Scalars['String']['input']>>;
+  organizations_scope?: InputMaybe<Scalars['String']['input']>;
+  read_userinfo?: InputMaybe<Scalars['Boolean']['input']>;
+  token_reference?: InputMaybe<Scalars['String']['input']>;
 };
 
 export enum OrganizationsOrdering {
@@ -41711,6 +41719,7 @@ export type GroupingEdgeResolvers<ContextType = any, ParentType extends Resolver
 }>;
 
 export type GroupsManagementResolvers<ContextType = any, ParentType extends ResolversParentTypes['GroupsManagement'] = ResolversParentTypes['GroupsManagement']> = ResolversObject<{
+  group_attribute?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   group_attributes?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   groups_mapping?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   groups_path?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -44783,6 +44792,8 @@ export type OrganizationsManagementResolvers<ContextType = any, ParentType exten
   organizations_mapping?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   organizations_path?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   organizations_scope?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  read_userinfo?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  token_reference?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type OtpElementResolvers<ContextType = any, ParentType extends ResolversParentTypes['OtpElement'] = ResolversParentTypes['OtpElement']> = ResolversObject<{
