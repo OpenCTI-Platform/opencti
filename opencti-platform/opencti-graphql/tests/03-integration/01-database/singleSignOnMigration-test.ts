@@ -417,6 +417,7 @@ describe('Migration of SSO environment test coverage', () => {
         groups_path: ['realm_access.roles'],
         read_userinfo: false,
         token_reference: 'token',
+        groups_scope: 'groupsScope',
       });
     });
 
@@ -506,6 +507,8 @@ describe('Migration of SSO environment test coverage', () => {
       expect(defaultValuesConfiguration.organizations_management).toStrictEqual({
         organizations_path: ['organizations'],
         organizations_mapping: [],
+        read_userinfo: false,
+        token_reference: 'access_token',
       });
     });
   });
