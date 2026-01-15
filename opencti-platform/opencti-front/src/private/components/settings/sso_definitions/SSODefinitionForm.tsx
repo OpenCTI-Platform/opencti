@@ -184,7 +184,7 @@ const SSODefinitionForm = ({
             >
               <Tab label={t_i18n('SSO Configuration')} />
               <Tab label={t_i18n('Groups configuration')} />
-              <Tab label={t_i18n('Organization configuration')} />
+              <Tab label={t_i18n('Organizations configuration')} />
             </Tabs>
           </Box>
           {currentTab === 0 && (
