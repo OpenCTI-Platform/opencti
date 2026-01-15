@@ -36,42 +36,42 @@ const StixItemMarkings = (props) => {
   const inlineStylesDark = {
     white: {
       backgroundColor: theme.palette.common.white,
-      color: '#313235',
+      color: theme.palette.tertiary.grey[700],
     },
     green: {
-      backgroundColor: theme.palette.success.main,
+      backgroundColor: theme.palette.tertiary.green[600],
     },
     blue: {
-      backgroundColor: '#001BDB',
+      backgroundColor: theme.palette.tertiary.darkBlue[500],
     },
     red: {
-      backgroundColor: theme.palette.error.dark,
+      backgroundColor: theme.palette.tertiary.red[700],
     },
     orange: {
-      backgroundColor: '#E6700F',
+      backgroundColor: theme.palette.tertiary.orange[500],
     },
   };
 
   const inlineStylesLight = {
     white: {
       backgroundColor: theme.palette.common.white,
-      color: '#313235',
-      border: '1px solid #313235',
+      color: theme.palette.tertiary.grey[700],
+      border: `1px solid ${theme.palette.tertiary.grey[700]}`,
     },
     green: {
-      backgroundColor: theme.palette.success.main,
+      backgroundColor: theme.palette.tertiary.green[600],
       color: theme.palette.common.white,
     },
     blue: {
-      backgroundColor: '#001BDB',
+      backgroundColor: theme.palette.tertiary.darkBlue[500],
       color: theme.palette.common.white,
     },
     red: {
-      backgroundColor: theme.palette.error.dark,
+      backgroundColor: theme.palette.tertiary.red[700],
       color: theme.palette.common.white,
     },
     orange: {
-      backgroundColor: '#E6700F',
+      backgroundColor: theme.palette.tertiary.orange[500],
       color: theme.palette.common.white,
     },
   };
@@ -90,13 +90,13 @@ const StixItemMarkings = (props) => {
           if (theme.palette.mode === 'light') {
             if (backgroundColor === theme.palette.common.white) {
               backgroundColor = theme.palette.common.white;
-              textColor = '#313235';
-              border = '1px solid #313235';
+              textColor = theme.palette.tertiary.grey[700];
+              border = `1px solid ${theme.palette.tertiary.grey[700]}`;
             } else {
               textColor = theme.palette.common.white;
             }
           } else if (backgroundColor === theme.palette.common.white) {
-            textColor = '#313235';
+            textColor = theme.palette.tertiary.grey[700];
           }
           return (
             <Chip

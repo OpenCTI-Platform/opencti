@@ -41,7 +41,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     alignItems: 'center',
   },
   red: {
-    borderColor: theme.palette.error.main,
+    borderColor: theme.palette.tertiary.red[400],
   },
 }));
 

@@ -12,16 +12,16 @@ const ItemPatternType: FunctionComponent<ItemPatternTypeProps> = ({
 }) => {
   const theme = useTheme<Theme>();
   const COLORS: Record<string, string> = {
-    stix: theme.palette.primary.main || '#0fbcff',
-    pcre: theme.palette.primary.light || '#B2ECFF',
-    sigma: theme.palette.success.main || '#17AB1F',
-    snort: 'rgb(231, 133, 109)',
-    suricata: theme.palette.success.dark || '#094E0B',
-    yara: theme.palette.error.main || '#F14337',
-    'tanium-signal': theme.palette.error.dark || '#881106',
-    spl: 'rgb(239, 108, 0)',
-    eql: 'rgba(32, 201, 151, 0.10)',
-    shodan: 'rgb(185, 52, 37)',
+    stix: theme.palette.tertiary.darkBlue[500] || '#0F2DFF',
+    pcre: theme.palette.tertiary.darkBlue[300] || '#7587FF',
+    sigma: theme.palette.tertiary.green[400] || '#41E149',
+    snort: theme.palette.tertiary.red[200] || '#F8958C',
+    suricata: theme.palette.tertiary.turquoise[800] || '#005744',
+    yara: theme.palette.tertiary.red[400] || '#F14337',
+    'tanium-signal': theme.palette.tertiary.red[500] || '#E51E10',
+    spl: theme.palette.tertiary.orange[500] || '#E6700F',
+    eql: theme.palette.tertiary.turquoise[600] || '#00BD94',
+    shodan: theme.palette.tertiary.red[600] || '#B8180A',
   } as const;
   return (
     <Tag

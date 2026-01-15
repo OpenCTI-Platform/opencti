@@ -13,24 +13,24 @@ const TaskScope: FunctionComponent<TaskScopeProps> = ({ label, scope }) => {
 
   const inlineStyles = {
     blue: {
-      backgroundColor: theme.palette.severity?.info,
-      color: theme.palette.severity?.info,
+      backgroundColor: theme.palette.tertiary.darkBlue[300],
+      color: theme.palette.tertiary.darkBlue[300],
     },
     grey: {
-      backgroundColor: theme.palette.common.grey,
-      color: theme.palette.common.grey,
+      backgroundColor: theme.palette.tertiary.grey[400],
+      color: theme.palette.tertiary.grey[400],
     },
     orange: {
-      backgroundColor: theme.palette.severity?.high,
-      color: theme.palette.severity?.high,
+      backgroundColor: theme.palette.tertiary.orange[400],
+      color: theme.palette.tertiary.orange[400],
     },
     rose: {
-      backgroundColor: '#F8958C',
-      color: '#F8958C',
+      backgroundColor: theme.palette.tertiary.red[100],
+      color: theme.palette.tertiary.red[100],
     },
     red: {
-      backgroundColor: theme.palette.error.main,
-      color: theme.palette.error.main,
+      backgroundColor: theme.palette.tertiary.red[400],
+      color: theme.palette.tertiary.red[400],
     },
   };
 

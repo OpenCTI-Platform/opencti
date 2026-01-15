@@ -52,7 +52,7 @@ const CsvMapperRepresentationAttributeRefForm: FunctionComponent<
       },
     },
     redStar: {
-      color: theme.palette.error.main,
+      color: theme.palette.tertiary.red[400],
       marginLeft: '5px',
     },
   }));

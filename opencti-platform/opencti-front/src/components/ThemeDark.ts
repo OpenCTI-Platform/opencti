@@ -114,6 +114,41 @@ const ThemeDark = (
       none: '#363B46',
       default: '#004C66',
     },
+    tertiary: {
+      grey: {
+        400: '#95969D',
+        700: '#494A50',
+        800: '#313235',
+      },
+      blue: {
+        500: '#0099CC',
+        900: '#003242',
+      },
+      darkBlue: {
+        300: '#7587FF',
+        500: '#0F2DFF',
+      },
+      turquoise: {
+        600: '#00BD94',
+        800: '#005744',
+      },
+      green: {
+        400: '#41E149',
+        600: '#17AB1F',
+      },
+      red: {
+        100: '#FBCBC5',
+        200: '#F8958C',
+        400: '#F14337',
+        500: '#E51E10',
+        600: '#B8180A',
+        700: '#881106',
+      },
+      orange: {
+        400: '#F2933A',
+        500: '#E6700F',
+      },
+    },
   },
   tag: {
     overflowColor: primary || THEME_DARK_DEFAULT_PRIMARY,

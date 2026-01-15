@@ -13,12 +13,12 @@ const ItemCvssScore = ({ score, style }: ItemCvssScoreProps) => {
   const inlineStyles = {
     whiteDark: {
       backgroundColor: theme.palette.common.white,
-      color: '#313235',
+      color: theme.palette.tertiary.grey[700],
     },
     whiteLight: {
       backgroundColor: theme.palette.common.white,
-      color: '#313235',
-      border: '1px solid #313235',
+      color: theme.palette.tertiary.grey[700],
+      border: `1px solid ${theme.palette.tertiary.grey[800]}`,
     },
     blueGrey: {
       backgroundColor: theme.palette.common.grey,
