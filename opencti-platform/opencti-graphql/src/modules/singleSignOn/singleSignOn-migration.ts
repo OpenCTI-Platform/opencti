@@ -203,7 +203,7 @@ const parseOpenIdStrategyConfiguration = (ssoKey: string, envConfiguration: any,
   const authEntity: SingleSignOnAddInput = {
     identifier,
     strategy: StrategyType.OpenIdConnectStrategy,
-    name: computeAuthenticationName(ssoKey, envConfiguration, 'TODO'),
+    name: computeAuthenticationName(ssoKey, envConfiguration, identifier),
     label: computeAuthenticationLabel(ssoKey, envConfiguration),
     description: `${StrategyType.OpenIdConnectStrategy} Automatically ${dryRun ? 'detected' : 'created'} from ${ssoKey} at ${now()}`,
     enabled: computeEnabled(envConfiguration),
@@ -221,7 +221,7 @@ const parseLDAPStrategyConfiguration = (ssoKey: string, envConfiguration: any, d
   const authEntity: SingleSignOnAddInput = {
     identifier,
     strategy: StrategyType.LdapStrategy,
-    name: computeAuthenticationName(ssoKey, envConfiguration, 'TODO'),
+    name: computeAuthenticationName(ssoKey, envConfiguration, identifier),
     label: computeAuthenticationLabel(ssoKey, envConfiguration),
     description: `${StrategyType.LdapStrategy} Automatically ${dryRun ? 'detected' : 'created'} from ${ssoKey} at ${now()}`,
     enabled: computeEnabled(envConfiguration),
