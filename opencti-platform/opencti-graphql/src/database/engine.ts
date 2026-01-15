@@ -3100,8 +3100,9 @@ export const elPaginate = async <T extends BasicStoreBase>(
     connectionFormat = true,
   } = options;
   const postFiltersMaps: PostFiltersTagMaps = buildPostFiltersTagMaps(filters);
+  const hasActivePostFilters = postFiltersMaps.filterToTagMap.size > 0;
   const tagAppliedFilters = applyTagToFilters(filters, postFiltersMaps);
-  const body = await elQueryBodyBuilder(context, user, { ...options, filters: tagAppliedFilters, handlePostFiltering: true });
+  const body = await elQueryBodyBuilder(context, user, { ...options, filters: tagAppliedFilters, handlePostFiltering: hasActivePostFilters });
   if (body.size > ES_MAX_PAGINATION && !bypassSizeLimit) {
     logApp.info('[SEARCH] Pagination limited to max result config', { size: body.size, max: ES_MAX_PAGINATION });
     body.size = ES_MAX_PAGINATION;
@@ -3124,7 +3125,7 @@ export const elPaginate = async <T extends BasicStoreBase>(
     const globalCount = data.hits.total.value;
     const elements = await elConvertHits<T>(data.hits.hits);
     let finalElements = elements;
-    if (finalElements.length > 0 && postFiltersMaps.filterToTagMap.size > 0) {
+    if (finalElements.length > 0 && hasActivePostFilters) {
       const elementsWithTags: { element: T; tagsToIgnoreSet: Set<string> }[] = [];
       for (let i = 0; i < data.hits.hits.length; i++) {
         const element = elements[i];
