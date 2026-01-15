@@ -47,6 +47,7 @@ import Transition from '../../../../components/Transition';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import withRouter from '../../../../utils/compat_router/withRouter';
 import Card from '../../../../components/common/card/Card';
+import Label from '../../../../components/common/label/Label';
 
 const styles = (theme) => ({
   container: {
@@ -388,40 +389,32 @@ class StixCoreRelationshipContainer extends Component {
               </Link>
               <Divider style={{ marginTop: 30 }} />
               <div style={{ padding: 15 }}>
-                <Grid container={true} spacing={3}>
+                <Grid container={true} spacing={2}>
                   <Grid item xs={6}>
-                    <Typography variant="h3" gutterBottom={true}>
+                    <Label>
                       {t('Marking')}
-                    </Typography>
+                    </Label>
                     <ItemMarkings markingDefinitions={stixCoreRelationship.objectMarking ?? []} />
-                    <Typography
-                      variant="h3"
-                      gutterBottom={true}
-                      style={{ marginTop: 20 }}
+                    <Label
+                      sx={{ marginTop: 2 }}
                     >
                       {t('Start time')}
-                    </Typography>
+                    </Label>
                     {nsdt(stixCoreRelationship.start_time)}
-                    <Typography
-                      variant="h3"
-                      style={{ marginTop: 20 }}
-                      gutterBottom={true}
-                    >
+                    <Label sx={{ marginTop: 2 }}>
                       {t('Stop time')}
-                    </Typography>
+                    </Label>
                     {nsdt(stixCoreRelationship.stop_time)}
                   </Grid>
                   <Grid item xs={6}>
                     <StixCoreRelationshipSharing
                       elementId={stixCoreRelationship.id}
                     />
-                    <Typography
-                      variant="h3"
-                      gutterBottom={true}
-                      style={{ marginTop: 20 }}
+                    <Label
+                      sx={{ marginTop: 2 }}
                     >
                       {t('Description')}
-                    </Typography>
+                    </Label>
                     <MarkdownDisplay
                       content={
                         stixCoreRelationship.x_opencti_inferences !== null ? (
@@ -445,24 +438,22 @@ class StixCoreRelationshipContainer extends Component {
           </Grid>
           <Grid item xs={6}>
             <Card title={t('Details')}>
-              <Grid container={true} spacing={3}>
+              <Grid container={true} spacing={2}>
                 <Grid item xs={6}>
-                  <Typography variant="h3" gutterBottom={true}>
+                  <Label>
                     {t('Confidence level')}
-                  </Typography>
+                  </Label>
                   <ItemConfidence
                     confidence={stixCoreRelationship.confidence}
                     entityType="stix-core-relationship"
                   />
                   {stixCoreRelationship.x_opencti_inferences === null && (
                     <div>
-                      <Typography
-                        variant="h3"
-                        gutterBottom={true}
-                        style={{ marginTop: 20 }}
+                      <Label
+                        sx={{ marginTop: 2 }}
                       >
                         {t('Author')}
-                      </Typography>
+                      </Label>
                       <ItemAuthor
                         createdBy={R.propOr(
                           null,
@@ -472,27 +463,23 @@ class StixCoreRelationshipContainer extends Component {
                       />
                     </div>
                   )}
-                  <Typography
-                    variant="h3"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
+                  <Label
+                    sx={{ marginTop: 2 }}
                   >
                     {t('Original creation date')}
-                  </Typography>
+                  </Label>
                   {nsdt(stixCoreRelationship.created)}
-                  <Typography
-                    variant="h3"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
+                  <Label
+                    sx={{ marginTop: 2 }}
                   >
                     {t('Modification date')}
-                  </Typography>
+                  </Label>
                   {nsdt(stixCoreRelationship.updated_at)}
                 </Grid>
                 <Grid item xs={6}>
-                  <Typography variant="h3" gutterBottom={true}>
+                  <Label>
                     {t('Processing status')}
-                  </Typography>
+                  </Label>
                   <ItemStatus
                     status={stixCoreRelationship.status}
                     disabled={!stixCoreRelationship.workflowEnabled}
@@ -500,23 +487,19 @@ class StixCoreRelationshipContainer extends Component {
                   <StixCoreRelationshipObjectLabelsView
                     labels={stixCoreRelationship.objectLabel}
                     id={stixCoreRelationship.id}
-                    marginTop={20}
+                    sx={{ marginTop: 2 }}
                   />
-                  <Typography
-                    variant="h3"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
+                  <Label
+                    sx={{ marginTop: 2 }}
                   >
                     {t('Platform creation date')}
-                  </Typography>
+                  </Label>
                   {fldt(stixCoreRelationship.created_at)}
-                  <Typography
-                    variant="h3"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
+                  <Label
+                    sx={{ marginTop: 2 }}
                   >
                     {t('Creators')}
-                  </Typography>
+                  </Label>
                   <ItemCreators
                     creators={stixCoreRelationship.creators ?? []}
                   />

@@ -1,5 +1,4 @@
 import React, { FunctionComponent } from 'react';
-import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql, PreloadedQuery } from 'react-relay';
@@ -14,6 +13,7 @@ import { PositionDetails_positionRelationships$key } from './__generated__/Posit
 import { isNotEmptyField } from '../../../../utils/utils';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import Card from '../../../../components/common/card/Card';
+import Label from '../../../../components/common/label/Label';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -153,17 +153,17 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
   return (
     <div style={{ height: '100%' }}>
       <Card title={t_i18n('Details')}>
-        <Grid container={true} spacing={3}>
+        <Grid container={true} spacing={2}>
           <Grid item xs={12}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('Description')}
-            </Typography>
+            </Label>
             <ExpandableMarkdown source={position.description} limit={300} />
           </Grid>
           <Grid item xs={6}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('Latitude')}
-            </Typography>
+            </Label>
             <FieldOrEmpty source={position.latitude}>
               <ExpandableMarkdown
                 source={position.latitude?.toString()}
@@ -172,9 +172,9 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('Longitude')}
-            </Typography>
+            </Label>
             <FieldOrEmpty source={position.longitude}>
               <ExpandableMarkdown
                 source={position.longitude?.toString()}
@@ -183,9 +183,9 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('Street address')}
-            </Typography>
+            </Label>
             <FieldOrEmpty source={position.street_address}>
               <ExpandableMarkdown
                 source={position.street_address}
@@ -194,17 +194,17 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('Postal code')}
-            </Typography>
+            </Label>
             <FieldOrEmpty source={position.postal_code}>
               <ExpandableMarkdown source={position.postal_code} limit={300} />
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('City')}
-            </Typography>
+            </Label>
             <FieldOrEmpty source={cities}>
               {cities?.map((name) => (
                 <Chip
@@ -216,9 +216,9 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('Country')}
-            </Typography>
+            </Label>
             <FieldOrEmpty source={countries}>
               {countries?.map((name) => (
                 <Chip
@@ -230,9 +230,9 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('Region')}
-            </Typography>
+            </Label>
             <FieldOrEmpty source={regions}>
               {regions?.map((name) => (
                 <Chip
@@ -244,9 +244,9 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('entity_Administrative-Area')}
-            </Typography>
+            </Label>
             <FieldOrEmpty source={areas}>
               {areas?.map((name) => (
                 <Chip
