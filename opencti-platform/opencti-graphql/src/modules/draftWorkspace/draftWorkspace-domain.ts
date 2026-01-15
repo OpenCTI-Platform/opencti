@@ -36,7 +36,7 @@ import { deleteAllDraftFiles } from '../../database/file-storage';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { BasicStoreCommon, BasicStoreEntity, BasicStoreRelation } from '../../types/store';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { getUserAccessRight, SYSTEM_USER } from '../../utils/access';
+import { getUserAccessRight, KNOWLEDGE_KNUPDATE_KNDELETE, SYSTEM_USER } from '../../utils/access';
 import { editAuthorizedMembers } from '../../utils/authorizedMembers';
 import { getDraftContext } from '../../utils/draftContext';
 import { addFilter } from '../../utils/filtering/filtering-utils';
@@ -241,7 +241,7 @@ export const draftWorkspaceEditAuthorizedMembers = async (
   const args = {
     entityId: workspaceId,
     input,
-    requiredCapabilities: ['EXPLORE_EXUPDATE_EXDELETE'],
+    requiredCapabilities: [KNOWLEDGE_KNUPDATE_KNDELETE],
     entityType: ENTITY_TYPE_DRAFT_WORKSPACE,
     busTopicKey: ENTITY_TYPE_DRAFT_WORKSPACE,
   };
