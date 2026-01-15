@@ -25,6 +25,7 @@ import { UserContext } from '../../../utils/hooks/useAuth';
 import Security from '../../../utils/Security';
 import { EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from '../../../utils/hooks/useGranted';
 import type { Theme } from '../../../components/Theme';
+import FormButtonContainer from '../../../components/common/form/FormButtonContainer';
 
 const workspaceMutation = graphql`
   mutation WorkspaceCreationMutation($input: WorkspaceAddInput!) {
@@ -185,23 +186,21 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
                   rows="4"
                   style={{ marginTop: 20 }}
                 />
-                <div style={{ marginTop: 20, textAlign: 'right' }}>
+                <FormButtonContainer>
                   <Button
                     variant="secondary"
                     onClick={handleReset}
                     disabled={isSubmitting}
-                    style={{ marginLeft: theme.spacing(2) }}
                   >
                     {t_i18n('Cancel')}
                   </Button>
                   <Button
                     onClick={submitForm}
                     disabled={isSubmitting}
-                    style={{ marginLeft: theme.spacing(2) }}
                   >
                     {t_i18n('Create')}
                   </Button>
-                </div>
+                </FormButtonContainer>
               </Form>
             )}
           </Formik>

@@ -21,6 +21,7 @@ import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import useAuth from '../../../../../utils/hooks/useAuth';
 import { ME_FILTER_VALUE } from '../../../../../utils/filters/filtersUtils';
 import { fromB64 } from '../../../../../utils/String';
+import FormButtonContainer from '../../../../../components/common/form/FormButtonContainer';
 
 const publicDashboardCreateMutation = graphql`
   mutation PublicDashboardCreationFormCreateMutation($input: PublicDashboardAddInput!) {
@@ -206,14 +207,7 @@ const PublicDashboardCreationFormComponent = ({
             {t_i18n('You see only marking definitions that can be shared (defined by the admin)')}
           </Alert>
 
-          <div
-            style={{
-              ...fieldSpacingContainerStyle,
-              display: 'flex',
-              justifyContent: 'end',
-              gap: '12px',
-            }}
-          >
+          <FormButtonContainer>
             <Button
               variant="secondary"
               disabled={isSubmitting}
@@ -230,7 +224,7 @@ const PublicDashboardCreationFormComponent = ({
             >
               {t_i18n('Create')}
             </Button>
-          </div>
+          </FormButtonContainer>
         </Form>
       )}
     </Formik>

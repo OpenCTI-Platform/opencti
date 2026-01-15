@@ -1,11 +1,12 @@
 import Button from '@common/button/Button';
+import FormButtonContainer from '@common/form/FormButtonContainer';
+import Drawer from '@components/common/drawer/Drawer';
 import { Add } from '@mui/icons-material';
 import Alert from '@mui/lab/Alert';
 import { ListItemButton } from '@mui/material';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import Drawer from '@components/common/drawer/Drawer';
 import Fab from '@mui/material/Fab';
 import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
@@ -63,13 +64,6 @@ const useStyles = makeStyles((theme) => ({
     bottom: 30,
     right: 30,
     zIndex: 2000,
-  },
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(1),
   },
 }));
 
@@ -940,34 +934,30 @@ const StixCyberObservableCreation = ({
                         label={t_i18n('Create an indicator from this observable')}
                         containerstyle={{ marginTop: 20 }}
                       />
-                      <div className={classes.buttons}>
+                      <FormButtonContainer>
                         {!isFromBulkRelation && (
                           <Button
-                            variant={contextual ? 'secondary' : 'default'}
+                            variant="secondary"
                             onClick={() => selectType(null)}
                             disabled={isSubmitting}
-                            classes={{ root: classes.button }}
                           >
                             {t_i18n('Back')}
                           </Button>
                         )}
                         <Button
-                          variant={contextual ? 'secondary' : 'default'}
+                          variant="secondary"
                           onClick={handleReset}
                           disabled={isSubmitting}
-                          classes={{ root: classes.button }}
                         >
                           {t_i18n('Cancel')}
                         </Button>
                         <Button
-                          variant={contextual ? 'primary' : 'default'}
                           onClick={submitForm}
                           disabled={isSubmitting}
-                          classes={{ root: classes.button }}
                         >
                           {t_i18n('Create')}
                         </Button>
-                      </div>
+                      </FormButtonContainer>
                     </Form>
                   </>
                 )}
