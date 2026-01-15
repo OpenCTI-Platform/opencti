@@ -4,7 +4,7 @@ import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { deleteSingleSignOn } from '../../../src/modules/singleSignOn/singleSignOn-domain';
 
 describe('Migration of SSO environment test coverage', () => {
-  describe.todo('Dry run of SAML migrations', () => {
+  describe('Dry run of SAML migrations', () => {
     it('should default configuration with only local works', async () => {
       const configuration = {
         local: {
@@ -313,7 +313,7 @@ describe('Migration of SSO environment test coverage', () => {
       });
     });
   });
-  describe.todo('Dry run of OpenId migrations', () => {
+  describe('Dry run of OpenId migrations', () => {
     it('should OpenId minimal configuration works', async () => {
       const configuration = {
         oic_minimal: {
@@ -682,7 +682,7 @@ describe('Migration of SSO environment test coverage', () => {
       });
     });
   });
-  describe.todo('Actual run of migrations', () => {
+  describe('Actual run of migrations', () => {
     it('should SAML configuration works', async () => {
       const configuration = {
         samltestmigration: {
