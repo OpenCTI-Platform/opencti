@@ -22,6 +22,8 @@ type OrganizationsManagement {
   organizations_path: [String!]
   organizations_mapping: [String!]!
   organizations_scope: String
+  read_userinfo: Boolean
+  token_reference: String
 }
 
 type GroupsManagement {
@@ -82,6 +84,9 @@ input OrganizationsManagementInput {
   organizations_path: [String!]
   organizations_mapping: [String!]
   organizations_default: [String!]
+  organizations_scope: String
+  read_userinfo: Boolean
+  token_reference: String
   # TODO missing organizations_splitter and organizations_header for HeaderStrategy
 }
 
@@ -90,6 +95,7 @@ input GroupsManagementInput {
   group_attribute: String
   groups_path: [String!]
   groups_mapping: [String!]
+  groups_scope: String
   read_userinfo: Boolean
   token_reference: String
   # TODO missing groups_header, groups_splitter for HeaderStrategy

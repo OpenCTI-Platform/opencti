@@ -15295,6 +15295,8 @@ type OrganizationsManagement {
   organizations_path: [String!]
   organizations_mapping: [String!]!
   organizations_scope: String
+  read_userinfo: Boolean
+  token_reference: String
 }
 
 type GroupsManagement {
@@ -15343,6 +15345,9 @@ input OrganizationsManagementInput {
   organizations_path: [String!]
   organizations_mapping: [String!]
   organizations_default: [String!]
+  organizations_scope: String
+  read_userinfo: Boolean
+  token_reference: String
 }
 
 input GroupsManagementInput {
@@ -15350,6 +15355,7 @@ input GroupsManagementInput {
   group_attribute: String
   groups_path: [String!]
   groups_mapping: [String!]
+  groups_scope: String
   read_userinfo: Boolean
   token_reference: String
 }

@@ -62,15 +62,11 @@ const computeConfiguration = (envConfiguration: any, strategy: StrategyType) => 
         const currentValue = mappedConfig[configKey];
         logApp.info('[SSO MIGRATION] groups management configured', currentValue);
 
-        const { group_attributes, group_attribute, groups_mapping, groups_path, read_userinfo, token_reference } = currentValue;
+        const { group_attributes, group_attribute, groups_mapping, groups_path, groups_scope, read_userinfo, token_reference } = currentValue;
         groups_management = {};
 
         // SAML, OpenId and LDAP
-        if (groups_mapping) {
-          groups_management['groups_mapping'] = groups_mapping;
-        } else {
-          groups_management['groups_mapping'] = [];
-        }
+        groups_management['groups_mapping'] = groups_mapping ?? [];
 
         // SAML only
         if (group_attributes) {
@@ -92,6 +88,10 @@ const computeConfiguration = (envConfiguration: any, strategy: StrategyType) => 
           groups_management['read_userinfo'] = false;
         }
         // OpenId only
+        if (strategy === StrategyType.OpenIdConnectStrategy && groups_scope) {
+          groups_management['groups_scope'] = groups_scope;
+        }
+        // OpenId only
         if (token_reference) {
           groups_management['token_reference'] = token_reference;
         } else if (strategy === StrategyType.OpenIdConnectStrategy) {
@@ -108,21 +108,33 @@ const computeConfiguration = (envConfiguration: any, strategy: StrategyType) => 
         const currentValue = mappedConfig[configKey];
         logApp.info('[SSO MIGRATION] organizations management configured', currentValue);
 
-        const { organizations_path, organizations_mapping } = currentValue;
+        const { organizations_path, organizations_mapping, organizations_scope, read_userinfo, token_reference } = currentValue;
         organizations_management = {};
 
         // SAML, OpenId and LDAP
         if (organizations_path) {
           organizations_management['organizations_path'] = organizations_path;
-        } else if (strategy === StrategyType.SamlStrategy || StrategyType.OpenIdConnectStrategy || StrategyType.LdapStrategy) {
+        } else if ([StrategyType.SamlStrategy, StrategyType.OpenIdConnectStrategy, StrategyType.LdapStrategy].includes(strategy)) {
           organizations_management['organizations_path'] = ['organizations'];
         }
-
-        if (organizations_mapping) {
-          organizations_management['organizations_mapping'] = organizations_mapping;
-        } else {
-          organizations_management['organizations_mapping'] = [];
+        // OpenId only
+        if (strategy === StrategyType.OpenIdConnectStrategy && organizations_scope) {
+          organizations_management['organizations_scope'] = organizations_scope;
         }
+        // OpenId only
+        if (read_userinfo) {
+          organizations_management['read_userinfo'] = read_userinfo;
+        } else if (strategy === StrategyType.OpenIdConnectStrategy) {
+          organizations_management['read_userinfo'] = false;
+        }
+        // OpenId only
+        if (token_reference) {
+          organizations_management['token_reference'] = token_reference;
+        } else if (strategy === StrategyType.OpenIdConnectStrategy) {
+          organizations_management['token_reference'] = 'access_token';
+        }
+
+        organizations_management['organizations_mapping'] = organizations_mapping ?? [];
       } else {
         // 5. Everything else is configuration
         const currentValue = mappedConfig[configKey];
