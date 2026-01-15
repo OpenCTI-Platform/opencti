@@ -1,19 +1,7 @@
 import React, { FunctionComponent } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
 import type { Theme } from './Theme';
 import Tag from '@common/tag/Tag';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  chip: {
-    fontSize: 12,
-    marginRight: 7,
-    borderRadius: 4,
-    width: 150,
-  },
-}));
 
 interface ItemAccountStatusProps {
   label: string;
@@ -27,8 +15,6 @@ const ItemAccountStatus: FunctionComponent<ItemAccountStatusProps> = ({
   variant,
 }) => {
   const theme = useTheme<Theme>();
-  const classes = useStyles();
-  const style = classes.chip;
   const inlineStyles = {
     green: {
       backgroundColor: theme.palette.success.main,
@@ -80,7 +66,6 @@ const ItemAccountStatus: FunctionComponent<ItemAccountStatusProps> = ({
   const classStyle = computeAccountStatusStyle(account_status);
   return (
     <Tag
-      classes={{ root: style }}
       variant={variant}
       label={label}
       style={classStyle}

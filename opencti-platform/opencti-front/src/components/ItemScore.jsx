@@ -1,32 +1,12 @@
 import React from 'react';
 import { compose } from 'ramda';
 import * as PropTypes from 'prop-types';
-import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
 import Typography from '@mui/material/Typography';
 import inject18n from './i18n';
 import { isEmptyField } from '../utils/utils';
 import { useTheme } from '@mui/styles';
 import Tag from '@common/tag/Tag';
-
-const styles = () => ({
-  chip: {
-    fontSize: 12,
-    lineHeight: '12px',
-    height: 25,
-    marginRight: 7,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-  },
-  chipInList: {
-    fontSize: 12,
-    lineHeight: '12px',
-    height: 20,
-    float: 'right',
-    textTransform: 'uppercase',
-    borderRadius: 4,
-  },
-});
 
 const ItemScore = (props) => {
   const theme = useTheme();
@@ -122,4 +102,4 @@ ItemScore.propTypes = {
   score: PropTypes.number,
 };
 
-export default compose(withTheme, inject18n, withStyles(styles))(ItemScore);
+export default compose(withTheme, inject18n)(ItemScore);

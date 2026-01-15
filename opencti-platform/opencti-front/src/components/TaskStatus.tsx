@@ -1,30 +1,8 @@
 import React from 'react';
-import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
 import { Theme } from '../components/Theme';
 import { State } from '@components/data/connectors/__generated__/ConnectorWorks_data.graphql';
 import Tag from '@common/tag/Tag';
-
-const useStyles = makeStyles<Theme>(() => ({
-  chip: {
-    fontSize: 12,
-    lineHeight: '12px',
-    height: 25,
-    marginRight: 7,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-    width: 130,
-  },
-  chipInList: {
-    fontSize: 12,
-    lineHeight: '12px',
-    height: 20,
-    float: 'left',
-    textTransform: 'uppercase',
-    borderRadius: 4,
-    width: 130,
-  },
-}));
 
 interface TaskStatusProps {
   status: State | string;
@@ -32,9 +10,7 @@ interface TaskStatusProps {
   variant?: string;
 }
 
-const TaskStatus = ({ status, label, variant }: TaskStatusProps) => {
-  const classes = useStyles();
-  const style = variant === 'inList' ? classes.chipInList : classes.chip;
+const TaskStatus = ({ status, label }: TaskStatusProps) => {
   const theme = useTheme<Theme>();
   const inlineStyles = {
     white: {
@@ -76,7 +52,6 @@ const TaskStatus = ({ status, label, variant }: TaskStatusProps) => {
 
   return (
     <Tag
-      classes={{ root: style }}
       style={inlineStyle()}
       label={label}
     />

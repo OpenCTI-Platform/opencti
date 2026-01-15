@@ -1,22 +1,7 @@
 import React, { FunctionComponent } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
 import type { Theme } from './Theme';
 import Tag from '@common/tag/Tag';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  chip: {
-    fontSize: 12,
-    lineHeight: '12px',
-    height: 25,
-    marginRight: 7,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-    width: 130,
-  },
-}));
 
 interface TaskScopeProps {
   label: string;
@@ -24,8 +9,6 @@ interface TaskScopeProps {
 }
 
 const TaskScope: FunctionComponent<TaskScopeProps> = ({ label, scope }) => {
-  const classes = useStyles();
-  const style = classes.chip;
   const theme = useTheme<Theme>();
 
   const inlineStyles = {
@@ -55,7 +38,6 @@ const TaskScope: FunctionComponent<TaskScopeProps> = ({ label, scope }) => {
     case 'SETTINGS':
       return (
         <Tag
-          classes={{ root: style }}
           style={inlineStyles.red}
           label={label}
         />
@@ -63,7 +45,6 @@ const TaskScope: FunctionComponent<TaskScopeProps> = ({ label, scope }) => {
     case 'USER':
       return (
         <Tag
-          classes={{ root: style }}
           style={inlineStyles.orange}
           label={label}
         />
@@ -71,7 +52,6 @@ const TaskScope: FunctionComponent<TaskScopeProps> = ({ label, scope }) => {
     case 'KNOWLEDGE':
       return (
         <Tag
-          classes={{ root: style }}
           style={inlineStyles.blue}
           label={label}
         />
@@ -79,7 +59,6 @@ const TaskScope: FunctionComponent<TaskScopeProps> = ({ label, scope }) => {
     case 'RULE':
       return (
         <Tag
-          classes={{ root: style }}
           style={inlineStyles.rose}
           label={label}
         />
@@ -87,7 +66,6 @@ const TaskScope: FunctionComponent<TaskScopeProps> = ({ label, scope }) => {
     case 'IMPORT':
       return (
         <Tag
-          classes={{ root: style }}
           style={inlineStyles.orange}
           label={label}
         />
@@ -97,7 +75,6 @@ const TaskScope: FunctionComponent<TaskScopeProps> = ({ label, scope }) => {
     case 'INVESTIGATION':
       return (
         <Tag
-          classes={{ root: style }}
           style={inlineStyles.orange}
           label={label}
         />
@@ -105,7 +82,6 @@ const TaskScope: FunctionComponent<TaskScopeProps> = ({ label, scope }) => {
     default:
       return (
         <Tag
-          classes={{ root: style }}
           style={inlineStyles.grey}
           label={label}
         />
