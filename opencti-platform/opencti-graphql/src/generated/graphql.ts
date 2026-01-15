@@ -15461,6 +15461,7 @@ export type Mutation = {
   roleAdd?: Maybe<Role>;
   roleEdit?: Maybe<RoleEditMutations>;
   ruleApply?: Maybe<Scalars['Boolean']['output']>;
+  ruleApplyAsync?: Maybe<Work>;
   ruleClear?: Maybe<Scalars['Boolean']['output']>;
   ruleManagerClean: RuleManager;
   ruleSetActivation: Rule;
@@ -17286,6 +17287,12 @@ export type MutationRoleEditArgs = {
 
 
 export type MutationRuleApplyArgs = {
+  elementId: Scalars['ID']['input'];
+  ruleId: Scalars['ID']['input'];
+};
+
+
+export type MutationRuleApplyAsyncArgs = {
   elementId: Scalars['ID']['input'];
   ruleId: Scalars['ID']['input'];
 };
@@ -43631,6 +43638,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   roleAdd?: Resolver<Maybe<ResolversTypes['Role']>, ParentType, ContextType, RequireFields<MutationRoleAddArgs, 'input'>>;
   roleEdit?: Resolver<Maybe<ResolversTypes['RoleEditMutations']>, ParentType, ContextType, RequireFields<MutationRoleEditArgs, 'id'>>;
   ruleApply?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationRuleApplyArgs, 'elementId' | 'ruleId'>>;
+  ruleApplyAsync?: Resolver<Maybe<ResolversTypes['Work']>, ParentType, ContextType, RequireFields<MutationRuleApplyAsyncArgs, 'elementId' | 'ruleId'>>;
   ruleClear?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationRuleClearArgs, 'elementId' | 'ruleId'>>;
   ruleManagerClean?: Resolver<ResolversTypes['RuleManager'], ParentType, ContextType, Partial<MutationRuleManagerCleanArgs>>;
   ruleSetActivation?: Resolver<ResolversTypes['Rule'], ParentType, ContextType, RequireFields<MutationRuleSetActivationArgs, 'enable' | 'id'>>;

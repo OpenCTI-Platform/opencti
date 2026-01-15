@@ -1,5 +1,6 @@
 # coding: utf-8
 import json
+from time import sleep
 
 
 class StixCoreObject:
@@ -1867,6 +1868,38 @@ class StixCoreObject:
                 }
             """
             self.opencti.query(query, {"elementId": element_id, "ruleId": rule_id})
+        else:
+            self.opencti.app_logger.error(
+                "[stix_core_object] Cannot apply rule, missing parameters: id"
+            )
+            return None
+
+    def rule_apply_async(self, **kwargs):
+        """Apply rule to Stix-Core-Object object.
+
+        :param element_id: the Stix-Core-Object id
+        :type element_id: str
+        :param rule_id: the rule to apply
+        :type rule_id: str
+        """
+        rule_id = kwargs.get("rule_id", None)
+        element_id = kwargs.get("element_id", None)
+        if element_id is not None and rule_id is not None:
+            self.opencti.app_logger.info(
+                "Apply rule stix_core_object", {"id": element_id}
+            )
+            query = """
+                    mutation StixCoreApplyRule($elementId: ID!, $ruleId: ID!) {
+                        ruleApplyAsync(elementId: $elementId, ruleId: $ruleId){
+                            id
+                        }
+                    }
+                """
+            result = self.opencti.query(
+                query, {"elementId": element_id, "ruleId": rule_id}
+            )
+            work_id = result["data"]["ruleApplyAsync"]["id"]
+            self.opencti.work.wait_for_work_to_finish(work_id)
         else:
             self.opencti.app_logger.error(
                 "[stix_core_object] Cannot apply rule, missing parameters: id"
