@@ -21,17 +21,17 @@ const StixDomainObjectNestedEntities = ({
 }: StixDomainObjectNestedEntitiesProps) => {
   const { t_i18n } = useFormatter();
 
-  const paginationOptions: StixDomainObjectNestedEntitiesLinesQuery$variables = {
+  const paginationOptions = {
     fromOrToId: entityId,
     search: '',
     orderBy: null,
     orderMode: 'desc',
-    count: 25,
   };
+  const queryPaginationOptions = { ...paginationOptions, count: 25 } as StixDomainObjectNestedEntitiesLinesQuery$variables;
 
   const queryRef = useQueryLoading<StixDomainObjectNestedEntitiesLinesQuery>(
     stixDomainObjectNestedEntitiesLinesQuery,
-    paginationOptions,
+    queryPaginationOptions,
   );
   return (
     <div style={{ marginTop: 20 }}>
@@ -55,7 +55,7 @@ const StixDomainObjectNestedEntities = ({
           <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
             <StixDomainObjectNestedEntitiesLines
               stixDomainObjectId={entityId}
-              paginationOptions={paginationOptions}
+              paginationOptions={queryPaginationOptions}
               queryRef={queryRef}
             />
           </React.Suspense>
