@@ -1,9 +1,7 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
-import Chip from '@mui/material/Chip';
 import { AccountBalanceOutlined } from '@mui/icons-material';
 import { BankPlus } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
@@ -12,7 +10,7 @@ import { Form, Formik } from 'formik';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
-import Typography from '@mui/material/Typography';
+import { Stack } from '@mui/material';
 import IconButton from '@common/button/IconButton';
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import EEChip from '@components/common/entreprise_edition/EEChip';
@@ -25,6 +23,8 @@ import useGranted, { KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import Transition from '../../../../components/Transition';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
+import Label from '../../../../components/common/label/Label';
+import Tag from '../../../../components/common/tag/Tag';
 
 // region types
 interface ContainerHeaderSharedProps {
@@ -37,18 +37,6 @@ interface OrganizationForm {
 }
 
 // endregion
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  organization: {
-    margin: '0 7px 0 0',
-    float: 'left',
-    fontSize: 12,
-    lineHeight: '12px',
-    height: 28,
-  },
-}));
 
 const containerHeaderSharedQuery = graphql`
   query StixSightingRelationshipSharingQuery($id: String!) {
@@ -98,7 +86,6 @@ const containerHeaderSharedGroupAddMutation = graphql`
 const StixSightingRelationshipSharing: FunctionComponent<
   ContainerHeaderSharedProps
 > = ({ elementId }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
   const disabledInDraft = !!draftContext;
@@ -153,35 +140,34 @@ const StixSightingRelationshipSharing: FunctionComponent<
     const edges = stixSightingRelationship?.objectOrganization ?? [];
     return (
       <React.Fragment>
-        <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
+        <Label action={(
+          <EETooltip title={disabledInDraft ? t_i18n('Not available in draft') : t_i18n('Share with an organization')}>
+            <IconButton
+              color="primary"
+              aria-label="Label"
+              onClick={isEnterpriseEdition && !disabledInDraft ? handleOpenSharing : () => {}}
+              size="small"
+            >
+              <BankPlus fontSize="small" color={isEnterpriseEdition && !disabledInDraft ? 'primary' : 'disabled'} />
+            </IconButton>
+          </EETooltip>
+        )}
+        >
           {t_i18n('Organizations sharing')}
-        </Typography>
-        <EETooltip title={disabledInDraft ? t_i18n('Not available in draft') : t_i18n('Share with an organization')}>
-          <IconButton
-            color="primary"
-            aria-label="Label"
-            onClick={isEnterpriseEdition && !disabledInDraft ? handleOpenSharing : () => {}}
-            style={{ float: 'left', margin: '-6px 0 0 3px' }}
-            size="small"
-          >
-            <BankPlus fontSize="small" color={isEnterpriseEdition && !disabledInDraft ? 'primary' : 'disabled'} />
-          </IconButton>
-        </EETooltip>
-        {!isEnterpriseEdition && <EEChip floating={true} />}
-        <div className="clearfix" />
-        {edges.map((edge) => (
-          <Tooltip key={edge.id} title={edge.name}>
-            <Chip
-              icon={<AccountBalanceOutlined />}
-              classes={{ root: classes.organization }}
-              color="warning"
-              variant="outlined"
-              label={truncate(edge.name, 15)}
-              onDelete={() => removeOrganization(edge.id)}
-            />
-          </Tooltip>
-        ))}
-        <div className="clearfix" />
+        </Label>
+
+        {!isEnterpriseEdition && <EEChip />}
+        <Stack direction="row" gap={1} flexWrap="wrap">
+          {edges.map((edge) => (
+            <Tooltip key={edge.id} title={edge.name}>
+              <Tag
+                icon={<AccountBalanceOutlined fontSize="small" />}
+                label={truncate(edge.name, 15)}
+                onDelete={() => removeOrganization(edge.id)}
+              />
+            </Tooltip>
+          ))}
+        </Stack>
         <Formik
           initialValues={{ objectOrganization: { value: '', label: '' } }}
           onSubmit={onSubmitOrganizations}

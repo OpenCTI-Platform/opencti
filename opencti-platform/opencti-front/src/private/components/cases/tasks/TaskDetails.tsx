@@ -1,12 +1,12 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import { TaskDetails_task$data, TaskDetails_task$key } from './__generated__/TaskDetails_task.graphql';
 import ItemDueDate from '../../../../components/ItemDueDate';
 import Card from '../../../../components/common/card/Card';
+import Label from '../../../../components/common/label/Label';
 
 const TaskDetailsFragment = graphql`
   fragment TaskDetails_task on Task {
@@ -63,17 +63,17 @@ const TaskDetails: FunctionComponent<TasksDetailsProps> = ({ tasksData }) => {
   return (
     <div style={{ height: '100%' }} data-testid="task-details-page">
       <Card title={t_i18n('Details')}>
-        <Grid container={true} spacing={3}>
+        <Grid container={true} spacing={2}>
           <Grid item xs={12}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('Description')}
-            </Typography>
+            </Label>
             <ExpandableMarkdown source={data.description} limit={300} />
           </Grid>
           <Grid item xs={12}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('Due Date')}
-            </Typography>
+            </Label>
             <ItemDueDate due_date={data.due_date} variant="inElement" />
           </Grid>
         </Grid>

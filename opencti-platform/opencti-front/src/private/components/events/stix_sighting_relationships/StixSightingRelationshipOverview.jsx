@@ -10,7 +10,6 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Dialog from '@mui/material/Dialog';
-import Typography from '@mui/material/Typography';
 import { ArrowRightAlt } from '@mui/icons-material';
 import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
@@ -40,6 +39,7 @@ import Transition from '../../../../components/Transition';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { stixSightingRelationshipEditionDeleteMutation } from './StixSightingRelationshipEdition';
 import Card from '@common/card/Card';
+import Label from '../../../../components/common/label/Label';
 
 const styles = (theme) => ({
   container: {
@@ -354,31 +354,27 @@ class StixSightingRelationshipContainer extends Component {
                   </div>
                 </div>
               </Link>
-              <Divider style={{ marginTop: 30 }} />
-              <div style={{ padding: 15 }}>
-                <Grid container={true} spacing={3}>
+              <Divider sx={{ my: 2 }} />
+              <div>
+                <Grid container={true} spacing={2}>
                   <Grid item xs={6}>
-                    <Typography variant="h3" gutterBottom={true}>
+                    <Label>
                       {t('Marking')}
-                    </Typography>
+                    </Label>
                     <ItemMarkings
                       markingDefinitions={stixSightingRelationship.objectMarking ?? []}
                     />
-                    <Typography
-                      variant="h3"
-                      gutterBottom={true}
-                      style={{ marginTop: 20 }}
+                    <Label
+                      sx={{ marginTop: 2 }}
                     >
                       {t('First seen')}
-                    </Typography>
+                    </Label>
                     {nsdt(stixSightingRelationship.first_seen)}
-                    <Typography
-                      variant="h3"
-                      gutterBottom={true}
-                      style={{ marginTop: 20 }}
+                    <Label
+                      sx={{ marginTop: 2 }}
                     >
                       {t('Last seen')}
-                    </Typography>
+                    </Label>
                     {nsdt(stixSightingRelationship.last_seen)}
                   </Grid>
                   <Grid item xs={6}>
@@ -386,13 +382,11 @@ class StixSightingRelationshipContainer extends Component {
                       <StixSightingRelationshipSharing
                         elementId={stixSightingRelationship.id}
                       />
-                      <Typography
-                        variant="h3"
-                        gutterBottom={true}
-                        style={{ marginTop: 20 }}
+                      <Label
+                        sx={{ marginTop: 2 }}
                       >
                         {t('x_opencti_negative')}
-                      </Typography>
+                      </Label>
                       <Chip
                         classes={{
                           root: stixSightingRelationship.x_opencti_negative
@@ -405,23 +399,19 @@ class StixSightingRelationshipContainer extends Component {
                             : t('True positive')
                         }
                       />
-                      <Typography
-                        variant="h3"
-                        gutterBottom={true}
-                        style={{ marginTop: 20 }}
+                      <Label
+                        sx={{ marginTop: 2 }}
                       >
                         {t('Count')}
-                      </Typography>
+                      </Label>
                       <span className={classes.number}>
                         {n(stixSightingRelationship.attribute_count)}
                       </span>
-                      <Typography
-                        variant="h3"
-                        gutterBottom={true}
-                        style={{ marginTop: 20 }}
+                      <Label
+                        sx={{ marginTop: 2 }}
                       >
                         {t('Description')}
-                      </Typography>
+                      </Label>
                       <MarkdownDisplay
                         content={stixSightingRelationship.x_opencti_inferences !== null
                           ? t('Inferred knowledge')
@@ -440,22 +430,20 @@ class StixSightingRelationshipContainer extends Component {
             <Card title={t('Details')}>
               <Grid container={true} spacing={3}>
                 <Grid item xs={6}>
-                  <Typography variant="h3" gutterBottom={true}>
+                  <Label>
                     {t('Confidence level')}
-                  </Typography>
+                  </Label>
                   <ItemConfidence
                     confidence={stixSightingRelationship.confidence}
                     entityType={stixSightingRelationship.entity_type}
                   />
                   {stixSightingRelationship.x_opencti_inferences === null && (
                     <div>
-                      <Typography
-                        variant="h3"
-                        gutterBottom={true}
-                        style={{ marginTop: 20 }}
+                      <Label
+                        sx={{ marginTop: 2 }}
                       >
                         {t('Author')}
-                      </Typography>
+                      </Label>
                       <ItemAuthor
                         createdBy={R.propOr(
                           null,
@@ -465,27 +453,23 @@ class StixSightingRelationshipContainer extends Component {
                       />
                     </div>
                   )}
-                  <Typography
-                    variant="h3"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
+                  <Label
+                    sx={{ marginTop: 2 }}
                   >
                     {t('Original creation date')}
-                  </Typography>
+                  </Label>
                   {nsdt(stixSightingRelationship.created)}
-                  <Typography
-                    variant="h3"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
+                  <Label
+                    sx={{ marginTop: 2 }}
                   >
                     {t('Modification date')}
-                  </Typography>
+                  </Label>
                   {nsdt(stixSightingRelationship.updated_at)}
                 </Grid>
                 <Grid item xs={6}>
-                  <Typography variant="h3" gutterBottom={true}>
+                  <Label>
                     {t('Processing status')}
-                  </Typography>
+                  </Label>
                   <ItemStatus
                     status={stixSightingRelationship.status}
                     disabled={!stixSightingRelationship.workflowEnabled}
@@ -493,23 +477,19 @@ class StixSightingRelationshipContainer extends Component {
                   <StixSightingRelationshipLabelsView
                     labels={stixSightingRelationship.objectLabel}
                     id={stixSightingRelationship.id}
-                    marginTop={20}
+                    sx={{ marginTop: 2 }}
                   />
-                  <Typography
-                    variant="h3"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
+                  <Label
+                    sx={{ marginTop: 2 }}
                   >
                     {t('Platform creation date')}
-                  </Typography>
+                  </Label>
                   {fldt(stixSightingRelationship.created_at)}
-                  <Typography
-                    variant="h3"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
+                  <Label
+                    sx={{ marginTop: 2 }}
                   >
                     {t('Creators')}
-                  </Typography>
+                  </Label>
                   <ItemCreators
                     creators={stixSightingRelationship.creators ?? []}
                   />
@@ -519,9 +499,9 @@ class StixSightingRelationshipContainer extends Component {
           </Grid>
           {stixSightingRelationship.x_opencti_inferences !== null ? (
             <Grid item xs={12}>
-              <Typography variant="h4" gutterBottom={true}>
+              <Label>
                 {t('Inference explanation')}
-              </Typography>
+              </Label>
               {stixSightingRelationship.x_opencti_inferences.map(
                 (inference) => (
                   <StixCoreRelationshipInference

@@ -1,6 +1,5 @@
 import Chip from '@mui/material/Chip';
 import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
@@ -12,6 +11,7 @@ import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import type { Theme } from '../../../../components/Theme';
 import { CaseRftDetails_case$key } from './__generated__/CaseRftDetails_case.graphql';
 import Card from '../../../../components/common/card/Card';
+import Label from '../../../../components/common/label/Label';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -81,11 +81,11 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
   return (
     <div style={{ height: '100%' }} data-testid="case-rft-details-page">
       <Card title={t_i18n('Details')}>
-        <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
+        <Grid container={true} spacing={2} sx={{ marginBottom: 2 }}>
           <Grid item xs={6}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('Takedown type')}
-            </Typography>
+            </Label>
             {takedownTypes.length > 0
               ? takedownTypes.map((takedownType) => (
                   <Chip
@@ -97,9 +97,9 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
               : '-'}
           </Grid>
           <Grid item xs={6}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('Priority')}
-            </Typography>
+            </Label>
             <ItemOpenVocab
               key="type"
               small={true}
@@ -109,9 +109,9 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
             />
           </Grid>
           <Grid item xs={6}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('Severity')}
-            </Typography>
+            </Label>
             <ItemOpenVocab
               key="type"
               small={true}
@@ -121,9 +121,9 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
             />
           </Grid>
           <Grid item xs={12}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('Description')}
-            </Typography>
+            </Label>
             {data.description ? (
               <ExpandableMarkdown source={data.description} limit={300} />
             ) : (
@@ -131,7 +131,7 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
             )}
           </Grid>
         </Grid>
-        <Divider style={{ marginTop: 30 }} />
+        <Divider />
         <RelatedContainers
           relatedContainers={data.relatedContainers}
           containerId={data.id}

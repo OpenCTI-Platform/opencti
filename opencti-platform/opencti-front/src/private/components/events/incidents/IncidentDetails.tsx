@@ -1,6 +1,5 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import { makeStyles } from '@mui/styles';
 import Chip from '@mui/material/Chip';
@@ -11,6 +10,7 @@ import { IncidentDetails_incident$data, IncidentDetails_incident$key } from './_
 import StixCoreObjectsDonut from '../../common/stix_core_objects/StixCoreObjectsDonut';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import Card from '../../../../components/common/card/Card';
+import Label from '../../../../components/common/label/Label';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -117,36 +117,32 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
   return (
     <div style={{ height: '100%' }} data-testid="incident-details-page">
       <Card title={t_i18n('Details')}>
-        <Grid container={true} spacing={3}>
+        <Grid container={true} spacing={2}>
           <Grid item xs={6}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('Incident type')}
-            </Typography>
+            </Label>
             <Chip
               classes={{ root: classes.chip }}
               label={incident.incident_type || t_i18n('Unknown')}
             />
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
+            <Label
+              sx={{ marginTop: 2 }}
             >
               {t_i18n('First seen')}
-            </Typography>
+            </Label>
             {fldt(incident.first_seen)}
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
+            <Label
+              sx={{ marginTop: 2 }}
             >
               {t_i18n('Description')}
-            </Typography>
+            </Label>
             <ExpandableMarkdown source={incident.description} limit={400} />
           </Grid>
           <Grid item xs={6}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('Severity')}
-            </Typography>
+            </Label>
             <ItemOpenVocab
               key="type"
               small={true}
@@ -154,34 +150,28 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
               value={incident.severity}
               displayMode="chip"
             />
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
+            <Label
+              sx={{ marginTop: 2 }}
             >
               {t_i18n('Last seen')}
-            </Typography>
+            </Label>
             {fldt(incident.last_seen)}
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
+            <Label
+              sx={{ marginTop: 2 }}
             >
               {t_i18n('Source')}
-            </Typography>
+            </Label>
             <Chip
               classes={{ root: classes.chip2 }}
               color="secondary"
               variant="outlined"
               label={incident.source || t_i18n('Unknown')}
             />
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
+            <Label
+              sx={{ marginTop: 2 }}
             >
               {t_i18n('Objective')}
-            </Typography>
+            </Label>
             <ExpandableMarkdown source={incident.objective} limit={100} />
           </Grid>
           <Grid item xs={6}>
