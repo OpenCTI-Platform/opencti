@@ -57,6 +57,7 @@ import { ENTITY_TYPE_PIR } from '../../modules/pir/pir-types';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { ENTITY_TYPE_STATUS } from '../../schema/internalObject';
 import { IDS_ATTRIBUTES } from '../../domain/attribute-utils';
+import type { FiltersWithNested } from '../../database/middleware-loader';
 
 export const adaptFilterToRegardingOfFilterKey = async (context: AuthContext, user: AuthUser, filter: TaggedFilter) => {
   const { key: filterKey, postFilteringTag } = filter;
@@ -685,7 +686,7 @@ const adaptFilterToComputedReliabilityFilterKey = async (context: AuthContext, u
 
   return { newFilterGroup };
 };
-export type TaggedFilter = Filter & { postFilteringTag?: string };
+export type TaggedFilter = FiltersWithNested & { postFilteringTag?: string };
 export type TaggedFilterGroup = {
   mode: FilterMode;
   filters: TaggedFilter[];

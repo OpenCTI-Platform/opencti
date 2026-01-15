@@ -2504,47 +2504,10 @@ export const buildLocalMustFilter = (validFilter: any) => {
   }
   throw UnsupportedError('Invalid filter configuration', validFilter);
 };
-
-const buildSubQueryForFilterGroup = (
-  context: AuthContext,
-  user: AuthUser,
-  inputFilters: any,
-) => {
-  const { mode = 'and', filters = [], filterGroups = [] } = inputFilters;
-  const localMustFilters: any = [];
-  // Handle filterGroups
-  for (let index = 0; index < filterGroups.length; index += 1) {
-    const group = filterGroups[index];
-    if (isFilterGroupNotEmpty(group)) {
-      const subQuery = buildSubQueryForFilterGroup(context, user, group);
-      if (subQuery) { // can be null
-        localMustFilters.push(subQuery);
-      }
-    }
-  }
-  // Handle filters
-  for (let index = 0; index < filters.length; index += 1) {
-    const filter = filters[index];
-    const isValidFilter = filter?.values || filter?.nested?.length > 0;
-    if (isValidFilter) {
-      const localMustFilter = buildLocalMustFilter(filter);
-      localMustFilters.push(localMustFilter);
-    }
-  }
-  if (localMustFilters.length > 0) {
-    return {
-      bool: {
-        should: localMustFilters,
-        minimum_should_match: mode === 'or' ? 1 : localMustFilters.length,
-      },
-    };
-  }
-  return null;
-};
 const buildSubQueryForTaggedFilterGroup = (
   context: AuthContext,
   user: AuthUser,
-  inputFilters: any,
+  inputFilters: TaggedFilterGroup,
 ): { subQuery: any; postFiltersTags: Set<string> } => {
   const { mode = 'and', filters = [], filterGroups = [] } = inputFilters;
   const localMustFilters: any = [];
@@ -2566,7 +2529,7 @@ const buildSubQueryForTaggedFilterGroup = (
   // Handle filters
   for (let index = 0; index < filters.length; index += 1) {
     const filter = filters[index];
-    const isValidFilter = filter?.values || filter?.nested?.length > 0;
+    const isValidFilter = filter?.values || (filter?.nested && filter?.nested?.length > 0);
     if (isValidFilter) {
       const localMustFilter = buildLocalMustFilter(filter);
       if (filter?.postFilteringTag) {
@@ -2579,19 +2542,24 @@ const buildSubQueryForTaggedFilterGroup = (
       }
     }
   }
-  // Wrap every subquery in a bool must tagged with name equal to local filter tags
-  for (let i = 0; i < localSubQueries.length; i++) {
-    const { subQuery, associatedTags } = localSubQueries[i];
-    const tagsToApply = Array.from(localPostFilterTags).filter((t: string) => !associatedTags.has(t));
-    const localMustFilter: any = {
-      bool: {
-        must: [subQuery],
-      },
-    };
-    if (mode === 'or' && tagsToApply.length > 0) {
-      localMustFilter.bool['_name'] = tagsToApply.join(POST_FILTER_TAG_SEPARATOR);
+  // Wrap every subquery in a bool must tagged with name equal to local filter tags if there are any tags
+  if (localPostFilterTags.size > 0) {
+    for (let i = 0; i < localSubQueries.length; i++) {
+      const { subQuery, associatedTags } = localSubQueries[i];
+      const tagsToApply = Array.from(localPostFilterTags).filter((t: string) => !associatedTags.has(t));
+      let localMustFilter = subQuery;
+      if (mode === 'or' && tagsToApply.length > 0) {
+        localMustFilter = {
+          bool: {
+            must: [subQuery],
+            ['_name']: tagsToApply.join(POST_FILTER_TAG_SEPARATOR),
+          },
+        };
+      }
+      localMustFilters.push(localMustFilter);
     }
-    localMustFilters.push(localMustFilter);
+  } else {
+    localMustFilters.push(...(localSubQueries.map((sub) => sub.subQuery)));
   }
 
   if (localMustFilters.length > 0) {
@@ -2797,7 +2765,7 @@ type QueryBodyBuilderOpts = ProcessSearchArgs & BuildDraftFilterOpts & {
   first?: number | null;
   types?: string[] | null;
   search?: string | null;
-  filters?: TaggedFilterGroup | FilterGroup | null;
+  filters?: TaggedFilterGroup | null;
   noFiltersChecking?: boolean;
   startDate?: any;
   endDate?: any;
@@ -2825,7 +2793,6 @@ const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, options:
     endDate = null,
     dateAttribute = null,
     includeAuthorities = false,
-    handlePostFiltering = false,
   } = options;
   const elFindByIdsToMap = async (c: AuthContext, u: AuthUser, i: string[], o: any) => {
     return elFindByIds<BasicStoreObject>(c, u, i, { ...o, toMap: true }) as Promise<Record<string, BasicStoreObject>>;
@@ -2862,16 +2829,9 @@ const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, options:
   // Handle filters
   if (isFilterGroupNotEmpty(completeFilters)) {
     const finalFilters = await completeSpecialFilterKeys(context, user, completeFilters);
-    if (handlePostFiltering) {
-      const { subQuery: filtersSubQuery } = buildSubQueryForTaggedFilterGroup(context, user, finalFilters);
-      if (filtersSubQuery) {
-        mustFilters.push(filtersSubQuery);
-      }
-    } else {
-      const filtersSubQuery = buildSubQueryForFilterGroup(context, user, finalFilters);
-      if (filtersSubQuery) {
-        mustFilters.push(filtersSubQuery);
-      }
+    const { subQuery: filtersSubQuery } = buildSubQueryForTaggedFilterGroup(context, user, finalFilters);
+    if (filtersSubQuery) {
+      mustFilters.push(filtersSubQuery);
     }
   }
   // Handle search
@@ -3102,7 +3062,7 @@ export const elPaginate = async <T extends BasicStoreBase>(
   const postFiltersMaps: PostFiltersTagMaps = buildPostFiltersTagMaps(filters);
   const hasActivePostFilters = postFiltersMaps.filterToTagMap.size > 0;
   const tagAppliedFilters = applyTagToFilters(filters, postFiltersMaps);
-  const body = await elQueryBodyBuilder(context, user, { ...options, filters: tagAppliedFilters, handlePostFiltering: hasActivePostFilters });
+  const body = await elQueryBodyBuilder(context, user, { ...options, filters: tagAppliedFilters });
   if (body.size > ES_MAX_PAGINATION && !bypassSizeLimit) {
     logApp.info('[SEARCH] Pagination limited to max result config', { size: body.size, max: ES_MAX_PAGINATION });
     body.size = ES_MAX_PAGINATION;
