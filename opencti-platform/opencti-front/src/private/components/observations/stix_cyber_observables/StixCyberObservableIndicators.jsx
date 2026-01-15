@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Typography from '@mui/material/Typography';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
@@ -26,6 +25,7 @@ import { commitMutation } from '../../../../relay/environment';
 import ItemPatternType from '../../../../components/ItemPatternType';
 import Transition from '../../../../components/Transition';
 import { insertNode } from '../../../../utils/store';
+import Label from '../../../../components/common/label/Label';
 
 const inlineStyles = {
   pattern_type: {
@@ -132,34 +132,35 @@ const StixCyberObservableIndicatorsComponent = ({ stixCyberObservable }) => {
 
   return (
     <div>
-      <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
+      <Label action={(
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <IconButton
+            ref={AddOrCreateIndicatorsButtonRef}
+            aria-label="Add or create indicators button"
+            color="primary"
+            onClick={handleOpenAddOrCreateIndicatorMenu}
+          >
+            <Add fontSize="small" />
+          </IconButton>
+          <Menu
+            anchorEl={AddOrCreateIndicatorsButtonRef.current}
+            open={isAddOrCreateIndicatorsMenuOpen}
+            onClose={handleCloseAddOrCreateIndicatorMenu}
+          >
+            <MenuItem onClick={handleOpenCreateIndicatorMenu}>
+              {t_i18n('Create')}
+            </MenuItem>
+            <MenuItem onClick={handleOpenAddIndicatorDrawer}>
+              {t_i18n('Add')}
+            </MenuItem>
+          </Menu>
+        </Security>
+      )}
+      >
         {t_i18n('Indicators composed with this observable')}
-      </Typography>
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <IconButton
-          ref={AddOrCreateIndicatorsButtonRef}
-          aria-label="Add or create indicators button"
-          color="primary"
-          onClick={handleOpenAddOrCreateIndicatorMenu}
-          style={{ float: 'left', margin: '-15px 0 0 -2px' }}
-        >
-          <Add fontSize="small" />
-        </IconButton>
-        <Menu
-          anchorEl={AddOrCreateIndicatorsButtonRef.current}
-          open={isAddOrCreateIndicatorsMenuOpen}
-          onClose={handleCloseAddOrCreateIndicatorMenu}
-        >
-          <MenuItem onClick={handleOpenCreateIndicatorMenu}>
-            {t_i18n('Create')}
-          </MenuItem>
-          <MenuItem onClick={handleOpenAddIndicatorDrawer}>
-            {t_i18n('Add')}
-          </MenuItem>
-        </Menu>
-      </Security>
-      <div className="clearfix" />
-      <List style={{ marginTop: -15 }} aria-label="Stix cyber observable indicators list">
+      </Label>
+
+      <List aria-label="Stix cyber observable indicators list">
         {stixCyberObservable.indicators.edges.map((indicatorEdge) => (
           <ListItem
             key={indicatorEdge.node.id}

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import Typography from '@mui/material/Typography';
 import { useFormatter } from '../../../../components/i18n';
 import IndicatorAddObservables from './IndicatorAddObservables';
 import IndicatorObservablePopover from './IndicatorObservablePopover';
@@ -8,6 +7,8 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import DataTableWithoutFragment from '../../../../components/dataGrid/DataTableWithoutFragment';
 import { DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
+import Label from '../../../../components/common/label/Label';
+import { Box } from '@mui/material';
 
 const IndicatorObservablesComponent = ({ indicator }) => {
   const [deleted, setDeleted] = useState([]);
@@ -23,18 +24,18 @@ const IndicatorObservablesComponent = ({ indicator }) => {
   const observablesGlobalCount = indicator.observables.pageInfo.globalCount;
 
   return (
-    <div style={{ marginTop: 20, height: 300, display: 'flex', flexFlow: 'column' }}>
-      <div style={{ display: 'flex', alignItems: 'center' }}>
-        <Typography variant="h3" style={{ marginBottom: 0 }}>
-          {t_i18n('Based on')}
-        </Typography>
+    <Box sx={{ marginTop: 2, height: 300, display: 'flex', flexFlow: 'column' }}>
+      <Label action={(
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <IndicatorAddObservables
             indicator={indicator}
             indicatorObservables={indicator.observables.edges}
           />
         </Security>
-      </div>
+      )}
+      >
+        {t_i18n('Based on')}
+      </Label>
       <div style={{ overflow: 'hidden', flex: 1 }} ref={(r) => setRef(r)}>
         <DataTableWithoutFragment
           dataColumns={{
@@ -66,7 +67,7 @@ const IndicatorObservablesComponent = ({ indicator }) => {
           )}
         />
       </div>
-    </div>
+    </Box>
   );
 };
 
