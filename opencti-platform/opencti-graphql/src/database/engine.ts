@@ -2956,15 +2956,15 @@ const buildPostFiltersTagMaps = (
 };
 const applyTagToFilters = (
   filters: FilterGroup | undefined | null,
-  postFiltersTagsMaps: PostFiltersTagMaps,
+  filterToTagMap: Map<Filter, string>,
 ): TaggedFilterGroup | undefined | null => {
-  if (!filters || postFiltersTagsMaps.filterToTagMap.size <= 0) {
+  if (!filters || filterToTagMap.size <= 0) {
     return filters;
   }
   const newFilterGroups: TaggedFilterGroup[] = [];
   for (let i = 0; i < filters.filterGroups.length; i++) {
     const filterGroupToTag = filters.filterGroups[i];
-    const taggedFilterGroup = applyTagToFilters(filterGroupToTag, postFiltersTagsMaps);
+    const taggedFilterGroup = applyTagToFilters(filterGroupToTag, filterToTagMap);
     if (taggedFilterGroup) {
       newFilterGroups.push(taggedFilterGroup);
     }
@@ -2973,8 +2973,8 @@ const applyTagToFilters = (
   const newFilters: TaggedFilter[] = [];
   for (let j = 0; j < filters.filters.length; j++) {
     const currentFilter = filters.filters[j];
-    if (postFiltersTagsMaps.filterToTagMap.has(currentFilter)) {
-      const filterTag = postFiltersTagsMaps.filterToTagMap.get(currentFilter) as string;
+    if (filterToTagMap.has(currentFilter)) {
+      const filterTag = filterToTagMap.get(currentFilter) as string;
       const taggedFilter = { ...currentFilter, postFilteringTag: filterTag };
       newFilters.push(taggedFilter);
     } else {
@@ -2992,34 +2992,30 @@ const applyPostFilteringToElements = async <T extends BasicStoreBase>(
   context: AuthContext,
   user: AuthUser,
   elements: { element: T; tagsToIgnoreSet: Set<string> }[],
-  postFiltersMaps?: PostFiltersTagMaps,
+  tagToFilterMap?: Map<string, Filter>,
 ): Promise<T[]> => {
-  let filteredElements: T[] = [];
+  const filteredElements: T[] = [];
   const rawElements = elements.map((e) => e.element);
-  if (elements.length <= 0 || !postFiltersMaps || postFiltersMaps.filterToTagMap.size <= 0) {
-    filteredElements = rawElements;
-  } else {
-    const allPostFilteringFilters = Array.from(postFiltersMaps.filterToTagMap.entries());
-    const tagToPostFilterMap = new Map<string, any>();
-    for (let i = 0; i < allPostFilteringFilters.length; i++) {
-      const [currentPostFilter, tag] = allPostFilteringFilters[i];
-      const postFilterCheckFunction = await buildRegardingOfFilter<T>(context, user, rawElements, currentPostFilter);
-      tagToPostFilterMap.set(tag, postFilterCheckFunction);
+  const allPostFilteringFilters = tagToFilterMap ? Array.from(tagToFilterMap.entries()) : [];
+  const tagToPostFilterMap = new Map<string, any>();
+  for (let i = 0; i < allPostFilteringFilters.length; i++) {
+    const [tag, currentPostFilter] = allPostFilteringFilters[i];
+    const postFilterCheckFunction = await buildRegardingOfFilter<T>(context, user, rawElements, currentPostFilter);
+    tagToPostFilterMap.set(tag, postFilterCheckFunction);
+  }
+  const allTags = Array.from(tagToPostFilterMap.keys());
+  for (let j = 0; j < elements.length; j++) {
+    const { element: currentElement, tagsToIgnoreSet } = elements[j];
+    let keepCurrentElement = true;
+    const postFilterTagsToIgnore: string[] = Array.from(tagsToIgnoreSet);
+    const tagsToApply = allTags.filter((t) => !postFilterTagsToIgnore.includes(t));
+    for (let k = 0; k < tagsToApply.length; k++) {
+      const tagToApply = tagsToApply[k];
+      const filterCheckToApply = tagToPostFilterMap.get(tagToApply);
+      keepCurrentElement = keepCurrentElement && filterCheckToApply(currentElement);
     }
-    const allTags = Array.from(tagToPostFilterMap.keys());
-    for (let j = 0; j < elements.length; j++) {
-      const { element: currentElement, tagsToIgnoreSet } = elements[j];
-      let keepCurrentElement = true;
-      const postFilterTagsToIgnore: string[] = Array.from(tagsToIgnoreSet);
-      const tagsToApply = allTags.filter((t) => !postFilterTagsToIgnore.includes(t));
-      for (let k = 0; k < tagsToApply.length; k++) {
-        const tagToApply = tagsToApply[k];
-        const filterCheckToApply = tagToPostFilterMap.get(tagToApply);
-        keepCurrentElement = keepCurrentElement && filterCheckToApply(currentElement);
-      }
-      if (keepCurrentElement) {
-        filteredElements.push(currentElement);
-      }
+    if (keepCurrentElement) {
+      filteredElements.push(currentElement);
     }
   }
 
@@ -3060,8 +3056,7 @@ export const elPaginate = async <T extends BasicStoreBase>(
     connectionFormat = true,
   } = options;
   const postFiltersMaps: PostFiltersTagMaps = buildPostFiltersTagMaps(filters);
-  const hasActivePostFilters = postFiltersMaps.filterToTagMap.size > 0;
-  const tagAppliedFilters = applyTagToFilters(filters, postFiltersMaps);
+  const tagAppliedFilters = applyTagToFilters(filters, postFiltersMaps.filterToTagMap);
   const body = await elQueryBodyBuilder(context, user, { ...options, filters: tagAppliedFilters });
   if (body.size > ES_MAX_PAGINATION && !bypassSizeLimit) {
     logApp.info('[SEARCH] Pagination limited to max result config', { size: body.size, max: ES_MAX_PAGINATION });
@@ -3085,6 +3080,7 @@ export const elPaginate = async <T extends BasicStoreBase>(
     const globalCount = data.hits.total.value;
     const elements = await elConvertHits<T>(data.hits.hits);
     let finalElements = elements;
+    const hasActivePostFilters = postFiltersMaps.filterToTagMap.size > 0;
     if (finalElements.length > 0 && hasActivePostFilters) {
       const elementsWithTags: { element: T; tagsToIgnoreSet: Set<string> }[] = [];
       for (let i = 0; i < data.hits.hits.length; i++) {
@@ -3104,7 +3100,7 @@ export const elPaginate = async <T extends BasicStoreBase>(
         elementsWithTags.push({ element, tagsToIgnoreSet });
       }
       // Since filters contains filters requiring post filtering (regardingOf, dynamicRegardingOf), a post-security filtering is needed
-      finalElements = await applyPostFilteringToElements(context, user, elementsWithTags, postFiltersMaps);
+      finalElements = await applyPostFilteringToElements(context, user, elementsWithTags, postFiltersMaps.tagToFilterMap);
     }
     const filterCount = elements.length - finalElements.length;
     const result = buildSearchResult(finalElements, first, body.search_after, globalCount, filterCount, connectionFormat);
