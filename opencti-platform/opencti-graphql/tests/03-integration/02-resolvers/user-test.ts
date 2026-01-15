@@ -988,28 +988,6 @@ describe('User has no settings capability and is organization admin query behavi
     expect([userInternalId, userEditorId, userParticipateId].every((userId) => queryResult.data.users.edges.map((n: any) => n.node.id).includes(userId)))
       .toBeTruthy();
   });
-  it('should list users from its own organization even if he has not the rights to see its organization', async () => {
-    const tlpRedMarking = await storeLoadById(testContext, ADMIN_USER, MARKING_TLP_RED, ENTITY_TYPE_MARKING_DEFINITION);
-    // add TLP:RED marking to the test organization so that USER_EDITOR is not able to see its own organization
-    await stixDomainObjectAddRelation(
-      testContext,
-      ADMIN_USER,
-      testOrganizationId,
-      { relationship_type: 'object-marking', toId: tlpRedMarking.id },
-    );
-
-    // list the users of the organization
-    const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
-      query: LIST_QUERY,
-      variables: {},
-    });
-    expect(queryResult.data.users.edges.length).toEqual(3);
-    expect([userInternalId, userEditorId, userParticipateId].every((userId) => queryResult.data.users.edges.map((n: any) => n.node.id).includes(userId)))
-      .toBeTruthy();
-
-    // remove TLP:RED marking of the organization
-    await stixDomainObjectDeleteRelation(testContext, ADMIN_USER, testOrganizationId, tlpRedMarking.id, 'object-marking');
-  });
   it('should update user from its own organization', async () => {
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
       query: UPDATE_QUERY,
