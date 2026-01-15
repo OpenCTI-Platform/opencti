@@ -5,8 +5,10 @@ import { useTheme } from '@mui/styles';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useFormatter } from '../../../components/i18n';
-import logoOpenAEV from '../../../static/images/logo_open_aev.svg';
-import logoXTMHub from '../../../static/images/logo_xtm_hub.svg';
+import logoOpenAEVDark from '../../../static/images/logo_open_aev_dark.svg';
+import logoOpenAEVLight from '../../../static/images/logo_open_aev_light.svg';
+import logoXTMHubLight from '../../../static/images/logo_xtm_hub_light.svg';
+import logoXTMHubDark from '../../../static/images/logo_xtm_hub_dark.svg';
 import { isNotEmptyField } from '../../../utils/utils';
 import { Theme } from '../../../components/Theme';
 
@@ -102,6 +104,7 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
   hasXtmHubAccess,
 }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -193,7 +196,7 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
           <Tooltip title={isNotEmptyField(openAEVUrl) ? t_i18n('Platform connected') : t_i18n('Get OpenAEV now')}>
             <span>
               <PopoverListItem
-                logoSrc={logoOpenAEV}
+                logoSrc={theme.palette.mode === 'dark' ? logoOpenAEVDark : logoOpenAEVLight}
                 href={openAEVUrl}
                 external
                 onClick={handleMouseLeave}
@@ -205,14 +208,14 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
 
           {(xtmhubStatus === 'registered' || !hasXtmHubAccess) ? (
             <PopoverListItem
-              logoSrc={logoXTMHub}
+              logoSrc={theme.palette.mode === 'dark' ? logoXTMHubDark : logoXTMHubLight}
               href={isNotEmptyField(xtmhubUrl) ? xtmhubUrl : 'https://hub.filigran.io'}
               external
               onClick={handleMouseLeave}
             />
           ) : (
             <PopoverListItem
-              logoSrc={logoXTMHub}
+              logoSrc={theme.palette.mode === 'dark' ? logoXTMHubDark : logoXTMHubLight}
               to="/dashboard/settings/experience"
               onClick={handleMouseLeave}
             />
