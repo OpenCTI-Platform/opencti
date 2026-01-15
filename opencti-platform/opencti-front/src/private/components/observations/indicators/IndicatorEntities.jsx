@@ -85,6 +85,7 @@ const IndicatorEntities = ({ indicatorId, relationshipType, defaultStartTime, de
       confidence: {
         label: 'Confidence',
         isSortable: true,
+        width: '9%',
       },
     };
     return (

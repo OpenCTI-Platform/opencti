@@ -448,7 +448,7 @@ const LeftBarComponent = ({ queryRef }) => {
           backgroundColor: 'transparent',
         }}
       >
-        <MenuList component="nav">
+        <MenuList disablePadding component="nav">
           {!draftContext && (
             <LeftBarItem
               {...itemProps}

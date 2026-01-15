@@ -135,9 +135,8 @@ const StixCoreObjectSecurityCoverage: FunctionComponent<StixCoreObjectSecurityCo
         {isEmptyField(coverage) && (
           <Tooltip title={t_i18n('Create a coverage')}>
             <Button
-              variant="secondary"
+              variant="tertiary"
               size="small"
-              style={{ fontSize: 12 }}
               disabled={!isGrantedToUpdate}
               onClick={handleOpen}
               startIcon={<ShieldCheckOutline />}
