@@ -8,8 +8,6 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import { BullseyeArrow, ArmFlexOutline, DramaMasks } from 'mdi-material-ui';
 import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
-import Typography from '@mui/material/Typography';
-import CardTitle from '@common/card/CardTitle';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
@@ -23,6 +21,7 @@ import ImageCarousel, { ImagesData } from '../../../../components/ImageCarousel'
 import ThreatActorIndividualLocation from './ThreatActorIndividualLocation';
 import ThreatActorIndividualDetailsChips from './ThreatActorIndividualDetailsChips';
 import Card from '../../../../components/common/card/Card';
+import Label from '../../../../components/common/label/Label';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -118,18 +117,18 @@ const ThreatActorIndividualDetails: FunctionComponent<
 
   return (
     <Card title={t_i18n('Details')}>
-      <Grid container={true} spacing={3}>
+      <Grid container={true} spacing={2}>
         <Grid item xs={hasImages ? 7 : 6}>
-          <Grid container={true} spacing={3}>
+          <Grid container={true} spacing={2}>
             {hasImages && (
               <Grid item xs={4}>
                 <ImageCarousel data={imagesCarousel} />
               </Grid>
             )}
             <Grid item xs={hasImages ? 8 : 12}>
-              <Typography variant="h3" gutterBottom={true}>
+              <Label>
                 {t_i18n('Threat actor types')}
-              </Typography>
+              </Label>
               <FieldOrEmpty source={data.threat_actor_types}>
                 {data.threat_actor_types?.map((threatActorIndividualType) => (
                   <Chip
@@ -139,13 +138,11 @@ const ThreatActorIndividualDetails: FunctionComponent<
                   />
                 ))}
               </FieldOrEmpty>
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
+              <Label
+                sx={{ marginTop: 2 }}
               >
                 {t_i18n('Description')}
-              </Typography>
+              </Label>
               <ExpandableMarkdown
                 source={data.description}
                 limit={hasImages ? 400 : 600}
@@ -163,25 +160,21 @@ const ThreatActorIndividualDetails: FunctionComponent<
             relType="impersonates"
           />
           <ThreatActorIndividualLocation threatActorIndividual={data} />
-          <CardTitle sx={{ marginTop: '20px' }}>
+          <Label sx={{ marginTop: '20px' }}>
             {t_i18n('First seen')}
-          </CardTitle>
+          </Label>
           {fldt(data.first_seen)}
-          <CardTitle sx={{ marginTop: '20px' }}>
+          <Label sx={{ marginTop: '20px' }}>
             {t_i18n('Last seen')}
-          </CardTitle>
+          </Label>
           {fldt(data.last_seen)}
         </Grid>
       </Grid>
-      <Grid container={true} spacing={3}>
+      <Grid container={true} spacing={2}>
         <Grid item xs={4}>
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
+          <Label>
             {t_i18n('Sophistication')}
-          </Typography>
+          </Label>
           <FieldOrEmpty source={data.sophistication}>
             <ItemOpenVocab
               type="threat-actor-individual-sophistication-ov"
@@ -191,13 +184,9 @@ const ThreatActorIndividualDetails: FunctionComponent<
           </FieldOrEmpty>
         </Grid>
         <Grid item xs={4}>
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
+          <Label>
             {t_i18n('Resource level')}
-          </Typography>
+          </Label>
           <FieldOrEmpty source={data.resource_level}>
             <ItemOpenVocab
               type="attack-resource-level-ov"
@@ -207,13 +196,9 @@ const ThreatActorIndividualDetails: FunctionComponent<
           </FieldOrEmpty>
         </Grid>
         <Grid item xs={4}>
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
+          <Label>
             {t_i18n('Primary motivation')}
-          </Typography>
+          </Label>
           <FieldOrEmpty source={data.primary_motivation}>
             <ItemOpenVocab
               type="attack-motivation-ov"
@@ -223,9 +208,9 @@ const ThreatActorIndividualDetails: FunctionComponent<
           </FieldOrEmpty>
         </Grid>
         <Grid item xs={4}>
-          <CardTitle sx={{ marginTop: '20px' }}>
+          <Label>
             {t_i18n('Roles')}
-          </CardTitle>
+          </Label>
           <FieldOrEmpty source={data.roles}>
             {data.roles && (
               <List>
@@ -250,9 +235,9 @@ const ThreatActorIndividualDetails: FunctionComponent<
           </FieldOrEmpty>
         </Grid>
         <Grid item xs={4}>
-          <CardTitle sx={{ marginTop: '20px' }}>
+          <Label>
             {t_i18n('Goals')}
-          </CardTitle>
+          </Label>
           <FieldOrEmpty source={data.goals}>
             {data.goals && (
               <List>
@@ -271,9 +256,9 @@ const ThreatActorIndividualDetails: FunctionComponent<
           </FieldOrEmpty>
         </Grid>
         <Grid item xs={4}>
-          <CardTitle sx={{ marginTop: '20px' }}>
+          <Label>
             {t_i18n('Secondary motivations')}
-          </CardTitle>
+          </Label>
           <FieldOrEmpty source={data.secondary_motivations}>
             {data.secondary_motivations && (
               <List>
@@ -302,9 +287,9 @@ const ThreatActorIndividualDetails: FunctionComponent<
           </FieldOrEmpty>
         </Grid>
         <Grid item xs={4}>
-          <CardTitle sx={{ marginTop: '20px' }}>
+          <Label>
             {t_i18n('Personal motivations')}
-          </CardTitle>
+          </Label>
           <FieldOrEmpty source={data.personal_motivations}>
             {data.personal_motivations && (
               <List>

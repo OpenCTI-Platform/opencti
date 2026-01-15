@@ -2,12 +2,12 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
-import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import Card from '@common/card/Card';
+import Label from '../../../../components/common/label/Label';
 
 class CampaignDetailsComponent extends Component {
   render() {
@@ -17,17 +17,15 @@ class CampaignDetailsComponent extends Component {
         <Card title={t('Details')}>
           <Grid container={true} spacing={3}>
             <Grid item xs={6}>
-              <Typography variant="h3" gutterBottom={true}>
+              <Label>
                 {t('Description')}
-              </Typography>
+              </Label>
               <ExpandableMarkdown source={campaign.description} limit={400} />
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
+              <Label
+                sx={{ marginTop: 2 }}
               >
                 {t('Objective')}
-              </Typography>
+              </Label>
               <MarkdownDisplay
                 content={campaign.objective}
                 remarkGfmPlugin={true}
@@ -35,17 +33,15 @@ class CampaignDetailsComponent extends Component {
               />
             </Grid>
             <Grid item xs={6}>
-              <Typography variant="h3" gutterBottom={true}>
+              <Label>
                 {t('First seen')}
-              </Typography>
+              </Label>
               {fldt(campaign.first_seen)}
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
+              <Label
+                sx={{ marginTop: 2 }}
               >
                 {t('Last seen')}
-              </Typography>
+              </Label>
               {fldt(campaign.last_seen)}
             </Grid>
           </Grid>

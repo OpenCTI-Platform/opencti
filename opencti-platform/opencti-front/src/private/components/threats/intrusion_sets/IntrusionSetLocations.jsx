@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
-import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -22,6 +21,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import Label from '../../../../components/common/label/Label';
 
 const styles = (theme) => ({
   avatar: {
@@ -65,18 +65,17 @@ class IntrusionSetLocationsComponent extends Component {
     const { t, intrusionSet } = this.props;
     return (
       <>
-        <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
-          {t('Originates from')}
-        </Typography>
-        <Security
-          needs={[KNOWLEDGE_KNUPDATE]}
+        <Label action={(
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <AddLocations
+              intrusionSet={intrusionSet}
+              intrusionSetLocations={intrusionSet.locations.edges}
+            />
+          </Security>
+        )}
         >
-          <AddLocations
-            intrusionSet={intrusionSet}
-            intrusionSetLocations={intrusionSet.locations.edges}
-          />
-        </Security>
-        <div className="clearfix" />
+          {t('Originates from')}
+        </Label>
         <FieldOrEmpty source={intrusionSet.locations.edges}>
           <List style={{ marginTop: -10 }}>
             {intrusionSet.locations.edges.map((locationEdge) => {

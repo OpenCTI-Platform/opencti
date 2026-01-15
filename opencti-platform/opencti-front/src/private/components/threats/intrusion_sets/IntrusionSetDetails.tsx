@@ -1,6 +1,5 @@
 import React from 'react';
 import { graphql, createFragmentContainer } from 'react-relay';
-import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -15,6 +14,7 @@ import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import ImageCarousel, { ImagesData } from '../../../../components/ImageCarousel';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import Card from '../../../../components/common/card/Card';
+import Label from '../../../../components/common/label/Label';
 
 type IntrusionSetDetailsProps = {
   intrusionSet: IntrusionSetDetails_intrusionSet$data;
@@ -36,18 +36,18 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
   return (
     <div style={{ height: '100%' }}>
       <Card title={t_i18n('Details')}>
-        <Grid container spacing={3}>
+        <Grid container spacing={2}>
           <Grid item xs={hasImages ? 7 : 6}>
-            <Grid container spacing={3}>
+            <Grid container spacing={2}>
               {hasImages && (
                 <Grid item xs={4}>
                   <ImageCarousel data={imagesCarousel} />
                 </Grid>
               )}
               <Grid item xs={hasImages ? 8 : 12}>
-                <Typography variant="h3" gutterBottom>
+                <Label>
                   {t_i18n('Description')}
-                </Typography>
+                </Label>
                 <ExpandableMarkdown
                   source={intrusionSet.description}
                   limit={hasImages ? 400 : 600}
@@ -57,33 +57,25 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
           </Grid>
           <Grid item xs={hasImages ? 5 : 6}>
             <IntrusionSetLocations intrusionSet={intrusionSet} />
-            <Typography
-              variant="h3"
-              gutterBottom
-              style={{ marginTop: 20 }}
+            <Label
+              sx={{ marginTop: 2 }}
             >
               {t_i18n('First seen')}
-            </Typography>
+            </Label>
             {fldt(intrusionSet.first_seen)}
-            <Typography
-              variant="h3"
-              gutterBottom
-              style={{ marginTop: 20 }}
+            <Label
+              sx={{ marginTop: 2 }}
             >
               {t_i18n('Last seen')}
-            </Typography>
+            </Label>
             {fldt(intrusionSet.last_seen)}
           </Grid>
         </Grid>
-        <Grid container spacing={3}>
+        <Grid container spacing={2} mt={0}>
           <Grid item xs={6}>
-            <Typography
-              variant="h3"
-              gutterBottom
-              style={{ marginTop: 20 }}
-            >
+            <Label>
               {t_i18n('Resource level')}
-            </Typography>
+            </Label>
             <FieldOrEmpty source={intrusionSet.resource_level}>
               <ItemOpenVocab
                 type="attack-resource-level-ov"
@@ -92,13 +84,9 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
-            <Typography
-              variant="h3"
-              gutterBottom
-              style={{ marginTop: 20 }}
-            >
+            <Label>
               {t_i18n('Primary motivation')}
-            </Typography>
+            </Label>
             <FieldOrEmpty source={intrusionSet.primary_motivation}>
               <ItemOpenVocab
                 type="attack-motivation-ov"
@@ -107,13 +95,9 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
-            <Typography
-              variant="h3"
-              gutterBottom
-              style={{ marginTop: 20 }}
-            >
+            <Label>
               {t_i18n('Goals')}
-            </Typography>
+            </Label>
             <FieldOrEmpty source={intrusionSet.goals}>
               {intrusionSet.goals && (
                 <List>
@@ -142,13 +126,9 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
-            <Typography
-              variant="h3"
-              gutterBottom
-              style={{ marginTop: 20 }}
-            >
+            <Label>
               {t_i18n('Secondary motivations')}
-            </Typography>
+            </Label>
             <FieldOrEmpty source={intrusionSet.secondary_motivations}>
               {intrusionSet.secondary_motivations && (
                 <List>

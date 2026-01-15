@@ -1,12 +1,12 @@
 import Button from '@common/button/Button';
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import CardTitle from '@common/card/CardTitle';
 import Security from 'src/utils/Security';
 import { KNOWLEDGE_KNUPDATE } from 'src/utils/hooks/useGranted';
 import { ThreatActorIndividualDetails_ThreatActorIndividual$data } from './__generated__/ThreatActorIndividualDetails_ThreatActorIndividual.graphql';
 import AddPersonaThreatActorIndividual from './AddPersonasThreatActorIndividual';
 import AddIndividualsThreatActorIndividual from './AddIndividualsThreatActorIndividual';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import Label from '../../../../components/common/label/Label';
 
 type SupportedTypes = 'known-as' | 'impersonates';
 type SupportedFields = 'observable_value' | 'name';
@@ -67,31 +67,27 @@ const ThreatActorIndividualDetailsChips: FunctionComponent<
 
   return (
     <div style={{ marginBottom: '20px' }}>
-      <CardTitle action={(
-        <Security
-          needs={[KNOWLEDGE_KNUPDATE]}
-        >
+      <Label action={(
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <AddComponent threatActorIndividual={data} />
         </Security>
       )}
       >
         {title}
-      </CardTitle>
+      </Label>
       <div className="clearfix" />
       <FieldOrEmpty source={nodes}>
-        {
-          nodes.map(({ id, to }) => (
-            <Button
-              key={id}
-              variant="secondary"
-              size="small"
-              href={`${path}/${to?.id}`}
-              style={{ margin: '0 5px 5px 0' }}
-            >
-              {to?.[field]}
-            </Button>
-          ))
-        }
+        {nodes.map(({ id, to }) => (
+          <Button
+            key={id}
+            variant="secondary"
+            size="small"
+            href={`${path}/${to?.id}`}
+            style={{ margin: '0 5px 5px 0' }}
+          >
+            {to?.[field]}
+          </Button>
+        ))}
       </FieldOrEmpty>
     </div>
   );

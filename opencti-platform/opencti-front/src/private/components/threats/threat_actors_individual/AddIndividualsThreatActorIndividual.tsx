@@ -1,6 +1,5 @@
 import Drawer from '@components/common/drawer/Drawer';
 import { Add } from '@mui/icons-material';
-import { IconButton } from '@mui/material';
 import React, { FunctionComponent, useState } from 'react';
 import SearchInput from 'src/components/SearchInput';
 import { useFormatter } from 'src/components/i18n';
@@ -14,6 +13,7 @@ import { ThreatActorIndividualDetails_ThreatActorIndividual$data } from './__gen
 import IndividualCreation from '../../entities/individuals/IndividualCreation';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import IconButton from '../../../../components/common/button/IconButton';
 
 interface AddIndividualsThreatActorIndividualComponentProps {
   threatActorIndividual: ThreatActorIndividualDetails_ThreatActorIndividual$data;
@@ -44,7 +44,7 @@ const AddIndividualsThreatActorIndividualComponent: FunctionComponent<
   return (
     <div>
       <IconButton
-        color="primary"
+        size="small"
         onClick={handleOpen}
       >
         <Add fontSize="small" />
