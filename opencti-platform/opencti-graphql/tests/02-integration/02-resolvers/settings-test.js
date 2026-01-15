@@ -154,7 +154,7 @@ describe('Settings resolver standard behavior', () => {
   it('should block AI operations when platform AI is disabled', async () => {
     const settingsInternalId = await settingsId();
     const initialSettingsResult = await queryAsAdmin({ query: READ_QUERY, variables: {} });
-    const initialAiEnabled = initialSettingsResult.data.settings.platform_ai_enabled !== false;
+    const initialAiEnabled = initialSettingsResult.data.settings.platform_ai_enabled === true;
     if (!initialAiEnabled) {
       await queryAsAdmin({
         query: UPDATE_SETTINGS_QUERY,
