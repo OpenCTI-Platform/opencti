@@ -1,6 +1,5 @@
 import React from 'react';
 import { filter } from 'ramda';
-import Typography from '@mui/material/Typography';
 import IconButton from '@common/button/IconButton';
 import { Domain, LinkOff } from '@mui/icons-material';
 import { graphql, createFragmentContainer } from 'react-relay';
@@ -16,6 +15,7 @@ import { commitMutation } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import Label from '../../../../components/common/label/Label';
 
 const SectorSubSectorsComponent = ({ sector }) => {
   const { t_i18n } = useFormatter();
@@ -43,16 +43,17 @@ const SectorSubSectorsComponent = ({ sector }) => {
 
   return (
     <div style={{ height: '100%' }}>
-      <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
+      <Label action={(
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <AddSubSector
+            sector={sector}
+            sectorSubSectors={sector.subSectors.edges}
+          />
+        </Security>
+      )}
+      >
         {t_i18n('Subsectors')}
-      </Typography>
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <AddSubSector
-          sector={sector}
-          sectorSubSectors={sector.subSectors.edges}
-        />
-      </Security>
-      <div className="clearfix" />
+      </Label>
       {sector.subSectors.edges.map((subSectorEdge) => {
         const { types } = subSectorEdge;
         const subSector = subSectorEdge.node;

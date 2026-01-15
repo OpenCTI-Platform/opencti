@@ -1,15 +1,14 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
 import Grid from '@mui/material/Grid';
 import { OrganizationDetails_organization$key } from '@components/entities/organizations/__generated__/OrganizationDetails_organization.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ItemScore from '../../../../components/ItemScore';
 import Card from '../../../../components/common/card/Card';
+import Label from '../../../../components/common/label/Label';
+import Tag from '../../../../components/common/tag/Tag';
 
 const organizationDetailsFragment = graphql`
   fragment OrganizationDetails_organization on Organization {
@@ -39,53 +38,37 @@ const OrganizationDetails: FunctionComponent<OrganizationDetailsComponentProps> 
       <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={3}>
           <Grid item xs={6}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('Organization type')}
-            </Typography>
-            <Chip
-              style={{
-                fontSize: 12,
-                height: 25,
-                marginRight: 7,
-                textTransform: 'uppercase',
-                borderRadius: 4,
-                width: 150,
-                backgroundColor: 'rgba(229,152,137, 0.08)',
-                color: '#e59889',
-              }}
+            </Label>
+            <Tag
+              color="#e59889"
               label={organization.x_opencti_organization_type || t_i18n('Unknown')}
             />
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={fieldSpacingContainerStyle}
+            <Label
+              sx={{ mt: 2 }}
             >
               {t_i18n('Description')}
-            </Typography>
+            </Label>
             <ExpandableMarkdown
               source={organization.description}
               limit={400}
             />
           </Grid>
           <Grid item xs={6}>
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-            >
+            <Label>
               {t_i18n('Contact information')}
-            </Typography>
+            </Label>
             <MarkdownDisplay
               content={organization.contact_information ?? ''}
               remarkGfmPlugin={true}
               commonmark={true}
             />
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
+            <Label
+              sx={{ marginTop: 2 }}
             >
               {t_i18n('Score')}
-            </Typography>
+            </Label>
             <ItemScore score={organization.x_opencti_score} />
           </Grid>
         </Grid>

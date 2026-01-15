@@ -2,13 +2,13 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
-import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import Card from '@common/card/Card';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import Label from '../../../../components/common/label/Label';
 
 class EventDetailsComponent extends Component {
   render() {
@@ -16,19 +16,17 @@ class EventDetailsComponent extends Component {
     return (
       <div style={{ height: '100%' }}>
         <Card title={t('Details')}>
-          <Grid container={true} spacing={3}>
+          <Grid container={true} spacing={2}>
             <Grid item xs={6}>
-              <Typography variant="h3" gutterBottom={true}>
+              <Label>
                 {t('Description')}
-              </Typography>
+              </Label>
               <ExpandableMarkdown source={event.description} limit={400} />
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
+              <Label
+                sx={{ marginTop: 2 }}
               >
                 {t('Event types')}
-              </Typography>
+              </Label>
               <FieldOrEmpty source={event.event_types}>
                 {event.event_types?.map((eventType) => (
                   <div key={`event_type_ov_${eventType}`} style={{ marginBottom: 10 }}>
@@ -38,17 +36,15 @@ class EventDetailsComponent extends Component {
               </FieldOrEmpty>
             </Grid>
             <Grid item xs={6}>
-              <Typography variant="h3" gutterBottom={true}>
+              <Label>
                 {t('Start date')}
-              </Typography>
+              </Label>
               {fldt(event.start_time)}
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
+              <Label
+                sx={{ marginTop: 2 }}
               >
                 {t('End date')}
-              </Typography>
+              </Label>
               {fldt(event.stop_time)}
             </Grid>
           </Grid>

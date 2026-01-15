@@ -2,13 +2,13 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
-import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import Card from '@common/card/Card';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import SectorParentSectors from './SectorParentSectors';
 import SectorSubSectors from './SectorSubSectors';
+import Label from '../../../../components/common/label/Label';
 
 class SectorDetailsComponent extends Component {
   render() {
@@ -18,9 +18,9 @@ class SectorDetailsComponent extends Component {
         <Card title={t('Details')}>
           <Grid container={true} spacing={3}>
             <Grid item xs={6}>
-              <Typography variant="h3" gutterBottom={true}>
+              <Label>
                 {t('Description')}
-              </Typography>
+              </Label>
               <ExpandableMarkdown source={sector.description} limit={400} />
             </Grid>
             <Grid item xs={6}>

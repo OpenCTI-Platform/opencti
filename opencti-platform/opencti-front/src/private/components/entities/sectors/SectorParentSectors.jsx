@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -11,16 +10,17 @@ import { Domain } from '@mui/icons-material';
 import { graphql, createFragmentContainer } from 'react-relay';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
+import Label from '../../../../components/common/label/Label';
 
 class SectorParentSectorsComponent extends Component {
   render() {
     const { t, sector } = this.props;
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true}>
+        <Label>
           {t('Parent sectors')}
-        </Typography>
-        <List>
+        </Label>
+        <List sx={{ py: 0 }}>
           {sector.parentSectors.edges.map((parentSectorEdge) => {
             const parentSector = parentSectorEdge.node;
             return (
