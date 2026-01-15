@@ -38,7 +38,15 @@ const initClients = () => {
   if (client && nlqChat) {
     return;
   }
+  // Defensive check: a partially initialized state (only one of `client` or `nlqChat` is set)
+  // is unexpected and can lead to inconsistent behavior. We log a warning and reset both
+  // so that the initialization below always starts from a clean state.
   if ((client && !nlqChat) || (!client && nlqChat)) {
+    logApp.warn('[AI] Detected partially initialized AI clients, resetting both before re-initialization', {
+      hasClient: !!client,
+      hasNlqChat: !!nlqChat,
+      aiType: AI_TYPE,
+    });
     resetClients();
   }
   if (!AI_ENABLED || !AI_TOKEN) {
