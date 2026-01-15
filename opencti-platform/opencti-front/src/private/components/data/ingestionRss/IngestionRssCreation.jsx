@@ -20,6 +20,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import { insertNode } from '../../../../utils/store';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import FormButtonContainer from '@common/form/FormButtonContainer';
 
 const styles = (theme) => ({
   createButton: {
@@ -86,7 +87,7 @@ const CreateIngestionRssControlledDial = (props) => (
 );
 
 const IngestionRssCreation = (props) => {
-  const { t, classes } = props;
+  const { t } = props;
 
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     const input = {
@@ -201,23 +202,21 @@ const IngestionRssCreation = (props) => {
                 style={fieldSpacingContainerStyle}
                 setFieldValue={setFieldValue}
               />
-              <div className={classes.buttons}>
+              <FormButtonContainer>
                 <Button
                   variant="secondary"
                   onClick={handleReset}
                   disabled={isSubmitting}
-                  classes={{ root: classes.button }}
                 >
                   {t('Cancel')}
                 </Button>
                 <Button
                   onClick={submitForm}
                   disabled={isSubmitting}
-                  classes={{ root: classes.button }}
                 >
                   {t('Create')}
                 </Button>
-              </div>
+              </FormButtonContainer>
             </Form>
           )}
         </Formik>

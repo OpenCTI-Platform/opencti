@@ -16,6 +16,7 @@ import { insertNode } from '../../../../utils/store';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import FormButtonContainer from '@common/form/FormButtonContainer';
 
 const styles = (theme) => ({
   buttons: {
@@ -51,7 +52,7 @@ const CreateIngestionTaxiiCollectionControlledDial = (props) => (
 );
 
 const IngestionTaxiiCollectionCreation = (props) => {
-  const { t, classes } = props;
+  const { t } = props;
 
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     const authorized_members = values.authorized_members.map(({ value }) => ({
@@ -140,23 +141,21 @@ const IngestionTaxiiCollectionCreation = (props) => {
                 label={t('Copy confidence level to OpenCTI scores for indicators')}
                 containerstyle={fieldSpacingContainerStyle}
               />
-              <div className={classes.buttons}>
+              <FormButtonContainer>
                 <Button
                   variant="secondary"
                   onClick={handleReset}
                   disabled={isSubmitting}
-                  classes={{ root: classes.button }}
                 >
                   {t('Cancel')}
                 </Button>
                 <Button
                   onClick={submitForm}
                   disabled={isSubmitting}
-                  classes={{ root: classes.button }}
                 >
                   {t('Create')}
                 </Button>
-              </div>
+              </FormButtonContainer>
             </Form>
           )}
         </Formik>

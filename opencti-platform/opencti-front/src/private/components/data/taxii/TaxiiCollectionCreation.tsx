@@ -24,6 +24,7 @@ import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import { PaginationOptions } from '../../../../components/list_lines';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 
 interface TaxiiCollectionCreationProps {
   paginationOptions: PaginationOptions;
@@ -40,14 +41,7 @@ interface TaxiiCollectionCreationForm {
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
+const useStyles = makeStyles<Theme>(() => ({
   alert: {
     width: '100%',
     marginTop: 20,
@@ -235,23 +229,21 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
                 redirection
                 searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
               />
-              <div className={classes.buttons}>
+              <FormButtonContainer>
                 <Button
                   variant="secondary"
                   onClick={handleReset}
                   disabled={isSubmitting}
-                  classes={{ root: classes.button }}
                 >
                   {t_i18n('Cancel')}
                 </Button>
                 <Button
                   onClick={submitForm}
                   disabled={!isFilterGroupNotEmpty(filters) || isSubmitting}
-                  classes={{ root: classes.button }}
                 >
                   {t_i18n('Create')}
                 </Button>
-              </div>
+              </FormButtonContainer>
             </Form>
           )}
         </Formik>

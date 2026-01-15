@@ -35,6 +35,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { PlaybookCreationImportMutation } from './__generated__/PlaybookCreationImportMutation.graphql';
 import { PlaybookCreationMutation } from './__generated__/PlaybookCreationMutation.graphql';
 import type { Theme } from '../../../../components/Theme';
+import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 
 const playbookCreationMutation = graphql`
   mutation PlaybookCreationMutation($input: PlaybookAddInput!) {
@@ -166,14 +167,9 @@ const PlaybookCreation = () => {
                   style={fieldSpacingContainerStyle}
                   fullWidth
                 />
-                <div style={{
-                  ...fieldSpacingContainerStyle,
-                  display: 'flex',
-                  justifyContent: 'end',
-                  gap: theme.spacing(2),
-                }}
-                >
+                <FormButtonContainer>
                   <Button
+                    variant="secondary"
                     onClick={handleReset}
                     disabled={isSubmitting}
                   >
@@ -186,7 +182,7 @@ const PlaybookCreation = () => {
                   >
                     {t_i18n('Create')}
                   </Button>
-                </div>
+                </FormButtonContainer>
               </Form>
             )}
           </Formik>

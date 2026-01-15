@@ -5,14 +5,13 @@ import Button from '@common/button/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
 import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import { insertNode } from '../../../../utils/store';
 import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
 import { PaginationOptions } from '../../../../components/list_lines';
-import type { Theme } from '../../../../components/Theme';
+import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 
 const killChainPhaseMutation = graphql`
   mutation KillChainPhaseCreationMutation($input: KillChainPhaseAddInput!) {
@@ -39,7 +38,6 @@ const KillChainPhaseCreation: FunctionComponent<
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme<Theme>();
   const killChainPhaseValidation = Yup.object().shape({
     kill_chain_name: Yup.string().required(t_i18n('This field is required')),
     phase_name: Yup.string().required(t_i18n('This field is required')),
@@ -117,27 +115,21 @@ const KillChainPhaseCreation: FunctionComponent<
                 type="number"
                 style={{ marginTop: 20 }}
               />
-              <div style={{
-                marginTop: 20,
-                textAlign: 'right',
-              }}
-              >
+              <FormButtonContainer>
                 <Button
                   variant="secondary"
                   onClick={handleReset}
                   disabled={isSubmitting}
-                  style={{ marginLeft: theme.spacing(2) }}
                 >
                   {t_i18n('Cancel')}
                 </Button>
                 <Button
                   onClick={submitForm}
                   disabled={isSubmitting}
-                  style={{ marginLeft: theme.spacing(2) }}
                 >
                   {t_i18n('Create')}
                 </Button>
-              </div>
+              </FormButtonContainer>
             </Form>
           )}
         </Formik>

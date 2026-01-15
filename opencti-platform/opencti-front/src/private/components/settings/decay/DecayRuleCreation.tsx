@@ -1,42 +1,29 @@
-import React, { FunctionComponent } from 'react';
-import { graphql } from 'react-relay';
-import { Field, FieldArray, Form, Formik, FormikConfig } from 'formik';
-import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import Button from '@common/button/Button';
-import * as R from 'ramda';
-import { RecordSourceSelectorProxy } from 'relay-runtime';
-import makeStyles from '@mui/styles/makeStyles';
-import { AddOutlined, Delete } from '@mui/icons-material';
 import IconButton from '@common/button/IconButton';
-import Typography from '@mui/material/Typography';
-import Tooltip from '@mui/material/Tooltip';
-import Box from '@mui/material/Box';
-import { InformationOutline } from 'mdi-material-ui';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import ObservableTypesField from '@components/common/form/ObservableTypesField';
-import { useFormatter } from '../../../../components/i18n';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import { AddOutlined, Delete } from '@mui/icons-material';
+import Box from '@mui/material/Box';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
+import { Field, FieldArray, Form, Formik, FormikConfig } from 'formik';
+import { InformationOutline } from 'mdi-material-ui';
+import * as R from 'ramda';
+import { FunctionComponent } from 'react';
+import { graphql } from 'react-relay';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import TextField from '../../../../components/TextField';
-import type { Theme } from '../../../../components/Theme';
+import FormButtonContainer from '@common/form/FormButtonContainer';
+import MarkdownField from '../../../../components/fields/MarkdownField';
 import SwitchField from '../../../../components/fields/SwitchField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { insertNode } from '../../../../utils/store';
+import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { insertNode } from '../../../../utils/store';
 import decayRuleValidator from './DecayRuleValidator';
 import { DecayRulesLinesPaginationQuery$variables } from './__generated__/DecayRulesLinesPaginationQuery.graphql';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-}));
 
 const decayRuleCreationMutation = graphql`
   mutation DecayRuleCreationMutation($input: DecayRuleAddInput!) {
@@ -76,7 +63,6 @@ const DecayRuleCreationForm: FunctionComponent<DecayRuleCreationFormProps> = ({
   onReset,
   onCompleted,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [commit] = useApiMutation(decayRuleCreationMutation);
 
@@ -255,23 +241,21 @@ const DecayRuleCreationForm: FunctionComponent<DecayRuleCreationFormProps> = ({
             label={t_i18n('Active')}
             containerstyle={fieldSpacingContainerStyle}
           />
-          <div className={classes.buttons}>
+          <FormButtonContainer>
             <Button
               variant="secondary"
               onClick={handleReset}
               disabled={isSubmitting}
-              classes={{ root: classes.button }}
             >
               {t_i18n('Cancel')}
             </Button>
             <Button
               onClick={submitForm}
               disabled={isSubmitting}
-              classes={{ root: classes.button }}
             >
               {t_i18n('Create')}
             </Button>
-          </div>
+          </FormButtonContainer>
         </Form>
       )}
     </Formik>

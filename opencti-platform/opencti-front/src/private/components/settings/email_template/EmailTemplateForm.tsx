@@ -8,6 +8,7 @@ import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
+import FormButtonContainer from '@common/form/FormButtonContainer';
 
 export interface EmailTemplateFormInputs {
   name: string;
@@ -110,7 +111,7 @@ const EmailTemplateForm: FunctionComponent<EmailTemplateFormProps> = ({
             style={{ marginTop: theme.spacing(2) }}
           />
           {!isEdition && (
-            <div style={{ marginTop: theme.spacing(2), textAlign: 'right' }}>
+            <FormButtonContainer>
               <Button
                 variant="secondary"
                 onClick={() => {
@@ -118,18 +119,16 @@ const EmailTemplateForm: FunctionComponent<EmailTemplateFormProps> = ({
                   onClose();
                 }}
                 disabled={isSubmitting}
-                style={{ marginLeft: theme.spacing(2) }}
               >
                 {t_i18n('Cancel')}
               </Button>
               <Button
                 onClick={submitForm}
                 disabled={isSubmitting}
-                style={{ marginLeft: theme.spacing(2) }}
               >
                 {t_i18n('Create')}
               </Button>
-            </div>
+            </FormButtonContainer>
           )}
         </>
       )}

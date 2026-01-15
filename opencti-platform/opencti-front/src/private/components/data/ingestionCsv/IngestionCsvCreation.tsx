@@ -1,66 +1,53 @@
-import React, { FunctionComponent, useState } from 'react';
-import { Field, Form, Formik, FormikErrors } from 'formik';
 import Button from '@common/button/Button';
-import * as Yup from 'yup';
-import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
-import MenuItem from '@mui/material/MenuItem';
-import makeStyles from '@mui/styles/makeStyles';
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import { IngestionCsvLinesPaginationQuery$variables } from '@components/data/ingestionCsv/__generated__/IngestionCsvLinesPaginationQuery.graphql';
-import { FormikConfig } from 'formik/dist/types';
-import { IngestionAuthType } from '@components/data/ingestionCsv/__generated__/IngestionCsvCreationMutation.graphql';
-import CsvMapperField, { csvMapperQuery } from '@components/common/form/CsvMapperField';
-import IngestionCsvFeedTestDialog from '@components/data/ingestionCsv/IngestionCsvFeedTestDialog';
+import FormButtonContainer from '@common/form/FormButtonContainer';
 import { CsvMapperFieldSearchQuery } from '@components/common/form/__generated__/CsvMapperFieldSearchQuery.graphql';
+import CsvMapperField, { csvMapperQuery } from '@components/common/form/CsvMapperField';
+import { ExternalReferencesValues } from '@components/common/form/ExternalReferencesField';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
-import { ingestionCsvEditionContainerQuery } from '@components/data/ingestionCsv/IngestionCsvEditionContainer';
-import { ingestionCsvEditionFragment } from '@components/data/ingestionCsv/IngestionCsvEdition';
+import IngestionCreationUserHandling, { BasicUserHandlingValues } from '@components/data/IngestionCreationUserHandling';
+import { IngestionAuthType } from '@components/data/ingestionCsv/__generated__/IngestionCsvCreationMutation.graphql';
+import { IngestionCsvCreationUsersQuery$data } from '@components/data/ingestionCsv/__generated__/IngestionCsvCreationUsersQuery.graphql';
+import { IngestionCsvEditionContainerQuery } from '@components/data/ingestionCsv/__generated__/IngestionCsvEditionContainerQuery.graphql';
 import {
   IngestionCsvEditionFragment_ingestionCsv$data,
   IngestionCsvEditionFragment_ingestionCsv$key,
 } from '@components/data/ingestionCsv/__generated__/IngestionCsvEditionFragment_ingestionCsv.graphql';
-import { IngestionCsvEditionContainerQuery } from '@components/data/ingestionCsv/__generated__/IngestionCsvEditionContainerQuery.graphql';
-import { ExternalReferencesValues } from '@components/common/form/ExternalReferencesField';
-import IngestionSchedulingField from '@components/data/IngestionSchedulingField';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
+import { IngestionCsvLinesPaginationQuery$variables } from '@components/data/ingestionCsv/__generated__/IngestionCsvLinesPaginationQuery.graphql';
+import { ingestionCsvEditionFragment } from '@components/data/ingestionCsv/IngestionCsvEdition';
+import { ingestionCsvEditionContainerQuery } from '@components/data/ingestionCsv/IngestionCsvEditionContainer';
+import IngestionCsvFeedTestDialog from '@components/data/ingestionCsv/IngestionCsvFeedTestDialog';
 import IngestionCsvInlineMapperForm from '@components/data/ingestionCsv/IngestionCsvInlineMapperForm';
-import { IngestionCsvCreationUsersQuery$data } from '@components/data/ingestionCsv/__generated__/IngestionCsvCreationUsersQuery.graphql';
-import IngestionCreationUserHandling, { BasicUserHandlingValues } from '@components/data/IngestionCreationUserHandling';
-import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
-import { useFormatter } from '../../../../components/i18n';
-import TextField from '../../../../components/TextField';
-import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
-import { insertNode } from '../../../../utils/store';
+import IngestionSchedulingField from '@components/data/IngestionSchedulingField';
+import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
+import MenuItem from '@mui/material/MenuItem';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
+import { Field, Form, Formik, FormikErrors } from 'formik';
+import { FormikConfig } from 'formik/dist/types';
+import React, { FunctionComponent, useState } from 'react';
+import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
+import * as Yup from 'yup';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import SelectField from '../../../../components/fields/SelectField';
-import type { Theme } from '../../../../components/Theme';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import SwitchField from '../../../../components/fields/SwitchField';
+import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
+import PasswordTextField from '../../../../components/PasswordTextField';
+import TextField from '../../../../components/TextField';
+import { fetchQuery } from '../../../../relay/environment';
 import { USER_CHOICE_MARKING_CONFIG } from '../../../../utils/csvMapperUtils';
 import { convertMapper, convertUser } from '../../../../utils/edition';
-import { BASIC_AUTH, CERT_AUTH, extractCA, extractCert, extractKey, extractPassword, extractUsername } from '../../../../utils/ingestionAuthentificationUtils';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useAuth from '../../../../utils/hooks/useAuth';
-import PasswordTextField from '../../../../components/PasswordTextField';
-import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import SwitchField from '../../../../components/fields/SwitchField';
-import { fetchQuery } from '../../../../relay/environment';
+import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import { BASIC_AUTH, CERT_AUTH, extractCA, extractCert, extractKey, extractPassword, extractUsername } from '../../../../utils/ingestionAuthentificationUtils';
+import { insertNode } from '../../../../utils/store';
+import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 import { CsvMapperAddInput } from '../csvMapper/CsvMapperUtils';
 import IngestionCsvInlineWrapper from './IngestionCsvInlineWrapper';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-}));
 
 const initCSVCreateForm: IngestionCsvAddInput = {
   name: '',
@@ -163,7 +150,6 @@ const CreateIngestionCsvControlledDial = (props: DrawerControlledDialProps) => (
 
 const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ paginationOptions, handleClose, ingestionCsvData, drawerSettings }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const isGranted = useGranted([SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]);
   const { me } = useAuth();
 
@@ -307,6 +293,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
   const disableVerify = (values: IngestionCsvAddInput): boolean => {
     const { name, uri, csv_mapper_type, csv_mapper_id, csv_mapper } = values;
 
+    console.log('values ', values);
     if (!uri || !name) {
       return true; // Disable if URI or name is missing
     }
@@ -497,34 +484,30 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                 </Alert>
               </Box>
             </Box>
-            <div className={classes.buttons}>
+            <FormButtonContainer>
               <Button
                 variant="secondary"
                 onClick={handleReset}
                 disabled={isSubmitting}
-                classes={{ root: classes.button }}
               >
                 {t_i18n('Cancel')}
               </Button>
               <Button
-                color={isCreateDisabled ? 'secondary' : 'primary'}
+                variant="secondary"
                 onClick={() => setOpen(true)}
-                classes={{ root: classes.button }}
                 disabled={disableVerify(values)}
               >
                 {t_i18n('Verify')}
               </Button>
 
               <Button
-                color="secondary"
                 onClick={submitForm}
                 disabled={isSubmitting || isCreateDisabled}
-                classes={{ root: classes.button }}
               >
                 {drawerSettings?.button ?? t_i18n('Create')}
               </Button>
 
-            </div>
+            </FormButtonContainer>
 
           </Form>
           <IngestionCsvFeedTestDialog

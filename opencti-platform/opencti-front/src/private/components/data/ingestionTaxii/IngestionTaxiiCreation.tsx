@@ -20,6 +20,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { PaginationOptions } from '../../../../components/list_lines';
 import { IngestionTaxiiImportQuery$data } from '@components/data/ingestionTaxii/__generated__/IngestionTaxiiImportQuery.graphql';
 import { FormikHelpers } from 'formik/dist/types';
+import FormButtonContainer from '@common/form/FormButtonContainer';
 
 const IngestionTaxiiCreationMutation = graphql`
   mutation IngestionTaxiiCreationMutation($input: IngestionTaxiiAddInput!) {
@@ -305,26 +306,22 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
                 label={t_i18n('Copy confidence level to OpenCTI scores for indicators')}
                 containerstyle={fieldSpacingContainerStyle}
               />
-              <div style={{ marginTop: 20,
-                textAlign: 'right' }}
-              >
+              <FormButtonContainer>
                 <Button
                   variant="secondary"
                   onClick={handleReset}
                   disabled={isSubmitting}
-                  style={{ marginLeft: 10 }}
                 >
                   {t_i18n('Cancel')}
                 </Button>
                 <Button
                   onClick={submitForm}
                   disabled={isSubmitting}
-                  style={{ marginLeft: 10 }}
 
                 >
                   {drawerSettings?.button ?? t_i18n('Create')}
                 </Button>
-              </div>
+              </FormButtonContainer>
             </Form>
           )}
         </Formik>

@@ -33,6 +33,7 @@ import ProgressBar from '../../../../components/ProgressBar';
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 
 const infrastructureMutation = graphql`
   mutation InfrastructureCreationMutation($input: InfrastructureAddInput!) {
@@ -329,27 +330,21 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
                 : undefined
               }
             />
-            <div style={{
-              marginTop: '20px',
-              textAlign: 'right',
-            }}
-            >
+            <FormButtonContainer>
               <Button
                 variant="secondary"
                 onClick={handleReset}
                 disabled={isSubmitting}
-                sx={{ marginLeft: 2 }}
               >
                 {t_i18n('Cancel')}
               </Button>
               <Button
                 onClick={submitForm}
                 disabled={isSubmitting}
-                sx={{ marginLeft: 2 }}
               >
                 {t_i18n('Create')}
               </Button>
-            </div>
+            </FormButtonContainer>
           </Form>
         </>
       )}

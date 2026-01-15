@@ -1,42 +1,43 @@
-import React, { FunctionComponent, useState } from 'react';
-import { Field, Form, Formik } from 'formik';
 import Button from '@common/button/Button';
-import { graphql } from 'react-relay';
-import * as Yup from 'yup';
-import { RecordSourceSelectorProxy } from 'relay-runtime';
-import makeStyles from '@mui/styles/makeStyles';
-import { Theme } from '@mui/material/styles/createTheme';
-import { FormikConfig } from 'formik/dist/types';
-import { Box, CardContent, Typography, Stepper, Step, StepLabel } from '@mui/material';
-import { AutoModeOutlined, EditOutlined } from '@mui/icons-material';
-import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { SecurityCoveragesLinesPaginationQuery$variables } from '@components/analyses/__generated__/SecurityCoveragesLinesPaginationQuery.graphql';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import ConfidenceField from '@components/common/form/ConfidenceField';
+import OpenVocabField from '@components/common/form/OpenVocabField';
+import { AutoModeOutlined, EditOutlined } from '@mui/icons-material';
+import { Box, CardContent, Step, StepLabel, Stepper, Typography } from '@mui/material';
+import MenuItem from '@mui/material/MenuItem';
+import { Theme } from '@mui/material/styles/createTheme';
+import makeStyles from '@mui/styles/makeStyles';
+import { Field, Form, Formik } from 'formik';
+import { FormikConfig } from 'formik/dist/types';
+import { FunctionComponent, useState } from 'react';
+import { graphql } from 'react-relay';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
+import * as Yup from 'yup';
+import Card from '../../../../components/common/card/Card';
+import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import MarkdownField from '../../../../components/fields/MarkdownField';
 import PeriodicityField from '../../../../components/fields/PeriodicityField';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
+import SelectField from '../../../../components/fields/SelectField';
+import SwitchField from '../../../../components/fields/SwitchField';
 import { useFormatter } from '../../../../components/i18n';
-import { handleErrorInForm, QueryRenderer } from '../../../../relay/environment';
+import ListLines from '../../../../components/list_lines/ListLines';
+import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 import TextField from '../../../../components/TextField';
+import { handleErrorInForm, QueryRenderer } from '../../../../relay/environment';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
+import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
+import useFiltersState from '../../../../utils/filters/useFiltersState';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import { insertNode } from '../../../../utils/store';
+import { CoverageInformationFieldAdd } from '../../common/form/CoverageInformationField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import MarkdownField from '../../../../components/fields/MarkdownField';
-import { insertNode } from '../../../../utils/store';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
-import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import { CoverageInformationFieldAdd } from '../../common/form/CoverageInformationField';
-import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import ListLines from '../../../../components/list_lines/ListLines';
-import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
-import useFiltersState from '../../../../utils/filters/useFiltersState';
 import SecurityCoverageEntityLine from './SecurityCoverageEntityLine';
-import SwitchField from '../../../../components/fields/SwitchField';
-import OpenVocabField from '@components/common/form/OpenVocabField';
-import SelectField from '../../../../components/fields/SelectField';
-import MenuItem from '@mui/material/MenuItem';
-import Card from '../../../../components/common/card/Card';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -772,23 +773,21 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
-            <div className={classes.buttons}>
+            <FormButtonContainer>
               <Button
                 variant="secondary"
                 onClick={handleClose}
                 disabled={isSubmitting}
-                classes={{ root: classes.button }}
               >
                 {t_i18n('Cancel')}
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmitting || !values.name || (mode === 'manual' && (!values.coverage_information || values.coverage_information.length === 0))}
-                classes={{ root: classes.button }}
               >
                 {t_i18n('Create')}
               </Button>
-            </div>
+            </FormButtonContainer>
           </Box>
         );
 

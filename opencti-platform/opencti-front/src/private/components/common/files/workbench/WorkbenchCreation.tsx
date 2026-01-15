@@ -23,6 +23,7 @@ import ItemIcon from '../../../../../components/ItemIcon';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../../utils/field';
 import type { Theme } from '../../../../../components/Theme';
 import CreateEntityControlledDial from '../../../../../components/CreateEntityControlledDial';
+import FormButtonContainer from '../../../../../components/common/form/FormButtonContainer';
 
 const workbenchCreationMutation = graphql`
   mutation WorkbenchCreationMutation(
@@ -220,23 +221,21 @@ const WorkbenchCreationForm: React.FC<WorkbenchCreationProps> = ({ onCompleted, 
             setFieldValue={setFieldValue}
             required={false}
           />
-          <div style={{ marginTop: 20, textAlign: 'right' }}>
+          <FormButtonContainer>
             <Button
               variant="secondary"
               onClick={handleReset}
               disabled={isSubmitting}
-              style={{ marginLeft: 10 }}
             >
               {t_i18n('Cancel')}
             </Button>
             <Button
               onClick={submitForm}
               disabled={isSubmitting}
-              style={{ marginLeft: 10 }}
             >
               {t_i18n('Create')}
             </Button>
-          </div>
+          </FormButtonContainer>
         </Form>
       )}
     </Formik>

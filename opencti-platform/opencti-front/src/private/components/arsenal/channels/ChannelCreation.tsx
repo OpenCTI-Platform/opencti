@@ -30,6 +30,7 @@ import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import { splitMultilines } from '../../../../utils/String';
 import ProgressBar from '../../../../components/ProgressBar';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import FormButtonContainer from '@common/form/FormButtonContainer';
 
 const channelMutation = graphql`
   mutation ChannelCreationMutation($input: ChannelAddInput!) {
@@ -280,11 +281,7 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
                 : undefined
               }
             />
-            <div style={{
-              marginTop: '20px',
-              textAlign: 'right',
-            }}
-            >
+            <FormButtonContainer>
               <Button
                 variant="secondary"
                 onClick={handleReset}
@@ -300,7 +297,7 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
               >
                 {t_i18n('Create')}
               </Button>
-            </div>
+            </FormButtonContainer>
           </Form>
         </>
       )}

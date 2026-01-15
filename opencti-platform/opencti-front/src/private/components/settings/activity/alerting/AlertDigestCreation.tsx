@@ -27,6 +27,7 @@ import NotifierField from '../../../common/form/NotifierField';
 import ObjectMembersField from '../../../common/form/ObjectMembersField';
 import { AlertingPaginationQuery$variables } from './__generated__/AlertingPaginationQuery.graphql';
 import AlertsField from './AlertsField';
+import FormButtonContainer from '../../../../../components/common/form/FormButtonContainer';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -43,13 +44,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   dialogActions: {
     padding: '0 17px 20px 0',
-  },
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
   },
   container: {
     padding: '10px 20px 20px 20px',
@@ -291,23 +285,21 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
           }) => (
             <Form>
               {digestFields(setFieldValue, values)}
-              <div className={classes.buttons}>
+              <FormButtonContainer>
                 <Button
                   variant="secondary"
                   onClick={handleReset}
                   disabled={isSubmitting}
-                  classes={{ root: classes.button }}
                 >
                   {t_i18n('Cancel')}
                 </Button>
                 <Button
                   onClick={submitForm}
                   disabled={isSubmitting}
-                  classes={{ root: classes.button }}
                 >
                   {t_i18n('Create')}
                 </Button>
-              </div>
+              </FormButtonContainer>
             </Form>
           )}
         </Formik>

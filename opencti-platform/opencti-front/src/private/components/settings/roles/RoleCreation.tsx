@@ -1,17 +1,16 @@
-import React from 'react';
+import Button from '@common/button/Button';
 import { Field, Form, Formik } from 'formik';
 import { TextField } from 'formik-mui';
-import { useTheme } from '@mui/material';
-import * as Yup from 'yup';
 import { ConnectionHandler, graphql } from 'react-relay';
 import { DataID, RecordProxy, RecordSourceSelectorProxy } from 'relay-runtime';
-import Button from '@common/button/Button';
-import MarkdownField from '../../../../components/fields/MarkdownField';
-import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
-import { PaginationOptions } from '../../../../components/list_lines';
-import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
-import { useFormatter } from '../../../../components/i18n';
+import * as Yup from 'yup';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import FormButtonContainer from '@common/form/FormButtonContainer';
+import MarkdownField from '../../../../components/fields/MarkdownField';
+import { useFormatter } from '../../../../components/i18n';
+import { PaginationOptions } from '../../../../components/list_lines';
+import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
+import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 
 const roleMutation = graphql`
   mutation RoleCreationMutation($input: RoleAddInput!) {
@@ -37,7 +36,6 @@ const RoleCreation = ({ paginationOptions }: {
   paginationOptions: PaginationOptions;
 }) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme();
 
   const roleValidation = Yup.object().shape({
     name: Yup.string().required(t_i18n('This field is required')),
@@ -129,27 +127,21 @@ const RoleCreation = ({ paginationOptions }: {
                 rows={4}
                 style={{ marginTop: 20 }}
               />
-              <div style={{
-                marginTop: 20,
-                textAlign: 'right',
-              }}
-              >
+              <FormButtonContainer>
                 <Button
                   variant="secondary"
                   onClick={handleReset}
                   disabled={isSubmitting}
-                  style={{ marginLeft: theme.spacing(2) }}
                 >
                   {t_i18n('Cancel')}
                 </Button>
                 <Button
                   onClick={submitForm}
                   disabled={isSubmitting || !isValid}
-                  style={{ marginLeft: theme.spacing(2) }}
                 >
                   {t_i18n('Create')}
                 </Button>
-              </div>
+              </FormButtonContainer>
             </Form>
           )}
         </Formik>

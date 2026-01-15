@@ -30,6 +30,7 @@ import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import { deserializeFilterGroupForFrontend } from '../../../../utils/filters/filtersUtils';
 import PasswordTextField from '../../../../components/PasswordTextField';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import FormButtonContainer from '@common/form/FormButtonContainer';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -423,12 +424,11 @@ const SyncCreation = ({ paginationOptions }) => {
                     </div>
                   </AccordionDetails>
                 </Accordion>
-                <div className={classes.buttons}>
+                <FormButtonContainer>
                   <Button
                     variant="secondary"
                     onClick={handleReset}
                     disabled={isSubmitting}
-                    classes={{ root: classes.button }}
                   >
                     {t_i18n('Cancel')}
                   </Button>
@@ -436,19 +436,16 @@ const SyncCreation = ({ paginationOptions }) => {
                     color="secondary"
                     onClick={() => handleVerify(values, setErrors)}
                     disabled={!values.stream_id || isSubmitting}
-                    classes={{ root: classes.button }}
                   >
                     {t_i18n('Verify')}
                   </Button>
                   <Button
-                    color="secondary"
                     onClick={submitForm}
                     disabled={!values.stream_id || !verified || isSubmitting}
-                    classes={{ root: classes.button }}
                   >
                     {t_i18n('Create')}
                   </Button>
-                </div>
+                </FormButtonContainer>
               </Form>
             );
           }}

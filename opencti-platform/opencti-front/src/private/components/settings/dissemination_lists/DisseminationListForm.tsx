@@ -10,6 +10,7 @@ import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { parseEmailList } from '../../../../utils/email';
 import { MESSAGING$ } from '../../../../relay/environment';
+import FormButtonContainer from '@common/form/FormButtonContainer';
 
 export interface DisseminationListFormData {
   name: string;
@@ -104,23 +105,21 @@ const DisseminationListForm: FunctionComponent<DisseminationListFormProps> = ({
             }}
           />
           {!isEdition && (
-            <div style={{ marginTop: theme.spacing(2), textAlign: 'right' }}>
+            <FormButtonContainer>
               <Button
                 variant="secondary"
                 onClick={handleReset}
                 disabled={isSubmitting}
-                style={{ marginLeft: theme.spacing(2) }}
               >
                 {t_i18n('Cancel')}
               </Button>
               <Button
                 onClick={submitForm}
                 disabled={isSubmitting}
-                style={{ marginLeft: theme.spacing(2) }}
               >
                 {t_i18n('Create')}
               </Button>
-            </div>
+            </FormButtonContainer>
           )}
         </>
       )}

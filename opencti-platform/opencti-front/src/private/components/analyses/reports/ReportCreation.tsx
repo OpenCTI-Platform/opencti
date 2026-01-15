@@ -1,56 +1,43 @@
-import React, { FunctionComponent, useState } from 'react';
-import { Field, Form, Formik } from 'formik';
 import Button from '@common/button/Button';
-import * as Yup from 'yup';
-import { graphql } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
-import { FormikConfig } from 'formik/dist/types';
-import { RecordSourceSelectorProxy } from 'relay-runtime';
-import { useNavigate } from 'react-router-dom';
-import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { ReportsLinesPaginationQuery$variables } from '@components/analyses/__generated__/ReportsLinesPaginationQuery.graphql';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
-import Typography from '@mui/material/Typography';
 import AccordionDetails from '@mui/material/AccordionDetails';
-import { useFormatter } from '../../../../components/i18n';
-import { handleErrorInForm } from '../../../../relay/environment';
-import TextField from '../../../../components/TextField';
-import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import ObjectLabelField from '../../common/form/ObjectLabelField';
-import CreatedByField from '../../common/form/CreatedByField';
-import MarkdownField from '../../../../components/fields/MarkdownField';
-import ConfidenceField from '../../common/form/ConfidenceField';
-import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import DateTimePickerField from '../../../../components/DateTimePickerField';
-import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
-import OpenVocabField from '../../common/form/OpenVocabField';
-import { insertNode } from '../../../../utils/store';
-import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
-import type { Theme } from '../../../../components/Theme';
-import { ReportCreationMutation, ReportCreationMutation$variables } from './__generated__/ReportCreationMutation.graphql';
-import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import RichTextField from '../../../../components/fields/RichTextField';
-import ObjectParticipantField from '../../common/form/ObjectParticipantField';
-import CustomFileUploader from '../../common/files/CustomFileUploader';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import Typography from '@mui/material/Typography';
+import { Field, Form, Formik } from 'formik';
+import { FormikConfig } from 'formik/dist/types';
+import { FunctionComponent, useState } from 'react';
+import { graphql } from 'react-relay';
+import { useNavigate } from 'react-router-dom';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
+import * as Yup from 'yup';
+import { Accordion, AccordionSummary } from '../../../../components/Accordion';
+import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
+import MarkdownField from '../../../../components/fields/MarkdownField';
+import RichTextField from '../../../../components/fields/RichTextField';
+import { useFormatter } from '../../../../components/i18n';
+import TextField from '../../../../components/TextField';
+import { handleErrorInForm } from '../../../../relay/environment';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
-import { Accordion, AccordionSummary } from '../../../../components/Accordion';
-import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-}));
+import { insertNode } from '../../../../utils/store';
+import CustomFileUploader from '../../common/files/CustomFileUploader';
+import ConfidenceField from '../../common/form/ConfidenceField';
+import CreatedByField from '../../common/form/CreatedByField';
+import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
+import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
+import ObjectLabelField from '../../common/form/ObjectLabelField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
+import ObjectParticipantField from '../../common/form/ObjectParticipantField';
+import OpenVocabField from '../../common/form/OpenVocabField';
+import { ReportCreationMutation, ReportCreationMutation$variables } from './__generated__/ReportCreationMutation.graphql';
 
 export const reportCreationMutation = graphql`
   mutation ReportCreationMutation($input: ReportAddInput!) {
@@ -118,8 +105,6 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
   defaultMarkingDefinitions,
   inputValue,
 }) => {
-  const classes = useStyles();
-
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [mapAfter, setMapAfter] = useState<boolean>(false);
@@ -366,19 +351,17 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
               </div>
             </Security>
           )}
-          <div className={classes.buttons}>
+          <FormButtonContainer>
             <Button
               variant="secondary"
               onClick={handleReset}
               disabled={isSubmitting}
-              classes={{ root: classes.button }}
             >
               {t_i18n('Cancel')}
             </Button>
             <Button
               onClick={submitForm}
               disabled={isSubmitting}
-              classes={{ root: classes.button }}
             >
               {t_i18n('Create')}
             </Button>
@@ -389,12 +372,11 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
                   submitForm();
                 }}
                 disabled={isSubmitting}
-                classes={{ root: classes.button }}
               >
                 {t_i18n('Create and map')}
               </Button>
             )}
-          </div>
+          </FormButtonContainer>
         </Form>
       )}
     </Formik>
