@@ -3,13 +3,14 @@ import * as R from 'ramda';
 import { createReadStream } from 'node:fs';
 import {
   ADMIN_API_TOKEN,
+  ADMIN_USER,
   createHttpClient,
   DATA_FILE_TEST,
   executeExternalQuery,
   FIFTEEN_MINUTES,
   SYNC_DIRECT_START_REMOTE_URI,
   SYNC_TEST_REMOTE_URI,
-  testContext
+  testContext,
 } from '../../utils/testQuery';
 import { checkPostSyncContent, checkPreSyncContent, REPORT_QUERY, SYNC_CREATION_QUERY, SYNC_START_QUERY, UPLOADED_FILE_SIZE } from '../sync-utils';
 import { SYSTEM_USER } from '../../../src/utils/access';
@@ -39,6 +40,8 @@ describe('Database sync direct', () => {
           no_dependencies: false,
           stream_id: 'live',
           token: ADMIN_API_TOKEN,
+          user_id: ADMIN_USER.id,
+          automatic_user: false,
         },
       };
       const synchronizer = await executeExternalQuery(client, SYNC_DIRECT_START_REMOTE_URI, SYNC_CREATION_QUERY, SYNC_CREATE);
@@ -59,6 +62,6 @@ describe('Database sync direct', () => {
       expect(uploadedFile.name).toEqual(DATA_FILE_TEST);
       expect(uploadedFile.size).toEqual(UPLOADED_FILE_SIZE);
     },
-    FIFTEEN_MINUTES
+    FIFTEEN_MINUTES,
   );
 });
