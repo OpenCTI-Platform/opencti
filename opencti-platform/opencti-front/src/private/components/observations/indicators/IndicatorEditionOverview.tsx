@@ -276,7 +276,7 @@ const IndicatorEditionOverviewComponent: FunctionComponent<IndicatorEditionOverv
             required={(mandatoryAttributes.includes('indicator_types'))}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            onChange={(name, value) => setFieldValue(name, value)}
+            onChange={setFieldValue}
             containerStyle={fieldSpacingContainerStyle}
             variant="edit"
             multiple={true}
@@ -311,7 +311,7 @@ const IndicatorEditionOverviewComponent: FunctionComponent<IndicatorEditionOverv
             type="reliability_ov"
             name="x_opencti_reliability"
             required={(mandatoryAttributes.includes('x_opencti_reliability'))}
-            onChange={(name, value) => setFieldValue(name, value)}
+            onChange={setFieldValue}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             multiple={false}
@@ -358,7 +358,7 @@ const IndicatorEditionOverviewComponent: FunctionComponent<IndicatorEditionOverv
             required={(mandatoryAttributes.includes('x_mitre_platforms'))}
             variant="edit"
             onSubmit={handleSubmitField}
-            onChange={(name, value) => setFieldValue(name, value)}
+            onChange={setFieldValue}
             containerStyle={fieldSpacingContainerStyle}
             multiple={true}
             editContext={context}
