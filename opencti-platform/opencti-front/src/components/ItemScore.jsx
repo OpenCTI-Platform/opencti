@@ -3,12 +3,11 @@ import { compose } from 'ramda';
 import * as PropTypes from 'prop-types';
 import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
-import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
 import inject18n from './i18n';
 import { isEmptyField } from '../utils/utils';
-import { alpha } from '@mui/material';
 import { useTheme } from '@mui/styles';
+import Tag from '@common/tag/Tag';
 
 const styles = () => ({
   chip: {
@@ -34,28 +33,28 @@ const ItemScore = (props) => {
 
   const inlineStyles = {
     white: {
-      backgroundColor: alpha(theme.palette.common.white, 0.08),
+      backgroundColor: theme.palette.common.white,
       color: theme.palette.common.white,
     },
     whiteLight: {
-      backgroundColor: alpha(theme.palette.common.black, 0.08),
+      backgroundColor: theme.palette.common.black,
       color: theme.palette.common.black,
     },
     green: {
-      backgroundColor: alpha(theme.palette.success.main, 0.08),
+      backgroundColor: theme.palette.success.main,
       color: theme.palette.success.main,
     },
     blue: {
-      backgroundColor: alpha(theme.palette.severity?.info || '#4DCCFF', 0.08),
-      color: theme.palette.severity?.info || '#4DCCFF',
+      backgroundColor: theme.palette.severity?.info,
+      color: theme.palette.severity?.info,
     },
     red: {
-      backgroundColor: alpha(theme.palette.error.main, 0.08),
+      backgroundColor: theme.palette.error.main,
       color: theme.palette.error.main,
     },
     orange: {
-      backgroundColor: alpha(theme.palette.severity?.high || '#E6700F', 0.08),
-      color: theme.palette.severity?.high || '#E6700F',
+      backgroundColor: theme.palette.severity?.high,
+      color: theme.palette.severity?.high,
     },
   };
 
@@ -74,7 +73,7 @@ const ItemScore = (props) => {
   }
   if (score <= 20) {
     return (
-      <Chip
+      <Tag
         classes={{ root: style }}
         style={inlineStyles.green}
         label={`${score} / 100`}
@@ -83,7 +82,7 @@ const ItemScore = (props) => {
   }
   if (score <= 50) {
     return (
-      <Chip
+      <Tag
         classes={{ root: style }}
         style={inlineStyles.blue}
         label={`${score} / 100`}
@@ -92,7 +91,7 @@ const ItemScore = (props) => {
   }
   if (score <= 75) {
     return (
-      <Chip
+      <Tag
         classes={{ root: style }}
         style={inlineStyles.orange}
         label={`${score} / 100`}
@@ -101,7 +100,7 @@ const ItemScore = (props) => {
   }
   if (score <= 100) {
     return (
-      <Chip
+      <Tag
         classes={{ root: style }}
         style={inlineStyles.red}
         label={`${score} / 100`}
@@ -109,7 +108,7 @@ const ItemScore = (props) => {
     );
   }
   return (
-    <Chip
+    <Tag
       classes={{ root: style }}
       style={inlineStyles.white}
       label={`${score} / 100`}

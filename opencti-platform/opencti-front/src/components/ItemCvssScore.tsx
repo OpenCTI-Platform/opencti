@@ -1,8 +1,7 @@
-import Chip from '@mui/material/Chip';
 import React, { CSSProperties } from 'react';
-import { alpha } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import type { Theme } from './Theme';
+import Tag from '@common/tag/Tag';
 
 type ItemCvssScoreProps = {
   score?: number | null;
@@ -22,26 +21,26 @@ const ItemCvssScore = ({ score, style }: ItemCvssScoreProps) => {
       border: '1px solid #313235',
     },
     blueGrey: {
-      backgroundColor: alpha(theme.palette.common.grey || '#95969D', 0.08),
+      backgroundColor: theme.palette.common.grey,
       color: theme.palette.common.grey,
       borderColor: theme.palette.common.grey,
       fontStyle: 'italic',
     },
     green: {
-      backgroundColor: alpha(theme.palette.success.main || '#17AB1F', 0.08),
+      backgroundColor: theme.palette.success.main,
       color: theme.palette.success.main,
     },
     blue: {
-      backgroundColor: alpha(theme.palette.severity?.info || '#4DCCFF', 0.08),
-      color: theme.palette.severity?.info || '#4DCCFF',
+      backgroundColor: theme.palette.severity?.info,
+      color: theme.palette.severity?.info,
     },
     red: {
-      backgroundColor: alpha(theme.palette.error.main || '#F14337', 0.08),
+      backgroundColor: theme.palette.error.main,
       color: theme.palette.error.main,
     },
     orange: {
-      backgroundColor: alpha(theme.palette.severity?.high || '#E6700F', 0.08),
-      color: theme.palette.severity?.high || '#E6700F',
+      backgroundColor: theme.palette.severity?.high,
+      color: theme.palette.severity?.high,
     },
     black: {
       backgroundColor: theme.palette.common.black,
@@ -66,7 +65,7 @@ const ItemCvssScore = ({ score, style }: ItemCvssScoreProps) => {
   if (score === null || score === undefined) return '-';
 
   return (
-    <Chip
+    <Tag
       style={{
         ...style,
         fontSize: 18,
@@ -76,7 +75,7 @@ const ItemCvssScore = ({ score, style }: ItemCvssScoreProps) => {
         borderRadius: 4,
         ...getChipStyleFromCVSS3Score(score),
       }}
-      label={score}
+      label={`${score}`}
     />
   );
 };

@@ -1,9 +1,8 @@
 import React, { FunctionComponent } from 'react';
-import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
-import { alpha } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import type { Theme } from './Theme';
+import Tag from '@common/tag/Tag';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -32,27 +31,27 @@ const ItemAccountStatus: FunctionComponent<ItemAccountStatusProps> = ({
   const style = classes.chip;
   const inlineStyles = {
     green: {
-      backgroundColor: alpha(theme.palette.success.main || '#17AB1F', 0.08),
+      backgroundColor: theme.palette.success.main,
       color: theme.palette.success.main,
       borderColor: theme.palette.success.main,
     },
     blue: {
-      backgroundColor: alpha(theme.palette.severity?.info || '#4DCCFF', 0.08),
-      color: theme.palette.severity?.info || '#4DCCFF',
-      borderColor: theme.palette.severity?.info || '#4DCCFF',
+      backgroundColor: theme.palette.severity?.info,
+      color: theme.palette.severity?.info,
+      borderColor: theme.palette.severity?.info,
     },
     red: {
-      backgroundColor: alpha(theme.palette.error.main || '#F14337', 0.08),
+      backgroundColor: theme.palette.error.main,
       color: theme.palette.error.main,
       borderColor: theme.palette.error.main,
     },
     orange: {
-      backgroundColor: alpha(theme.palette.severity?.high || '#E6700F', 0.08),
-      color: theme.palette.severity?.high || '#E6700F',
-      borderColor: theme.palette.severity?.high || '#E6700F',
+      backgroundColor: theme.palette.severity?.high,
+      color: theme.palette.severity?.high,
+      borderColor: theme.palette.severity?.high,
     },
     blueGrey: {
-      backgroundColor: alpha(theme.palette.common.grey || '#95969D', 0.08),
+      backgroundColor: theme.palette.common.grey,
       color: theme.palette.common.grey,
       borderColor: theme.palette.common.grey,
       fontStyle: 'italic',
@@ -80,7 +79,7 @@ const ItemAccountStatus: FunctionComponent<ItemAccountStatusProps> = ({
 
   const classStyle = computeAccountStatusStyle(account_status);
   return (
-    <Chip
+    <Tag
       classes={{ root: style }}
       variant={variant}
       label={label}

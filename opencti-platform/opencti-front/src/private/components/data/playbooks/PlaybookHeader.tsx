@@ -29,7 +29,7 @@ import { interval } from 'rxjs';
 import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
-import { alpha, Stack } from '@mui/material';
+import { Stack } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import { Theme } from '../../../../components/Theme';
 import ListItemButton from '@mui/material/ListItemButton';
@@ -42,6 +42,7 @@ import { FIVE_SECONDS } from '../../../../utils/Time';
 import Transition from '../../../../components/Transition';
 import ItemIcon from '../../../../components/ItemIcon';
 import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
+import Tag from '@common/tag/Tag';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -63,11 +64,11 @@ const PlaybookHeaderComponent = ({
   const theme = useTheme<Theme>();
   const inlineStyles = {
     green: {
-      backgroundColor: alpha(theme.palette.success.main || '#17AB1F', 0.08),
+      backgroundColor: theme.palette.success.main,
       color: theme.palette.success.main,
     },
     red: {
-      backgroundColor: alpha(theme.palette.error.main || '#F14337', 0.08),
+      backgroundColor: theme.palette.error.main,
       color: theme.palette.error.main,
     },
   };
@@ -92,7 +93,7 @@ const PlaybookHeaderComponent = ({
           <TitleMainEntity>
             {playbook.name}
           </TitleMainEntity>
-          <Chip
+          <Tag
             style={{
               fontSize: 12,
               lineHeight: '12px',

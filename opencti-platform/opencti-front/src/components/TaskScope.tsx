@@ -1,9 +1,8 @@
 import React, { FunctionComponent } from 'react';
-import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
-import { alpha } from '@mui/material';
 import type { Theme } from './Theme';
+import Tag from '@common/tag/Tag';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -31,23 +30,23 @@ const TaskScope: FunctionComponent<TaskScopeProps> = ({ label, scope }) => {
 
   const inlineStyles = {
     blue: {
-      backgroundColor: alpha(theme.palette.severity?.info || '#4DCCFF', 0.08),
-      color: theme.palette.severity?.info || '#4DCCFF',
+      backgroundColor: theme.palette.severity?.info,
+      color: theme.palette.severity?.info,
     },
     grey: {
-      backgroundColor: alpha(theme.palette.common.grey || '#95969D', 0.08),
+      backgroundColor: theme.palette.common.grey,
       color: theme.palette.common.grey,
     },
     orange: {
-      backgroundColor: alpha(theme.palette.severity?.high || '#E6700F', 0.08),
-      color: theme.palette.severity?.high || '#E6700F',
+      backgroundColor: theme.palette.severity?.high,
+      color: theme.palette.severity?.high,
     },
     rose: {
-      backgroundColor: alpha('#F8958C', 0.08),
+      backgroundColor: '#F8958C',
       color: '#F8958C',
     },
     red: {
-      backgroundColor: alpha(theme.palette.error.main || '#F14337', 0.08),
+      backgroundColor: theme.palette.error.main,
       color: theme.palette.error.main,
     },
   };
@@ -55,7 +54,7 @@ const TaskScope: FunctionComponent<TaskScopeProps> = ({ label, scope }) => {
   switch (scope) {
     case 'SETTINGS':
       return (
-        <Chip
+        <Tag
           classes={{ root: style }}
           style={inlineStyles.red}
           label={label}
@@ -63,7 +62,7 @@ const TaskScope: FunctionComponent<TaskScopeProps> = ({ label, scope }) => {
       );
     case 'USER':
       return (
-        <Chip
+        <Tag
           classes={{ root: style }}
           style={inlineStyles.orange}
           label={label}
@@ -71,7 +70,7 @@ const TaskScope: FunctionComponent<TaskScopeProps> = ({ label, scope }) => {
       );
     case 'KNOWLEDGE':
       return (
-        <Chip
+        <Tag
           classes={{ root: style }}
           style={inlineStyles.blue}
           label={label}
@@ -79,7 +78,7 @@ const TaskScope: FunctionComponent<TaskScopeProps> = ({ label, scope }) => {
       );
     case 'RULE':
       return (
-        <Chip
+        <Tag
           classes={{ root: style }}
           style={inlineStyles.rose}
           label={label}
@@ -87,7 +86,7 @@ const TaskScope: FunctionComponent<TaskScopeProps> = ({ label, scope }) => {
       );
     case 'IMPORT':
       return (
-        <Chip
+        <Tag
           classes={{ root: style }}
           style={inlineStyles.orange}
           label={label}
@@ -97,7 +96,7 @@ const TaskScope: FunctionComponent<TaskScopeProps> = ({ label, scope }) => {
     case 'DASHBOARD':
     case 'INVESTIGATION':
       return (
-        <Chip
+        <Tag
           classes={{ root: style }}
           style={inlineStyles.orange}
           label={label}
@@ -105,7 +104,7 @@ const TaskScope: FunctionComponent<TaskScopeProps> = ({ label, scope }) => {
       );
     default:
       return (
-        <Chip
+        <Tag
           classes={{ root: style }}
           style={inlineStyles.grey}
           label={label}

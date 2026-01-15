@@ -1,10 +1,9 @@
 import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
-import Chip from '@mui/material/Chip';
-import { alpha } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import { Theme } from '../components/Theme';
 import { State } from '@components/data/connectors/__generated__/ConnectorWorks_data.graphql';
+import Tag from '@common/tag/Tag';
 
 const useStyles = makeStyles<Theme>(() => ({
   chip: {
@@ -43,19 +42,19 @@ const TaskStatus = ({ status, label, variant }: TaskStatusProps) => {
       color: theme.palette.common.grey,
     },
     green: {
-      backgroundColor: alpha(theme.palette.success.main || '#17AB1F', 0.08),
+      backgroundColor: theme.palette.success.main,
       color: theme.palette.success.main,
     },
     blue: {
-      backgroundColor: alpha(theme.palette.severity.info, 0.08),
+      backgroundColor: theme.palette.severity.info,
       color: theme.palette.severity.info,
     },
     grey: {
-      backgroundColor: alpha(theme.palette.common.grey || '#95969D', 0.08),
+      backgroundColor: theme.palette.common.grey,
       color: theme.palette.common.grey,
     },
     orange: {
-      backgroundColor: alpha(theme.palette.severity.high, 0.08),
+      backgroundColor: theme.palette.severity.high,
       color: theme.palette.severity.high,
     },
   };
@@ -76,7 +75,7 @@ const TaskStatus = ({ status, label, variant }: TaskStatusProps) => {
   };
 
   return (
-    <Chip
+    <Tag
       classes={{ root: style }}
       style={inlineStyle()}
       label={label}
