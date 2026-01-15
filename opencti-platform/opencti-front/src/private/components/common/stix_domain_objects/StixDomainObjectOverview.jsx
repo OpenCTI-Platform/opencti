@@ -129,6 +129,7 @@ const StixDomainObjectOverview = ({
 
   const otherStixIds = stixDomainObject.x_opencti_stix_ids || [];
   const stixIds = otherStixIds.filter((n) => n !== stixDomainObject.standard_id);
+  const isIndicator = stixDomainObject.entity_type === 'Indicator';
   const isReliabilityOfSource = !stixDomainObject.x_opencti_reliability;
   const reliability = isReliabilityOfSource
     ? stixDomainObject.createdBy?.x_opencti_reliability
@@ -184,7 +185,7 @@ const StixDomainObjectOverview = ({
                       style={{ marginTop: 20 }}
                     >
                       {t_i18n('Reliability')}
-                      {isReliabilityOfSource && (
+                      {isReliabilityOfSource && !isIndicator && (
                         <span style={{ fontStyle: 'italic' }}>
                           {' '}
                           ({t_i18n('of author')})
