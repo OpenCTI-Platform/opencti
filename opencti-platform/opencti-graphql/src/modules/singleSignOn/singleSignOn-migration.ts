@@ -113,16 +113,16 @@ const computeConfiguration = (envConfiguration: any, strategy: StrategyType) => 
         } else if (strategy === StrategyType.LdapStrategy) {
           groups_management['group_attribute'] = 'cn';
         }
-        // CERT only
+        // HEADER only
         if (groups_splitter) {
           groups_management['groups_splitter'] = groups_splitter;
-        } else if (strategy === StrategyType.ClientCertStrategy) {
+        } else if (strategy === StrategyType.HeaderStrategy) {
           groups_management['groups_splitter'] = ',';
         }
-        // CERT only
+        // HEADER only
         if (groups_header) {
           groups_management['groups_header'] = groups_header;
-        } else if (strategy === StrategyType.ClientCertStrategy) {
+        } else if (strategy === StrategyType.HeaderStrategy) {
           groups_management['groups_header'] = '';
         }
       } else if (configKey === ORG_MANAGEMENT_KEY) {
@@ -163,16 +163,16 @@ const computeConfiguration = (envConfiguration: any, strategy: StrategyType) => 
         } else if (strategy === StrategyType.OpenIdConnectStrategy) {
           organizations_management['token_reference'] = 'access_token';
         }
-        // CERT only
+        // HEADER only
         if (organizations_splitter) {
           organizations_management['organizations_splitter'] = organizations_splitter;
-        } else if (strategy === StrategyType.ClientCertStrategy) {
+        } else if (strategy === StrategyType.HeaderStrategy) {
           organizations_management['organizations_splitter'] = ',';
         }
-        // CERT only
+        // HEADER only
         if (organizations_header) {
           organizations_management['organizations_header'] = organizations_header;
-        } else if (strategy === StrategyType.ClientCertStrategy) {
+        } else if (strategy === StrategyType.HeaderStrategy) {
           organizations_management['organizations_header'] = '';
         }
 
@@ -286,8 +286,26 @@ const parseLDAPStrategyConfiguration = (ssoKey: string, envConfiguration: any, d
   return authEntity;
 };
 
+const parseHEADERStrategyConfiguration = (ssoKey: string, envConfiguration: any, dryRun: boolean) => {
+  const { configuration, groups_management, organizations_management } = computeConfiguration(envConfiguration, StrategyType.HeaderStrategy);
+  const identifier = envConfiguration?.identifier || 'header';
+
+  const authEntity: SingleSignOnAddInput = {
+    identifier,
+    strategy: StrategyType.HeaderStrategy,
+    name: computeAuthenticationName(ssoKey, envConfiguration, identifier),
+    label: computeAuthenticationLabel(ssoKey, envConfiguration),
+    description: `${StrategyType.HeaderStrategy} Automatically ${dryRun ? 'detected' : 'created'} from ${ssoKey} at ${now()}`,
+    enabled: computeEnabled(envConfiguration),
+    configuration,
+    groups_management,
+    organizations_management,
+  };
+  return authEntity;
+};
+
 const parseCERTStrategyConfiguration = (ssoKey: string, envConfiguration: any, dryRun: boolean) => {
-  const { configuration, groups_management, organizations_management } = computeConfiguration(envConfiguration, StrategyType.ClientCertStrategy);
+  const { configuration } = computeConfiguration(envConfiguration, StrategyType.ClientCertStrategy);
   const identifier = envConfiguration?.identifier || 'cert';
 
   const authEntity: SingleSignOnAddInput = {
@@ -298,8 +316,6 @@ const parseCERTStrategyConfiguration = (ssoKey: string, envConfiguration: any, d
     description: `${StrategyType.ClientCertStrategy} Automatically ${dryRun ? 'detected' : 'created'} from ${ssoKey} at ${now()}`,
     enabled: computeEnabled(envConfiguration),
     configuration,
-    groups_management,
-    organizations_management,
   };
   return authEntity;
 };
@@ -349,7 +365,8 @@ export const parseSingleSignOnRunConfiguration = async (context: AuthContext, us
             authenticationStrategiesInput.push(parseCERTStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
             break;
           case EnvStrategyType.STRATEGY_HEADER:
-            logApp.warn(`[SSO MIGRATION] NOT IMPLEMENTED ${currentSSOconfig.strategy} detected.`);
+            logApp.info('[SSO MIGRATION] Looking at HEADER migration');
+            authenticationStrategiesInput.push(parseHEADERStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
             break;
           case EnvStrategyType.STRATEGY_FACEBOOK:
             logApp.warn(`[SSO MIGRATION] DEPRECATED ${currentSSOconfig.strategy} detected.`);

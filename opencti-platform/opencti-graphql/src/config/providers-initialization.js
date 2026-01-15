@@ -39,6 +39,7 @@ export const MIGRATED_STRATEGY = [
   EnvStrategyType.STRATEGY_OPENID,
   EnvStrategyType.STRATEGY_LDAP,
   EnvStrategyType.STRATEGY_CERT,
+  EnvStrategyType.STRATEGY_HEADER,
 ];
 
 // (providerRef: string)

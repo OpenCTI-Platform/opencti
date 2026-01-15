@@ -715,6 +715,131 @@ describe('Migration of SSO environment test coverage', () => {
       });
     });
   });
+  describe('Dry run of HEADER migrations', () => {
+    it('should HEADER minimal configuration works', async () => {
+      const configuration = {
+        headers_minimal: {
+          identifier: 'headers_minimal',
+          strategy: 'HeaderStrategy',
+          config: {
+
+          },
+        },
+      };
+
+      const result = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
+
+      const minimalHEADERSConfiguration = result[0];
+
+      expect(minimalHEADERSConfiguration.strategy).toBe('HeaderStrategy');
+      expect(minimalHEADERSConfiguration.label).toBe('headers_minimal');
+      expect(minimalHEADERSConfiguration.enabled).toBeTruthy();
+      expect(minimalHEADERSConfiguration.configuration).toStrictEqual([
+
+      ]);
+    });
+
+    it('should HEADER with groups mapping in configuration works', async () => {
+      const configuration = {
+        headers_groups: {
+          identifier: 'headers_groups',
+          strategy: 'HeaderStrategy',
+          config: {
+
+            groups_management: {
+              groups_mapping: ['default-roles-master:Connectors'],
+              groups_splitter: '/',
+              groups_header: 'header',
+            },
+          },
+        },
+      };
+
+      const result = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
+      const groupManagementHEADERConfiguration = result[0];
+      expect(groupManagementHEADERConfiguration.strategy).toBe('HeaderStrategy');
+      expect(groupManagementHEADERConfiguration.label).toBe('headers_groups');
+      expect(groupManagementHEADERConfiguration.enabled).toBeTruthy();
+      expect(groupManagementHEADERConfiguration.configuration).toStrictEqual([
+
+      ]);
+
+      expect(groupManagementHEADERConfiguration.groups_management).toStrictEqual({
+        groups_mapping: ['default-roles-master:Connectors'],
+        groups_splitter: '/',
+        groups_header: 'header',
+      });
+    });
+
+    it('should HEADER with several config works', async () => {
+      const configuration = {
+        headers_1: {
+          identifier: 'headers_1',
+          strategy: 'HeaderStrategy',
+          config: {
+
+          },
+        },
+        headers_2: {
+          identifier: 'headers_2',
+          strategy: 'HeaderStrategy',
+          config: {
+
+          },
+        },
+      };
+
+      const multiOicConfigurations = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
+
+      expect(multiOicConfigurations[0].strategy).toBe('HeaderStrategy');
+      expect(multiOicConfigurations[0].label).toBe('headers_1');
+      expect(multiOicConfigurations[0].enabled).toBeTruthy();
+      expect(multiOicConfigurations[0].configuration).toStrictEqual([
+
+      ]);
+      expect(multiOicConfigurations[1].strategy).toBe('HeaderStrategy');
+      expect(multiOicConfigurations[1].label).toBe('headers_2');
+      expect(multiOicConfigurations[1].enabled).toBeTruthy();
+      expect(multiOicConfigurations[1].configuration).toStrictEqual([
+
+      ]);
+    });
+
+    it('should HEADER with default values works', async () => {
+      const configuration = {
+        headers_default: {
+          identifier: 'headers_default',
+          strategy: 'HeaderStrategy',
+          config: {
+            groups_management: {
+            },
+            organizations_management: {
+            },
+          },
+        },
+      };
+
+      const result = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
+      const defaultValuesConfiguration = result[0];
+      expect(defaultValuesConfiguration.strategy).toBe('HeaderStrategy');
+      expect(defaultValuesConfiguration.label).toBe('headers_default');
+      expect(defaultValuesConfiguration.enabled).toBeTruthy();
+      expect(defaultValuesConfiguration.configuration).toStrictEqual([
+
+      ]);
+
+      expect(defaultValuesConfiguration.groups_management).toStrictEqual({
+        groups_mapping: [],
+        groups_splitter: ',',
+        groups_header: '',
+      });
+      expect(defaultValuesConfiguration.organizations_management).toStrictEqual({
+        organizations_mapping: [],
+        organizations_splitter: ',',
+        organizations_header: '',
+      });
+    });
+  });
   describe('Dry run of CERT migrations', () => {
     it('should CERT minimal configuration works', async () => {
       const configuration = {
@@ -737,38 +862,6 @@ describe('Migration of SSO environment test coverage', () => {
       expect(minimalCERTConfiguration.configuration).toStrictEqual([
 
       ]);
-    });
-
-    it('should CERT with groups mapping in configuration works', async () => {
-      const configuration = {
-        cert_groups: {
-          identifier: 'cert_groups',
-          strategy: 'ClientCertStrategy',
-          config: {
-
-            groups_management: {
-              groups_mapping: ['default-roles-master:Connectors'],
-              groups_splitter: '/',
-              groups_header: 'header',
-            },
-          },
-        },
-      };
-
-      const result = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
-      const groupManagementCERTConfiguration = result[0];
-      expect(groupManagementCERTConfiguration.strategy).toBe('ClientCertStrategy');
-      expect(groupManagementCERTConfiguration.label).toBe('cert_groups');
-      expect(groupManagementCERTConfiguration.enabled).toBeTruthy();
-      expect(groupManagementCERTConfiguration.configuration).toStrictEqual([
-
-      ]);
-
-      expect(groupManagementCERTConfiguration.groups_management).toStrictEqual({
-        groups_mapping: ['default-roles-master:Connectors'],
-        groups_splitter: '/',
-        groups_header: 'header',
-      });
     });
 
     it('should CERT with several CERT config works', async () => {
@@ -803,41 +896,6 @@ describe('Migration of SSO environment test coverage', () => {
       expect(multiOicConfigurations[1].configuration).toStrictEqual([
 
       ]);
-    });
-
-    it('should CERT with default values works', async () => {
-      const configuration = {
-        cert_default: {
-          identifier: 'cert_default',
-          strategy: 'ClientCertStrategy',
-          config: {
-            groups_management: {
-            },
-            organizations_management: {
-            },
-          },
-        },
-      };
-
-      const result = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
-      const defaultValuesConfiguration = result[0];
-      expect(defaultValuesConfiguration.strategy).toBe('ClientCertStrategy');
-      expect(defaultValuesConfiguration.label).toBe('cert_default');
-      expect(defaultValuesConfiguration.enabled).toBeTruthy();
-      expect(defaultValuesConfiguration.configuration).toStrictEqual([
-
-      ]);
-
-      expect(defaultValuesConfiguration.groups_management).toStrictEqual({
-        groups_mapping: [],
-        groups_splitter: ',',
-        groups_header: '',
-      });
-      expect(defaultValuesConfiguration.organizations_management).toStrictEqual({
-        organizations_mapping: [],
-        organizations_splitter: ',',
-        organizations_header: '',
-      });
     });
   });
   describe('Actual run of migrations', () => {
