@@ -57,9 +57,8 @@ import { ENTITY_TYPE_PIR } from '../../modules/pir/pir-types';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { ENTITY_TYPE_STATUS } from '../../schema/internalObject';
 import { IDS_ATTRIBUTES } from '../../domain/attribute-utils';
-import type { FiltersWithNested } from '../../database/middleware-loader';
 
-export const adaptFilterToRegardingOfFilterKey = async (context: AuthContext, user: AuthUser, filter: TaggedFilter) => {
+export const adaptFilterToRegardingOfFilterKey = async (context: AuthContext, user: AuthUser, filter: Filter & { postFilteringTag?: string }) => {
   const { key: filterKey, postFilteringTag } = filter;
   const regardingFilters = [];
   const idParameter = filter.values.find((i) => i.key === ID_SUBFILTER);
@@ -686,12 +685,6 @@ const adaptFilterToComputedReliabilityFilterKey = async (context: AuthContext, u
 
   return { newFilterGroup };
 };
-export type TaggedFilter = FiltersWithNested & { postFilteringTag?: string };
-export type TaggedFilterGroup = {
-  mode: FilterMode;
-  filters: TaggedFilter[];
-  filterGroups: TaggedFilterGroup[];
-};
 /**
  * Complete the filter if needed for several special filter keys
  * Some keys need this preprocessing before building the query:
@@ -705,11 +698,11 @@ export type TaggedFilterGroup = {
 export const completeSpecialFilterKeys = async (
   context: AuthContext,
   user: AuthUser,
-  inputFilters: TaggedFilterGroup,
-): Promise<TaggedFilterGroup> => {
+  inputFilters: FilterGroup,
+): Promise<FilterGroup> => {
   const { filters = [], filterGroups = [] } = inputFilters;
   const finalFilters = [];
-  const finalFilterGroups: TaggedFilterGroup[] = [];
+  const finalFilterGroups: FilterGroup[] = [];
   for (let index = 0; index < filterGroups.length; index += 1) {
     const filterGroup = filterGroups[index];
     const newFilterGroup = await completeSpecialFilterKeys(context, user, filterGroup);

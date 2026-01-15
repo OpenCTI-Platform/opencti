@@ -191,8 +191,9 @@ import type {
   StoreRelation,
 } from '../types/store';
 import type { BasicStoreSettings } from '../types/settings';
-import { completeSpecialFilterKeys, type TaggedFilter, type TaggedFilterGroup } from '../utils/filtering/filtering-completeSpecialFilterKeys';
+import { completeSpecialFilterKeys } from '../utils/filtering/filtering-completeSpecialFilterKeys';
 import { IDS_ATTRIBUTES } from '../domain/attribute-utils';
+import type { FiltersWithNested } from './middleware-loader';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -2504,35 +2505,34 @@ export const buildLocalMustFilter = (validFilter: any) => {
   }
   throw UnsupportedError('Invalid filter configuration', validFilter);
 };
-const buildSubQueryForTaggedFilterGroup = (
+
+const POST_FILTER_TAG_SEPARATOR = ';';
+const buildSubQueryForFilterGroup = (
   context: AuthContext,
   user: AuthUser,
-  inputFilters: TaggedFilterGroup,
+  inputFilters: FilterGroup,
 ): { subQuery: any; postFiltersTags: Set<string> } => {
   const { mode = 'and', filters = [], filterGroups = [] } = inputFilters;
-  const localMustFilters: any = [];
   const localSubQueries: { subQuery: any; associatedTags: Set<string> }[] = [];
-  const localPostFilterTags: Set<string> = new Set<string>();
+  const localPostFilterTags = new Set<string>();
   // Handle filterGroups
   for (let index = 0; index < filterGroups.length; index += 1) {
     const group = filterGroups[index];
     if (isFilterGroupNotEmpty(group)) {
-      const { subQuery, postFiltersTags } = buildSubQueryForTaggedFilterGroup(context, user, group);
+      const { subQuery, postFiltersTags } = buildSubQueryForFilterGroup(context, user, group);
       if (subQuery) { // can be null
         localSubQueries.push({ subQuery, associatedTags: postFiltersTags });
       }
-      if (postFiltersTags) {
-        postFiltersTags.forEach((t: string) => localPostFilterTags.add(t));
-      }
+      postFiltersTags.forEach((t: string) => localPostFilterTags.add(t));
     }
   }
   // Handle filters
   for (let index = 0; index < filters.length; index += 1) {
-    const filter = filters[index];
-    const isValidFilter = filter?.values || (filter?.nested && filter?.nested?.length > 0);
+    const filter = filters[index] as FiltersWithNested & { postFilteringTag?: string };
+    const isValidFilter = filter.values || (filter.nested && filter.nested?.length > 0);
     if (isValidFilter) {
       const localMustFilter = buildLocalMustFilter(filter);
-      if (filter?.postFilteringTag) {
+      if (filter.postFilteringTag) {
         const associatedTag = filter.postFilteringTag;
         localPostFilterTags.add(associatedTag);
         const associatedTags = new Set<string>([associatedTag]);
@@ -2542,37 +2542,31 @@ const buildSubQueryForTaggedFilterGroup = (
       }
     }
   }
-  // Wrap every subquery in a bool must tagged with name equal to local filter tags if there are any tags
-  if (localPostFilterTags.size > 0) {
-    for (let i = 0; i < localSubQueries.length; i++) {
-      const { subQuery, associatedTags } = localSubQueries[i];
-      const tagsToApply = Array.from(localPostFilterTags).filter((t: string) => !associatedTags.has(t));
-      let localMustFilter = subQuery;
-      if (mode === 'or' && tagsToApply.length > 0) {
-        localMustFilter = {
-          bool: {
-            must: [subQuery],
-            ['_name']: tagsToApply.join(POST_FILTER_TAG_SEPARATOR),
-          },
-        };
-      }
-      localMustFilters.push(localMustFilter);
-    }
-  } else {
-    localMustFilters.push(...(localSubQueries.map((sub) => sub.subQuery)));
-  }
 
-  if (localMustFilters.length > 0) {
-    const currentSubQuery = {
-      bool: {
-        should: localMustFilters,
-        minimum_should_match: mode === 'or' ? 1 : localMustFilters.length,
-      },
-    };
-    return { subQuery: currentSubQuery, postFiltersTags: localPostFilterTags };
-  }
-  return { subQuery: null, postFiltersTags: localPostFilterTags };
+  // Wrap every tagged subquery in a bool must with _name tag
+  const localMustFilters = localSubQueries.map(({ subQuery, associatedTags }) => {
+    const tagsToApply = mode === 'or' ? [...localPostFilterTags].filter((t: string) => !associatedTags.has(t)) : [];
+    if (tagsToApply.length > 0) {
+      return {
+        bool: {
+          must: [subQuery],
+          ['_name']: tagsToApply.join(POST_FILTER_TAG_SEPARATOR),
+        },
+      };
+    }
+    return subQuery;
+  });
+
+  const currentSubQuery = localMustFilters.length > 0
+    ? {
+        bool: {
+          should: localMustFilters,
+          minimum_should_match: mode === 'or' ? 1 : localMustFilters.length,
+        } }
+    : null;
+  return { subQuery: currentSubQuery, postFiltersTags: localPostFilterTags };
 };
+
 const getRuntimeEntities = async (context: AuthContext, user: AuthUser, entityType: string) => {
   const elements = await elPaginate<BasicStoreEntity>(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, {
     types: [entityType],
@@ -2765,13 +2759,12 @@ type QueryBodyBuilderOpts = ProcessSearchArgs & BuildDraftFilterOpts & {
   first?: number | null;
   types?: string[] | null;
   search?: string | null;
-  filters?: TaggedFilterGroup | null;
+  filters?: FilterGroup | null;
   noFiltersChecking?: boolean;
   startDate?: any;
   endDate?: any;
   dateAttribute?: string | null;
   includeAuthorities?: boolean | null;
-  handlePostFiltering?: boolean;
 };
 const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, options: QueryBodyBuilderOpts) => {
   const {
@@ -2821,21 +2814,21 @@ const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, options:
       specialFiltersContent.push({ key: TYPE_FILTER, values: R.flatten(types) });
     }
   }
-  const completeFilters: any = specialFiltersContent.length > 0 ? {
+  const completeFilters = specialFiltersContent.length > 0 ? {
     mode: FilterMode.And,
     filters: specialFiltersContent,
     filterGroups: isFilterGroupNotEmpty(convertedFilters) ? [convertedFilters as FilterGroup] : [],
   } : convertedFilters;
   // Handle filters
-  if (isFilterGroupNotEmpty(completeFilters)) {
+  if (completeFilters && isFilterGroupNotEmpty(completeFilters)) {
     const finalFilters = await completeSpecialFilterKeys(context, user, completeFilters);
-    const { subQuery: filtersSubQuery } = buildSubQueryForTaggedFilterGroup(context, user, finalFilters);
+    const { subQuery: filtersSubQuery } = buildSubQueryForFilterGroup(context, user, finalFilters);
     if (filtersSubQuery) {
       mustFilters.push(filtersSubQuery);
     }
   }
   // Handle search
-  const orderConfiguration = isEmptyField(orderBy) ? [] : orderBy as string;
+  const orderConfiguration = isEmptyField(orderBy) ? [] : orderBy;
   const orderCriterion = Array.isArray(orderConfiguration) ? orderConfiguration : [orderConfiguration];
   let scoreSearchOrder = orderMode;
   if (search !== null && search.length > 0) {
@@ -2931,96 +2924,37 @@ const buildSearchResult = <T extends BasicStoreBase>(
   }
   return elements;
 };
-const POST_FILTER_TAG_SEPARATOR = ';';
-type PostFiltersTagMaps = {
-  tagToFilterMap: Map<string, Filter>; // Is used during hit processing to know which post filtering application to exclude based on tag
-  filterToTagMap: Map<Filter, string>; // Is used during applyTagToFilters to get tag to apply based on filter
-};
-const buildPostFiltersTagMaps = (
-  filters: FilterGroup | undefined | null,
-): PostFiltersTagMaps => {
-  const tagToFilterMap = new Map<string, Filter>();
-  const filterToTagMap = new Map<Filter, string>();
-  const result = { tagToFilterMap, filterToTagMap };
-  if (isNotEmptyField(filters)) {
-    const definedFilters = filters as FilterGroup;
-    const postFilteringFilters = extractFiltersFromGroup(definedFilters, [INSTANCE_REGARDING_OF, INSTANCE_DYNAMIC_REGARDING_OF])
-      .filter((filter) => isEmptyField(filter.operator) || filter.operator === 'eq');
-    for (let i = 0; i < postFilteringFilters.length; i++) {
-      const currentPostFilter: Filter = postFilteringFilters[i];
-      tagToFilterMap.set(String(i), currentPostFilter);
-      filterToTagMap.set(currentPostFilter, String(i));
-    }
-  }
-  return result;
-};
-const applyTagToFilters = (
-  filters: FilterGroup | undefined | null,
-  filterToTagMap: Map<Filter, string>,
-): TaggedFilterGroup | undefined | null => {
-  if (!filters || filterToTagMap.size <= 0) {
-    return filters;
-  }
-  const newFilterGroups: TaggedFilterGroup[] = [];
-  for (let i = 0; i < filters.filterGroups.length; i++) {
-    const filterGroupToTag = filters.filterGroups[i];
-    const taggedFilterGroup = applyTagToFilters(filterGroupToTag, filterToTagMap);
-    if (taggedFilterGroup) {
-      newFilterGroups.push(taggedFilterGroup);
-    }
-  }
 
-  const newFilters: TaggedFilter[] = [];
-  for (let j = 0; j < filters.filters.length; j++) {
-    const currentFilter = filters.filters[j];
-    if (filterToTagMap.has(currentFilter)) {
-      const filterTag = filterToTagMap.get(currentFilter) as string;
-      const taggedFilter = { ...currentFilter, postFilteringTag: filterTag };
-      newFilters.push(taggedFilter);
-    } else {
-      newFilters.push(currentFilter);
-    }
-  }
+const tagFiltersForPostFiltering = (filters: FilterGroup | undefined | null) => {
+  const taggedFilters: (Filter & { postFilteringTag: string })[] = filters
+    ? extractFiltersFromGroup(filters, [INSTANCE_REGARDING_OF, INSTANCE_DYNAMIC_REGARDING_OF])
+        .filter((filter) => isEmptyField(filter.operator) || filter.operator === 'eq')
+        .map((filter, i) => {
+          const taggedFilter = filter as Filter & { postFilteringTag: string };
+          taggedFilter.postFilteringTag = `${i}`;
+          return taggedFilter;
+        })
+    : [];
 
-  return {
-    mode: filters.mode,
-    filters: newFilters,
-    filterGroups: newFilterGroups,
-  };
+  if (taggedFilters) {
+    return async <T extends BasicStoreBase> (context: AuthContext, user: AuthUser, elementsIds: string[]) => {
+      const postFilters: { tag: string; postFilter: (element: T) => boolean }[] = [];
+      for (let i = 0; i < taggedFilters.length; i++) {
+        const taggedFilter = taggedFilters[i];
+        postFilters.push({
+          tag: taggedFilter.postFilteringTag,
+          postFilter: await buildRegardingOfFilter<T>(context, user, elementsIds, taggedFilter),
+        });
+      }
+      return (element: T, tagsToIgnore: Set<string>) =>
+        postFilters
+          .filter(({ tag }) => !tagsToIgnore.has(tag))
+          .every(({ postFilter }) => postFilter(element));
+    };
+  }
+  return undefined;
 };
-const applyPostFilteringToElements = async <T extends BasicStoreBase>(
-  context: AuthContext,
-  user: AuthUser,
-  elements: { element: T; tagsToIgnoreSet: Set<string> }[],
-  tagToFilterMap?: Map<string, Filter>,
-): Promise<T[]> => {
-  const filteredElements: T[] = [];
-  const rawElements = elements.map((e) => e.element);
-  const allPostFilteringFilters = tagToFilterMap ? Array.from(tagToFilterMap.entries()) : [];
-  const tagToPostFilterMap = new Map<string, any>();
-  for (let i = 0; i < allPostFilteringFilters.length; i++) {
-    const [tag, currentPostFilter] = allPostFilteringFilters[i];
-    const postFilterCheckFunction = await buildRegardingOfFilter<T>(context, user, rawElements, currentPostFilter);
-    tagToPostFilterMap.set(tag, postFilterCheckFunction);
-  }
-  const allTags = Array.from(tagToPostFilterMap.keys());
-  for (let j = 0; j < elements.length; j++) {
-    const { element: currentElement, tagsToIgnoreSet } = elements[j];
-    let keepCurrentElement = true;
-    const postFilterTagsToIgnore: string[] = Array.from(tagsToIgnoreSet);
-    const tagsToApply = allTags.filter((t) => !postFilterTagsToIgnore.includes(t));
-    for (let k = 0; k < tagsToApply.length; k++) {
-      const tagToApply = tagsToApply[k];
-      const filterCheckToApply = tagToPostFilterMap.get(tagToApply);
-      keepCurrentElement = keepCurrentElement && filterCheckToApply(currentElement);
-    }
-    if (keepCurrentElement) {
-      filteredElements.push(currentElement);
-    }
-  }
 
-  return filteredElements;
-};
 export type PaginateOpts = QueryBodyBuilderOpts & {
   baseData?: boolean;
   baseFields?: string[];
@@ -3052,12 +2986,11 @@ export const elPaginate = async <T extends BasicStoreBase>(
     types = null,
     withResultMeta = false,
     first = ES_DEFAULT_PAGINATION,
-    filters,
     connectionFormat = true,
   } = options;
-  const postFiltersMaps: PostFiltersTagMaps = buildPostFiltersTagMaps(filters);
-  const tagAppliedFilters = applyTagToFilters(filters, postFiltersMaps.filterToTagMap);
-  const body = await elQueryBodyBuilder(context, user, { ...options, filters: tagAppliedFilters });
+  // tagFiltersForPostFiltering have side effect on options.filters, it must be done before elQueryBodyBuilder
+  const createPostFilter = tagFiltersForPostFiltering(options.filters);
+  const body = await elQueryBodyBuilder(context, user, options);
   if (body.size > ES_MAX_PAGINATION && !bypassSizeLimit) {
     logApp.info('[SEARCH] Pagination limited to max result config', { size: body.size, max: ES_MAX_PAGINATION });
     body.size = ES_MAX_PAGINATION;
@@ -3076,31 +3009,17 @@ export const elPaginate = async <T extends BasicStoreBase>(
   }
   logApp.debug('[SEARCH] paginate', { query });
   try {
-    const data = await elRawSearch(context, user, types !== null ? types : 'Any', query);
-    const globalCount = data.hits.total.value;
-    const elements = await elConvertHits<T>(data.hits.hits);
+    const { hits: { hits, total: { value: globalCount } } } = await elRawSearch(context, user, types !== null ? types : 'Any', query);
+    const elements = await elConvertHits<T>(hits);
     let finalElements = elements;
-    const hasActivePostFilters = postFiltersMaps.filterToTagMap.size > 0;
-    if (finalElements.length > 0 && hasActivePostFilters) {
-      const elementsWithTags: { element: T; tagsToIgnoreSet: Set<string> }[] = [];
-      for (let i = 0; i < data.hits.hits.length; i++) {
-        const element = elements[i];
-        const dataHit = data.hits.hits[i];
-        const tagsToIgnoreSet = new Set<string>();
-        if (dataHit.matched_queries) {
-          for (let j = 0; j < dataHit.matched_queries.length; j++) {
-            const currentMatchedQuery = dataHit.matched_queries[j];
-            const matchedTags = currentMatchedQuery.split(POST_FILTER_TAG_SEPARATOR);
-            for (let k = 0; k < matchedTags.length; k++) {
-              const matchedTag = matchedTags[k];
-              tagsToIgnoreSet.add(matchedTag);
-            }
-          }
-        }
-        elementsWithTags.push({ element, tagsToIgnoreSet });
-      }
+    if (finalElements.length > 0 && createPostFilter) {
       // Since filters contains filters requiring post filtering (regardingOf, dynamicRegardingOf), a post-security filtering is needed
-      finalElements = await applyPostFilteringToElements(context, user, elementsWithTags, postFiltersMaps.tagToFilterMap);
+      const postFilter = await createPostFilter<T>(context, user, elements.map(({ id }) => id));
+      finalElements = elements.filter((element, i) => {
+        const dataHit = hits[i];
+        const tagsToIgnoreSet = new Set<string>((dataHit.matched_queries ?? []).flatMap((matchedQuery: string) => matchedQuery.split(POST_FILTER_TAG_SEPARATOR)));
+        return postFilter(element, tagsToIgnoreSet);
+      });
     }
     const filterCount = elements.length - finalElements.length;
     const result = buildSearchResult(finalElements, first, body.search_after, globalCount, filterCount, connectionFormat);
@@ -3627,7 +3546,7 @@ export const elAggregationsList = async (
 const buildRegardingOfFilter = async <T extends BasicStoreBase> (
   context: AuthContext,
   user: AuthUser,
-  elements: T[],
+  elementIds: string[],
   filter: Filter,
 ) => {
   // We need to ensure elements are filtered according to denormalization rights.
@@ -3641,7 +3560,6 @@ const buildRegardingOfFilter = async <T extends BasicStoreBase> (
   const directionReverse = R.head(values.filter((v) => v.key === INSTANCE_REGARDING_OF_DIRECTION_REVERSE).map((f) => f.values).flat()) ?? false;
   // resolve all relationships that target the id values, forcing the type is available
   const paginateArgs: RepaginateOpts<BasicStoreRelation> = { baseData: true, types };
-  const elementIds = elements.map(({ id }) => id);
   if (directionForced) {
     // If a direction is forced, build the filter in the correct direction
     const directedFilters = [];
