@@ -15,9 +15,6 @@ import { isEmptyField } from '../../../../../../utils/utils';
 import { useTheme } from '@mui/styles';
 import { Theme } from '../../../../../../components/Theme';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-
 export type RepresentationAttributeForm = CsvMapperRepresentationAttributeFormData | undefined;
 
 interface CsvMapperRepresentationAttributeFormProps
@@ -32,6 +29,8 @@ const CsvMapperRepresentationAttributeForm: FunctionComponent<
 > = ({ form, field, schemaAttribute, label, handleErrors }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
+  // Deprecated - https://mui.com/system/styles/basics/
+  // Do not use it for new code.
   const useStyles = makeStyles(() => ({
     container: {
       width: '100%',

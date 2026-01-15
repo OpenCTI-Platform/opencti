@@ -16,9 +16,6 @@ import TextField from '../../../../../../components/TextField';
 import type { Theme } from '../../../../../../components/Theme';
 import { isEmptyField } from '../../../../../../utils/utils';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-
 export const JsonMapperRepresentationAttributesFormFragment = graphql`
   fragment JsonMapperRepresentationAttributesForm_allSchemaAttributes on Query {
     csvMapperSchemaAttributes {
@@ -69,6 +66,8 @@ const JsonMapperRepresentationAttributesForm: FunctionComponent<
 > = ({ handleErrors, representation, representationType, representationName }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
+  // Deprecated - https://mui.com/system/styles/basics/
+  // Do not use it for new code.
   const useStyles = makeStyles(() => ({
     container: {
       width: '100%',

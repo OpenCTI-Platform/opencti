@@ -4,7 +4,7 @@ import { findThemePaginated, fieldPatchTheme } from '../modules/theme/theme-doma
 import { FilterMode, FilterOperator } from '../generated/graphql';
 import { DARK_DEFAULTS, LIGHT_DEFAULTS } from '../modules/theme/theme-constants';
 
-const message = '[MIGRATION] migration title';
+const message = '[MIGRATION] update themes colors';
 
 export const up = async (next) => {
   logMigration.info(`${message} > started`);
@@ -57,8 +57,12 @@ export const up = async (next) => {
     { key: 'theme_text_color', value: [lightTheme.theme_text_color] },
   ];
 
-  await fieldPatchTheme(context, SYSTEM_USER, darkTheme.id, inputDark);
-  await fieldPatchTheme(context, SYSTEM_USER, lightTheme.id, inputLight);
+  if (darkTheme) {
+    await fieldPatchTheme(context, SYSTEM_USER, darkTheme.id, inputDark);
+  }
+  if (lightTheme) {
+    await fieldPatchTheme(context, SYSTEM_USER, lightTheme.id, inputLight);
+  }
 
   logMigration.info(`${message} > done`);
   next();

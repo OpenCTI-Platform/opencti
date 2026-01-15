@@ -21,9 +21,6 @@ import { isStixCoreObjects, isStixCoreRelationships } from '../../../../../../ut
 import { useTheme } from '@mui/styles';
 import { Theme } from '../../../../../../components/Theme';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-
 export type RepresentationAttributeForm = CsvMapperRepresentationAttributeFormData | undefined;
 
 interface CsvMapperRepresentationAttributeRefFormProps
@@ -38,6 +35,8 @@ const CsvMapperRepresentationAttributeRefForm: FunctionComponent<
   CsvMapperRepresentationAttributeRefFormProps
 > = ({ form, field, representation, schemaAttribute, label, handleErrors }) => {
   const theme = useTheme<Theme>();
+  // Deprecated - https://mui.com/system/styles/basics/
+  // Do not use it for new code.
   const useStyles = makeStyles(() => ({
     container: {
       width: '100%',

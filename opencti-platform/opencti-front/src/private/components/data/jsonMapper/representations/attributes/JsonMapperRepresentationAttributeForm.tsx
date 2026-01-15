@@ -12,9 +12,6 @@ import JsonMapperRepresentionAttributeSelectedConfigurations from './JsonMapperR
 import { useTheme } from '@mui/styles';
 import { Theme } from '../../../../../../components/Theme';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-
 export type RepresentationAttributeForm = JsonMapperRepresentationAttributeFormData | undefined;
 
 interface JsonMapperRepresentationAttributeFormProps
@@ -28,6 +25,8 @@ const JsonMapperRepresentationAttributeForm: FunctionComponent<
   JsonMapperRepresentationAttributeFormProps
 > = ({ form, field, schemaAttribute, label, handleErrors }) => {
   const theme = useTheme<Theme>();
+  // Deprecated - https://mui.com/system/styles/basics/
+  // Do not use it for new code.
   const useStyles = makeStyles(() => ({
     container: {
       width: '100%',

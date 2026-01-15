@@ -480,8 +480,8 @@ export const horizontalBarsChartOptions = (
     enabled: stackType === '100%',
   },
   colors: [
-    // theme.palette.primary.main,
-    // ...colors(theme.palette.mode === 'dark' ? 400 : 600),
+    theme.palette.primary.main,
+    ...colors(theme.palette.mode === 'dark' ? 400 : 600),
   ],
   states: {
     hover: {
