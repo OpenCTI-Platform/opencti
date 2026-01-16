@@ -12,6 +12,8 @@ import { useFormatter } from '../../../../components/i18n';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import { Dashboard_workspace$data } from './__generated__/Dashboard_workspace.graphql';
 import { Stack } from '@mui/material';
+import { useTheme } from '@mui/styles';
+import { Theme } from '../../../../components/Theme';
 
 interface DashboardTimeFiltersProps {
   workspace: Dashboard_workspace$data | InvestigationGraph_fragment$data;
@@ -33,6 +35,7 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
   handleDateChange,
 }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
   const { canEdit } = useGetCurrentUserAccessRight(workspace.currentUserAccessRight);
 
   const handleChangeRelativeDate = (event: SelectChangeEvent) => {
@@ -56,7 +59,10 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
           style={{ width: 194, marginLeft: 20 }}
           variant="outlined"
         >
-          <InputLabel id="relative" variant="outlined">
+          <InputLabel
+            id="relative"
+            variant="outlined"
+          >
             {t_i18n('Relative time')}
           </InputLabel>
           <Select
@@ -65,6 +71,13 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
             onChange={handleChangeRelativeDate}
             label={t_i18n('Relative time')}
             variant="outlined"
+            sx={{
+              '& fieldset': {
+                border: config.relativeDate
+                  ? `1px solid ${theme.palette.border.secondary}`
+                  : undefined,
+              },
+            }}
           >
             <MenuItem value="none">{t_i18n('None')}</MenuItem>
             <MenuItem value="days-1">{t_i18n('Last 24 hours')}</MenuItem>
