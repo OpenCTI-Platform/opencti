@@ -9,7 +9,6 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS, logApp } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import { isSingleSignOnInGuiEnabled } from './singleSignOn';
 import nconf from 'nconf';
 import { parseSingleSignOnRunConfiguration } from './singleSignOn-migration';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
@@ -33,12 +32,7 @@ const toEnv = (newStrategyType: StrategyType) => {
   }
 };
 
-export const isSSOAllowed = async (context: AuthContext) => {
-  return isSingleSignOnInGuiEnabled && await isEnterpriseEdition(context);
-};
-
 export const checkSSOAllowed = async (context: AuthContext) => {
-  if (!isSingleSignOnInGuiEnabled) throw UnsupportedError('Feature not yet available');
   if (!await isEnterpriseEdition(context)) throw UnsupportedError('Enterprise licence is required');
 };
 
@@ -51,8 +45,8 @@ export const logAuthWarn = (message: string, strategyType: EnvStrategyType, meta
   logApp.warn(`[Auth][${strategyType}]${message}`, { meta });
 };
 
-export const logAuthError = (message: string, meta?: any) => {
-  logApp.error(`[Auth]${message}`, { meta });
+export const logAuthError = (message: string, strategyType: EnvStrategyType | undefined, meta?: any) => {
+  logApp.error(`[Auth][${strategyType ?? 'Not provided'}]${message}`, { meta });
 };
 
 export const findSingleSignOnById = async (context: AuthContext, user: AuthUser, id: string) => {
@@ -60,8 +54,8 @@ export const findSingleSignOnById = async (context: AuthContext, user: AuthUser,
   return storeLoadById<BasicStoreEntitySingleSignOn>(context, user, id, ENTITY_TYPE_SINGLE_SIGN_ON);
 };
 
-export const findSingleSignOnPaginated = (context: AuthContext, user: AuthUser, args: any) => {
-  if (!isSingleSignOnInGuiEnabled) throw UnsupportedError('Feature not yet available');
+export const findSingleSignOnPaginated = async (context: AuthContext, user: AuthUser, args: any) => {
+  await checkSSOAllowed(context);
   return pageEntitiesConnection<BasicStoreEntitySingleSignOn>(context, user, [ENTITY_TYPE_SINGLE_SIGN_ON], args);
 };
 
@@ -96,8 +90,7 @@ export const internalAddSingleSignOn = async (context: AuthContext, user: AuthUs
 export const addSingleSignOn = async (context: AuthContext, user: AuthUser, input: SingleSignOnAddInput) => {
   await checkSSOAllowed(context);
   // Call here the function to check that all mandatory field are in the input
-  const created = await internalAddSingleSignOn(context, user, input, false);
-  return created;
+  return await internalAddSingleSignOn(context, user, input, false);
 };
 
 export const fieldPatchSingleSignOn = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {

@@ -49,18 +49,18 @@ const computeConfiguration = (envConfiguration: any, strategy: StrategyType) => 
     // TODO we will need to move this function inside current file
     const mappedConfig = strategy === StrategyType.OpenIdConnectStrategy ? envConfiguration.config : configRemapping(envConfiguration.config);
     for (const configKey in mappedConfig) {
-      logApp.debug(`[SSO MIGRATION] current config key:${configKey}`);
+      logApp.debug(`[SSO CONVERSION] current config key:${configKey}`);
 
       if (DEPRECATED_KEYS.some((deprecatedKey) => deprecatedKey === configKey)) {
         // 1. Check if it's a deprecated key that should be ignored
         skipped_configuration.push(configKey);
-        logApp.warn(`[SSO MIGRATION] ${configKey} is deprecated, ignored during migration`);
+        logApp.warn(`[SSO CONVERSION] ${configKey} is deprecated, ignored during conversion`);
       } else if (NO_CONFIGURATION_KEY.some((noConfigKey) => noConfigKey === configKey)) {
-        logApp.info(`[SSO MIGRATION] config key removed:${configKey}`);
+        logApp.info(`[SSO CONVERSION] config key removed:${configKey}`);
       } else if (configKey === GROUP_MANAGEMENT_KEY) {
         // 2. Extract group management
         const currentValue = mappedConfig[configKey];
-        logApp.info('[SSO MIGRATION] groups management configured', currentValue);
+        logApp.info('[SSO CONVERSION] groups management configured', currentValue);
 
         const { group_attributes, group_attribute, groups_mapping, groups_path, groups_scope, read_userinfo, token_reference } = currentValue;
         groups_management = {};
@@ -106,7 +106,7 @@ const computeConfiguration = (envConfiguration: any, strategy: StrategyType) => 
       } else if (configKey === ORG_MANAGEMENT_KEY) {
       // 3. Extract organization management
         const currentValue = mappedConfig[configKey];
-        logApp.info('[SSO MIGRATION] organizations management configured', currentValue);
+        logApp.info('[SSO CONVERSION] organizations management configured', currentValue);
 
         const { organizations_path, organizations_mapping, organizations_scope, read_userinfo, token_reference } = currentValue;
         organizations_management = {};
@@ -260,51 +260,51 @@ export const parseSingleSignOnRunConfiguration = async (context: AuthContext, us
   const authenticationStrategiesInput: SingleSignOnAddInput[] = [];
   for (const ssoKey in envConfiguration) {
     const currentSSOconfig = envConfiguration[ssoKey];
-    logApp.info(`[SSO MIGRATION] reading ${ssoKey}`);
+    logApp.info(`[SSO CONVERSION] reading ${ssoKey}`);
 
     if (currentSSOconfig.strategy) {
       if (!MIGRATED_STRATEGY.some((strategyName) => strategyName === currentSSOconfig.strategy)) {
         // Allow migration only for full migrated strategies.
-        logApp.info(`[SSO MIGRATION] ${currentSSOconfig.strategy} detected but migration is not implemented yet`);
+        logApp.info(`[SSO CONVERSION] ${currentSSOconfig.strategy} detected but conversion is not implemented yet`);
       } else {
         switch (currentSSOconfig.strategy) {
           case EnvStrategyType.STRATEGY_LOCAL:
-            logApp.info('[SSO MIGRATION] Looking at LocalStrategy migration');
+            logApp.info('[SSO CONVERSION] Looking at LocalStrategy conversion');
             authenticationStrategiesInput.push(parseLocalStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
             break;
           case EnvStrategyType.STRATEGY_OPENID:
-            logApp.info('[SSO MIGRATION] Looking at OpenID migration');
+            logApp.info('[SSO CONVERSION] Looking at OpenID conversion');
             authenticationStrategiesInput.push(parseOpenIdStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
             break;
           case EnvStrategyType.STRATEGY_SAML:
-            logApp.info('[SSO MIGRATION] Looking at SAML migration');
+            logApp.info('[SSO CONVERSION] Looking at SAML conversion');
             authenticationStrategiesInput.push(parseSAMLStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
             break;
           case EnvStrategyType.STRATEGY_LDAP:
-            logApp.info('[SSO MIGRATION] Looking at LDAP migration');
+            logApp.info('[SSO CONVERSION] Looking at LDAP conversion');
             authenticationStrategiesInput.push(parseLDAPStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
             break;
           case EnvStrategyType.STRATEGY_CERT:
-            logApp.warn(`[SSO MIGRATION] NOT IMPLEMENTED ${currentSSOconfig.strategy} detected.`);
+            logApp.warn(`[SSO CONVERSION] NOT IMPLEMENTED ${currentSSOconfig.strategy} detected.`);
             break;
           case EnvStrategyType.STRATEGY_HEADER:
-            logApp.warn(`[SSO MIGRATION] NOT IMPLEMENTED ${currentSSOconfig.strategy} detected.`);
+            logApp.warn(`[SSO CONVERSION] NOT IMPLEMENTED ${currentSSOconfig.strategy} detected.`);
             break;
           case EnvStrategyType.STRATEGY_FACEBOOK:
-            logApp.warn(`[SSO MIGRATION] DEPRECATED ${currentSSOconfig.strategy} detected.`);
+            logApp.warn(`[SSO CONVERSION] DEPRECATED ${currentSSOconfig.strategy} detected.`);
             break;
           case EnvStrategyType.STRATEGY_AUTH0:
-            logApp.warn(`[SSO MIGRATION] DEPRECATED ${currentSSOconfig.strategy} detected.`);
+            logApp.warn(`[SSO CONVERSION] DEPRECATED ${currentSSOconfig.strategy} detected.`);
             break;
           case EnvStrategyType.STRATEGY_GITHUB:
-            logApp.warn(`[SSO MIGRATION] DEPRECATED ${currentSSOconfig.strategy} detected.`);
+            logApp.warn(`[SSO CONVERSION] DEPRECATED ${currentSSOconfig.strategy} detected.`);
             break;
           case EnvStrategyType.STRATEGY_GOOGLE:
-            logApp.warn(`[SSO MIGRATION] DEPRECATED ${currentSSOconfig.strategy} detected.`);
+            logApp.warn(`[SSO CONVERSION] DEPRECATED ${currentSSOconfig.strategy} detected.`);
             break;
 
           default:
-            logApp.error('[SSO MIGRATION] unknown strategy in configuration', {
+            logApp.error('[SSO CONVERSION] unknown strategy in configuration', {
               providerKey: ssoKey,
               strategy: currentSSOconfig.strategy,
             });
@@ -312,7 +312,7 @@ export const parseSingleSignOnRunConfiguration = async (context: AuthContext, us
         }
       }
     } else {
-      logApp.error('[SSO MIGRATION] strategy not defined in configuration', { providerKey: ssoKey });
+      logApp.error('[SSO CONVERSION] strategy not defined in configuration', { providerKey: ssoKey });
     }
   }
 
@@ -339,7 +339,7 @@ export const parseSingleSignOnRunConfiguration = async (context: AuthContext, us
     return authenticationStrategies;
   } else {
     // When no dry run: save in database, and then convert BasicStore into display object
-    logApp.info('[SSO MIGRATION] starting to write migrated SSO in database');
+    logApp.info('[SSO CONVERSION] starting to write migrated SSO in database');
     const authenticationStrategies: SingleSignOnMigrationResult[] = [];
     const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
     const migratedIdentifier: string[] = [];
@@ -347,7 +347,7 @@ export const parseSingleSignOnRunConfiguration = async (context: AuthContext, us
       const currentAuthProvider = authenticationStrategiesInput[i];
       const identifier = currentAuthProvider.identifier;
       if (identifier && !isAuthenticationProviderMigrated(settings, identifier)) {
-        logApp.info(`[SSO MIGRATION] creating new configuration for ${identifier}`);
+        logApp.info(`[SSO CONVERSION] creating new configuration for ${identifier}`);
         const created = await internalAddSingleSignOn(context, user, currentAuthProvider, true);
         const queryResult: SingleSignOnMigrationResult = {
           enabled: created.enabled,
@@ -362,7 +362,7 @@ export const parseSingleSignOnRunConfiguration = async (context: AuthContext, us
         migratedIdentifier.push(identifier);
         authenticationStrategies.push(queryResult);
       } else {
-        logApp.info(`[SSO MIGRATION] skipping ${currentAuthProvider.strategy} - ${identifier} as it's already in database.`, { auth_strategy_migrated: settings?.auth_strategy_migrated });
+        logApp.info(`[SSO CONVERSION] skipping ${currentAuthProvider.strategy} - ${identifier} as it's already in database.`, { auth_strategy_migrated: settings?.auth_strategy_migrated });
       }
     }
 
@@ -373,7 +373,7 @@ export const parseSingleSignOnRunConfiguration = async (context: AuthContext, us
       } else {
         newList = migratedIdentifier;
       }
-      logApp.info('[SSO MIGRATION] New list of migrated identifier saved in settings', { newList });
+      logApp.info('[SSO CONVERSION] New list of migrated identifier saved in settings', { newList });
       await settingsEditField(context, user, settings.id, [
         { key: 'auth_strategy_migrated', value: newList },
       ]);
