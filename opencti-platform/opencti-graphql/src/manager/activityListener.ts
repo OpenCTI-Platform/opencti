@@ -27,6 +27,7 @@ import { isStixCoreObject } from '../schema/stixCoreObject';
 import { REDACTED_INFORMATION } from '../database/utils';
 import type { ActivityStreamEvent } from '../types/event';
 import { EVENT_ACTIVITY_VERSION } from '../database/stream/stream-utils';
+import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
 
 const INTERNAL_READ_ENTITIES = [ENTITY_TYPE_WORKSPACE];
 const LOGS_SENSITIVE_FIELDS = conf.get('app:app_logs:logs_redacted_inputs') ?? [];
@@ -126,7 +127,7 @@ const initActivityManager = () => {
       if (!['query', 'internal'].includes(action.user.origin?.socket ?? '')) { // Subscription is not part of the listening
         return;
       }
-      if (settings.valid_enterprise_edition !== true) { // If enterprise edition is not activated
+      if (!isEnterpriseEditionFromSettings(settings)) { // If enterprise edition is not activated
         return;
       }
       const isUserListening = (settings.activity_listeners_users ?? []).includes(action.user.id);

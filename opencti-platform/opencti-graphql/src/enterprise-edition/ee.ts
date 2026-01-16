@@ -7,6 +7,10 @@ import { UnsupportedError } from '../config/errors';
 
 export const isEnterpriseEdition = async (context: AuthContext) => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  return isEnterpriseEditionFromSettings(settings);
+};
+
+export const isEnterpriseEditionFromSettings = (settings: Pick<BasicStoreSettings, 'valid_enterprise_edition'>): boolean => {
   return settings.valid_enterprise_edition === true;
 };
 
