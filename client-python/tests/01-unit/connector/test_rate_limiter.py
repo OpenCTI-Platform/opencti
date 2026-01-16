@@ -51,19 +51,20 @@ class TestRateLimiter(TestCase):
         now = 2000.0
         limiter.timestamps = deque([now])
 
-        sleep_calls = []
+        wait_calls = []
 
-        def sleep_side_effect(_duration):
-            sleep_calls.append(_duration)
+        def wait_side_effect(_timeout=None):
+            wait_calls.append(_timeout)
             limiter.stop()
+            return True
 
         with patch("pycti.connector.opencti_connector_helper.time") as time_mock:
-            time_mock.time.side_effect = [now, now, now, now]
-            time_mock.sleep.side_effect = sleep_side_effect
-            wait_time = limiter.wait_if_needed()
+            time_mock.time.return_value = now
+            with patch.object(limiter._condition, "wait", side_effect=wait_side_effect):
+                wait_time = limiter.wait_if_needed()
 
         self.assertEqual(wait_time, 60.0)
-        self.assertEqual(len(sleep_calls), 1)
+        self.assertEqual(len(wait_calls), 1)
         self.assertTrue(limiter._stop_event.is_set())
         self.assertFalse(limiter._lock.locked())
 
@@ -100,13 +101,14 @@ class TestRateLimiter(TestCase):
         now = 4000.0
         limiter.timestamps = deque([now])
 
-        def sleep_side_effect(_duration):
+        def wait_side_effect(_timeout=None):
             limiter.stop()
+            return True
 
         with patch("pycti.connector.opencti_connector_helper.time") as time_mock:
-            time_mock.time.side_effect = [now, now, now, now]
-            time_mock.sleep.side_effect = sleep_side_effect
-            limiter.wait_if_needed()
+            time_mock.time.return_value = now
+            with patch.object(limiter._condition, "wait", side_effect=wait_side_effect):
+                limiter.wait_if_needed()
 
         self.assertEqual(limiter._heartbeat_queue.get_nowait(), "rate_limit_heartbeat")
 

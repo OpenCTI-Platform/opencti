@@ -1119,6 +1119,7 @@ class RateLimiter:
         self.max_per_minute = max_per_minute
         self.timestamps: deque = deque()
         self._lock = threading.Lock()
+        self._condition = threading.Condition(self._lock)
         self._stop_event = threading.Event()
         self._heartbeat_queue: Optional[Queue] = None
 
@@ -1132,6 +1133,8 @@ class RateLimiter:
     def stop(self) -> None:
         """Signal the rate limiter to stop waiting."""
         self._stop_event.set()
+        with self._condition:
+            self._condition.notify_all()
 
     def wait_if_needed(self) -> float:
         """Wait if rate limit is exceeded. Thread-safe.
@@ -1141,7 +1144,7 @@ class RateLimiter:
 
         :return: Time spent waiting (seconds), 0 if no wait needed
         """
-        with self._lock:
+        with self._condition:
             now = time.time()
             cutoff_time = now - 60.0
 
@@ -1160,27 +1163,22 @@ class RateLimiter:
                         {"wait_seconds": round(wait_time, 2)},
                     )
 
-                    # Release lock while sleeping
-                    self._lock.release()
-                    try:
-                        chunk_size = 30.0
-                        total_slept = 0.0
-                        while total_slept < wait_time and not self._stop_event.is_set():
-                            sleep_duration = min(chunk_size, wait_time - total_slept)
-                            time.sleep(sleep_duration)
-                            total_slept += sleep_duration
+                    chunk_size = 30.0
+                    total_waited = 0.0
+                    while total_waited < wait_time and not self._stop_event.is_set():
+                        sleep_duration = min(chunk_size, wait_time - total_waited)
+                        self._condition.wait(timeout=sleep_duration)
+                        total_waited += sleep_duration
 
-                            # Send heartbeat during long waits
-                            if self._heartbeat_queue is not None:
-                                try:
-                                    self._heartbeat_queue.put(
-                                        "rate_limit_heartbeat", block=False
-                                    )
-                                except queue.Full:
-                                    # Heartbeats are best-effort; drop if the queue is full to avoid blocking.
-                                    pass
-                    finally:
-                        self._lock.acquire()
+                        # Send heartbeat during long waits
+                        if self._heartbeat_queue is not None:
+                            try:
+                                self._heartbeat_queue.put(
+                                    "rate_limit_heartbeat", block=False
+                                )
+                            except queue.Full:
+                                # Heartbeats are best-effort; drop if the queue is full to avoid blocking.
+                                pass
 
                     # Cleanup after sleep
                     now = time.time()
