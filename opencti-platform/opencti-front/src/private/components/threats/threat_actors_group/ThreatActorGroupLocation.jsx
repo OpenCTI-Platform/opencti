@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -22,6 +21,7 @@ import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import AddLocationsThreatActorGroup from './AddLocationsThreatActorGroup';
 import { addLocationsThreatActorGroupMutationRelationDelete } from './AddLocationsThreatActorGroupLines';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import Label from '../../../../components/common/label/Label';
 
 class ThreatActorGroupLocationsComponent extends Component {
   removeLocation(locationEdge) {
@@ -48,21 +48,20 @@ class ThreatActorGroupLocationsComponent extends Component {
     const { t, threatActorGroup } = this.props;
     return (
       <>
-        <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
-          {t('Located at')}
-        </Typography>
-        <Security
-          needs={[KNOWLEDGE_KNUPDATE]}
-          placeholder={<div style={{ height: 29 }} />}
+        <Label action={(
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <AddLocationsThreatActorGroup
+              threatActorGroup={threatActorGroup}
+              threatActorGroupLocations={threatActorGroup.locations.edges}
+            />
+          </Security>
+        )}
         >
-          <AddLocationsThreatActorGroup
-            threatActorGroup={threatActorGroup}
-            threatActorGroupLocations={threatActorGroup.locations.edges}
-          />
-        </Security>
-        <div className="clearfix" />
+          {t('Located at')}
+        </Label>
+
         <FieldOrEmpty source={threatActorGroup.locations.edges}>
-          <List style={{ marginTop: -10 }}>
+          <List>
             {threatActorGroup.locations.edges.map((locationEdge) => {
               const { types } = locationEdge;
               const location = locationEdge.node;

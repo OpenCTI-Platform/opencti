@@ -1,6 +1,5 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import Chip from '@mui/material/Chip';
 import { List } from '@mui/material';
@@ -12,6 +11,7 @@ import StixCoreObjectKillChainPhasesView from '../../common/stix_core_objects/St
 import type { Theme } from '../../../../components/Theme';
 import { InfrastructureDetails_infrastructure$data, InfrastructureDetails_infrastructure$key } from './__generated__/InfrastructureDetails_infrastructure.graphql';
 import Card from '../../../../components/common/card/Card';
+import Label from '../../../../components/common/label/Label';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -91,9 +91,9 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
       <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={3}>
           <Grid item xs={6}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('Infrastructure types')}
-            </Typography>
+            </Label>
             {data.infrastructure_types
               && data.infrastructure_types.length > 0 ? (
                   <List>
@@ -110,21 +110,21 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
                 )}
           </Grid>
           <Grid item xs={6}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('Description')}
-            </Typography>
+            </Label>
             <ExpandableMarkdown source={data.description} limit={400} />
           </Grid>
           <Grid item xs={6}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('First seen')}
-            </Typography>
+            </Label>
             {data.first_seen ? fldt(data.first_seen) : '-'}
           </Grid>
           <Grid item xs={6}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('Last seen')}
-            </Typography>
+            </Label>
             {data.last_seen ? fldt(data.last_seen) : '-'}
           </Grid>
           <Grid item xs={6}>

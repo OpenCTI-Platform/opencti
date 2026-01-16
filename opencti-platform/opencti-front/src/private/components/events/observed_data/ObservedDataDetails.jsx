@@ -2,11 +2,11 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
-import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import Card from '@common/card/Card';
 import StixCoreObjectsDonut from '../../common/stix_core_objects/StixCoreObjectsDonut';
 import inject18n from '../../../../components/i18n';
+import Label from '../../../../components/common/label/Label';
 
 class ObservedDataDetailsComponent extends Component {
   render() {
@@ -36,29 +36,26 @@ class ObservedDataDetailsComponent extends Component {
     return (
       <div style={{ height: '100%' }} data-testid="observed-data-details-page">
         <Card title={t('Entity details')}>
-          <Grid container={true} spacing={3}>
+          <Grid container={true} spacing={2} sx={{ mb: 2 }}>
             <Grid item xs={6}>
-              <Typography variant="h3" gutterBottom={true}>
+              <Label>
                 {t('First observed')}
-              </Typography>
+              </Label>
               {fldt(observedData.first_observed)}
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
+              <Label
+                sx={{ marginTop: 2 }}
               >
                 {t('Number observed')}
-              </Typography>
+              </Label>
               {observedData.number_observed}
             </Grid>
             <Grid item xs={6}>
-              <Typography variant="h3" gutterBottom={true}>
+              <Label>
                 {t('Last observed')}
-              </Typography>
+              </Label>
               {fldt(observedData.last_observed)}
             </Grid>
           </Grid>
-          <br />
           <StixCoreObjectsDonut
             dataSelection={observablesDataSelection}
             parameters={{ title: t('Observables distribution') }}

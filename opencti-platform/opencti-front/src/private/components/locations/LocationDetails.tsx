@@ -1,11 +1,11 @@
 import React, { FunctionComponent } from 'react';
-import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import { LocationDetails_location$key } from '@components/locations/__generated__/LocationDetails_location.graphql';
 import { graphql, useFragment } from 'react-relay';
 import ExpandableMarkdown from '../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../components/i18n';
 import Card from '../../../components/common/card/Card';
+import Label from '../../../components/common/label/Label';
 
 const locationDetailsFragment = graphql`
   fragment LocationDetails_location on Location {
@@ -25,11 +25,11 @@ const LocationDetails: FunctionComponent<LocationDetailsProps> = ({ locationData
   return (
     <div style={{ height: '100%' }}>
       <Card title={t_i18n('Details')}>
-        <Grid container={true} spacing={3}>
+        <Grid container={true} spacing={2}>
           <Grid item xs={12}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('Description')}
-            </Typography>
+            </Label>
             <ExpandableMarkdown source={location.description} limit={300} />
           </Grid>
         </Grid>

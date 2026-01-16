@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, filter } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
-import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -12,13 +11,14 @@ import IconButton from '@common/button/IconButton';
 import { ExpandLessOutlined, ExpandMoreOutlined, LinkOff } from '@mui/icons-material';
 import { graphql, createFragmentContainer } from 'react-relay';
 import * as R from 'ramda';
-import { ListItemButton } from '@mui/material';
+import { Box, ListItemButton } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
 import { truncate } from '../../../../utils/String';
 import AddAttackPatterns from './AddAttackPatterns';
 import { addAttackPatternsLinesMutationRelationDelete } from './AddAttackPatternsLines';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
+import Label from '../../../../components/common/label/Label';
 
 const styles = (theme) => ({
   avatar: {
@@ -80,25 +80,26 @@ class CourseOfActionAttackPatternComponent extends Component {
     const attackPatternsEdges = courseOfAction.attackPatterns.edges;
     const expandable = attackPatternsEdges.length > 7;
     return (
-      <div style={{ marginTop: 20 }}>
-        <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
+      <Box sx={{ marginTop: 2 }}>
+        <Label action={(
+          <>
+            <AddAttackPatterns
+              courseOfAction={courseOfAction}
+              courseOfActionAttackPatterns={courseOfAction.attackPatterns.edges}
+            />
+            {expandable && (
+              <IconButton
+                color="primary"
+                onClick={this.handleToggleExpand.bind(this)}
+              >
+                {expanded ? <ExpandLessOutlined /> : <ExpandMoreOutlined />}
+              </IconButton>
+            )}
+          </>
+        )}
+        >
           {t('Mitigated attack patterns')}
-        </Typography>
-        <AddAttackPatterns
-          courseOfAction={courseOfAction}
-          courseOfActionAttackPatterns={courseOfAction.attackPatterns.edges}
-        />
-        <div style={{ float: 'right', margin: '-10px 15px 0 0' }}>
-          {expandable && (
-            <IconButton
-              color="primary"
-              onClick={this.handleToggleExpand.bind(this)}
-            >
-              {expanded ? <ExpandLessOutlined /> : <ExpandMoreOutlined />}
-            </IconButton>
-          )}
-        </div>
-        <div className="clearfix" />
+        </Label>
         <List classes={{ root: classes.list }}>
           {R.take(expanded ? 200 : 7, attackPatternsEdges).map(
             (attackPatternEdge) => {
@@ -140,7 +141,7 @@ class CourseOfActionAttackPatternComponent extends Component {
             },
           )}
         </List>
-      </div>
+      </Box>
     );
   }
 }

@@ -21,10 +21,7 @@ const ExpandablePre = (props) => {
           </IconButton>
         </div>
       )}
-      <div style={{ marginTop: -5 }}>
-        <pre>{expand ? source : truncate(source, limit)}</pre>
-      </div>
-      <div className="clearfix" />
+      <pre style={{ margin: 0 }}>{expand ? source : truncate(source, limit)}</pre>
     </div>
   );
 };

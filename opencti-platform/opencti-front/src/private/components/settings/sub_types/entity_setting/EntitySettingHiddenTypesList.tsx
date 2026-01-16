@@ -1,12 +1,12 @@
 import React, { FunctionComponent } from 'react';
-import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { ListItemButton } from '@mui/material';
+import { Box, ListItemButton } from '@mui/material';
 import ItemIcon from '../../../../../components/ItemIcon';
 import FieldOrEmpty from '../../../../../components/FieldOrEmpty';
+import Label from '../../../../../components/common/label/Label';
 
 export interface Entity {
   readonly id: string;
@@ -39,10 +39,10 @@ const EntitySettingHiddenTypesList: FunctionComponent<{
 }) => {
   const hiddenEntities = computeHiddenEntities(nodes, targetType);
   return (
-    <div style={{ marginTop: 20 }}>
-      <Typography variant="h3" gutterBottom={true}>
+    <Box sx={{ marginTop: 2 }}>
+      <Label>
         {label}
-      </Typography>
+      </Label>
       <List style={{ paddingTop: 0 }}>
         <FieldOrEmpty source={hiddenEntities}>
           {hiddenEntities.map((hiddenEntity) => (
@@ -61,7 +61,7 @@ const EntitySettingHiddenTypesList: FunctionComponent<{
           ))}
         </FieldOrEmpty>
       </List>
-    </div>
+    </Box>
   );
 };
 

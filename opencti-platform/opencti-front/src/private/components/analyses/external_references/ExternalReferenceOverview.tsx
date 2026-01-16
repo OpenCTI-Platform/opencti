@@ -1,12 +1,12 @@
 import React, { FunctionComponent } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import { useFormatter } from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { truncate } from '../../../../utils/String';
 import { ExternalReferenceOverview_externalReference$data } from './__generated__/ExternalReferenceOverview_externalReference.graphql';
 import Card from '../../../../components/common/card/Card';
+import Label from '../../../../components/common/label/Label';
 
 interface ExternalReferenceOverviewComponentProps {
   externalReference: ExternalReferenceOverview_externalReference$data;
@@ -22,34 +22,30 @@ const ExternalReferenceOverviewComponent: FunctionComponent<
       <Card title={t_i18n('Overview')}>
         <Grid container={true} spacing={3}>
           <Grid item xs={6}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('Source name')}
-            </Typography>
+            </Label>
             {truncate(externalReference.source_name, 40)}
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
+            <Label
+              sx={{ marginTop: 2 }}
             >
               {t_i18n('Description')}
-            </Typography>
+            </Label>
             <ExpandableMarkdown
               source={externalReference.description}
               limit={400}
             />
           </Grid>
           <Grid item xs={6}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('Original creation date')}
-            </Typography>
+            </Label>
             {fldt(externalReference.created)}
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
+            <Label
+              sx={{ marginTop: 2 }}
             >
               {t_i18n('Modification date')}
-            </Typography>
+            </Label>
             {fldt(externalReference.modified)}
           </Grid>
         </Grid>

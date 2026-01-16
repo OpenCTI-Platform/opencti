@@ -1,6 +1,5 @@
 import React from 'react';
 import * as R from 'ramda';
-import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -18,6 +17,7 @@ import { commitMutation } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import Label from '../../../../components/common/label/Label';
 
 const AttackPatternSubAttackPatternsComponent = ({ attackPattern }) => {
   const { t_i18n } = useFormatter();
@@ -53,20 +53,21 @@ const AttackPatternSubAttackPatternsComponent = ({ attackPattern }) => {
   return (
     <div style={{ height: '100%', marginTop: 20 }}>
       <div style={{ display: 'flex', flexDirection: 'row' }}>
-        <Typography variant="h3" gutterBottom={true}>
+        <Label action={(
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <AddSubAttackPattern
+              attackPattern={attackPattern}
+              attackPatternSubAttackPatterns={
+                attackPattern.subAttackPatterns.edges
+              }
+            />
+          </Security>
+        )}
+        >
           {t_i18n('Sub attack patterns')}
-        </Typography>
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <AddSubAttackPattern
-            attackPattern={attackPattern}
-            attackPatternSubAttackPatterns={
-              attackPattern.subAttackPatterns.edges
-            }
-          />
-        </Security>
-        <div className="clearfix" />
+        </Label>
       </div>
-      <List style={{ marginTop: -10, paddingTop: 0 }}>
+      <List style={{ paddingTop: 0 }}>
         <FieldOrEmpty source={subAttackPatterns}>
           {subAttackPatterns.map((subAttackPattern) => (
             <ListItem

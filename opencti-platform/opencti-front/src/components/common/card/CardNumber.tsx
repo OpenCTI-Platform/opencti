@@ -67,6 +67,7 @@ const CardNumber = ({
             type={entityType}
             size="large"
             color={theme.palette.text.secondary}
+            style={{ opacity: 0.35 }}
           />
         )}
         {icon}

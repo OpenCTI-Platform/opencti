@@ -40,6 +40,7 @@ import { TEN_SECONDS } from '../../../../utils/Time';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import Card from '../../../../components/common/card/Card';
+import Label from '../../../../components/common/label/Label';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -224,9 +225,9 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
             <Card title={title} sx={style}>
               <Grid container={true} spacing={3}>
                 <Grid item xs={6}>
-                  <Typography variant="h3" gutterBottom={true}>
+                  <Label>
                     {t_i18n('Engine')}
-                  </Typography>
+                  </Label>
                   {isStarted ? (
                     <Button
                       startIcon={<PauseOutlined />}
@@ -250,9 +251,9 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
                   )}
                 </Grid>
                 <Grid item xs={6}>
-                  <Typography variant="h3" gutterBottom={true}>
+                  <Label>
                     {t_i18n('Indexing')}
-                  </Typography>
+                  </Label>
                   <Button
                     startIcon={<ClearOutlined />}
                     aria-label="Reset"
@@ -264,15 +265,15 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
                   </Button>
                 </Grid>
                 <Grid item xs={6}>
-                  <Typography variant="h3" gutterBottom={true}>
+                  <Label>
                     {t_i18n('Indexing manager start')}
-                  </Typography>
+                  </Label>
                   {fldt(managerConfiguration?.last_run_start_date)}
                 </Grid>
                 <Grid item xs={6}>
-                  <Typography variant="h3" gutterBottom={true}>
+                  <Label>
                     {t_i18n('Last indexation')}
-                  </Typography>
+                  </Label>
                   {fldt(lastIndexationDate)}
                 </Grid>
               </Grid>
@@ -284,26 +285,26 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
         <Card title={t_i18n('Information')}>
           <Grid container={true} spacing={3}>
             <Grid item xs={6}>
-              <Typography variant="h3" gutterBottom={true}>
+              <Label>
                 {t_i18n('Total files in S3')}
-              </Typography>
+              </Label>
               <span style={{ fontWeight: 600, fontSize: 20 }}>
                 {n(totalFiles)}
               </span>
             </Grid>
             <Grid item xs={6}>
-              <Typography variant="h3" gutterBottom={true}>
+              <Label>
                 {t_i18n('Files volumes in S3')}
-              </Typography>
+              </Label>
               <span style={{ fontWeight: 600, fontSize: 20 }}>
                 {b(dataToIndex)}
               </span>
             </Grid>
             <Grid item xs={12}>
-              <Typography variant="h3" gutterBottom={true}>
+              <Label>
                 {t_i18n('S3 volume by file type')}
-              </Typography>
-              <List>
+              </Label>
+              <List sx={{ py: 0 }}>
                 <ListItem
                   divider={true}
                   dense={true}

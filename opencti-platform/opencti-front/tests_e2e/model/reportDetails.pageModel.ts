@@ -31,7 +31,7 @@ export default class ReportDetailsPage {
   getTextForHeading(heading: string, text: string) {
     return this.page
       .getByRole('heading', { name: heading })
-      .locator('..')
+      .locator('../..')
       .getByText(text);
   }
 

@@ -1,7 +1,6 @@
-import Chip from '@mui/material/Chip';
-import React, { CSSProperties } from 'react';
 import { useTheme } from '@mui/styles';
 import type { Theme } from './Theme';
+import Tag from './common/tag/Tag';
 
 const inlineStyles = {
   whiteDark: {
@@ -43,10 +42,9 @@ const inlineStyles = {
 
 type ItemCvssScoreProps = {
   score?: number | null;
-  style?: CSSProperties;
 };
 
-const ItemCvssScore = ({ score, style }: ItemCvssScoreProps) => {
+const ItemCvssScore = ({ score }: ItemCvssScoreProps) => {
   const theme = useTheme<Theme>();
 
   const getChipStyleFromCVSS3Score = (cvssScore: number) => {
@@ -66,17 +64,9 @@ const ItemCvssScore = ({ score, style }: ItemCvssScoreProps) => {
   if (score === null || score === undefined) return '-';
 
   return (
-    <Chip
-      style={{
-        ...style,
-        fontSize: 18,
-        lineHeight: '18px',
-        height: 38,
-        textTransform: 'uppercase',
-        borderRadius: 4,
-        ...getChipStyleFromCVSS3Score(score),
-      }}
-      label={score}
+    <Tag
+      color={getChipStyleFromCVSS3Score(score).color}
+      label={`${score}`}
     />
   );
 };

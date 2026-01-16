@@ -31,6 +31,7 @@ import type { Theme } from '../../../../components/Theme';
 import CardAccordion from '../../../../components/common/card/CardAccordion';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import Tag from '@common/tag/Tag';
+import Label from '../../../../components/common/label/Label';
 
 const detailsFragment = graphql`
   fragment PirOverviewDetailsFragment on Pir {
@@ -89,17 +90,13 @@ const PirOverviewDetails = ({ data, dataStream }: PirOverviewDetailsProps) => {
           }}
           >
             <div>
-              <Typography variant="h3" gutterBottom>
-                {t_i18n('Rescan period (days)')}
-              </Typography>
+              <Label>{t_i18n('Rescan period (days)')}</Label>
               <Typography variant="body2" gutterBottom>
                 {pir.pir_rescan_days}
               </Typography>
             </div>
             <div>
-              <Typography variant="h3" gutterBottom>
-                {t_i18n('Filters')}
-              </Typography>
+              <Label>{t_i18n('Filters')}</Label>
               <FilterIconButton
                 key={pir.pir_filters}
                 filters={JSON.parse(pir.pir_filters)}
@@ -108,9 +105,7 @@ const PirOverviewDetails = ({ data, dataStream }: PirOverviewDetailsProps) => {
               />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <Typography variant="h3" gutterBottom>
-                {t_i18n('Processing delay')}
-              </Typography>
+              <Label>{t_i18n('Processing delay')}</Label>
               <Typography variant="body2" gutterBottom style={{ display: 'flex' }}>
                 <span>
                   {diffInMinutes > 1 ? `${stringFormatMinutes(diffInMinutes, t_i18n)} ${t_i18n('behind live stream')}` : t_i18n('ON TIME')}
@@ -126,15 +121,11 @@ const PirOverviewDetails = ({ data, dataStream }: PirOverviewDetailsProps) => {
               <Tag label={`${n(pir.queue_messages)} ${t_i18n('messages in queue')}`} />
             </div>
             <div>
-              <Typography variant="h3" gutterBottom>
-                {t_i18n('Creation date')}
-              </Typography>
+              <Label>{t_i18n('Creation date')}</Label>
               {fldt(pir.created_at)}
             </div>
             <div>
-              <Typography variant="h3" gutterBottom>
-                {t_i18n('Creators')}
-              </Typography>
+              <Label>{t_i18n('Creators')}</Label>
               <ItemCreators creators={pir.creators ?? []} />
             </div>
           </div>
@@ -142,15 +133,11 @@ const PirOverviewDetails = ({ data, dataStream }: PirOverviewDetailsProps) => {
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(3) }}>
           <div>
-            <Typography variant="h3" gutterBottom>
-              {t_i18n('Description')}
-            </Typography>
+            <Label>{t_i18n('Description')}</Label>
             <ExpandableMarkdown source={pir.description} limit={400} />
           </div>
           <div>
-            <Typography variant="h3" gutterBottom>
-              {t_i18n('Criteria')}
-            </Typography>
+            <Label>{t_i18n('Criteria')}</Label>
             <PirCriteriaDisplay criteria={criteria} full />
           </div>
         </div>

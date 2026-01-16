@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
-import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
@@ -40,6 +39,7 @@ import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import ItemParticipants from '../../../../components/ItemParticipants';
 import Transition from '../../../../components/Transition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import Label from '../../../../components/common/label/Label';
 
 const StixDomainObjectOverview = ({
   stixDomainObject,
@@ -148,28 +148,22 @@ const StixDomainObjectOverview = ({
           <Grid item xs={6}>
             {stixDomainObject.objectMarking && (
               <>
-                <Typography variant="h3" gutterBottom={true}>
-                  {t_i18n('Marking')}
-                </Typography>
+                <Label>{t_i18n('Marking')}</Label>
                 <ItemMarkings
                   markingDefinitions={stixDomainObject.objectMarking ?? []}
                 />
               </>
             )}
             <div>
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{
-                  marginTop:
+              <Label sx={{
+                mt:
                     withPattern
                     || (!withoutMarking && stixDomainObject.objectMarking)
-                      ? 20
+                      ? 2
                       : 0,
-                }}
-              >
-                {t_i18n('Author')}
-              </Typography>
+              }}
+              >{t_i18n('Author')}
+              </Label>
               <ItemAuthor
                 createdBy={stixDomainObject.createdBy ?? null}
               />
@@ -178,11 +172,7 @@ const StixDomainObjectOverview = ({
               <Grid container={true} columnSpacing={1}>
                 {displayReliability && (
                   <Grid item xs={6}>
-                    <Typography
-                      variant="h3"
-                      gutterBottom={true}
-                      style={{ marginTop: 20 }}
-                    >
+                    <Label sx={{ mt: 2 }}>
                       {t_i18n('Reliability')}
                       {isReliabilityOfSource && (
                         <span style={{ fontStyle: 'italic' }}>
@@ -190,7 +180,7 @@ const StixDomainObjectOverview = ({
                           ({t_i18n('of author')})
                         </span>
                       )}
-                    </Typography>
+                    </Label>
                     <ItemOpenVocab
                       displayMode="chip"
                       type="reliability_ov"
@@ -200,13 +190,9 @@ const StixDomainObjectOverview = ({
                 )}
                 {displayConfidence && (
                   <Grid item xs={6}>
-                    <Typography
-                      variant="h3"
-                      gutterBottom={true}
-                      style={{ marginTop: 20 }}
-                    >
+                    <Label sx={{ marginTop: 2 }}>
                       {t_i18n('Confidence level')}
-                    </Typography>
+                    </Label>
                     <ItemConfidence
                       confidence={stixDomainObject.confidence}
                       entityType={stixDomainObject.entity_type}
@@ -216,41 +202,29 @@ const StixDomainObjectOverview = ({
               </Grid>
             )}
             {displayOpinions && <StixCoreObjectOpinions stixCoreObjectId={stixDomainObject.id} />}
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
-            >
+            <Label sx={{ marginTop: 2 }}>
               {t_i18n('Original creation date')}
-            </Typography>
+            </Label>
             {fldt(stixDomainObject.created)}
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
-            >
+            <Label sx={{ marginTop: 2 }}>
               {t_i18n('Modification date')}
-            </Typography>
+            </Label>
             {fldt(stixDomainObject.modified)}
           </Grid>
           <Grid item xs={6}>
             {withPattern && (
               <>
-                <Typography variant="h3" gutterBottom={true}>
+                <Label>
                   {t_i18n('Pattern type')}
-                </Typography>
+                </Label>
                 <ItemPatternType label={stixDomainObject.pattern_type} />
               </>
             )}
             {!isRequestAccessRFI && (
               <>
-                <Typography
-                  variant="h3"
-                  gutterBottom={true}
-                  style={{ marginTop: withPattern ? 20 : 0 }}
-                >
+                <Label sx={{ marginTop: withPattern ? 2 : 0 }}>
                   {t_i18n('Processing status')}
-                </Typography>
+                </Label>
                 <ItemStatus
                   status={stixDomainObject.status}
                   disabled={!stixDomainObject.workflowEnabled}
@@ -259,61 +233,59 @@ const StixDomainObjectOverview = ({
             )}
             {displayAssignees && (
               <div data-testid="sdo-overview-assignees">
-                <div style={{ display: 'flex', alignItems: 'center', marginTop: 20 }}>
-                  <Typography
-                    variant="h3"
-                    gutterBottom={true}
-                  >
-                    {t_i18n('Assignees')}
-                  </Typography>
-                  <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                    <IconButton
-                      variant="tertiary"
-                      size="small"
-                      aria-label={t_i18n('Add new assignees')}
-                      title={t_i18n('Add new assignees')}
-                      onClick={handleToggleAddAssignee}
-                      sx={{ marginTop: -0.6 }}
-                    >
-                      <Add fontSize="small" />
-                    </IconButton>
-                  </Security>
-                </div>
-                <ItemAssignees assignees={stixDomainObject.objectAssignee ?? []} stixDomainObjectId={stixDomainObject.id} />
+                <Label
+                  sx={{ marginTop: 2 }}
+                  action={(
+                    <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                      <IconButton
+                        variant="tertiary"
+                        size="small"
+                        aria-label={t_i18n('Add new assignees')}
+                        title={t_i18n('Add new assignees')}
+                        onClick={handleToggleAddAssignee}
+                      >
+                        <Add fontSize="small" />
+                      </IconButton>
+                    </Security>
+                  )}
+                >
+                  {t_i18n('Assignees')}
+                </Label>
+                <ItemAssignees
+                  assignees={stixDomainObject.objectAssignee ?? []}
+                  stixDomainObjectId={stixDomainObject.id}
+                />
               </div>
             )}
             {displayParticipants && (
               <div data-testid="sdo-overview-participants">
-                <div style={{ display: 'flex', alignItems: 'center', marginTop: 20 }}>
-                  <Typography
-                    variant="h3"
-                    gutterBottom={true}
-                  >
-                    {t_i18n('Participants')}
-                  </Typography>
-                  <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                    <IconButton
-                      variant="tertiary"
-                      size="small"
-                      aria-label={t_i18n('Add new participants')}
-                      title={t_i18n('Add new participants')}
-                      onClick={handleToggleAddParticipant}
-                      sx={{ marginTop: -0.6 }}
-                    >
-                      <Add fontSize="small" />
-                    </IconButton>
-                  </Security>
-                </div>
-                <ItemParticipants participants={stixDomainObject.objectParticipant ?? []} stixDomainObjectId={stixDomainObject.id} />
+                <Label
+                  sx={{ marginTop: 2 }}
+                  action={(
+                    <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                      <IconButton
+                        variant="tertiary"
+                        size="small"
+                        aria-label={t_i18n('Add new participants')}
+                        title={t_i18n('Add new participants')}
+                        onClick={handleToggleAddParticipant}
+                      >
+                        <Add fontSize="small" />
+                      </IconButton>
+                    </Security>
+                  )}
+                >
+                  {t_i18n('Participants')}
+                </Label>
+                <ItemParticipants
+                  participants={stixDomainObject.objectParticipant ?? []}
+                  stixDomainObjectId={stixDomainObject.id}
+                />
               </div>
             )}
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
-            >
+            <Label sx={{ marginTop: 2 }}>
               {t_i18n('Revoked')}
-            </Typography>
+            </Label>
             <ItemBoolean
               status={stixDomainObject.revoked}
               label={stixDomainObject.revoked ? t_i18n('Yes') : t_i18n('No')}
@@ -322,60 +294,50 @@ const StixDomainObjectOverview = ({
             <StixCoreObjectLabelsView
               labels={stixDomainObject.objectLabel}
               id={stixDomainObject.id}
-              marginTop={20}
+              sx={{ marginTop: 2 }}
               entity_type={stixDomainObject.entity_type}
             />
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
-            >
+            <Label sx={{ marginTop: 2 }}>
               {t_i18n('Platform creation date')}
-            </Typography>
+            </Label>
             {fldt(stixDomainObject.created_at)}
             <div>
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
+              <Label sx={{ marginTop: 2 }}>
                 {t_i18n('Creators')}
-              </Typography>
+              </Label>
               <ItemCreators creators={stixDomainObject.creators ?? []} />
             </div>
             <div style={{ marginTop: 20 }}>
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ float: 'left' }}
+              <Label
+                sx={{ marginTop: 2 }}
+                action={(
+                  <>
+                    <Tooltip
+                      title={t_i18n(
+                        'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                      )}
+                    >
+                      <InformationOutline fontSize="small" color="primary" />
+                    </Tooltip>
+                    <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                      <IconButton
+                        variant="tertiary"
+                        aria-label="Close"
+                        size="small"
+                        disabled={stixIds.length === 0}
+                        onClick={handleToggleOpenStixIds}
+                      >
+                        <BrushOutlined
+                          fontSize="small"
+                          color={stixIds.length === 0 ? 'inherit' : 'primary'}
+                        />
+                      </IconButton>
+                    </Security>
+                  </>
+                )}
               >
                 {t_i18n('Standard STIX ID')}
-              </Typography>
-              <div style={{ float: 'left', margin: '-3px 0 0 8px' }}>
-                <Tooltip
-                  title={t_i18n(
-                    'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
-                  )}
-                >
-                  <InformationOutline fontSize="small" color="primary" />
-                </Tooltip>
-              </div>
-              <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <div style={{ float: 'right', margin: '-5px 0 0 8px' }}>
-                  <IconButton
-                    variant="tertiary"
-                    aria-label="Close"
-                    size="small"
-                    disabled={stixIds.length === 0}
-                    onClick={handleToggleOpenStixIds}
-                  >
-                    <BrushOutlined
-                      color={stixIds.length === 0 ? 'inherit' : 'primary'}
-                    />
-                  </IconButton>
-                </div>
-              </Security>
-              <div className="clearfix" />
+              </Label>
               <div style={{
                 padding: '5px 5px 5px 10px',
                 fontFamily: 'Consolas, monaco, monospace',

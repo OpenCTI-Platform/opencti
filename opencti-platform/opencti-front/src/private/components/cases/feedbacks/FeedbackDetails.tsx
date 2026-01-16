@@ -1,12 +1,12 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import { FeedbackDetails_case$data, FeedbackDetails_case$key } from './__generated__/FeedbackDetails_case.graphql';
 import RatingField from '../../../../components/fields/RatingField';
 import Card from '../../../../components/common/card/Card';
+import Label from '../../../../components/common/label/Label';
 
 const FeedbackDetailsFragment = graphql`
   fragment FeedbackDetails_case on Feedback {
@@ -53,15 +53,15 @@ const FeedbackDetails: FunctionComponent<FeedbackDetailsProps> = ({
       <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={3}>
           <Grid item xs={6}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('Rating')}
-            </Typography>
+            </Label>
             <RatingField rating={data.rating} size="small" readOnly={true} />
           </Grid>
           <Grid item xs={12}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('Description')}
-            </Typography>
+            </Label>
             {data.description && (
               <ExpandableMarkdown source={data.description} limit={300} />
             )}

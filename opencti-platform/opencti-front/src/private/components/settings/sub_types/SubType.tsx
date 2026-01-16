@@ -2,7 +2,6 @@ import React, { Suspense, useMemo } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import EntitySettingCustomOverview from '@components/settings/sub_types/entity_setting/EntitySettingCustomOverview';
-import { useTheme } from '@mui/styles';
 import { SubTypeQuery, SubTypeQuery$variables } from '@components/settings/sub_types/__generated__/SubTypeQuery.graphql';
 import { useParams } from 'react-router-dom';
 import GlobalWorkflowSettings from '@components/settings/sub_types/workflow/GlobalWorkflowSettings';
@@ -14,7 +13,6 @@ import EntitySettingAttributes from './entity_setting/EntitySettingAttributes';
 import CustomizationMenu from '../CustomizationMenu';
 import SearchInput from '../../../../components/SearchInput';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import type { Theme } from '../../../../components/Theme';
 import FintelTemplatesGrid from './fintel_templates/FintelTemplatesGrid';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -61,7 +59,6 @@ interface SubTypeProps {
 }
 
 const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
-  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
 
@@ -118,7 +115,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
 
         <Grid item xs={12}>
           <Card title={t_i18n('Workflow')}>
-            <div style={{ display: 'flex', marginTop: theme.spacing(1) }}>
+            <div style={{ display: 'flex' }}>
               <Grid item xs={hasRequestAccessConfig ? 6 : 12}>
                 {subType.settings?.availableSettings.includes('workflow_configuration')
                   && <GlobalWorkflowSettings data={subType} subTypeId={subType.id} workflowEnabled={subType.workflowEnabled ?? false} />

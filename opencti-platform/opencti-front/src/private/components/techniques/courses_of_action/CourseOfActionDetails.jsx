@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
-import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
@@ -15,6 +14,7 @@ import CoursesOfActionAttackPatterns from './CourseOfActionAttackPatterns';
 import inject18n from '../../../../components/i18n';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import Card from '@common/card/Card';
+import Label from '../../../../components/common/label/Label';
 
 class CourseOfActionDetailsComponent extends Component {
   render() {
@@ -22,22 +22,20 @@ class CourseOfActionDetailsComponent extends Component {
     return (
       <div style={{ height: '100%' }}>
         <Card title={t('Details')}>
-          <Grid container={true} spacing={3}>
+          <Grid container={true} spacing={2}>
             <Grid item xs={6}>
-              <Typography variant="h3" gutterBottom={true}>
+              <Label>
                 {t('Description')}
-              </Typography>
+              </Label>
               <ExpandableMarkdown
                 source={courseOfAction.description}
                 limit={300}
               />
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
+              <Label
+                sx={{ marginTop: 2 }}
               >
                 {t('Log sources')}
-              </Typography>
+              </Label>
               <FieldOrEmpty source={courseOfAction.x_opencti_log_sources}>
                 <List>
                   {(courseOfAction.x_opencti_log_sources ?? []).map((logSource, index) => (
@@ -52,9 +50,9 @@ class CourseOfActionDetailsComponent extends Component {
               </FieldOrEmpty>
             </Grid>
             <Grid item xs={6}>
-              <Typography variant="h3" gutterBottom={true}>
+              <Label>
                 {t('External ID')}
-              </Typography>
+              </Label>
               <FieldOrEmpty
                 source={courseOfAction.x_mitre_id}
               >
@@ -65,13 +63,11 @@ class CourseOfActionDetailsComponent extends Component {
                   style={{ borderRadius: 4 }}
                 />
               </FieldOrEmpty>
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
+              <Label
+                sx={{ marginTop: 2 }}
               >
                 {t('Threat hunting techniques')}
-              </Typography>
+              </Label>
               <ExpandableMarkdown
                 source={courseOfAction.x_opencti_threat_hunting}
                 limit={300}

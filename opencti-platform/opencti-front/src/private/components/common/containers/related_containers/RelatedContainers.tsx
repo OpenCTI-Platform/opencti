@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { NorthEastOutlined, LoupeOutlined } from '@mui/icons-material';
 import { VectorLink } from 'mdi-material-ui';
 import IconButton from '@common/button/IconButton';
-import Typography from '@mui/material/Typography';
 import { graphql, useFragment } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import RelatedContainersDetails from '@components/common/containers/related_containers/RelatedContainersDetails';
@@ -12,13 +11,13 @@ import {
   RelatedContainersFragment_container_connection$data,
   RelatedContainersFragment_container_connection$key,
 } from '@components/common/containers/related_containers/__generated__/RelatedContainersFragment_container_connection.graphql';
-import { useTheme } from '@mui/styles';
 import Loader from 'src/components/Loader';
-import type { Theme } from '../../../../../components/Theme';
 import { resolveLink } from '../../../../../utils/Entity';
 import { useFormatter } from '../../../../../components/i18n';
 import DataTableWithoutFragment from '../../../../../components/dataGrid/DataTableWithoutFragment';
 import { DataTableVariant } from '../../../../../components/dataGrid/dataTableTypes';
+import Label from '../../../../../components/common/label/Label';
+import { Box } from '@mui/material';
 
 export const RelatedContainersFragment = graphql`
   fragment RelatedContainersFragment_container_connection on ContainerConnection {
@@ -120,7 +119,6 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
   entityType,
 }) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme<Theme>();
   const [selectedContainer, setSelectedContainer] = useState<RelatedContainerNode | undefined>();
   const relatedContainers = useFragment(
     RelatedContainersFragment,
@@ -142,26 +140,27 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
   const calcMinHeight = useMemo(() => Math.max(Math.min(containersGlobalCount * 50, 150), 50), [containersGlobalCount]);
 
   return (
-    <div style={{
-      marginTop: 20,
+    <Box sx={{
+      marginTop: 2,
       flex: 1,
       display: 'flex',
       flexFlow: 'column',
     }}
     >
-      <Typography variant="h3" gutterBottom={true}>
-        {t_i18n('Correlated containers')}
+      <Label action={(
         <Tooltip title={t_i18n('Display the correlation graph')} placement="top">
           <IconButton
             color="primary"
             component={Link}
-            style={{ marginBottom: theme.spacing(0.5) }}
             to={`${resolveLink(entityType)}/${containerId}/knowledge/correlation`}
           >
             <VectorLink fontSize="small" />
           </IconButton>
         </Tooltip>
-      </Typography>
+      )}
+      >
+        {t_i18n('Correlated containers')}
+      </Label>
       <div style={{ height: '100%', minHeight: calcMinHeight }} ref={(r) => setRef(r ?? undefined)}>
         {containersGlobalCount > 0 ? (
           <DataTableWithoutFragment
@@ -239,7 +238,7 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
           )}
         </>
       </Drawer>
-    </div>
+    </Box>
   );
 };
 

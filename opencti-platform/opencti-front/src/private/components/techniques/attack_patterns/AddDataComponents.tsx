@@ -1,4 +1,3 @@
-import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent, useState } from 'react';
 import IconButton from '@common/button/IconButton';
 import { Add } from '@mui/icons-material';
@@ -12,20 +11,10 @@ import { AddDataComponentsLinesQuery, AddDataComponentsLinesQuery$variables } fr
 import { AttackPatternDataComponents_attackPattern$data } from './__generated__/AttackPatternDataComponents_attackPattern.graphql';
 import DataComponentCreation from '../data_components/DataComponentCreation';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  createButton: {
-    float: 'left',
-    marginTop: -15,
-  },
-}));
-
 const AddDataComponents: FunctionComponent<{
   attackPattern: AttackPatternDataComponents_attackPattern$data;
 }> = ({ attackPattern }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const paginationOptions: AddDataComponentsLinesQuery$variables = {
@@ -48,7 +37,6 @@ const AddDataComponents: FunctionComponent<{
         color="primary"
         aria-label="Add"
         onClick={handleOpen}
-        classes={{ root: classes.createButton }}
       >
         <Add fontSize="small" />
       </IconButton>

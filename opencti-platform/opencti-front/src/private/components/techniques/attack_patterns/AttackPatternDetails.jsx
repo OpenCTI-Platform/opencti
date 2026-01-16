@@ -8,7 +8,6 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Typography from '@mui/material/Typography';
 import { PermIdentity, SettingsApplications } from '@mui/icons-material';
 import Grid from '@mui/material/Grid';
 import Card from '@common/card/Card';
@@ -20,6 +19,7 @@ import AttackPatternSubAttackPatterns from './AttackPatternSubAttackPatterns';
 import AttackPatternCoursesOfAction from './AttackPatternCoursesOfAction';
 import AttackPatternDataComponents from './AttackPatternDataComponents';
 import StixCoreObjectKillChainPhasesView from '../../common/stix_core_objects/StixCoreObjectKillChainPhasesView';
+import Label from '../../../../components/common/label/Label';
 
 const styles = (theme) => ({
   paper: {
@@ -43,45 +43,39 @@ class AttackPatternDetailsComponent extends Component {
     return (
       <div style={{ height: '100%' }}>
         <Card title={t('Details')}>
-          <Grid container={true} spacing={3}>
+          <Grid container={true} spacing={2}>
             <Grid item xs={6}>
               {attackPattern.isSubAttackPattern && (
                 <AttackPatternParentAttackPatterns
                   attackPattern={attackPattern}
                 />
               )}
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: attackPattern.isSubAttackPattern ? 20 : 0 }}
+              <Label
+                sx={{ marginTop: attackPattern.isSubAttackPattern ? 2 : 0 }}
               >
                 {t('External ID')}
-              </Typography>
+              </Label>
               <FieldOrEmpty source={attackPattern.x_mitre_id}>
                 <Chip
                   label={attackPattern.x_mitre_id}
                   classes={{ root: classes.chip }}
                 />
               </FieldOrEmpty>
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
+              <Label
+                sx={{ marginTop: 2 }}
               >
                 {t('Description')}
-              </Typography>
+              </Label>
               <ExpandableMarkdown
                 source={attackPattern.description}
                 limit={300}
               />
               <div>
-                <Typography
-                  variant="h3"
-                  gutterBottom={true}
-                  style={{ marginTop: 20 }}
+                <Label
+                  sx={{ marginTop: 2 }}
                 >
                   {t('Platforms')}
-                </Typography>
+                </Label>
                 <List style={{ paddingTop: 0 }}>
                   <FieldOrEmpty source={attackPattern.x_mitre_platforms}>
                     {attackPattern.x_mitre_platforms?.map(
@@ -104,24 +98,20 @@ class AttackPatternDetailsComponent extends Component {
                 killChainPhases={attackPattern.killChainPhases}
                 firstLine={true}
               />
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
+              <Label
+                sx={{ marginTop: 2 }}
               >
                 {t('Detection')}
-              </Typography>
+              </Label>
               <ExpandableMarkdown
                 source={attackPattern.x_mitre_detection}
                 limit={400}
               />
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
+              <Label
+                sx={{ marginTop: 2 }}
               >
                 {t('Required permissions')}
-              </Typography>
+              </Label>
               <List style={{ paddingTop: 0 }}>
                 <FieldOrEmpty source={attackPattern.x_mitre_permissions_required}>
                   {attackPattern.x_mitre_permissions_required?.map(

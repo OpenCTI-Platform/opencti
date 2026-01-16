@@ -1,9 +1,8 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
-import Typography from '@mui/material/Typography';
 import Switch from '@mui/material/Switch';
 import Grid from '@mui/material/Grid';
-import { Tooltip } from '@mui/material';
+import { Box, Tooltip } from '@mui/material';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import { InformationOutline } from 'mdi-material-ui';
@@ -15,6 +14,7 @@ import Security from '../../../../../utils/Security';
 import { EntitySettingSettings_entitySetting$key } from './__generated__/EntitySettingSettings_entitySetting.graphql';
 import SettingsOrganizationEntitySettingHiddenTypesList from '../../organizations/SettingsOrganizationEntitySettingHiddenTypesList';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import Label from '../../../../../components/common/label/Label';
 
 export const entitySettingFragment = graphql`
   fragment EntitySettingSettings_entitySetting on EntitySetting {
@@ -100,32 +100,26 @@ const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProp
     });
   };
   return (
-    <Grid container={true} spacing={3}>
+    <Grid container={true} spacing={2}>
       <Grid item xs={6}>
         <div>
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ float: 'left' }}
+          <Label action={(
+            <Tooltip
+              title={!entitySetting.availableSettings.includes('platform_hidden_type')
+                ? t_i18n('This configuration is not available for this entity type')
+                : t_i18n('This configuration hides a specific entity type across the entire platform.')
+              }
+            >
+              <InformationOutline
+                fontSize="small"
+                color="primary"
+              />
+            </Tooltip>
+          )}
           >
             {t_i18n('Hidden in interface')}
-          </Typography>
-          <Tooltip
-            title={
-              !entitySetting.availableSettings.includes('platform_hidden_type')
-                ? t_i18n('This configuration is not available for this entity type')
-                : t_i18n(
-                    'This configuration hides a specific entity type across the entire platform.',
-                  )
-            }
-          >
-            <InformationOutline
-              fontSize="small"
-              color="primary"
-              style={{ cursor: 'default', margin: '-2px 0 0 10px' }}
-            />
-          </Tooltip>
-          <div className="clearfix" />
+          </Label>
+
           <FormGroup>
             <FormControlLabel
               control={(
@@ -149,38 +143,30 @@ const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProp
         </div>
         <Security needs={[SETTINGS_SETACCESSES]}>
           <>
-            <GroupEntitySettingHiddenTypesList targetType={entitySetting.target_type}></GroupEntitySettingHiddenTypesList>
-            <SettingsOrganizationEntitySettingHiddenTypesList targetType={entitySetting.target_type}></SettingsOrganizationEntitySettingHiddenTypesList>
+            <GroupEntitySettingHiddenTypesList targetType={entitySetting.target_type} />
+            <SettingsOrganizationEntitySettingHiddenTypesList targetType={entitySetting.target_type} />
           </>
         </Security>
       </Grid>
       <Grid item xs={6}>
         <div>
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ float: 'left' }}
+          <Label action={(
+            <Tooltip
+              title={!entitySetting.availableSettings.includes('platform_entity_files_ref')
+                ? t_i18n('This configuration is not available for this entity type')
+                : t_i18n('This configuration enables an entity to automatically construct an external reference from the uploaded file.')
+              }
+            >
+              <InformationOutline
+                fontSize="small"
+                color="primary"
+              />
+            </Tooltip>
+          )}
           >
             {t_i18n('Automatic references at file upload')}
-          </Typography>
-          <Tooltip
-            title={
-              !entitySetting.availableSettings.includes(
-                'platform_entity_files_ref',
-              )
-                ? t_i18n('This configuration is not available for this entity type')
-                : t_i18n(
-                    'This configuration enables an entity to automatically construct an external reference from the uploaded file.',
-                  )
-            }
-          >
-            <InformationOutline
-              fontSize="small"
-              color="primary"
-              style={{ cursor: 'default', margin: '-2px 0 0 10px' }}
-            />
-          </Tooltip>
-          <div className="clearfix" />
+          </Label>
+
           <FormGroup>
             <FormControlLabel
               control={(
@@ -202,30 +188,23 @@ const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProp
             />
           </FormGroup>
         </div>
-        <div style={{ marginTop: 20 }}>
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ float: 'left' }}
+        <Box sx={{ marginTop: 2 }}>
+          <Label action={(
+            <Tooltip
+              title={!entitySetting.availableSettings.includes('enforce_reference')
+                ? t_i18n('This configuration is not available for this entity type')
+                : t_i18n('This configuration enables the requirement of a reference message on an entity creation or modification.')
+              }
+            >
+              <InformationOutline
+                fontSize="small"
+                color="primary"
+              />
+            </Tooltip>
+          )}
           >
             {t_i18n('Enforce references')}
-          </Typography>
-          <Tooltip
-            title={
-              !entitySetting.availableSettings.includes('enforce_reference')
-                ? t_i18n('This configuration is not available for this entity type')
-                : t_i18n(
-                    'This configuration enables the requirement of a reference message on an entity creation or modification.',
-                  )
-            }
-          >
-            <InformationOutline
-              fontSize="small"
-              color="primary"
-              style={{ cursor: 'default', margin: '-2px 0 0 10px' }}
-            />
-          </Tooltip>
-          <div className="clearfix" />
+          </Label>
           <FormGroup>
             <FormControlLabel
               control={(
@@ -246,7 +225,7 @@ const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProp
               label={t_i18n('Enforce references')}
             />
           </FormGroup>
-        </div>
+        </Box>
       </Grid>
     </Grid>
   );

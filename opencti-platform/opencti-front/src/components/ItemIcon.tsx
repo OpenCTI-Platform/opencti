@@ -1,4 +1,4 @@
-import React from 'react';
+import { CSSProperties } from 'react';
 import {
   AccountBalanceOutlined,
   AlternateEmailOutlined,
@@ -120,8 +120,9 @@ const iconSelector = (
   fontSize: 'inherit' | 'large' | 'medium' | 'small',
   color?: string | null,
   isReversed?: boolean,
+  overrideStyle: CSSProperties = {},
 ) => {
-  let style: React.CSSProperties;
+  let style: CSSProperties;
   switch (variant) {
     case 'inline':
       style = {
@@ -132,12 +133,14 @@ const iconSelector = (
         float: 'left',
         paddingTop: 2,
         transform: isReversed ? 'rotate(-90deg)' : 'none',
+        ...overrideStyle,
       };
       break;
     default:
       style = {
         color: color ?? itemColor(type),
         transform: isReversed ? 'rotate(-90deg)' : 'none',
+        ...overrideStyle,
       };
   }
 
@@ -608,10 +611,18 @@ interface ItemIconProps {
   variant?: string;
   color?: string | null;
   isReversed?: boolean;
+  style?: CSSProperties;
 }
 
-const ItemIcon = ({ type, size = 'medium', variant, color = null, isReversed = false }: ItemIconProps) => {
-  return iconSelector(type, variant, size, color, isReversed);
+const ItemIcon = ({
+  type,
+  size = 'medium',
+  variant,
+  color = null,
+  isReversed = false,
+  style,
+}: ItemIconProps) => {
+  return iconSelector(type, variant, size, color, isReversed, style);
 };
 
 export default ItemIcon;

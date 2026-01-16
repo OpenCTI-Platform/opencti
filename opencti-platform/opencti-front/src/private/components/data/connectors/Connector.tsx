@@ -4,7 +4,6 @@ import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Button from '@common/button/Button';
-import Chip from '@mui/material/Chip';
 import { interval } from 'rxjs';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
@@ -51,6 +50,8 @@ import { ConnectorUpdateStatusMutation } from './__generated__/ConnectorUpdateSt
 import { ConnectorWorksQuery$data, ConnectorWorksQuery$variables } from './__generated__/ConnectorWorksQuery.graphql';
 import Card from '../../../../components/common/card/Card';
 import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
+import Label from '../../../../components/common/label/Label';
+import Tag from '../../../../components/common/tag/Tag';
 
 // Type extension for organization node with authorized_authorities
 interface OrganizationNodeWithAuthorities {
@@ -271,77 +272,64 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
       <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
         <Grid item xs={6}>
           <Card title={t_i18n('Basic information')}>
-            <Grid container={true} spacing={3}>
+            <Grid container={true} spacing={2}>
               <Grid item xs={6}>
-                <Typography variant="h3" gutterBottom={true}>
+                <Label>
                   {t_i18n('Type')}
-                </Typography>
-                <Chip
+                </Label>
+                <Tag
                   key={connector.connector_type}
-                  style={{
-                    height: 30,
-                    float: 'left',
-                    margin: '0 10px 10px 0',
-                    borderRadius: 4,
-                    backgroundColor: theme.palette.background.accent,
-                  }}
-                  label={connector.connector_type}
+                  label={connector.connector_type ?? ''}
                 />
               </Grid>
               <Grid item xs={6}>
-                <Typography variant="h3" gutterBottom={true}>
+                <Label>
                   {t_i18n('Last update')}
-                </Typography>
+                </Label>
                 {nsdt(connector.updated_at)}
               </Grid>
               <Grid item xs={6}>
-                <Typography variant="h3" gutterBottom={true}>
+                <Label>
                   {t_i18n('Only contextual')}
-                </Typography>
+                </Label>
                 <ItemBoolean
                   status={connectorOnlyContextualStatus.status}
                   label={connectorOnlyContextualStatus.label}
                 />
               </Grid>
               <Grid item xs={6}>
-                <Typography variant="h3" gutterBottom={true}>
+                <Label>
                   {t_i18n('Automatic trigger')}
-                </Typography>
+                </Label>
                 <ItemBoolean
                   status={connectorTriggerStatus.status}
                   label={connectorTriggerStatus.label}
                 />
               </Grid>
               <Grid item xs={connectorFiltersEnabled ? 6 : 12}>
-                <Typography variant="h3" gutterBottom={true}>
+                <Label>
                   {t_i18n('Scope')}
-                </Typography>
+                </Label>
                 {connector.connector_scope?.map((scope) => (
-                  <Chip
+                  <Tag
                     key={scope}
-                    style={{
-                      height: 30,
-                      float: 'left',
-                      margin: '0 10px 10px 0',
-                      borderRadius: 4,
-                      backgroundColor: theme.palette.background.accent,
-                    }}
                     label={scope}
+                    sx={{ mr: 1 }}
                   />
                 ))}
               </Grid>
               {connectorFiltersEnabled && (
                 <Grid item xs={6}>
-                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                    <Typography variant="h3" gutterBottom={true}>
-                      {t_i18n('Trigger filters')}
-                    </Typography>
-                    <Tooltip title={t_i18n('Trigger filters can be used to trigger automatically this connector on entities matching the filters and scope.')}>
-                      <span>
-                        <InformationOutline fontSize="small" color="primary" />
-                      </span>
+                  <Label action={(
+                    <Tooltip
+                      title={t_i18n('Trigger filters can be used to trigger automatically this connector on entities matching the filters and scope.')}
+                    >
+                      <InformationOutline fontSize="small" color="primary" />
                     </Tooltip>
-                  </Box>
+                  )}
+                  >
+                    {t_i18n('Trigger filters')}
+                  </Label>
                   <Box sx={{ display: 'flex', gap: 1, paddingTop: '4px' }}>
                     <Filters
                       availableFilterKeys={connectorAvailableFilterKeys}
@@ -365,9 +353,9 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
               <Security needs={[SETTINGS_SETACCESSES]}>
                 <>
                   <Grid item xs={6}>
-                    <Typography variant="h3" gutterBottom={true}>
+                    <Label>
                       {t_i18n('Associated user')}
-                    </Typography>
+                    </Label>
                     {connector.connector_user ? (
                       <ListItemButton
                         key={connector.connector_user.id}
@@ -386,9 +374,9 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                     )}
                   </Grid>
                   <Grid item xs={6}>
-                    <Typography variant="h3" gutterBottom={true}>
+                    <Label>
                       {t_i18n('Max confidence level')}
-                    </Typography>
+                    </Label>
                     {connector.connector_user ? (
                       <FieldOrEmpty source={connector.connector_user?.effective_confidence_level?.max_confidence}>
                         {connector.connector_user.effective_confidence_level?.max_confidence}
@@ -398,12 +386,12 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                     )}
                   </Grid>
                   <Grid item xs={6}>
-                    <Typography variant="h3" gutterBottom={true}>
+                    <Label>
                       {t_i18n("User's roles")}
-                    </Typography>
+                    </Label>
                     {connector.connector_user ? (
                       <FieldOrEmpty source={connector.connector_user.roles ?? []}>
-                        <List>
+                        <List sx={{ py: 0 }}>
                           {(connector.connector_user.roles ?? []).map((role) => (userHasSettingsCapability ? (
                             <ListItemButton
                               key={role?.id}
@@ -432,12 +420,12 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                     )}
                   </Grid>
                   <Grid item xs={6}>
-                    <Typography variant="h3" gutterBottom={true}>
+                    <Label>
                       {t_i18n("User's groups")}
-                    </Typography>
+                    </Label>
                     {connector.connector_user ? (
                       <FieldOrEmpty source={connector.connector_user.groups?.edges}>
-                        <List>
+                        <List sx={{ py: 0 }}>
                           {(connector.connector_user.groups?.edges ?? []).map((groupEdge) => (userHasSettingsCapability ? (
                             <ListItemButton
                               key={groupEdge?.node.id}
@@ -471,12 +459,12 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                   </Grid>
 
                   <Grid item xs={6}>
-                    <Typography variant="h3" gutterBottom={true}>
+                    <Label>
                       {t_i18n("User's organizations")}
-                    </Typography>
+                    </Label>
                     {connector.connector_user ? (
                       <FieldOrEmpty source={connector.connector_user.objectOrganization?.edges}>
-                        <List>
+                        <List sx={{ py: 0 }}>
                           {connector.connector_user.objectOrganization?.edges.map((organizationEdge) => (
                             <ListItemButton
                               key={organizationEdge.node.id}
@@ -511,7 +499,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
         </Grid>
         <Grid item xs={6}>
           <Card title={t_i18n('Details')}>
-            <Grid container={true} spacing={3}>
+            <Grid container={true} spacing={2}>
               {connector.connector_info?.buffering && (
                 <Grid item xs={12}>
                   <Alert severity="warning" icon={<UpdateIcon color="warning" />} style={{ alignItems: 'center' }}>
@@ -524,9 +512,9 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
               )}
 
               <Grid item={true} xs={12}>
-                <Typography variant="h3" gutterBottom={true}>
+                <Label>
                   {t_i18n('State')}
-                </Typography>
+                </Label>
                 <FieldOrEmpty source={connector.connector_state}>
                   <pre>
                     <ItemCopy
@@ -543,18 +531,18 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                   && connectorStateConverted !== null
                   && checkLastRunExistingInState && checkLastRunIsNumber ? (
                         <>
-                          <Typography variant="h3" gutterBottom={true}>
+                          <Label>
                             {t_i18n('Last run (from State)')}
-                          </Typography>
+                          </Label>
                           <Typography variant="body1" gutterBottom={true}>
                             {nsdt(lastRunConverted)}
                           </Typography>
                         </>
                       ) : (
                         <>
-                          <Typography variant="h3" gutterBottom={true}>
+                          <Label>
                             {t_i18n('Last run')}
-                          </Typography>
+                          </Label>
                           <Typography variant="body1" gutterBottom={true}>
                             {t_i18n('Not provided')}
                           </Typography>
@@ -562,12 +550,11 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                       )
                 )}
                 {connector.connector_info && (
-
                   connector.connector_info.last_run_datetime ? (
                     <>
-                      <Typography variant="h3" gutterBottom={true}>
+                      <Label>
                         {t_i18n('Last run')}
-                      </Typography>
+                      </Label>
                       <Typography variant="body1" gutterBottom={true}>
                         {nsdt(connector.connector_info?.last_run_datetime)}
                       </Typography>
@@ -576,9 +563,9 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                     && connectorStateConverted !== null
                     && checkLastRunExistingInState && checkLastRunIsNumber ? (
                         <>
-                          <Typography variant="h3" gutterBottom={true}>
+                          <Label>
                             {t_i18n('Last run (from State)')}
-                          </Typography>
+                          </Label>
                           <Typography variant="body1" gutterBottom={true}>
                             {nsdt(lastRunConverted)}
                           </Typography>
@@ -586,9 +573,9 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                       )
                     : (
                         <>
-                          <Typography variant="h3" gutterBottom={true}>
+                          <Label>
                             {t_i18n('Last run')}
-                          </Typography>
+                          </Label>
                           <Typography variant="body1" gutterBottom={true}>
                             {t_i18n('Not provided')}
                           </Typography>
@@ -598,11 +585,10 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                 )}
               </Grid>
               <Grid item xs={6}>
-                <Typography variant="h3" gutterBottom={true}>
+                <Label>
                   {t_i18n('Next run')}
-                </Typography>
+                </Label>
                 {connector.connector_info && (
-
                   connector.connector_info.run_and_terminate ? (
                     <Typography variant="body1" gutterBottom={true}>
                       {t_i18n('External schedule')}
@@ -626,19 +612,17 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                 )}
               </Grid>
 
-              {
-                connector.is_managed && (
-                  <Grid item xs={6}>
-                    <Typography variant="h3">{t_i18n('Instance name')}</Typography>
-                    <Typography component="div" variant="body1">{connector.name}</Typography>
-                  </Grid>
-                )
-              }
+              {connector.is_managed && (
+                <Grid item xs={6}>
+                  <Label>{t_i18n('Instance name')}</Label>
+                  <Typography component="div" variant="body1">{connector.name}</Typography>
+                </Grid>
+              )}
 
               <Grid item xs={6}>
-                <Typography variant="h3" gutterBottom={true}>
+                <Label>
                   {t_i18n('Server capacity')}
-                </Typography>
+                </Label>
                 {connector.connector_info && (connector.connector_info.queue_messages_size !== 0
                   || connector.connector_info.last_run_datetime) ? (
                       <FieldOrEmpty source={connector.connector_info?.queue_messages_size}>
@@ -654,9 +638,9 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
               </Grid>
               {connector.is_managed && connector.manager_current_status === 'started' && connector.manager_connector_uptime != null && (
                 <Grid item xs={6}>
-                  <Typography variant="h3" gutterBottom={true}>
+                  <Label>
                     {t_i18n('Uptime')}
-                  </Typography>
+                  </Label>
                   <Typography variant="body1" gutterBottom={true}>
                     {formatUptime(connector.manager_connector_uptime, t_i18n)}
                   </Typography>

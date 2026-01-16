@@ -1,5 +1,4 @@
 import React, { FunctionComponent, useState } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
 import IconButton from '@common/button/IconButton';
 import { Add } from '@mui/icons-material';
 import Drawer from '@components/common/drawer/Drawer';
@@ -13,20 +12,10 @@ import { DataSourceDataComponents_dataSource$data } from './__generated__/DataSo
 import { AddDataComponentsLinesToDataSourceQuery } from './__generated__/AddDataComponentsLinesToDataSourceQuery.graphql';
 import DataComponentCreation from '../data_components/DataComponentCreation';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  createButton: {
-    float: 'left',
-    marginTop: -15,
-  },
-}));
-
 const AddDataComponents: FunctionComponent<{
   dataSource: DataSourceDataComponents_dataSource$data;
 }> = ({ dataSource }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
 
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -53,7 +42,6 @@ const AddDataComponents: FunctionComponent<{
         color="primary"
         aria-label="Add"
         onClick={handleOpen}
-        classes={{ root: classes.createButton }}
       >
         <Add fontSize="small" />
       </IconButton>

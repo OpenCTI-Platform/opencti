@@ -1,5 +1,6 @@
 import { CSSProperties, FunctionComponent, ReactNode } from 'react';
 import Card, { CardProps } from '../common/card/Card';
+import Label from '../common/label/Label';
 
 interface WidgetContainerProps {
   children: ReactNode;
@@ -20,7 +21,12 @@ const WidgetContainer: FunctionComponent<WidgetContainerProps> = ({
     <div style={{ height: height || '100%' }}>
       {variant !== 'inLine' && variant !== 'inEntity'
         ? <Card title={title} padding={padding}>{children}</Card>
-        : children
+        : (
+            <>
+              {title && <Label>{title}</Label>}
+              {children}
+            </>
+          )
       }
     </div>
   );

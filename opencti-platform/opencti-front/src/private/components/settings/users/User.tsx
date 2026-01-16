@@ -1,7 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
 import { DeleteForeverOutlined, DeleteOutlined, RefreshOutlined, Visibility, VisibilityOff } from '@mui/icons-material';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -23,7 +22,6 @@ import { UserUserRenewTokenMutation } from '@components/settings/users/__generat
 import Tooltip from '@mui/material/Tooltip';
 import DialogTitle from '@mui/material/DialogTitle';
 import { ListItemButton } from '@mui/material';
-import Chip from '@mui/material/Chip';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import { handleError, QueryRenderer } from '../../../../relay/environment';
@@ -52,6 +50,8 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import ItemCopy from '../../../../components/ItemCopy';
 import { maskString } from '../../../../utils/String';
 import Card from '../../../../components/common/card/Card';
+import Label from '../../../../components/common/label/Label';
+import Tag from '../../../../components/common/tag/Tag';
 
 const startDate = yearsAgo(1);
 const endDate = now();
@@ -59,10 +59,6 @@ const endDate = now();
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>(() => ({
-  floatingButton: {
-    float: 'left',
-    margin: '-8px 0 0 5px',
-  },
   gridContainer: {
     marginBottom: 50,
   },
@@ -371,30 +367,18 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
       >
         <Grid item xs={6}>
           <Card title={t_i18n('Basic information')}>
-            <Grid container={true} spacing={3}>
+            <Grid container={true} spacing={2}>
               {!isServiceAccount && (
                 <>
                   <Grid item xs={8}>
-                    <Typography
-                      variant="h3"
-                      gutterBottom={true}
-                      style={{ marginBottom: user.otp_activated ? 7 : 5 }}
-                    >
+                    <Label>
                       {t_i18n('Email address')}
-                    </Typography>
+                    </Label>
                     <pre style={{ margin: 0 }}>{user.user_email}</pre>
                   </Grid>
                   <Grid item xs={4}>
-                    <Typography
-                      variant="h3"
-                      gutterBottom={true}
-                      style={{ float: 'left' }}
-                    >
-                      {t_i18n('2FA state')}
-                    </Typography>
-                    {user.otp_activated && (
+                    <Label action={!user.otp_activated && (
                       <IconButton
-                        classes={{ root: classes.floatingButton }}
                         color="primary"
                         onClick={otpUserDeactivation}
                         aria-label="Delete all"
@@ -403,7 +387,9 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                         <DeleteForeverOutlined fontSize="small" />
                       </IconButton>
                     )}
-                    <div className="clearfix" />
+                    >
+                      {t_i18n('2FA state')}
+                    </Label>
                     <pre style={{ margin: 0 }}>
                       {user.otp_activated ? t_i18n('Enabled') : t_i18n('Disabled')}
                     </pre>
@@ -413,25 +399,18 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
               {isServiceAccount && (
                 <>
                   <Grid item xs={4}>
-                    <Typography variant="h3" gutterBottom={true} style={{ marginBottom: 5 }}>
+                    <Label>
                       {t_i18n('Account type')}
-                    </Typography>
-                    {user.user_service_account
-                      ? (
-                          <Chip
-                            variant="outlined"
-                            label={t_i18n('Service account')}
-                            style={{
-                              borderRadius: 4,
-                              width: 150 }}
-                          />
-                        )
-                      : '-'}
+                    </Label>
+                    {!user.user_service_account
+                      ? <Tag label={t_i18n('Service account')} />
+                      : '-'
+                    }
                   </Grid>
                   <Grid item xs={4}>
-                    <Typography variant="h3" gutterBottom={true}>
+                    <Label>
                       {t_i18n('Account status')}
-                    </Typography>
+                    </Label>
                     <ItemAccountStatus
                       account_status={user.account_status}
                       label={t_i18n(user.account_status || 'Unknown')}
@@ -439,31 +418,31 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                     />
                   </Grid>
                   <Grid item xs={4}>
-                    <Typography variant="h3" gutterBottom={true}>
+                    <Label>
                       {t_i18n('Account expiration date')}
-                    </Typography>
+                    </Label>
                     {accountExpireDate || '-'}
                   </Grid>
                 </>
               )}
               <Grid item xs={12}>
-                <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
+                <Label action={(
+                  <Security needs={[SETTINGS_SETACCESSES]}>
+                    <Tooltip title={t_i18n('Revoke token')}>
+                      <IconButton
+                        color="primary"
+                        aria-label={t_i18n('Revoke token')}
+                        onClick={handleOpenRenewToken}
+                        size="small"
+                      >
+                        <RefreshOutlined fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </Security>
+                )}
+                >
                   {t_i18n('Token')}
-                </Typography>
-                <Security needs={[SETTINGS_SETACCESSES]}>
-                  <Tooltip title={t_i18n('Revoke token')}>
-                    <IconButton
-                      color="primary"
-                      aria-label={t_i18n('Revoke token')}
-                      onClick={handleOpenRenewToken}
-                      classes={{ root: classes.floatingButton }}
-                      size="small"
-                    >
-                      <RefreshOutlined fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </Security>
-                <div className="clearfix" />
+                </Label>
                 <pre
                   style={{
                     margin: 0,
@@ -472,6 +451,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                     alignItems: 'center',
                     width: '100%',
                     padding: `${theme.spacing(1)}`,
+                    gap: 4,
                   }}
                 >
                   <span style={{ flexGrow: 1 }}>
@@ -490,28 +470,31 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                     onClick={() => setShowToken((value) => !value)}
                     aria-label={showToken ? t_i18n('Hide') : t_i18n('Show')}
                   >
-                    {showToken ? <VisibilityOff /> : <Visibility />}
+                    {showToken
+                      ? <VisibilityOff fontSize="small" />
+                      : <Visibility fontSize="small" />
+                    }
                   </IconButton>
                 </pre>
               </Grid>
               {!isServiceAccount && (
                 <>
                   <Grid item xs={6}>
-                    <Typography variant="h3" gutterBottom={true}>
+                    <Label>
                       {t_i18n('Firstname')}
-                    </Typography>
+                    </Label>
                     {user.firstname || '-'}
                   </Grid>
                   <Grid item xs={6}>
-                    <Typography variant="h3" gutterBottom={true}>
+                    <Label>
                       {t_i18n('Lastname')}
-                    </Typography>
+                    </Label>
                     {user.lastname || '-'}
                   </Grid>
                   <Grid item xs={6}>
-                    <Typography variant="h3" gutterBottom={true}>
+                    <Label>
                       {t_i18n('Account status')}
-                    </Typography>
+                    </Label>
                     <ItemAccountStatus
                       account_status={user.account_status}
                       label={t_i18n(user.account_status || 'Unknown')}
@@ -519,9 +502,9 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                     />
                   </Grid>
                   <Grid item xs={6}>
-                    <Typography variant="h3" gutterBottom={true}>
+                    <Label>
                       {t_i18n('Account expiration date')}
-                    </Typography>
+                    </Label>
                     {accountExpireDate || '-'}
                   </Grid>
                 </>
@@ -529,15 +512,15 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
               {isServiceAccount && (
                 <>
                   <Grid item xs={6}>
-                    <Typography variant="h3" gutterBottom={true}>
+                    <Label>
                       {t_i18n('Created by')}
-                    </Typography>
+                    </Label>
                     { creatorName }
                   </Grid>
                   <Grid item xs={6}>
-                    <Typography variant="h3" gutterBottom={true}>
+                    <Label>
                       {t_i18n('Creation date')}
-                    </Typography>
+                    </Label>
                     {creationDate || '-'}
                   </Grid>
                 </>
@@ -547,13 +530,13 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
         </Grid>
         <Grid item xs={6}>
           <Card title={t_i18n('Permissions')}>
-            <Grid container={true} spacing={3}>
+            <Grid container={true} spacing={2}>
               <Grid item xs={6}>
-                <Typography variant="h3" gutterBottom={true}>
+                <Label>
                   {t_i18n('Roles')}
-                </Typography>
+                </Label>
                 <FieldOrEmpty source={user.roles ?? []}>
-                  <List>
+                  <List sx={{ py: 0 }}>
                     {(user.roles ?? []).map((role) => (userHasSettingsCapability ? (
                       <ListItemButton
                         key={role?.id}
@@ -579,11 +562,11 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                 </FieldOrEmpty>
               </Grid>
               <Grid item xs={6}>
-                <Typography variant="h3" gutterBottom={true}>
+                <Label>
                   {t_i18n('Groups')}
-                </Typography>
+                </Label>
                 <FieldOrEmpty source={user.groups?.edges}>
-                  <List>
+                  <List sx={{ py: 0 }}>
                     {(user.groups?.edges ?? []).map((groupEdge) => (userHasSettingsCapability ? (
                       <ListItemButton
                         key={groupEdge?.node.id}
@@ -613,9 +596,9 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                 </FieldOrEmpty>
               </Grid>
               <Grid item xs={6}>
-                <Typography variant="h3" gutterBottom={true}>
+                <Label>
                   {t_i18n('Organizations')}
-                </Typography>
+                </Label>
                 <FieldOrEmpty source={user.objectOrganization?.edges}>
                   <List>
                     {user.objectOrganization?.edges.map((organizationEdge) => (
@@ -649,29 +632,25 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                 </FieldOrEmpty>
               </Grid>
               <Grid item xs={6}>
-                <Typography
-                  variant="h3"
-                  gutterBottom={true}
-                  style={{ float: 'left' }}
+                <Label action={(
+                  <Security needs={[SETTINGS_SETACCESSES]}>
+                    <Tooltip title={t_i18n('Kill all sessions')}>
+                      <IconButton
+                        color="primary"
+                        aria-label={t_i18n('Delete all')}
+                        onClick={handleOpenKillSessions}
+                        size="small"
+                      >
+                        <DeleteForeverOutlined fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </Security>
+                )}
                 >
                   {t_i18n('Sessions')}
-                </Typography>
-                <Security needs={[SETTINGS_SETACCESSES]}>
-                  <Tooltip title={t_i18n('Kill all sessions')}>
-                    <IconButton
-                      color="primary"
-                      aria-label={t_i18n('Delete all')}
-                      onClick={handleOpenKillSessions}
-                      classes={{ root: classes.floatingButton }}
-                      size="small"
-                    >
-                      <DeleteForeverOutlined fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </Security>
-                <div className="clearfix" />
+                </Label>
                 <FieldOrEmpty source={orderedSessions}>
-                  <List style={{ marginTop: -2, width: '100%', maxHeight: 400, overflowY: 'auto' }}>
+                  <List sx={{ py: 0, width: '100%', maxHeight: 400, overflowY: 'auto' }}>
                     {orderedSessions
                       && orderedSessions.map((session: Session) => (
                         <ListItem
@@ -719,14 +698,9 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                 </Grid>
               )}
               <Grid item xs={6}>
-                <Typography
-                  variant="h3"
-                  gutterBottom={true}
-                  style={{ float: 'left' }}
-                >
+                <Label>
                   {t_i18n('Max Confidence Level')}
-                </Typography>
-                <div className="clearfix" />
+                </Label>
                 <UserConfidenceLevel user={user} />
               </Grid>
             </Grid>

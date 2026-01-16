@@ -5,7 +5,6 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router-dom';
@@ -30,6 +29,7 @@ import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import type { Theme } from '../../../../components/Theme';
 import Card from '../../../../components/common/card/Card';
 import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
+import Label from '../../../../components/common/label/Label';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -166,18 +166,18 @@ const SettingsOrganization = ({
         </Grid>
         <Grid item xs={6}>
           <Card title={t_i18n('More information')}>
-            <Grid container={true} spacing={3}>
+            <Grid container={true} spacing={2}>
               <Grid item xs={12}>
                 <SettingsOrganizationHiddenTypesChipList
                   organizationData={organization}
                 />
               </Grid>
               <Grid item xs={6}>
-                <Typography variant="h3" gutterBottom={true}>
+                <Label>
                   {t_i18n('Parent organizations')}
-                </Typography>
+                </Label>
                 <FieldOrEmpty source={parentOrganizations}>
-                  <List>
+                  <List sx={{ py: 0 }}>
                     {parentOrganizations.map((parentOrganization) => (
                       <ListItemButton
                         key={parentOrganization.node.id}
@@ -198,11 +198,11 @@ const SettingsOrganization = ({
                 </FieldOrEmpty>
               </Grid>
               <Grid item xs={6}>
-                <Typography variant="h3" gutterBottom={true}>
+                <Label>
                   {t_i18n('Child organizations')}
-                </Typography>
+                </Label>
                 <FieldOrEmpty source={subOrganizations}>
-                  <List>
+                  <List sx={{ py: 0 }}>
                     {subOrganizations.map((subOrganization) => (
                       <ListItemButton
                         key={subOrganization.node.id}
@@ -221,11 +221,11 @@ const SettingsOrganization = ({
                 </FieldOrEmpty>
               </Grid>
               <Grid item xs={6}>
-                <Typography variant="h3" gutterBottom={true}>
+                <Label>
                   {t_i18n('Default dashboard')}
-                </Typography>
+                </Label>
                 <FieldOrEmpty source={organization.default_dashboard}>
-                  <List>
+                  <List sx={{ py: 0 }}>
                     <ListItem
                       dense={true}
                       divider={true}
@@ -258,11 +258,11 @@ const SettingsOrganization = ({
                 </FieldOrEmpty>
               </Grid>
               <Grid item xs={6}>
-                <Typography variant="h3" gutterBottom={true}>
+                <Label>
                   {t_i18n('Grantable groups by organization administrators')}
-                </Typography>
+                </Label>
                 <FieldOrEmpty source={organization.grantable_groups}>
-                  <List>
+                  <List sx={{ py: 0 }}>
                     {(organization.grantable_groups ?? []).map((group) => (!isOrganizationAdmin ? (
                       <ListItemButton
                         key={group.id}

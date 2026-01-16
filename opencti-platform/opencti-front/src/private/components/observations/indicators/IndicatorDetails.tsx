@@ -1,6 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -29,6 +28,8 @@ import type { Theme } from '../../../../components/Theme';
 import Transition from '../../../../components/Transition';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import Card from '../../../../components/common/card/Card';
+import Label from '../../../../components/common/label/Label';
+import { Stack } from '@mui/material';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -65,47 +66,44 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
   return (
     <Box sx={{ height: '100%' }} className="break">
       <Card title={t_i18n('Details')}>
-        <Typography variant="h3" gutterBottom={true}>
+        <Label>
           {t_i18n('Indicator pattern')}
-        </Typography>
+        </Label>
         <ExpandablePre source={indicator.pattern ?? ''} limit={300} />
-        <Grid container={true} spacing={3} sx={{ marginTop: '10px' }}>
+        <Grid container={true} spacing={2} sx={{ mt: 0 }}>
           <Grid item xs={6}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('Valid from')}
-            </Typography>
+            </Label>
             <Chip
               classes={{ root: classes.chip }}
               label={fldt(indicator.valid_from)}
             />
-            <Grid container columnSpacing={1} sx={{ marginTop: '20px' }}>
-              <Grid item xs={4}>
-                <Typography variant="h3" gutterBottom={true}>
-                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                    <span>{t_i18n('Score')}</span>
-                    {indicator.decay_applied_rule && (
-                      <Tooltip
-                        title={t_i18n(
-                          'This score is updated with the decay rule applied to this indicator.',
-                        )}
-                      >
-                        <InformationOutline fontSize="small" color="primary" />
-                      </Tooltip>
-                    )}
-                  </Box>
-                </Typography>
-                <ItemScore score={indicator.x_opencti_score} />
-              </Grid>
+            <Label
+              sx={{ mt: 2 }}
+              action={indicator.decay_applied_rule && (
+                <Tooltip
+                  title={t_i18n(
+                    'This score is updated with the decay rule applied to this indicator.',
+                  )}
+                >
+                  <InformationOutline fontSize="small" color="primary" />
+                </Tooltip>
+              )}
+            >
+              {t_i18n('Score')}
+            </Label>
+            <Stack direction="row">
+              <ItemScore score={indicator.x_opencti_score} />
               {(indicator.decay_applied_rule
                 || !!indicator.decay_exclusion_applied_rule) && (
-                <Grid item xs={8}>
+                <>
                   <Button
                     size="small"
                     variant="secondary"
                     onClick={openLifecycleDialog}
                     startIcon={<TroubleshootOutlined />}
-                    sx={{ marginTop: '22px' }}
-                    color={indicator.decay_exclusion_applied_rule ? 'warning' : 'primary'}
+                    color={indicator.decay_exclusion_applied_rule ? 'warning' : undefined}
                   >
                     {t_i18n('Lifecycle')}
                   </Button>
@@ -130,16 +128,14 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
                       />
                     )}
                   </Dialog>
-                </Grid>
+                </>
               )}
-            </Grid>
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              sx={{ marginTop: '20px' }}
+            </Stack>
+            <Label
+              sx={{ marginTop: 2 }}
             >
               {t_i18n('Description')}
-            </Typography>
+            </Label>
             <ExpandableMarkdown
               source={indicator.description}
               limit={400}
@@ -147,20 +143,18 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
             />
           </Grid>
           <Grid item xs={6}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label>
               {t_i18n('Valid until')}
-            </Typography>
+            </Label>
             <Chip
               classes={{ root: classes.chip }}
               label={fldt(indicator.valid_until)}
             />
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              sx={{ marginTop: '20px' }}
+            <Label
+              sx={{ marginTop: 2 }}
             >
               {t_i18n('Detection')}
-            </Typography>
+            </Label>
             <ItemBoolean
               label={
                 indicator.x_opencti_detection ? t_i18n('Yes') : t_i18n('No')
@@ -174,13 +168,11 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
         </Grid>
         <Grid container={true} spacing={3} sx={{ marginBottom: '10px' }}>
           <Grid item xs={4}>
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              sx={{ marginTop: '20px' }}
+            <Label
+              sx={{ marginTop: 2 }}
             >
               {t_i18n('Indicator types')}
-            </Typography>
+            </Label>
             <FieldOrEmpty source={indicator.indicator_types}>
               {indicator.indicator_types?.map((indicatorType) => (
                 <Chip
@@ -192,13 +184,11 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={4}>
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              sx={{ marginTop: '20px' }}
+            <Label
+              sx={{ marginTop: 2 }}
             >
               {t_i18n('Main observable type')}
-            </Typography>
+            </Label>
             <FieldOrEmpty source={indicator.x_opencti_main_observable_type}>
               <Chip
                 classes={{ root: classes.chip }}
@@ -207,13 +197,11 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={4}>
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              sx={{ marginTop: '20px' }}
+            <Label
+              sx={{ marginTop: 2 }}
             >
               {t_i18n('Platforms')}
-            </Typography>
+            </Label>
             <FieldOrEmpty source={indicator.x_mitre_platforms}>
               <List>
                 {indicator.x_mitre_platforms?.map(

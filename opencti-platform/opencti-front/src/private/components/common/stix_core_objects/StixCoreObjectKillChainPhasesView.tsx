@@ -1,14 +1,13 @@
-import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import React, { FunctionComponent } from 'react';
 import { makeStyles, useTheme } from '@mui/styles';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import type { Theme } from '../../../../components/Theme';
+import Label from '../../../../components/common/label/Label';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -33,17 +32,20 @@ interface StixCoreObjectKillChainPhasesViewProps {
   firstLine?: boolean;
 }
 
-const StixCoreObjectKillChainPhasesView: FunctionComponent<StixCoreObjectKillChainPhasesViewProps> = ({ killChainPhases, firstLine }) => {
+const StixCoreObjectKillChainPhasesView = ({
+  killChainPhases,
+  firstLine,
+}: StixCoreObjectKillChainPhasesViewProps) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
   const theme = useTheme<Theme>();
   return (
     <div>
-      <Typography variant="h3" gutterBottom={true} style={firstLine ? undefined : { marginTop: 20 }}>
+      <Label sx={firstLine ? undefined : { marginTop: 2 }}>
         {t_i18n('Kill chain phases')}
-      </Typography>
+      </Label>
       <FieldOrEmpty source={killChainPhases}>
-        <List>
+        <List sx={{ py: 0 }}>
           {killChainPhases.map((killChainPhase) => {
             return (
               <ListItem
@@ -55,7 +57,10 @@ const StixCoreObjectKillChainPhasesView: FunctionComponent<StixCoreObjectKillCha
                 <ListItemIcon>
                   <ItemIcon type={killChainPhase.entity_type} />
                 </ListItemIcon>
-                <ListItemText primary={killChainPhase.phase_name} secondary={<span style={{ color: theme.palette.text?.secondary }}>{killChainPhase.kill_chain_name}</span>} />
+                <ListItemText
+                  primary={killChainPhase.phase_name}
+                  secondary={<span style={{ color: theme.palette.text?.secondary }}>{killChainPhase.kill_chain_name}</span>}
+                />
               </ListItem>
             );
           })}

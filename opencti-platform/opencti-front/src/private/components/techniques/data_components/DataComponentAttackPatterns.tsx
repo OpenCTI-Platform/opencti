@@ -1,6 +1,5 @@
 import React, { FunctionComponent } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -17,6 +16,7 @@ import AddAttackPatterns from './AddAttackPatterns';
 import { addAttackPatternsMutationRelationDelete } from './AddAttackPatternsLines';
 import { DataComponentAttackPatterns_dataComponent$data } from './__generated__/DataComponentAttackPatterns_dataComponent.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import Label from '../../../../components/common/label/Label';
 
 const DataComponentAttackPatternsComponent: FunctionComponent<{
   dataComponent: DataComponentAttackPatterns_dataComponent$data;
@@ -47,13 +47,14 @@ const DataComponentAttackPatternsComponent: FunctionComponent<{
         marginTop: 20,
       }}
     >
-      <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
+      <Label action={(
+        <AddAttackPatterns dataComponent={dataComponent} />
+      )}
+      >
         {t_i18n('Attack patterns')}
-      </Typography>
-      <AddAttackPatterns dataComponent={dataComponent} />
-      <div className="clearfix" />
+      </Label>
       {dataComponent.attackPatterns && (
-        <List style={{ marginTop: -10 }}>
+        <List sx={{ py: 0 }}>
           {dataComponent.attackPatterns.edges
             ?.map((attackPatternEdge) => attackPatternEdge?.node)
             .map((attackPattern, idx) => {

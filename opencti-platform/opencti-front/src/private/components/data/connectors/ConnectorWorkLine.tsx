@@ -26,6 +26,7 @@ import TaskStatus from '../../../../components/TaskStatus';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { MESSAGING$ } from '../../../../relay/environment';
+import Label from '../../../../components/common/label/Label';
 
 type WorkMessages = NonNullable<NonNullable<NonNullable<ConnectorWorks_data$data['works']>['edges']>[0]>['node']['errors'];
 interface ConnectorWorkLineProps {
@@ -79,13 +80,13 @@ const ConnectorWorkLine: FunctionComponent<
 
   return (
     <>
-      <Grid container={true} spacing={3}>
+      <Grid container={true} spacing={2}>
         <Grid item xs={7}>
           <Grid container={true} spacing={1}>
             <Grid item xs={8}>
-              <Typography variant="h3" gutterBottom={true}>
+              <Label>
                 {t_i18n('Name')}
-              </Typography>
+              </Label>
               <Tooltip title={workName}>
                 <Typography sx={{ overflowX: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'noWrap' }}>
                   {workName}
@@ -93,39 +94,31 @@ const ConnectorWorkLine: FunctionComponent<
               </Tooltip>
             </Grid>
             <Grid item xs={4}>
-              <Typography variant="h3" gutterBottom={true}>
+              <Label>
                 {t_i18n('Status')}
-              </Typography>
+              </Label>
               <TaskStatus status={workStatus} label={t_i18n(workStatus)} />
             </Grid>
             <Grid item xs={8}>
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
+              <Label>
                 {t_i18n('Work start time')}
-              </Typography>
+              </Label>
               {nsdt(workReceivedTime)}
             </Grid>
             <Grid item xs={4}>
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
+              <Label>
                 {t_i18n('Work end time')}
-              </Typography>
+              </Label>
               {workEndTime ? nsdt(workEndTime) : '-'}
             </Grid>
           </Grid>
         </Grid>
         <Grid item xs={4}>
-          <Grid container={true} spacing={3}>
+          <Grid container={true} spacing={2}>
             <Grid item xs={6}>
-              <Typography variant="h3" gutterBottom={true}>
+              <Label>
                 {t_i18n('Operations completed')}
-              </Typography>
+              </Label>
               <span style={{ fontWeight: 600, fontSize: 18 }}>
                 {workStatus === 'wait'
                   ? '-'
@@ -133,17 +126,17 @@ const ConnectorWorkLine: FunctionComponent<
               </span>
             </Grid>
             <Grid item xs={6}>
-              <Typography variant="h3" gutterBottom={true}>
+              <Label>
                 {t_i18n('Total number of operations')}
-              </Typography>
+              </Label>
               <span style={{ fontWeight: 600, fontSize: 18 }}>
                 {workExpectedNumber ?? '-'}
               </span>
             </Grid>
             <Grid item xs={11}>
-              <Typography variant="h3" gutterBottom={true}>
+              <Label>
                 {t_i18n('Progress')}
-              </Typography>
+              </Label>
               <LinearProgress
                 style={{ borderRadius: 4, height: 10 }}
                 variant="determinate"
@@ -157,7 +150,7 @@ const ConnectorWorkLine: FunctionComponent<
           </Grid>
         </Grid>
         <Button
-          style={{ position: 'absolute', right: 10, top: 10 }}
+          sx={{ position: 'absolute', right: 16, top: 16 }}
           variant="secondary"
           color={(workErrors ?? []).length === 0 ? 'success' : 'warning'}
           onClick={() => handleOpenDrawerErrors(workErrors ?? [])}

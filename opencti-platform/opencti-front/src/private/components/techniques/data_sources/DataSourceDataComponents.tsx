@@ -1,6 +1,5 @@
 import React, { FunctionComponent } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -15,6 +14,7 @@ import AddDataComponents from './AddDataComponents';
 import { addDataComponentsMutationRelationDelete } from './AddDataComponentsLines';
 import { DataSourceDataComponents_dataSource$data } from './__generated__/DataSourceDataComponents_dataSource.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import Label from '../../../../components/common/label/Label';
 
 const DataSourceDataComponentsComponent: FunctionComponent<{
   dataSource: DataSourceDataComponents_dataSource$data;
@@ -32,13 +32,14 @@ const DataSourceDataComponentsComponent: FunctionComponent<{
 
   return (
     <div>
-      <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
+      <Label action={(
+        <AddDataComponents dataSource={dataSource} />
+      )}
+      >
         {t_i18n('Data components')}
-      </Typography>
-      <AddDataComponents dataSource={dataSource} />
-      <div className="clearfix" />
+      </Label>
       {dataSource.dataComponents && (
-        <List style={{ marginTop: -10 }}>
+        <List sx={{ py: 0 }}>
           {dataSource.dataComponents.edges
             ?.map((node) => node?.node)
             .map((dataComponent, idx) => {

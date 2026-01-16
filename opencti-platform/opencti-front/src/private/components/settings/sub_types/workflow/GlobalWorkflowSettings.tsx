@@ -1,11 +1,10 @@
-import Typography from '@mui/material/Typography';
-import React from 'react';
 import SubTypeStatusPopover from '@components/settings/sub_types/SubTypeWorkflowPopover';
 import { graphql, useFragment } from 'react-relay';
 import { useFormatter } from '../../../../../components/i18n';
 import { StatusScopeEnum } from '../../../../../utils/statusConstants';
 import ItemStatusTemplate from '../../../../../components/ItemStatusTemplate';
 import { GlobalWorkflowSettings_global$key } from './__generated__/GlobalWorkflowSettings_global.graphql';
+import Label from '../../../../../components/common/label/Label';
 
 const globalWorkflowSettingsFragment = graphql`
     fragment GlobalWorkflowSettings_global on SubType {
@@ -42,12 +41,13 @@ const GlobalWorkflowSettings = ({ subTypeId, data, workflowEnabled }: GlobalWork
   }));
   return (
     <>
-      <div>
-        <Typography variant="h3" gutterBottom={true}>
-          {t_i18n('Global Workflow')}
-          <SubTypeStatusPopover subTypeId={subTypeId} scope={StatusScopeEnum.GLOBAL} />
-        </Typography>
-      </div>
+      <Label action={(
+        <SubTypeStatusPopover subTypeId={subTypeId} scope={StatusScopeEnum.GLOBAL} />
+      )}
+      >
+        {t_i18n('Global Workflow')}
+
+      </Label>
       <ItemStatusTemplate
         statuses={statusList}
         disabled={!workflowEnabled}

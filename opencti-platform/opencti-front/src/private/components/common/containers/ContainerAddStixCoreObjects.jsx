@@ -401,7 +401,7 @@ const ContainerAddStixCoreObjects = (props) => {
           variant="tertiary"
           size="small"
         >
-          <Add />
+          <Add fontSize="small" />
         </IconButton>
       );
     }

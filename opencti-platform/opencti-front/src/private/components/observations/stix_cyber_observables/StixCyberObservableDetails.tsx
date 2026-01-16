@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid2';
 import { GetAppOutlined } from '@mui/icons-material';
 import Button from '@common/button/Button';
@@ -25,6 +24,7 @@ import {
 import { PopoverProps } from '@mui/material/Popover';
 import useAttributeValueToReadableValue from '../../../../utils/hooks/useAttributeValueToReadableValue';
 import Card from '../../../../components/common/card/Card';
+import Label from '../../../../components/common/label/Label';
 
 const stixCyberObservableDetailsFragment = graphql`
   fragment StixCyberObservableDetails_stixCyberObservable on StixCyberObservable {
@@ -325,7 +325,7 @@ const DownloadFileButtonMenu = ({
 
   return (
     <>
-      <Typography variant="h3" gutterBottom={true}>{t_i18n('File')}</Typography>
+      <Label>{t_i18n('File')}</Label>
 
       <Button
         variant="secondary"
@@ -365,7 +365,7 @@ const DownloadFileButtonMenu = ({
 const LabelItemCopy = ({ label, value }: { label: string; value: string }) => {
   return (
     <>
-      <Typography variant="h3" gutterBottom={true}>{label}</Typography>
+      <Label>{label}</Label>
       <pre>
         <ItemCopy content={value} />
       </pre>
@@ -421,7 +421,7 @@ const StixCyberObservableDetails = ({ data }: StixCyberObservableDetailsProps) =
   return (
     <div style={{ height: '100%' }} className="break">
       <Card title={t_i18n('Details')}>
-        <Grid container={true} spacing={3} style={{ marginBottom: 10 }}>
+        <Grid container={true} spacing={2} sx={{ marginBottom: 2 }}>
           {file && (
             <Grid size={6}>
               <DownloadFileButtonMenu fileSize={file.size} encodedFilePath={encodedFilePath} />
@@ -430,9 +430,9 @@ const StixCyberObservableDetails = ({ data }: StixCyberObservableDetailsProps) =
 
           <Grid size={6}>
             <>
-              <Typography variant="h3" gutterBottom={true}>
+              <Label>
                 {t_i18n('Description')}
-              </Typography>
+              </Label>
               <ExpandableMarkdown
                 source={stixCyberObservable.x_opencti_description}
                 limit={400}
@@ -466,9 +466,9 @@ const StixCyberObservableDetails = ({ data }: StixCyberObservableDetailsProps) =
               return (
                 <Grid key={key} size={6}>
                   <>
-                    <Typography variant="h3" gutterBottom={true}>
+                    <Label>
                       {t_i18n(key)}
-                    </Typography>
+                    </Label>
                     <ItemOpenVocab
                       small={false}
                       type={fieldToCategory(
@@ -486,9 +486,9 @@ const StixCyberObservableDetails = ({ data }: StixCyberObservableDetailsProps) =
               return (
                 <Grid key={key} size={6}>
                   <>
-                    <Typography variant="h3" gutterBottom={true}>
+                    <Label>
                       {t_i18n('Content')}
-                    </Typography>
+                    </Label>
                     <ExpandableMarkdown
                       source={value}
                       limit={400}

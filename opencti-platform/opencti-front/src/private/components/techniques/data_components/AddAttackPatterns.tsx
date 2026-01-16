@@ -17,10 +17,6 @@ import AddAttackPatternsLines, { addAttackPatternsLinesQuery } from './AddAttack
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles(() => ({
-  createButton: {
-    float: 'left',
-    marginTop: -15,
-  },
   search: {
     marginLeft: 'auto',
     marginRight: ' 20px',
@@ -58,7 +54,6 @@ const AddAttackPatterns: FunctionComponent<{
         color="primary"
         aria-label="Add"
         onClick={handleOpen}
-        classes={{ root: classes.createButton }}
       >
         <Add fontSize="small" />
       </IconButton>

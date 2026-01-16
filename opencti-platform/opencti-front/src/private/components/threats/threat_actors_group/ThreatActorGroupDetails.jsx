@@ -3,9 +3,7 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
-import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
-import Chip from '@mui/material/Chip';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -20,6 +18,8 @@ import ImageCarousel from '../../../../components/ImageCarousel';
 import ThreatActorGroupLocation from './ThreatActorGroupLocation';
 import { truncate } from '../../../../utils/String';
 import Card from '@common/card/Card';
+import Label from '../../../../components/common/label/Label';
+import Tag from '../../../../components/common/tag/Tag';
 
 const styles = (theme) => ({
   paper: {
@@ -53,37 +53,34 @@ class ThreatActorGroupDetailsComponent extends Component {
 
     return (
       <Card title={t('Details')}>
-        <Grid container={true} spacing={3}>
+        <Grid container={true} spacing={2}>
           <Grid item xs={hasImages ? 7 : 6}>
-            <Grid container={true} spacing={3}>
+            <Grid container={true} spacing={2}>
               {hasImages && (
                 <Grid item xs={4}>
                   <ImageCarousel data={threatActorGroup} />
                 </Grid>
               )}
               <Grid item xs={hasImages ? 8 : 12}>
-                <Typography variant="h3" gutterBottom={true}>
+                <Label>
                   {t('Threat actor types')}
-                </Typography>
+                </Label>
                 <FieldOrEmpty source={threatActorGroup.threat_actor_types}>
                   {threatActorGroup.threat_actor_types
                     && threatActorGroup.threat_actor_types.map(
                       (threatActorGroupType) => (
-                        <Chip
+                        <Tag
                           key={threatActorGroupType}
-                          classes={{ root: classes.chip }}
                           label={threatActorGroupType}
                         />
                       ),
                     )}
                 </FieldOrEmpty>
-                <Typography
-                  variant="h3"
-                  gutterBottom={true}
-                  style={{ marginTop: 20 }}
+                <Label
+                  sx={{ marginTop: 2 }}
                 >
                   {t('Description')}
-                </Typography>
+                </Label>
                 <ExpandableMarkdown
                   source={threatActorGroup.description}
                   limit={hasImages ? 400 : 600}
@@ -93,33 +90,27 @@ class ThreatActorGroupDetailsComponent extends Component {
           </Grid>
           <Grid item xs={hasImages ? 5 : 6}>
             <ThreatActorGroupLocation threatActorGroup={threatActorGroup} />
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
+            <Label
+              sx={{ marginTop: 2 }}
             >
               {t('First seen')}
-            </Typography>
+            </Label>
             {fldt(threatActorGroup.first_seen)}
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
+            <Label
+              sx={{ marginTop: 2 }}
             >
               {t('Last seen')}
-            </Typography>
+            </Label>
             {fldt(threatActorGroup.last_seen)}
           </Grid>
         </Grid>
-        <Grid container={true} spacing={3}>
+        <Grid container={true} spacing={2}>
           <Grid item xs={4}>
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
+            <Label
+              sx={{ marginTop: 2 }}
             >
               {t('Sophistication')}
-            </Typography>
+            </Label>
             <FieldOrEmpty source={threatActorGroup.sophistication}>
               <ItemOpenVocab
                 type="threat-actor-group-sophistication-ov"
@@ -128,13 +119,11 @@ class ThreatActorGroupDetailsComponent extends Component {
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={4}>
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
+            <Label
+              sx={{ marginTop: 2 }}
             >
               {t('Resource level')}
-            </Typography>
+            </Label>
             <FieldOrEmpty source={threatActorGroup.resource_level}>
               <ItemOpenVocab
                 type="attack-resource-level-ov"
@@ -143,13 +132,11 @@ class ThreatActorGroupDetailsComponent extends Component {
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={4}>
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
+            <Label
+              sx={{ marginTop: 2 }}
             >
               {t('Primary motivation')}
-            </Typography>
+            </Label>
             <FieldOrEmpty source={threatActorGroup.primary_motivation}>
               <ItemOpenVocab
                 type="attack-motivation-ov"
@@ -158,13 +145,9 @@ class ThreatActorGroupDetailsComponent extends Component {
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={4}>
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
-            >
+            <Label>
               {t('Roles')}
-            </Typography>
+            </Label>
             <FieldOrEmpty source={threatActorGroup.roles}>
               {threatActorGroup.roles && (
                 <List>
@@ -188,13 +171,9 @@ class ThreatActorGroupDetailsComponent extends Component {
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={4}>
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
-            >
+            <Label>
               {t('Goals')}
-            </Typography>
+            </Label>
             <FieldOrEmpty source={threatActorGroup.goals}>
               {threatActorGroup.goals && (
                 <List>
@@ -219,13 +198,9 @@ class ThreatActorGroupDetailsComponent extends Component {
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={4}>
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
-            >
+            <Label>
               {t('Secondary motivations')}
-            </Typography>
+            </Label>
             <FieldOrEmpty source={threatActorGroup.secondary_motivations}>
               {threatActorGroup.secondary_motivations && (
                 <List>

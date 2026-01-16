@@ -3,7 +3,6 @@ import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import makeStyles from '@mui/styles/makeStyles';
 import { Form, Formik } from 'formik';
@@ -27,6 +26,7 @@ import { CaseTasksLinesQuery, CaseTasksLinesQuery$variables } from './__generate
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { FieldOption } from '../../../../utils/field';
 import Card from '../../../../components/common/card/Card';
+import IconButton from '../../../../components/common/button/IconButton';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -209,20 +209,16 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
           <div>
             <Tooltip title={t_i18n('Add a task to this container')}>
               <IconButton
-                color="primary"
                 aria-label="Add"
                 onClick={handleOpen}
-                size="small"
               >
                 <AddOutlined fontSize="small" />
               </IconButton>
             </Tooltip>
             <Tooltip title={t_i18n('Apply a new case template')}>
               <IconButton
-                color="primary"
                 aria-label="Apply"
                 onClick={() => setOpenCaseTemplate(true)}
-                size="small"
               >
                 <ContentPasteGoOutlined fontSize="small" />
               </IconButton>

@@ -49,7 +49,7 @@ const AddExternalReferences = ({
         aria-label="Add"
         onClick={handleOpen}
       >
-        <Add />
+        <Add fontSize="small" />
       </IconButton>
       <Drawer
         title={t_i18n('Add external references')}

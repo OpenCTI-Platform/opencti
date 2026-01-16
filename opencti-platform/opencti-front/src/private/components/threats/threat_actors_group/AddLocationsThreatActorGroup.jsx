@@ -13,10 +13,6 @@ import AddLocationsThreatActorGroupLines, { addLocationsThreatActorGroupLinesQue
 import { insertNode } from '../../../../utils/store';
 
 const styles = () => ({
-  createButton: {
-    float: 'left',
-    marginTop: '-10px',
-  },
   search: {
     marginLeft: 'auto',
     marginRight: ' 20px',
@@ -58,7 +54,6 @@ class AddLocationsThreatActorGroup extends Component {
           color="primary"
           aria-label="Add"
           onClick={this.handleOpen.bind(this)}
-          classes={{ root: classes.createButton }}
         >
           <Add fontSize="small" />
         </IconButton>

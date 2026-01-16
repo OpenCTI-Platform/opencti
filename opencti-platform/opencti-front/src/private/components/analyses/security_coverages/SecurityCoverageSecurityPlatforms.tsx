@@ -16,6 +16,7 @@ import { SecurityCoverageSecurityPlatforms_securityCoverage$data } from './__gen
 import SecurityCoverageInformation from './SecurityCoverageInformation';
 import ItemIcon from '../../../../components/ItemIcon';
 import StixCoreRelationshipPopover from '../../common/stix_core_relationships/StixCoreRelationshipPopover';
+import Label from '../../../../components/common/label/Label';
 
 interface SecurityCoverageSecurityPlatformsProps {
   securityCoverage: SecurityCoverageSecurityPlatforms_securityCoverage$data;
@@ -33,15 +34,17 @@ const SecurityCoverageSecurityPlatformsComponent: FunctionComponent<SecurityCove
     toTypes: ['SecurityPlatform'],
   };
   return (
-    <div style={{ marginTop: 20 }}>
-      <div style={{ display: 'flex', flexDirection: 'row' }}>
-        <Typography variant="h3" gutterBottom={true}>
-          {t_i18n('Security Platforms')}
-        </Typography>
-        <AddSecurityPlatforms securityCoverage={securityCoverage} paginationOptions={paginationOptions} />
-      </div>
-      <div className="clearfix" />
-      <List style={{ marginTop: -10 }}>
+    <div>
+      <Label action={(
+        <AddSecurityPlatforms
+          securityCoverage={securityCoverage}
+          paginationOptions={paginationOptions}
+        />
+      )}
+      >
+        {t_i18n('Security Platforms')}
+      </Label>
+      <List>
         <FieldOrEmpty source={securityCoverage.securityPlatforms?.edges || []}>
           {(securityCoverage.securityPlatforms?.edges || []).map((securityPlatformEdge) => {
             const securityPlatform = securityPlatformEdge.node.to;
