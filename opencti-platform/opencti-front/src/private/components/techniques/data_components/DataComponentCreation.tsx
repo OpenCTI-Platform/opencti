@@ -352,9 +352,7 @@ const DataComponentCreation: FunctionComponent<{
   );
   const renderContextual = () => (
     <div style={{ display: display ? 'block' : 'none' }}>
-      <div style={{ marginTop: '5px' }}>
-        {CreateDataComponentControlledDialContextual}
-      </div>
+      {CreateDataComponentControlledDialContextual}
       <Dialog open={open} onClose={handleClose} slotProps={{ paper: { elevation: 1 } }}>
         <DialogTitle>
           {t_i18n('Create a data component')}

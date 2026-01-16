@@ -313,9 +313,7 @@ const AttackPatternCreation = ({
       display: display ? 'block' : 'none',
     }}
     >
-      <div style={{ marginTop: '5px' }}>
-        {CreateAttackPatternControlledDialContextual}
-      </div>
+      {CreateAttackPatternControlledDialContextual}
       <Dialog open={open} onClose={handleClose} slotProps={{ paper: { elevation: 1 } }}>
         <DialogTitle>{t_i18n('Create an attack pattern')}</DialogTitle>
         <DialogContent>

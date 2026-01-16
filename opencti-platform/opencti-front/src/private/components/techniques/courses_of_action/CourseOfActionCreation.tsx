@@ -291,9 +291,7 @@ const CourseOfActionCreation: FunctionComponent<CourseOfActionFormProps> = ({
   const renderContextual = () => {
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
-        <div style={{ marginTop: '5px' }}>
-          {CreateCourseOfActionControlledDialContextual}
-        </div>
+        {CreateCourseOfActionControlledDialContextual}
         <Dialog open={open} onClose={handleClose} slotProps={{ paper: { elevation: 1 } }}>
           <DialogTitle>{t_i18n('Create a course of action')}</DialogTitle>
           <DialogContent>

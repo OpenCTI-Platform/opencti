@@ -61,14 +61,7 @@ const AddDataSources: FunctionComponent<{ dataComponentId: string }> = ({
         onClose={handleClose}
         title={t_i18n('Add data sources')}
         header={(
-          <div style={{
-            marginLeft: 'auto',
-            marginRight: '20px',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'flex-end',
-          }}
-          >
+          <>
             <SearchInput
               variant="inDrawer"
               onSubmit={handleSearch}
@@ -79,7 +72,7 @@ const AddDataSources: FunctionComponent<{ dataComponentId: string }> = ({
               inputValue={search}
               paginationOptions={paginationOptions}
             />
-          </div>
+          </>
         )}
       >
         {queryRef && (

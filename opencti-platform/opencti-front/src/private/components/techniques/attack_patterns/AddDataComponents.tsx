@@ -57,15 +57,7 @@ const AddDataComponents: FunctionComponent<{
         onClose={handleClose}
         title={t_i18n('Add data components')}
         header={(
-          <div
-            style={{
-              marginLeft: 'auto',
-              marginRight: '20px',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'flex-end',
-            }}
-          >
+          <>
             <SearchInput
               variant="inDrawer"
               onSubmit={handleSearch}
@@ -76,7 +68,7 @@ const AddDataComponents: FunctionComponent<{
               inputValue={search}
               paginationOptions={paginationOptions}
             />
-          </div>
+          </>
         )}
       >
         {queryRef && (
