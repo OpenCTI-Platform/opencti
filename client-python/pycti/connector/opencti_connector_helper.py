@@ -2804,41 +2804,47 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         self.listen_queue.start()
         self.listen_queue.join()
 
-    def _resolve_stream_parameters(
+    def listen_stream(
         self,
-        url=None,
-        token=None,
-        verify_ssl=None,
-        start_timestamp=None,
-        live_stream_id=None,
-        listen_delete=None,
-        no_dependencies=None,
-        recover_iso_date=None,
-        with_inferences=None,
-    ) -> dict:
-        """Resolve stream connection parameters from arguments or configuration.
-            :param url: OpenCTI URL (defaults to configured URL)
-            :param token: Authentication token (defaults to configured token)
-            :param verify_ssl: SSL verification flag (defaults to configured value)
-            :param start_timestamp: Starting timestamp for stream (optional)
-            :param live_stream_id: Stream ID to consume from (optional)
-            :param listen_delete: Whether to listen for delete events (defaults to configured value)
-            :param no_dependencies: Whether to exclude dependencies (defaults to configured value)
-            :param recover_iso_date: ISO date to recover from (optional)
-            :param with_inferences: Whether to include inferences (defaults to configured value)
-            :return: Dictionary with resolved parameters
-            :rtype: dict
-            message_callback: Callable,
-            url: Optional[str] = None,
-            token: Optional[str] = None,
-            verify_ssl: Optional[bool] = None,
-            start_timestamp: Optional[str] = None,
-            live_stream_id: Optional[str] = None,
-            listen_delete: Optional[bool] = None,
-            no_dependencies: Optional[bool] = None,
-            recover_iso_date: Optional[str] = None,
-            with_inferences: Optional[bool] = None,
-        ) -> dict:
+        message_callback: Callable,
+        url: Optional[str] = None,
+        token: Optional[str] = None,
+        verify_ssl: Optional[bool] = None,
+        start_timestamp: Optional[str] = None,
+        live_stream_id: Optional[str] = None,
+        listen_delete: Optional[bool] = None,
+        no_dependencies: Optional[bool] = None,
+        recover_iso_date: Optional[str] = None,
+        with_inferences: Optional[bool] = None,
+    ) -> ListenStream:
+        """Start listening to an OpenCTI event stream.
+
+        Connects to an SSE stream and processes events through the callback.
+        Parameters default to connector configuration values if not specified.
+
+        :param message_callback: Function to call for each stream event
+        :type message_callback: Callable
+        :param url: Base URL for stream (defaults to opencti_url)
+        :type url: str or None
+        :param token: Authentication token (defaults to opencti_token)
+        :type token: str or None
+        :param verify_ssl: Whether to verify SSL certificates
+        :type verify_ssl: bool or None
+        :param start_timestamp: Stream position to start from
+        :type start_timestamp: str or None
+        :param live_stream_id: Specific stream ID to connect to
+        :type live_stream_id: str or None
+        :param listen_delete: Whether to receive delete events
+        :type listen_delete: bool or None
+        :param no_dependencies: Whether to exclude dependencies
+        :type no_dependencies: bool or None
+        :param recover_iso_date: ISO date to recover events from
+        :type recover_iso_date: str or None
+        :param with_inferences: Whether to include inferred data
+        :type with_inferences: bool or None
+
+        :return: The started ListenStream thread
+        :rtype: ListenStream
         """
         # URL
         if url is None:
@@ -2888,91 +2894,21 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         ):
             recover_iso_date = self.connect_live_stream_recover_iso_date
         # Generate the stream URL
-        stream_url = url + "/stream"
+        url = url + "/stream"
         if live_stream_id is not None:
-            stream_url = stream_url + "/" + live_stream_id
-
-        return {
-            "url": stream_url,
-            "token": token,
-            "verify_ssl": verify_ssl,
-            "start_timestamp": start_timestamp,
-            "live_stream_id": live_stream_id,
-            "listen_delete": listen_delete,
-            "no_dependencies": no_dependencies,
-            "recover_iso_date": recover_iso_date,
-            "with_inferences": with_inferences,
-        }
-
-    def listen_stream(
-        self,
-        message_callback,
-        url=None,
-        token=None,
-        verify_ssl=None,
-        start_timestamp=None,
-        live_stream_id=None,
-        listen_delete=None,
-        no_dependencies=None,
-        recover_iso_date=None,
-        with_inferences=None,
-    ) -> ListenStream:
-        """Listen for stream messages and register the callback function.
-
-        This method connects to an OpenCTI live stream (SSE) and starts a
-        background listener thread. For each received event, the provided
-        ``message_callback`` is invoked with the parsed message payload.
-
-        :param message_callback: Callback function to process each received
-            stream message.
-        :param url: Base URL of the OpenCTI platform. If not provided, the
-            value from the connector configuration or environment will be used.
-        :param token: API token to authenticate with the OpenCTI platform. If
-            not provided, the connector configuration or environment value
-            will be used.
-        :param verify_ssl: Whether to verify the SSL certificate when
-            connecting to the stream endpoint. If ``None``, the default from
-            the connector configuration is used.
-        :param start_timestamp: Optional UNIX timestamp from which to start
-            consuming the stream. If ``None``, streaming starts from "now".
-        :param live_stream_id: Identifier of the OpenCTI live stream to
-            subscribe to. If ``None``, the default connector stream is used.
-        :param listen_delete: If truthy, listen for and process delete events
-            on the stream.
-        :param no_dependencies: If truthy, only the main objects will be
-            streamed without their dependencies.
-        :param recover_iso_date: Optional ISO 8601 date string used to recover
-            events from a specific point in time.
-        :param with_inferences: If truthy, include inferred data from the
-            platform in the stream.
-        :return: A ``ListenStream`` instance managing the underlying SSE
-            connection and listener thread.
-        """
-        # Resolve all stream parameters using helper method
-        params = self._resolve_stream_parameters(
-            url=url,
-            token=token,
-            verify_ssl=verify_ssl,
-            start_timestamp=start_timestamp,
-            live_stream_id=live_stream_id,
-            listen_delete=listen_delete,
-            no_dependencies=no_dependencies,
-            recover_iso_date=recover_iso_date,
-            with_inferences=with_inferences,
-        )
-
+            url = url + "/" + live_stream_id
         self.listen_stream = ListenStream(
             self,
             message_callback,
-            params["url"],
-            params["token"],
-            params["verify_ssl"],
-            params["start_timestamp"],
-            params["live_stream_id"],
-            params["listen_delete"],
-            params["no_dependencies"],
-            params["recover_iso_date"],
-            params["with_inferences"],
+            url,
+            token,
+            verify_ssl,
+            start_timestamp,
+            live_stream_id,
+            listen_delete,
+            no_dependencies,
+            recover_iso_date,
+            with_inferences,
         )
         self.listen_stream.start()
         return self.listen_stream
