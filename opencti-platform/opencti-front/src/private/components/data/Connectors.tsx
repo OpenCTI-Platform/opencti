@@ -7,7 +7,7 @@ import ConnectorsStatus from './connectors/ConnectorsStatus';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import PageContainer from '../../../components/PageContainer';
-import { WorkersStatusQuery$data } from './__generated__/WorkersStatusQuery.graphql';
+import { WorkersStatusQuery$data } from './connectors/__generated__/WorkersStatusQuery.graphql';
 
 const Connectors = () => {
   const { t_i18n } = useFormatter();
