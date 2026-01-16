@@ -1190,7 +1190,16 @@ const fetchMembersWithOrgaRestriction = async (
       : membersFilterGroup;
 
     // list the members
-    return membersFetchFunction(context, user, types, { ...args, filters: finalFilterGroup }); // TODO noRegardingOfFilterCheck
+    return membersFetchFunction(
+      context,
+      user,
+      types,
+      {
+        ...args,
+        filters: finalFilterGroup,
+        noRegardingOfFilterIdsCheck: true, // don't check regardingOf filter ids to avoid error if a user has not access to an orga id of the filter values
+      },
+    );
   } else { // case 2. no users to fetch, so no special restriction on user visibility
     return membersFetchFunction(context, user, types, args);
   }
