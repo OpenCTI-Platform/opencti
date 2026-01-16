@@ -9,43 +9,42 @@ interface ItemOperationsProps {
   draftOperation?: string;
 }
 
-const operationStylesLight = {
-  green: {
-    backgroundColor: '#2e7d32',
-    color: '#ffffff',
-  },
-  red: {
-    backgroundColor: '#c62828',
-    color: '#ffffff',
-  },
-  yellow: {
-    backgroundColor: '#ff9800',
-    color: '#ffffff',
-  },
-  lightYellow: {
-    backgroundColor: '#ec7629',
-    color: '#ffffff',
-  },
-};
-
-const operationStylesDark = {
-  green: {
-    backgroundColor: '#2e7d32',
-  },
-  red: {
-    backgroundColor: '#c62828',
-  },
-  yellow: {
-    backgroundColor: '#ff9800',
-  },
-  lightYellow: {
-    backgroundColor: '#ec7629',
-  },
-};
-
 const ItemOperations: FunctionComponent<ItemOperationsProps> = ({ draftOperation }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
+  const operationStylesLight = {
+    green: {
+      backgroundColor: theme.palette.tertiary.green[800],
+      color: theme.palette.common.white,
+    },
+    red: {
+      backgroundColor: theme.palette.tertiary.red[700],
+      color: theme.palette.common.white,
+    },
+    yellow: {
+      backgroundColor: theme.palette.tertiary.yellow[400],
+      color: theme.palette.common.white,
+    },
+    lightYellow: {
+      backgroundColor: theme.palette.tertiary.orange[500],
+      color: theme.palette.common.white,
+    },
+  };
+
+  const operationStylesDark = {
+    green: {
+      backgroundColor: theme.palette.tertiary.green[800],
+    },
+    red: {
+      backgroundColor: theme.palette.tertiary.red[700],
+    },
+    yellow: {
+      backgroundColor: theme.palette.tertiary.yellow[400],
+    },
+    lightYellow: {
+      backgroundColor: theme.palette.tertiary.orange[500],
+    },
+  };
 
   const getChipStyle = () => {
     switch (draftOperation) {

@@ -5,41 +5,14 @@ import withTheme from '@mui/styles/withTheme';
 import Tag from '@common/tag/Tag';
 import inject18n from './i18n';
 
-const inlineStyles = {
-  white: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    color: '#ffffff',
-  },
-  whiteLight: {
-    backgroundColor: 'rgba(0, 0, 0, 0.08)',
-    color: '#000000',
-  },
-  green: {
-    backgroundColor: 'rgba(76, 175, 80, 0.08)',
-    color: '#4caf50',
-  },
-  blue: {
-    backgroundColor: 'rgba(92, 123, 245, 0.08)',
-    color: '#5c7bf5',
-  },
-  red: {
-    backgroundColor: 'rgba(244, 67, 54, 0.08)',
-    color: '#f44336',
-  },
-  orange: {
-    backgroundColor: 'rgba(255, 152, 0, 0.08)',
-    color: '#ff9800',
-  },
-};
-
 const ItemLikelihood = ({ likelihood, t, theme }) => {
   if (!likelihood) {
     return (
       <Tag
-        style={
+        color={
           theme.palette.mode === 'dark'
-            ? inlineStyles.white
-            : inlineStyles.whiteLight
+            ? theme.palette.common.white
+            : theme.palette.common.black
         }
         label={t('Unknown')}
       />
@@ -48,7 +21,7 @@ const ItemLikelihood = ({ likelihood, t, theme }) => {
   if (likelihood <= 20) {
     return (
       <Tag
-        style={inlineStyles.red}
+        color={theme.palette.severity.critical}
         label={`${likelihood} / 100`}
       />
     );
@@ -56,7 +29,7 @@ const ItemLikelihood = ({ likelihood, t, theme }) => {
   if (likelihood <= 50) {
     return (
       <Tag
-        color={inlineStyles.orange.color}
+        color={theme.palette.severity.high}
         label={`${likelihood} / 100`}
       />
     );
@@ -64,7 +37,7 @@ const ItemLikelihood = ({ likelihood, t, theme }) => {
   if (likelihood <= 75) {
     return (
       <Tag
-        style={inlineStyles.blue}
+        color={theme.palette.severity.info}
         label={`${likelihood} / 100`}
       />
     );
@@ -72,14 +45,14 @@ const ItemLikelihood = ({ likelihood, t, theme }) => {
   if (likelihood <= 100) {
     return (
       <Tag
-        style={inlineStyles.green}
+        color={theme.palette.severity.low}
         label={`${likelihood} / 100`}
       />
     );
   }
   return (
     <Tag
-      style={inlineStyles.white}
+      color={theme.palette.common.white}
       label={`${likelihood} / 100`}
     />
   );

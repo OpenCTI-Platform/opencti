@@ -15,6 +15,7 @@ import { formCreationQuery } from './FormCreation';
 import type { FormBuilderData, FormFieldAttribute } from './Form.d';
 import { convertFormBuilderDataToSchema } from './FormUtils';
 import Loader from '../../../../components/Loader';
+import { useTheme } from '@mui/styles';
 
 const useStyles = makeStyles<Theme>(() => ({
   container: {
@@ -73,6 +74,7 @@ const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
   handleClose,
   queryRef,
 }) => {
+  const theme = useTheme<Theme>();
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [isSaving, setIsSaving] = useState(false);
@@ -258,7 +260,7 @@ const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
       </React.Suspense>
 
       {validationError && (
-        <div style={{ marginTop: 20, color: '#f44336', textAlign: 'center' }}>
+        <div style={{ marginTop: 20, color: theme.palette.error.main, textAlign: 'center' }}>
           {validationError}
         </div>
       )}

@@ -20,6 +20,7 @@ import inject18n, { useFormatter } from '../../../../components/i18n';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
+import { useTheme } from '@mui/styles';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -53,6 +54,7 @@ const fileWorkDeleteMutation = graphql`
 `;
 
 const FileWorkComponent = (props) => {
+  const theme = useTheme();
   const {
     t,
     nsdt,
@@ -154,12 +156,12 @@ const FileWorkComponent = (props) => {
                 <ListItemIcon>
                   {work.status === 'complete' && numberOfError === 0 && (
                     <CheckCircleOutlined
-                      style={{ fontSize: 15, color: '#4caf50' }}
+                      style={{ fontSize: 15, color: theme.palette.success.main }}
                     />
                   )}
                   {work.status === 'complete' && numberOfError > 0 && (
                     <WarningOutlined
-                      style={{ fontSize: 15, color: '#f44336' }}
+                      style={{ fontSize: 15, color: theme.palette.error.main }}
                     />
                   )}
                   {(work.status === 'progress'

@@ -60,7 +60,7 @@ const renderChip = (props) => {
 
   if (status === true) {
     return (
-      <Tag label={label} color={reverse ? '#f44336' : '#4caf50'} />
+      <Tag label={label} color={reverse ? theme.palette.error.main : theme.palette.success.main} />
     );
   }
 
@@ -90,7 +90,7 @@ const renderChip = (props) => {
   return (
     <Tag
       label={label}
-      color={reverse ? '#4caf50' : '#f44336'}
+      color={reverse ? theme.palette.success.main : theme.palette.error.main}
     />
   );
 };

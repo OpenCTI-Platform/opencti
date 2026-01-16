@@ -67,6 +67,10 @@ declare module '@mui/material/styles' {
       popoverItem: string;
       drawer: string;
     };
+    common?: CommonColors & {
+      grey: string;
+      lightGrey: string;
+    };
     severity?: {
       critical: string;
       high: string;
@@ -182,6 +186,12 @@ interface ExtendedText extends TypeText {
   light: string;
 }
 
+type ColorScale = Partial<Record<
+  50 | 100 | 150 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | 1000,
+  string
+>>;
+
+type TertiaryPalette = Record<string, ColorScale>;
 interface ExtendedPaletteOptions extends PaletteOptions {
   common: Partial<CommonColors & { grey: string; lightGrey: string }>;
   background: Partial<ExtendedBackground>;
@@ -210,6 +220,7 @@ interface ExtendedPaletteOptions extends PaletteOptions {
   ai: Partial<ExtendedColor>;
   gradient: Partial<ExtendedColor>;
   secondary: Partial<ExtendedColor>;
+  tertiary: TertiaryPalette;
   mode: PaletteMode;
   text: Partial<ExtendedText>;
   severity: {

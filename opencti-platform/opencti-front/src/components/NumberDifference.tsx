@@ -3,19 +3,6 @@ import { ArrowUpward, ArrowDownward, ArrowForward } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import type { Theme } from './Theme';
 import { useFormatter } from './i18n';
-
-const inlineStyles = {
-  green: {
-    color: '#4caf50',
-  },
-  red: {
-    color: '#f44336',
-  },
-  blueGrey: {
-    color: '#607d8b',
-  },
-};
-
 interface ItemNumberDifferenceProps {
   value: number;
   description: string;
@@ -24,6 +11,18 @@ interface ItemNumberDifferenceProps {
 const NumberDifference = ({ value, description }: ItemNumberDifferenceProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
+
+  const inlineStyles = {
+    green: {
+      color: theme.palette.success.main,
+    },
+    red: {
+      color: theme.palette.error.main,
+    },
+    blueGrey: {
+      color: theme.palette.common.grey,
+    },
+  };
 
   let color = inlineStyles.green;
   if (value < 0) color = inlineStyles.red;

@@ -2,6 +2,7 @@ import * as C from '@mui/material/colors';
 import { resolveLink } from './Entity';
 import { truncate } from './String';
 import { isColorCloseToWhite } from './Colors';
+import { alpha } from '@mui/material/styles';
 
 export const colors = (temp) => [
   C.red[temp],
@@ -494,8 +495,8 @@ export const horizontalBarsChartOptions = (
     show: stackType !== '100%',
     borderColor:
       theme.palette.mode === 'dark'
-        ? 'rgba(255, 255, 255, .1)'
-        : 'rgba(0, 0, 0, .1)',
+        ? alpha(theme.palette.common.white, 0.1)
+        : alpha(theme.palette.common.black, 0.1),
     strokeDashArray: 3,
     padding: {
       right: 20,

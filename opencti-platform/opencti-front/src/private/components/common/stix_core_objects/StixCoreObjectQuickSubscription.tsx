@@ -66,12 +66,12 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   deleteButton: {
     marginLeft: theme.spacing(2),
-    backgroundColor: '#f44336',
-    borderColor: '#f44336',
-    color: '#ffffff',
+    backgroundColor: theme.palette.error.main,
+    borderColor: theme.palette.error.main,
+    color: theme.palette.common.white,
     '&:hover': {
-      backgroundColor: '#c62828',
-      borderColor: '#c62828',
+      backgroundColor: theme.palette.error.dark,
+      borderColor: theme.palette.error.dark,
     },
   },
   container: {

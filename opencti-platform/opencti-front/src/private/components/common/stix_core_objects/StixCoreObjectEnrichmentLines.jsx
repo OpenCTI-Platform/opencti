@@ -12,6 +12,7 @@ import ListItemText from '@mui/material/ListItemText';
 import List from '@mui/material/List';
 import { v4 as uuid } from 'uuid';
 import { ListItemButton } from '@mui/material';
+import { useTheme } from '@mui/styles';
 import ListItem from '@mui/material/ListItem';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
@@ -85,6 +86,7 @@ const StixCoreObjectEnrichment = ({
   t,
   nsdt,
 }) => {
+  const theme = useTheme();
   const { id } = stixCoreObject;
   const file = stixCoreObject.importFiles && stixCoreObject.importFiles.edges.length > 0
     ? stixCoreObject.importFiles.edges[0].node
@@ -184,7 +186,7 @@ const StixCoreObjectEnrichment = ({
                   >
                     <ListItemIcon
                       style={{
-                        color: connector.active ? '#4caf50' : '#f44336',
+                        color: connector.active ? theme.palette.success.main : theme.palette.error.main,
                       }}
                     >
                       <ExtensionOutlined />
@@ -242,7 +244,7 @@ const StixCoreObjectEnrichment = ({
                               <WarningOutlined
                                 style={{
                                   fontSize: 15,
-                                  color: '#f44336',
+                                  color: theme.palette.error.main,
                                 }}
                               />
                             )}
@@ -250,7 +252,7 @@ const StixCoreObjectEnrichment = ({
                               <CheckCircleOutlined
                                 style={{
                                   fontSize: 15,
-                                  color: '#4caf50',
+                                  color: theme.palette.success.main,
                                 }}
                               />
                             )}

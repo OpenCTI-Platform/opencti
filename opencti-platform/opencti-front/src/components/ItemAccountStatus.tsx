@@ -1,46 +1,7 @@
 import React, { FunctionComponent } from 'react';
-import Chip from '@mui/material/Chip';
-import makeStyles from '@mui/styles/makeStyles';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  chip: {
-    fontSize: 12,
-    marginRight: 7,
-    borderRadius: 4,
-    width: 150,
-  },
-}));
-
-const inlineStyles = {
-  green: {
-    backgroundColor: 'rgba(76, 175, 80, 0.08)',
-    color: '#4caf50',
-    borderColor: '#4caf50',
-  },
-  blue: {
-    backgroundColor: 'rgba(92, 123, 245, 0.08)',
-    color: '#5c7bf5',
-    borderColor: '#5c7bf5',
-  },
-  red: {
-    backgroundColor: 'rgba(244, 67, 54, 0.08)',
-    color: '#f44336',
-    borderColor: '#f44336',
-  },
-  orange: {
-    backgroundColor: 'rgba(255, 152, 0, 0.08)',
-    color: '#ff9800',
-    borderColor: '#ff9800',
-  },
-  blueGrey: {
-    backgroundColor: 'rgba(96, 125, 139, 0.08)',
-    color: '#607d8b',
-    borderColor: '#607d8b',
-    fontStyle: 'italic',
-  },
-};
+import { useTheme } from '@mui/styles';
+import type { Theme } from './Theme';
+import Tag from '@common/tag/Tag';
 
 interface ItemAccountStatusProps {
   label: string;
@@ -48,36 +9,63 @@ interface ItemAccountStatusProps {
   variant?: 'outlined' | 'filled';
 }
 
-const computeAccountStatusStyle = (
-  account_status: string | undefined | null,
-) => {
-  switch (account_status) {
-    case 'Active':
-      return inlineStyles.green;
-    case 'Locked (security)':
-      return inlineStyles.blueGrey;
-    case 'Locked (training)':
-      return inlineStyles.blueGrey;
-    case 'Inactive':
-      return inlineStyles.orange;
-    case 'Expired':
-      return inlineStyles.red;
-    default:
-      return inlineStyles.blueGrey;
-  }
-};
-
 const ItemAccountStatus: FunctionComponent<ItemAccountStatusProps> = ({
   label,
   account_status,
   variant,
 }) => {
-  const classes = useStyles();
-  const style = classes.chip;
+  const theme = useTheme<Theme>();
+  const inlineStyles = {
+    green: {
+      backgroundColor: theme.palette.severity.low,
+      color: theme.palette.severity.low,
+      borderColor: theme.palette.severity.low,
+    },
+    blue: {
+      backgroundColor: theme.palette.severity.info,
+      color: theme.palette.severity.info,
+      borderColor: theme.palette.severity.info,
+    },
+    red: {
+      backgroundColor: theme.palette.severity.critical,
+      color: theme.palette.severity.critical,
+      borderColor: theme.palette.severity.critical,
+    },
+    orange: {
+      backgroundColor: theme.palette.severity.high,
+      color: theme.palette.severity.high,
+      borderColor: theme.palette.severity.high,
+    },
+    blueGrey: {
+      backgroundColor: theme.palette.common.grey,
+      color: theme.palette.common.grey,
+      borderColor: theme.palette.common.grey,
+      fontStyle: 'italic',
+    },
+  };
+
+  const computeAccountStatusStyle = (
+    account_status: string | undefined | null,
+  ) => {
+    switch (account_status) {
+      case 'Active':
+        return inlineStyles.green;
+      case 'Locked (security)':
+        return inlineStyles.blueGrey;
+      case 'Locked (training)':
+        return inlineStyles.blueGrey;
+      case 'Inactive':
+        return inlineStyles.orange;
+      case 'Expired':
+        return inlineStyles.red;
+      default:
+        return inlineStyles.blueGrey;
+    }
+  };
+
   const classStyle = computeAccountStatusStyle(account_status);
   return (
-    <Chip
-      classes={{ root: style }}
+    <Tag
       variant={variant}
       label={label}
       style={classStyle}

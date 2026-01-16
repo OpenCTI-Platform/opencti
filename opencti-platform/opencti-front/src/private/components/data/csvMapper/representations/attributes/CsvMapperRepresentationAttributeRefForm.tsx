@@ -18,28 +18,8 @@ import useAuth from '../../../../../../utils/hooks/useAuth';
 import { resolveTypesForRelationship, resolveTypesForRelationshipRef } from '../../../../../../utils/Relation';
 import { useFormatter } from '../../../../../../components/i18n';
 import { isStixCoreObjects, isStixCoreRelationships } from '../../../../../../utils/stixTypeUtils';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  container: {
-    width: '100%',
-    display: 'inline-grid',
-    gridTemplateColumns: '2fr 3fr 50px',
-    alignItems: 'center',
-    marginTop: '10px',
-    gap: '10px',
-  },
-  inputError: {
-    '& fieldset': {
-      borderColor: 'rgb(244, 67, 54)',
-    },
-  },
-  redStar: {
-    color: 'rgb(244, 67, 54)',
-    marginLeft: '5px',
-  },
-}));
+import { useTheme } from '@mui/styles';
+import { Theme } from '../../../../../../components/Theme';
 
 export type RepresentationAttributeForm = CsvMapperRepresentationAttributeFormData | undefined;
 
@@ -54,6 +34,28 @@ interface CsvMapperRepresentationAttributeRefFormProps
 const CsvMapperRepresentationAttributeRefForm: FunctionComponent<
   CsvMapperRepresentationAttributeRefFormProps
 > = ({ form, field, representation, schemaAttribute, label, handleErrors }) => {
+  const theme = useTheme<Theme>();
+  // Deprecated - https://mui.com/system/styles/basics/
+  // Do not use it for new code.
+  const useStyles = makeStyles(() => ({
+    container: {
+      width: '100%',
+      display: 'inline-grid',
+      gridTemplateColumns: '2fr 3fr 50px',
+      alignItems: 'center',
+      marginTop: '10px',
+      gap: '10px',
+    },
+    inputError: {
+      '& fieldset': {
+        borderColor: theme.palette.error.main,
+      },
+    },
+    redStar: {
+      color: theme.palette.tertiary.red[400],
+      marginLeft: '5px',
+    },
+  }));
   const classes = useStyles();
   const { t_i18n } = useFormatter();
 

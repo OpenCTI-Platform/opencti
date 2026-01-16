@@ -24,6 +24,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import PasswordTextField from '../../../../components/PasswordTextField';
 import { extractToken } from '../../../../utils/ingestionAuthentificationUtils';
+import { useTheme } from '@mui/styles';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -71,6 +72,7 @@ const syncValidation = (t) => Yup.object().shape({
 });
 
 const SyncEditionContainer = ({ synchronizer }) => {
+  const theme = useTheme();
   const { t_i18n } = useFormatter();
   const classes = useStyles();
   const [streams, setStreams] = useState([]);
@@ -178,11 +180,11 @@ const SyncEditionContainer = ({ synchronizer }) => {
               &nbsp;&nbsp;{t_i18n('Remote OpenCTI configuration')}{' '}
               {isStreamAccessible ? (
                 <CheckCircleOutlined
-                  style={{ fontSize: 22, color: '#4caf50', float: 'left' }}
+                  style={{ fontSize: 22, color: theme.palette.success.main, float: 'left' }}
                 />
               ) : (
                 <WarningOutlined
-                  style={{ fontSize: 22, color: '#f44336', float: 'left' }}
+                  style={{ fontSize: 22, color: theme.palette.error.main, float: 'left' }}
                 />
               )}
             </AlertTitle>

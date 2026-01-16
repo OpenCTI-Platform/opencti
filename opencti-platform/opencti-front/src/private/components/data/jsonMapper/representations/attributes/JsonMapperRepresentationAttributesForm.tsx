@@ -16,25 +16,6 @@ import TextField from '../../../../../../components/TextField';
 import type { Theme } from '../../../../../../components/Theme';
 import { isEmptyField } from '../../../../../../utils/utils';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  container: {
-    width: '100%',
-    display: 'inline-grid',
-    gridTemplateColumns: '2fr 3fr 50px',
-    alignItems: 'center',
-    padding: 10,
-    marginTop: 20,
-    marginBottom: 10,
-    gap: '10px',
-  },
-  redStar: {
-    color: 'rgb(244, 67, 54)',
-    marginLeft: '5px',
-  },
-}));
-
 export const JsonMapperRepresentationAttributesFormFragment = graphql`
   fragment JsonMapperRepresentationAttributesForm_allSchemaAttributes on Query {
     csvMapperSchemaAttributes {
@@ -85,6 +66,24 @@ const JsonMapperRepresentationAttributesForm: FunctionComponent<
 > = ({ handleErrors, representation, representationType, representationName }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
+  // Deprecated - https://mui.com/system/styles/basics/
+  // Do not use it for new code.
+  const useStyles = makeStyles(() => ({
+    container: {
+      width: '100%',
+      display: 'inline-grid',
+      gridTemplateColumns: '2fr 3fr 50px',
+      alignItems: 'center',
+      padding: 10,
+      marginTop: 20,
+      marginBottom: 10,
+      gap: '10px',
+    },
+    redStar: {
+      color: theme.palette.tertiary.red[400],
+      marginLeft: '5px',
+    },
+  }));
   const classes = useStyles();
   const { schemaAttributes } = useJsonMappersData();
   const data = useFragment<JsonMapperRepresentationAttributesForm_allSchemaAttributes$key>(

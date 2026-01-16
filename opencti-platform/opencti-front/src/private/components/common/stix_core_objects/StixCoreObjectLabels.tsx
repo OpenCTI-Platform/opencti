@@ -1,10 +1,11 @@
 import Tag from '@common/tag/Tag';
-import { Box, Chip, Stack } from '@mui/material';
+import { Box, Stack } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import React, { CSSProperties, SyntheticEvent } from 'react';
 import { useFormatter } from '../../../../components/i18n';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 import useChipOverflow from '../../data/IngestionCatalog/components/card/usecases/useChipOverflow';
+import { Theme } from '../../../../components/Theme';
 
 interface StixCoreObjectLabelsProps {
   labels: readonly {
@@ -24,7 +25,7 @@ const StixCoreObjectLabels = ({
   revoked,
 }: StixCoreObjectLabelsProps) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme();
+  const theme = useTheme<Theme>();
 
   const labelValues = labels?.map((l) => l.value || l.id) ?? [];
   const { containerRef, chipRefs, visibleCount, shouldTruncate } = useChipOverflow(labelValues);
@@ -111,15 +112,15 @@ const StixCoreObjectLabels = ({
   return (
     <>
       {revoked ? (
-        <Chip
+        <Tag
           variant="outlined"
           label={t_i18n('Revoked')}
           style={{
             ...variantStyle,
             margin: '0 7px 7px 0',
-            color: '#d32f2f',
-            borderColor: '#d32f2f',
-            backgroundColor: 'rgba(211, 47, 47, .1)',
+            color: theme.palette.error.main,
+            borderColor: theme.palette.error.main,
+            backgroundColor: theme.palette.error.main,
           }}
           onClick={(e: SyntheticEvent) => {
             e.preventDefault();
@@ -135,7 +136,7 @@ const StixCoreObjectLabels = ({
             e.stopPropagation();
             onClick?.('objectLabel', null, 'eq');
           }}
-          color="#1C2F49"
+          color={theme.palette.tertiary.blue[900]}
         />
       )}
     </>

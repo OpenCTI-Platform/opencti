@@ -1,45 +1,7 @@
-import Chip from '@mui/material/Chip';
 import React, { CSSProperties } from 'react';
 import { useTheme } from '@mui/styles';
 import type { Theme } from './Theme';
-
-const inlineStyles = {
-  whiteDark: {
-    backgroundColor: '#ffffff',
-    color: '#2b2b2b',
-  },
-  whiteLight: {
-    backgroundColor: '#ffffff',
-    color: '#2b2b2b',
-    border: '1px solid #2b2b2b',
-  },
-  blueGrey: {
-    backgroundColor: 'rgba(96, 125, 139, 0.08)',
-    color: '#607d8b',
-    borderColor: '#607d8b',
-    fontStyle: 'italic',
-  },
-  green: {
-    backgroundColor: 'rgba(76, 175, 80, 0.08)',
-    color: '#4caf50',
-  },
-  blue: {
-    backgroundColor: 'rgba(92, 123, 245, 0.08)',
-    color: '#5c7bf5',
-  },
-  red: {
-    backgroundColor: 'rgba(244, 67, 54, 0.08)',
-    color: '#f44336',
-  },
-  orange: {
-    backgroundColor: 'rgba(255, 152, 0, 0.08)',
-    color: '#ff9800',
-  },
-  black: {
-    backgroundColor: '#000000',
-    color: '#ffffff',
-  },
-};
+import Tag from '@common/tag/Tag';
 
 type ItemCvssScoreProps = {
   score?: number | null;
@@ -48,6 +10,43 @@ type ItemCvssScoreProps = {
 
 const ItemCvssScore = ({ score, style }: ItemCvssScoreProps) => {
   const theme = useTheme<Theme>();
+  const inlineStyles = {
+    whiteDark: {
+      backgroundColor: theme.palette.common.white,
+      color: theme.palette.tertiary.grey[700],
+    },
+    whiteLight: {
+      backgroundColor: theme.palette.common.white,
+      color: theme.palette.tertiary.grey[700],
+      border: `1px solid ${theme.palette.tertiary.grey[800]}`,
+    },
+    blueGrey: {
+      backgroundColor: theme.palette.severity.default,
+      color: theme.palette.severity.default,
+      borderColor: theme.palette.severity.default,
+      fontStyle: 'italic',
+    },
+    green: {
+      backgroundColor: theme.palette.severity.low,
+      color: theme.palette.severity.low,
+    },
+    blue: {
+      backgroundColor: theme.palette.severity.info,
+      color: theme.palette.severity.info,
+    },
+    red: {
+      backgroundColor: theme.palette.severity.critical,
+      color: theme.palette.severity.critical,
+    },
+    orange: {
+      backgroundColor: theme.palette.severity.high,
+      color: theme.palette.severity.high,
+    },
+    black: {
+      backgroundColor: theme.palette.common.black,
+      color: theme.palette.common.white,
+    },
+  };
 
   const getChipStyleFromCVSS3Score = (cvssScore: number) => {
     switch (true) {
@@ -66,7 +65,7 @@ const ItemCvssScore = ({ score, style }: ItemCvssScoreProps) => {
   if (score === null || score === undefined) return '-';
 
   return (
-    <Chip
+    <Tag
       style={{
         ...style,
         fontSize: 18,
@@ -76,7 +75,7 @@ const ItemCvssScore = ({ score, style }: ItemCvssScoreProps) => {
         borderRadius: 4,
         ...getChipStyleFromCVSS3Score(score),
       }}
-      label={score}
+      label={`${score}`}
     />
   );
 };
