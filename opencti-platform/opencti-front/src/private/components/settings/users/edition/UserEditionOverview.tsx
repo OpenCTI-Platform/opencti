@@ -14,7 +14,7 @@ import MarkdownField from '../../../../../components/fields/MarkdownField';
 import ObjectOrganizationField from '../../../common/form/ObjectOrganizationField';
 import { useFormatter } from '../../../../../components/i18n';
 import DateTimePickerField from '../../../../../components/DateTimePickerField';
-import { fieldSpacingContainerStyle } from '../../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../../utils/field';
 import useAuth from '../../../../../utils/hooks/useAuth';
 import { isOnlyOrganizationAdmin } from '../../../../../utils/hooks/useGranted';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
@@ -149,14 +149,14 @@ const UserEditionOverviewComponent: FunctionComponent<
 
   const handleChangeObjectOrganization = (
     name: string,
-    values: { label: string; value: string }[],
+    value: FieldOption[],
   ) => {
     const currentValues = (user?.objectAssignedOrganization?.edges ?? []).map((n) => ({
       label: n.node.name,
       value: n.node.id,
     }));
-    const added = R.difference(values, currentValues);
-    const removed = R.difference(currentValues, values);
+    const added = R.difference(value, currentValues);
+    const removed = R.difference(currentValues, value);
     if (added.length > 0) {
       commitOrganizationAdd({
         variables: {
