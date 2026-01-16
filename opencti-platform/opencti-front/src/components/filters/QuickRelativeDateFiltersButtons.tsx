@@ -33,6 +33,7 @@ const QuickRelativeDateFiltersButtons: FunctionComponent<QuickRelativeDateFilter
         <Button
           key={button.value}
           size="small"
+          variant="tertiary"
           onClick={() => handleClick(button.value)}
         >
           {button.label}
