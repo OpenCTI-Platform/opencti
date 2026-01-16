@@ -216,7 +216,7 @@ const SSODefinitionForm = ({
                 name="enabled"
                 type="checkbox"
                 onChange={updateField}
-                label={t_i18n('Enable SAML authentication')}
+                label={t_i18n(`Enable ${selectedStrategy} authentication`)}
                 containerstyle={{ marginLeft: 2, marginTop: 20 }}
               />
               <Field
