@@ -1,13 +1,14 @@
 import { afterAll, describe, expect, it, vi } from 'vitest';
-import { addSingleSignOn, deleteSingleSignOn, findAllSingleSignOn } from '../../../src/modules/singleSignOn/singleSignOn-domain';
-import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import { type SingleSignOnAddInput, StrategyType } from '../../../src/generated/graphql';
-import { PROVIDERS } from '../../../src/config/providers-configuration';
-import { convertStoreToStix_2_1 } from '../../../src/database/stix-2-1-converter';
-import type { StixSingleSignOn, StoreEntitySingleSignOn } from '../../../src/modules/singleSignOn/singleSignOn-types';
+
 import { v4 as uuid } from 'uuid';
-import { logApp } from '../../../src/config/conf';
-import { registerStrategy } from '../../../src/modules/singleSignOn/singleSignOn-providers';
+import { registerStrategy } from '../../../../src/modules/singleSignOn/singleSignOn-providers';
+import { logApp } from '../../../../src/config/conf';
+import { addSingleSignOn, deleteSingleSignOn, findAllSingleSignOn } from '../../../../src/modules/singleSignOn/singleSignOn-domain';
+import { ADMIN_USER, testContext } from '../../../utils/testQuery';
+import { StrategyType, type SingleSignOnAddInput } from '../../../../src/generated/graphql';
+import { PROVIDERS } from '../../../../src/modules/singleSignOn/providers-configuration';
+import type { StixSingleSignOn, StoreEntitySingleSignOn } from '../../../../src/modules/singleSignOn/singleSignOn-types';
+import { convertStoreToStix_2_1 } from '../../../../src/database/stix-2-1-converter';
 
 describe('Single sign on Domain coverage tests', () => {
   describe('SAML coverage tests', () => {

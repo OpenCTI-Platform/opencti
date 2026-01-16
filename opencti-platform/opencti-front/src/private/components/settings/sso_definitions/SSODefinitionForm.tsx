@@ -1,6 +1,6 @@
 import { useFormatter } from '../../../../components/i18n';
 import * as Yup from 'yup';
-import { Field, Form, Formik } from 'formik';
+import { Field, FieldArray, Form, Formik } from 'formik';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -17,6 +17,9 @@ import { ConfigurationTypeInput } from '@components/settings/sso_definitions/__g
 import Button from '@common/button/Button';
 import SSODefinitionGroupForm from '@components/settings/sso_definitions/SSODefinitionGroupForm';
 import SSODefinitionOrganizationForm from '@components/settings/sso_definitions/SSODefinitionOrganizationForm';
+import { IconButton, Typography } from '@mui/material';
+import { Add } from '@mui/icons-material';
+import { Delete } from 'mdi-material-ui';
 
 interface SSODefinitionFormProps {
   onCancel: () => void;
@@ -101,6 +104,7 @@ const SSODefinitionForm = ({
   selectedStrategy,
   onSubmitField,
 }: SSODefinitionFormProps) => {
+  console.log('selectedStrategy ; ', selectedStrategy);
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const [currentTab, setCurrentTab] = useState(0);
@@ -260,6 +264,105 @@ const SSODefinitionForm = ({
                 label={t_i18n(`Enable ${selectedStrategy} authentication`)}
                 containerstyle={{ marginLeft: 2, marginTop: 20 }}
               />
+              {selectedStrategy === 'SAML' && <SAMLConfig updateField={updateField} />}
+            </>
+          )}
+          {currentTab === 1 && (
+            <>
+              <div style={{ marginTop: 20 }}>
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="group_attributes"
+                  onSubmit={updateField}
+                  label={t_i18n('Attribute/path in token')}
+                  containerstyle={{ marginTop: 12 }}
+                  fullWidth
+                />
+              </div>
+              <FieldArray name="groups_mapping">
+                {({ push, remove, form }) => (
+                  <>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        marginTop: 20,
+                      }}
+                    >
+                      <Typography variant="h2">{t_i18n('Add a group mapping')}</Typography>
+                      <IconButton
+                        color="secondary"
+                        aria-label={t_i18n('Add a new value')}
+                        size="large"
+                        style={{ marginBottom: 12 }}
+                        onClick={() => push('')}
+                      >
+                        <Add fontSize="small" />
+                      </IconButton>
+                    </div>
+                    {form.values.groups_mapping
+                      && form.values.groups_mapping.map(
+                        (value: string, index: number) => (
+                          <div
+                            key={index}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              marginBottom: 8,
+                            }}
+                          >
+                            <Field
+                              component={TextField}
+                              variant="standard"
+                              onSubmit={() => updateField('groups_mapping', form.values.groups_mapping)}
+                              name={`groups_mapping[${index}]`}
+                              label={t_i18n('Group mapping value')}
+                              fullWidth
+                              style={{ marginTop: 20 }}
+                            />
+                            {/* <div */}
+                            {/*  style={{ */}
+                            {/*    flexBasis: '70%', */}
+                            {/*    maxWidth: '70%', */}
+                            {/*    marginBottom: 20, */}
+                            {/*  }} */}
+                            {/* > */}
+                            {/*  <GroupField */}
+                            {/*    name="groups" */}
+                            {/*    label="Groups" */}
+                            {/*    style={fieldSpacingContainerStyle} */}
+                            {/*    showConfidence={true} */}
+                            {/*  /> */}
+                            {/* </div> */}
+                            <IconButton
+                              color="primary"
+                              aria-label={t_i18n('Delete')}
+                              style={{ marginTop: 10 }}
+                              onClick={() => {
+                                remove(index);
+                                const groupsMapping = [...form.values.groups_mapping];
+                                groupsMapping.splice(index, 1);
+                                updateField('groups_mapping', groupsMapping);
+                              }} // Delete
+                            >
+                              <Delete fontSize="small" />
+                            </IconButton>
+                            {/* <Field */}
+                            {/*  component={SwitchField} */}
+                            {/*  variant="standard" */}
+                            {/*  type="checkbox" */}
+                            {/*  name="auto_create_group" */}
+                            {/*  label={t_i18n('auto-create group')} */}
+                            {/*  containerstyle={{ marginTop: 10 }} */}
+                            {/* /> */}
+                          </div>
+                        ),
+                      )}
+                  </>
+                )}
+              </FieldArray>
               <Field
                 component={TextField}
                 variant="standard"

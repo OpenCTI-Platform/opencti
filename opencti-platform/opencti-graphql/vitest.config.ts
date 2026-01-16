@@ -11,8 +11,8 @@ export const buildTestConfig = (include: string[]) => defineConfig({
     setupFiles: [],
     coverage: {
       provider: 'v8',
-      include: ['src/**'],
-      exclude: ['src/generated/**', 'src/migrations/**', 'src/stixpattern/**', 'src/python/**', '*.md'],
+      include: ['src/**/*.{ts,js}'],
+      exclude: ['src/generated/**', 'src/migrations/**', 'src/stixpattern/**', 'src/python/**'],
       reporter: ['text', 'json', 'html'],
     },
   },

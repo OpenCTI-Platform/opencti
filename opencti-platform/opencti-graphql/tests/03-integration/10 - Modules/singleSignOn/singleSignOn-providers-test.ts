@@ -1,15 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import {
-  buildSAMLOptions,
-  computeSamlGroupAndOrg,
-  convertKeyValueToJsConfiguration,
-  initAuthenticationProviders,
-  registerLocalStrategy,
-} from '../../../src/modules/singleSignOn/singleSignOn-providers';
-import { type ProviderConfiguration, PROVIDERS } from '../../../src/config/providers-configuration';
-import type { BasicStoreEntitySingleSignOn } from '../../../src/modules/singleSignOn/singleSignOn-types';
-import { type GroupsManagement, type OrganizationsManagement, StrategyType } from '../../../src/generated/graphql';
+import { convertKeyValueToJsConfiguration, initAuthenticationProviders, registerLocalStrategy } from '../../../../src/modules/singleSignOn/singleSignOn-providers';
+import { ADMIN_USER, testContext } from '../../../utils/testQuery';
+import type { BasicStoreEntitySingleSignOn } from '../../../../src/modules/singleSignOn/singleSignOn-types';
+import { type GroupsManagement, type OrganizationsManagement, StrategyType } from '../../../../src/generated/graphql';
+import { buildSAMLOptions, computeSamlGroupAndOrg } from '../../../../src/modules/singleSignOn/singleSignOn-provider-saml';
+import { type ProviderConfiguration, PROVIDERS } from '../../../../src/modules/singleSignOn/providers-configuration';
 
 describe('Single sign on Provider coverage tests', () => {
   describe('initialization coverage', () => {
