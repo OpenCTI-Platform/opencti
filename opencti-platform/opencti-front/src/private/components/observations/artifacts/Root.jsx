@@ -114,6 +114,7 @@ class RootArtifact extends Component {
                     />
                     <StixCyberObservableHeader
                       stixCyberObservable={stixCyberObservable}
+                      enableEnrollPlaybook={true}
                       DeleteComponent={({ isOpen, onClose }) => (
                         <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                           <StixCyberObservableDeletion id={stixCyberObservable.id} isOpen={isOpen} handleClose={onClose} />

@@ -155,6 +155,7 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
               )}
               enableQuickSubscription={true}
               enableEnricher={true}
+              enableEnrollPlaybook={true}
             />
             <Box
               sx={{

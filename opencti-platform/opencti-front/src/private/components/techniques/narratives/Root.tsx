@@ -135,6 +135,7 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
             <StixDomainObjectHeader
               entityType="Narrative"
               stixDomainObject={narrative}
+              enableEnrollPlaybook={true}
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <NarrativeEdition narrativeId={narrative.id} />

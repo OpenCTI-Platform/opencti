@@ -86,6 +86,8 @@ const StixSightingRelationship: FunctionComponent<
                   headerName={headerName}
                   onOpenEdit={handleOpenEdit}
                   onOpenDelete={handleOpenDelete}
+                  stixSightingId={sightingId}
+                  enableEnrollPlaybook={true}
                 />
                 <StixSightingRelationshipOverview
                   entityId={entityId}

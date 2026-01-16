@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // TODO Remove this when V6
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
@@ -133,6 +132,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
             )}
             enableQuickSubscription={true}
             redirectToContent={true}
+            enableEnrollPlaybook={true}
           />
           <Box
             sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 3 }}
