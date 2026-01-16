@@ -2761,6 +2761,7 @@ type QueryBodyBuilderOpts = ProcessSearchArgs & BuildDraftFilterOpts & {
   search?: string | null;
   filters?: FilterGroup | null;
   noFiltersChecking?: boolean;
+  noRegardingOfFilterIdsCheck?: boolean;
   startDate?: any;
   endDate?: any;
   dateAttribute?: string | null;
@@ -2786,6 +2787,7 @@ const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, options:
     endDate = null,
     dateAttribute = null,
     includeAuthorities = false,
+    noRegardingOfFilterIdsCheck = false,
   } = options;
   const elFindByIdsToMap = async (c: AuthContext, u: AuthUser, i: string[], o: any) => {
     return elFindByIds<BasicStoreObject>(c, u, i, { ...o, toMap: true }) as Promise<Record<string, BasicStoreObject>>;
@@ -2821,7 +2823,7 @@ const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, options:
   } : convertedFilters;
   // Handle filters
   if (completeFilters && isFilterGroupNotEmpty(completeFilters)) {
-    const finalFilters = await completeSpecialFilterKeys(context, user, completeFilters);
+    const finalFilters = await completeSpecialFilterKeys(context, user, completeFilters, { noRegardingOfFilterIdsCheck });
     const { subQuery: filtersSubQuery } = buildSubQueryForFilterGroup(context, user, finalFilters);
     if (filtersSubQuery) {
       mustFilters.push(filtersSubQuery);
@@ -2987,6 +2989,7 @@ export const elPaginate = async <T extends BasicStoreBase>(
     withResultMeta = false,
     first = ES_DEFAULT_PAGINATION,
     connectionFormat = true,
+    noRegardingOfFilterIdsCheck = false,
   } = options;
   // tagFiltersForPostFiltering have side effect on options.filters, it must be done before elQueryBodyBuilder
   const createPostFilter = tagFiltersForPostFiltering(options.filters);
@@ -3012,7 +3015,7 @@ export const elPaginate = async <T extends BasicStoreBase>(
     const { hits: { hits, total: { value: globalCount } } } = await elRawSearch(context, user, types !== null ? types : 'Any', query);
     const elements = await elConvertHits<T>(hits);
     let finalElements = elements;
-    if (finalElements.length > 0 && createPostFilter) {
+    if (!noRegardingOfFilterIdsCheck && finalElements.length > 0 && createPostFilter) {
       // Since filters contains filters requiring post filtering (regardingOf, dynamicRegardingOf), a post-security filtering is needed
       const postFilter = await createPostFilter<T>(context, user, elements.map(({ id }) => id));
       finalElements = elements.filter((element, i) => {

@@ -58,7 +58,12 @@ import { getEntitiesListFromCache } from '../../database/cache';
 import { ENTITY_TYPE_STATUS } from '../../schema/internalObject';
 import { IDS_ATTRIBUTES } from '../../domain/attribute-utils';
 
-export const adaptFilterToRegardingOfFilterKey = async (context: AuthContext, user: AuthUser, filter: Filter & { postFilteringTag?: string }) => {
+export const adaptFilterToRegardingOfFilterKey = async (
+  context: AuthContext,
+  user: AuthUser,
+  filter: Filter & { postFilteringTag?: string },
+  noRegardingOfFilterIdsCheck = false,
+) => {
   const { key: filterKey, postFilteringTag } = filter;
   const regardingFilters = [];
   const idParameter = filter.values.find((i) => i.key === ID_SUBFILTER);
@@ -95,6 +100,13 @@ export const adaptFilterToRegardingOfFilterKey = async (context: AuthContext, us
   if (ids.length > 0) {
     // Keep ids the user has access to
     const filteredEntities = await elFindByIds(context, user, ids, { baseData: true }) as BasicStoreBase[];
+    ids = noRegardingOfFilterIdsCheck
+      ? ids // if noRegardingOfFilterIdsCheck=true, we keep all the ids, even if the user has not access to them
+      : filteredEntities.map((n) => n.id);
+    if (ids.length === 0) { // If no id available, reject the query
+      throw ResourceNotFoundError('Specified ids not found or restricted');
+    }
+
     // If no type specified, we also need to check if the user have the correct capability for Pirs
     if (!typeParameter && !isUserHasCapability(user, PIRAPI)) {
       const isIncludingPir = (await uniqAsyncMap(filteredEntities, (value) => value.entity_type))
@@ -102,10 +114,6 @@ export const adaptFilterToRegardingOfFilterKey = async (context: AuthContext, us
       if (isIncludingPir) {
         throw ForbiddenAccess('You are not allowed to use PIR filtering');
       }
-    }
-    ids = filteredEntities.map((n) => n.id);
-    if (ids.length === 0) { // If no id available, reject the query
-      throw ResourceNotFoundError('Specified ids not found or restricted');
     }
   }
   // Check dynamic
@@ -699,13 +707,14 @@ export const completeSpecialFilterKeys = async (
   context: AuthContext,
   user: AuthUser,
   inputFilters: FilterGroup,
+  opts?: { noRegardingOfFilterIdsCheck?: boolean },
 ): Promise<FilterGroup> => {
   const { filters = [], filterGroups = [] } = inputFilters;
   const finalFilters = [];
   const finalFilterGroups: FilterGroup[] = [];
   for (let index = 0; index < filterGroups.length; index += 1) {
     const filterGroup = filterGroups[index];
-    const newFilterGroup = await completeSpecialFilterKeys(context, user, filterGroup);
+    const newFilterGroup = await completeSpecialFilterKeys(context, user, filterGroup, opts);
     finalFilterGroups.push(newFilterGroup);
   }
   for (let index = 0; index < filters.length; index += 1) {
@@ -718,7 +727,7 @@ export const completeSpecialFilterKeys = async (
       }
       const filterKey = arrayKeys[0];
       if (filterKey === INSTANCE_REGARDING_OF || filterKey === INSTANCE_DYNAMIC_REGARDING_OF) {
-        const { newFilterGroup } = await adaptFilterToRegardingOfFilterKey(context, user, filter);
+        const { newFilterGroup } = await adaptFilterToRegardingOfFilterKey(context, user, filter, opts?.noRegardingOfFilterIdsCheck);
         finalFilterGroups.push(newFilterGroup);
       }
       if (filterKey === IDS_FILTER) {
