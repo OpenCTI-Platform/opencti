@@ -113,7 +113,6 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
   defaultMarkingDefinitions,
   inputValue,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { mandatoryAttributes } = useIsMandatoryAttribute(INDICATOR_TYPE);
   const basicShape = yupShapeConditionalRequired({
