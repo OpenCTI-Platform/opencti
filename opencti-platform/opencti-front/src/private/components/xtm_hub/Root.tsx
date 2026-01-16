@@ -4,6 +4,7 @@ import { boundaryWrapper } from '../Error';
 
 const DeployCustomDashboards = lazy(() => import('./DeployCustomDashboard'));
 const IngestionCsv = lazy(() => import('../data/IngestionCsv'));
+const IngestionTaxii = lazy(() => import('../data/IngestionTaxiis'));
 const IngestionCatalogConnector = lazy(() => import('../data/IngestionCatalog/IngestionCatalogConnector'));
 
 const Root = () => {
@@ -22,6 +23,10 @@ const Root = () => {
         <Route
           path="/deploy-connector/:connectorSlug"
           element={boundaryWrapper(IngestionCatalogConnector)}
+        />
+        <Route
+          path="/deploy-taxii-feed/:serviceInstanceId/:fileId"
+          element={boundaryWrapper(IngestionTaxii)}
         />
       </Routes>
     </Suspense>
