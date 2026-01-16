@@ -168,7 +168,11 @@ const DraftEntities: FunctionComponent<DraftEntitiesProps> = ({
   } = viewStorage;
   const filtersWithType = useBuildEntityTypeBasedFilterContext(entitiesType, filters, excludedEntitiesType);
   // add filter to keep only relevant draft operations
-  const contextFilters = addFilter(filtersWithType, 'draft_change.draft_operation', ['create', 'update', 'delete']);
+  const contextFilters = addFilter(
+    filtersWithType,
+    'draft_change.draft_operation',
+    ['create', 'update', 'delete', 'update_linked', 'delete_linked'],
+  );
   const queryPaginationOptions = {
     ...paginationOptions,
     draftId,

@@ -91,7 +91,7 @@ const ItemOperations: FunctionComponent<ItemOperationsProps> = ({ draftOperation
   return (
     <Chip
       title={getChipTitle()}
-      label={draftOperation}
+      label={t_i18n(draftOperation)}
       variant="outlined"
       style={{
         ...getChipStyle(),
