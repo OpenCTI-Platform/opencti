@@ -53,8 +53,8 @@ class TestRateLimiter(TestCase):
 
         wait_calls = []
 
-        def wait_side_effect(_timeout=None):
-            wait_calls.append(_timeout)
+        def wait_side_effect(timeout=None):
+            wait_calls.append(timeout)
             limiter.stop()
             return True
 
