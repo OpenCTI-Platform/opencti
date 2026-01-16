@@ -9,7 +9,7 @@ OpenCTI is a cyber threat intelligence platform built with a **monorepo structur
 - **opencti-worker**: Python worker for background tasks
 - **docs**: MkDocs documentation (~56MB)
 
-**Tech Stack**: Node.js ≥20, Python 3.9-3.12, Yarn 4.12.0, TypeScript, React 19, GraphQL, ElasticSearch/OpenSearch, Redis, RabbitMQ, MinIO
+**Tech Stack**: Node.js ≥20, Python 3.10-3.12, Yarn 4.12.0, TypeScript, React 19, GraphQL, ElasticSearch/OpenSearch, Redis, RabbitMQ, MinIO
 
 ## Critical Build Requirements
 
@@ -109,11 +109,11 @@ python3 src/worker.py           # Start worker
 
 ## CI/CD Workflows
 
-**Main CI**: Docker build (~10 min), API tests (~20 min), Frontend tests (~5-15 min), Client Python matrix (3.9-3.12), License check. **All commits MUST be GPG signed**.
+**Main CI**: Docker build (~10 min), API tests (~20 min), Frontend tests (~5-15 min), Client Python matrix (3.10-3.12), License check. **All commits MUST be GPG signed**.
 
 ## Local Development
 
-**Prerequisites**: Node.js ≥20, Python 3.9-3.12, Docker, `corepack enable`, `sudo sysctl -w vm.max_map_count=262144`
+**Prerequisites**: Node.js ≥20, Python 3.10-3.12, Docker, `corepack enable`, `sudo sysctl -w vm.max_map_count=262144`
 
 **Start**: `cd opencti-platform/opencti-dev && docker compose up -d` (Elasticsearch, Redis, RabbitMQ, MinIO, Kibana)
 
