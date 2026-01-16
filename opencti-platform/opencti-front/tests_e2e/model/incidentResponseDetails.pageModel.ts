@@ -37,7 +37,7 @@ export default class IncidentResponseDetailsPage {
   getTextForHeading(heading: string, text: string) {
     return this.page
       .getByRole('heading', { name: heading })
-      .locator('..')
+      .locator('../..')
       .getByText(text);
   }
 

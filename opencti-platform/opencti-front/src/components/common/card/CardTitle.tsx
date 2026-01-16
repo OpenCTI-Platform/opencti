@@ -29,6 +29,9 @@ const CardTitle = ({
     textTransform: 'capitalize',
     color: theme.palette.text.light,
     lineHeight: '19px',
+    fontSize: '12px',
+    fontWeight: 400,
+    fontFamily: '"IBM Plex Sans", sans-serif',
   };
 
   return (
@@ -38,7 +41,7 @@ const CardTitle = ({
       alignItems={alignItems}
       sx={containerSx}
     >
-      <Typography variant="body2" sx={titleSx}>
+      <Typography variant="h5" sx={titleSx}>
         {children}
       </Typography>
       {action}

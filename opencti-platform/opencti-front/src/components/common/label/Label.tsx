@@ -26,6 +26,9 @@ const Label = ({
     textTransform: 'capitalize',
     color: theme.palette.text.light,
     lineHeight: '21px',
+    fontSize: '12px',
+    fontWeight: 400,
+    fontFamily: '"IBM Plex Sans", sans-serif',
   };
 
   return (
@@ -35,7 +38,7 @@ const Label = ({
       sx={containerSx}
       gap={0.5}
     >
-      <Typography variant="body2" sx={titleSx}>
+      <Typography variant="h6" sx={titleSx}>
         {children}
       </Typography>
       {action}
