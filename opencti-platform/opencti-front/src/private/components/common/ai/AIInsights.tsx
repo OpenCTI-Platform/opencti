@@ -10,7 +10,6 @@ import { createStyles } from '@mui/styles';
 import { Close } from '@mui/icons-material';
 import { LogoXtmOneIcon } from 'filigran-icon';
 import Typography from '@mui/material/Typography';
-import Drawer from '@mui/material/Drawer';
 import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
@@ -31,6 +30,7 @@ import useFiltersState from '../../../../utils/filters/useFiltersState';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useGranted';
+import Drawer from '../drawer/Drawer';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -274,32 +274,21 @@ const AIInsights = ({
       />
       <Drawer
         open={display}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
-        onClick={(e) => e.stopPropagation()}
+        title={t_i18n('AI Insights')}
+        header={(
+          <>
+            <Button
+              color="ai"
+              variant="tertiary"
+              size="small"
+              startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" />}
+            >
+              {t_i18n('XTM AI')}
+            </Button>
+          </>
+        )}
       >
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            onClick={handleClose}
-          >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="subtitle2" style={{ textWrap: 'nowrap' }}>
-            {t_i18n('AI Insights')}
-          </Typography>
-          <Button
-            variant="secondary"
-            size="small"
-            className={classes.chipNoAction}
-            startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" />}
-          >
-            {t_i18n('XTM AI')}
-          </Button>
-        </div>
         <div className={classes.container}>
           <Box sx={{
             borderBottom: 1,
