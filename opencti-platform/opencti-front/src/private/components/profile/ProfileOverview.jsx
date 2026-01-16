@@ -16,7 +16,6 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import { useTheme } from '@mui/styles';
 import { ListItem, ListItemText, Stack, Switch } from '@mui/material';
-import IconButton from '@mui/material/IconButton';
 import Button from '@common/button/Button';
 import Card from '@common/card/Card';
 import NotifierField from '../common/form/NotifierField';
@@ -38,6 +37,7 @@ import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocum
 import ProfileLocalStorage from './ProfileLocalStorage';
 import useHelper from '../../../utils/hooks/useHelper';
 import DashboardSettings from '../DashboardSettings';
+import IconButton from '../../../components/common/button/IconButton';
 
 const styles = () => ({
   container: {
@@ -595,6 +595,7 @@ const ProfileOverviewComponent = (props) => {
               alignItems: 'center',
               width: '100%',
               padding: `${theme.spacing(1)}`,
+              gap: 4,
             }}
           >
             <span style={{ flexGrow: 1 }}>
@@ -604,16 +605,10 @@ const ProfileOverviewComponent = (props) => {
               />
             </span>
             <IconButton
-              style={{
-                cursor: 'pointer',
-                color: theme.palette.primary.main,
-                padding: `0 ${theme.spacing(1)}`,
-              }}
-              disableRipple
               onClick={() => setShowToken((value) => !value)}
               aria-label={showToken ? t('Hide') : t('Show')}
             >
-              {showToken ? <VisibilityOff /> : <Visibility />}
+              {showToken ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
             </IconButton>
           </pre>
           {me.id !== OPENCTI_ADMIN_UUID && (
@@ -636,6 +631,7 @@ const ProfileOverviewComponent = (props) => {
               justifyContent: 'space-between',
               alignItems: 'center',
               width: '100%',
+              gap: 4,
             }}
           >
             <span
@@ -664,11 +660,10 @@ const ProfileOverviewComponent = (props) => {
                 position: 'relative',
                 top: '-8px',
               }}
-              disableRipple
               onClick={() => setShowToken((value) => !value)}
               aria-label={showToken ? t('Hide') : t('Show')}
             >
-              {showToken ? <VisibilityOff /> : <Visibility />}
+              {showToken ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
             </IconButton>
           </pre>
           { isPlaygroundEnable() && (
