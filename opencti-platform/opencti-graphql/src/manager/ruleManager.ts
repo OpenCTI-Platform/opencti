@@ -18,7 +18,7 @@ import { internalLoadById, fullRelationsList } from '../database/middleware-load
 import type { RuleDefinition, RuleRuntime, RuleScope } from '../types/rules';
 import type { BasicManagerEntity, BasicStoreBase, BasicStoreCommon, BasicStoreEntity, BasicStoreRelation, StoreObject } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
-import type { RuleManager } from '../generated/graphql';
+import { ConnectorType, type RuleManager } from '../generated/graphql';
 import { FilterMode, FilterOperator } from '../generated/graphql';
 import type { StixCoreObject } from '../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
@@ -30,6 +30,8 @@ import { isModuleActivated } from '../database/cluster-module';
 import { elList } from '../database/engine';
 import { isStixObject } from '../schema/stixCoreObject';
 import { buildCreateEvent, EVENT_CURRENT_VERSION, LIVE_STREAM_NAME, type StreamProcessor } from '../database/stream/stream-utils';
+import { now } from '../utils/format';
+import { createWork, reportExpectation, updateExpectationsNumber } from '../domain/work';
 
 const MIN_LIVE_STREAM_EVENT_VERSION = 4;
 
@@ -366,6 +368,25 @@ export const ruleApply = async (context: AuthContext, user: AuthUser, elementId:
     throw FunctionalError('Cant find rule to scan', { id: ruleId });
   }
   return executeRuleApply(context, user, rule, elementId);
+};
+
+export const ruleApplyAsync = async (context: AuthContext, user: AuthUser, elementId: string, ruleId: string) => {
+  const rule = await getRule(context, user, ruleId) as RuleRuntime;
+  if (!rule) {
+    throw FunctionalError('Cant find rule to scan', { id: ruleId });
+  }
+  const connector = { internal_id: ruleId, connector_type: ConnectorType.ExternalImport };
+  const args = { receivedTime: now() };
+  const ruleApplyAsyncWork = await createWork(context, SYSTEM_USER, connector, `rule apply async @ ${now()}`, ruleId, args);
+  await updateExpectationsNumber(context, user, ruleApplyAsyncWork?.id, 1);
+
+  ruleApply(context, user, elementId, ruleId).catch((err) => {
+    logApp.error('[OPENCTI] Error loading Pyroscope', { cause: err });
+  }).finally(async () => {
+    await reportExpectation(context, user, ruleApplyAsyncWork?.id);
+  });
+
+  return ruleApplyAsyncWork;
 };
 
 export const ruleClear = async (context: AuthContext, user: AuthUser, elementId: string, ruleId: string) => {

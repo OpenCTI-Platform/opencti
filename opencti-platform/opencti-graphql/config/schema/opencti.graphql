@@ -15583,6 +15583,7 @@ type Mutation {
   ruleSetActivation(id: ID!, enable: Boolean!): Rule! @auth(for: [SETTINGS_SETCUSTOMIZATION])
   ruleManagerClean(eventId: ID): RuleManager! @auth(for: [SETTINGS_SETCUSTOMIZATION])
   ruleApply(elementId: ID!, ruleId: ID!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])
+  ruleApplyAsync(elementId: ID!, ruleId: ID!): Work @auth(for: [KNOWLEDGE_KNUPDATE])
   ruleClear(elementId: ID!, ruleId: ID!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])
   rulesRescan(elementId: ID!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])
 

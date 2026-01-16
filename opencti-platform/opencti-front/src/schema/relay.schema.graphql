@@ -9882,6 +9882,7 @@ type Mutation {
   ruleSetActivation(id: ID!, enable: Boolean!): Rule!
   ruleManagerClean(eventId: ID): RuleManager!
   ruleApply(elementId: ID!, ruleId: ID!): Boolean
+  ruleApplyAsync(elementId: ID!, ruleId: ID!): Work
   ruleClear(elementId: ID!, ruleId: ID!): Boolean
   rulesRescan(elementId: ID!): Boolean
   frontendErrorLog(message: String!, codeStack: String, componentStack: String): Boolean
