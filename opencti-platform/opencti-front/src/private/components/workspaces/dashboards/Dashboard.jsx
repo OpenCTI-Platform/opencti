@@ -17,6 +17,7 @@ import { fromB64, toB64 } from '../../../../utils/String';
 import { ErrorBoundary } from '../../Error';
 import { deserializeDashboardManifestForFrontend, serializeDashboardManifestForBackend } from '../../../../utils/filters/filtersUtils';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { Stack } from '@mui/material';
 
 const dashboardLayoutMutation = graphql`
   mutation DashboardLayoutMutation($id: ID!, $input: [EditInput!]!) {
@@ -270,21 +271,19 @@ const DashboardComponent = ({ data, noToolbar }) => {
       }}
     >
       {!noToolbar && (
-        <>
+        <Stack gap={1}>
           <WorkspaceHeader
             handleAddWidget={handleAddWidget}
             handleImportWidget={importWidget}
             data={workspace}
             variant="dashboard"
           />
-          <div style={{ marginTop: 8 }}>
-            <DashboardTimeFilters
-              workspace={workspace}
-              config={manifest.config}
-              handleDateChange={handleDateChange}
-            />
-          </div>
-        </>
+          <DashboardTimeFilters
+            workspace={workspace}
+            config={manifest.config}
+            handleDateChange={handleDateChange}
+          />
+        </Stack>
       )}
       <ReactGridLayout
         className="layout"

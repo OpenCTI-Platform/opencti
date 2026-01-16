@@ -72,9 +72,9 @@ const SavedFiltersAutocomplete = ({ isDisabled, value, inputValue, onChange, onI
           label={t_i18n('Select saved filter')}
           sx={{
             '& .MuiOutlinedInput-root': {
-              backgroundColor: value ? theme.palette.background.secondary : 'transparent',
+              backgroundColor: theme.palette.background.secondary,
               '& fieldset': {
-                borderColor: value ? theme.palette.action?.hover : 'transparent',
+                borderColor: value ? theme.palette.border.secondary : 'transparent!important',
               },
             },
           }}
