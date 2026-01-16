@@ -1,31 +1,30 @@
-import React from 'react';
-import { Field, Form, Formik } from 'formik';
 import Button from '@common/button/Button';
-import * as Yup from 'yup';
-import { useTheme } from '@mui/styles';
-import { graphql, usePreloadedQuery } from 'react-relay';
+import FormButtonContainer from '@common/form/FormButtonContainer';
 import Alert from '@mui/material/Alert';
 import MenuItem from '@mui/material/MenuItem';
-import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
-import EmailTemplateField from '../../common/form/EmailTemplateField';
-import GroupField, { groupsQuery } from '../../common/form/GroupField';
-import UserConfidenceLevelField from './edition/UserConfidenceLevelField';
-import Drawer from '../../common/drawer/Drawer';
-import { useFormatter } from '../../../../components/i18n';
-import { commitMutation } from '../../../../relay/environment';
+import { Field, Form, Formik } from 'formik';
+import { InformationOutline } from 'mdi-material-ui';
+import { graphql, usePreloadedQuery } from 'react-relay';
+import * as Yup from 'yup';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
-import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
-import PasswordPolicies from '../../common/form/PasswordPolicies';
 import SelectField from '../../../../components/fields/SelectField';
-import DateTimePickerField from '../../../../components/DateTimePickerField';
+import SwitchField from '../../../../components/fields/SwitchField';
+import { useFormatter } from '../../../../components/i18n';
+import { commitMutation } from '../../../../relay/environment';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useAuth from '../../../../utils/hooks/useAuth';
-import { insertNode } from '../../../../utils/store';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
-import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import SwitchField from '../../../../components/fields/SwitchField';
+import { insertNode } from '../../../../utils/store';
+import Drawer from '../../common/drawer/Drawer';
+import EmailTemplateField from '../../common/form/EmailTemplateField';
+import GroupField, { groupsQuery } from '../../common/form/GroupField';
+import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
+import PasswordPolicies from '../../common/form/PasswordPolicies';
+import UserConfidenceLevelField from './edition/UserConfidenceLevelField';
 
 const userMutation = graphql`
   mutation UserCreationMutation($input: UserAddInput!) {
@@ -82,7 +81,6 @@ const CreateUserControlledDial = (props) => (
 
 const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
   const { settings } = useAuth();
-  const theme = useTheme();
   const { t_i18n } = useFormatter();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
 
@@ -307,27 +305,21 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                     label={t_i18n('Max Confidence Level')}
                   />
                 )}
-                <div style={{
-                  marginTop: 20,
-                  textAlign: 'right',
-                }}
-                >
+                <FormButtonContainer>
                   <Button
                     variant="secondary"
                     onClick={handleReset}
                     disabled={isSubmitting}
-                    style={{ marginLeft: theme.spacing(2) }}
                   >
                     {t_i18n('Cancel')}
                   </Button>
                   <Button
                     onClick={submitForm}
                     disabled={isSubmitting}
-                    style={{ marginLeft: theme.spacing(2) }}
                   >
                     {t_i18n('Create')}
                   </Button>
-                </div>
+                </FormButtonContainer>
               </Form>
             )}
           </Formik>

@@ -43,7 +43,7 @@ const StixCoreObjectEnrollPlaybook: FunctionComponent<StixCoreObjectEnrollPlaybo
               onClick={() => !disabledInDraft && handleOpenEnrollPlaybook()}
               value="enroll"
               size="small"
-              style={{ marginRight: 3, height: '100%' }}
+              style={{ height: '100%' }}
             >
               <PrecisionManufacturingOutlined fontSize="small" color={disabledInDraft ? 'disabled' : 'primary'} />
             </ToggleButton>

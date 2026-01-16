@@ -1,32 +1,21 @@
-import React, { FunctionComponent, useState, useMemo } from 'react';
-import { Field, Form, Formik } from 'formik';
 import Button from '@common/button/Button';
-import * as Yup from 'yup';
+import { FormCreationQuery } from '@components/data/forms/__generated__/FormCreationQuery.graphql';
+import { FormLinesPaginationQuery$variables } from '@components/data/forms/__generated__/FormLinesPaginationQuery.graphql';
+import { Field, Form, Formik } from 'formik';
+import { FormikHelpers } from 'formik/dist/types';
+import { FunctionComponent, useMemo, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import makeStyles from '@mui/styles/makeStyles';
-import { FormikHelpers } from 'formik/dist/types';
-import { FormLinesPaginationQuery$variables } from '@components/data/forms/__generated__/FormLinesPaginationQuery.graphql';
-import { FormCreationQuery } from '@components/data/forms/__generated__/FormCreationQuery.graphql';
+import * as Yup from 'yup';
 import TextField from '../../../../components/TextField';
+import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
+import SwitchField from '../../../../components/fields/SwitchField';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, handleError } from '../../../../relay/environment';
-import SwitchField from '../../../../components/fields/SwitchField';
 import { insertNode } from '../../../../utils/store';
-import type { Theme } from '../../../../components/Theme';
-import { convertFormBuilderDataToSchema } from './FormUtils';
+import { FormAddInput, FormBuilderData, FormFieldAttribute } from './Form.d';
 import FormSchemaEditor from './FormSchemaEditor';
-import { FormBuilderData, FormAddInput, FormFieldAttribute } from './Form.d';
-
-const useStyles = makeStyles<Theme>((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-}));
+import { convertFormBuilderDataToSchema } from './FormUtils';
 
 const formCreationMutation = graphql`
   mutation FormCreationMutation($input: FormAddInput!) {
@@ -78,7 +67,6 @@ const FormCreation: FunctionComponent<FormCreationProps> = ({
   paginationOptions,
   formData,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   // Parse initial form data if duplicating
@@ -262,23 +250,21 @@ const FormCreation: FunctionComponent<FormCreationProps> = ({
               onChange={setFormBuilderData}
             />
 
-            <div className={classes.buttons}>
+            <FormButtonContainer>
               <Button
                 variant="secondary"
                 onClick={handleClose}
                 disabled={isSubmitting}
-                classes={{ root: classes.button }}
               >
                 {t_i18n('Cancel')}
               </Button>
               <Button
                 onClick={submitForm}
                 disabled={isSubmitting || !formBuilderData}
-                classes={{ root: classes.button }}
               >
                 {formData ? t_i18n('Duplicate') : t_i18n('Create')}
               </Button>
-            </div>
+            </FormButtonContainer>
           </Form>
         )}
       </Formik>

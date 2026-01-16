@@ -309,7 +309,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
   };
 
   return (
-    <div style={{ scrollbarWidth: 'none' }} data-testid="setting-page">
+    <div style={{ height: '100%', scrollbarWidth: 'none' }} data-testid="setting-page">
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Parameters'), current: true }]} />
       {isEnterpriseEditionActivated && (
         <Grid container={true} spacing={3} style={{ marginBottom: 23 }}>

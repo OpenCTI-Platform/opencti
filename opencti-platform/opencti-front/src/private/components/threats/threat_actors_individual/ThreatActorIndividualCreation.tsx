@@ -45,6 +45,7 @@ import BulkTextModal from '../../../../components/fields/BulkTextField/BulkTextM
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 
 interface ErrorBadgeProps extends BadgeProps {
   errors?: FormikErrors<ThreatActorIndividualAddInput>;
@@ -656,27 +657,21 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
                 />
               </>
             )}
-            <div style={{
-              marginTop: '20px',
-              textAlign: 'right',
-            }}
-            >
+            <FormButtonContainer>
               <Button
                 variant="secondary"
                 onClick={handleReset}
                 disabled={isSubmitting}
-                sx={{ marginLeft: 2 }}
               >
                 {t_i18n('Cancel')}
               </Button>
               <Button
                 onClick={submitForm}
                 disabled={isSubmitting}
-                sx={{ marginLeft: 2 }}
               >
                 {t_i18n('Create')}
               </Button>
-            </div>
+            </FormButtonContainer>
           </Form>
         </>
       )}

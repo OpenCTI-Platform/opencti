@@ -1,40 +1,28 @@
-import React, { useState } from 'react';
-import { Field, Form, Formik } from 'formik';
 import Button from '@common/button/Button';
-import * as Yup from 'yup';
-import { makeStyles } from '@mui/styles';
-import { graphql } from 'react-relay';
-import MenuItem from '@mui/material/MenuItem';
-import { Add } from '@mui/icons-material';
 import IconButton from '@common/button/IconButton';
-import EmailTemplateField from '../../common/form/EmailTemplateField';
-import Drawer from '../../common/drawer/Drawer';
-import GroupField from '../../common/form/GroupField';
-import { convertGrantableGroups } from '../organizations/SettingsOrganizationEdition';
-import { useFormatter } from '../../../../components/i18n';
-import { commitMutation } from '../../../../relay/environment';
+import FormButtonContainer from '@common/form/FormButtonContainer';
+import { Add } from '@mui/icons-material';
+import MenuItem from '@mui/material/MenuItem';
+import { Field, Form, Formik } from 'formik';
+import { useState } from 'react';
+import { graphql } from 'react-relay';
+import * as Yup from 'yup';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
-import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
-import PasswordPolicies from '../../common/form/PasswordPolicies';
 import SelectField from '../../../../components/fields/SelectField';
-import DateTimePickerField from '../../../../components/DateTimePickerField';
+import { useFormatter } from '../../../../components/i18n';
+import { commitMutation } from '../../../../relay/environment';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { insertNode } from '../../../../utils/store';
-import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-}));
+import Drawer from '../../common/drawer/Drawer';
+import EmailTemplateField from '../../common/form/EmailTemplateField';
+import GroupField from '../../common/form/GroupField';
+import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
+import PasswordPolicies from '../../common/form/PasswordPolicies';
+import { convertGrantableGroups } from '../organizations/SettingsOrganizationEdition';
 
 const userMutation = graphql`
   mutation SettingsOrganizationUserCreationMutation($input: UserAddInput!) {
@@ -87,7 +75,6 @@ const SettingsOrganizationUserCreation = ({
 }) => {
   const { me, settings } = useAuth();
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const [openAddUser, setOpenAddUser] = useState(false);
   const onReset = () => setOpenAddUser(false);
   const onSubmit = (values, { setSubmitting, resetForm }) => {
@@ -287,23 +274,21 @@ const SettingsOrganizationUserCreation = ({
                 name="email_template_id"
                 label={t_i18n('Email template')}
               />
-              <div className={classes.buttons}>
+              <FormButtonContainer>
                 <Button
                   variant="secondary"
                   onClick={handleReset}
                   disabled={isSubmitting}
-                  classes={{ root: classes.button }}
                 >
                   {t_i18n('Cancel')}
                 </Button>
                 <Button
                   onClick={submitForm}
                   disabled={isSubmitting}
-                  classes={{ root: classes.button }}
                 >
                   {t_i18n('Create')}
                 </Button>
-              </div>
+              </FormButtonContainer>
             </Form>
           )}
         </Formik>

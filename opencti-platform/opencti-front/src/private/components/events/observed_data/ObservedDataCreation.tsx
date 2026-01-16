@@ -1,45 +1,32 @@
-import React, { FunctionComponent } from 'react';
-import { Field, Form, Formik } from 'formik';
-import * as Yup from 'yup';
-import { graphql } from 'react-relay';
 import Button from '@common/button/Button';
-import makeStyles from '@mui/styles/makeStyles';
-import { RecordSourceSelectorProxy } from 'relay-runtime';
-import { FormikConfig } from 'formik/dist/types';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { ObservedDatasLinesPaginationQuery$variables } from '@components/events/__generated__/ObservedDatasLinesPaginationQuery.graphql';
-import { handleErrorInForm } from '../../../../relay/environment';
+import { Field, Form, Formik } from 'formik';
+import { FormikConfig } from 'formik/dist/types';
+import { FunctionComponent } from 'react';
+import { graphql } from 'react-relay';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
+import * as Yup from 'yup';
+import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
-import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import CreatedByField from '../../common/form/CreatedByField';
-import ObjectLabelField from '../../common/form/ObjectLabelField';
-import { parse } from '../../../../utils/Time';
-import ConfidenceField from '../../common/form/ConfidenceField';
-import StixCoreObjectsField from '../../common/form/StixCoreObjectsField';
-import { insertNode } from '../../../../utils/store';
-import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import DateTimePickerField from '../../../../components/DateTimePickerField';
+import { handleErrorInForm } from '../../../../relay/environment';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
-import type { Theme } from '../../../../components/Theme';
-import { ObservedDataCreationMutation, ObservedDataCreationMutation$variables } from './__generated__/ObservedDataCreationMutation.graphql';
-import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-}));
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import { insertNode } from '../../../../utils/store';
+import { parse } from '../../../../utils/Time';
+import CustomFileUploader from '../../common/files/CustomFileUploader';
+import ConfidenceField from '../../common/form/ConfidenceField';
+import CreatedByField from '../../common/form/CreatedByField';
+import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
+import ObjectLabelField from '../../common/form/ObjectLabelField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
+import StixCoreObjectsField from '../../common/form/StixCoreObjectsField';
+import { ObservedDataCreationMutation, ObservedDataCreationMutation$variables } from './__generated__/ObservedDataCreationMutation.graphql';
 
 const observedDataCreationMutation = graphql`
   mutation ObservedDataCreationMutation($input: ObservedDataAddInput!) {
@@ -95,7 +82,6 @@ export const ObservedDataCreationForm: FunctionComponent<
   defaultCreatedBy,
   defaultMarkingDefinitions,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { mandatoryAttributes } = useIsMandatoryAttribute(OBSERVED_DATA_TYPE);
   const basicShape = yupShapeConditionalRequired({
@@ -245,23 +231,21 @@ export const ObservedDataCreationForm: FunctionComponent<
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
-          <div className={classes.buttons}>
+          <FormButtonContainer>
             <Button
               variant="secondary"
               onClick={handleReset}
               disabled={isSubmitting}
-              classes={{ root: classes.button }}
             >
               {t_i18n('Cancel')}
             </Button>
             <Button
               onClick={submitForm}
               disabled={isSubmitting}
-              classes={{ root: classes.button }}
             >
               {t_i18n('Create')}
             </Button>
-          </div>
+          </FormButtonContainer>
         </Form>
       )}
     </Formik>

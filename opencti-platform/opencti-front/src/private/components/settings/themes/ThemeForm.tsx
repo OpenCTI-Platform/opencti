@@ -1,13 +1,12 @@
-import React, { FunctionComponent } from 'react';
-import { Field, Form } from 'formik';
 import Button from '@common/button/Button';
-import { useTheme } from '@mui/styles';
+import { Field, Form } from 'formik';
+import { FunctionComponent } from 'react';
 import ColorPickerField from '../../../../components/ColorPickerField';
+import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 import { useFormatter } from '../../../../components/i18n';
-import type { Theme } from '../../../../components/Theme';
-import ThemeDetectDuplicate from './ThemeDetectDuplicate';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import TextField from '../../../../components/TextField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import ThemeDetectDuplicate from './ThemeDetectDuplicate';
 
 interface ThemeFormProps {
   values: {
@@ -47,7 +46,6 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
   withButtons = true,
 }) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme<Theme>();
 
   const handleFieldSubmit = () => {
     if (onChange) {
@@ -186,23 +184,21 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
 
       {
         withButtons && (
-          <div style={{ marginTop: 20, textAlign: 'right' }}>
+          <FormButtonContainer>
             <Button
               variant="secondary"
               onClick={onCancel}
               disabled={isSubmitting}
-              style={{ marginLeft: theme.spacing(2) }}
             >
               {t_i18n('Cancel')}
             </Button>
             <Button
               onClick={onSubmit}
               disabled={isSubmitting}
-              style={{ marginLeft: theme.spacing(2) }}
             >
               {t_i18n(submitLabel)}
             </Button>
-          </div>
+          </FormButtonContainer>
         )
       }
     </Form>

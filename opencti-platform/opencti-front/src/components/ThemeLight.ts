@@ -46,7 +46,7 @@ const ThemeLight = (
     border: {
       lightBackground: hexToRGB('#000000', 0.15),
       primary: hexToRGB((primary || THEME_LIGHT_DEFAULT_PRIMARY), 0.3),
-      secondary: hexToRGB((secondary || THEME_LIGHT_DEFAULT_SECONDARY), 0.3),
+      secondary: '#C2C2C2',
       pagination: hexToRGB('#000000', 0.5),
       paper: hexToRGB('#000000', 0.12),
       main: '#D2D2D2',

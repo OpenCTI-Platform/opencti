@@ -29,6 +29,7 @@ import BulkTextModal from '../../../../components/fields/BulkTextField/BulkTextM
 import ProgressBar from '../../../../components/ProgressBar';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 
 const intrusionSetMutation = graphql`
   mutation IntrusionSetCreationMutation($input: IntrusionSetAddInput!) {
@@ -271,27 +272,21 @@ export const IntrusionSetCreationForm: FunctionComponent<
                 : undefined
               }
             />
-            <div style={{
-              marginTop: '20px',
-              textAlign: 'right',
-            }}
-            >
+            <FormButtonContainer>
               <Button
                 variant="secondary"
                 onClick={handleReset}
                 disabled={isSubmitting}
-                sx={{ marginLeft: 2 }}
               >
                 {t_i18n('Cancel')}
               </Button>
               <Button
                 onClick={submitForm}
                 disabled={isSubmitting}
-                sx={{ marginLeft: 2 }}
               >
                 {t_i18n('Create')}
               </Button>
-            </div>
+            </FormButtonContainer>
           </Form>
         </>
       )}

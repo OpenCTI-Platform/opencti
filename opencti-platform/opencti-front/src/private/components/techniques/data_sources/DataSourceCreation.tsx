@@ -33,6 +33,7 @@ import BulkTextModal from '../../../../components/fields/BulkTextField/BulkTextM
 import ProgressBar from '../../../../components/ProgressBar';
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
+import FormButtonContainer from '@common/form/FormButtonContainer';
 
 const dataSourceMutation = graphql`
   mutation DataSourceCreationMutation($input: DataSourceAddInput!) {
@@ -297,27 +298,21 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
               containerStyle={fieldSpacingContainerStyle}
               multiple={true}
             />
-            <div style={{
-              marginTop: '20px',
-              textAlign: 'right',
-            }}
-            >
+            <FormButtonContainer>
               <Button
                 variant="secondary"
                 onClick={handleReset}
                 disabled={isSubmitting}
-                sx={{ marginLeft: 2 }}
               >
                 {t_i18n('Cancel')}
               </Button>
               <Button
                 onClick={submitForm}
                 disabled={isSubmitting}
-                sx={{ marginLeft: 2 }}
               >
                 {t_i18n('Create')}
               </Button>
-            </div>
+            </FormButtonContainer>
           </Form>
         </>
       )}
@@ -371,9 +366,7 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
 
   const renderContextual = () => (
     <div style={{ display: display ? 'block' : 'none' }}>
-      <div style={{ marginTop: '5px' }}>
-        {CreateNarrativeControlledDialContextual}
-      </div>
+      {CreateNarrativeControlledDialContextual}
       <Dialog open={open} onClose={handleClose} slotProps={{ paper: { elevation: 1 } }}>
         <DialogTitle>
           {t_i18n('Create a data source')}

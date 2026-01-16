@@ -22,17 +22,11 @@ import SwitchField from '../../../../components/fields/SwitchField';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { representationInitialization } from './representations/RepresentationUtils';
 import CsvMapperTestDialog from './CsvMapperTestDialog';
+import FormButtonContainer from '@common/form/FormButtonContainer';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
+const useStyles = makeStyles<Theme>(() => ({
   center: {
     display: 'flex',
     alignItems: 'center',
@@ -321,11 +315,10 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                 )}
               />
 
-              <div className={classes.buttons}>
+              <FormButtonContainer>
                 <Button
                   variant="secondary"
                   onClick={() => setOpen(true)}
-                  classes={{ root: classes.button }}
                   disabled={hasError}
                 >
                   {t_i18n('Test')}
@@ -333,11 +326,11 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                 <Button
                   onClick={submitForm}
                   disabled={isSubmitting}
-                  classes={{ root: classes.button }}
                 >
                   {getButtonText()}
                 </Button>
-              </div>
+              </FormButtonContainer>
+
               <CsvMapperTestDialog
                 open={open}
                 onClose={() => setOpen(false)}

@@ -40,14 +40,11 @@ import Security from '../../../../utils/Security';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
   button: {
     marginLeft: theme.spacing(2),
   },
@@ -372,7 +369,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
               </div>
             </Security>
           )}
-          <div className={classes.buttons}>
+          <FormButtonContainer>
             <Button
               variant="secondary"
               onClick={handleReset}
@@ -400,7 +397,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
                 {t_i18n('Create and map')}
               </Button>
             )}
-          </div>
+          </FormButtonContainer>
         </Form>
       )}
     </Formik>

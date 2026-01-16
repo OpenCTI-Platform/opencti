@@ -28,15 +28,9 @@ import SelectField from '../../../../components/fields/SelectField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import type { Theme } from '../../../../components/Theme';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 
-const useStyles = makeStyles<Theme>((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
+const useStyles = makeStyles<Theme>(() => ({
   text: {
     display: 'inline-block',
     flexGrow: 1,
@@ -268,12 +262,11 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                   />
                 </>
               )}
-              <div className={classes.buttons}>
+              <FormButtonContainer>
                 <Button
                   variant="secondary"
                   onClick={handleReset}
                   disabled={isSubmitting}
-                  classes={{ root: classes.button }}
                 >
                   {t_i18n('Cancel')}
                 </Button>
@@ -281,19 +274,16 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                   variant="secondary"
                   onClick={() => handleVerify(formValues)}
                   disabled={isSubmitting}
-                  classes={{ root: classes.button }}
                 >
                   {t_i18n('Verify')}
                 </Button>
                 <Button
-                  color="secondary"
                   onClick={submitForm}
                   disabled={!verified || isSubmitting}
-                  classes={{ root: classes.button }}
                 >
                   {t_i18n('Create')}
                 </Button>
-              </div>
+              </FormButtonContainer>
             </Form>
           )}
         </Formik>

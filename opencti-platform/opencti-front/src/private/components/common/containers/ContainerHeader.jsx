@@ -7,7 +7,7 @@ import { ViewColumnOutlined } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { useTheme } from '@mui/styles';
-import { Box } from '@mui/material';
+import { Box, Stack } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
 import StixCoreObjectMenuItemUnderEE from '../stix_core_objects/StixCoreObjectMenuItemUnderEE';
 import StixCoreObjectSharingList from '../stix_core_objects/StixCoreObjectSharingList';
@@ -658,140 +658,138 @@ const ContainerHeader = (props) => {
             </ToggleButtonGroup>
           </div>
         )}
-        <div>
-          <div style={{ display: 'flex' }}>
-            {!knowledge && (
-              <StixCoreObjectBackgroundTasks
-                id={container.id}
-                actionsFilter={['SHARE', 'UNSHARE', 'SHARE_MULTIPLE', 'UNSHARE_MULTIPLE']}
+        <Stack direction="row" gap={1}>
+          {!knowledge && (
+            <StixCoreObjectBackgroundTasks
+              id={container.id}
+              actionsFilter={['SHARE', 'UNSHARE', 'SHARE_MULTIPLE', 'UNSHARE_MULTIPLE']}
+            />
+          )}
+          {enableQuickSubscription && (
+            <StixCoreObjectSubscribers triggerData={triggerData} />
+          )}
+          {displaySharing && (
+            <>
+              <StixCoreObjectSharingList data={container} inContainer={true} />
+              <StixCoreObjectSharing
+                elementId={container.id}
+                open={openSharing}
+                variant="header"
+                disabled={isSharingDisabled}
+                handleClose={displaySharingButton ? undefined : handleCloseSharing}
+                inContainer={true}
               />
-            )}
-            {enableQuickSubscription && (
-              <StixCoreObjectSubscribers triggerData={triggerData} />
-            )}
-            {displaySharing && (
-              <>
-                <StixCoreObjectSharingList data={container} inContainer={true} />
-                <StixCoreObjectSharing
-                  elementId={container.id}
-                  open={openSharing}
-                  variant="header"
-                  disabled={isSharingDisabled}
-                  handleClose={displaySharingButton ? undefined : handleCloseSharing}
-                  inContainer={true}
-                />
-              </>
-            )}
-            {displayAuthorizedMembers && (
-              <FormAuthorizedMembersDialog
-                id={container.id}
-                owner={container.creators?.[0]}
-                authorizedMembers={authorizedMembersToOptions(
-                  container.authorized_members,
+            </>
+          )}
+          {displayAuthorizedMembers && (
+            <FormAuthorizedMembersDialog
+              id={container.id}
+              owner={container.creators?.[0]}
+              authorizedMembers={authorizedMembersToOptions(
+                container.authorized_members,
+              )}
+              mutation={containerHeaderEditAuthorizedMembersMutation}
+              open={openAccessRestriction}
+              handleClose={displayAuthorizedMembersButton ? undefined : handleCloseAccessRestriction}
+              canDeactivate={true}
+            />
+          )}
+          {!knowledge && (
+            <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
+              <StixCoreObjectFileExport
+                scoId={container.id}
+                scoName={container.name}
+                scoEntityType={container.entity_type}
+                redirectToContentTab={!!redirectToContent}
+                OpenFormComponent={StixCoreObjectFileExportButton}
+                onExportCompleted={handleExportCompleted}
+              />
+            </Security>
+          )}
+          {enableSuggestions && (
+            <StixCoreObjectsSuggestions
+              containerId={container.id}
+              currentMode={currentMode}
+              onApplied={onApplied}
+              containerHeaderObjectsQuery={containerHeaderObjectsQuery}
+              container={container}
+            />
+          )}
+          {enableQuickSubscription && (
+            <StixCoreObjectQuickSubscription
+              instanceId={container.id}
+              instanceName={getMainRepresentative(container)}
+              paginationOptions={triggersPaginationOptions}
+              triggerData={triggerData}
+            />
+          )}
+          {enableEnricher && (
+            <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+              <StixCoreObjectEnrichment
+                stixCoreObjectId={container.id}
+              />
+            </Security>
+          )}
+          {displayEnrollPlaybook
+            && (
+              <StixCoreObjectEnrollPlaybook
+                stixCoreObjectId={container.id}
+                open={openEnrollPlaybook}
+                handleClose={displayEnrollPlaybookButton ? undefined : handleCloseEnrollPlaybook}
+              />
+            )
+          }
+          {displayPopoverMenu && (
+            <>
+              <PopoverMenu>
+                {({ closeMenu }) => (
+                  <Box>
+                    {displaySharing && !displaySharingButton && (
+                      <StixCoreObjectMenuItemUnderEE
+                        setOpen={setOpenSharing}
+                        title={t_i18n('Share with an organization')}
+                        isDisabled={isSharingDisabled}
+                        handleCloseMenu={closeMenu}
+                        needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}
+                      />
+                    )}
+                    {displayAuthorizedMembers && !displayAuthorizedMembersButton && (
+                      <StixCoreObjectMenuItemUnderEE
+                        setOpen={setOpenAccessRestriction}
+                        title={t_i18n('Manage access restriction')}
+                        handleCloseMenu={closeMenu}
+                        isDisabled={!enableManageAuthorizedMembers}
+                        needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
+                      />
+                    )}
+                    {displayEnrollPlaybook && !displayEnrollPlaybookButton && (
+                      <StixCoreObjectMenuItemUnderEE
+                        title={t_i18n('Enroll in playbook')}
+                        setOpen={setOpenEnrollPlaybook}
+                        handleCloseMenu={closeMenu}
+                        needs={[AUTOMATION]}
+                        matchAll
+                      />
+                    )}
+                    {canDelete && (
+                      <MenuItem onClick={() => {
+                        handleOpenDelete();
+                        closeMenu();
+                      }}
+                      >
+                        {t_i18n('Delete')}
+                      </MenuItem>
+                    )}
+                  </Box>
                 )}
-                mutation={containerHeaderEditAuthorizedMembersMutation}
-                open={openAccessRestriction}
-                handleClose={displayAuthorizedMembersButton ? undefined : handleCloseAccessRestriction}
-                canDeactivate={true}
-              />
-            )}
-            {!knowledge && (
-              <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
-                <StixCoreObjectFileExport
-                  scoId={container.id}
-                  scoName={container.name}
-                  scoEntityType={container.entity_type}
-                  redirectToContentTab={!!redirectToContent}
-                  OpenFormComponent={StixCoreObjectFileExportButton}
-                  onExportCompleted={handleExportCompleted}
-                />
-              </Security>
-            )}
-            {enableSuggestions && (
-              <StixCoreObjectsSuggestions
-                containerId={container.id}
-                currentMode={currentMode}
-                onApplied={onApplied}
-                containerHeaderObjectsQuery={containerHeaderObjectsQuery}
-                container={container}
-              />
-            )}
-            {enableQuickSubscription && (
-              <StixCoreObjectQuickSubscription
-                instanceId={container.id}
-                instanceName={getMainRepresentative(container)}
-                paginationOptions={triggersPaginationOptions}
-                triggerData={triggerData}
-              />
-            )}
-            {enableEnricher && (
-              <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
-                <StixCoreObjectEnrichment
-                  stixCoreObjectId={container.id}
-                />
-              </Security>
-            )}
-            {displayEnrollPlaybook
-              && (
-                <StixCoreObjectEnrollPlaybook
-                  stixCoreObjectId={container.id}
-                  open={openEnrollPlaybook}
-                  handleClose={displayEnrollPlaybookButton ? undefined : handleCloseEnrollPlaybook}
-                />
-              )
-            }
-            {displayPopoverMenu && (
-              <>
-                <PopoverMenu>
-                  {({ closeMenu }) => (
-                    <Box>
-                      {displaySharing && !displaySharingButton && (
-                        <StixCoreObjectMenuItemUnderEE
-                          setOpen={setOpenSharing}
-                          title={t_i18n('Share with an organization')}
-                          isDisabled={isSharingDisabled}
-                          handleCloseMenu={closeMenu}
-                          needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}
-                        />
-                      )}
-                      {displayAuthorizedMembers && !displayAuthorizedMembersButton && (
-                        <StixCoreObjectMenuItemUnderEE
-                          setOpen={setOpenAccessRestriction}
-                          title={t_i18n('Manage access restriction')}
-                          handleCloseMenu={closeMenu}
-                          isDisabled={!enableManageAuthorizedMembers}
-                          needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
-                        />
-                      )}
-                      {displayEnrollPlaybook && !displayEnrollPlaybookButton && (
-                        <StixCoreObjectMenuItemUnderEE
-                          title={t_i18n('Enroll in playbook')}
-                          setOpen={setOpenEnrollPlaybook}
-                          handleCloseMenu={closeMenu}
-                          needs={[AUTOMATION]}
-                          matchAll
-                        />
-                      )}
-                      {canDelete && (
-                        <MenuItem onClick={() => {
-                          handleOpenDelete();
-                          closeMenu();
-                        }}
-                        >
-                          {t_i18n('Delete')}
-                        </MenuItem>
-                      )}
-                    </Box>
-                  )}
-                </PopoverMenu>
-                {DeleteComponent && (
-                  <DeleteComponent isOpen={openDelete} onClose={handleCloseDelete} />
-                )}
-              </>
-            )}
-            {EditComponent}
-          </div>
-        </div>
+              </PopoverMenu>
+              {DeleteComponent && (
+                <DeleteComponent isOpen={openDelete} onClose={handleCloseDelete} />
+              )}
+            </>
+          )}
+          {EditComponent}
+        </Stack>
       </React.Suspense>
     </div>
   );

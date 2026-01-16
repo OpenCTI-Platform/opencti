@@ -1,50 +1,37 @@
-import React, { FunctionComponent, useState } from 'react';
-import { Field, Form, Formik } from 'formik';
+import Button from '@common/button/Button';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
+import CustomFileUploader from '@components/common/files/CustomFileUploader';
+import ConfidenceField from '@components/common/form/ConfidenceField';
+import { CoursesOfActionLinesPaginationQuery$variables } from '@components/techniques/__generated__/CoursesOfActionLinesPaginationQuery.graphql';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import Button from '@common/button/Button';
-import * as Yup from 'yup';
-import { graphql } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
-import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
-import CustomFileUploader from '@components/common/files/CustomFileUploader';
-import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
-import { CoursesOfActionLinesPaginationQuery$variables } from '@components/techniques/__generated__/CoursesOfActionLinesPaginationQuery.graphql';
-import ConfidenceField from '@components/common/form/ConfidenceField';
+import { FunctionComponent, useState } from 'react';
+import { graphql } from 'react-relay';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
+import * as Yup from 'yup';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import TextField from '../../../../components/TextField';
+import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
+import MarkdownField from '../../../../components/fields/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
-import TextField from '../../../../components/TextField';
-import CreatedByField from '../../common/form/CreatedByField';
-import ObjectLabelField from '../../common/form/ObjectLabelField';
-import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import MarkdownField from '../../../../components/fields/MarkdownField';
-import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
-import type { Theme } from '../../../../components/Theme';
+import CreatedByField from '../../common/form/CreatedByField';
+import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
+import ObjectLabelField from '../../common/form/ObjectLabelField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import {
   CourseOfActionCreationMutation,
   CourseOfActionCreationMutation$data,
   CourseOfActionCreationMutation$variables,
 } from './__generated__/CourseOfActionCreationMutation.graphql';
-import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-}));
 
 const courseOfActionMutation = graphql`
   mutation CourseOfActionCreationMutation($input: CourseOfActionAddInput!) {
@@ -98,7 +85,6 @@ export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormPro
   defaultCreatedBy,
   defaultMarkingDefinitions,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { mandatoryAttributes } = useIsMandatoryAttribute(COURSE_OF_ACTION_TYPE);
   const basicShape = yupShapeConditionalRequired({
@@ -240,23 +226,21 @@ export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormPro
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
-          <div className={classes.buttons}>
+          <FormButtonContainer>
             <Button
               variant="secondary"
               onClick={handleReset}
               disabled={isSubmitting}
-              classes={{ root: classes.button }}
             >
               {t_i18n('Cancel')}
             </Button>
             <Button
               onClick={submitForm}
               disabled={isSubmitting}
-              classes={{ root: classes.button }}
             >
               {t_i18n('Create')}
             </Button>
-          </div>
+          </FormButtonContainer>
         </Form>
       )}
     </Formik>
@@ -307,9 +291,7 @@ const CourseOfActionCreation: FunctionComponent<CourseOfActionFormProps> = ({
   const renderContextual = () => {
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
-        <div style={{ marginTop: '5px' }}>
-          {CreateCourseOfActionControlledDialContextual}
-        </div>
+        {CreateCourseOfActionControlledDialContextual}
         <Dialog open={open} onClose={handleClose} slotProps={{ paper: { elevation: 1 } }}>
           <DialogTitle>{t_i18n('Create a course of action')}</DialogTitle>
           <DialogContent>

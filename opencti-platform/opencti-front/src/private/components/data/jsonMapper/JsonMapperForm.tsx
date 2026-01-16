@@ -20,17 +20,11 @@ import { representationInitialization } from './representations/RepresentationUt
 import {
   JsonMapperRepresentationAttributesForm_allSchemaAttributes$data,
 } from './representations/attributes/__generated__/JsonMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
+import FormButtonContainer from '@common/form/FormButtonContainer';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
+const useStyles = makeStyles<Theme>(() => ({
   center: {
     display: 'flex',
     alignItems: 'center',
@@ -248,11 +242,10 @@ const JsonMapperForm: FunctionComponent<JsonMapperFormProps> = ({ jsonMapper, on
                 )}
               />
 
-              <div className={classes.buttons}>
+              <FormButtonContainer>
                 <Button
                   color="primary"
                   onClick={() => setOpen(true)}
-                  classes={{ root: classes.button }}
                   disabled={hasError}
                 >
                   {t_i18n('Test')}
@@ -261,11 +254,11 @@ const JsonMapperForm: FunctionComponent<JsonMapperFormProps> = ({ jsonMapper, on
                   color="secondary"
                   onClick={submitForm}
                   disabled={isSubmitting}
-                  classes={{ root: classes.button }}
                 >
                   {getButtonText()}
                 </Button>
-              </div>
+              </FormButtonContainer>
+
               <JsonMapperTestDialog
                 open={open}
                 onClose={() => setOpen(false)}

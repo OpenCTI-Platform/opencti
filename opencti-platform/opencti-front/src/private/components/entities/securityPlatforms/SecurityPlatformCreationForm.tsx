@@ -25,6 +25,7 @@ import ProgressBar from '../../../../components/ProgressBar';
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
+import FormButtonContainer from '@common/form/FormButtonContainer';
 
 interface SecurityPlatformCreationFormData {
   name: string;
@@ -224,11 +225,7 @@ const SecurityPlatformCreationForm: FunctionComponent<SecurityPlatformCreationFo
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
-            <div style={{
-              marginTop: '20px',
-              textAlign: 'right',
-            }}
-            >
+            <FormButtonContainer>
               <Button
                 variant="secondary"
                 onClick={handleReset}
@@ -239,11 +236,10 @@ const SecurityPlatformCreationForm: FunctionComponent<SecurityPlatformCreationFo
               <Button
                 onClick={submitForm}
                 disabled={isSubmitting}
-                sx={{ marginLeft: 2 }}
               >
                 {t_i18n('Create')}
               </Button>
-            </div>
+            </FormButtonContainer>
           </Form>
         </>
       )}

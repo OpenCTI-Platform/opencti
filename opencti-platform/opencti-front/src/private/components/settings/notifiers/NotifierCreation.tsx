@@ -1,41 +1,28 @@
-import React, { createRef, FunctionComponent, MutableRefObject, useRef, useState } from 'react';
-import { Field, Form, Formik } from 'formik';
-import CoreForm from '@rjsf/core';
-import * as Yup from 'yup';
-import JsonForm from '@rjsf/mui';
 import Button from '@common/button/Button';
-import makeStyles from '@mui/styles/makeStyles';
+import FormButtonContainer from '@common/form/FormButtonContainer';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
+import CoreForm from '@rjsf/core';
+import JsonForm from '@rjsf/mui';
+import { Field, Form, Formik } from 'formik';
+import { FormikHelpers } from 'formik/dist/types';
+import { createRef, FunctionComponent, MutableRefObject, useRef, useState } from 'react';
 import { graphql, useQueryLoader } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import { FormikHelpers } from 'formik/dist/types';
-import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
+import * as Yup from 'yup';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import { useFormatter } from '../../../../components/i18n';
-import type { Theme } from '../../../../components/Theme';
 import TextField from '../../../../components/TextField';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { insertNode } from '../../../../utils/store';
+import NotifierConnectorField from '../../common/form/NotifierConnectorField';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
 import { NotifiersLinesPaginationQuery$variables } from './__generated__/NotifiersLinesPaginationQuery.graphql';
-import NotifierConnectorField from '../../common/form/NotifierConnectorField';
-import { uiSchema } from './NotifierUtils';
-import NotifierTestDialog, { notifierTestQuery } from './NotifierTestDialog';
 import { NotifierTestDialogQuery } from './__generated__/NotifierTestDialogQuery.graphql';
+import NotifierTestDialog, { notifierTestQuery } from './NotifierTestDialog';
+import { uiSchema } from './NotifierUtils';
 import notifierValidator from './NotifierValidator';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-}));
 
 const notifierMutation = graphql`
   mutation NotifierCreationMutation($input: NotifierAddInput!) {
@@ -81,7 +68,6 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
   onClose,
   inputValue,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const formRef = createRef<CoreForm>();
   const [open, setOpen] = useState(false);
@@ -197,7 +183,14 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
               }}
             />
           )}
-          <div className={classes.buttons}>
+          <FormButtonContainer>
+            <Button
+              variant="secondary"
+              onClick={handleReset}
+              disabled={isSubmitting}
+            >
+              {t_i18n('Cancel')}
+            </Button>
             <Button
               variant="secondary"
               onClick={() => {
@@ -207,17 +200,8 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
                 setOpen(true);
               }}
               disabled={isSubmitting}
-              classes={{ root: classes.button }}
             >
               {t_i18n('Test')}
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={handleReset}
-              disabled={isSubmitting}
-              classes={{ root: classes.button }}
-            >
-              {t_i18n('Cancel')}
             </Button>
             <Button
               color="secondary"
@@ -227,11 +211,10 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
                 resetForm,
               })
               }
-              classes={{ root: classes.button }}
             >
               {t_i18n('Create')}
             </Button>
-          </div>
+          </FormButtonContainer>
           <NotifierTestDialog
             open={open}
             onClose={() => setOpen(false)}

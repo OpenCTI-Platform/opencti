@@ -19,6 +19,7 @@ import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { resolveLink } from '../../../../utils/Entity';
 import type { Theme } from '../../../../components/Theme';
+import FormButtonContainer from '@common/form/FormButtonContainer';
 
 const fintelDesignCreationMutation = graphql`
   mutation FintelDesignCreationAddMutation($input: FintelDesignAddInput!) {
@@ -132,23 +133,21 @@ const FintelDesignCreationForm: FunctionComponent<FintelDesignCreationFormProps>
             rows={2}
             style={{ marginTop: 20 }}
           />
-          <div style={{ marginTop: 20, textAlign: 'right' }}>
+          <FormButtonContainer>
             <Button
               variant="secondary"
               onClick={handleReset}
               disabled={isSubmitting}
-              style={{ marginLeft: 16 }}
             >
               {t_i18n('Cancel')}
             </Button>
             <Button
               onClick={submitForm}
               disabled={isSubmitting}
-              style={{ marginLeft: 16 }}
             >
               {t_i18n('Create')}
             </Button>
-          </div>
+          </FormButtonContainer>
         </Form>
       )}
     </Formik>

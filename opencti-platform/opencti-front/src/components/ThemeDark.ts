@@ -45,7 +45,7 @@ const ThemeDark = (
     gradient: { main: '#00f1bd' },
     border: {
       primary: hexToRGB((primary || THEME_DARK_DEFAULT_PRIMARY), 0.3),
-      secondary: hexToRGB((secondary || THEME_DARK_DEFAULT_SECONDARY), 0.3),
+      secondary: '#424751',
       pagination: hexToRGB('#ffffff', 0.5),
       paper: hexToRGB('#ffffff', 0.12),
       main: '#2B3447',
@@ -294,6 +294,10 @@ const ThemeDark = (
       styleOverrides: {
         root: {
           color: text_color,
+          backgroundColor: '#0D182A',
+          '& fieldset': {
+            border: 'none',
+          },
         },
       },
     },
@@ -511,6 +515,7 @@ const ThemeDark = (
         },
       },
     },
+
   },
 });
 

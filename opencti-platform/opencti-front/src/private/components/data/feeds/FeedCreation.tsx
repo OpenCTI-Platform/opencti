@@ -53,6 +53,7 @@ import type { Theme } from '../../../../components/Theme';
 import { PaginationOptions } from '../../../../components/list_lines';
 import { FilterDefinition } from '../../../../utils/hooks/useAuth';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 
 export const feedCreationAllTypesQuery = graphql`
     query FeedCreationAllTypesQuery {
@@ -77,10 +78,6 @@ export const feedCreationAllTypesQuery = graphql`
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles((theme: Theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
   button: {
     marginLeft: theme.spacing(2),
   },
@@ -638,23 +635,21 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                         </div>
                       )}
                       <div className="clearfix" />
-                      <div className={classes.buttons}>
+                      <FormButtonContainer>
                         <Button
                           variant="secondary"
                           onClick={handleReset}
                           disabled={isSubmitting}
-                          classes={{ root: classes.button }}
                         >
                           {t_i18n('Cancel')}
                         </Button>
                         <Button
                           onClick={submitForm}
                           disabled={isSubmitting || !areAttributesValid()}
-                          classes={{ root: classes.button }}
                         >
                           {isDuplicated ? t_i18n('Duplicate') : t_i18n('Create')}
                         </Button>
-                      </div>
+                      </FormButtonContainer>
                     </Form>
                   )}
                 </Formik>

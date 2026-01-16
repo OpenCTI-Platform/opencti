@@ -24,6 +24,7 @@ import { PaginationOptions } from '../../../../components/list_lines';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 
 interface StreamCollectionCreationProps {
   paginationOptions: PaginationOptions;
@@ -37,14 +38,7 @@ interface StreamCollectionCreationForm {
 }
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
+const useStyles = makeStyles<Theme>(() => ({
   alert: {
     width: '100%',
     marginTop: 20,
@@ -213,23 +207,21 @@ const StreamCollectionCreation: FunctionComponent<StreamCollectionCreationProps>
                 searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
                 entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering']}
               />
-              <div className={classes.buttons}>
+              <FormButtonContainer>
                 <Button
                   variant="secondary"
                   onClick={handleReset}
                   disabled={isSubmitting}
-                  classes={{ root: classes.button }}
                 >
                   {t_i18n('Cancel')}
                 </Button>
                 <Button
                   onClick={submitForm}
                   disabled={isSubmitting}
-                  classes={{ root: classes.button }}
                 >
                   {t_i18n('Create')}
                 </Button>
-              </div>
+              </FormButtonContainer>
             </Form>
           )}
         </Formik>

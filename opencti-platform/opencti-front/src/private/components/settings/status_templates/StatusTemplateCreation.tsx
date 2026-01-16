@@ -1,25 +1,25 @@
-import React, { FunctionComponent } from 'react';
-import { Field, Form, Formik, FormikConfig } from 'formik';
 import Button from '@common/button/Button';
-import * as Yup from 'yup';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import makeStyles from '@mui/styles/makeStyles';
+import { Field, Form, Formik, FormikConfig } from 'formik';
+import { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
-import { useTheme } from '@mui/styles';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import makeStyles from '@mui/styles/makeStyles';
-import TextField from '../../../../components/TextField';
+import * as Yup from 'yup';
 import ColorPickerField from '../../../../components/ColorPickerField';
-import { commitMutation, defaultCommitMutation, handleErrorInForm } from '../../../../relay/environment';
-import { useFormatter } from '../../../../components/i18n';
-import { insertNode } from '../../../../utils/store';
+import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import { useFormatter } from '../../../../components/i18n';
+import TextField from '../../../../components/TextField';
 import type { Theme } from '../../../../components/Theme';
-import { StatusTemplatesLinesPaginationQuery$variables } from './__generated__/StatusTemplatesLinesPaginationQuery.graphql';
+import { commitMutation, defaultCommitMutation, handleErrorInForm } from '../../../../relay/environment';
+import { insertNode } from '../../../../utils/store';
 import { StatusTemplateAddInput, StatusTemplateCreationContextualMutation$data } from './__generated__/StatusTemplateCreationContextualMutation.graphql';
+import { StatusTemplatesLinesPaginationQuery$variables } from './__generated__/StatusTemplatesLinesPaginationQuery.graphql';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -76,7 +76,6 @@ const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = (
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const theme = useTheme<Theme>();
   const statusTemplateValidation = Yup.object().shape({
     name: Yup.string().required(t_i18n('This field is required')),
     color: Yup.string().required(t_i18n('This field is required')),
@@ -173,27 +172,21 @@ const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = (
                   fullWidth={true}
                   style={{ marginTop: 20 }}
                 />
-                <div style={{
-                  marginTop: 20,
-                  textAlign: 'right',
-                }}
-                >
+                <FormButtonContainer>
                   <Button
                     variant="secondary"
                     onClick={handleReset}
                     disabled={isSubmitting}
-                    style={{ marginLeft: theme.spacing(2) }}
                   >
                     {t_i18n('Cancel')}
                   </Button>
                   <Button
                     onClick={submitForm}
                     disabled={isSubmitting}
-                    style={{ marginLeft: theme.spacing(2) }}
                   >
                     {t_i18n('Create')}
                   </Button>
-                </div>
+                </FormButtonContainer>
               </Form>
             )}
           </Formik>

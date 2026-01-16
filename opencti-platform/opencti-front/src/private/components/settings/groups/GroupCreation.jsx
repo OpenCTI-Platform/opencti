@@ -1,31 +1,18 @@
-import React from 'react';
-import { Field, Form, Formik } from 'formik';
 import Button from '@common/button/Button';
-import * as Yup from 'yup';
+import FormButtonContainer from '@common/form/FormButtonContainer';
+import { Field, Form, Formik } from 'formik';
 import { graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
-import makeStyles from '@mui/styles/makeStyles';
-import ConfidenceField from '../../common/form/ConfidenceField';
-import Drawer from '../../common/drawer/Drawer';
-import { useFormatter } from '../../../../components/i18n';
-import { commitMutation } from '../../../../relay/environment';
+import * as Yup from 'yup';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
+import { useFormatter } from '../../../../components/i18n';
+import { commitMutation } from '../../../../relay/environment';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
-import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-}));
+import Drawer from '../../common/drawer/Drawer';
+import ConfidenceField from '../../common/form/ConfidenceField';
 
 const groupMutation = graphql`
   mutation GroupCreationMutation($input: GroupAddInput!) {
@@ -62,7 +49,6 @@ const CreateGroupControlledDial = (props) => (
 );
 
 const GroupCreation = ({ paginationOptions }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
 
@@ -140,23 +126,21 @@ const GroupCreation = ({ paginationOptions }) => {
                   containerStyle={fieldSpacingContainerStyle}
                 />
               )}
-              <div className={classes.buttons}>
+              <FormButtonContainer>
                 <Button
                   variant="secondary"
                   onClick={handleReset}
                   disabled={isSubmitting}
-                  classes={{ root: classes.button }}
                 >
                   {t_i18n('Cancel')}
                 </Button>
                 <Button
                   onClick={submitForm}
                   disabled={isSubmitting}
-                  classes={{ root: classes.button }}
                 >
                   {t_i18n('Create')}
                 </Button>
-              </div>
+              </FormButtonContainer>
             </Form>
           )}
         </Formik>

@@ -3,7 +3,7 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import DatePicker from '@common/input/DatePicker';
 import { parse, buildDate } from 'src/utils/Time';
 import { InvestigationGraph_fragment$data } from '@components/workspaces/investigations/__generated__/InvestigationGraph_fragment.graphql';
 import { EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from '../../../../utils/hooks/useGranted';
@@ -11,6 +11,9 @@ import Security from '../../../../utils/Security';
 import { useFormatter } from '../../../../components/i18n';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import { Dashboard_workspace$data } from './__generated__/Dashboard_workspace.graphql';
+import { Stack } from '@mui/material';
+import { useTheme } from '@mui/styles';
+import { Theme } from '../../../../components/Theme';
 
 interface DashboardTimeFiltersProps {
   workspace: Dashboard_workspace$data | InvestigationGraph_fragment$data;
@@ -24,10 +27,15 @@ interface DashboardTimeFiltersProps {
 
 const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
   workspace,
-  config = {},
+  config = {
+    startDate: null,
+    endDate: null,
+    relativeDate: null,
+  },
   handleDateChange,
 }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
   const { canEdit } = useGetCurrentUserAccessRight(workspace.currentUserAccessRight);
 
   const handleChangeRelativeDate = (event: SelectChangeEvent) => {
@@ -45,13 +53,16 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
       needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}
       hasAccess={canEdit}
     >
-      <div style={{ display: 'flex', marginLeft: 20 }}>
+      <Stack direction="row" gap={1}>
         <FormControl
           size="small"
-          style={{ width: 194, marginRight: 8 }}
+          style={{ width: 194, marginLeft: 20 }}
           variant="outlined"
         >
-          <InputLabel id="relative" variant="outlined">
+          <InputLabel
+            id="relative"
+            variant="outlined"
+          >
             {t_i18n('Relative time')}
           </InputLabel>
           <Select
@@ -60,6 +71,13 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
             onChange={handleChangeRelativeDate}
             label={t_i18n('Relative time')}
             variant="outlined"
+            sx={{
+              '& fieldset': {
+                border: config.relativeDate
+                  ? `1px solid ${theme.palette.border.secondary}`
+                  : undefined,
+              },
+            }}
           >
             <MenuItem value="none">{t_i18n('None')}</MenuItem>
             <MenuItem value="days-1">{t_i18n('Last 24 hours')}</MenuItem>
@@ -76,13 +94,6 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
           disableFuture
           disabled={!!config.relativeDate}
           onChange={(value: Date | null, context) => !context.validationError && handleChangeDate('startDate', value)}
-          slotProps={{
-            textField: {
-              style: { marginRight: 8 },
-              variant: 'outlined',
-              size: 'small',
-            },
-          }}
         />
         <DatePicker
           value={buildDate(config.endDate)}
@@ -90,14 +101,8 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
           disabled={!!config.relativeDate}
           disableFuture
           onChange={(value: Date | null, context) => !context.validationError && handleChangeDate('endDate', value)}
-          slotProps={{
-            textField: {
-              variant: 'outlined',
-              size: 'small',
-            },
-          }}
         />
-      </div>
+      </Stack>
     </Security>
   );
 };

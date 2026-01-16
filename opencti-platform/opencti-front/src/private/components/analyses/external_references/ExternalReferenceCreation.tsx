@@ -1,27 +1,27 @@
-import React, { FunctionComponent, useState } from 'react';
-import { Field, Form, Formik } from 'formik';
-import * as R from 'ramda';
-import * as Yup from 'yup';
-import { graphql } from 'react-relay';
+import Button from '@common/button/Button';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@common/button/Button';
-import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
-import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
+import * as R from 'ramda';
+import { FunctionComponent, useState } from 'react';
+import { graphql } from 'react-relay';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
 import useApiMutation from 'src/utils/hooks/useApiMutation';
-import { useTheme } from '@mui/material/styles';
-import { ExternalReferencesLinesPaginationQuery$variables } from '../__generated__/ExternalReferencesLinesPaginationQuery.graphql';
-import { handleErrorInForm } from '../../../../relay/environment';
-import { useFormatter } from '../../../../components/i18n';
-import TextField from '../../../../components/TextField';
-import MarkdownField from '../../../../components/fields/MarkdownField';
-import { insertNode } from '../../../../utils/store';
-import { ExternalReferenceAddInput, ExternalReferenceCreationMutation, ExternalReferenceCreationMutation$data } from './__generated__/ExternalReferenceCreationMutation.graphql';
-import CustomFileUploader from '../../common/files/CustomFileUploader';
+import * as Yup from 'yup';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import TextField from '../../../../components/TextField';
+import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
+import MarkdownField from '../../../../components/fields/MarkdownField';
+import { useFormatter } from '../../../../components/i18n';
+import { handleErrorInForm } from '../../../../relay/environment';
+import { insertNode } from '../../../../utils/store';
+import CustomFileUploader from '../../common/files/CustomFileUploader';
+import { ExternalReferencesLinesPaginationQuery$variables } from '../__generated__/ExternalReferencesLinesPaginationQuery.graphql';
+import { ExternalReferenceAddInput, ExternalReferenceCreationMutation, ExternalReferenceCreationMutation$data } from './__generated__/ExternalReferenceCreationMutation.graphql';
 
 const externalReferenceCreationMutation = graphql`
   mutation ExternalReferenceCreationMutation(
@@ -90,8 +90,6 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
   dryrun,
 }) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme();
-  const buttonStyle = { marginLeft: theme.spacing(2) };
 
   const [open, setOpen] = useState(false);
 
@@ -259,23 +257,21 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
                   rows="4"
                   style={{ marginTop: 20 }}
                 />
-                <div style={{ marginTop: 20, textAlign: 'right' }}>
+                <FormButtonContainer>
                   <Button
                     variant="secondary"
                     onClick={handleReset}
                     disabled={isSubmitting}
-                    style={buttonStyle}
                   >
                     {t_i18n('Cancel')}
                   </Button>
                   <Button
                     onClick={submitForm}
                     disabled={isSubmitting}
-                    style={buttonStyle}
                   >
                     {t_i18n('Create')}
                   </Button>
-                </div>
+                </FormButtonContainer>
               </Form>
             )}
           </Formik>

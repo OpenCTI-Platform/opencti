@@ -1,71 +1,29 @@
-import { Close } from '@mui/icons-material';
 import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import Drawer from '@mui/material/Drawer';
-import IconButton from '@common/button/IconButton';
 import MenuItem from '@mui/material/MenuItem';
-import Typography from '@mui/material/Typography';
-import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import * as Yup from 'yup';
-import { useFormatter } from '../../../../components/i18n';
+import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import SelectField from '../../../../components/fields/SelectField';
+import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
-import type { Theme } from '../../../../components/Theme';
 import TimePickerField from '../../../../components/TimePickerField';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { insertNode } from '../../../../utils/store';
 import { dayStartDate, parse } from '../../../../utils/Time';
+import Drawer from '../../common/drawer/Drawer';
 import NotifierField from '../../common/form/NotifierField';
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
 import TriggersField from './TriggersField';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
-  dialogActions: {
-    padding: '0 17px 20px 0',
-  },
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
-}));
 
 const triggerDigestCreationMutation = graphql`
   mutation TriggerDigestCreationMutation($input: TriggerDigestAddInput!) {
@@ -118,7 +76,6 @@ const TriggerDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
   recipientId,
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const onReset = () => handleClose && handleClose();
   const [commitDigest] = useApiMutation(triggerDigestCreationMutation);
   const digestInitialValues: TriggerDigestAddInput = {
@@ -275,62 +232,43 @@ const TriggerDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
   );
   const renderClassic = () => (
     <Drawer
-      disableRestoreFocus={true}
       open={open}
-      anchor="right"
-      elevation={1}
-      sx={{ zIndex: 1202 }}
-      classes={{ paper: classes.drawerPaper }}
       onClose={handleClose}
+      title={t_i18n('Create a regular digest')}
     >
-      <div className={classes.header}>
-        <IconButton
-          aria-label="Close"
-          className={classes.closeButton}
-          onClick={handleClose}
-          color="primary"
-        >
-          <Close fontSize="small" color="primary" />
-        </IconButton>
-        <Typography variant="h6">{t_i18n('Create a regular digest')}</Typography>
-      </div>
-      <div className={classes.container}>
-        <Formik<TriggerDigestAddInput>
-          initialValues={digestInitialValues}
-          validationSchema={digestTriggerValidation(t_i18n)}
-          onSubmit={onDigestSubmit}
-          onReset={onReset}
-        >
-          {({
-            submitForm,
-            handleReset,
-            isSubmitting,
-            setFieldValue,
-            values,
-          }) => (
-            <Form>
-              {digestFields(setFieldValue, values)}
-              <div className={classes.buttons}>
-                <Button
-                  variant="secondary"
-                  onClick={handleReset}
-                  disabled={isSubmitting}
-                  classes={{ root: classes.button }}
-                >
-                  {t_i18n('Cancel')}
-                </Button>
-                <Button
-                  onClick={submitForm}
-                  disabled={isSubmitting}
-                  classes={{ root: classes.button }}
-                >
-                  {t_i18n('Create')}
-                </Button>
-              </div>
-            </Form>
-          )}
-        </Formik>
-      </div>
+      <Formik<TriggerDigestAddInput>
+        initialValues={digestInitialValues}
+        validationSchema={digestTriggerValidation(t_i18n)}
+        onSubmit={onDigestSubmit}
+        onReset={onReset}
+      >
+        {({
+          submitForm,
+          handleReset,
+          isSubmitting,
+          setFieldValue,
+          values,
+        }) => (
+          <Form>
+            {digestFields(setFieldValue, values)}
+            <FormButtonContainer>
+              <Button
+                variant="secondary"
+                onClick={handleReset}
+                disabled={isSubmitting}
+              >
+                {t_i18n('Cancel')}
+              </Button>
+              <Button
+                onClick={submitForm}
+                disabled={isSubmitting}
+              >
+                {t_i18n('Create')}
+              </Button>
+            </FormButtonContainer>
+          </Form>
+        )}
+      </Formik>
     </Drawer>
   );
   const renderContextual = () => (
@@ -350,7 +288,7 @@ const TriggerDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
           <div>
             <DialogTitle>{t_i18n('Create a regular digest')}</DialogTitle>
             <DialogContent>{digestFields(setFieldValue, values)}</DialogContent>
-            <DialogActions classes={{ root: classes.dialogActions }}>
+            <DialogActions sx={{ display: 'flex' }}>
               <Button onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
               </Button>

@@ -21,6 +21,7 @@ import useSchema from '../../../../utils/hooks/useSchema';
 import { now } from '../../../../utils/Time';
 import ItemIcon from '../../../../components/ItemIcon';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import FormButtonContainer from '@common/form/FormButtonContainer';
 
 const exclusionListCreationFileMutation = graphql`
   mutation ExclusionListCreationFileAddMutation($input: ExclusionListFileAddInput!) {
@@ -193,23 +194,21 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
               required={!isUploadFileChecked}
             />
           )}
-          <div style={{ marginTop: 20, textAlign: 'right' }}>
+          <FormButtonContainer>
             <Button
               variant="secondary"
               onClick={handleReset}
               disabled={isSubmitting}
-              style={{ marginLeft: 16 }}
             >
               {t_i18n('Cancel')}
             </Button>
             <Button
               onClick={submitForm}
               disabled={isSubmitting}
-              style={{ marginLeft: 16 }}
             >
               {t_i18n('Create')}
             </Button>
-          </div>
+          </FormButtonContainer>
         </Form>
       )}
     </Formik>

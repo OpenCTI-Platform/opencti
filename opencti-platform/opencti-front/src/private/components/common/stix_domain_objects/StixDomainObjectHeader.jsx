@@ -483,7 +483,7 @@ const StixDomainObjectHeader = (props) => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: theme.spacing(3) }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
           <Tooltip title={getMainRepresentative(stixDomainObject)}>
-            <TitleMainEntity>
+            <TitleMainEntity preserveCase>
               {truncate(getMainRepresentative(stixDomainObject), 80)}
             </TitleMainEntity>
           </Tooltip>
@@ -640,125 +640,124 @@ const StixDomainObjectHeader = (props) => {
             )}
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <div style={{ display: 'flex' }}>
-            {enableQuickSubscription && (
-              <StixCoreObjectSubscribers triggerData={triggerData} />
-            )}
-            {disableSharing !== true && (
-              <StixCoreObjectSharingList data={stixDomainObject} />
-            )}
-            {disableSharing !== true && (
-              <StixCoreObjectSharing
-                elementId={stixDomainObject.id}
-                open={isSharingOpen}
-                variant="header"
-                handleClose={displaySharingButton ? undefined : handleCloseSharing}
-              />
-            )}
-            <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
-              <StixCoreObjectFileExport
-                scoId={stixDomainObject.id}
-                scoEntityType={entityType}
-                OpenFormComponent={StixCoreObjectFileExportButton}
-                onExportCompleted={handleExportCompleted}
-              />
-            </Security>
-            {isKnowledgeUpdater && (
-              <StixCoreObjectContainer elementId={stixDomainObject.id} />
-            )}
-            {enableQuickSubscription && (
-              <StixCoreObjectQuickSubscription
-                instanceId={stixDomainObject.id}
-                instanceName={getMainRepresentative(stixDomainObject)}
-                paginationOptions={triggersPaginationOptions}
-                triggerData={triggerData}
-              />
-            )}
-            {(enableEnricher && isKnowledgeEnricher) && (
-              <StixCoreObjectEnrichment
-                onClose={handleCloseEnrichment}
-                isOpen={isEnrichmentOpen}
-                stixCoreObjectId={stixDomainObject.id}
-              />
-            )}
-            {enableEnrollPlaybook && (
-              <StixCoreObjectEnrollPlaybook
-                open={isEnrollPlaybookOpen}
-                handleClose={displayEnrollPlaybookButton ? undefined : handleCloseEnrollPlaybook}
-                stixCoreObjectId={stixDomainObject.id}
-              />
-            )}
-            {enableManageAuthorizedMembers && (
-              <FormAuthorizedMembersDialog
-                id={stixDomainObject.id}
-                owner={stixDomainObject.creators?.[0]}
-                authorizedMembers={authorizedMembersToOptions(
-                  stixDomainObject.authorized_members,
-                )}
-                mutation={stixDomainObjectHeaderEditAuthorizedMembersMutation}
-                open={openAccessRestriction}
-                handleClose={handleCloseAccessRestriction}
-                isCanUseEnable={CAN_USE_ENTITY_TYPES.includes(stixDomainObject.entity_type)}
-                canDeactivate={true}
-              />
-            )}
-            {displayPopoverMenu ? (
-              <PopoverMenu>
-                {({ closeMenu }) => (
-                  <Box>
-                    {disableSharing !== true && !displaySharingButton && (
-                      <StixCoreObjectMenuItemUnderEE
-                        setOpen={setIsSharingOpen}
-                        title={t_i18n('Share with an organization')}
-                        handleCloseMenu={closeMenu}
-                        needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}
-                      />
-                    )}
-                    {enableManageAuthorizedMembers && (
-                      <StixCoreObjectMenuItemUnderEE
-                        setOpen={setOpenAccessRestriction}
-                        title={t_i18n('Manage access restriction')}
-                        handleCloseMenu={closeMenu}
-                        isDisabled={!enableManageAuthorizedMembers}
-                        needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
-                      />
-                    )}
-                    {(enableEnricher && isKnowledgeEnricher) && (
-                      <MenuItem onClick={() => {
-                        handleOpenEnrichment();
-                        closeMenu();
-                      }}
-                      >
-                        {t_i18n('Enrichment')}
-                      </MenuItem>
-                    )}
-                    {enableEnrollPlaybook && !displayEnrollPlaybookButton && (
-                      <StixCoreObjectMenuItemUnderEE
-                        title={t_i18n('Enroll in playbook')}
-                        setOpen={setEnrollPlaybookOpen}
-                        handleCloseMenu={closeMenu}
-                        needs={[AUTOMATION]}
-                        matchAll
-                      />
-                    )}
-                    {isKnowledgeDeleter && (
-                      <MenuItem onClick={() => {
-                        handleOpenDelete();
-                        closeMenu();
-                      }}
-                      >
-                        {t_i18n('Delete')}
-                      </MenuItem>
-                    )}
-                  </Box>
-                )}
-              </PopoverMenu>
-            ) : null}
-            {RelateComponent}
-            {EditComponent}
-            <DeleteComponent isOpen={openDelete} onClose={handleCloseDelete} />
-          </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {enableQuickSubscription && (
+            <StixCoreObjectSubscribers triggerData={triggerData} />
+          )}
+          {disableSharing !== true && (
+            <StixCoreObjectSharingList data={stixDomainObject} />
+          )}
+          {disableSharing !== true && (
+            <StixCoreObjectSharing
+              elementId={stixDomainObject.id}
+              open={isSharingOpen}
+              variant="header"
+              handleClose={displaySharingButton ? undefined : handleCloseSharing}
+            />
+          )}
+          <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
+            <StixCoreObjectFileExport
+              scoId={stixDomainObject.id}
+              scoEntityType={entityType}
+              OpenFormComponent={StixCoreObjectFileExportButton}
+              onExportCompleted={handleExportCompleted}
+            />
+          </Security>
+          {isKnowledgeUpdater && (
+            <StixCoreObjectContainer elementId={stixDomainObject.id} />
+          )}
+          {enableQuickSubscription && (
+            <StixCoreObjectQuickSubscription
+              instanceId={stixDomainObject.id}
+              instanceName={getMainRepresentative(stixDomainObject)}
+              paginationOptions={triggersPaginationOptions}
+              triggerData={triggerData}
+            />
+          )}
+          {(enableEnricher && isKnowledgeEnricher) && (
+            <StixCoreObjectEnrichment
+              onClose={handleCloseEnrichment}
+              isOpen={isEnrichmentOpen}
+              stixCoreObjectId={stixDomainObject.id}
+            />
+          )}
+          {enableEnrollPlaybook && (
+            <StixCoreObjectEnrollPlaybook
+              open={isEnrollPlaybookOpen}
+              handleClose={displayEnrollPlaybookButton ? undefined : handleCloseEnrollPlaybook}
+              stixCoreObjectId={stixDomainObject.id}
+            />
+          )}
+          {enableManageAuthorizedMembers && (
+            <FormAuthorizedMembersDialog
+              id={stixDomainObject.id}
+              owner={stixDomainObject.creators?.[0]}
+              authorizedMembers={authorizedMembersToOptions(
+                stixDomainObject.authorized_members,
+              )}
+              mutation={stixDomainObjectHeaderEditAuthorizedMembersMutation}
+              open={openAccessRestriction}
+              handleClose={handleCloseAccessRestriction}
+              isCanUseEnable={CAN_USE_ENTITY_TYPES.includes(stixDomainObject.entity_type)}
+              canDeactivate={true}
+            />
+          )}
+          {displayPopoverMenu ? (
+            <PopoverMenu>
+              {({ closeMenu }) => (
+                <Box>
+                  {disableSharing !== true && !displaySharingButton && (
+                    <StixCoreObjectMenuItemUnderEE
+                      setOpen={setIsSharingOpen}
+                      title={t_i18n('Share with an organization')}
+                      handleCloseMenu={closeMenu}
+                      needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}
+                    />
+                  )}
+                  {enableManageAuthorizedMembers && (
+                    <StixCoreObjectMenuItemUnderEE
+                      setOpen={setOpenAccessRestriction}
+                      title={t_i18n('Manage access restriction')}
+                      handleCloseMenu={closeMenu}
+                      isDisabled={!enableManageAuthorizedMembers}
+                      needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
+                    />
+                  )}
+                  {(enableEnricher && isKnowledgeEnricher) && (
+                    <MenuItem onClick={() => {
+                      handleOpenEnrichment();
+                      closeMenu();
+                    }}
+                    >
+                      {t_i18n('Enrichment')}
+                    </MenuItem>
+                  )}
+                  {enableEnrollPlaybook && !displayEnrollPlaybookButton && (
+                    <StixCoreObjectMenuItemUnderEE
+                      title={t_i18n('Enroll in playbook')}
+                      setOpen={setEnrollPlaybookOpen}
+                      handleCloseMenu={closeMenu}
+                      needs={[AUTOMATION]}
+                      matchAll
+                    />
+                  )}
+                  {isKnowledgeDeleter && (
+                    <MenuItem onClick={() => {
+                      handleOpenDelete();
+                      closeMenu();
+                    }}
+                    >
+                      {t_i18n('Delete')}
+                    </MenuItem>
+                  )}
+                </Box>
+              )}
+            </PopoverMenu>
+          ) : null}
+          {RelateComponent}
+          {EditComponent}
+          <DeleteComponent isOpen={openDelete} onClose={handleCloseDelete} />
         </div>
       </div>
       {!noAliases && (

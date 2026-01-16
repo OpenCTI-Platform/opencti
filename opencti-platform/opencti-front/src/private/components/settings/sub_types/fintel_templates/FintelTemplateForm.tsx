@@ -1,17 +1,15 @@
-import { FormikConfig } from 'formik/dist/types';
-import * as Yup from 'yup';
-import { Field, Form, Formik } from 'formik';
-import React from 'react';
 import Button from '@common/button/Button';
-import { useTheme } from '@mui/styles';
-import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
-import { useFormatter } from '../../../../../components/i18n';
+import { Field, Form, Formik } from 'formik';
+import { FormikConfig } from 'formik/dist/types';
+import { InformationOutline } from 'mdi-material-ui';
+import * as Yup from 'yup';
 import TextField from '../../../../../components/TextField';
+import FormButtonContainer from '../../../../../components/common/form/FormButtonContainer';
 import MarkdownField from '../../../../../components/fields/MarkdownField';
-import { fieldSpacingContainerStyle } from '../../../../../utils/field';
-import type { Theme } from '../../../../../components/Theme';
 import SwitchField from '../../../../../components/fields/SwitchField';
+import { useFormatter } from '../../../../../components/i18n';
+import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 
 export interface FintelTemplateFormInputs {
   name: string;
@@ -36,7 +34,6 @@ const FintelTemplateForm = ({
   defaultValues,
   isEdition = false,
 }: FintelTemplateFormProps) => {
-  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
 
   const validation = Yup.object().shape({
@@ -108,13 +105,7 @@ const FintelTemplateForm = ({
             />
 
             {!isEdition && (
-              <div style={{
-                display: 'flex',
-                justifyContent: 'end',
-                marginTop: theme.spacing(3),
-                gap: theme.spacing(2),
-              }}
-              >
+              <FormButtonContainer>
                 <Button
                   disabled={isSubmitting}
                   onClick={() => {
@@ -130,7 +121,7 @@ const FintelTemplateForm = ({
                 >
                   {t_i18n('Create')}
                 </Button>
-              </div>
+              </FormButtonContainer>
             )}
           </Form>
         );

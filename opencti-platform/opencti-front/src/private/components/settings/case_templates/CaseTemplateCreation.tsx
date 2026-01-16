@@ -1,20 +1,19 @@
 import Button from '@common/button/Button';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { Field, Form, Formik } from 'formik';
-import React, { FunctionComponent } from 'react';
+import { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import * as Yup from 'yup';
-import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
-import { useTheme } from '@mui/styles';
-import { useFormatter } from '../../../../components/i18n';
+import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import MarkdownField from '../../../../components/fields/MarkdownField';
+import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
-import type { Theme } from '../../../../components/Theme';
+import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
 import { insertNode } from '../../../../utils/store';
 import CaseTemplateTasks from '../../common/form/CaseTemplateTasks';
 import { CaseTemplateLinesPaginationQuery$variables } from './__generated__/CaseTemplateLinesPaginationQuery.graphql';
-import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
 
 const caseTemplateMutation = graphql`
   mutation CaseTemplateCreationMutation($input: CaseTemplateAddInput!) {
@@ -41,7 +40,6 @@ const CaseTemplateCreation: FunctionComponent<CaseTemplateCreationProps> = ({
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme<Theme>();
   const caseTemplateValidation = Yup.object().shape({
     name: Yup.string().required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
@@ -118,27 +116,21 @@ const CaseTemplateCreation: FunctionComponent<CaseTemplateCreationProps> = ({
                 onChange={setFieldValue}
                 values={values.tasks}
               />
-              <div style={{
-                marginTop: 20,
-                textAlign: 'right',
-              }}
-              >
+              <FormButtonContainer>
                 <Button
                   variant="secondary"
                   onClick={handleReset}
                   disabled={isSubmitting}
-                  style={{ marginLeft: theme.spacing(2) }}
                 >
                   {t_i18n('Cancel')}
                 </Button>
                 <Button
                   onClick={submitForm}
                   disabled={isSubmitting}
-                  style={{ marginLeft: theme.spacing(2) }}
                 >
                   {t_i18n('Create')}
                 </Button>
-              </div>
+              </FormButtonContainer>
             </Form>
           )}
         </Formik>

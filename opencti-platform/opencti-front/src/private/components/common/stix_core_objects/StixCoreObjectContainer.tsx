@@ -168,7 +168,6 @@ const StixCoreObjectContainer = ({ elementId }: StixCoreObjectContainerProps) =>
           onClick={handleToggleAddInContainer(true)}
           value="container"
           size="small"
-          style={{ marginRight: 3 }}
         >
           <MoveToInboxOutlined color="primary" fontSize="small" />
         </ToggleButton>

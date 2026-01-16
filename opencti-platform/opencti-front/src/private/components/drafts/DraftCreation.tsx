@@ -16,6 +16,7 @@ import TextField from '../../../components/TextField';
 import { useFormatter } from '../../../components/i18n';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useAuth from '../../../utils/hooks/useAuth';
+import FormButtonContainer from '@common/form/FormButtonContainer';
 
 export const draftCreationMutation = graphql`
     mutation DraftCreationMutation($input: DraftWorkspaceAddInput!) {
@@ -127,23 +128,21 @@ const DraftCreationForm: React.FC<DraftFormProps> = ({ updater, onCompleted, onR
               applyAccesses
             />
           </div>
-          <div style={{ marginTop: 20, textAlign: 'right' }}>
+          <FormButtonContainer>
             <Button
               variant="secondary"
               onClick={handleReset}
               disabled={isSubmitting}
-              style={{ marginLeft: 10 }}
             >
               {t_i18n('Cancel')}
             </Button>
             <Button
               onClick={submitForm}
               disabled={isSubmitting}
-              style={{ marginLeft: 10 }}
             >
               {t_i18n('Create')}
             </Button>
-          </div>
+          </FormButtonContainer>
         </Form>
       )}
 

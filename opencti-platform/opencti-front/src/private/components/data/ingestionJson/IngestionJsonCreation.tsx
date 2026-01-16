@@ -4,7 +4,6 @@ import Button from '@common/button/Button';
 import * as Yup from 'yup';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import MenuItem from '@mui/material/MenuItem';
-import makeStyles from '@mui/styles/makeStyles';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import { FormikConfig } from 'formik/dist/types';
@@ -30,7 +29,6 @@ import CreatorField from '../../common/form/CreatorField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { insertNode } from '../../../../utils/store';
 import SelectField from '../../../../components/fields/SelectField';
-import type { Theme } from '../../../../components/Theme';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -41,18 +39,7 @@ import { BASIC_AUTH, CERT_AUTH, extractCA, extractCert, extractKey, extractPassw
 import useAuth from '../../../../utils/hooks/useAuth';
 import PasswordTextField from '../../../../components/PasswordTextField';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-}));
+import FormButtonContainer from '@common/form/FormButtonContainer';
 
 const ingestionJsonCreationMutation = graphql`
   mutation IngestionJsonCreationMutation($input: IngestionJsonAddInput!) {
@@ -131,7 +118,6 @@ const resolveHasUserChoiceJsonMapper = (option: FieldOption & {
 
 const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ paginationOptions, isDuplicated, handleClose, ingestionJson }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const [open, setOpen] = useState(false);
   const ingestionJsonData = useFragment(ingestionJsonEditionFragment, ingestionJson);
   const [isCreateDisabled, setIsCreateDisabled] = useState(true);
@@ -515,19 +501,17 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
               {t_i18n('Only successful tests allow the ingestion creation.')}
             </Alert>
           </Box>
-          <div className={classes.buttons}>
+          <FormButtonContainer>
             <Button
               variant="secondary"
               onClick={handleReset}
               disabled={isSubmitting}
-              classes={{ root: classes.button }}
             >
               {t_i18n('Cancel')}
             </Button>
             <Button
               color={isCreateDisabled ? 'secondary' : 'primary'}
               onClick={() => setOpen(true)}
-              classes={{ root: classes.button }}
               disabled={!(values.uri && values.json_mapper_id)}
             >
               {t_i18n('Verify')}
@@ -537,7 +521,6 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
                 color="secondary"
                 onClick={submitForm}
                 disabled={isSubmitting || isCreateDisabled}
-                classes={{ root: classes.button }}
               >
                 {t_i18n('Duplicate')}
               </Button>
@@ -546,12 +529,11 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
                 color="secondary"
                 onClick={submitForm}
                 disabled={isSubmitting || isCreateDisabled}
-                classes={{ root: classes.button }}
               >
                 {t_i18n('Create')}
               </Button>
             )}
-          </div>
+          </FormButtonContainer>
           <IngestionJsonMapperTestDialog
             open={open}
             onClose={() => setOpen(false)}
