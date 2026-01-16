@@ -8105,8 +8105,6 @@ __metadata:
 "eslint-plugin-custom-rules@workspace:*, eslint-plugin-custom-rules@workspace:packages/eslint-plugin-custom-rules":
   version: 0.0.0-use.local
   resolution: "eslint-plugin-custom-rules@workspace:packages/eslint-plugin-custom-rules"
-  dependencies:
-    requireindex: "npm:1.2.0"
   peerDependencies:
     eslint: ">=7"
   languageName: unknown
@@ -12370,8 +12368,6 @@ __metadata:
     vitest: "npm:4.0.16"
     yup: "npm:1.7.1"
   dependenciesMeta:
-    canvas:
-      built: false
     core-js:
       built: false
     esbuild:
@@ -13771,13 +13767,6 @@ __metadata:
   version: 2.0.0
   resolution: "require-main-filename@npm:2.0.0"
   checksum: 10c0/db91467d9ead311b4111cbd73a4e67fa7820daed2989a32f7023785a2659008c6d119752d9c4ac011ae07e537eb86523adff99804c5fdb39cd3a017f9b401bb6
-  languageName: node
-  linkType: hard
-
-"requireindex@npm:1.2.0":
-  version: 1.2.0
-  resolution: "requireindex@npm:1.2.0"
-  checksum: 10c0/7fb42aed73bf8de9acc4d6716cf07acc7fbe180e58729433bafcf702e76e7bb10e54f8266c06bfec62d752e0ac14d50e8758833de539e6f4e2cd642077866153
   languageName: node
   linkType: hard
 

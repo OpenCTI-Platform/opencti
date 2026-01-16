@@ -2,6 +2,7 @@
   "name": "opencti-front",
   "version": "6.9.8",
   "private": true,
+  "type": "module",
   "workspaces": [
     "packages/*"
   ],
@@ -13,7 +14,7 @@
     "esbuild": "node builder/prod/prod.js",
     "build": "yarn relay && yarn esbuild",
     "build:standalone": "yarn relay && yarn esbuild --keep",
-    "lint": "DEBUG=eslint:cli-engine TIMING=1 eslint --quiet --cache --config eslint.config.mjs src",
+    "lint": "DEBUG=eslint:cli-engine TIMING=1 eslint --quiet --cache --config eslint.config.js src",
     "control": "yarn audit --groups dependencies --summary",
     "test": "vitest run",
     "test:watch": "vitest watch",
@@ -192,9 +193,6 @@
     "three": "0.181.2"
   },
   "dependenciesMeta": {
-    "canvas": {
-      "built": false
-    },
     "core-js": {
       "built": false
     },
