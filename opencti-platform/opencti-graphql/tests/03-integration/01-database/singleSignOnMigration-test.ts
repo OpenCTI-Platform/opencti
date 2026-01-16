@@ -724,9 +724,6 @@ describe('Migration of SSO environment test coverage', () => {
           config: {
             header_email: 'X-MY-USER-EMAIL',
             header_name: 'X-MY-USER-NAME',
-            header_firstname: 'X-MY-USER-FIRSTNAME',
-            header_lastname: 'X-MY-USER-LASTNAME',
-            headers_audit: ['X-MY-USER-AUDIT'],
           },
         },
       };
@@ -741,9 +738,6 @@ describe('Migration of SSO environment test coverage', () => {
       expect(minimalHEADERSConfiguration.configuration).toStrictEqual([
         { key: 'header_email', type: 'string', value: 'X-MY-USER-EMAIL' },
         { key: 'header_name', type: 'string', value: 'X-MY-USER-NAME' },
-        { key: 'header_firstname', type: 'string', value: 'X-MY-USER-FIRSTNAME' },
-        { key: 'header_lastname', type: 'string', value: 'X-MY-USER-LASTNAME' },
-        { key: 'headers_audit', type: 'array', value: '["X-MY-USER-AUDIT"]' },
       ]);
     });
 
