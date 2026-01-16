@@ -3015,7 +3015,7 @@ export const elPaginate = async <T extends BasicStoreBase>(
     const { hits: { hits, total: { value: globalCount } } } = await elRawSearch(context, user, types !== null ? types : 'Any', query);
     const elements = await elConvertHits<T>(hits);
     let finalElements = elements;
-    if (finalElements.length > 0 && createPostFilter) {
+    if (!noRegardingOfFilterIdsCheck && finalElements.length > 0 && createPostFilter) {
       // Since filters contains filters requiring post filtering (regardingOf, dynamicRegardingOf), a post-security filtering is needed
       const postFilter = await createPostFilter<T>(context, user, elements.map(({ id }) => id));
       finalElements = elements.filter((element, i) => {
