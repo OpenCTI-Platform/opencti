@@ -5,8 +5,6 @@ import { graphql } from 'react-relay';
 import withTheme from '@mui/styles/withTheme';
 import withStyles from '@mui/styles/withStyles';
 import CircularProgress from '@mui/material/CircularProgress';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
 import * as R from 'ramda';
 import Chart from '../../common/charts/Chart';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -14,6 +12,7 @@ import inject18n from '../../../../components/i18n';
 import { donutChartOptions } from '../../../../utils/Charts';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { NO_DATA_WIDGET_MESSAGE } from '../../../../components/dashboard/WidgetNoData';
+import Card from '../../../../components/common/card/Card';
 
 const styles = (theme) => ({
   paper: {
@@ -279,30 +278,17 @@ class EntityStixSightingRelationshipsDonut extends Component {
   }
 
   render() {
-    const { t, classes, title, variant, height } = this.props;
+    const { t, title } = this.props;
     return (
-      <div style={{ height: height || '100%' }}>
-        <Typography
-          variant={variant === 'inEntity' ? 'h3' : 'h4'}
-          gutterBottom={true}
-        >
-          {title || t('Distribution of entities')}
-        </Typography>
-        {variant === 'inLine' || variant === 'inEntity' ? (
-          this.renderContent()
-        ) : (
-          <Paper classes={{ root: classes.paper }} variant="outlined">
-            {this.renderContent()}
-          </Paper>
-        )}
-      </div>
+      <Card title={title || t('Distribution of entities')}>
+        {this.renderContent()}
+      </Card>
     );
   }
 }
 
 EntityStixSightingRelationshipsDonut.propTypes = {
   title: PropTypes.string,
-  variant: PropTypes.string,
   entityId: PropTypes.string,
   entityType: PropTypes.string,
   startDate: PropTypes.string,
