@@ -8,15 +8,8 @@ import { isEmptyField } from '../utils/utils';
 import { useTheme } from '@mui/styles';
 import Tag from '@common/tag/Tag';
 
-const ItemScore = (props) => {
+const ItemScore = ({ score }) => {
   const theme = useTheme();
-
-  const { score, classes, variant } = props;
-  let style = '';
-
-  if (variant === 'inList' && classes) {
-    style = classes.chipInList ?? classes.chip ?? '';
-  }
 
   if (isEmptyField(score)) {
     return (
@@ -32,7 +25,6 @@ const ItemScore = (props) => {
   if (score <= 20) {
     return (
       <Tag
-        classes={{ root: style }}
         color={theme.palette.severity.low}
         label={`${score} / 100`}
       />
@@ -41,7 +33,6 @@ const ItemScore = (props) => {
   if (score <= 50) {
     return (
       <Tag
-        classes={{ root: style }}
         color={theme.palette.severity.info}
         label={`${score} / 100`}
       />
@@ -50,7 +41,6 @@ const ItemScore = (props) => {
   if (score <= 75) {
     return (
       <Tag
-        classes={{ root: style }}
         color={theme.palette.severity.high}
         label={`${score} / 100`}
       />
@@ -59,7 +49,6 @@ const ItemScore = (props) => {
   if (score <= 100) {
     return (
       <Tag
-        classes={{ root: style }}
         color={theme.palette.severity.critical}
         label={`${score} / 100`}
       />
@@ -67,8 +56,7 @@ const ItemScore = (props) => {
   }
   return (
     <Tag
-      classes={{ root: style }}
-      color={theme.palette.common.white}
+      color={theme.palette.common.grey}
       label={`${score} / 100`}
     />
   );

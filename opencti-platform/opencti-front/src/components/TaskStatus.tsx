@@ -12,45 +12,29 @@ interface TaskStatusProps {
 
 const TaskStatus = ({ status, label }: TaskStatusProps) => {
   const theme = useTheme<Theme>();
-  const inlineStyles = {
-    white: {
-      backgroundColor: theme.palette.common.white,
-      color: theme.palette.common.grey,
-    },
-    green: {
-      color: theme.palette.severity.low,
-    },
-    blue: {
-      color: theme.palette.severity.info,
-    },
-    grey: {
-      color: theme.palette.severity.none,
-    },
-    orange: {
-      color: theme.palette.severity.high,
-    },
-  };
 
-  const inlineStyle = () => {
+  const color = () => {
     switch (status) {
       case 'progress':
       case 'provisioning':
       case 'processing':
-        return inlineStyles.orange;
+        return theme.palette.severity.high;
       case 'wait':
-        return inlineStyles.blue;
+        return theme.palette.severity.info;
       case 'complete':
-        return inlineStyles.green;
+        return theme.palette.severity.low;
       default:
-        return inlineStyles.blue;
+        return theme.palette.severity.info;
     }
   };
 
   return (
-    <Tag
-      style={inlineStyle()}
-      label={label}
-    />
+    <>
+      <Tag
+        color={color()}
+        label={label}
+      />
+    </>
   );
 };
 
