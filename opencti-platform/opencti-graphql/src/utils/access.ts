@@ -28,7 +28,6 @@ import type { StixObject } from '../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type { BasicConnection, BasicStoreCommon, BasicStoreEntity } from '../types/store';
 import type { AuthContext, AuthUser, UserRole } from '../types/user';
-import { isFilterGroupNotEmpty } from './filtering/filtering-utils';
 
 export const DEFAULT_INVALID_CONF_VALUE = 'ChangeMe';
 
@@ -609,33 +608,14 @@ export const isOnlyOrgaAdmin = (user: AuthUser) => {
 };
 
 /**
- * Construct a filter to restrict users visibility in case the user has not set_access capa and is organization administrator
+ * Construct a filter to restrict users visibility
+ * In case the user has not set_access capa and is organization administrator, don't check regardingOf filter rights
  */
 export const buildUserOrganizationRestrictedFiltersOptions = (user: AuthUser, inputFilters?: FilterGroup) => {
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
-    // If user is not a set access administrator, user can only see attached organization users
+    // If user is not a set access administrator, user can only see directly attached organization users
     const organizationIds = user.administrated_organizations.map((organization) => organization.id);
-    const filters = {
-      mode: 'and',
-      filters: [
-        {
-          key: 'regardingOf',
-          operator: 'eq',
-          values: [
-            {
-              key: 'relationship_type',
-              values: ['participate-to'],
-            },
-            {
-              key: 'id',
-              values: organizationIds,
-            },
-          ],
-          mode: 'or',
-        },
-      ],
-      filterGroups: inputFilters && isFilterGroupNotEmpty(inputFilters) ? [inputFilters] : [],
-    };
+    const filters = buildRegardingOfDirectParticipateToFilters(organizationIds, inputFilters);
     // dont check regardingOf filter id if user is admin of an orga, to avoid regardingOf filter error if the user has not access to his own organization
     const noRegardingOfFilterIdsCheck = isOnlyOrgaAdmin(user) ? true : false;
     return { filters, noRegardingOfFilterIdsCheck };
