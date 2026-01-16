@@ -3,7 +3,7 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { ENTITY_TYPE_INDICATOR, type StixIndicator, type StoreEntityIndicator } from './indicator-types';
 import convertIndicatorToStix from './indicator-converter';
 import { killChainPhases, objectOrganization } from '../../schema/stixRefRelationship';
-import { revoked } from '../../schema/attribute-definition';
+import { revoked, xOpenctiReliability } from '../../schema/attribute-definition';
 import { RELATION_DERIVED_FROM } from '../../schema/stixCoreRelationship';
 import { REL_BUILT_IN } from '../../database/stix';
 
@@ -21,6 +21,7 @@ const INDICATOR_DEFINITION: ModuleDefinition<StoreEntityIndicator, StixIndicator
     resolvers: {},
   },
   attributes: [
+    xOpenctiReliability,
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'pattern_type', label: 'Pattern type', type: 'string', format: 'vocabulary', vocabularyCategory: 'pattern_type_ov', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },

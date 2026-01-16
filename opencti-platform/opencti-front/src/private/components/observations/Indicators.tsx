@@ -30,6 +30,7 @@ const indicatorLineFragment = graphql`
     valid_until
     x_opencti_score
     x_opencti_main_observable_type
+    x_opencti_reliability
     created
     confidence
     draftVersion {

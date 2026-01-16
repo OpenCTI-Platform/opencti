@@ -1,9 +1,8 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import * as PropTypes from 'prop-types';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
-import * as R from 'ramda';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -19,11 +18,15 @@ import { convertCreatedBy, convertKillChainPhases, convertMarkings, convertStatu
 import StatusField from '../../common/form/StatusField';
 import { buildDate, parse } from '../../../../utils/Time';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useFormatter } from '../../../../components/i18n';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
-import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import { GenericContext } from '@components/common/model/GenericContextModel';
+import { IndicatorEditionOverview_indicator$data } from '@components/observations/indicators/__generated__/IndicatorEditionOverview_indicator.graphql';
+import { ExternalReferencesValues } from '@components/common/form/ExternalReferencesField';
+import { FormikConfig } from 'formik/dist/types';
 
 const indicatorMutationFieldPatch = graphql`
   mutation IndicatorEditionOverviewFieldPatchMutation(
@@ -32,7 +35,12 @@ const indicatorMutationFieldPatch = graphql`
     $commitMessage: String
     $references: [String]
   ) {
-    indicatorFieldPatch(id: $id, input: $input, commitMessage: $commitMessage, references: $references) {
+    indicatorFieldPatch(
+      id: $id
+      input: $input
+      commitMessage: $commitMessage
+      references: $references
+    ) {
       ...IndicatorEditionOverview_indicator
       ...Indicator_indicator
     }
@@ -76,8 +84,27 @@ const indicatorMutationRelationDelete = graphql`
 `;
 
 const INDICATOR_TYPE = 'Indicator';
+type IndicatorGenericData = IndicatorEditionOverview_indicator$data & GenericData;
 
-const IndicatorEditionOverviewComponent = ({
+interface IndicatorEditionOverviewComponentProps {
+  indicator: IndicatorGenericData;
+  enableReferences: boolean;
+  context?: readonly (GenericContext | null)[] | null;
+  handleClose: () => void;
+}
+
+interface IndicatorEditionFormData {
+  message?: string;
+  createdBy?: FieldOption;
+  objectMarking?: FieldOption[];
+  x_opencti_workflow_id: FieldOption;
+  killChainPhases?: FieldOption[];
+  valid_from?: Date | string | null;
+  valid_until?: Date | string | null;
+  references: ExternalReferencesValues | undefined;
+}
+
+const IndicatorEditionOverviewComponent: FunctionComponent<IndicatorEditionOverviewComponentProps> = ({
   indicator,
   handleClose,
   context,
@@ -85,9 +112,11 @@ const IndicatorEditionOverviewComponent = ({
 }) => {
   const { t_i18n } = useFormatter();
   const { mandatoryAttributes } = useIsMandatoryAttribute(INDICATOR_TYPE);
+
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
     indicator_types: Yup.array(),
+    x_opencti_reliability: Yup.string().nullable(),
     confidence: Yup.number(),
     pattern: Yup.string().trim(),
     valid_from: Yup.date()
@@ -112,6 +141,7 @@ const IndicatorEditionOverviewComponent = ({
     killChainPhases: Yup.array().nullable(),
     objectMarking: Yup.array().nullable(),
   }, mandatoryAttributes);
+
   const indicatorValidator = useDynamicSchemaEditionValidation(
     mandatoryAttributes,
     basicShape,
@@ -130,29 +160,25 @@ const IndicatorEditionOverviewComponent = ({
     indicatorValidator,
   );
 
-  const onSubmit = (values, { setSubmitting }) => {
-    const commitMessage = values.message;
-    const references = R.pluck('value', values.references || []);
-    const inputValues = R.pipe(
-      R.dissoc('message'),
-      R.dissoc('references'),
-      R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
-      R.assoc('createdBy', values.createdBy?.value),
-      R.assoc('x_mitre_platforms', values.x_mitre_platforms ?? []),
-      R.assoc('indicator_types', values.indicator_types),
-      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
-      R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
-      R.assoc(
-        'valid_from',
-        values.valid_from ? parse(values.valid_from).format() : null,
-      ),
-      R.assoc(
-        'valid_until',
-        values.valid_until ? parse(values.valid_until).format() : null,
-      ),
-      R.toPairs,
-      R.map((n) => ({ key: n[0], value: adaptFieldValue(n[1]) })),
-    )(values);
+  const onSubmit: FormikConfig<IndicatorEditionFormData>['onSubmit'] = (values, { setSubmitting }) => {
+    const { message, references, ...otherValues } = values;
+    const commitMessage = message ?? '';
+    const commitReferences = (references ?? []).map(({ value }) => value);
+
+    const inputValues = Object.entries({
+      ...otherValues,
+      createdBy: values.createdBy?.value,
+      x_opencti_workflow_id: values.x_opencti_workflow_id?.value,
+      objectMarking: (values.objectMarking ?? []).map(({ value }) => value),
+      killChainPhases: (values.killChainPhases ?? []).map(({ value }) => value),
+      valid_from: values.valid_from
+        ? parse(values.valid_from).format()
+        : null,
+
+      valid_until: values.valid_until
+        ? parse(values.valid_until).format()
+        : null,
+    }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
 
     editor.fieldPatch({
       variables: {
@@ -160,9 +186,8 @@ const IndicatorEditionOverviewComponent = ({
         input: inputValues,
         commitMessage:
           commitMessage && commitMessage.length > 0 ? commitMessage : null,
-        references,
+        references: commitReferences,
       },
-      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         handleClose();
@@ -170,11 +195,11 @@ const IndicatorEditionOverviewComponent = ({
     });
   };
 
-  const handleSubmitField = (name, value) => {
+  const handleSubmitField = (name: string, value: string | string[] | number | number[] | FieldOption | null) => {
     if (!enableReferences) {
       let finalValue = value;
       if (name === 'x_opencti_workflow_id') {
-        finalValue = value.value;
+        finalValue = (value as FieldOption).value;
       }
       indicatorValidator
         .validateAt(name, { [name]: value })
@@ -193,36 +218,27 @@ const IndicatorEditionOverviewComponent = ({
     }
   };
 
-  const initialValues = R.pipe(
-    R.assoc('killChainPhases', convertKillChainPhases(indicator)),
-    R.assoc('createdBy', convertCreatedBy(indicator)),
-    R.assoc('objectMarking', convertMarkings(indicator)),
-    R.assoc('x_opencti_workflow_id', convertStatus(t_i18n, indicator)),
-    R.assoc('x_mitre_platforms', R.propOr([], 'x_mitre_platforms', indicator)),
-    R.assoc('indicator_types', R.propOr([], 'indicator_types', indicator)),
-    R.assoc('valid_from', buildDate(indicator.valid_from)),
-    R.assoc('valid_until', buildDate(indicator.valid_until)),
-    R.assoc('references', []),
-    R.pick([
-      'name',
-      'references',
-      'confidence',
-      'pattern',
-      'description',
-      'valid_from',
-      'valid_until',
-      'x_opencti_score',
-      'x_opencti_detection',
-      'indicator_types',
-      'x_mitre_platforms',
-      'killChainPhases',
-      'createdBy',
-      'objectMarking',
-      'x_opencti_workflow_id',
-    ]),
-  )(indicator);
+  const initialValues = {
+    name: indicator.name,
+    confidence: indicator.confidence,
+    pattern: indicator.pattern,
+    description: indicator.description,
+    x_opencti_score: indicator.x_opencti_score,
+    x_opencti_detection: indicator.x_opencti_detection,
+    indicator_types: indicator.indicator_types ?? [],
+    x_mitre_platforms: indicator.x_mitre_platforms ?? [],
+    x_opencti_reliability: indicator.x_opencti_reliability,
+    valid_from: buildDate(indicator.valid_from),
+    valid_until: buildDate(indicator.valid_until),
+    killChainPhases: convertKillChainPhases(indicator),
+    createdBy: convertCreatedBy(indicator) as FieldOption,
+    objectMarking: convertMarkings(indicator),
+    x_opencti_workflow_id: convertStatus(t_i18n, indicator) as FieldOption,
+    references: [],
+  };
+
   return (
-    <Formik
+    <Formik<IndicatorEditionFormData>
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={indicatorValidator}
@@ -260,7 +276,7 @@ const IndicatorEditionOverviewComponent = ({
             required={(mandatoryAttributes.includes('indicator_types'))}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            onChange={(name, value) => setFieldValue(name, value)}
+            onChange={setFieldValue}
             containerStyle={fieldSpacingContainerStyle}
             variant="edit"
             multiple={true}
@@ -289,6 +305,19 @@ const IndicatorEditionOverviewComponent = ({
             helperText={
               <SubscriptionFocus context={context} fieldName="pattern" />
             }
+          />
+          <OpenVocabField
+            label={t_i18n('Reliability')}
+            type="reliability_ov"
+            name="x_opencti_reliability"
+            required={(mandatoryAttributes.includes('x_opencti_reliability'))}
+            onChange={setFieldValue}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            multiple={false}
+            editContext={context}
+            variant="edit"
+            containerStyle={fieldSpacingContainerStyle}
           />
           <Field
             component={DateTimePickerField}
@@ -329,7 +358,7 @@ const IndicatorEditionOverviewComponent = ({
             required={(mandatoryAttributes.includes('x_mitre_platforms'))}
             variant="edit"
             onSubmit={handleSubmitField}
-            onChange={(name, value) => setFieldValue(name, value)}
+            onChange={setFieldValue}
             containerStyle={fieldSpacingContainerStyle}
             multiple={true}
             editContext={context}
@@ -371,7 +400,6 @@ const IndicatorEditionOverviewComponent = ({
             name="killChainPhases"
             required={(mandatoryAttributes.includes('killChainPhases'))}
             style={fieldSpacingContainerStyle}
-            setFieldValue={setFieldValue}
             helpertext={
               <SubscriptionFocus context={context} fieldName="killChainPhases" />
             }
@@ -468,6 +496,7 @@ const IndicatorEditionOverview = createFragmentContainer(
         revoked
         x_opencti_score
         x_opencti_detection
+        x_opencti_reliability
         x_mitre_platforms
         indicator_types
         createdBy {

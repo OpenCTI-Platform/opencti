@@ -85,6 +85,7 @@ interface IndicatorAddInput {
   pattern: string;
   pattern_type: string;
   x_opencti_main_observable_type: string;
+  x_opencti_reliability: string | undefined;
   createObservables: boolean;
   x_mitre_platforms: string[];
   valid_from: Date | null;
@@ -129,6 +130,8 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
     pattern: Yup.string(),
     pattern_type: Yup.string(),
     x_opencti_main_observable_type: Yup.string(),
+    x_opencti_reliability: Yup.string()
+      .nullable(),
     valid_from: Yup.date()
       .nullable()
       .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
@@ -168,6 +171,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
       pattern_type: values.pattern_type,
       createObservables: values.createObservables,
       x_opencti_main_observable_type: values.x_opencti_main_observable_type,
+      x_opencti_reliability: values.x_opencti_reliability,
       x_mitre_platforms: values.x_mitre_platforms,
       confidence: parseInt(String(values.confidence), 10),
       x_opencti_score: parseInt(String(values.x_opencti_score), 10),
@@ -213,6 +217,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
       pattern: '',
       pattern_type: '',
       x_opencti_main_observable_type: '',
+      x_opencti_reliability: undefined,
       x_mitre_platforms: [],
       valid_from: null,
       valid_until: null,
@@ -287,6 +292,15 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
             label={t_i18n('Main observable type')}
             required={(mandatoryAttributes.includes('x_opencti_main_observable_type'))}
             containerstyle={fieldSpacingContainerStyle}
+          />
+          <OpenVocabField
+            label={t_i18n('Reliability')}
+            type="reliability_ov"
+            name="x_opencti_reliability"
+            required={(mandatoryAttributes.includes('x_opencti_reliability'))}
+            containerStyle={fieldSpacingContainerStyle}
+            multiple={false}
+            onChange={setFieldValue}
           />
           <Field
             component={DateTimePickerField}
