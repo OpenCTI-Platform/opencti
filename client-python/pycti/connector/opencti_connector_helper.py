@@ -33,6 +33,7 @@ import tempfile
 import threading
 import time
 import uuid
+from collections import deque
 from enum import Enum
 from queue import Queue
 from typing import Callable, Dict, List, Optional, Union
@@ -90,12 +91,12 @@ def start_loop(loop) -> None:
 
 
 def get_config_variable(
-        env_var: str,
-        yaml_path: List,
-        config: Optional[Dict] = None,
-        isNumber: Optional[bool] = False,
-        default=None,
-        required=False,
+    env_var: str,
+    yaml_path: List,
+    config: Optional[Dict] = None,
+    isNumber: Optional[bool] = False,
+    default=None,
+    required=False,
 ) -> Union[bool, int, None, str]:
     """Retrieve a configuration variable from environment or YAML config.
 
@@ -153,9 +154,9 @@ def get_config_variable(
         return int(result)
 
     if (
-            required
-            and default is None
-            and (result is None or (isinstance(result, str) and len(result) == 0))
+        required
+        and default is None
+        and (result is None or (isinstance(result, str) and len(result) == 0))
     ):
         raise ValueError("The configuration " + env_var + " is required")
 
@@ -291,10 +292,10 @@ def data_to_temp_file(data: str) -> str:
 
 
 def ssl_cert_chain(
-        ssl_context: ssl.SSLContext,
-        cert_data: Optional[str],
-        key_data: Optional[str],
-        passphrase: Optional[str],
+    ssl_context: ssl.SSLContext,
+    cert_data: Optional[str],
+    key_data: Optional[str],
+    passphrase: Optional[str],
 ) -> None:
     """Load a certificate chain and private key into an SSL context.
 
@@ -468,17 +469,17 @@ class ListenQueue(threading.Thread):
     """
 
     def __init__(
-            self,
-            helper,
-            opencti_token: str,
-            config: Dict,
-            connector_config: Dict,
-            applicant_id: str,
-            listen_protocol: str,
-            listen_protocol_api_ssl: bool,
-            listen_protocol_api_path: str,
-            listen_protocol_api_port: int,
-            callback: Callable[[Dict], str],
+        self,
+        helper,
+        opencti_token: str,
+        config: Dict,
+        connector_config: Dict,
+        applicant_id: str,
+        listen_protocol: str,
+        listen_protocol_api_ssl: bool,
+        listen_protocol_api_path: str,
+        listen_protocol_api_port: int,
+        callback: Callable[[Dict], str],
     ) -> None:
         """Initialize the ListenQueue thread.
 
@@ -559,7 +560,7 @@ class ListenQueue(threading.Thread):
         while self.thread.is_alive():  # Loop while the thread is processing
             self.pika_connection.sleep(0.05)
             if (
-                    self.helper.work_id is not None and time_wait > five_minutes
+                self.helper.work_id is not None and time_wait > five_minutes
             ):  # Ping every 5 minutes
                 self.helper.api.work.ping(self.helper.work_id)
                 time_wait = 0
@@ -686,7 +687,7 @@ class ListenQueue(threading.Thread):
                             e
                             for e in stix_objects
                             if e["id"] == opencti_entity["standard_id"]
-                               or e["id"] == "x-opencti-" + opencti_entity["standard_id"]
+                            or e["id"] == "x-opencti-" + opencti_entity["standard_id"]
                         ][0]
                     event_data["stix_objects"] = stix_objects
                     event_data["stix_entity"] = stix_entity
@@ -760,9 +761,9 @@ class ListenQueue(threading.Thread):
         authorization: str = request.headers.get("Authorization", "")
         items = authorization.split() if isinstance(authorization, str) else []
         if (
-                len(items) != 2
-                or items[0].lower() != "bearer"
-                or items[1] != self.opencti_token
+            len(items) != 2
+            or items[0].lower() != "bearer"
+            or items[1] != self.opencti_token
         ):
             return JSONResponse(
                 status_code=401, content={"error": "Invalid credentials"}
@@ -918,14 +919,14 @@ class PingAlive(threading.Thread):
     """
 
     def __init__(
-            self,
-            connector_logger,
-            connector_id: str,
-            api,
-            get_state: Callable[[], Optional[Dict]],
-            set_state: Callable[[str], None],
-            metric,
-            connector_info,
+        self,
+        connector_logger,
+        connector_id: str,
+        api,
+        get_state: Callable[[], Optional[Dict]],
+        set_state: Callable[[str], None],
+        metric,
+        connector_info,
     ) -> None:
         """Initialize the PingAlive daemon thread.
 
@@ -982,7 +983,7 @@ class PingAlive(threading.Thread):
                 remote_state = (
                     json.loads(result["connector_state"])
                     if result["connector_state"] is not None
-                       and len(result["connector_state"]) > 0
+                    and len(result["connector_state"]) > 0
                     else None
                 )
                 if initial_state != remote_state:
@@ -1113,7 +1114,6 @@ class RateLimiter:
         :param helper: OpenCTIConnectorHelper instance for logging
         :param max_per_minute: Maximum number of calls allowed per minute
         """
-        from collections import deque
 
         self.helper = helper
         self.max_per_minute = max_per_minute
@@ -1177,6 +1177,7 @@ class RateLimiter:
                                         "rate_limit_heartbeat", block=False
                                     )
                                 except queue.Full:
+                                    # Heartbeats are best-effort; drop if the queue is full to avoid blocking.
                                     pass
                     finally:
                         self._lock.acquire()
@@ -1278,11 +1279,11 @@ class BatchCallbackWrapper:
     manages_state = True
 
     def __init__(
-            self,
-            helper,
-            batch_callback: Callable,
-            batch_size: Optional[int] = None,
-            batch_timeout: Optional[float] = None,
+        self,
+        helper,
+        batch_callback: Callable,
+        batch_size: Optional[int] = None,
+        batch_timeout: Optional[float] = None,
     ) -> None:
         """Initialize the batch callback wrapper.
 
@@ -1412,7 +1413,10 @@ class BatchCallbackWrapper:
             try:
                 self._heartbeat_queue.put("batch_processing", block=False)
             except queue.Full:
-                pass
+                # Heartbeat queue is full: skip this best-effort heartbeat rather than blocking
+                self.helper.connector_logger.debug(
+                    "Heartbeat queue is full, skipping batch_processing heartbeat"
+                )
 
         try:
             self.batch_callback(batch_data)
@@ -1446,6 +1450,11 @@ class BatchCallbackWrapper:
         """
         self._stop_event.set()
         self._timer_thread.join(timeout=30.0)
+        if self._timer_thread.is_alive():
+            self.helper.connector_logger.warning(
+                "Batch timer thread did not stop within the timeout",
+                {"timeout_seconds": 30.0},
+            )
 
     def set_heartbeat_queue(self, q: Queue) -> None:
         """Set the heartbeat queue for sending keepalive signals during batch processing.
@@ -1489,18 +1498,18 @@ class ListenStream(threading.Thread):
     """
 
     def __init__(
-            self,
-            helper,
-            callback: Callable,
-            url: str,
-            token: str,
-            verify_ssl: bool,
-            start_timestamp: Optional[str],
-            live_stream_id: Optional[str],
-            listen_delete: bool,
-            no_dependencies: bool,
-            recover_iso_date: Optional[str],
-            with_inferences: bool,
+        self,
+        helper,
+        callback: Callable,
+        url: str,
+        token: str,
+        verify_ssl: bool,
+        start_timestamp: Optional[str],
+        live_stream_id: Optional[str],
+        listen_delete: bool,
+        no_dependencies: bool,
+        recover_iso_date: Optional[str],
+        with_inferences: bool,
     ) -> None:
         """Initialize the ListenStream thread.
 
@@ -1703,13 +1712,13 @@ class ConnectorInfo:
     """
 
     def __init__(
-            self,
-            run_and_terminate: bool = False,
-            buffering: bool = False,
-            queue_threshold: float = 500.0,
-            queue_messages_size: float = 0.0,
-            next_run_datetime: datetime = None,
-            last_run_datetime: datetime = None,
+        self,
+        run_and_terminate: bool = False,
+        buffering: bool = False,
+        queue_threshold: float = 500.0,
+        queue_messages_size: float = 0.0,
+        next_run_datetime: datetime = None,
+        last_run_datetime: datetime = None,
     ):
         """Initialize ConnectorInfo with runtime parameters.
 
@@ -2478,7 +2487,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             remote_state = (
                 json.loads(result["connector_state"])
                 if result["connector_state"] is not None
-                   and len(result["connector_state"]) > 0
+                and len(result["connector_state"]) > 0
                 else None
             )
             if initial_state != remote_state:
@@ -2590,10 +2599,10 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             sys.excepthook(*sys.exc_info())
 
     def schedule_unit(
-            self,
-            message_callback: Callable[[], None],
-            duration_period: Union[int, float, str],
-            time_unit: TimeUnit,
+        self,
+        message_callback: Callable[[], None],
+        duration_period: Union[int, float, str],
+        time_unit: TimeUnit,
     ) -> None:
         """Schedule connector execution with a time unit (deprecated).
 
@@ -2624,7 +2633,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             sys.excepthook(*sys.exc_info())
 
     def schedule_iso(
-            self, message_callback: Callable[[], None], duration_period: str
+        self, message_callback: Callable[[], None], duration_period: str
     ) -> None:
         """Schedule connector execution using ISO 8601 duration format.
 
@@ -2654,10 +2663,10 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             sys.excepthook(*sys.exc_info())
 
     def _schedule_process(
-            self,
-            scheduler: sched.scheduler,
-            message_callback: Callable[[], None],
-            duration_period: Union[int, float],
+        self,
+        scheduler: sched.scheduler,
+        message_callback: Callable[[], None],
+        duration_period: Union[int, float],
     ) -> None:
         """Execute scheduled connector process if queue is not buffering.
 
@@ -2701,7 +2710,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             )
 
     def schedule_process(
-            self, message_callback: Callable[[], None], duration_period: Union[int, float]
+        self, message_callback: Callable[[], None], duration_period: Union[int, float]
     ) -> None:
         """Schedule the execution of a connector process.
 
@@ -2766,8 +2775,8 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             sys.excepthook(*sys.exc_info())
 
     def listen(
-            self,
-            message_callback: Callable[[Dict], str],
+        self,
+        message_callback: Callable[[Dict], str],
     ) -> None:
         """Listen for messages from the queue and process them via callback.
 
@@ -2796,16 +2805,16 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         self.listen_queue.join()
 
     def _resolve_stream_parameters(
-            self,
-            url=None,
-            token=None,
-            verify_ssl=None,
-            start_timestamp=None,
-            live_stream_id=None,
-            listen_delete=None,
-            no_dependencies=None,
-            recover_iso_date=None,
-            with_inferences=None,
+        self,
+        url=None,
+        token=None,
+        verify_ssl=None,
+        start_timestamp=None,
+        live_stream_id=None,
+        listen_delete=None,
+        no_dependencies=None,
+        recover_iso_date=None,
+        with_inferences=None,
     ) -> dict:
         """Resolve stream connection parameters from arguments or configuration.
             :param url: OpenCTI URL (defaults to configured URL)
@@ -2850,32 +2859,32 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             listen_delete = False
         # No deps
         if (
-                no_dependencies is None
-                and self.connect_live_stream_no_dependencies is not None
+            no_dependencies is None
+            and self.connect_live_stream_no_dependencies is not None
         ):
             no_dependencies = self.connect_live_stream_no_dependencies
         elif no_dependencies is None:
             no_dependencies = False
         # With inferences
         if (
-                with_inferences is None
-                and self.connect_live_stream_with_inferences is not None
+            with_inferences is None
+            and self.connect_live_stream_with_inferences is not None
         ):
             with_inferences = self.connect_live_stream_with_inferences
         elif with_inferences is None:
             with_inferences = False
         # Start timestamp
         if (
-                start_timestamp is None
-                and self.connect_live_stream_start_timestamp is not None
+            start_timestamp is None
+            and self.connect_live_stream_start_timestamp is not None
         ):
             start_timestamp = str(self.connect_live_stream_start_timestamp) + "-0"
         elif start_timestamp is not None:
             start_timestamp = str(start_timestamp) + "-0"
         # Recover ISO date
         if (
-                recover_iso_date is None
-                and self.connect_live_stream_recover_iso_date is not None
+            recover_iso_date is None
+            and self.connect_live_stream_recover_iso_date is not None
         ):
             recover_iso_date = self.connect_live_stream_recover_iso_date
         # Generate the stream URL
@@ -2896,21 +2905,48 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         }
 
     def listen_stream(
-            self,
-            message_callback,
-            url=None,
-            token=None,
-            verify_ssl=None,
-            start_timestamp=None,
-            live_stream_id=None,
-            listen_delete=None,
-            no_dependencies=None,
-            recover_iso_date=None,
-            with_inferences=None,
+        self,
+        message_callback,
+        url=None,
+        token=None,
+        verify_ssl=None,
+        start_timestamp=None,
+        live_stream_id=None,
+        listen_delete=None,
+        no_dependencies=None,
+        recover_iso_date=None,
+        with_inferences=None,
     ) -> ListenStream:
-        """listen for messages and register callback function
+        """Listen for stream messages and register the callback function.
 
-        :param message_callback: callback function to process messages
+        This method connects to an OpenCTI live stream (SSE) and starts a
+        background listener thread. For each received event, the provided
+        ``message_callback`` is invoked with the parsed message payload.
+
+        :param message_callback: Callback function to process each received
+            stream message.
+        :param url: Base URL of the OpenCTI platform. If not provided, the
+            value from the connector configuration or environment will be used.
+        :param token: API token to authenticate with the OpenCTI platform. If
+            not provided, the connector configuration or environment value
+            will be used.
+        :param verify_ssl: Whether to verify the SSL certificate when
+            connecting to the stream endpoint. If ``None``, the default from
+            the connector configuration is used.
+        :param start_timestamp: Optional UNIX timestamp from which to start
+            consuming the stream. If ``None``, streaming starts from "now".
+        :param live_stream_id: Identifier of the OpenCTI live stream to
+            subscribe to. If ``None``, the default connector stream is used.
+        :param listen_delete: If truthy, listen for and process delete events
+            on the stream.
+        :param no_dependencies: If truthy, only the main objects will be
+            streamed without their dependencies.
+        :param recover_iso_date: Optional ISO 8601 date string used to recover
+            events from a specific point in time.
+        :param with_inferences: If truthy, include inferred data from the
+            platform in the stream.
+        :return: A ``ListenStream`` instance managing the underlying SSE
+            connection and listener thread.
         """
         # Resolve all stream parameters using helper method
         params = self._resolve_stream_parameters(
@@ -2942,11 +2978,11 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         return self.listen_stream
 
     def create_batch_callback(
-            self,
-            batch_callback: Callable,
-            batch_size: Optional[int] = None,
-            batch_timeout: Optional[float] = None,
-            max_per_minute: Optional[int] = None,
+        self,
+        batch_callback: Callable,
+        batch_size: Optional[int] = None,
+        batch_timeout: Optional[float] = None,
+        max_per_minute: Optional[int] = None,
     ) -> BatchCallbackWrapper:
         """Create a callback wrapper that batches messages.
 
@@ -3199,9 +3235,9 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             bundle_data = json.loads(bundle)
             for item in bundle_data["objects"]:
                 if (
-                        "extensions" in item
-                        and "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
-                        in item["extensions"]
+                    "extensions" in item
+                    and "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
+                    in item["extensions"]
                 ):
                     octi_extensions = item["extensions"][
                         "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
@@ -3241,9 +3277,9 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             file_name = f"{work_id}.json"
 
         if (
-                (self.connect_validate_before_import or force_validation)
-                and not bypass_validation
-                and file_name
+            (self.connect_validate_before_import or force_validation)
+            and not bypass_validation
+            and file_name
         ):
             if validation_mode == "workbench":
                 self.api.upload_pending_file(
@@ -3275,11 +3311,11 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 },
             )
             bundle_file = (
-                    self.connect_name.lower().replace(" ", "_")
-                    + "-"
-                    + time.strftime("%Y%m%d-%H%M%S-")
-                    + str(time.time())
-                    + ".json"
+                self.connect_name.lower().replace(" ", "_")
+                + "-"
+                + time.strftime("%Y%m%d-%H%M%S-")
+                + str(time.time())
+                + ".json"
             )
             write_file = os.path.join(
                 bundle_send_to_directory_path, bundle_file + ".tmp"
@@ -3307,8 +3343,8 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                         file_location = os.path.join(bundle_send_to_directory_path, f)
                         file_time = os.stat(file_location).st_mtime
                         is_expired_file = (
-                                file_time
-                                < current_time - 86400 * bundle_send_to_directory_retention
+                            file_time
+                            < current_time - 86400 * bundle_send_to_directory_retention
                         )  # 86400 = 1 day
                         if is_expired_file:
                             os.remove(file_location)
@@ -3579,25 +3615,25 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             85
         """
         if (
-                "extensions" in stix_object
-                and "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
-                in stix_object["extensions"]
-                and key
-                in stix_object["extensions"][
-            "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
-        ]
+            "extensions" in stix_object
+            and "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
+            in stix_object["extensions"]
+            and key
+            in stix_object["extensions"][
+                "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
+            ]
         ):
             return stix_object["extensions"][
                 "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
             ][key]
         elif (
-                "extensions" in stix_object
-                and "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
-                in stix_object["extensions"]
-                and key
-                in stix_object["extensions"][
-                    "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
-                ]
+            "extensions" in stix_object
+            and "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
+            in stix_object["extensions"]
+            and key
+            in stix_object["extensions"][
+                "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
+            ]
         ):
             return stix_object["extensions"][
                 "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
@@ -3627,13 +3663,13 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             '1.0'
         """
         if (
-                "extensions" in stix_object
-                and "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b"
-                in stix_object["extensions"]
-                and key
-                in stix_object["extensions"][
-            "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b"
-        ]
+            "extensions" in stix_object
+            and "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b"
+            in stix_object["extensions"]
+            and key
+            in stix_object["extensions"][
+                "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b"
+            ]
         ):
             return stix_object["extensions"][
                 "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b"
