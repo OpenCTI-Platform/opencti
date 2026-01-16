@@ -29,6 +29,7 @@ import { checkIsMarkingAllowed } from '../../../../utils/markings/markingsFilter
 import type { Theme } from '../../../../components/Theme';
 import MarkingIcon from '../../../../utils/MarkingIcon';
 import Card from '../../../../components/common/card/Card';
+import Label from '../../../../components/common/label/Label';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -147,11 +148,11 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
       >
         <Grid item xs={6}>
           <Card title={t_i18n('Basic information')}>
-            <Grid container={true} spacing={3}>
+            <Grid container={true} spacing={2}>
               <Grid item xs={12}>
-                <Typography variant="h3" gutterBottom={true}>
+                <Label>
                   {t_i18n('Description')}
-                </Typography>
+                </Label>
                 <ExpandableMarkdown
                   source={group.description}
                   limit={400}
@@ -161,18 +162,18 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                 <GroupHiddenTypesChipList groupData={group} />
               </Grid>
               <Grid item xs={6}>
-                <Typography variant="h3" gutterBottom={true}>
+                <Label>
                   {t_i18n('Auto new markings')}
-                </Typography>
+                </Label>
                 <ItemBoolean
                   status={group.auto_new_marking ?? false}
                   label={group.auto_new_marking ? t_i18n('Yes') : t_i18n('No')}
                 />
               </Grid>
               <Grid item xs={6}>
-                <Typography variant="h3" gutterBottom={true}>
+                <Label>
                   {t_i18n('Default membership')}
-                </Typography>
+                </Label>
                 <ItemBoolean
                   status={group.default_assignation ?? false}
                   label={group.default_assignation ? t_i18n('Yes') : t_i18n('No')}
@@ -183,12 +184,12 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
         </Grid>
         <Grid item xs={6}>
           <Card title={t_i18n('Permissions')}>
-            <Grid container={true} spacing={3}>
+            <Grid container={true} spacing={2}>
               <Grid item xs={6}>
-                <Typography variant="h3" gutterBottom={true}>
+                <Label>
                   {t_i18n('Roles')}
-                </Typography>
-                <List>
+                </Label>
+                <List sx={{ py: 0 }}>
                   {group.roles?.edges?.map(({ node: role }) => (
                     <ListItemButton
                       key={role?.id}
@@ -206,9 +207,9 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                 </List>
               </Grid>
               <Grid item xs={6}>
-                <Typography variant="h3" gutterBottom={true}>
+                <Label>
                   {t_i18n('Default dashboard')}
-                </Typography>
+                </Label>
                 <FieldOrEmpty source={group.default_dashboard}>
                   <List>
                     <ListItem
@@ -240,31 +241,26 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                 </FieldOrEmpty>
               </Grid>
               <Grid item xs={12}>
-                <Typography
-                  variant="h3"
-                  gutterBottom={true}
-                  style={{ float: 'left' }}
-                >
+                <Label>
                   {t_i18n('Max Confidence Level')}
-                </Typography>
-                <div className="clearfix" />
+                </Label>
                 <GroupConfidenceLevel
                   confidenceLevel={group.group_confidence_level}
                 />
               </Grid>
               <Grid item xs={6}>
-                <Typography variant="h3" gutterBottom={true}>
+                <Label>
                   {t_i18n('No creators accumulation')}
-                </Typography>
+                </Label>
                 <ItemBoolean
                   status={group.no_creators ?? false}
                   label={group.no_creators ? t_i18n('Yes') : t_i18n('No')}
                 />
               </Grid>
               <Grid item xs={6}>
-                <Typography variant="h3" gutterBottom={true}>
+                <Label>
                   {t_i18n('Restrict delete to created entities')}
-                </Typography>
+                </Label>
                 <ItemBoolean
                   status={group.restrict_delete ?? false}
                   label={group.restrict_delete ? t_i18n('Yes') : t_i18n('No')}
@@ -277,8 +273,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
           <Card title={t_i18n('Markings')}>
             <Grid container={true} spacing={3}>
               <Grid item xs={4}>
-                <Typography variant="h3" gutterBottom={true}>
-                  {t_i18n('Default markings')}
+                <Label action={(
                   <Tooltip
                     title={t_i18n(
                       'You can enable/disable default values for marking in the customization of each entity type.',
@@ -287,10 +282,12 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                     <InformationOutline
                       fontSize="small"
                       color="primary"
-                      style={{ margin: '0 0 -5px 10px' }}
                     />
                   </Tooltip>
-                </Typography>
+                )}
+                >
+                  {t_i18n('Default markings')}
+                </Label>
                 <FieldOrEmpty source={globalDefaultMarkings}>
                   <List style={{ marginTop: -3 }}>
                     {globalDefaultMarkings.map((marking) => (
@@ -312,11 +309,11 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                 </FieldOrEmpty>
               </Grid>
               <Grid item xs={4}>
-                <Typography variant="h3" gutterBottom={true}>
+                <Label>
                   {t_i18n('Allowed markings')}
-                </Typography>
+                </Label>
                 <FieldOrEmpty source={allowedMarkings}>
-                  <List>
+                  <List sx={{ py: 0 }}>
                     {allowedMarkings.map((marking) => (
                       <ListItem
                         key={marking?.id}
@@ -336,11 +333,11 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                 </FieldOrEmpty>
               </Grid>
               <Grid item xs={4}>
-                <Typography variant="h3" gutterBottom={true}>
+                <Label>
                   {t_i18n('Maximum shareable markings')}
-                </Typography>
+                </Label>
                 <FieldOrEmpty source={markingTypes}>
-                  <List>
+                  <List sx={{ py: 0 }}>
                     {markingTypes.map((type) => {
                       const marking = maxShareableMarkingsByType.get(type);
                       if (marking) {

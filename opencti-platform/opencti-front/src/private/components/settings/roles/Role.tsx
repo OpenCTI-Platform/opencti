@@ -2,7 +2,6 @@ import React from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
-import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -21,6 +20,7 @@ import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import type { Theme } from '../../../../components/Theme';
 import useHelper from '../../../../utils/hooks/useHelper';
 import Card from '../../../../components/common/card/Card';
+import Label from '../../../../components/common/label/Label';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -90,20 +90,20 @@ const Role = ({
       >
         <Grid item xs={12}>
           <Card title={t_i18n('Basic information')}>
-            <Grid container={true} spacing={3}>
+            <Grid container={true} spacing={2}>
               <Grid item xs={12}>
-                <Typography variant="h3" gutterBottom={true}>
+                <Label>
                   {t_i18n('Description')}
-                </Typography>
+                </Label>
                 <ExpandableMarkdown
                   source={role.description}
                   limit={400}
                 />
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="h3" gutterBottom={true}>
+                <Label>
                   {t_i18n('Groups using this role')}
-                </Typography>
+                </Label>
                 <div>
                   {groupNodes(role)?.map((group) => (
                     <ListItemButton

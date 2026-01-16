@@ -1,11 +1,10 @@
-import React from 'react';
-import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
 import useEntitySettings from '../../../../utils/hooks/useEntitySettings';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import Label from '../../../../components/common/label/Label';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -45,9 +44,9 @@ const HiddenTypesChipList = ({
 
   return (
     <>
-      <Typography variant="h3" gutterBottom={true}>
+      <Label>
         {t_i18n('Hidden entity types')}
-      </Typography>
+      </Label>
       <FieldOrEmpty source={hiddenTypesGlobal.concat(hiddenTypes)}>
         {diff.map((hiddenTypeGlobal) => (
           <Chip
