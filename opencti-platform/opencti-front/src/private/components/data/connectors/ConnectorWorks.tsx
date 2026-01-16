@@ -1,28 +1,16 @@
 import React, { FunctionComponent, useEffect } from 'react';
 import { createRefetchContainer, graphql, RelayRefetchProp } from 'react-relay';
 import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
 import { interval } from 'rxjs';
-import makeStyles from '@mui/styles/makeStyles';
 import ConnectorWorkLine from '@components/data/connectors/ConnectorWorkLine';
 import { ConnectorWorksQuery$variables } from './__generated__/ConnectorWorksQuery.graphql';
 import { ConnectorWorks_data$data } from './__generated__/ConnectorWorks_data.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import Card from '../../../../components/common/card/Card';
+import CardTitle from '../../../../components/common/card/CardTitle';
 
 const interval$ = interval(FIVE_SECONDS);
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  paper: {
-    margin: '10px 0 20px 0',
-    padding: '15px',
-    borderRadius: 4,
-    position: 'relative',
-  },
-}));
 
 export const connectorWorksWorkDeletionMutation = graphql`
   mutation ConnectorWorksWorkDeletionMutation($id: ID!) {
@@ -49,7 +37,6 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
 }) => {
   const works = data.works?.edges ?? [];
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
 
   useEffect(() => {
     const subscription = interval$.subscribe(() => {
@@ -58,11 +45,14 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
     return () => subscription.unsubscribe();
   }, []);
 
+  const title = `${inProgress ? t_i18n('In progress works') : t_i18n('Completed works')}${` (${works.length})`}`;
+
   return (
     <>
       <div>
+        <CardTitle>{title}</CardTitle>
         {works.length === 0 && (
-          <Card title={`${inProgress ? t_i18n('In progress works') : t_i18n('Completed works')}${` (${works.length})`}`}>
+          <Card>
             <Typography align="center">
               {t_i18n('No work')}
             </Typography>
@@ -72,11 +62,7 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
           const work = workEdge?.node;
           if (!work) return null;
           return (
-            <Paper
-              key={work.id}
-              classes={{ root: classes.paper }}
-              variant="outlined"
-            >
+            <Card key={work.id}>
               <ConnectorWorkLine
                 workId={work.id}
                 workName={work.name}
@@ -88,7 +74,7 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
                 workErrors={work.errors}
                 readOnly
               />
-            </Paper>
+            </Card>
           );
         })}
       </div>
