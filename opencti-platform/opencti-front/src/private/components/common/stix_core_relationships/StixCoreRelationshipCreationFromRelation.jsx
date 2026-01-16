@@ -4,7 +4,6 @@ import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import IconButton from '@common/button/IconButton';
 import withStyles from '@mui/styles/withStyles';
-import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
 import { Add, Close } from '@mui/icons-material';
 import List from '@mui/material/List';
@@ -29,6 +28,7 @@ import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCre
 import SearchInput from '../../../../components/SearchInput';
 import StixCoreRelationshipCreationForm from './StixCoreRelationshipCreationForm';
 import { UserContext } from '../../../../utils/hooks/useAuth';
+import Drawer from '../drawer/Drawer';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -554,7 +554,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
   }
 
   render() {
-    const { classes, entityId, variant, paddingRight } = this.props;
+    const { classes, entityId, variant, paddingRight, t } = this.props;
     const { open, step } = this.state;
     return (
       <div>
@@ -583,11 +583,8 @@ class StixCoreRelationshipCreationFromRelation extends Component {
         )}
         <Drawer
           open={open}
-          anchor="right"
-          elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: this.props.classes.drawerPaper }}
           onClose={this.handleClose.bind(this)}
+          title={t('Create a relationship')}
         >
           <QueryRenderer
             query={stixCoreRelationshipCreationFromRelationQuery}
