@@ -64,12 +64,10 @@ const PlaybookHeaderComponent = ({
   const theme = useTheme<Theme>();
   const inlineStyles = {
     green: {
-      backgroundColor: theme.palette.success.main,
-      color: theme.palette.success.main,
+      color: theme.palette.severity.low,
     },
     red: {
-      backgroundColor: theme.palette.error.main,
-      color: theme.palette.error.main,
+      color: theme.palette.severity.critical,
     },
   };
 

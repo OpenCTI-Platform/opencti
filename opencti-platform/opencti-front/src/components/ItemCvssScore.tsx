@@ -21,26 +21,26 @@ const ItemCvssScore = ({ score, style }: ItemCvssScoreProps) => {
       border: `1px solid ${theme.palette.tertiary.grey[800]}`,
     },
     blueGrey: {
-      backgroundColor: theme.palette.common.grey,
-      color: theme.palette.common.grey,
-      borderColor: theme.palette.common.grey,
+      backgroundColor: theme.palette.severity.default,
+      color: theme.palette.severity.default,
+      borderColor: theme.palette.severity.default,
       fontStyle: 'italic',
     },
     green: {
-      backgroundColor: theme.palette.success.main,
-      color: theme.palette.success.main,
+      backgroundColor: theme.palette.severity.low,
+      color: theme.palette.severity.low,
     },
     blue: {
-      backgroundColor: theme.palette.severity?.info,
-      color: theme.palette.severity?.info,
+      backgroundColor: theme.palette.severity.info,
+      color: theme.palette.severity.info,
     },
     red: {
-      backgroundColor: theme.palette.error.main,
-      color: theme.palette.error.main,
+      backgroundColor: theme.palette.severity.critical,
+      color: theme.palette.severity.critical,
     },
     orange: {
-      backgroundColor: theme.palette.severity?.high,
-      color: theme.palette.severity?.high,
+      backgroundColor: theme.palette.severity.high,
+      color: theme.palette.severity.high,
     },
     black: {
       backgroundColor: theme.palette.common.black,

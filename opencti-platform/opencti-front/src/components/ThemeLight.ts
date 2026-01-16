@@ -108,13 +108,13 @@ const ThemeLight = (
       popoverItem: '#ECECF2',
     },
     severity: {
-      critical: '#F14337',
+      critical: '#EE3838',
       high: '#E6700F',
-      medium: '#F2BE3A',
-      low: '#1CA55E',
-      info: '#00719E',
-      none: '#62636A',
-      default: '#ECECF2',
+      medium: '#E1B823',
+      low: '#16AD34',
+      info: '#1565c0',
+      none: '#424242',
+      default: '#DDE1FE',
     },
     tertiary: {
       grey: {
@@ -137,6 +137,7 @@ const ThemeLight = (
       green: {
         400: '#41E149',
         600: '#17AB1F',
+        800: '#094E0B',
       },
       red: {
         100: '#FBCBC5',
@@ -149,6 +150,9 @@ const ThemeLight = (
       orange: {
         400: '#F2933A',
         500: '#E6700F',
+      },
+      yellow: {
+        400: '#F2BE3A',
       },
     },
   },

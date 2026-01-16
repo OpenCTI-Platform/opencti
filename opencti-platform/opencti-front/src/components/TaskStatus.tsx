@@ -18,19 +18,15 @@ const TaskStatus = ({ status, label }: TaskStatusProps) => {
       color: theme.palette.common.grey,
     },
     green: {
-      backgroundColor: theme.palette.success.main,
-      color: theme.palette.success.main,
+      color: theme.palette.severity.low,
     },
     blue: {
-      backgroundColor: theme.palette.severity.info,
       color: theme.palette.severity.info,
     },
     grey: {
-      backgroundColor: theme.palette.common.grey,
-      color: theme.palette.common.grey,
+      color: theme.palette.severity.none,
     },
     orange: {
-      backgroundColor: theme.palette.severity.high,
       color: theme.palette.severity.high,
     },
   };

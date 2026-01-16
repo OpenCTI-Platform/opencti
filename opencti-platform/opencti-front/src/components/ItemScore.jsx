@@ -11,39 +11,13 @@ import Tag from '@common/tag/Tag';
 const ItemScore = (props) => {
   const theme = useTheme();
 
-  const inlineStyles = {
-    white: {
-      backgroundColor: theme.palette.common.white,
-      color: theme.palette.common.white,
-    },
-    whiteLight: {
-      backgroundColor: theme.palette.common.black,
-      color: theme.palette.common.black,
-    },
-    green: {
-      backgroundColor: theme.palette.success.main,
-      color: theme.palette.success.main,
-    },
-    blue: {
-      backgroundColor: theme.palette.severity?.info,
-      color: theme.palette.severity?.info,
-    },
-    red: {
-      backgroundColor: theme.palette.error.main,
-      color: theme.palette.error.main,
-    },
-    orange: {
-      backgroundColor: theme.palette.severity?.high,
-      color: theme.palette.severity?.high,
-    },
-  };
-
   const { score, classes, variant } = props;
   let style = '';
 
   if (variant === 'inList' && classes) {
     style = classes.chipInList ?? classes.chip ?? '';
   }
+
   if (isEmptyField(score)) {
     return (
       <Typography
@@ -59,7 +33,7 @@ const ItemScore = (props) => {
     return (
       <Tag
         classes={{ root: style }}
-        style={inlineStyles.green}
+        color={theme.palette.severity.low}
         label={`${score} / 100`}
       />
     );
@@ -68,7 +42,7 @@ const ItemScore = (props) => {
     return (
       <Tag
         classes={{ root: style }}
-        style={inlineStyles.blue}
+        color={theme.palette.severity.info}
         label={`${score} / 100`}
       />
     );
@@ -77,7 +51,7 @@ const ItemScore = (props) => {
     return (
       <Tag
         classes={{ root: style }}
-        style={inlineStyles.orange}
+        color={theme.palette.severity.high}
         label={`${score} / 100`}
       />
     );
@@ -86,7 +60,7 @@ const ItemScore = (props) => {
     return (
       <Tag
         classes={{ root: style }}
-        style={inlineStyles.red}
+        color={theme.palette.severity.critical}
         label={`${score} / 100`}
       />
     );
@@ -94,7 +68,7 @@ const ItemScore = (props) => {
   return (
     <Tag
       classes={{ root: style }}
-      style={inlineStyles.white}
+      color={theme.palette.common.white}
       label={`${score} / 100`}
     />
   );

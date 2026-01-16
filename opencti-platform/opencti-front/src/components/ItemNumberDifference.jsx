@@ -37,16 +37,16 @@ const ItemNumberDifference = (props) => {
 
   const inlineStyles = {
     green: {
-      backgroundColor: alpha(theme.palette.success.main, 0.08),
-      color: theme.palette.success.main,
+      backgroundColor: alpha(theme.palette.severity.low, 0.08),
+      color: theme.palette.severity.low,
     },
     red: {
-      backgroundColor: alpha(theme.palette.error.main, 0.08),
-      color: theme.palette.error.main,
+      backgroundColor: alpha(theme.palette.severity.critical, 0.08),
+      color: theme.palette.severity.critical,
     },
     blueGrey: {
-      backgroundColor: alpha(theme.palette.common.grey, 0.08),
-      color: theme.palette.common.grey,
+      backgroundColor: alpha(theme.palette.severity.default, 0.08),
+      color: theme.palette.severity.default,
     },
   };
 
