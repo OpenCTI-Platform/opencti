@@ -106,7 +106,11 @@ const StixRelationshipsNumber = ({
             </WidgetContainer>
           );
         }
-        return <Loader variant={LoaderVariant.inElement} />;
+        return (
+          <WidgetContainer title={title}>
+            <Loader variant={LoaderVariant.inElement} />
+          </WidgetContainer>
+        );
       }}
     />
   );
