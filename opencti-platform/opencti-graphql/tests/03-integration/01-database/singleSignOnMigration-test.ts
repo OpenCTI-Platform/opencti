@@ -722,7 +722,11 @@ describe('Migration of SSO environment test coverage', () => {
           identifier: 'headers_minimal',
           strategy: 'HeaderStrategy',
           config: {
-
+            header_email: 'X-MY-USER-EMAIL',
+            header_name: 'X-MY-USER-NAME',
+            header_firstname: 'X-MY-USER-FIRSTNAME',
+            header_lastname: 'X-MY-USER-LASTNAME',
+            headers_audit: ['X-MY-USER-AUDIT'],
           },
         },
       };
@@ -735,7 +739,11 @@ describe('Migration of SSO environment test coverage', () => {
       expect(minimalHEADERSConfiguration.label).toBe('headers_minimal');
       expect(minimalHEADERSConfiguration.enabled).toBeTruthy();
       expect(minimalHEADERSConfiguration.configuration).toStrictEqual([
-
+        { key: 'header_email', type: 'string', value: 'X-MY-USER-EMAIL' },
+        { key: 'header_name', type: 'string', value: 'X-MY-USER-NAME' },
+        { key: 'header_firstname', type: 'string', value: 'X-MY-USER-FIRSTNAME' },
+        { key: 'header_lastname', type: 'string', value: 'X-MY-USER-LASTNAME' },
+        { key: 'headers_audit', type: 'array', value: '["X-MY-USER-AUDIT"]' },
       ]);
     });
 
@@ -745,7 +753,11 @@ describe('Migration of SSO environment test coverage', () => {
           identifier: 'headers_groups',
           strategy: 'HeaderStrategy',
           config: {
-
+            header_email: 'X-MY-USER-EMAIL',
+            header_name: 'X-MY-USER-NAME',
+            header_firstname: 'X-MY-USER-FIRSTNAME',
+            header_lastname: 'X-MY-USER-LASTNAME',
+            headers_audit: ['X-MY-USER-AUDIT'],
             groups_management: {
               groups_mapping: ['default-roles-master:Connectors'],
               groups_splitter: '/',
@@ -761,7 +773,11 @@ describe('Migration of SSO environment test coverage', () => {
       expect(groupManagementHEADERConfiguration.label).toBe('headers_groups');
       expect(groupManagementHEADERConfiguration.enabled).toBeTruthy();
       expect(groupManagementHEADERConfiguration.configuration).toStrictEqual([
-
+        { key: 'header_email', type: 'string', value: 'X-MY-USER-EMAIL' },
+        { key: 'header_name', type: 'string', value: 'X-MY-USER-NAME' },
+        { key: 'header_firstname', type: 'string', value: 'X-MY-USER-FIRSTNAME' },
+        { key: 'header_lastname', type: 'string', value: 'X-MY-USER-LASTNAME' },
+        { key: 'headers_audit', type: 'array', value: '["X-MY-USER-AUDIT"]' },
       ]);
 
       expect(groupManagementHEADERConfiguration.groups_management).toStrictEqual({
@@ -777,14 +793,34 @@ describe('Migration of SSO environment test coverage', () => {
           identifier: 'headers_1',
           strategy: 'HeaderStrategy',
           config: {
-
+            header_email: 'X-MY-USER-EMAIL1',
+            header_name: 'X-MY-USER-NAME1',
+            header_firstname: 'X-MY-USER-FIRSTNAME1',
+            header_lastname: 'X-MY-USER-LASTNAME1',
+            headers_audit: ['X-MY-USER-AUDIT1'],
+            groups_management: {
+              groups_header: 'X-MY-USER-GROUPS1',
+            },
+            organizations_management: {
+              organizations_header: 'X-MY-USER-ORGANIZATIONS1',
+            },
           },
         },
         headers_2: {
           identifier: 'headers_2',
           strategy: 'HeaderStrategy',
           config: {
-
+            header_email: 'X-MY-USER-EMAIL2',
+            header_name: 'X-MY-USER-NAME2',
+            header_firstname: 'X-MY-USER-FIRSTNAME2',
+            header_lastname: 'X-MY-USER-LASTNAME2',
+            headers_audit: ['X-MY-USER-AUDIT2'],
+            groups_management: {
+              groups_header: 'X-MY-USER-GROUPS2',
+            },
+            organizations_management: {
+              organizations_header: 'X-MY-USER-ORGANIZATIONS2',
+            },
           },
         },
       };
@@ -795,13 +831,21 @@ describe('Migration of SSO environment test coverage', () => {
       expect(multiOicConfigurations[0].label).toBe('headers_1');
       expect(multiOicConfigurations[0].enabled).toBeTruthy();
       expect(multiOicConfigurations[0].configuration).toStrictEqual([
-
+        { key: 'header_email', type: 'string', value: 'X-MY-USER-EMAIL1' },
+        { key: 'header_name', type: 'string', value: 'X-MY-USER-NAME1' },
+        { key: 'header_firstname', type: 'string', value: 'X-MY-USER-FIRSTNAME1' },
+        { key: 'header_lastname', type: 'string', value: 'X-MY-USER-LASTNAME1' },
+        { key: 'headers_audit', type: 'array', value: '["X-MY-USER-AUDIT1"]' },
       ]);
       expect(multiOicConfigurations[1].strategy).toBe('HeaderStrategy');
       expect(multiOicConfigurations[1].label).toBe('headers_2');
       expect(multiOicConfigurations[1].enabled).toBeTruthy();
       expect(multiOicConfigurations[1].configuration).toStrictEqual([
-
+        { key: 'header_email', type: 'string', value: 'X-MY-USER-EMAIL2' },
+        { key: 'header_name', type: 'string', value: 'X-MY-USER-NAME2' },
+        { key: 'header_firstname', type: 'string', value: 'X-MY-USER-FIRSTNAME2' },
+        { key: 'header_lastname', type: 'string', value: 'X-MY-USER-LASTNAME2' },
+        { key: 'headers_audit', type: 'array', value: '["X-MY-USER-AUDIT2"]' },
       ]);
     });
 
@@ -811,6 +855,11 @@ describe('Migration of SSO environment test coverage', () => {
           identifier: 'headers_default',
           strategy: 'HeaderStrategy',
           config: {
+            header_email: 'X-MY-USER-EMAIL',
+            header_name: 'X-MY-USER-NAME',
+            header_firstname: 'X-MY-USER-FIRSTNAME',
+            header_lastname: 'X-MY-USER-LASTNAME',
+            headers_audit: ['X-MY-USER-AUDIT'],
             groups_management: {
             },
             organizations_management: {
@@ -825,7 +874,11 @@ describe('Migration of SSO environment test coverage', () => {
       expect(defaultValuesConfiguration.label).toBe('headers_default');
       expect(defaultValuesConfiguration.enabled).toBeTruthy();
       expect(defaultValuesConfiguration.configuration).toStrictEqual([
-
+        { key: 'header_email', type: 'string', value: 'X-MY-USER-EMAIL' },
+        { key: 'header_name', type: 'string', value: 'X-MY-USER-NAME' },
+        { key: 'header_firstname', type: 'string', value: 'X-MY-USER-FIRSTNAME' },
+        { key: 'header_lastname', type: 'string', value: 'X-MY-USER-LASTNAME' },
+        { key: 'headers_audit', type: 'array', value: '["X-MY-USER-AUDIT"]' },
       ]);
 
       expect(defaultValuesConfiguration.groups_management).toStrictEqual({
