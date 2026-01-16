@@ -43,10 +43,11 @@ const SSODefinitionHeader = (
       <Breadcrumbs elements={breadcrumb} />
       <>
         <Stack direction="row" alignItems="center" gap={0.5} marginBottom={3}>
-          <>
-            <TitleMainEntity sx={{ flex: 1 }}>
-              {name}
-            </TitleMainEntity>
+          <TitleMainEntity sx={{ flex: 1 }}>
+            {name}
+          </TitleMainEntity>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <SSODefinitionPopover data={sso} />
             <Button
               onClick={() => setIsEditionOpen(true)}
               aria-label={t_i18n('Update')}
@@ -54,8 +55,7 @@ const SSODefinitionHeader = (
             >
               {t_i18n('Update')}
             </Button>
-            <SSODefinitionPopover data={sso} />
-          </>
+          </div>
         </Stack>
         <SSODefinitionEdition
           isOpen={isEditionOpen}
