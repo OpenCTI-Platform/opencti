@@ -87,7 +87,11 @@ const StixCoreObjectsNumber = ({
             </WidgetContainer>
           );
         }
-        return <Loader variant={LoaderVariant.inElement} />;
+        return (
+          <WidgetContainer>
+            <Loader variant={LoaderVariant.inElement} />
+          </WidgetContainer>
+        );
       }}
     />
   );
