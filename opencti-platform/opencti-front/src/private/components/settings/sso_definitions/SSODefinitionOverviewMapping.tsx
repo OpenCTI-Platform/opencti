@@ -12,6 +12,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { graphql, useFragment } from 'react-relay';
 import { SSODefinitionOverviewMappingFragment$key } from '@components/settings/sso_definitions/__generated__/SSODefinitionOverviewMappingFragment.graphql';
 import ItemBoolean from '../../../../components/ItemBoolean';
+import Tooltip from '@mui/material/Tooltip';
 
 export const ssoDefinitionOverviewMappingFragment = graphql`
   fragment SSODefinitionOverviewMappingFragment on SingleSignOn {
@@ -183,11 +184,22 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
         </List>
       );
     }
+    const MAX_LEN = 70;
 
+    const truncate = (value: string) =>
+      value && value.length > MAX_LEN ? `${value.slice(0, MAX_LEN)}…` : value;
     return (
       <List dense disablePadding>
         <ListItem disableGutters>
-          <ListItemText primary={value != null ? String(value) : ''} />
+          <Tooltip title={value != null && String(value).length > MAX_LEN ? String(value) : ''}>
+            <ListItemText
+              primary={
+                value != null
+                  ? truncate(String(value))
+                  : ''
+              }
+            />
+          </Tooltip>
         </ListItem>
       </List>
     );

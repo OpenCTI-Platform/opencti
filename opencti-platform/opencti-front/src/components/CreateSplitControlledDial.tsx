@@ -37,10 +37,15 @@ const CreateSplitControlledDial: FunctionComponent<CreateSplitControlledDialProp
   });
 
   const [open, setOpen] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(options.length > 0 ? 0 : null);
   const anchorRef = useRef<HTMLDivElement | null>(null);
 
   const handleClickMain = () => {
+    if (selectedIndex !== null && options[selectedIndex]) {
+      if (onOptionClick) {
+        onOptionClick(options[selectedIndex], selectedIndex);
+      }
+    }
     onOpen();
   };
 

@@ -12,6 +12,7 @@ import { SSODefinitionsLinesPaginationQuery } from './__generated__/SSODefinitio
 import { SSODefinitionsLines_data$data } from './__generated__/SSODefinitionsLines_data.graphql';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import SSODefinitionCreation from '@components/settings/sso_definitions/SSODefinitionCreation';
+import ItemBoolean from '../../../../components/ItemBoolean';
 
 const LOCAL_STORAGE_KEY = 'SSODefinitions';
 
@@ -121,7 +122,13 @@ const SSODefinitions = () => {
     strategy: {
       label: 'Authentication strategy',
       percentWidth: 25,
-      render: (node: { strategy: string }) => <div>{node.strategy}</div>,
+      render: (node: { strategy: string }) => (
+        <ItemBoolean
+          variant="large"
+          neutralLabel={node.strategy}
+          status={null}
+        />
+      ),
     },
     name: {
       label: 'Configuration name',
@@ -131,13 +138,23 @@ const SSODefinitions = () => {
     enabled: {
       label: 'Enabled',
       percentWidth: 25,
-      render: (node: { enabled: boolean }) => <div>{JSON.stringify(node.enabled)}</div>,
-    },
+      render: (node: { enabled: boolean }) => (
+        <ItemBoolean
+          variant="large"
+          label={node.enabled ? t_i18n('True') : t_i18n('False')}
+          status={node.enabled}
+        />
+      ) },
     label: {
       label: 'Login Name Button',
       percentWidth: 25,
-      render: (node: { label: string }) => <div>{node.label}</div>,
-    },
+      render: (node: { label: string }) => (
+        <ItemBoolean
+          variant="large"
+          neutralLabel={node.label}
+          status={null}
+        />
+      ) },
   };
 
   const queryRef = useQueryLoading(

@@ -47,7 +47,6 @@ const SSODefinitionHeader = (
             {name}
           </TitleMainEntity>
           <div style={{ display: 'flex', gap: 4 }}>
-            <SSODefinitionPopover data={sso} />
             <Button
               onClick={() => setIsEditionOpen(true)}
               aria-label={t_i18n('Update')}
@@ -55,6 +54,7 @@ const SSODefinitionHeader = (
             >
               {t_i18n('Update')}
             </Button>
+            <SSODefinitionPopover data={sso} />
           </div>
         </Stack>
         <SSODefinitionEdition
