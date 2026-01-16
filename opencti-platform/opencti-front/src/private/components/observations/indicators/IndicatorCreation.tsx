@@ -51,9 +51,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
       duration: theme.transitions.duration.enteringScreen,
     }),
   },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
 }));
 
 const indicatorMutation = graphql`
@@ -388,14 +385,12 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
               variant="secondary"
               onClick={handleReset}
               disabled={isSubmitting}
-              classes={{ root: classes.button }}
             >
               {t_i18n('Cancel')}
             </Button>
             <Button
               onClick={submitForm}
               disabled={isSubmitting}
-              classes={{ root: classes.button }}
             >
               {t_i18n('Create')}
             </Button>
