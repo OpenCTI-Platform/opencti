@@ -2967,12 +2967,24 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :return: BatchCallbackWrapper instance for use with listen_stream
         :rtype: BatchCallbackWrapper
         :raises ValueError: If neither batch_size nor batch_timeout is specified
+        :raises ValueError: If batch_size is not a positive integer
+        :raises ValueError: If batch_timeout is not a positive number
         :raises ValueError: If max_per_minute is not a positive integer
         """
         if batch_size is None and batch_timeout is None:
             raise ValueError(
                 "At least one of batch_size or batch_timeout must be specified"
             )
+        if batch_size is not None:
+            if not isinstance(batch_size, int):
+                raise ValueError("batch_size must be an integer")
+            if batch_size <= 0:
+                raise ValueError("batch_size must be > 0")
+        if batch_timeout is not None:
+            if not isinstance(batch_timeout, (int, float)):
+                raise ValueError("batch_timeout must be a number")
+            if batch_timeout <= 0:
+                raise ValueError("batch_timeout must be > 0")
 
         actual_callback = batch_callback
         if max_per_minute is not None:
