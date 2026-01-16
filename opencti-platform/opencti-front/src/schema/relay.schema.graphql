@@ -15299,6 +15299,8 @@ type OrganizationsManagement {
   organizations_scope: String
   read_userinfo: Boolean
   token_reference: String
+  organizations_splitter: String
+  organizations_header: String
 }
 
 type GroupsManagement {
@@ -15309,6 +15311,8 @@ type GroupsManagement {
   read_userinfo: Boolean
   token_reference: String
   groups_scope: String
+  groups_splitter: String
+  groups_header: String
 }
 
 type ConfigurationType {
@@ -15350,6 +15354,8 @@ input OrganizationsManagementInput {
   organizations_scope: String
   read_userinfo: Boolean
   token_reference: String
+  organizations_splitter: String
+  organizations_header: String
 }
 
 input GroupsManagementInput {
@@ -15360,6 +15366,8 @@ input GroupsManagementInput {
   groups_scope: String
   read_userinfo: Boolean
   token_reference: String
+  groups_splitter: String
+  groups_header: String
 }
 
 input ConfigurationTypeInput {
