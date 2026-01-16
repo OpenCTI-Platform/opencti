@@ -33,6 +33,7 @@ import tempfile
 import threading
 import time
 import uuid
+from collections import deque
 from enum import Enum
 from queue import Queue
 from typing import Callable, Dict, List, Optional, Union
@@ -1089,6 +1090,383 @@ class StreamAlive(threading.Thread):
         self.exit_event.set()
 
 
+class RateLimiter:
+    """Rate limiter using sliding window algorithm.
+
+    Usage:
+        # For batch mode (alternative to using max_per_minute in create_batch_callback):
+        batch_callback = helper.create_batch_callback(
+            process_batch_func,
+            batch_size=100,
+            batch_timeout=30
+        )
+        rate_limiter = helper.create_rate_limiter(max_per_minute=10)
+        rate_limited_callback = rate_limiter.wrap(batch_callback)
+        helper.listen_stream(message_callback=rate_limited_callback)
+
+        # For non-batch mode:
+        rate_limiter = helper.create_rate_limiter(max_per_minute=100)
+        rate_limited_callback = rate_limiter.wrap(process_message)
+        helper.listen_stream(message_callback=rate_limited_callback)
+    """
+
+    def __init__(self, helper, max_per_minute: int) -> None:
+        """Initialize the rate limiter.
+
+        :param helper: OpenCTIConnectorHelper instance for logging
+        :param max_per_minute: Maximum number of calls allowed per minute
+        """
+
+        self.helper = helper
+        self.max_per_minute = max_per_minute
+        self.timestamps: deque = deque()
+        self._lock = threading.Lock()
+        self._condition = threading.Condition(self._lock)
+        self._stop_event = threading.Event()
+        self._heartbeat_queue: Optional[Queue] = None
+
+    def set_heartbeat_queue(self, q: Queue) -> None:
+        """Set the heartbeat queue for sending keepalive signals during rate limiting.
+
+        :param q: Queue used by StreamAlive for heartbeat monitoring
+        """
+        self._heartbeat_queue = q
+
+    def stop(self) -> None:
+        """Signal the rate limiter to stop waiting."""
+        self._stop_event.set()
+        with self._condition:
+            self._condition.notify_all()
+
+    def wait_if_needed(self) -> float:
+        """Wait if rate limit is exceeded. Thread-safe.
+
+        Uses a sliding window algorithm to enforce max_per_minute.
+        Sleeps if necessary to stay within the limit.
+
+        :return: Time spent waiting (seconds), 0 if no wait needed
+        """
+        with self._condition:
+            now = time.time()
+            cutoff_time = now - 60.0
+
+            # Remove timestamps outside the window
+            while self.timestamps and self.timestamps[0] < cutoff_time:
+                self.timestamps.popleft()
+
+            wait_time = 0.0
+            if len(self.timestamps) >= self.max_per_minute:
+                oldest_timestamp = self.timestamps[0]
+                wait_time = 60.0 - (now - oldest_timestamp)
+
+                if wait_time > 0:
+                    self.helper.connector_logger.info(
+                        "Rate limit reached, delaying",
+                        {"wait_seconds": round(wait_time, 2)},
+                    )
+
+                    chunk_size = 30.0
+                    total_waited = 0.0
+                    while total_waited < wait_time and not self._stop_event.is_set():
+                        sleep_duration = min(chunk_size, wait_time - total_waited)
+                        self._condition.wait(timeout=sleep_duration)
+                        total_waited += sleep_duration
+
+                        # Send heartbeat during long waits
+                        if self._heartbeat_queue is not None:
+                            try:
+                                self._heartbeat_queue.put(
+                                    "rate_limit_heartbeat", block=False
+                                )
+                            except queue.Full:
+                                # Heartbeats are best-effort; drop if the queue is full to avoid blocking.
+                                pass
+
+                    # Cleanup after sleep
+                    now = time.time()
+                    cutoff_time = now - 60.0
+                    while self.timestamps and self.timestamps[0] < cutoff_time:
+                        self.timestamps.popleft()
+
+            self.timestamps.append(time.time())
+            return wait_time
+
+    def wrap(self, callback: Callable) -> "RateLimitedCallback":
+        """Wrap a callback with rate limiting.
+
+        :param callback: The callback to wrap (can be a function or BatchCallbackWrapper)
+        :return: A callable that applies rate limiting before calling the original callback
+        """
+        return RateLimitedCallback(self, callback)
+
+
+class RateLimitedCallback:
+    """A callback wrapper that applies rate limiting.
+
+    This class wraps any callable and applies rate limiting before each call.
+    It preserves the stop() and set_heartbeat_queue() methods from the wrapped
+    callback if they exist.
+    """
+
+    def __init__(self, rate_limiter: RateLimiter, callback: Callable) -> None:
+        """Initialize the rate-limited callback.
+
+        :param rate_limiter: The RateLimiter instance to use
+        :param callback: The callback to wrap
+        """
+        self._rate_limiter = rate_limiter
+        self._callback = callback
+
+    def __call__(self, *args, **kwargs):
+        """Call the wrapped callback with rate limiting."""
+        self._rate_limiter.wait_if_needed()
+        return self._callback(*args, **kwargs)
+
+    def stop(self) -> None:
+        """Stop both the rate limiter and the wrapped callback."""
+        self._rate_limiter.stop()
+        if hasattr(self._callback, "stop"):
+            self._callback.stop()
+
+    def set_heartbeat_queue(self, q: Queue) -> None:
+        """Set heartbeat queue on both rate limiter and wrapped callback."""
+        self._rate_limiter.set_heartbeat_queue(q)
+        if hasattr(self._callback, "set_heartbeat_queue"):
+            self._callback.set_heartbeat_queue(q)
+
+    @property
+    def manages_state(self) -> bool:
+        """Propagate manages_state from wrapped callback."""
+        return getattr(self._callback, "manages_state", False)
+
+
+class BatchCallbackWrapper:
+    """Wraps a batch callback to work with single-message listen_stream.
+
+    This class accumulates individual messages and processes them in batches
+    based on batch_size or batch_timeout conditions. It can be used as a
+    callback with the listen_stream method to enable batch processing.
+
+    A dedicated timer thread handles all batch processing to avoid race
+    conditions between size-triggered and timeout-triggered batches.
+
+    For rate limiting, use the max_per_minute parameter in create_batch_callback().
+
+    Usage:
+        # Basic batch processing:
+        batch_callback = helper.create_batch_callback(
+            process_batch_func,
+            batch_size=100,
+            batch_timeout=30
+        )
+        helper.listen_stream(message_callback=batch_callback)
+
+        # With rate limiting (recommended):
+        batch_callback = helper.create_batch_callback(
+            process_batch_func,
+            batch_size=100,
+            batch_timeout=30,
+            max_per_minute=10
+        )
+        helper.listen_stream(message_callback=batch_callback)
+    """
+
+    # How frequently the timer thread checks for batch conditions (seconds)
+    _TIMER_CHECK_INTERVAL = 0.3
+
+    # Marker attribute indicating this callback manages its own state updates
+    # ListenStream checks for this to avoid duplicate state updates
+    manages_state = True
+
+    def __init__(
+        self,
+        helper,
+        batch_callback: Callable,
+        batch_size: Optional[int] = None,
+        batch_timeout: Optional[float] = None,
+    ) -> None:
+        """Initialize the batch callback wrapper.
+
+        :param helper: OpenCTIConnectorHelper instance
+        :param batch_callback: Function to call with batched events
+        :param batch_size: Process batch when this many events accumulated
+        :param batch_timeout: Process batch after this many seconds
+        """
+        self.helper = helper
+        self.batch_callback = batch_callback
+        self.batch_size = batch_size
+        self.batch_timeout = batch_timeout
+
+        # Batch state
+        self.batch: List = []
+        self.batch_start_time: Optional[float] = None
+        self._lock = threading.Lock()
+
+        # Heartbeat queue for keepalive signals
+        self._heartbeat_queue: Optional[Queue] = None
+
+        # Timer thread handles all batch processing (both size and timeout triggers)
+        # This eliminates race conditions between the main thread and timer thread
+        self._stop_event = threading.Event()
+        self._batch_ready_event = threading.Event()  # Signal when batch_size reached
+        self._timer_thread = threading.Thread(target=self._timer_loop)
+        self._timer_thread.start()
+
+    def _timer_loop(self) -> None:
+        """Background thread that handles all batch processing.
+
+        This is the ONLY thread that processes batches, eliminating race
+        conditions. It checks both size and timeout conditions.
+        """
+        while not self._stop_event.is_set():
+            # Wait for either: batch_ready signal, stop signal, or timeout
+            # This ensures immediate processing when batch_size is reached
+            self._batch_ready_event.wait(timeout=self._TIMER_CHECK_INTERVAL)
+            self._batch_ready_event.clear()
+
+            if self._stop_event.is_set():
+                break
+
+            batch_data = None
+            with self._lock:
+                if len(self.batch) > 0 and self.batch_start_time is not None:
+                    should_process = False
+                    trigger_reason = None
+
+                    if self.batch_size and len(self.batch) >= self.batch_size:
+                        should_process = True
+                        trigger_reason = "size_limit"
+                    elif self.batch_timeout:
+                        elapsed = time.time() - self.batch_start_time
+                        if elapsed >= self.batch_timeout:
+                            should_process = True
+                            trigger_reason = "timeout"
+
+                    if should_process:
+                        batch_data = self._extract_batch_data(trigger_reason)
+
+            if batch_data is not None:
+                self._execute_batch_callback(batch_data)
+
+        # Process remaining messages after loop exits
+        batch_data = None
+        with self._lock:
+            if len(self.batch) > 0:
+                batch_data = self._extract_batch_data("shutdown")
+        if batch_data is not None:
+            self._execute_batch_callback(batch_data)
+
+    def __call__(self, msg) -> None:
+        """Accumulate a message into the current batch.
+
+        This method only accumulates messages; batch processing is handled
+        by the dedicated timer thread to avoid race conditions.
+
+        :param msg: SSE message object from the stream
+        """
+        with self._lock:
+            if self.batch_start_time is None:
+                self.batch_start_time = time.time()
+            self.batch.append(msg)
+            if self.batch_size and len(self.batch) >= self.batch_size:
+                self._batch_ready_event.set()
+
+    def _extract_batch_data(self, trigger_reason: str) -> dict:
+        """Extract batch data and reset batch state. Must be called with _lock held.
+
+        :param trigger_reason: What triggered batch processing
+        :return: Dictionary containing events and batch metadata
+        """
+        elapsed = time.time() - self.batch_start_time if self.batch_start_time else 0
+
+        self.helper.connector_logger.info(
+            "Processing batch",
+            {
+                "batch_size": len(self.batch),
+                "elapsed_time": elapsed,
+                "trigger": trigger_reason,
+            },
+        )
+
+        batch_data = {
+            "events": self.batch.copy(),
+            "batch_metadata": {
+                "batch_size": len(self.batch),
+                "trigger_reason": trigger_reason,
+                "elapsed_time": elapsed,
+                "timestamp": time.time(),
+            },
+        }
+
+        self.batch = []
+        self.batch_start_time = None
+
+        return batch_data
+
+    def _execute_batch_callback(self, batch_data: dict) -> None:
+        """Execute the batch callback and update state. Called WITHOUT _lock held.
+
+        :param batch_data: Dictionary containing events and batch metadata
+        """
+        # Send heartbeat before potentially long callback
+        if self._heartbeat_queue is not None:
+            try:
+                self._heartbeat_queue.put("batch_processing", block=False)
+            except queue.Full:
+                # Heartbeat queue is full: skip this best-effort heartbeat rather than blocking
+                self.helper.connector_logger.debug(
+                    "Heartbeat queue is full, skipping batch_processing heartbeat"
+                )
+
+        try:
+            self.batch_callback(batch_data)
+        except Exception as e:
+            self.helper.connector_logger.error(
+                "Batch callback failed",
+                {
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "batch_size": batch_data["batch_metadata"]["batch_size"],
+                    "trigger_reason": batch_data["batch_metadata"]["trigger_reason"],
+                },
+            )
+            # Don't update state on failure - messages can be reprocessed on restart
+            raise
+
+        # Update state with last message ID from the batch
+        if batch_data["events"]:
+            last_msg_id = batch_data["events"][-1].id
+            state = self.helper.get_state()
+            if state is None:
+                state = {}
+            state["start_from"] = str(last_msg_id)
+            self.helper.set_state(state)
+
+    def stop(self) -> None:
+        """Stop the batch wrapper and process remaining messages.
+
+        This method signals the timer thread to stop and waits for it to
+        finish processing any remaining messages in the batch.
+        """
+        self._stop_event.set()
+        self._batch_ready_event.set()
+        self._timer_thread.join(timeout=30.0)
+        if self._timer_thread.is_alive():
+            self.helper.connector_logger.warning(
+                "Batch timer thread did not stop within the timeout",
+                {"timeout_seconds": 30.0},
+            )
+
+    def set_heartbeat_queue(self, q: Queue) -> None:
+        """Set the heartbeat queue for sending keepalive signals during batch processing.
+
+        :param q: Queue used by StreamAlive for heartbeat monitoring
+        """
+        self._heartbeat_queue = q
+        if hasattr(self.batch_callback, "set_heartbeat_queue"):
+            self.batch_callback.set_heartbeat_queue(q)
+
+
 class ListenStream(threading.Thread):
     """Thread class for consuming events from OpenCTI SSE stream.
 
@@ -1220,6 +1598,9 @@ class ListenStream(threading.Thread):
             q = Queue(maxsize=1)
             stream_alive = StreamAlive(self.helper, q)
             stream_alive.start()
+            # Pass heartbeat queue to BatchCallbackWrapper if applicable
+            if hasattr(self.callback, "set_heartbeat_queue"):
+                self.callback.set_heartbeat_queue(q)
             # Computing args building
             live_stream_url = self.url
             # In case no recover is explicitly set
@@ -1276,14 +1657,16 @@ class ListenStream(threading.Thread):
                             self.helper.set_state(state)
                     else:
                         self.callback(msg)
-                        state = self.helper.get_state()
-                        # state can be None if reset from the UI
-                        # In this case, default parameters will be used but SSE Client needs to be restarted
-                        if state is None:
-                            self.exit_event.set()
-                        else:
-                            state["start_from"] = str(msg.id)
-                            self.helper.set_state(state)
+                        # Skip state update if callback manages its own state
+                        if not getattr(self.callback, "manages_state", False):
+                            state = self.helper.get_state()
+                            # state can be None if reset from the UI
+                            # In this case, default parameters will be used but SSE Client needs to be restarted
+                            if state is None:
+                                self.exit_event.set()
+                            else:
+                                state["start_from"] = str(msg.id)
+                                self.helper.set_state(state)
         except Exception as ex:
             self.helper.connector_logger.error(
                 "Error in ListenStream loop, exit.", {"reason": str(ex)}
@@ -1294,9 +1677,13 @@ class ListenStream(threading.Thread):
         """Stop the ListenStream thread.
 
         This method sets the exit event to signal the stream listening thread to stop.
+        If the callback has a stop method (e.g., BatchCallbackWrapper or RateLimitedCallback),
+        it will be called to ensure proper cleanup.
         """
         self.helper.connector_logger.info("Preparing ListenStream for clean shutdown")
         self.exit_event.set()
+        if hasattr(self.callback, "stop"):
+            self.callback.stop()
 
 
 class ConnectorInfo:
@@ -2801,6 +3188,137 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         )
         self.listen_stream.start()
         return self.listen_stream
+
+    def create_batch_callback(
+        self,
+        batch_callback: Callable,
+        batch_size: Optional[int] = None,
+        batch_timeout: Optional[float] = None,
+        max_per_minute: Optional[int] = None,
+    ) -> BatchCallbackWrapper:
+        """Create a callback wrapper that batches messages.
+
+        This factory method creates a BatchCallbackWrapper that can be used
+        with listen_stream to enable batch processing of events.
+
+        For rate limiting, use the max_per_minute parameter (recommended).
+
+        Usage:
+            # Basic batch processing:
+            batch_callback = helper.create_batch_callback(
+                process_batch_func,
+                batch_size=100,
+                batch_timeout=30
+            )
+            helper.listen_stream(message_callback=batch_callback)
+
+            # With rate limiting (recommended):
+            batch_callback = helper.create_batch_callback(
+                process_batch_func,
+                batch_size=100,
+                batch_timeout=30,
+                max_per_minute=10
+            )
+            helper.listen_stream(message_callback=batch_callback)
+
+        The batch callback receives a dictionary with the following structure:
+            {
+                "events": [list of SSE messages],
+                "batch_metadata": {
+                    "batch_size": int,
+                    "trigger_reason": str,  # "size_limit", "timeout", "shutdown"
+                    "elapsed_time": float,
+                    "timestamp": float,
+                }
+            }
+
+        :param batch_callback: Function to call with batched events
+        :type batch_callback: Callable[[dict], None]
+        :param batch_size: Process batch when this many events accumulated (optional)
+        :type batch_size: int or None
+        :param batch_timeout: Process batch after this many seconds (optional)
+        :type batch_timeout: float or None
+        :param max_per_minute: Maximum batch callbacks per minute (optional)
+        :type max_per_minute: int or None
+        :return: BatchCallbackWrapper instance for use with listen_stream
+        :rtype: BatchCallbackWrapper
+        :raises ValueError: If neither batch_size nor batch_timeout is specified
+        :raises ValueError: If batch_size is not a positive integer
+        :raises ValueError: If batch_timeout is not a positive number
+        :raises ValueError: If max_per_minute is not a positive integer
+        """
+        if batch_size is None and batch_timeout is None:
+            raise ValueError(
+                "At least one of batch_size or batch_timeout must be specified"
+            )
+        if batch_size is not None:
+            if not isinstance(batch_size, int):
+                raise ValueError("batch_size must be an integer")
+            if batch_size <= 0:
+                raise ValueError("batch_size must be > 0")
+        if batch_timeout is not None:
+            if not isinstance(batch_timeout, (int, float)):
+                raise ValueError("batch_timeout must be a number")
+            if batch_timeout <= 0:
+                raise ValueError("batch_timeout must be > 0")
+
+        actual_callback = batch_callback
+        if max_per_minute is not None:
+            rate_limiter = self.create_rate_limiter(max_per_minute)
+            actual_callback = rate_limiter.wrap(batch_callback)
+
+        return BatchCallbackWrapper(
+            helper=self,
+            batch_callback=actual_callback,
+            batch_size=batch_size,
+            batch_timeout=batch_timeout,
+        )
+
+    def create_rate_limiter(self, max_per_minute: int) -> RateLimiter:
+        """Create a rate limiter that can wrap any callback.
+
+        The rate limiter uses a sliding window algorithm to enforce a maximum
+        number of calls per minute. It can be used with both batch and non-batch
+        callbacks.
+
+        Usage:
+            # With batch callback:
+            batch_callback = helper.create_batch_callback(
+                process_batch_func,
+                batch_size=100,
+                batch_timeout=30
+            )
+            rate_limiter = helper.create_rate_limiter(max_per_minute=10)
+            rate_limited = rate_limiter.wrap(batch_callback)
+            helper.listen_stream(message_callback=rate_limited)
+
+            # With non-batch callback:
+            rate_limiter = helper.create_rate_limiter(max_per_minute=100)
+            rate_limited = rate_limiter.wrap(process_message)
+            helper.listen_stream(message_callback=rate_limited)
+
+        :param max_per_minute: Maximum number of calls allowed per 60-second window
+        :type max_per_minute: int
+        :return: RateLimiter instance that can wrap callbacks
+        :rtype: RateLimiter
+        :raises ValueError: If max_per_minute is not a positive integer
+        """
+        if not isinstance(max_per_minute, int):
+            raise ValueError("max_per_minute must be an integer")
+        if max_per_minute <= 0:
+            raise ValueError("max_per_minute must be > 0")
+        if max_per_minute > 10000:
+            self.connector_logger.warning(
+                "Very high max_per_minute configured",
+                {"max_per_minute": max_per_minute},
+            )
+
+        self.connector_logger.info(
+            "Rate limiter created",
+            {"max_per_minute": max_per_minute},
+        )
+
+        return RateLimiter(helper=self, max_per_minute=max_per_minute)
 
     def get_opencti_url(self) -> Optional[Union[bool, int, str]]:
         """Get the OpenCTI URL.
