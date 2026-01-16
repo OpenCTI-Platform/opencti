@@ -14,8 +14,8 @@ import { registerDefinition } from '../../schema/module';
 import { authorizedAuthorities, authorizedMembers } from '../../schema/attribute-definition';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { ENTITY_TYPE_NOTIFIER } from '../notifier/notifier-types';
-import { MEMBERS_ENTITY_TYPES } from '../../domain/user';
 import { DIGEST_PERIOD_VALUES, TRIGGER_EVENT_TYPES_VALUES, TRIGGER_SCOPE_VALUES, TRIGGER_TYPE_VALUES } from '../../manager/notificationManager';
+import { MEMBERS_ENTITY_TYPES } from '../../utils/access';
 
 // Outcomes
 // TODO

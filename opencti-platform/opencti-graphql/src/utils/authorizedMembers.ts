@@ -73,13 +73,13 @@ export const getAuthorizedMembers = async (
       filterGroups: [],
     },
   };
-  const members = await findAllMembers(context, user, args);
+  const members = await findAllMembers(context, user, args) as BasicStoreEntity[];
   return (entity.restricted_members ?? []).map((currentAuthMember, i) => {
-    const member = members.find((m) => (m as BasicStoreEntity).id === currentAuthMember.id) as BasicStoreEntity;
+    const member = members.find((m) => m.id === currentAuthMember.id);
     let groups_restriction: MemberGroupRestriction[] = [];
     if (currentAuthMember.groups_restriction_ids) {
       groups_restriction = currentAuthMember.groups_restriction_ids.map((groupId: string) => {
-        const group = members.find((m) => (m as BasicStoreEntity).id === groupId) as BasicStoreEntity;
+        const group = members.find((m) => m.id === groupId);
         return { id: groupId, name: group?.name ?? 'unknown' };
       });
     }

@@ -1,6 +1,7 @@
 import { addIngestion, findTaxiiCollectionPaginated, findById, ingestionDelete, ingestionEditField } from './ingestion-taxii-collection-domain';
 import type { Resolvers } from '../../generated/graphql';
 import { getAuthorizedMembers } from '../../utils/authorizedMembers';
+import { loadCreator } from '../../database/members';
 
 const ingestionTaxiiCollectionResolvers: Resolvers = {
   Query: {
@@ -8,7 +9,7 @@ const ingestionTaxiiCollectionResolvers: Resolvers = {
     ingestionTaxiiCollections: (_, args, context) => findTaxiiCollectionPaginated(context, context.user, args),
   },
   IngestionTaxiiCollection: {
-    user: (ingestionTaxiiCollection, _, context) => context.batch.creatorBatchLoader.load(ingestionTaxiiCollection.user_id),
+    user: (ingestionTaxiiCollection, _, context) => loadCreator(context, context.user, ingestionTaxiiCollection.user_id),
     authorized_members: (ingestionTaxiiCollection, _, context) => getAuthorizedMembers(context, context.user, ingestionTaxiiCollection),
   },
   Mutation: {
