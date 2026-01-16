@@ -6,6 +6,7 @@ import { indicatorEditionOverviewFocus } from './IndicatorEditionOverview';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 import { IndicatorEditionContainerQuery$data } from '@components/observations/indicators/__generated__/IndicatorEditionContainerQuery.graphql';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 export const indicatorEditionQuery = graphql`
   query IndicatorEditionContainerQuery($id: String!) {
@@ -22,9 +23,10 @@ interface IndicatorEditionProps {
 const IndicatorEdition: FunctionComponent<IndicatorEditionProps> = ({
   indicatorId,
 }) => {
+  const [commit] = useApiMutation(indicatorEditionOverviewFocus);
+
   const handleClose = () => {
-    commitMutation(environment, {
-      mutation: indicatorEditionOverviewFocus,
+    commit({
       variables: {
         id: indicatorId,
         input: { focusOn: '' },
