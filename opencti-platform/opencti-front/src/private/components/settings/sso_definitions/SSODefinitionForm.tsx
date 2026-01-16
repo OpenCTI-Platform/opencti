@@ -183,8 +183,8 @@ const SSODefinitionForm = ({
               onChange={(event, value) => handleChangeTab(value)}
             >
               <Tab label={t_i18n('SSO Configuration')} />
-              <Tab label={t_i18n('Groups mapping')} />
-              <Tab label={t_i18n('Organization mapping')} />
+              <Tab label={t_i18n('Groups configuration')} />
+              <Tab label={t_i18n('Organizations configuration')} />
             </Tabs>
           </Box>
           {currentTab === 0 && (
@@ -211,15 +211,6 @@ const SSODefinitionForm = ({
                 />
               </div>
               <Field
-                component={TextField}
-                variant="standard"
-                name="label"
-                onSubmit={updateField}
-                label={t_i18n('Login Button Name')}
-                fullWidth
-                style={{ marginTop: 20 }}
-              />
-              <Field
                 component={SwitchField}
                 variant="standard"
                 name="enabled"
@@ -227,6 +218,15 @@ const SSODefinitionForm = ({
                 onChange={updateField}
                 label={t_i18n('Enable SAML authentication')}
                 containerstyle={{ marginLeft: 2, marginTop: 20 }}
+              />
+              <Field
+                component={TextField}
+                variant="standard"
+                name="label"
+                onSubmit={updateField}
+                label={t_i18n('Login Button Name')}
+                fullWidth
+                style={{ marginTop: 10 }}
               />
               {selectedStrategy === 'SAML' && <SAMLConfig updateField={updateField} />}
             </>

@@ -13,6 +13,7 @@ export const ssoDefinitionQuery = graphql`
     singleSignOn(id: $id) {
       ...SSODefinitionHeaderFragment
       ...SSODefinitionEditionFragment
+      ...SSODefinitionOverviewFragment
     }
   }
 `;
@@ -28,7 +29,7 @@ const SSODefinitionComponent = ({ queryRef }: SSODefinitionComponentProps) => {
   return (
     <>
       <SSODefinitionHeader data={singleSignOn} editionData={singleSignOn} />
-      <SSODefinitionOverview sso={singleSignOn} />
+      <SSODefinitionOverview data={singleSignOn} />
     </>
 
   );
