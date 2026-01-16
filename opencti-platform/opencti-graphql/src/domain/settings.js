@@ -16,7 +16,7 @@ import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { UnsupportedError } from '../config/errors';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { getEnterpriseEditionInfoFromPem } from '../modules/settings/licensing';
+import { decodeLicensePem, getEnterpriseEditionInfo } from '../modules/settings/licensing';
 import { getClusterInformation } from '../database/cluster-module';
 import { completeXTMHubDataForRegistration } from '../utils/settings.helper';
 import { XTM_ONE_CHATBOT_URL } from '../http/httpChatbotProxy';
@@ -104,7 +104,7 @@ export const getProtectedSensitiveConfig = async (context, user) => {
 export const getSettings = async (context) => {
   const platformSettings = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
   const clusterInfo = await getClusterInformation();
-  const eeInfo = getEnterpriseEditionInfoFromPem(platformSettings.internal_id, platformSettings.enterprise_license);
+  const eeInfo = getEnterpriseEditionInfo(platformSettings);
 
   const platformTheme = await findThemeById(context, SYSTEM_USER, platformSettings.platform_theme);
 
@@ -215,7 +215,7 @@ export const settingsEditField = async (context, user, settingsId, input) => {
   if (enterpriseLicense && enterpriseLicense.value?.length > 0) {
     const license = enterpriseLicense.value[0];
     if (isNotEmptyField(license)) {
-      const info = getEnterpriseEditionInfoFromPem(settings.internal_id, license);
+      const info = decodeLicensePem(settings.internal_id, false, license);
       if (!info.license_validated) {
         throw UnsupportedError('Invalid license');
       }

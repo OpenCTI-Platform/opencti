@@ -12,7 +12,6 @@ import { ENTITY_TYPE_SETTINGS } from '../../../src/schema/internalObject';
 import * as settingsModule from '../../../src/domain/settings';
 import * as redisModule from '../../../src/database/redis';
 import * as xtmHubEmail from '../../../src/modules/xtm/hub/xtm-hub-email';
-import * as licensingModule from '../../../src/modules/settings/licensing';
 import * as conf from '../../../src/config/conf';
 
 describe('XTM hub', () => {
@@ -300,13 +299,11 @@ describe('XTM hub', () => {
     let settingsEditFieldSpy: MockInstance;
     let confGetSpy: MockInstance;
     let getEntityFromCacheSpy: MockInstance;
-    let getEnterpriseEditionInfoFromPemSpy: MockInstance;
     beforeEach(() => {
       autoRegisterSpy = vi.spyOn(xtmHubClient, 'autoRegister');
       settingsEditFieldSpy = vi.spyOn(settingsModule, 'settingsEditField');
       getEntityFromCacheSpy = vi.spyOn(cache, 'getEntityFromCache');
       confGetSpy = vi.spyOn(confModule.default, 'get');
-      getEnterpriseEditionInfoFromPemSpy = vi.spyOn(licensingModule, 'getEnterpriseEditionInfoFromPem');
     });
 
     afterEach(() => {
@@ -326,24 +323,6 @@ describe('XTM hub', () => {
       confGetSpy.mockReturnValue('platform_id');
       getEntityFromCacheSpy.mockResolvedValue({
         id: 'settings_id'
-      });
-      getEnterpriseEditionInfoFromPemSpy.mockReturnValue({
-        license_enterprise: '',
-        license_by_configuration: '',
-        license_validated: true,
-        license_valid_cert: '',
-        license_customer: '',
-        license_expired: '',
-        license_extra_expiration: '',
-        license_extra_expiration_days: '',
-        license_expiration_date: '',
-        license_start_date: '',
-        license_expiration_prevention: '',
-        license_platform: '',
-        license_type: 'trial',
-        license_platform_match: '',
-        license_creator: '',
-        license_global: ''
       });
 
       await autoRegisterOpenCTI(testContext, HUB_REGISTRATION_MANAGER_USER, input);

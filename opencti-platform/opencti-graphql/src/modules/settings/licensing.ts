@@ -44,7 +44,7 @@ const getExtensionValue = (clientCrt: forge.pki.Certificate, standardOid: string
   return clientCrt.extensions.find((ext) => ext.id === legacyOid)?.value;
 };
 
-const decodeLicense = (platformInstanceId: string, licenseByConfiguration: boolean, pem: string | undefined): PlatformEe => {
+export const decodeLicensePem = (platformInstanceId: string, licenseByConfiguration: boolean, pem: string | undefined): PlatformEe => {
   const license_enterprise = pem !== undefined && isNotEmptyField(pem);
   if (license_enterprise) {
     try {
@@ -125,13 +125,18 @@ export const getEnterpriseEditionActivePem = (rawPem: string | undefined) => {
 let cachedLicence: PlatformEe | undefined = undefined;
 let cachedPem: string | undefined = undefined;
 
-export const getEnterpriseEditionInfoFromPem = (platformInstanceId: string, rawPem: string | undefined) => {
+const getEnterpriseEditionInfoFromPem = (platformInstanceId: string, rawPem: string | undefined) => {
   const pem = getEnterpriseEditionActivePem(rawPem);
   if (cachedLicence === undefined || cachedPem !== pem) {
     const pemFromConfig = conf.get('app:enterprise_edition_license');
     const licenseByConfiguration = isNotEmptyField(pemFromConfig);
-    cachedLicence = decodeLicense(platformInstanceId, licenseByConfiguration, pem);
+    cachedLicence = decodeLicensePem(platformInstanceId, licenseByConfiguration, pem);
     cachedPem = pem;
+    if (cachedLicence.license_type === 'ci') {
+      setTimeout(() => {
+        process.exit(0);
+      }, 2700000);
+    }
   }
   return cachedLicence;
 };

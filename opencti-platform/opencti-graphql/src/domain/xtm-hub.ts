@@ -11,7 +11,7 @@ import { getSettings, settingsEditField } from './settings';
 import { notify } from '../database/redis';
 import { utcDate } from '../utils/format';
 import { sendAdministratorsLostConnectivityEmail } from '../modules/xtm/hub/xtm-hub-email';
-import { getEnterpriseEditionInfoFromPem } from '../modules/settings/licensing';
+import { getEnterpriseEditionInfo } from '../modules/settings/licensing';
 
 interface AttributeUpdate {
   key: keyof BasicStoreSettings;
@@ -70,7 +70,7 @@ export const checkXTMHubConnectivity = async (context: AuthContext, user: AuthUs
 export const autoRegisterOpenCTI = async (context: AuthContext, user: AuthUser, input: AutoRegisterInput): Promise<{ success: boolean }> => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
 
-  const licenseInfo = getEnterpriseEditionInfoFromPem(settings.internal_id, settings.enterprise_license);
+  const licenseInfo = getEnterpriseEditionInfo(settings);
 
   if (!input.platform_token) {
     return { success: false };
