@@ -58,8 +58,8 @@ import { getEntitiesListFromCache } from '../../database/cache';
 import { ENTITY_TYPE_STATUS } from '../../schema/internalObject';
 import { IDS_ATTRIBUTES } from '../../domain/attribute-utils';
 
-export const adaptFilterToRegardingOfFilterKey = async (context: AuthContext, user: AuthUser, filter: Filter) => {
-  const { key: filterKey } = filter;
+export const adaptFilterToRegardingOfFilterKey = async (context: AuthContext, user: AuthUser, filter: Filter & { postFilteringTag?: string }) => {
+  const { key: filterKey, postFilteringTag } = filter;
   const regardingFilters = [];
   const idParameter = filter.values.find((i) => i.key === ID_SUBFILTER);
   const typeParameter = filter.values.find((i) => i.key === RELATION_TYPE_SUBFILTER);
@@ -133,13 +133,13 @@ export const adaptFilterToRegardingOfFilterKey = async (context: AuthContext, us
       ? buildRefRelationKey('*', '*')
       : types.map((t: string) => buildRefRelationKey(t, '*'));
     keys.forEach((relKey: string) => {
-      regardingFilters.push({ key: [relKey], operator: filter.operator, values: ['EXISTS'] });
+      regardingFilters.push({ key: [relKey], operator: filter.operator, values: ['EXISTS'], postFilteringTag });
     });
   } else {
     const keys = isEmptyField(types)
       ? buildRefRelationKey('*', '*')
       : types.flatMap((t: string) => [buildRefRelationKey(t, ID_INTERNAL), buildRefRelationKey(t, ID_INFERRED)]);
-    regardingFilters.push({ key: keys, operator: filter.operator, mode, values: ids });
+    regardingFilters.push({ key: keys, operator: filter.operator, mode, values: ids, postFilteringTag });
   }
   return { newFilterGroup: { mode, filters: regardingFilters, filterGroups: [] } };
 };

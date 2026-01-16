@@ -139,7 +139,7 @@ import {
   RELATION_TYPE_SUBFILTER,
   TYPE_FILTER,
 } from '../utils/filtering/filtering-constants';
-import { type FilterGroup, FilterMode, FilterOperator } from '../generated/graphql';
+import { type Filter, type FilterGroup, FilterMode, FilterOperator } from '../generated/graphql';
 import {
   type AttributeDefinition,
   authorizedMembers,
@@ -173,7 +173,7 @@ import { ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, isStixCyberObservable } from '../sc
 import { lockResources } from '../lock/master-lock';
 import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_UPDATE_LINKED } from '../modules/draftWorkspace/draftOperations';
 import { RELATION_SAMPLE } from '../modules/malwareAnalysis/malwareAnalysis-types';
-import { asyncFilter, asyncMap } from '../utils/data-processing';
+import { asyncMap } from '../utils/data-processing';
 import { doYield } from '../utils/eventloop-utils';
 import { RELATION_COVERED } from '../modules/securityCoverage/securityCoverage-types';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -193,6 +193,7 @@ import type {
 import type { BasicStoreSettings } from '../types/settings';
 import { completeSpecialFilterKeys } from '../utils/filtering/filtering-completeSpecialFilterKeys';
 import { IDS_ATTRIBUTES } from '../domain/attribute-utils';
+import type { FiltersWithNested } from './middleware-loader';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -621,7 +622,6 @@ export const buildDataRestrictions = async (
   opts: { includeAuthorities?: boolean | null } | null | undefined = {},
 ): Promise<{ must: any[]; must_not: any[] }> => {
   const must: any[] = [];
-
   const must_not: any[] = [];
   // If internal users of the system, we cancel rights checking
   if (INTERNAL_USERS[user.id]) {
@@ -2506,42 +2506,67 @@ export const buildLocalMustFilter = (validFilter: any) => {
   throw UnsupportedError('Invalid filter configuration', validFilter);
 };
 
+const POST_FILTER_TAG_SEPARATOR = ';';
 const buildSubQueryForFilterGroup = (
   context: AuthContext,
   user: AuthUser,
-  inputFilters: any,
-) => {
+  inputFilters: FilterGroup,
+): { subQuery: any; postFiltersTags: Set<string> } => {
   const { mode = 'and', filters = [], filterGroups = [] } = inputFilters;
-  const localMustFilters: any = [];
+  const localSubQueries: { subQuery: any; associatedTags: Set<string> }[] = [];
+  const localPostFilterTags = new Set<string>();
   // Handle filterGroups
   for (let index = 0; index < filterGroups.length; index += 1) {
     const group = filterGroups[index];
     if (isFilterGroupNotEmpty(group)) {
-      const subQuery = buildSubQueryForFilterGroup(context, user, group);
+      const { subQuery, postFiltersTags } = buildSubQueryForFilterGroup(context, user, group);
       if (subQuery) { // can be null
-        localMustFilters.push(subQuery);
+        localSubQueries.push({ subQuery, associatedTags: postFiltersTags });
       }
+      postFiltersTags.forEach((t: string) => localPostFilterTags.add(t));
     }
   }
   // Handle filters
   for (let index = 0; index < filters.length; index += 1) {
-    const filter = filters[index];
-    const isValidFilter = filter?.values || filter?.nested?.length > 0;
+    const filter = filters[index] as FiltersWithNested & { postFilteringTag?: string };
+    const isValidFilter = filter.values || (filter.nested && filter.nested?.length > 0);
     if (isValidFilter) {
       const localMustFilter = buildLocalMustFilter(filter);
-      localMustFilters.push(localMustFilter);
+      if (filter.postFilteringTag) {
+        const associatedTag = filter.postFilteringTag;
+        localPostFilterTags.add(associatedTag);
+        const associatedTags = new Set<string>([associatedTag]);
+        localSubQueries.push({ subQuery: localMustFilter, associatedTags });
+      } else {
+        localSubQueries.push({ subQuery: localMustFilter, associatedTags: new Set<string>() });
+      }
     }
   }
-  if (localMustFilters.length > 0) {
-    return {
-      bool: {
-        should: localMustFilters,
-        minimum_should_match: mode === 'or' ? 1 : localMustFilters.length,
-      },
-    };
-  }
-  return null;
+
+  // Wrap every tagged subquery in a bool must with _name tag
+  const localMustFilters = localSubQueries.map(({ subQuery, associatedTags }) => {
+    const tagsToApply = mode === 'or' ? [...localPostFilterTags].filter((t: string) => !associatedTags.has(t)) : [];
+    if (tagsToApply.length > 0) {
+      return {
+        bool: {
+          must: [subQuery],
+          ['_name']: tagsToApply.join(POST_FILTER_TAG_SEPARATOR),
+        },
+      };
+    }
+    return subQuery;
+  });
+
+  const currentSubQuery = localMustFilters.length > 0
+    ? {
+        bool: {
+          should: localMustFilters,
+          minimum_should_match: mode === 'or' ? 1 : localMustFilters.length,
+        } }
+    : null;
+  return { subQuery: currentSubQuery, postFiltersTags: localPostFilterTags };
 };
+
 const getRuntimeEntities = async (context: AuthContext, user: AuthUser, entityType: string) => {
   const elements = await elPaginate<BasicStoreEntity>(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, {
     types: [entityType],
@@ -2789,21 +2814,21 @@ const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, options:
       specialFiltersContent.push({ key: TYPE_FILTER, values: R.flatten(types) });
     }
   }
-  const completeFilters: any = specialFiltersContent.length > 0 ? {
+  const completeFilters = specialFiltersContent.length > 0 ? {
     mode: FilterMode.And,
     filters: specialFiltersContent,
     filterGroups: isFilterGroupNotEmpty(convertedFilters) ? [convertedFilters as FilterGroup] : [],
   } : convertedFilters;
   // Handle filters
-  if (isFilterGroupNotEmpty(completeFilters)) {
+  if (completeFilters && isFilterGroupNotEmpty(completeFilters)) {
     const finalFilters = await completeSpecialFilterKeys(context, user, completeFilters);
-    const filtersSubQuery = buildSubQueryForFilterGroup(context, user, finalFilters);
+    const { subQuery: filtersSubQuery } = buildSubQueryForFilterGroup(context, user, finalFilters);
     if (filtersSubQuery) {
       mustFilters.push(filtersSubQuery);
     }
   }
   // Handle search
-  const orderConfiguration = isEmptyField(orderBy) ? [] : orderBy as string;
+  const orderConfiguration = isEmptyField(orderBy) ? [] : orderBy;
   const orderCriterion = Array.isArray(orderConfiguration) ? orderConfiguration : [orderConfiguration];
   let scoreSearchOrder = orderMode;
   if (search !== null && search.length > 0) {
@@ -2899,6 +2924,37 @@ const buildSearchResult = <T extends BasicStoreBase>(
   }
   return elements;
 };
+
+const tagFiltersForPostFiltering = (filters: FilterGroup | undefined | null) => {
+  const taggedFilters: (Filter & { postFilteringTag: string })[] = filters
+    ? extractFiltersFromGroup(filters, [INSTANCE_REGARDING_OF, INSTANCE_DYNAMIC_REGARDING_OF])
+        .filter((filter) => isEmptyField(filter.operator) || filter.operator === 'eq')
+        .map((filter, i) => {
+          const taggedFilter = filter as Filter & { postFilteringTag: string };
+          taggedFilter.postFilteringTag = `${i}`;
+          return taggedFilter;
+        })
+    : [];
+
+  if (taggedFilters) {
+    return async <T extends BasicStoreBase> (context: AuthContext, user: AuthUser, elementsIds: string[]) => {
+      const postFilters: { tag: string; postFilter: (element: T) => boolean }[] = [];
+      for (let i = 0; i < taggedFilters.length; i++) {
+        const taggedFilter = taggedFilters[i];
+        postFilters.push({
+          tag: taggedFilter.postFilteringTag,
+          postFilter: await buildRegardingOfFilter<T>(context, user, elementsIds, taggedFilter),
+        });
+      }
+      return (element: T, tagsToIgnore: Set<string>) =>
+        postFilters
+          .filter(({ tag }) => !tagsToIgnore.has(tag))
+          .every(({ postFilter }) => postFilter(element));
+    };
+  }
+  return undefined;
+};
+
 export type PaginateOpts = QueryBodyBuilderOpts & {
   baseData?: boolean;
   baseFields?: string[];
@@ -2930,9 +2986,10 @@ export const elPaginate = async <T extends BasicStoreBase>(
     types = null,
     withResultMeta = false,
     first = ES_DEFAULT_PAGINATION,
-    filters,
     connectionFormat = true,
   } = options;
+  // tagFiltersForPostFiltering have side effect on options.filters, it must be done before elQueryBodyBuilder
+  const createPostFilter = tagFiltersForPostFiltering(options.filters);
   const body = await elQueryBodyBuilder(context, user, options);
   if (body.size > ES_MAX_PAGINATION && !bypassSizeLimit) {
     logApp.info('[SEARCH] Pagination limited to max result config', { size: body.size, max: ES_MAX_PAGINATION });
@@ -2952,15 +3009,20 @@ export const elPaginate = async <T extends BasicStoreBase>(
   }
   logApp.debug('[SEARCH] paginate', { query });
   try {
-    const data = await elRawSearch(context, user, types !== null ? types : 'Any', query);
-    const globalCount = data.hits.total.value;
-    const elements = await elConvertHits<T>(data.hits.hits);
-    // If filters contains an "in regards of" filter a post-security filtering is needed
-
-    const regardingOfFilter = elements.length === 0 ? undefined : await buildRegardingOfFilter<T>(context, user, elements, filters);
-    const filteredElements = regardingOfFilter ? await asyncFilter(elements, regardingOfFilter) : elements;
-    const filterCount = elements.length - filteredElements.length;
-    const result = buildSearchResult(filteredElements, first, body.search_after, globalCount, filterCount, connectionFormat);
+    const { hits: { hits, total: { value: globalCount } } } = await elRawSearch(context, user, types !== null ? types : 'Any', query);
+    const elements = await elConvertHits<T>(hits);
+    let finalElements = elements;
+    if (finalElements.length > 0 && createPostFilter) {
+      // Since filters contains filters requiring post filtering (regardingOf, dynamicRegardingOf), a post-security filtering is needed
+      const postFilter = await createPostFilter<T>(context, user, elements.map(({ id }) => id));
+      finalElements = elements.filter((element, i) => {
+        const dataHit = hits[i];
+        const tagsToIgnoreSet = new Set<string>((dataHit.matched_queries ?? []).flatMap((matchedQuery: string) => matchedQuery.split(POST_FILTER_TAG_SEPARATOR)));
+        return postFilter(element, tagsToIgnoreSet);
+      });
+    }
+    const filterCount = elements.length - finalElements.length;
+    const result = buildSearchResult(finalElements, first, body.search_after, globalCount, filterCount, connectionFormat);
     if (withResultMeta) {
       const lastProcessedSort = R.last(elements)?.sort;
       const endCursor = lastProcessedSort ? offsetToCursor(lastProcessedSort) : null;
@@ -3484,99 +3546,87 @@ export const elAggregationsList = async (
 const buildRegardingOfFilter = async <T extends BasicStoreBase> (
   context: AuthContext,
   user: AuthUser,
-  elements: T[],
-  filters: FilterGroup | undefined | null,
+  elementIds: string[],
+  filter: Filter,
 ) => {
-  // First check if there is an "in regards of" filter
-  // If its case we need to ensure elements are filtered according to denormalization rights.
-  if (isNotEmptyField(filters)) {
-    const definedFilters = filters as FilterGroup;
-    const extractedFilters = extractFiltersFromGroup(definedFilters, [INSTANCE_REGARDING_OF, INSTANCE_DYNAMIC_REGARDING_OF])
-      .filter((filter) => isEmptyField(filter.operator) || filter.operator === 'eq');
-    if (extractedFilters.length > 0) {
-      const targetValidatedIds = new Set();
-      const sideIdManualInferred = new Map();
-      for (let i = 0; i < extractedFilters.length; i += 1) {
-        const { values } = extractedFilters[i];
-        const ids = values.filter((v) => v.key === ID_SUBFILTER).map((f) => f.values).flat();
-        const types = values.filter((v) => v.key === RELATION_TYPE_SUBFILTER).map((f) => f.values).flat();
-        const inferredParameterValues = values.filter((v) => v.key === RELATION_INFERRED_SUBFILTER).map((f) => f.values).flat();
-        const directionForced = R.head(values.filter((v) => v.key === INSTANCE_REGARDING_OF_DIRECTION_FORCED).map((f) => f.values).flat()) ?? false;
-        const directionReverse = R.head(values.filter((v) => v.key === INSTANCE_REGARDING_OF_DIRECTION_REVERSE).map((f) => f.values).flat()) ?? false;
-        // resolve all relationships that target the id values, forcing the type is available
-        const paginateArgs: RepaginateOpts<BasicStoreRelation> = { baseData: true, types };
-        const elementIds = elements.map(({ id }) => id);
-        if (directionForced) {
-          // If a direction is forced, build the filter in the correct direction
-          const directedFilters = [];
-          if (directionReverse) {
-            directedFilters.push({ key: ['fromId'], values: elementIds });
-            if (ids.length > 0) { // Ids can be empty if nothing configured by the user
-              directedFilters.push({ key: ['toId'], values: ids });
-            }
-          } else {
-            directedFilters.push({ key: ['toId'], values: elementIds });
-            if (ids.length > 0) { // Ids can be empty if nothing configured by the user
-              directedFilters.push({ key: ['fromId'], values: ids });
-            }
-          }
-          paginateArgs.filters = { mode: FilterMode.And, filters: directedFilters, filterGroups: [] };
-        } else {
-          // If no direction is setup, create the filter group for both directions
-          const filterTo = [{ key: ['fromId'], values: elementIds }];
-          const filterFrom = [{ key: ['toId'], values: elementIds }];
-          if (ids.length > 0) { // Ids can be empty if nothing configured by the user
-            filterTo.push({ key: ['toId'], values: ids });
-            filterFrom.push({ key: ['fromId'], values: ids });
-          }
-          paginateArgs.filters = {
-            mode: FilterMode.Or,
-            filters: [],
-            filterGroups: [
-              { mode: FilterMode.And, filterGroups: [], filters: filterTo },
-              { mode: FilterMode.And, filterGroups: [], filters: filterFrom }],
-          };
-        }
-        let relationshipIndices = READ_RELATIONSHIPS_INDICES;
-        if (inferredParameterValues.length > 0) {
-          if (inferredParameterValues.includes('true')) {
-            relationshipIndices = [READ_INDEX_INFERRED_RELATIONSHIPS];
-          } else if (inferredParameterValues.includes('false')) {
-            relationshipIndices = READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED;
-          };
-        };
-        const relationships = await elList<BasicStoreRelation>(context, user, relationshipIndices, paginateArgs);
-        // compute side ids
-        const addTypeSide = (sideId: string, sideType: string) => {
-          targetValidatedIds.add(sideId);
-          if (sideIdManualInferred.has(sideId)) {
-            const toTypes = sideIdManualInferred.get(sideId);
-            toTypes.add(sideType);
-            sideIdManualInferred.set(sideId, toTypes);
-          } else {
-            const toTypes = new Set();
-            toTypes.add(sideType);
-            sideIdManualInferred.set(sideId, toTypes);
-          }
-        };
-        for (let relIndex = 0; relIndex < relationships.length; relIndex += 1) {
-          await doYield();
-          const relation = relationships[relIndex];
-          const relType = isInferredIndex(relation._index) ? 'inferred' : 'manual';
-          addTypeSide(relation.fromId, relType);
-          addTypeSide(relation.toId, relType);
-        }
+  // We need to ensure elements are filtered according to denormalization rights.
+  const targetValidatedIds = new Set();
+  const sideIdManualInferred = new Map();
+  const { values } = filter;
+  const ids = values.filter((v) => v.key === ID_SUBFILTER).map((f) => f.values).flat();
+  const types = values.filter((v) => v.key === RELATION_TYPE_SUBFILTER).map((f) => f.values).flat();
+  const inferredParameterValues = values.filter((v) => v.key === RELATION_INFERRED_SUBFILTER).map((f) => f.values).flat();
+  const directionForced = R.head(values.filter((v) => v.key === INSTANCE_REGARDING_OF_DIRECTION_FORCED).map((f) => f.values).flat()) ?? false;
+  const directionReverse = R.head(values.filter((v) => v.key === INSTANCE_REGARDING_OF_DIRECTION_REVERSE).map((f) => f.values).flat()) ?? false;
+  // resolve all relationships that target the id values, forcing the type is available
+  const paginateArgs: RepaginateOpts<BasicStoreRelation> = { baseData: true, types };
+  if (directionForced) {
+    // If a direction is forced, build the filter in the correct direction
+    const directedFilters = [];
+    if (directionReverse) {
+      directedFilters.push({ key: ['fromId'], values: elementIds });
+      if (ids.length > 0) { // Ids can be empty if nothing configured by the user
+        directedFilters.push({ key: ['toId'], values: ids });
       }
-      return (element: (T & { regardingOfTypes?: string })) => {
-        const accepted = targetValidatedIds.has(element.id);
-        if (accepted) {
-          element.regardingOfTypes = sideIdManualInferred.get(element.id);
-        }
-        return accepted;
-      };
+    } else {
+      directedFilters.push({ key: ['toId'], values: elementIds });
+      if (ids.length > 0) { // Ids can be empty if nothing configured by the user
+        directedFilters.push({ key: ['fromId'], values: ids });
+      }
+    }
+    paginateArgs.filters = { mode: FilterMode.And, filters: directedFilters, filterGroups: [] };
+  } else {
+    // If no direction is setup, create the filter group for both directions
+    const filterTo = [{ key: ['fromId'], values: elementIds }];
+    const filterFrom = [{ key: ['toId'], values: elementIds }];
+    if (ids.length > 0) { // Ids can be empty if nothing configured by the user
+      filterTo.push({ key: ['toId'], values: ids });
+      filterFrom.push({ key: ['fromId'], values: ids });
+    }
+    paginateArgs.filters = {
+      mode: FilterMode.Or,
+      filters: [],
+      filterGroups: [
+        { mode: FilterMode.And, filterGroups: [], filters: filterTo },
+        { mode: FilterMode.And, filterGroups: [], filters: filterFrom }],
+    };
+  }
+  let relationshipIndices = READ_RELATIONSHIPS_INDICES;
+  if (inferredParameterValues.length > 0) {
+    if (inferredParameterValues.includes('true')) {
+      relationshipIndices = [READ_INDEX_INFERRED_RELATIONSHIPS];
+    } else if (inferredParameterValues.includes('false')) {
+      relationshipIndices = READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED;
     }
   }
-  return undefined;
+  const relationships = await elList<BasicStoreRelation>(context, user, relationshipIndices, paginateArgs);
+  // compute side ids
+  const addTypeSide = (sideId: string, sideType: string) => {
+    targetValidatedIds.add(sideId);
+    if (sideIdManualInferred.has(sideId)) {
+      const toTypes = sideIdManualInferred.get(sideId);
+      toTypes.add(sideType);
+      sideIdManualInferred.set(sideId, toTypes);
+    } else {
+      const toTypes = new Set();
+      toTypes.add(sideType);
+      sideIdManualInferred.set(sideId, toTypes);
+    }
+  };
+  for (let relIndex = 0; relIndex < relationships.length; relIndex += 1) {
+    await doYield();
+    const relation = relationships[relIndex];
+    const relType = isInferredIndex(relation._index) ? 'inferred' : 'manual';
+    addTypeSide(relation.fromId, relType);
+    addTypeSide(relation.toId, relType);
+  }
+  return (element: (T & { regardingOfTypes?: string })) => {
+    const accepted = targetValidatedIds.has(element.id);
+    if (accepted) {
+      element.regardingOfTypes = sideIdManualInferred.get(element.id);
+    }
+    return accepted;
+  };
 };
 type AttributeValues = {
   orderMode?: string | null;
