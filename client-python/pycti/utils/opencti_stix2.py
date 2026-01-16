@@ -3467,12 +3467,12 @@ class OpenCTIStix2:
                 # If item is considered too large, meaning that it has a number of refs higher than inputted objects_max_refs, do not import it
                 nb_refs = OpenCTIStix2Utils.compute_object_refs_number(item)
                 if 0 < objects_max_refs <= nb_refs:
-                    too_large_element_message = "Too large element in bundle."
+                    too_large_element_message = "Too large element in bundle"
                     worker_logger.warning(too_large_element_message)
                     self.opencti.work.report_expectation(
                         work_id,
                         {
-                            "error": "Too large element in bundle",
+                            "error": too_large_element_message,
                             "source": "Element "
                             + item["id"]
                             + " is too large and couldn't be processed",
