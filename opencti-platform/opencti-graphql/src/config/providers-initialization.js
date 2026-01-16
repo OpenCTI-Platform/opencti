@@ -36,8 +36,6 @@ import { logAuthInfo, runSingleSignOnRunMigration } from '../modules/singleSignO
 export const MIGRATED_STRATEGY = [
   EnvStrategyType.STRATEGY_LOCAL,
   EnvStrategyType.STRATEGY_SAML,
-  EnvStrategyType.STRATEGY_OPENID,
-  EnvStrategyType.STRATEGY_LDAP,
 ];
 
 // (providerRef: string)

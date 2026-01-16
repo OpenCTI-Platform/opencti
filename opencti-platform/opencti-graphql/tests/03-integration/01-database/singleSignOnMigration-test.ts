@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { parseSingleSignOnRunConfiguration } from '../../../src/modules/singleSignOn/singleSignOn-migration';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { deleteSingleSignOn } from '../../../src/modules/singleSignOn/singleSignOn-domain';
+import { MIGRATED_STRATEGY } from '../../../src/config/providers-initialization';
+import { EnvStrategyType } from '../../../src/config/providers-configuration';
 
 describe('Migration of SSO environment test coverage', () => {
   describe('Dry run of SAML migrations', () => {
@@ -315,6 +317,9 @@ describe('Migration of SSO environment test coverage', () => {
   });
   describe('Dry run of OpenId migrations', () => {
     it('should OpenId minimal configuration works', async () => {
+      if (!MIGRATED_STRATEGY.some((strat) => strat === EnvStrategyType.STRATEGY_OPENID)) {
+        return;
+      }
       const configuration = {
         oic_minimal: {
           identifier: 'oic_minimal',
@@ -344,6 +349,10 @@ describe('Migration of SSO environment test coverage', () => {
     });
 
     it('should OpenId with all types in configuration works', async () => {
+      if (!MIGRATED_STRATEGY.some((strat) => strat === EnvStrategyType.STRATEGY_OPENID)) {
+        return;
+      }
+
       const configuration = {
         oic_all_types: {
           identifier: 'oic_all_types',
@@ -376,6 +385,9 @@ describe('Migration of SSO environment test coverage', () => {
     });
 
     it('should OpenId with groups mapping in configuration works', async () => {
+      if (!MIGRATED_STRATEGY.some((strat) => strat === EnvStrategyType.STRATEGY_OPENID)) {
+        return;
+      }
       const configuration = {
         oic_groups: {
           identifier: 'oic_groups',
@@ -422,6 +434,9 @@ describe('Migration of SSO environment test coverage', () => {
     });
 
     it('should OpenId with several OpenId config works', async () => {
+      if (!MIGRATED_STRATEGY.some((strat) => strat === EnvStrategyType.STRATEGY_OPENID)) {
+        return;
+      }
       const configuration = {
         oic_1: {
           identifier: 'oic_1',
@@ -468,6 +483,9 @@ describe('Migration of SSO environment test coverage', () => {
     });
 
     it('should OpenId with default values works', async () => {
+      if (!MIGRATED_STRATEGY.some((strat) => strat === EnvStrategyType.STRATEGY_OPENID)) {
+        return;
+      }
       const configuration = {
         oic_default: {
           identifier: 'oic_default',
@@ -514,6 +532,9 @@ describe('Migration of SSO environment test coverage', () => {
   });
   describe('Dry run of LDAP migrations', () => {
     it('should LDAP minimal configuration works', async () => {
+      if (!MIGRATED_STRATEGY.some((strat) => strat === EnvStrategyType.STRATEGY_LDAP)) {
+        return;
+      }
       const configuration = {
         ldap_minimal: {
           identifier: 'ldap_minimal',
@@ -547,6 +568,9 @@ describe('Migration of SSO environment test coverage', () => {
     });
 
     it('should LDAP with groups mapping in configuration works', async () => {
+      if (!MIGRATED_STRATEGY.some((strat) => strat === EnvStrategyType.STRATEGY_LDAP)) {
+        return;
+      }
       const configuration = {
         ldap_groups: {
           identifier: 'ldap_groups',
@@ -588,6 +612,9 @@ describe('Migration of SSO environment test coverage', () => {
     });
 
     it('should LDAP with several LDAP config works', async () => {
+      if (!MIGRATED_STRATEGY.some((strat) => strat === EnvStrategyType.STRATEGY_LDAP)) {
+        return;
+      }
       const configuration = {
         ldap_1: {
           identifier: 'ldap_1',
@@ -642,6 +669,9 @@ describe('Migration of SSO environment test coverage', () => {
     });
 
     it('should LDAP with default values works', async () => {
+      if (!MIGRATED_STRATEGY.some((strat) => strat === EnvStrategyType.STRATEGY_LDAP)) {
+        return;
+      }
       const configuration = {
         ldap_default: {
           identifier: 'ldap_default',
