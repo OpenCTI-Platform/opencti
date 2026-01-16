@@ -1,6 +1,6 @@
 import Button from '@common/button/Button';
 import { CoverageInformationFieldEdit } from '@components/common/form/CoverageInformationField';
-import makeStyles from '@mui/styles/makeStyles';
+import { Stack } from '@mui/material';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import { FunctionComponent } from 'react';
@@ -10,7 +10,6 @@ import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForE
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import type { Theme } from '../../../../components/Theme';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
 import { adaptFieldValue } from '../../../../utils/String';
@@ -30,7 +29,6 @@ import {
   StixCoreRelationshipEditionOverview_stixCoreRelationship$data,
   StixCoreRelationshipEditionOverview_stixCoreRelationship$key,
 } from './__generated__/StixCoreRelationshipEditionOverview_stixCoreRelationship.graphql';
-import { Stack } from '@mui/material';
 
 const StixCoreRelationshipEditionOverviewFragment = graphql`
   fragment StixCoreRelationshipEditionOverview_stixCoreRelationship on StixCoreRelationship {

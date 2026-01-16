@@ -4,12 +4,10 @@ import { v4 as uuid } from 'uuid';
 import { graphql, usePreloadedQuery } from 'react-relay';
 import * as R from 'ramda';
 import * as Yup from 'yup';
-import Drawer from '@mui/material/Drawer';
-import Typography from '@mui/material/Typography';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import MenuItem from '@mui/material/MenuItem';
-import { Add, ArrowRightAlt, ChevronRightOutlined, Close } from '@mui/icons-material';
+import { Add, ArrowRightAlt, ChevronRightOutlined } from '@mui/icons-material';
 import Fab from '@mui/material/Fab';
 import CircularProgress from '@mui/material/CircularProgress';
 import { ConnectionHandler } from 'relay-runtime';
@@ -35,46 +33,21 @@ import ListLines from '../../../../components/list_lines/ListLines';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import { emptyFilterGroup, removeIdFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
+import Drawer from '../drawer/Drawer';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles((theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
   createButton: {
     position: 'fixed',
     bottom: 30,
     right: 30,
     zIndex: 1001,
   },
-  title: {
-    float: 'left',
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
   container: {
     padding: '15px 0 0 15px',
     height: '100%',
     width: '100%',
-  },
-  containerRelation: {
-    padding: '10px 20px 20px 20px',
   },
   item: {
     position: 'absolute',
@@ -121,12 +94,6 @@ const useStyles = makeStyles((theme) => ({
     },
     padding: 10,
     marginBottom: 10,
-  },
-  continue: {
-    position: 'fixed',
-    bottom: 40,
-    right: 30,
-    zIndex: 1001,
   },
   relationCreate: {
     position: 'relative',
@@ -553,142 +520,125 @@ const StixNestedRefRelationshipCreationFromEntity = ({
     };
     return (
       <div>
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleClose}
+        <>
+          <ListLines
+            sortBy={sortBy}
+            orderAsc={orderAsc}
+            dataColumns={dataColumns}
+            keyword={searchTerm}
+            helpers={helpers}
+            disableCards={true}
+            handleSearch={setSearchTerm}
+            filters={filters}
+            disableExport={true}
+            handleSort={handleSort}
+            numberOfElements={numberOfElements}
+            paginationOptions={searchPaginationOptions}
+            iconExtension={true}
+            parametersWithPadding={true}
+            handleToggleSelectAll="no"
+            entityTypes={virtualEntityTypes}
+            availableEntityTypes={virtualEntityTypes}
+            additionalFilterKeys={{
+              filterKeys: ['entity_type'],
+              filtersRestrictions: { preventFilterValuesEditionFor: new Map([['entity_type', actualTypeFilter]]) } }
+            }
           >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6" classes={{ root: classes.title }}>
-            {t_i18n('Create a relationship')}
-          </Typography>
-          <div className="clearfix" />
-        </div>
-        <div className={classes.container}>
+            <QueryRenderer
+              query={stixNestedRefRelationshipCreationFromEntityLinesQuery}
+              variables={{ count: 25, ...searchPaginationOptions }}
+              render={({ props }) => {
+                if (props) {
+                  return (
+                    <StixNestedRefRelationCreationFromEntityLines
+                      entityType={entityType}
+                      handleSelect={handleSelectEntity}
+                      data={props}
+                      dataColumns={dataColumns}
+                      initialLoading={false}
+                      setNumberOfElements={setNumberOfElements}
+                      onToggleEntity={onInstanceToggleEntity}
+                      containerRef={containerRef}
+                      selectedElements={selectedElements}
+                      deSelectedElements={deSelectedElements}
+                      selectAll={false}
+                    />
+                  );
+                }
+                return (<></>);
+              }}
+            />
+          </ListLines>
+        </>
+        {targetEntities.length === 0 && (
           <>
-            <ListLines
-              sortBy={sortBy}
-              orderAsc={orderAsc}
-              dataColumns={dataColumns}
-              keyword={searchTerm}
-              helpers={helpers}
-              disableCards={true}
-              handleSearch={setSearchTerm}
-              filters={filters}
-              disableExport={true}
-              handleSort={handleSort}
-              numberOfElements={numberOfElements}
-              paginationOptions={searchPaginationOptions}
-              iconExtension={true}
-              parametersWithPadding={true}
-              handleToggleSelectAll="no"
-              entityTypes={virtualEntityTypes}
-              availableEntityTypes={virtualEntityTypes}
-              additionalFilterKeys={{
-                filterKeys: ['entity_type'],
-                filtersRestrictions: { preventFilterValuesEditionFor: new Map([['entity_type', actualTypeFilter]]) } }
-              }
+            <SpeedDial
+              className={classes.createButton}
+              ariaLabel="Create"
+              icon={<SpeedDialIcon />}
+              onClose={handleCloseSpeedDial}
+              onOpen={handleOpenSpeedDial}
+              open={openSpeedDial}
             >
-              <QueryRenderer
-                query={stixNestedRefRelationshipCreationFromEntityLinesQuery}
-                variables={{ count: 25, ...searchPaginationOptions }}
-                render={({ props }) => {
-                  if (props) {
-                    return (
-                      <StixNestedRefRelationCreationFromEntityLines
-                        entityType={entityType}
-                        handleSelect={handleSelectEntity}
-                        data={props}
-                        dataColumns={dataColumns}
-                        initialLoading={false}
-                        setNumberOfElements={setNumberOfElements}
-                        onToggleEntity={onInstanceToggleEntity}
-                        containerRef={containerRef}
-                        selectedElements={selectedElements}
-                        deSelectedElements={deSelectedElements}
-                        selectAll={false}
-                      />
-                    );
-                  }
-                  return (<></>);
-                }}
-              />
-            </ListLines>
-          </>
-          {targetEntities.length === 0 && (
-            <>
-              <SpeedDial
-                className={classes.createButton}
-                ariaLabel="Create"
-                icon={<SpeedDialIcon />}
-                onClose={handleCloseSpeedDial}
-                onOpen={handleOpenSpeedDial}
-                open={openSpeedDial}
+              <SpeedDialAction
+                title={t_i18n('Create an observable')}
+                icon={<HexagonOutline />}
+                tooltipTitle={t_i18n('Create an observable')}
+                onClick={handleOpenCreateObservable}
                 FabProps={{
-                  color: 'secondary',
+                  classes: { root: classes.speedDialButton },
                 }}
-              >
-                <SpeedDialAction
-                  title={t_i18n('Create an observable')}
-                  icon={<HexagonOutline />}
-                  tooltipTitle={t_i18n('Create an observable')}
-                  onClick={handleOpenCreateObservable}
-                  FabProps={{
-                    classes: { root: classes.speedDialButton },
-                  }}
-                />
-                <SpeedDialAction
-                  title={t_i18n('Create an entity')}
-                  icon={<GlobeModel />}
-                  tooltipTitle={t_i18n('Create an entity')}
-                  onClick={handleOpenCreateEntity}
-                  FabProps={{
-                    classes: { root: classes.speedDialButton },
-                  }}
-                />
-              </SpeedDial>
-              <StixDomainObjectCreation
-                display={open}
-                inputValue={searchTerm}
-                paginationKey="Pagination_stixCoreObjects"
-                paginationOptions={searchPaginationOptions}
-                speeddial={true}
-                open={openCreateEntity}
-                handleClose={handleCloseCreateEntity}
-                creationCallback={undefined}
-                confidence={undefined}
-                defaultCreatedBy={undefined}
-                defaultMarkingDefinitions={undefined}
-                stixDomainObjectTypes={undefined}
               />
-              <StixCyberObservableCreation
-                display={open}
-                contextual={true}
-                inputValue={searchTerm}
-                paginationKey="Pagination_stixCoreObjects"
-                paginationOptions={searchPaginationOptions}
-                speeddial={true}
-                open={openCreateObservable}
-                handleClose={handleCloseCreateObservable}
-                stixCyberObservableTypes={targetStixCoreObjectTypes}
+              <SpeedDialAction
+                title={t_i18n('Create an entity')}
+                icon={<GlobeModel />}
+                tooltipTitle={t_i18n('Create an entity')}
+                onClick={handleOpenCreateEntity}
+                FabProps={{
+                  classes: { root: classes.speedDialButton },
+                }}
               />
-            </>
-          )}
-          {targetEntities.length > 0 && (
-            <Fab
-              variant="extended"
-              className={classes.continue}
-              size="small"
-              color="secondary"
-              onClick={() => handleNextStep()}
-            >
-              {t_i18n('Continue')}
-              <ChevronRightOutlined />
-            </Fab>
-          )}
-        </div>
+            </SpeedDial>
+            <StixDomainObjectCreation
+              display={open}
+              inputValue={searchTerm}
+              paginationKey="Pagination_stixCoreObjects"
+              paginationOptions={searchPaginationOptions}
+              speeddial={true}
+              open={openCreateEntity}
+              handleClose={handleCloseCreateEntity}
+              creationCallback={undefined}
+              confidence={undefined}
+              defaultCreatedBy={undefined}
+              defaultMarkingDefinitions={undefined}
+              stixDomainObjectTypes={undefined}
+            />
+            <StixCyberObservableCreation
+              display={open}
+              contextual={true}
+              inputValue={searchTerm}
+              paginationKey="Pagination_stixCoreObjects"
+              paginationOptions={searchPaginationOptions}
+              speeddial={true}
+              open={openCreateObservable}
+              handleClose={handleCloseCreateObservable}
+              stixCyberObservableTypes={targetStixCoreObjectTypes}
+            />
+          </>
+        )}
+        {targetEntities.length > 0 && (
+          <Button
+            onClick={handleNextStep}
+            endIcon={<ChevronRightOutlined />}
+            sx={{
+              position: 'fixed',
+              bottom: 40,
+              right: 30,
+            }}
+          >
+            {t_i18n('Continue')}
+          </Button>
+        )}
       </div>
     );
   };
@@ -735,16 +685,6 @@ const StixNestedRefRelationshipCreationFromEntity = ({
       >
         {({ submitForm, handleReset, isSubmitting }) => (
           <Form>
-            <div className={classes.header}>
-              <IconButton
-                aria-label="Close"
-                className={classes.closeButton}
-                onClick={handleClose}
-              >
-                <Close fontSize="small" color="primary" />
-              </IconButton>
-              <Typography variant="h6">{t_i18n('Create a relationship')}</Typography>
-            </div>
             <div className={classes.containerRelation}>
               <div className={classes.relationCreate}>
                 <div
@@ -927,13 +867,11 @@ const StixNestedRefRelationshipCreationFromEntity = ({
           <Add />
         </Fab>
       )}
+
       <Drawer
         open={open}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
+        title={t_i18n('Create a relationship')}
       >
         <>
           {step === 0

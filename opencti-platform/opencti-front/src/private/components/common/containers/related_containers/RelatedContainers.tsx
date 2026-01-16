@@ -217,10 +217,9 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
         header={(
           <Tooltip title={t_i18n('Go to container')}>
             <IconButton
-              color="primary"
+              size="default"
               component={Link}
               to={`${resolveLink(selectedContainer?.entity_type)}/${selectedContainer?.id}`}
-              style={{ position: 'absolute', right: 12 }}
             >
               <NorthEastOutlined />
             </IconButton>
