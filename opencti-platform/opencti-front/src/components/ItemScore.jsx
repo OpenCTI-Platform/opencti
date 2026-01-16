@@ -39,7 +39,11 @@ const ItemScore = (props) => {
   };
 
   const { score, classes, variant } = props;
-  const style = variant === 'inList' ? classes.chipInList : classes.chip;
+  let style = '';
+
+  if (variant === 'inList' && classes) {
+    style = classes.chipInList ?? classes.chip ?? '';
+  }
   if (isEmptyField(score)) {
     return (
       <Typography
