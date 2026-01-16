@@ -1,39 +1,12 @@
-import React from 'react';
-import { graphql } from 'react-relay';
-import Drawer from '@mui/material/Drawer';
-import makeStyles from '@mui/styles/makeStyles';
-import { Theme } from 'src/components/Theme';
 import { StixCoreRelationshipEditionOverviewQuery } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipEditionOverviewQuery.graphql';
-import StixCoreRelationshipEditionOverview, { stixCoreRelationshipEditionOverviewQuery } from './StixCoreRelationshipEditionOverview';
+import React from 'react';
+import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
-  drawerPaperInGraph: {
-    minHeight: '100vh',
-    width: '30%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
-}));
+import Drawer from '../drawer/Drawer';
+import StixCoreRelationshipEditionOverview, { stixCoreRelationshipEditionOverviewQuery } from './StixCoreRelationshipEditionOverview';
+import { StixCoreRelationshipEditionContextQuery } from './__generated__/StixCoreRelationshipEditionContextQuery.graphql';
 
 export const stixCoreRelationshipEditionDeleteMutation = graphql`
   mutation StixCoreRelationshipEditionDeleteMutation($id: ID!) {
@@ -43,79 +16,90 @@ export const stixCoreRelationshipEditionDeleteMutation = graphql`
   }
 `;
 
+const stixCoreRelationshipEditionContextQuery = graphql`
+  query StixCoreRelationshipEditionContextQuery($id: String!) {
+    stixCoreRelationship(id: $id) {
+      editContext {
+        name
+        focusOn
+      }
+    }
+  }
+`;
+
 type StixCoreRelationshipEditionContainerProps = {
   stixCoreRelationshipId: string;
   open: boolean;
-  inGraph: boolean;
   noStoreUpdate: boolean;
   handleDelete?: () => void;
   handleClose: () => void;
   isCoverage?: boolean;
 };
 
-type StixCoreRelationshipEditionProps = {
-  stixCoreRelationshipId: string;
-  noStoreUpdate: boolean;
-  handleDelete?: () => void;
-  handleClose: () => void;
-  isCoverage?: boolean;
+const StixCoreRelationshipEditionContainer = (props: StixCoreRelationshipEditionContainerProps) => {
+  const {
+    stixCoreRelationshipId,
+  } = props;
+
+  const contextQueryRef = useQueryLoading<StixCoreRelationshipEditionContextQuery>(
+    stixCoreRelationshipEditionContextQuery,
+    { id: stixCoreRelationshipId },
+  );
+
+  if (!contextQueryRef) return null;
+
+  return (
+    <StixCoreRelationshipEditionContainerContent
+      {...props}
+      contextQueryRef={contextQueryRef}
+    />
+  );
 };
 
-const StixCoreRelationshipEdition = ({
+const StixCoreRelationshipEditionContainerContent = ({
+  open,
   stixCoreRelationshipId,
   handleClose,
   handleDelete,
   noStoreUpdate,
   isCoverage = false,
-}: StixCoreRelationshipEditionProps) => {
-  const queryRef = useQueryLoading<StixCoreRelationshipEditionOverviewQuery>(stixCoreRelationshipEditionOverviewQuery, {
-    id: stixCoreRelationshipId,
-  });
+  contextQueryRef,
+}: StixCoreRelationshipEditionContainerProps & {
+  contextQueryRef: PreloadedQuery<StixCoreRelationshipEditionContextQuery>;
+}) => {
+  const { t_i18n } = useFormatter();
 
-  return queryRef ? (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
-      <StixCoreRelationshipEditionOverview
-        queryRef={queryRef}
-        handleClose={handleClose}
-        handleDelete={handleDelete}
-        noStoreUpdate={noStoreUpdate}
-        isCoverage={isCoverage}
-      />
-    </React.Suspense>
-  ) : (
-    <Loader variant={LoaderVariant.inline} />
+  const contextData = usePreloadedQuery(
+    stixCoreRelationshipEditionContextQuery,
+    contextQueryRef,
   );
-};
 
-const StixCoreRelationshipEditionContainer = (props: StixCoreRelationshipEditionContainerProps) => {
-  const classes = useStyles();
-  const {
-    open,
-    inGraph,
-    stixCoreRelationshipId,
-    handleClose,
-    handleDelete,
-    noStoreUpdate,
-    isCoverage = false,
-  } = props;
+  const editContext = contextData?.stixCoreRelationship?.editContext;
+
+  const queryRef = useQueryLoading<StixCoreRelationshipEditionOverviewQuery>(
+    stixCoreRelationshipEditionOverviewQuery,
+    { id: stixCoreRelationshipId },
+  );
 
   return (
     <Drawer
       open={open}
-      anchor="right"
-      elevation={1}
-      sx={{ zIndex: 1202 }}
-      classes={{ paper: inGraph ? classes.drawerPaperInGraph : classes.drawerPaper }}
       onClose={handleClose}
+      title={t_i18n('Update a relationship')}
+      context={editContext}
     >
-      {open && (
-        <StixCoreRelationshipEdition
-          stixCoreRelationshipId={stixCoreRelationshipId}
-          handleDelete={handleDelete}
-          noStoreUpdate={noStoreUpdate}
-          handleClose={handleClose}
-          isCoverage={isCoverage}
-        />
+      {queryRef ? (
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
+          <StixCoreRelationshipEditionOverview
+            queryRef={queryRef}
+            handleClose={handleClose}
+            handleDelete={handleDelete}
+            noStoreUpdate={noStoreUpdate}
+            isCoverage={isCoverage}
+          />
+        </React.Suspense>
+      ) : (
+        <Loader variant={LoaderVariant.inline} />
       )}
     </Drawer>
   );

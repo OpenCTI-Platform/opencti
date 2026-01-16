@@ -1,70 +1,36 @@
-import React, { FunctionComponent } from 'react';
-import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
-import { Field, Form, Formik } from 'formik';
-import Typography from '@mui/material/Typography';
-import IconButton from '@common/button/IconButton';
 import Button from '@common/button/Button';
-import { Close } from '@mui/icons-material';
-import * as Yup from 'yup';
-import makeStyles from '@mui/styles/makeStyles';
-import { FormikConfig } from 'formik/dist/types';
 import { CoverageInformationFieldEdit } from '@components/common/form/CoverageInformationField';
-import { buildDate, formatDate } from '../../../../utils/Time';
-import { useFormatter } from '../../../../components/i18n';
-import MarkdownField from '../../../../components/fields/MarkdownField';
-import { SubscriptionAvatars, SubscriptionFocus } from '../../../../components/Subscription';
-import KillChainPhasesField from '../form/KillChainPhasesField';
-import ObjectMarkingField from '../form/ObjectMarkingField';
-import CreatedByField from '../form/CreatedByField';
-import ConfidenceField from '../form/ConfidenceField';
-import CommitMessage from '../form/CommitMessage';
-import { adaptFieldValue } from '../../../../utils/String';
-import { convertCreatedBy, convertKillChainPhases, convertMarkings, convertStatus } from '../../../../utils/edition';
-import StatusField from '../form/StatusField';
+import makeStyles from '@mui/styles/makeStyles';
+import { Field, Form, Formik } from 'formik';
+import { FormikConfig } from 'formik/dist/types';
+import { FunctionComponent } from 'react';
+import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
+import * as Yup from 'yup';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
+import ErrorNotFound from '../../../../components/ErrorNotFound';
+import { SubscriptionFocus } from '../../../../components/Subscription';
+import type { Theme } from '../../../../components/Theme';
+import MarkdownField from '../../../../components/fields/MarkdownField';
+import { useFormatter } from '../../../../components/i18n';
+import { adaptFieldValue } from '../../../../utils/String';
+import { buildDate, formatDate } from '../../../../utils/Time';
+import { convertCreatedBy, convertKillChainPhases, convertMarkings, convertStatus } from '../../../../utils/edition';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useIsEnforceReference, useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
-import ErrorNotFound from '../../../../components/ErrorNotFound';
+import CommitMessage from '../form/CommitMessage';
+import ConfidenceField from '../form/ConfidenceField';
+import CreatedByField from '../form/CreatedByField';
+import KillChainPhasesField from '../form/KillChainPhasesField';
+import ObjectMarkingField from '../form/ObjectMarkingField';
+import StatusField from '../form/StatusField';
 import { StixCoreRelationshipEditionOverviewQuery } from './__generated__/StixCoreRelationshipEditionOverviewQuery.graphql';
 import {
   StixCoreRelationshipEditionOverview_stixCoreRelationship$data,
   StixCoreRelationshipEditionOverview_stixCoreRelationship$key,
 } from './__generated__/StixCoreRelationshipEditionOverview_stixCoreRelationship.graphql';
-import type { Theme } from '../../../../components/Theme';
-import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
-import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
-  title: {
-    float: 'left',
-  },
-  button: {
-    float: 'left',
-    marginTop: theme.spacing(2),
-    backgroundColor: theme.palette.error.main,
-    borderColor: theme.palette.error.main,
-    color: theme.palette.common.white,
-    '&:hover': {
-      backgroundColor: theme.palette.error.dark,
-      borderColor: theme.palette.error.dark,
-    },
-  },
-}));
+import { Stack } from '@mui/material';
 
 const StixCoreRelationshipEditionOverviewFragment = graphql`
   fragment StixCoreRelationshipEditionOverview_stixCoreRelationship on StixCoreRelationship {
@@ -219,7 +185,6 @@ const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
   const stixCoreRelationshipType = 'stix-core-relationship';
 
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const enableReferences = useIsEnforceReference(stixCoreRelationshipType);
 
   const { editContext } = stixCoreRelationship;
@@ -313,184 +278,170 @@ const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
     ...(isCoverage ? { coverage_information: stixCoreRelationship.coverage_information || [] } : {}),
   };
   return (
-    <>
-      <div className={classes.header}>
-        <IconButton
-          aria-label="Close"
-          className={classes.closeButton}
-          onClick={handleClose}
-          color="primary"
-        >
-          <Close fontSize="small" color="primary" />
-        </IconButton>
-        <Typography variant="h6" classes={{ root: classes.title }}>
-          {t_i18n('Update a relationship')}
-        </Typography>
-        <SubscriptionAvatars context={editContext} />
-        <div className="clearfix" />
-      </div>
-      <div className={classes.container}>
-        <Formik
-          enableReinitialize={true}
-          initialValues={initialValues}
-          validationSchema={stixCoreRelationshipValidator}
-          onSubmit={onSubmit}
-        >
-          {({
-            submitForm,
-            isSubmitting,
-            setFieldValue,
-            values,
-            isValid,
-            dirty,
-          }) => (
-            <Form>
-              <AlertConfidenceForEntity entity={stixCoreRelationship} />
-              <ConfidenceField
-                variant="edit"
-                onFocus={editor.changeFocus}
-                onSubmit={editor.changeField}
-                containerStyle={{ width: '100%' }}
-                editContext={editContext}
-                entityType={stixCoreRelationshipType}
+    <Stack>
+      <Formik
+        enableReinitialize={true}
+        initialValues={initialValues}
+        validationSchema={stixCoreRelationshipValidator}
+        onSubmit={onSubmit}
+      >
+        {({
+          submitForm,
+          isSubmitting,
+          setFieldValue,
+          values,
+          isValid,
+          dirty,
+        }) => (
+          <Form>
+            <AlertConfidenceForEntity entity={stixCoreRelationship} />
+            <ConfidenceField
+              variant="edit"
+              onFocus={editor.changeFocus}
+              onSubmit={editor.changeField}
+              containerStyle={{ width: '100%' }}
+              editContext={editContext}
+              entityType={stixCoreRelationshipType}
+            />
+            <Field
+              component={DateTimePickerField}
+              name="start_time"
+              onFocus={editor.changeFocus}
+              onSubmit={editor.changeField}
+              textFieldProps={{
+                label: t_i18n('Start time'),
+                variant: 'standard',
+                fullWidth: true,
+                style: { marginTop: 40 },
+                helperText: (
+                  <SubscriptionFocus
+                    context={editContext}
+                    fieldName="start_time"
+                  />
+                ),
+              }}
+            />
+            <Field
+              component={DateTimePickerField}
+              name="stop_time"
+              onFocus={editor.changeFocus}
+              onSubmit={handleSubmitFieldStopTime}
+              textFieldProps={{
+                label: t_i18n('Stop time'),
+                variant: 'standard',
+                fullWidth: true,
+                style: { marginTop: 20 },
+                helperText: (
+                  <SubscriptionFocus
+                    context={editContext}
+                    fieldName="stop_time"
+                  />
+                ),
+              }}
+            />
+            <Field
+              component={MarkdownField}
+              name="description"
+              label={t_i18n('Description')}
+              fullWidth={true}
+              multiline={true}
+              rows={4}
+              style={{ marginTop: 20 }}
+              onFocus={editor.changeFocus}
+              onSubmit={editor.changeField}
+              helperText={(
+                <SubscriptionFocus
+                  context={editContext}
+                  fieldName="description"
+                />
+              )}
+            />
+            {isCoverage && (
+              <CoverageInformationFieldEdit
+                id={stixCoreRelationship.id}
+                name="coverage_information"
+                mode="relation"
+                values={values.coverage_information ?? []}
+                containerStyle={fieldSpacingContainerStyle}
               />
-              <Field
-                component={DateTimePickerField}
-                name="start_time"
+            )}
+            <KillChainPhasesField
+              name="killChainPhases"
+              style={fieldSpacingContainerStyle}
+              helpertext={(
+                <SubscriptionFocus
+                  context={editContext}
+                  fieldName="killChainPhases"
+                />
+              )}
+              onChange={editor.changeKillChainPhases}
+            />
+            {stixCoreRelationship.workflowEnabled && (
+              <StatusField
+                name="x_opencti_workflow_id"
+                type={stixCoreRelationshipType}
                 onFocus={editor.changeFocus}
-                onSubmit={editor.changeField}
-                textFieldProps={{
-                  label: t_i18n('Start time'),
-                  variant: 'standard',
-                  fullWidth: true,
-                  style: { marginTop: 40 },
-                  helperText: (
-                    <SubscriptionFocus
-                      context={editContext}
-                      fieldName="start_time"
-                    />
-                  ),
-                }}
-              />
-              <Field
-                component={DateTimePickerField}
-                name="stop_time"
-                onFocus={editor.changeFocus}
-                onSubmit={handleSubmitFieldStopTime}
-                textFieldProps={{
-                  label: t_i18n('Stop time'),
-                  variant: 'standard',
-                  fullWidth: true,
-                  style: { marginTop: 20 },
-                  helperText: (
-                    <SubscriptionFocus
-                      context={editContext}
-                      fieldName="stop_time"
-                    />
-                  ),
-                }}
-              />
-              <Field
-                component={MarkdownField}
-                name="description"
-                label={t_i18n('Description')}
-                fullWidth={true}
-                multiline={true}
-                rows={4}
+                onChange={editor.changeField}
+                setFieldValue={setFieldValue}
                 style={{ marginTop: 20 }}
-                onFocus={editor.changeFocus}
-                onSubmit={editor.changeField}
-                helperText={(
-                  <SubscriptionFocus
-                    context={editContext}
-                    fieldName="description"
-                  />
-                )}
-              />
-              {isCoverage && (
-                <CoverageInformationFieldEdit
-                  id={stixCoreRelationship.id}
-                  name="coverage_information"
-                  mode="relation"
-                  values={values.coverage_information ?? []}
-                  containerStyle={fieldSpacingContainerStyle}
-                />
-              )}
-              <KillChainPhasesField
-                name="killChainPhases"
-                style={fieldSpacingContainerStyle}
                 helpertext={(
                   <SubscriptionFocus
                     context={editContext}
-                    fieldName="killChainPhases"
+                    fieldName="x_opencti_workflow_id"
                   />
                 )}
-                onChange={editor.changeKillChainPhases}
               />
-              {stixCoreRelationship.workflowEnabled && (
-                <StatusField
-                  name="x_opencti_workflow_id"
-                  type={stixCoreRelationshipType}
-                  onFocus={editor.changeFocus}
-                  onChange={editor.changeField}
-                  setFieldValue={setFieldValue}
-                  style={{ marginTop: 20 }}
-                  helpertext={(
-                    <SubscriptionFocus
-                      context={editContext}
-                      fieldName="x_opencti_workflow_id"
-                    />
-                  )}
+            )}
+            <CreatedByField
+              name="createdBy"
+              style={fieldSpacingContainerStyle}
+              setFieldValue={setFieldValue}
+              helpertext={(
+                <SubscriptionFocus
+                  context={editContext}
+                  fieldName="createdBy"
                 />
               )}
-              <CreatedByField
-                name="createdBy"
-                style={fieldSpacingContainerStyle}
+              onChange={editor.changeCreated}
+            />
+            <ObjectMarkingField
+              name="objectMarking"
+              style={fieldSpacingContainerStyle}
+              helpertext={(
+                <SubscriptionFocus
+                  context={editContext}
+                  fieldname="objectMarking"
+                />
+              )}
+              setFieldValue={setFieldValue}
+              onChange={editor.changeMarking}
+            />
+            {enableReferences && (
+              <CommitMessage
+                submitForm={submitForm}
+                disabled={isSubmitting || !isValid || !dirty}
                 setFieldValue={setFieldValue}
-                helpertext={(
-                  <SubscriptionFocus
-                    context={editContext}
-                    fieldName="createdBy"
-                  />
-                )}
-                onChange={editor.changeCreated}
+                open={false}
+                values={values.references}
+                id={stixCoreRelationship.id}
+                noStoreUpdate={noStoreUpdate}
               />
-              <ObjectMarkingField
-                name="objectMarking"
-                style={fieldSpacingContainerStyle}
-                helpertext={(
-                  <SubscriptionFocus
-                    context={editContext}
-                    fieldname="objectMarking"
-                  />
-                )}
-                setFieldValue={setFieldValue}
-                onChange={editor.changeMarking}
-              />
-              {enableReferences && (
-                <CommitMessage
-                  submitForm={submitForm}
-                  disabled={isSubmitting || !isValid || !dirty}
-                  setFieldValue={setFieldValue}
-                  open={false}
-                  values={values.references}
-                  id={stixCoreRelationship.id}
-                  noStoreUpdate={noStoreUpdate}
-                />
-              )}
-            </Form>
-          )}
-        </Formik>
-        {typeof handleDelete === 'function' && (
+            )}
+          </Form>
+        )}
+      </Formik>
+      {typeof handleDelete === 'function' && (
+        <Stack direction="row" alignSelf="flex-end" sx={{ mt: 3 }}>
           <Button
-            onClick={() => handleDelete()}
-            classes={{ root: classes.button }}
+            intent="destructive"
+            onClick={handleDelete}
+            variant="secondary"
           >
             {t_i18n('Delete')}
           </Button>
-        )}
-      </div>
-    </>
+        </Stack>
+      )}
+    </Stack>
   );
 };
 
