@@ -18,6 +18,7 @@ import * as JSONPath from 'jsonpath-plus';
 import '../modules';
 import { v4 as uuidv4 } from 'uuid';
 import {
+  type AttributeBasedOnIdentifierComplex,
   type BasedRepresentationAttribute,
   type ComplexAttributePath,
   type JsonMapperParsed,
@@ -190,7 +191,6 @@ const extractTargetIdentifierFromJson = (base: JSON, record: JSON, identifier: s
   return orderedIdentifiersCombinations(arrayOfMappedIdentifiers).map((comb) => comb.join('-'));
 };
 
-/* eslint-disable no-param-reassign */
 const handleDirectAttribute = async (
   base: JSON,
   metaData: Record<string, any>,
@@ -267,17 +267,34 @@ const handleBasedOnAttribute = async (
   // endregion
   // region bind the value and override default if needed
   if (attribute.based_on && attribute.based_on.representations) {
-    let entities;
-    if (attribute.based_on.identifier) {
-      const mappedIdentifiers = extractTargetIdentifierFromJson(base, record, attribute.based_on.identifier, definition);
-      entities = attribute.based_on.representations
-        .map((id) => otherEntities.get(id)).flat()
-        .filter((e) => e !== undefined && mappedIdentifiers.includes(e.__identifier as string)) as Record<string, InputType>[];
-    } else {
-      entities = attribute.based_on.representations
-        .map((id) => otherEntities.get(id)).flat()
-        .filter((e) => e !== undefined) as Record<string, InputType>[];
+    const entities = [];
+    const ident = attribute.based_on.identifier;
+    const isRetroCompatibilityIdentifier = typeof ident === 'string' && isNotEmptyField(ident);
+    for (let index = 0; index < attribute.based_on.representations.length; index += 1) {
+      const representation = attribute.based_on.representations[index];
+      let emptyMatching = true;
+      let mappedIdentifiers: string[] = [];
+      if (isRetroCompatibilityIdentifier) {
+        emptyMatching = false;
+        mappedIdentifiers = extractTargetIdentifierFromJson(base, record, ident, definition);
+      } else {
+        const identifiers = (attribute.based_on.identifier ?? []) as AttributeBasedOnIdentifierComplex[];
+        const targetIdentifier = identifiers.find((ident) => ident.representation === representation);
+        if (targetIdentifier?.identifier) {
+          emptyMatching = false;
+          mappedIdentifiers = extractTargetIdentifierFromJson(base, record, targetIdentifier.identifier, definition);
+        }
+      }
+      if (!emptyMatching) {
+        entities.push(...(otherEntities.get(representation) ?? []).flat()
+          .filter((e) => e !== undefined
+            && mappedIdentifiers.includes(e.__identifier as string)) as Record<string, InputType>[]);
+      } else {
+        entities.push(...(otherEntities.get(representation) ?? []).flat()
+          .filter((e) => e !== undefined) as Record<string, InputType>[]);
+      }
     }
+
     if (entities.length > 0) {
       const entity_type = input[entityType.name] as string;
       // Is relation from or to (stix-core || stix-sighting)
@@ -346,7 +363,7 @@ const jsonMappingExecution = async (context: AuthContext, user: AuthUser, data: 
   const chosenMarkings = mapper.user_chosen_markings ?? [];
   const results = new Map<string, Record<string, InputType>[]>();
   const baseJson = typeof data === 'string' ? JSON.parse(data) : data;
-  const baseArray = Array.isArray(baseJson) ? baseJson : [baseJson];
+  const baseArray = [baseJson]; // Wrapping in array for base JSON to have JsonPath base array compatibility
   for (let index = 0; index < baseArray.length; index += 1) {
     const element = baseArray[index];
     // region variables
