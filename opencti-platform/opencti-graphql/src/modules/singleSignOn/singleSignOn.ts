@@ -23,15 +23,15 @@ const SINGLE_SIGN_ON_DEFINITION: ModuleDefinition<StoreEntitySingleSignOn, StixS
     },
   },
   attributes: [
-    { name: 'name', label: 'Authentication name', type: 'string', mandatoryType: 'internal', format: 'short', editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag: SINGLE_SIGN_ON_FF },
-    { name: 'identifier', label: 'IDP Identifier', type: 'string', mandatoryType: 'internal', format: 'short', editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag: SINGLE_SIGN_ON_FF },
-    { name: 'description', label: 'Description', mandatoryType: 'customizable', type: 'string', format: 'text', editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag: SINGLE_SIGN_ON_FF },
-    { name: 'enabled', label: 'Enabled', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag: SINGLE_SIGN_ON_FF },
-    { name: 'strategy', label: 'Strategy', mandatoryType: 'internal', type: 'string', format: 'enum', values: StrategyTypeList, editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag: SINGLE_SIGN_ON_FF },
-    { name: 'label', label: 'Button display name', mandatoryType: 'no', type: 'string', format: 'short', editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag: SINGLE_SIGN_ON_FF },
-    { name: 'organizations_management', label: 'Organizations management', mandatoryType: 'no', type: 'object', format: 'flat', editDefault: false, multiple: false, upsert: false, isFilterable: false, featureFlag: SINGLE_SIGN_ON_FF },
-    { name: 'groups_management', label: 'Groups management', mandatoryType: 'no', type: 'object', format: 'flat', editDefault: false, multiple: false, upsert: false, isFilterable: false, featureFlag: SINGLE_SIGN_ON_FF },
-    { name: 'configuration', label: 'SSO Configuration', mandatoryType: 'no', type: 'object', format: 'flat', editDefault: false, multiple: true, upsert: false, isFilterable: false, featureFlag: SINGLE_SIGN_ON_FF },
+    { name: 'name', label: 'Authentication name', type: 'string', mandatoryType: 'internal', format: 'short', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'identifier', label: 'IDP Identifier', type: 'string', mandatoryType: 'internal', format: 'short', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'description', label: 'Description', mandatoryType: 'customizable', type: 'string', format: 'text', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'enabled', label: 'Enabled', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'strategy', label: 'Strategy', mandatoryType: 'internal', type: 'string', format: 'enum', values: StrategyTypeList, editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'label', label: 'Button display name', mandatoryType: 'no', type: 'string', format: 'short', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'organizations_management', label: 'Organizations management', mandatoryType: 'no', type: 'object', format: 'flat', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'groups_management', label: 'Groups management', mandatoryType: 'no', type: 'object', format: 'flat', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'configuration', label: 'SSO Configuration', mandatoryType: 'no', type: 'object', format: 'flat', editDefault: false, multiple: true, upsert: false, isFilterable: false },
   ],
   relations: [],
   representative: (stix: StixSingleSignOn) => {
@@ -41,7 +41,4 @@ const SINGLE_SIGN_ON_DEFINITION: ModuleDefinition<StoreEntitySingleSignOn, StixS
 };
 
 export const isSingleSignOnInGuiEnabled = isFeatureEnabled(SINGLE_SIGN_ON_FF);
-
-if (isSingleSignOnInGuiEnabled) {
-  registerDefinition(SINGLE_SIGN_ON_DEFINITION);
-}
+registerDefinition(SINGLE_SIGN_ON_DEFINITION);
