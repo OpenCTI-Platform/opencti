@@ -1,11 +1,15 @@
-const express = require("express");
-const { createProxyMiddleware } = require("http-proxy-middleware");
-const { cp, readFile } = require("node:fs/promises")
-const path = require("node:path");
-const esbuild = require("esbuild");
-const chokidar = require("chokidar");
-const compression = require("compression");
-const { RelayPlugin } = require("../plugin/esbuild-relay");
+import express from 'express';
+import { createProxyMiddleware } from 'http-proxy-middleware';
+import { cp, readFile } from 'node:fs/promises'
+import path from 'node:path';
+import esbuild from 'esbuild';
+import chokidar from 'chokidar';
+import compression from 'compression';
+import { RelayPlugin } from '../plugin/esbuild-relay.js';
+import { fileURLToPath } from 'node:url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 const basePath = "";
 const clients = [];

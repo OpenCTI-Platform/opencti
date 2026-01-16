@@ -1,6 +1,6 @@
-const esbuild = require("esbuild");
-const { cp, rename, rm, readdir, writeFile } = require("node:fs/promises")
-const { RelayPlugin } = require("../plugin/esbuild-relay");
+import esbuild from 'esbuild';
+import { cp, rename, rm, readdir, writeFile } from 'node:fs/promises'
+import { RelayPlugin } from '../plugin/esbuild-relay.js';
 
 // Define args options
 const keep = process.argv.slice(2).includes('--keep');

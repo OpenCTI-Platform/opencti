@@ -127,7 +127,7 @@ python3 src/worker.py           # Start worker
 opencti/
 ├── opencti-platform/
 │   ├── .yarnrc.yml             # MUST copy to subdirs
-│   ├── opencti-graphql/        # Backend: src/, config/, tests/, vitest.config.*.ts, eslint.config.mjs
+│   ├── opencti-graphql/        # Backend: src/, config/, tests/, vitest.config.*.ts, eslint.config.js
 │   ├── opencti-front/          # Frontend: src/, tests_e2e/, lang/, relay.config.json
 │   └── opencti-dev/docker-compose.yml
 ├── client-python/              # pycti/, tests/, pyproject.toml, .flake8, .isort.cfg
@@ -135,7 +135,7 @@ opencti/
 └── scripts/ci/                 # docker-compose.yml, ci-common.env
 ```
 
-**Key Configs**: `eslint.config.mjs` (v9), `tsconfig.json` (strict), `vitest.config.*`, `.flake8`, `.isort.cfg`, `pyproject.toml`
+**Key Configs**: `eslint.config.js` (v9), `tsconfig.json` (strict), `vitest.config.*`, `.flake8`, `.isort.cfg`, `pyproject.toml`
 
 ## Common Pitfalls & Solutions
 
