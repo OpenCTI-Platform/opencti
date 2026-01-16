@@ -20,7 +20,7 @@ export default defineConfig([
       '**/src/static/ext/**',
       'extract-i18n-keyword.js',
       'playwright.config.ts',
-      'vite.config.mts',
+      'vite.config.ts',
       'vitest.config.ts',
       'setup-vitest.ts',
     ],
@@ -64,7 +64,7 @@ export default defineConfig([
   {
     plugins: {
       'import-newlines': importNewlines,
-      'custom-rules': customRules,
+      'custom-rules': { rules: customRules },
       '@stylistic': stylistic,
     },
   },
