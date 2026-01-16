@@ -1322,13 +1322,13 @@ class BatchCallbackWrapper:
             # Wait for either: batch_ready signal, stop signal, or timeout
             # This ensures immediate processing when batch_size is reached
             self._batch_ready_event.wait(timeout=self._TIMER_CHECK_INTERVAL)
+            self._batch_ready_event.clear()
 
             if self._stop_event.is_set():
                 break
 
             batch_data = None
             with self._lock:
-                self._batch_ready_event.clear()
                 if len(self.batch) > 0 and self.batch_start_time is not None:
                     should_process = False
                     trigger_reason = None
