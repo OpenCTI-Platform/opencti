@@ -56,7 +56,6 @@ const StixItemMarkings = (props) => {
     white: {
       backgroundColor: theme.palette.common.white,
       color: theme.palette.tertiary.grey[700],
-      border: `1px solid ${theme.palette.tertiary.grey[700]}`,
     },
     green: {
       backgroundColor: theme.palette.tertiary.green[600],

@@ -1,7 +1,7 @@
 import Tag from '@common/tag/Tag';
 import { Box, Stack } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import React, { CSSProperties, SyntheticEvent } from 'react';
+import React, { SyntheticEvent } from 'react';
 import { useFormatter } from '../../../../components/i18n';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 import useChipOverflow from '../../data/IngestionCatalog/components/card/usecases/useChipOverflow';
@@ -21,7 +21,6 @@ interface StixCoreObjectLabelsProps {
 const StixCoreObjectLabels = ({
   labels,
   onClick,
-  variant,
   revoked,
 }: StixCoreObjectLabelsProps) => {
   const { t_i18n } = useFormatter();
@@ -29,26 +28,6 @@ const StixCoreObjectLabels = ({
 
   const labelValues = labels?.map((l) => l.value || l.id) ?? [];
   const { containerRef, chipRefs, visibleCount, shouldTruncate } = useChipOverflow(labelValues);
-
-  let variantStyle: CSSProperties = {
-    height: 25,
-    fontSize: 12,
-    borderRadius: 4,
-  };
-  if (variant === 'inList') {
-    variantStyle = {
-      fontSize: 12,
-      height: 20,
-      borderRadius: 4,
-    };
-  }
-  if (variant === 'inSearch') {
-    variantStyle = {
-      height: 25,
-      fontSize: 12,
-      borderRadius: 4,
-    };
-  }
 
   if (!revoked && labels && labels.length > 0) {
     const hiddenCount = labels.length - visibleCount;
@@ -115,18 +94,12 @@ const StixCoreObjectLabels = ({
         <Tag
           variant="outlined"
           label={t_i18n('Revoked')}
-          style={{
-            ...variantStyle,
-            margin: '0 7px 7px 0',
-            color: theme.palette.error.main,
-            borderColor: theme.palette.error.main,
-            backgroundColor: theme.palette.error.main,
-          }}
           onClick={(e: SyntheticEvent) => {
             e.preventDefault();
             e.stopPropagation();
             onClick?.('objectLabel', null, 'eq');
           }}
+          color={theme.palette.tertiary.red[400]}
         />
       ) : (
         <Tag
