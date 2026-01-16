@@ -1,7 +1,6 @@
 import React, { CSSProperties } from 'react';
 import { Grid2 as Grid } from '@mui/material';
 import DangerZoneBlock from '@components/common/danger_zone/DangerZoneBlock';
-import Typography from '@mui/material/Typography';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
@@ -14,6 +13,7 @@ import RuleListItemProgressBar from './RulesListItemProgressBar';
 import type { Theme } from '../../../../components/Theme';
 import Tag from './RulesListItemTag';
 import Card from '../../../../components/common/card/Card';
+import Label from '../../../../components/common/label/Label';
 
 interface RulesListItemProps {
   rule: NonNullable<Rule>;
@@ -69,15 +69,15 @@ const RulesListItem = ({ rule, task, toggle }: RulesListItemProps) => {
             >
               <Grid container spacing={3}>
                 <Grid size={{ xs: 6 }}>
-                  <Typography variant="h3">
+                  <Label>
                     {t_i18n('Description')}
-                  </Typography>
+                  </Label>
                   {t_i18n(rule.description)}
                 </Grid>
                 <Grid size={{ xs: 6 }}>
-                  <Typography variant="h3" gutterBottom>
+                  <Label>
                     {t_i18n('Status')}
-                  </Typography>
+                  </Label>
                   <FormGroup>
                     <FormControlLabel
                       label={ruleStatus}

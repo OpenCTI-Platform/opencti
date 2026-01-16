@@ -1,7 +1,5 @@
 import React from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
@@ -23,6 +21,7 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import type { Theme } from '../../../../components/Theme';
 import Card from '../../../../components/common/card/Card';
 import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
+import Label from '../../../../components/common/label/Label';
 
 const decayRuleQuery = graphql`
   query DecayRuleQuery($id: String!) {
@@ -116,22 +115,22 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
       >
         <Grid item xs={6}>
           <Card title={t_i18n('Configuration')}>
-            <Grid container={true} spacing={3}>
+            <Grid container={true} spacing={2}>
               <Grid item xs={12}>
-                <Typography variant="h3" gutterBottom={true}>
+                <Label>
                   {t_i18n('Description')}
-                </Typography>
+                </Label>
                 <ExpandableMarkdown source={decayRule.description} limit={300} />
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="h3" gutterBottom={true}>
-                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                    <span>{t_i18n('Indicator observable types')}</span>
-                    <Tooltip title={t_i18n('Matches all indicator main observable types if none is listed.')}>
-                      <InformationOutline fontSize="small" color="primary" />
-                    </Tooltip>
-                  </Box>
-                </Typography>
+                <Label action={(
+                  <Tooltip title={t_i18n('Matches all indicator main observable types if none is listed.')}>
+                    <InformationOutline fontSize="small" color="primary" />
+                  </Tooltip>
+                )}
+                >
+                  {t_i18n('Indicator observable types')}
+                </Label>
                 <FieldOrEmpty source={decayRule.decay_observable_types}>
                   <span>
                     {decayRule.decay_observable_types
@@ -141,29 +140,29 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
                 </FieldOrEmpty>
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="h3" gutterBottom={true}>
+                <Label>
                   {t_i18n('Lifetime (in days)')}
-                </Typography>
+                </Label>
                 {decayRule.decay_lifetime}
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="h3" gutterBottom={true}>
+                <Label>
                   {t_i18n('Decay factor')}
-                </Typography>
+                </Label>
                 {decayRule.decay_pound}
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="h3" gutterBottom={true}>
+                <Label>
                   {t_i18n('Reaction points')}
-                </Typography>
+                </Label>
                 <FieldOrEmpty source={decayRule.decay_points}>
                   <span>{decayRule.decay_points?.join(', ')}</span>
                 </FieldOrEmpty>
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="h3" gutterBottom={true}>
+                <Label>
                   {t_i18n('Revoke score')}
-                </Typography>
+                </Label>
                 {decayRule.decay_revoke_score}
               </Grid>
             </Grid>
