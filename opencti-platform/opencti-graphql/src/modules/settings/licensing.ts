@@ -22,8 +22,18 @@ import type { BasicStoreSettings } from '../../types/settings';
 import type { PlatformEe } from '../../generated/graphql';
 
 const GLOBAL_LICENSE_OPTION = 'global';
-export const LICENSE_OPTION_TRIAL = 'trial';
-export const LICENSE_OPTION_LTS = 'lts';
+const LICENSE_TYPE_STANDARD = 'standard';
+const LICENSE_TYPE_NFR = 'nfr';
+const LICENSE_TYPE_TRIAL = 'trial';
+const LICENSE_TYPE_LTS = 'lts';
+const LICENSE_TYPE_CI = 'ci';
+const LICENSE_TYPES = [
+  LICENSE_TYPE_STANDARD,
+  LICENSE_TYPE_NFR,
+  LICENSE_TYPE_TRIAL,
+  LICENSE_TYPE_LTS,
+  LICENSE_TYPE_CI,
+];
 export const IS_LTS_PLATFORM = PLATFORM_VERSION.includes('lts');
 
 // https://www.iana.org/assignments/enterprise-numbers/enterprise-numbers
@@ -44,35 +54,59 @@ const getExtensionValue = (clientCrt: forge.pki.Certificate, standardOid: string
   return clientCrt.extensions.find((ext) => ext.id === legacyOid)?.value;
 };
 
-const decodeLicense = (platformInstanceId: string, licenseByConfiguration: boolean, pem: string | undefined): PlatformEe => {
+export const getEnterpriseEditionActivePem = (settings: BasicStoreSettings) => {
+  const pemFromConfig: string | undefined = conf.get('app:enterprise_edition_license');
+  const licenseByConfiguration = isNotEmptyField(pemFromConfig);
+  return {
+    licenseByConfiguration,
+    pem: licenseByConfiguration ? pemFromConfig : settings.enterprise_license,
+  };
+};
+
+export const decodeLicensePem = (settings: BasicStoreSettings, overridePem?: string): PlatformEe => {
+  const currentDate = new Date();
+  const { pem, licenseByConfiguration } = overridePem ? {
+    pem: overridePem,
+    licenseByConfiguration: false,
+  } : getEnterpriseEditionActivePem(settings);
   const license_enterprise = pem !== undefined && isNotEmptyField(pem);
   if (license_enterprise) {
     try {
       const clientCrt = forge.pki.certificateFromPem(pem);
       const license_valid_cert = OPENCTI_CA.verify(clientCrt);
       const license_type = getExtensionValue(clientCrt, LICENSE_OID_TYPE, LICENSE_LEGACY_TYPE);
-      const valid_type = IS_LTS_PLATFORM ? license_type === LICENSE_OPTION_LTS : true;
+      const valid_type = LICENSE_TYPES.includes(license_type) && (!IS_LTS_PLATFORM || license_type === LICENSE_TYPE_LTS);
       const license_creator = getExtensionValue(clientCrt, LICENSE_OID_CREATOR, LICENSE_LEGACY_CREATOR);
       const valid_product = getExtensionValue(clientCrt, LICENSE_OID_PRODUCT, LICENSE_LEGACY_PRODUCT) === 'opencti';
       const license_customer = clientCrt.subject.getField('O').value;
       const license_platform = clientCrt.subject.getField('OU').value;
-      const license_platform_match = valid_product && valid_type && (license_platform === GLOBAL_LICENSE_OPTION || platformInstanceId === license_platform);
       const license_global = license_platform === GLOBAL_LICENSE_OPTION;
-      const license_expired = new Date() > clientCrt.validity.notAfter || new Date() < clientCrt.validity.notBefore;
+      const license_platform_match = valid_product && valid_type && (license_global || settings.internal_id === license_platform);
       const license_start_date = clientCrt.validity.notBefore;
       const license_expiration_date = clientCrt.validity.notAfter;
-      const license_expiration_prevention = license_type !== LICENSE_OPTION_TRIAL && utcDate(clientCrt.validity.notAfter).diff(now(), 'months') < 3;
+      if (license_type === LICENSE_TYPE_CI) {
+        // settings.created_at is sometime a string...
+        const createdAt = new Date(settings.created_at);
+        const ciPlatformEndDate = new Date(createdAt.getTime() + 2700000);
+        const certEndDate = new Date(license_start_date.getTime() + 31536000000);
+        const expirationDate = ciPlatformEndDate < certEndDate ? ciPlatformEndDate : certEndDate;
+        license_expiration_date.setTime(expirationDate.getTime());
+      }
+      const license_expired = currentDate > license_expiration_date || currentDate < license_start_date;
+      const license_expiration_prevention = license_type !== LICENSE_TYPE_TRIAL && license_type !== LICENSE_TYPE_CI && utcDate(license_expiration_date).diff(now(), 'months') < 3;
       let license_validated = license_valid_cert && license_platform_match;
       let license_extra_expiration = false;
       let license_extra_expiration_days = 0;
       if (license_validated && license_expired) {
         // If trial license, deactivation for expiration is direct
-        if (license_type !== LICENSE_OPTION_TRIAL) {
+        if (license_type !== LICENSE_TYPE_TRIAL && license_type !== LICENSE_TYPE_CI) {
           // If standard or lts license, a 3 months safe period is granted
-          const license_extra_expiration_date = utcDate(clientCrt.validity.notAfter).add(3, 'months');
+          const license_extra_expiration_date = utcDate(license_expiration_date).add(3, 'months');
           license_extra_expiration_days = license_extra_expiration_date.diff(utcDate(), 'days');
-          license_extra_expiration = new Date() < license_extra_expiration_date.toDate();
+          license_extra_expiration = currentDate < license_extra_expiration_date.toDate();
           license_validated = license_extra_expiration;
+        } else {
+          license_validated = false;
         }
       }
       return {
@@ -106,8 +140,8 @@ const decodeLicense = (platformInstanceId: string, licenseByConfiguration: boole
     license_extra_expiration_days: 0,
     license_customer: 'invalid',
     license_expired: true,
-    license_expiration_date: new Date(),
-    license_start_date: new Date(),
+    license_expiration_date: currentDate,
+    license_start_date: currentDate,
     license_platform: 'invalid',
     license_type: 'trial',
     license_expiration_prevention: false,
@@ -117,25 +151,17 @@ const decodeLicense = (platformInstanceId: string, licenseByConfiguration: boole
   };
 };
 
-export const getEnterpriseEditionActivePem = (rawPem: string | undefined) => {
-  const pemFromConfig: string | undefined = conf.get('app:enterprise_edition_license');
-  return isNotEmptyField(pemFromConfig) ? pemFromConfig : rawPem;
-};
-
 let cachedLicence: PlatformEe | undefined = undefined;
 let cachedPem: string | undefined = undefined;
-
-export const getEnterpriseEditionInfoFromPem = (platformInstanceId: string, rawPem: string | undefined) => {
-  const pem = getEnterpriseEditionActivePem(rawPem);
-  if (cachedLicence === undefined || cachedPem !== pem) {
-    const pemFromConfig = conf.get('app:enterprise_edition_license');
-    const licenseByConfiguration = isNotEmptyField(pemFromConfig);
-    cachedLicence = decodeLicense(platformInstanceId, licenseByConfiguration, pem);
-    cachedPem = pem;
-  }
-  return cachedLicence;
-};
+let cacheExpiration: number | undefined = undefined;
 
 export const getEnterpriseEditionInfo = (settings: BasicStoreSettings) => {
-  return getEnterpriseEditionInfoFromPem(settings.internal_id, settings.enterprise_license);
+  const { pem } = getEnterpriseEditionActivePem(settings);
+  const now = Date.now();
+  if (cachedLicence === undefined || cachedPem !== pem || (cacheExpiration !== undefined && now > cacheExpiration)) {
+    cachedLicence = decodeLicensePem(settings);
+    cachedPem = pem;
+    cacheExpiration = now + 300000; // Cache for 5 minutes
+  }
+  return cachedLicence;
 };

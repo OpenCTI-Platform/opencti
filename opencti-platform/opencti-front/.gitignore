@@ -1,6 +1,5 @@
 .eslintcache
 config/development.json
-.yarnrc.yml
 
 # testing
 /coverage
@@ -15,10 +14,6 @@ config/development.json
 .env.test.local
 .env.production.local
 
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
 # relay
 __generated__
 
@@ -28,4 +23,3 @@ __generated__
 /playwright/.cache/
 /.nyc_output/
 /tests_e2e/.setup/
-.yarnrc.yml
