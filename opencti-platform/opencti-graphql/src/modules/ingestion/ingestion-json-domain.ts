@@ -16,7 +16,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import * as JSONPath from 'jsonpath-plus';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import { type BasicStoreEntityIngestionJson, type DataParam, ENTITY_TYPE_INGESTION_JSON } from './ingestion-types';
+import { type BasicStoreEntityIngestionJson, type DataParam, ENTITY_TYPE_INGESTION_JSON, type StoreEntityIngestionJson } from './ingestion-types';
 import { addAuthenticationCredentials, removeAuthenticationCredentials, verifyIngestionAuthenticationContent } from './ingestion-common';
 import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
 import { connectorIdFromIngestId, registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
@@ -107,17 +107,19 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
     headers[k] = String(v);
   });
   if (ingestion.authentication_type === IngestionAuthType.Basic) {
-    const auth = Buffer.from(ingestion.authentication_value, 'utf-8').toString('base64');
+    const basicAuthenticationValue = ingestion.authentication_value as string;
+    const auth = Buffer.from(basicAuthenticationValue, 'utf-8').toString('base64');
     headers.Authorization = `Basic ${auth}`;
   }
   if (ingestion.authentication_type === IngestionAuthType.Bearer) {
     headers.Authorization = `Bearer ${ingestion.authentication_value}`;
   }
   if (ingestion.authentication_type === IngestionAuthType.Certificate) {
+    const certificateAuthenticationValue = ingestion.authentication_value as string;
     certificates = {
-      cert: ingestion.authentication_value.split(':')[0],
-      key: ingestion.authentication_value.split(':')[1],
-      ca: ingestion.authentication_value.split(':')[2],
+      cert: certificateAuthenticationValue.split(':')[0],
+      key: certificateAuthenticationValue.split(':')[1],
+      ca: certificateAuthenticationValue.split(':')[2],
     };
   }
   const httpClientOptions: GetHttpClient = { headers, rejectUnauthorized: false, responseType: 'json', certificates };
@@ -195,7 +197,7 @@ export const findJsonMapperForIngestionById = (context: AuthContext, user: AuthU
 };
 
 export const deleteIngestionJson = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
-  const deleted = await deleteElementById(context, user, ingestionId, ENTITY_TYPE_INGESTION_JSON);
+  const deleted = await deleteElementById<StoreEntityIngestionJson>(context, user, ingestionId, ENTITY_TYPE_INGESTION_JSON);
   await unregisterConnectorForIngestion(context, deleted.id);
   await publishUserAction({
     user,
@@ -245,7 +247,7 @@ export const editIngestionJson = async (context: AuthContext, user: AuthUser, id
     );
   }
 
-  const { element } = await patchAttribute(context, user, id, ENTITY_TYPE_INGESTION_JSON, {
+  const { element } = await patchAttribute<StoreEntityIngestionJson>(context, user, id, ENTITY_TYPE_INGESTION_JSON, {
     ...input,
     authentication_value: authenticationValue,
   });
@@ -292,7 +294,7 @@ export const ingestionJsonEditField = async (context: AuthContext, user: AuthUse
     patchInput.push(resetAuthenticationValue);
   }
 
-  const { element } = await updateAttribute(context, user, ingestionId, ENTITY_TYPE_INGESTION_JSON, patchInput);
+  const { element } = await updateAttribute<StoreEntityIngestionJson>(context, user, ingestionId, ENTITY_TYPE_INGESTION_JSON, patchInput);
   await registerConnectorForIngestion(context, {
     id: element.id,
     type: 'JSON',

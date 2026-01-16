@@ -91,6 +91,7 @@ export interface StoreEntityNotification extends StoreEntity {
   is_read: boolean;
   notification_id: string;
   notification_uri: string;
+  user_id: string;
 }
 // endregion
 

@@ -42,6 +42,19 @@ export interface BasicStoreEntityEntitySetting extends BasicStoreEntity {
   request_access_workflow?: RequestAccessFlow;
 }
 
+export interface StoreEntityEntitySetting extends StoreEntity {
+  target_type: string;
+  platform_entity_files_ref: boolean;
+  platform_hidden_type: boolean;
+  enforce_reference: boolean;
+  attributes_configuration?: string;
+  workflow_configuration: boolean;
+  availableSettings?: string[];
+  overview_layout_customization?: Array<OverviewLayoutCustomization>;
+  templates?: Array<FintelTemplate>;
+  request_access_workflow?: RequestAccessFlow;
+}
+
 export interface OverviewLayoutCustomization {
   key: string;
   width: number;

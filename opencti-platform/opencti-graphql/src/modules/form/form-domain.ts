@@ -168,7 +168,7 @@ export const formEditField = async (
     return { key, value: Array.isArray(value) ? value : [value] };
   });
 
-  const { element } = await updateAttribute(context, user, formId, ENTITY_TYPE_FORM, updates);
+  const { element } = await updateAttribute<StoreEntityForm>(context, user, formId, ENTITY_TYPE_FORM, updates);
 
   // Update connector registration
   const activeUpdate = input.find(({ key }) => key === 'active');
