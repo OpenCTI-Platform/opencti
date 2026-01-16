@@ -26,6 +26,8 @@ import { truncate } from '../../../utils/String';
 import { TEN_SECONDS } from '../../../utils/Time';
 import { useGetCurrentUserAccessRight, authorizedMembersToOptions } from '../../../utils/authorizedMembers';
 import useUserCanApproveDraft from '../../../utils/hooks/useUserCanApproveDraft';
+import Security from '../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../utils/hooks/useGranted';
 
 const interval$ = interval(TEN_SECONDS * 3);
 
@@ -191,16 +193,18 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
       <div style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
         <div style={{ padding: '0 12px' }}>
           {currentAccessRight.canManage && (
-            <Tooltip title={t_i18n('Authorized members')}>
-              <IconButton
-                onClick={() => {
-                  setDisplayAuthorizeMembersDialog(true);
-                }}
-                color="primary"
-              >
-                <LockOutlined />
-              </IconButton>
-            </Tooltip>
+            <Security needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}>
+              <Tooltip title={t_i18n('Authorized members')}>
+                <IconButton
+                  onClick={() => {
+                    setDisplayAuthorizeMembersDialog(true);
+                  }}
+                  color="primary"
+                >
+                  <LockOutlined />
+                </IconButton>
+              </Tooltip>
+            </Security>
           )}
           {displayAuthorizeMembersDialog && (
             <FormAuthorizedMembersDialog
