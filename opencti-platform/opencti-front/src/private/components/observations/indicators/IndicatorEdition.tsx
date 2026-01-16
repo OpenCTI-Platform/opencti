@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { commitMutation, graphql } from 'react-relay';
-import { environment, QueryRenderer } from '../../../../relay/environment';
+import { graphql } from 'react-relay';
+import { QueryRenderer } from '../../../../relay/environment';
 import IndicatorEditionContainer from './IndicatorEditionContainer';
 import { indicatorEditionOverviewFocus } from './IndicatorEditionOverview';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
