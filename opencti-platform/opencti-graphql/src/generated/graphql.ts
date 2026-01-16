@@ -9250,6 +9250,7 @@ export enum Format {
 }
 
 export enum FormsOrdering {
+  Score = '_score',
   Active = 'active',
   CreatedAt = 'created_at',
   Name = 'name',
