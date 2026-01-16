@@ -12,63 +12,33 @@ interface ItemAccountStatusProps {
 const ItemAccountStatus: FunctionComponent<ItemAccountStatusProps> = ({
   label,
   account_status,
-  variant,
 }) => {
   const theme = useTheme<Theme>();
-  const inlineStyles = {
-    green: {
-      backgroundColor: theme.palette.severity.low,
-      color: theme.palette.severity.low,
-      borderColor: theme.palette.severity.low,
-    },
-    blue: {
-      backgroundColor: theme.palette.severity.info,
-      color: theme.palette.severity.info,
-      borderColor: theme.palette.severity.info,
-    },
-    red: {
-      backgroundColor: theme.palette.severity.critical,
-      color: theme.palette.severity.critical,
-      borderColor: theme.palette.severity.critical,
-    },
-    orange: {
-      backgroundColor: theme.palette.severity.high,
-      color: theme.palette.severity.high,
-      borderColor: theme.palette.severity.high,
-    },
-    blueGrey: {
-      backgroundColor: theme.palette.common.grey,
-      color: theme.palette.common.grey,
-      borderColor: theme.palette.common.grey,
-      fontStyle: 'italic',
-    },
-  };
 
-  const computeAccountStatusStyle = (
+  const computeAccountStatusColor = (
     account_status: string | undefined | null,
   ) => {
     switch (account_status) {
       case 'Active':
-        return inlineStyles.green;
+        return theme.palette.severity.low;
       case 'Locked (security)':
-        return inlineStyles.blueGrey;
+        return theme.palette.common.grey;
       case 'Locked (training)':
-        return inlineStyles.blueGrey;
+        return theme.palette.common.grey;
       case 'Inactive':
-        return inlineStyles.orange;
+        return theme.palette.severity.high;
       case 'Expired':
-        return inlineStyles.red;
+        return theme.palette.severity.critical;
       default:
-        return inlineStyles.blueGrey;
+        return theme.palette.common.grey;
     }
   };
 
-  const classStyle = computeAccountStatusStyle(account_status);
+  const color = computeAccountStatusColor(account_status);
   return (
     <Tag
-      variant={variant}
       label={label}
-      style={classStyle}
+      color={color}
     />
   );
 };
