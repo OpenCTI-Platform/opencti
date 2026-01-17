@@ -1,12 +1,13 @@
 import base64
 import datetime
 import json
+import time
 from dataclasses import dataclass
-from typing import Any, Dict, Union, Literal
+from typing import Any, Dict, Literal, Union
 
 import pika
 from pika.adapters.blocking_connection import BlockingChannel
-
+from pika.exceptions import NackError, UnroutableError
 from pycti import OpenCTIApiClient, OpenCTIStix2Splitter, __version__
 
 
@@ -50,15 +51,24 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
         data["content"] = base64.b64encode(
             text_bundle.encode("utf-8", "escape")
         ).decode("utf-8")
-        push_channel.basic_publish(
-            exchange=exchange,
-            routing_key=routing_key,
-            body=json.dumps(data),
-            properties=pika.BasicProperties(
-                delivery_mode=2,
-                content_encoding="utf-8",  # make message persistent
-            ),
-        )
+
+        # Send the message
+        while True:
+            try:
+                push_channel.basic_publish(
+                    exchange=exchange,
+                    routing_key=routing_key,
+                    body=json.dumps(data),
+                    properties=pika.BasicProperties(
+                        delivery_mode=2,
+                        content_encoding="utf-8",  # make message persistent
+                    ),
+                )
+                self.logger.debug("Bundle has been sent")
+                return
+            except (UnroutableError, NackError):
+                self.logger.error("Unable to send bundle, retry...")
+                time.sleep(10)
 
     def handle_message(
         self,
