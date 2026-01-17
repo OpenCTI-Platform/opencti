@@ -223,8 +223,8 @@ steps:
       - cd opencti-platform/opencti-front
       - node script/verify-translation.js
   
-  - name: client-test-39
-    image: python:3.9
+  - name: client-test-310
+    image: python:3.10
     environment:
       OPENCTI_API_URL: http://opencti-pycti-start:4600
       OPENCTI_API_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
@@ -236,20 +236,6 @@ steps:
       - python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
     depends_on:
       - dependencies-checkout
-
-  - name: client-test-310
-    image: python:3.10
-    environment:
-      OPENCTI_API_URL: http://opencti-pycti-start:4600
-      OPENCTI_API_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
-    commands:
-      - cd client-python
-      - pip3 install -r requirements.txt --user
-      - pip3 install -r test-requirements.txt --user
-      # - sleep 180
-      - python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
-    depends_on:
-      - client-test-39
 
   - name: client-test-311
     image: python:3.11
