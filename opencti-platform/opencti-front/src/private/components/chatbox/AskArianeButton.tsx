@@ -14,6 +14,7 @@ import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import useGranted, { SETTINGS_SETPARAMETERS } from '../../../utils/hooks/useGranted';
 import useHelper from '../../../utils/hooks/useHelper';
 import ChatbotManager from './ChatbotManager';
+import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 
 const AskArianeButton = () => {
   const { t_i18n } = useFormatter();
@@ -22,6 +23,7 @@ const AskArianeButton = () => {
   const theme = useTheme<Theme>();
   const isEnterpriseEdition = useEnterpriseEdition();
   const hasRightToValidateCGU = useGranted([SETTINGS_SETPARAMETERS]);
+  const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
 
   const isCGUStatusPending = filigran_chatbot_ai_cgu_status === CGUStatus.pending;
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
@@ -32,9 +34,9 @@ const AskArianeButton = () => {
 
   useEffect(() => {
     if (isChatbotEnabled) {
-      chatbotManager.current.configure(theme, t_i18n);
+      chatbotManager.current.configure(theme, t_i18n, settingsMessagesBannerHeight);
     }
-  }, [isChatbotEnabled, theme, t_i18n]);
+  }, [isChatbotEnabled, theme, t_i18n, settingsMessagesBannerHeight]);
 
   useEffect(() => {
     if (!isChatbotEnabled && chatbotManager.current.isReady()) {

@@ -17,6 +17,7 @@ class ChatbotManager {
   private isInitialized = false;
   private theme: Theme | null = null;
   private t_i18n: ((message: string) => string) | null = null;
+  private bannerHeight: number = 0;
 
   static getInstance(): ChatbotManager {
     if (!ChatbotManager.instance) {
@@ -25,9 +26,55 @@ class ChatbotManager {
     return ChatbotManager.instance;
   }
 
-  configure(theme: Theme, t_i18n: (message: string) => string) {
+  configure(theme: Theme, t_i18n: (message: string) => string, bannerHeight: number = 0) {
     this.theme = theme;
     this.t_i18n = t_i18n;
+    this.bannerHeight = bannerHeight;
+
+    if (this.isInitialized) {
+      this.updateCustomCSS();
+    }
+  }
+
+  private getCustomCSS(): string {
+    const totalOffset = 68 + this.bannerHeight;
+    return `
+      * {
+        font-family: "IBM Plex Sans" !important;
+      }
+      div[part="bot"] {
+        height: calc(100% - ${totalOffset}px) !important;
+        max-height: inherit !important;
+        bottom: 0 !important;
+        left: unset !important;
+        right: 0 !important;
+      }
+      div[part="bot"] > div > div > div {
+        border-radius: 0 !important;
+      }
+      div[part="bot"] > div > div > div > div,
+      div[part="bot"] > div > div > div > div > div {
+        border: 0 !important;
+      }
+      div[part="bot"] > div > div > div > figure {
+        width: 24px !important;
+        height: 24px !important;
+      }
+      div[part="bot"] > div > div > div:first-child > div:first-child {
+        width: 5px !important;
+      }
+    `;
+  }
+
+  private updateCustomCSS() {
+    if (!this.chatbotElement || !this.theme) return;
+
+    const chatBotTheme = {
+      ...this.chatbotElement.theme,
+      customCSS: this.getCustomCSS(),
+    };
+
+    this.chatbotElement.theme = chatBotTheme;
   }
 
   private initialize() {
@@ -55,32 +102,7 @@ class ChatbotManager {
       tooltip: {
         showTooltip: false,
       },
-      customCSS: `
-        * {
-          font-family: "IBM Plex Sans" !important;
-        }
-        div[part="bot"] {
-          height: calc(100% - 65px) !important;
-          max-height: inherit !important;
-          bottom: 0 !important;
-          left: unset !important;
-          right: 0 !important;
-        }
-        div[part="bot"] > div > div > div {
-          border-radius: 0 !important;
-        }
-        div[part="bot"] > div > div > div > div,
-        div[part="bot"] > div > div > div > div > div {
-          border: 0 !important;
-        }
-        div[part="bot"] > div > div > div > figure {
-          width: 24px !important;
-          height: 24px !important;
-        }
-        div[part="bot"] > div > div > div:first-child > div:first-child {
-          width: 5px !important;
-        }
-      `,
+      customCSS: this.getCustomCSS(),
       chatWindow: {
         showTitle: true,
         showAgentMessages: false,

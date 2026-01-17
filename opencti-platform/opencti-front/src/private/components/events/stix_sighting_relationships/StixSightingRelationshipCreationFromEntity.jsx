@@ -1,70 +1,44 @@
-import React, { useState } from 'react';
-import { graphql } from 'react-relay';
-import * as R from 'ramda';
-import { assoc, pipe, pluck } from 'ramda';
-import Drawer from '@mui/material/Drawer';
-import Typography from '@mui/material/Typography';
 import IconButton from '@common/button/IconButton';
-import { Add, Close } from '@mui/icons-material';
+import { Add } from '@mui/icons-material';
+import { Stack } from '@mui/material';
+import Alert from '@mui/material/Alert';
+import CircularProgress from '@mui/material/CircularProgress';
+import Fab from '@mui/material/Fab';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Fab from '@mui/material/Fab';
-import CircularProgress from '@mui/material/CircularProgress';
-import Alert from '@mui/material/Alert';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import * as R from 'ramda';
+import { assoc, pipe, pluck } from 'ramda';
+import { useState } from 'react';
+import { graphql } from 'react-relay';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import { useFormatter } from '../../../../components/i18n';
+import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { insertNode } from '../../../../utils/store';
 import { dayStartDate, formatDate } from '../../../../utils/Time';
-import StixSightingRelationshipCreationFromEntityStixDomainObjectsLines, {
-  stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesQuery,
-} from './StixSightingRelationshipCreationFromEntityStixDomainObjectsLines';
+import Drawer from '../../common/drawer/Drawer';
+import StixDomainObjectCreation from '../../common/stix_domain_objects/StixDomainObjectCreation';
+import StixSightingRelationshipCreationForm from './StixSightingRelationshipCreationForm';
 import StixSightingRelationshipCreationFromEntityStixCyberObservablesLines, {
   stixSightingRelationshipCreationFromEntityStixCyberObservablesLinesQuery,
 } from './StixSightingRelationshipCreationFromEntityStixCyberObservablesLines';
-import StixDomainObjectCreation from '../../common/stix_domain_objects/StixDomainObjectCreation';
-import SearchInput from '../../../../components/SearchInput';
-import StixSightingRelationshipCreationForm from './StixSightingRelationshipCreationForm';
-import { useFormatter } from '../../../../components/i18n';
-import { insertNode } from '../../../../utils/store';
-import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import DrawerHeader from '@common/drawer/DrawerHeader';
+import StixSightingRelationshipCreationFromEntityStixDomainObjectsLines, {
+  stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesQuery,
+} from './StixSightingRelationshipCreationFromEntityStixDomainObjectsLines';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
+const useStyles = makeStyles(() => ({
   createButton: {
     position: 'fixed',
     bottom: 30,
     right: 30,
     zIndex: 1001,
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  container: {
-    padding: 0,
-    height: '100%',
-    width: '100%',
   },
 }));
 
@@ -357,46 +331,26 @@ const StixSightingRelationshipCreationFromEntity = ({
 
   const renderSelectEntity = () => {
     return (
-      <div style={{ height: '100%' }}>
-        <DrawerHeader
-          title={t_i18n('Create a sighting')}
-          onClose={handleClose}
-          endContent={(
-            <StixDomainObjectCreation
-              display={open}
-              inputValue={search}
-              paginationOptions={stixDomainObjectsPaginationOptions}
-              stixDomainObjectTypes={stixCoreObjectTypes}
-              controlledDialStyles={{ float: 'right' }}
-              controlledDialSize="small"
-            />
-          )}
-        />
-
-        <div className={classes.container}>
-          {search.length === 0 && (
-            <Alert
-              severity="info"
-              variant="outlined"
-              style={{ margin: '15px 15px 0 15px' }}
-              classes={{ message: classes.info }}
-            >
-              {t_i18n(
-                'This panel shows by default the latest created entities, use the search to find more.',
-              )}
-            </Alert>
-          )}
-          <div style={{ float: 'left', marginLeft: 15, marginTop: 15 }}>
-            <SearchInput
-              variant="inDrawer"
-              keyword={search}
-              onSubmit={handleSearch}
-            />
-          </div>
-          <div className="clearfix" />
-          {renderSearchResults()}
+      <Stack gap={2}>
+        {search.length === 0 && (
+          <Alert
+            severity="info"
+            variant="outlined"
+            classes={{ message: classes.info }}
+          >
+            {t_i18n(
+              'This panel shows by default the latest created entities, use the search to find more.',
+            )}
+          </Alert>
+        )}
+        <div>
+          <SearchInput
+            keyword={search}
+            onSubmit={handleSearch}
+          />
         </div>
-      </div>
+        {renderSearchResults()}
+      </Stack>
     );
   };
 
@@ -408,27 +362,15 @@ const StixSightingRelationshipCreationFromEntity = ({
       toEntity = sourceEntity;
     }
     return (
-      <>
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleClose}
-          >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6">{t_i18n('Create a sighting')}</Typography>
-        </div>
-        <StixSightingRelationshipCreationForm
-          fromEntities={[fromEntity]}
-          toEntities={[toEntity]}
-          handleResetSelection={handleResetSelection}
-          onSubmit={onSubmit}
-          handleClose={handleClose}
-          defaultFirstSeen={dayStartDate()}
-          defaultLastSeen={dayStartDate()}
-        />
-      </>
+      <StixSightingRelationshipCreationForm
+        fromEntities={[fromEntity]}
+        toEntities={[toEntity]}
+        handleResetSelection={handleResetSelection}
+        onSubmit={onSubmit}
+        handleClose={handleClose}
+        defaultFirstSeen={dayStartDate()}
+        defaultLastSeen={dayStartDate()}
+      />
     );
   };
 
@@ -485,11 +427,18 @@ const StixSightingRelationshipCreationFromEntity = ({
       {openElement()}
       <Drawer
         open={open}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
+        title={t_i18n('Create a sighting')}
+        header={step === 0 && (
+          <StixDomainObjectCreation
+            display={open}
+            inputValue={search}
+            paginationOptions={stixDomainObjectsPaginationOptions}
+            stixDomainObjectTypes={stixCoreObjectTypes}
+            controlledDialStyles={{ float: 'right' }}
+            controlledDialSize="small"
+          />
+        )}
       >
         <QueryRenderer
           query={stixSightingRelationshipCreationFromEntityQuery}

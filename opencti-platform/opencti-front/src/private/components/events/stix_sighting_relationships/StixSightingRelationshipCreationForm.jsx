@@ -20,6 +20,7 @@ import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeCo
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
+import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -81,10 +82,6 @@ const useStyles = makeStyles((theme) => ({
   buttonBack: {
     marginTop: 20,
     float: 'left',
-  },
-  buttons: {
-    marginTop: 20,
-    float: 'right',
   },
   button: {
     marginLeft: theme.spacing(2),
@@ -338,23 +335,21 @@ const StixSightingRelationshipCreationForm = ({
                 </Button>
               </div>
             )}
-            <div className={classes.buttons}>
+            <FormButtonContainer>
               <Button
                 variant="secondary"
                 onClick={handleReset}
                 disabled={isSubmitting}
-                classes={{ root: classes.button }}
               >
                 {t_i18n('Cancel')}
               </Button>
               <Button
                 onClick={submitForm}
                 disabled={isSubmitting}
-                classes={{ root: classes.button }}
               >
                 {t_i18n('Create')}
               </Button>
-            </div>
+            </FormButtonContainer>
           </div>
         </Form>
       )}

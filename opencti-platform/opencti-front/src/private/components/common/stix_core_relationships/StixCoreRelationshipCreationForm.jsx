@@ -24,6 +24,7 @@ import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { minutesBefore, now } from '../../../../utils/Time';
 import { CoverageInformationFieldAdd } from '../form/CoverageInformationField';
+import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -81,17 +82,6 @@ const useStyles = makeStyles((theme) => ({
     textAlign: 'center',
     padding: 0,
     color: theme.palette.text.primary,
-  },
-  buttonBack: {
-    marginTop: 20,
-    float: 'left',
-  },
-  buttons: {
-    marginTop: 20,
-    float: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
   },
 }));
 
@@ -352,8 +342,9 @@ const StixCoreRelationshipCreationForm = ({
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
-            {typeof handleResetSelection === 'function' && (
-              <div className={classes.buttonBack}>
+
+            <FormButtonContainer>
+              {typeof handleResetSelection === 'function' && (
                 <Button
                   variant="secondary"
                   onClick={handleResetSelection}
@@ -361,25 +352,21 @@ const StixCoreRelationshipCreationForm = ({
                 >
                   {t_i18n('Back')}
                 </Button>
-              </div>
-            )}
-            <div className={classes.buttons}>
+              )}
               <Button
                 variant="secondary"
                 onClick={handleClose}
                 disabled={isSubmitting}
-                classes={{ root: classes.button }}
               >
                 {t_i18n('Cancel')}
               </Button>
               <Button
                 onClick={submitForm}
                 disabled={isSubmitting}
-                classes={{ root: classes.button }}
               >
                 {t_i18n('Create')}
               </Button>
-            </div>
+            </FormButtonContainer>
           </div>
         </Form>
       )}
