@@ -74,7 +74,7 @@ import {
   UPDATE_OPERATION_REMOVE,
 } from '../database/utils';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
-import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
+import { getEntitySettingFromCache } from '../utils/entitySetting-utils';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
 import { buildContextDataForFile, completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName, extractRepresentative } from '../database/entity-representative';

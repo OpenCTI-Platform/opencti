@@ -16,7 +16,7 @@ import { type CsvMapperSchemaAttribute, type CsvMapperSchemaAttributes, parseCsv
 import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../../schema/schema-relationsRef';
 import { INTERNAL_ATTRIBUTES, INTERNAL_REFS } from '../../../domain/attribute-utils';
-import { getAttributesConfiguration, getEntitySettingFromCache } from '../../entitySetting/entitySetting-utils';
+import { getAttributesConfiguration, getEntitySettingFromCache } from '../../../utils/entitySetting-utils';
 import { isNotEmptyField } from '../../../database/utils';
 import { extractRepresentative } from '../../../database/entity-representative';
 import { isStixCoreRelationship } from '../../../schema/stixCoreRelationship';
