@@ -7,6 +7,7 @@ const useHasOnlyAccessToImportDraftTab = (): boolean => {
   const { me } = useAuth();
 
   const hasImportCapability = useGranted([KNOWLEDGE_KNASKIMPORT]);
+  const userCapabilities = getCapabilitiesName(me.capabilities);
   const userCapabilitiesInDraft = getCapabilitiesName(me.capabilitiesInDraft);
 
   const { isFeatureEnable } = useHelper();
@@ -14,7 +15,7 @@ const useHasOnlyAccessToImportDraftTab = (): boolean => {
   if (!isCapabilitiesInDraftEnabled || hasImportCapability) {
     return false;
   }
-  return userCapabilitiesInDraft.some((capability) => capability.includes(KNOWLEDGE));
+  return [...userCapabilities, ...userCapabilitiesInDraft].some((capabilityInDraft) => capabilityInDraft.includes(KNOWLEDGE));
 };
 
 export default useHasOnlyAccessToImportDraftTab;
