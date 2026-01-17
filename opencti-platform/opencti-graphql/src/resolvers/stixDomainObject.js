@@ -20,6 +20,8 @@ import {
   stixDomainObjectsNumber,
   stixDomainObjectsTimeSeries,
   stixDomainObjectsTimeSeriesByAuthor,
+  getFilesFromTemplate,
+  getFintelTemplates,
 } from '../domain/stixDomainObject';
 import { findById as findStatusById, findByType } from '../domain/status';
 import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
@@ -75,6 +77,8 @@ const stixDomainObjectResolvers = {
       return statusesType.length > 0;
     },
     pirInformation: (stixDomainObject, { pirId }, context) => stixDomainObjectPirInformation(context, context.user, stixDomainObject, pirId),
+    filesFromTemplate: (stixDomainObject, { first, prefixMimeType }, context) => getFilesFromTemplate(context, context.user, stixDomainObject, { first, prefixMimeType }),
+    fintelTemplates: (stixDomainObject, _, context) => getFintelTemplates(context, context.user, stixDomainObject),
   },
   Mutation: {
     stixDomainObjectEdit: (_, { id }, context) => ({

@@ -98,6 +98,16 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
+  fintelTemplates: [FintelTemplate!]
+  filesFromTemplate(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
   # Container
   authorized_members: [MemberAccess!]
   authorized_members_activation_date: DateTime
@@ -142,16 +152,6 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
     search: String
     filters: FilterGroup
   ): FileConnection
-  filesFromTemplate(
-    first: Int
-    prefixMimeType: String
-    after: ID
-    orderBy: FileOrdering
-    orderMode: OrderingMode
-    search: String
-    filters: FilterGroup
-  ): FileConnection
-  fintelTemplates: [FintelTemplate!]
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]

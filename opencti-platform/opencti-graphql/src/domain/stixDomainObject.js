@@ -18,6 +18,7 @@ import {
   topRelationsList,
   storeLoadById,
   storeLoadByIds,
+  fullEntitiesList,
 } from '../database/middleware-loader';
 import { elCount, elFindByIds } from '../database/engine';
 import { workToExportFile } from './work';
@@ -48,6 +49,9 @@ import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { validateMarking } from '../utils/access';
 import { editAuthorizedMembers } from '../utils/authorizedMembers';
 import { getPirWithAccessCheck } from '../modules/pir/pir-checkPirAccess';
+import { isEnterpriseEdition } from '../enterprise-edition/ee';
+import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
+import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../modules/fintelTemplate/fintelTemplate-types';
 
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 
@@ -132,6 +136,41 @@ export const stixDomainObjectPirInformation = async (context, user, stixDomainOb
     last_pir_score_date: pirInformation?.last_pir_score_date,
     pir_explanation: inPirRelations.length !== 1 ? [] : inPirRelations[0].pir_explanation,
   };
+};
+
+export const getFilesFromTemplate = async (context, user, stixDomainObject, args) => {
+  const isEE = await isEnterpriseEdition(context);
+  if (!isEE) {
+    return null;
+  }
+  const { first, prefixMimeType } = args;
+  const opts = { first, prefixMimeTypes: prefixMimeType ? [prefixMimeType] : null, entity_id: stixDomainObject.id, entity_type: stixDomainObject.entity_type };
+  return paginatedForPathWithEnrichment(context, user, `fromTemplate/${stixDomainObject.entity_type}/${stixDomainObject.id}`, stixDomainObject.id, opts);
+};
+
+export const getFintelTemplates = async (context, user, stixDomainObject) => {
+  const isEE = await isEnterpriseEdition(context);
+  if (!isEE) {
+    return null;
+  }
+  const nowDate = new Date().getTime();
+  const filters = {
+    mode: 'and',
+    filters: [
+      {
+        key: 'settings_types',
+        values: [stixDomainObject.entity_type],
+        operator: 'eq',
+      },
+      {
+        key: 'start_date',
+        values: [nowDate],
+        operator: 'lte',
+      },
+    ],
+    filterGroups: [],
+  };
+  return fullEntitiesList(context, user, [ENTITY_TYPE_FINTEL_TEMPLATE], { filters });
 };
 
 // region export

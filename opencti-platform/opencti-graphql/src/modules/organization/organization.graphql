@@ -102,6 +102,16 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   authorized_members: [MemberAccess!]
   authorized_members_activation_date: DateTime
   currentUserAccessRight: String
+  fintelTemplates: [FintelTemplate!]
+  filesFromTemplate(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
   # Identity
   identity_class: String!
   name: String!
