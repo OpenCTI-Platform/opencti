@@ -33,7 +33,7 @@ import { emailChecker } from '../../utils/syntax';
 import type { BasicStoreCommon } from '../../types/store';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
 import { BASIC_EMAIL_TEMPLATE } from '../../utils/emailTemplates/basicEmailTemplate';
-import { addDisseminationCount } from '../../manager/telemetryManager';
+import { addTelemetryCount, TELEMETRY_COUNT } from '../../manager/telemetryManager';
 import type { SendMailArgs } from '../../types/smtp';
 import { safeRender } from '../../utils/safeEjs.client';
 import { sanitizeSettings } from '../../utils/templateContextSanitizer';
@@ -121,7 +121,7 @@ export const sendDisseminationEmail = async (
     attachments: attachmentListForSendMail,
   };
   await sendMail(sendMailArgs, { identifier: disseminationListId, category: 'dissemination' });
-  await addDisseminationCount();
+  await addTelemetryCount(TELEMETRY_COUNT.GAUGE_DISSEMINATION);
   return sentFiles;
 };
 

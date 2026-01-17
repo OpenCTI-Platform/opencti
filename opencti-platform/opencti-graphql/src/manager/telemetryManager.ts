@@ -22,7 +22,7 @@ import { elCount } from '../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { FilterMode } from '../generated/graphql';
 import { redisClearTelemetry, redisGetTelemetry, redisSetTelemetryAdd } from '../database/redis';
-import type { AuthUser } from '../types/user';
+import type { AuthContext, AuthUser } from '../types/user';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../modules/securityCoverage/securityCoverage-types';
 import { isStrategyActivated, StrategyType } from '../config/providers-configuration';
@@ -46,101 +46,35 @@ const TELEMETRY_EXPORT_INTERVAL = DEV_MODE ? TWO_MINUTE : SIX_HOUR;
 const COMPUTE_SCHEDULE_TIME = DEV_MODE ? ONE_MINUTE / 2 : ONE_HOUR / 2;
 
 // Region user event counters
-export const TELEMETRY_GAUGE_DISSEMINATION = 'disseminationCount';
-export const TELEMETRY_GAUGE_NLQ = 'nlqQueryCount';
-export const TELEMETRY_GAUGE_REQUEST_ACCESS = 'requestAccessCreationCount';
-export const TELEMETRY_GAUGE_DRAFT_CREATION = 'draftCreationCount';
-export const TELEMETRY_GAUGE_DRAFT_VALIDATION = 'draftValidationCount';
-export const TELEMETRY_GAUGE_CAPABILITIES_IN_DRAFT_UPDATED = 'capabilitiesInDraftUpdateCount';
-export const TELEMETRY_GAUGE_WORKBENCH_UPLOAD = 'workbenchUploadCount';
-export const TELEMETRY_GAUGE_WORKBENCH_DRAFT_CONVERTION = 'workbenchDraftConvertionCount';
-export const TELEMETRY_GAUGE_WORKBENCH_VALIDATION = 'workbenchValidationCount';
-export const TELEMETRY_GAUGE_USER_INTO_SERVICE_ACCOUNT = 'userIntoServiceAccountCount';
-export const TELEMETRY_GAUGE_SERVICE_ACCOUNT_INTO_USER = 'serviceAccountIntoUserCount';
-export const TELEMETRY_GAUGE_USER_EMAIL_SEND = 'userEmailSendCount';
-export const TELEMETRY_BACKGROUND_TASK_USER = 'userBackgroundTaskCount';
-export const TELEMETRY_EMAIL_TEMPLATE_CREATED = 'emailTemplateCreatedCount';
-export const TELEMETRY_FORGOT_PASSWORD = 'forgotPasswordCount';
-export const TELEMETRY_CONNECTOR_DEPLOYED = 'connectorDeployedCount';
-export const TELEMETRY_FORM_INTAKE_CREATED = 'formIntakeCreatedCount';
-export const TELEMETRY_FORM_INTAKE_UPDATED = 'formIntakeUpdatedCount';
-export const TELEMETRY_FORM_INTAKE_DELETED = 'formIntakeDeletedCount';
-export const TELEMETRY_FORM_INTAKE_SUBMITTED = 'formIntakeSubmittedCount';
-export const TELEMETRY_USER_LOGIN = 'userLoginCount';
+export enum TELEMETRY_COUNT {
+  GAUGE_DISSEMINATION = 'disseminationCount',
+  GAUGE_NLQ = 'nlqQueryCount',
+  GAUGE_REQUEST_ACCESS = 'requestAccessCreationCount',
+  GAUGE_DRAFT_CREATION = 'draftCreationCount',
+  GAUGE_DRAFT_VALIDATION = 'draftValidationCount',
+  GAUGE_CAPABILITIES_IN_DRAFT_UPDATED = 'capabilitiesInDraftUpdateCount',
+  GAUGE_WORKBENCH_UPLOAD = 'workbenchUploadCount',
+  GAUGE_WORKBENCH_DRAFT_CONVERTION = 'workbenchDraftConvertionCount',
+  GAUGE_WORKBENCH_VALIDATION = 'workbenchValidationCount',
+  GAUGE_USER_INTO_SERVICE_ACCOUNT = 'userIntoServiceAccountCount',
+  GAUGE_SERVICE_ACCOUNT_INTO_USER = 'serviceAccountIntoUserCount',
+  GAUGE_USER_EMAIL_SEND = 'userEmailSendCount',
+  BACKGROUND_TASK_USER = 'userBackgroundTaskCount',
+  EMAIL_TEMPLATE_CREATED = 'emailTemplateCreatedCount',
+  FORGOT_PASSWORD = 'forgotPasswordCount',
+  CONNECTOR_DEPLOYED = 'connectorDeployedCount',
+  FORM_INTAKE_CREATED = 'formIntakeCreatedCount',
+  FORM_INTAKE_UPDATED = 'formIntakeUpdatedCount',
+  FORM_INTAKE_DELETED = 'formIntakeDeletedCount',
+  FORM_INTAKE_SUBMITTED = 'formIntakeSubmittedCount',
+  USER_LOGIN = 'userLoginCount',
+}
 
-export const addDisseminationCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_GAUGE_DISSEMINATION, 1);
+export const addTelemetryCount = async (telemetryCount: TELEMETRY_COUNT) => {
+  await redisSetTelemetryAdd(telemetryCount, 1);
 };
-export const addNlqQueryCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_GAUGE_NLQ, 1);
-};
-export const addRequestAccessCreationCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_GAUGE_REQUEST_ACCESS, 1);
-};
-export const addDraftCreationCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_GAUGE_DRAFT_CREATION, 1);
-};
-export const addDraftValidationCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_GAUGE_DRAFT_VALIDATION, 1);
-};
-export const addCapabilitiesInDraftUpdatedCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_GAUGE_CAPABILITIES_IN_DRAFT_UPDATED, 1);
-};
-export const addWorkbenchUploadCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_GAUGE_WORKBENCH_UPLOAD, 1);
-};
-export const addWorkbenchDraftConvertionCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_GAUGE_WORKBENCH_DRAFT_CONVERTION, 1);
-};
-export const addWorkbenchValidationCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_GAUGE_WORKBENCH_VALIDATION, 1);
-};
-export const addUserIntoServiceAccountCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_GAUGE_USER_INTO_SERVICE_ACCOUNT, 1);
-};
-
-export const addServiceAccountIntoUserCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_GAUGE_SERVICE_ACCOUNT_INTO_USER, 1);
-};
-
-export const addUserEmailSendCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_GAUGE_USER_EMAIL_SEND, 1);
-};
-
-export const addFormIntakeCreatedCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_FORM_INTAKE_CREATED, 1);
-};
-
-export const addFormIntakeUpdatedCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_FORM_INTAKE_UPDATED, 1);
-};
-
-export const addFormIntakeDeletedCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_FORM_INTAKE_DELETED, 1);
-};
-
-export const addFormIntakeSubmittedCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_FORM_INTAKE_SUBMITTED, 1);
-};
-
-export const addUserBackgroundTaskCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_BACKGROUND_TASK_USER, 1);
-};
-
-export const addEmailTemplateCreatedCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_EMAIL_TEMPLATE_CREATED, 1);
-};
-
-export const addForgotPasswordCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_FORGOT_PASSWORD, 1);
-};
-
-export const addConnectorDeployedCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_CONNECTOR_DEPLOYED, 1);
-};
-
 export const addUserLoginCount = () => {
-  redisSetTelemetryAdd(TELEMETRY_USER_LOGIN, 1).catch((reason) => logApp.info('Error add user login in telemetry', { reason }));
+  redisSetTelemetryAdd(TELEMETRY_COUNT.USER_LOGIN, 1).catch((reason) => logApp.info('Error add user login in telemetry', { reason }));
 };
 
 // End Region user event counters
@@ -216,122 +150,119 @@ const telemetryInitializer = async (): Promise<HandlerInput> => {
   return filigranTelemetryMeterManager;
 };
 
+// Settings information
+const fetchSettingsData = async (context: AuthContext, manager: TelemetryMeterManager) => {
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_SETTINGS);
+  manager.setIsEEActivated(settings.valid_enterprise_edition === true ? 1 : 0);
+};
+// Cluster information
+const fetchClusterData = async (manager: TelemetryMeterManager) => {
+  const clusterInfo = await getClusterInformation();
+  manager.setInstancesCount(clusterInfo.info.instances_number);
+};
+// Users information
+const fetchUsersData = async (context: AuthContext, manager: TelemetryMeterManager) => {
+  const users = await getEntitiesListFromCache(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_USER) as AuthUser[];
+  manager.setUsersCount(users.filter((user) => !user.user_service_account).length);
+  manager.setServiceAccountsCount(users.filter((user) => user.user_service_account === true).length);
+};
+// Roles with draft capability information
+const fetchRolesWithCapabilityInDraftData = async (context: AuthContext, manager: TelemetryMeterManager) => {
+  const rolesWithCapabilityInDraft = await findRolesWithCapabilityInDraft(context, TELEMETRY_MANAGER_USER);
+  manager.setRolesWithCapabilityInDraftCount(rolesWithCapabilityInDraft.length);
+};
+// Connectors information
+const fetchConnectorsData = async (context: AuthContext, manager: TelemetryMeterManager) => {
+  const connectors = await getEntitiesListFromCache<BasicStoreEntityConnector>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_CONNECTOR);
+  const activeConnectors = connectors.filter((c) => c.active);
+  manager.setActiveConnectorsCount(activeConnectors.length);
+};
+// Draft information
+const fetchDraftsData = async (context: AuthContext, manager: TelemetryMeterManager) => {
+  const draftWorkspaces = await getEntitiesListFromCache(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_DRAFT_WORKSPACE);
+  manager.setDraftCount(draftWorkspaces.length);
+};
+// Workbenches information
+const fetchWorkbenchesData = async (context: AuthContext, manager: TelemetryMeterManager) => {
+  const pendingFileFilter = {
+    mode: FilterMode.And,
+    filters: [{ key: ['internal_id'], values: ['import/pending'], operator: 'starts_with' }],
+    filterGroups: [],
+  };
+  const workbenchesCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, { filters: pendingFileFilter, types: [ENTITY_TYPE_INTERNAL_FILE] });
+  manager.setWorkbenchCount(workbenchesCount);
+};
+// PIR information
+const fetchPirsData = async (context: AuthContext, manager: TelemetryMeterManager) => {
+  const pirs = await getEntitiesListFromCache(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_PIR);
+  manager.setPirCount(pirs.length);
+};
+// SSO providers configuration
+const fetchSsoProvidersData = async (manager: TelemetryMeterManager) => {
+  manager.setSsoLocalStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_LOCAL) ? 1 : 0);
+  manager.setSsoOpenidStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_OPENID) ? 1 : 0);
+  manager.setSsoLDAPStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_LDAP) ? 1 : 0);
+  manager.setSsoSAMLStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_SAML) ? 1 : 0);
+  manager.setSsoAuthZeroStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_AUTH0) ? 1 : 0);
+  manager.setSsoCertStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_CERT) ? 1 : 0);
+  manager.setSsoHeaderStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_HEADER) ? 1 : 0);
+  manager.setSsoFacebookStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_FACEBOOK) ? 1 : 0);
+  manager.setSsoGoogleStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_GOOGLE) ? 1 : 0);
+  manager.setSsoGithubStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_GITHUB) ? 1 : 0);
+};
+// Security Coverages
+const fetchSecurityCoveragesData = async (context: AuthContext, manager: TelemetryMeterManager) => {
+  const securityCoveragesCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, {
+    types: [ENTITY_TYPE_SECURITY_COVERAGE],
+  });
+  manager.setSecurityCoveragesCount(securityCoveragesCount);
+};
+// Telemetry user events
+const fetchTelemetryCountsData = async (manager: TelemetryMeterManager) => {
+  const telemetryCounts = [
+    { count: TELEMETRY_COUNT.GAUGE_DISSEMINATION, setter: manager.setDisseminationCount },
+    { count: TELEMETRY_COUNT.GAUGE_NLQ, setter: manager.setNlqQueryCount },
+    { count: TELEMETRY_COUNT.GAUGE_REQUEST_ACCESS, setter: manager.setRequestAccessCreatedCount },
+    { count: TELEMETRY_COUNT.GAUGE_DRAFT_CREATION, setter: manager.setDraftCreationCount },
+    { count: TELEMETRY_COUNT.GAUGE_DRAFT_VALIDATION, setter: manager.setDraftValidationCount },
+    { count: TELEMETRY_COUNT.GAUGE_CAPABILITIES_IN_DRAFT_UPDATED, setter: manager.setCapabilitiesInDraftUpdatedCount },
+    { count: TELEMETRY_COUNT.GAUGE_WORKBENCH_UPLOAD, setter: manager.setWorkbenchUploadCount },
+    { count: TELEMETRY_COUNT.GAUGE_WORKBENCH_DRAFT_CONVERTION, setter: manager.setWorkbenchDraftConvertionCount },
+    { count: TELEMETRY_COUNT.GAUGE_WORKBENCH_VALIDATION, setter: manager.setWorkbenchValidationCount },
+    { count: TELEMETRY_COUNT.GAUGE_USER_INTO_SERVICE_ACCOUNT, setter: manager.setUserIntoServiceAccountCount },
+    { count: TELEMETRY_COUNT.GAUGE_SERVICE_ACCOUNT_INTO_USER, setter: manager.setServiceAccountIntoUserCount },
+    { count: TELEMETRY_COUNT.GAUGE_USER_EMAIL_SEND, setter: manager.setUserEmailSendCount },
+    { count: TELEMETRY_COUNT.BACKGROUND_TASK_USER, setter: manager.setUserBackgroundTaskCount },
+    { count: TELEMETRY_COUNT.EMAIL_TEMPLATE_CREATED, setter: manager.setEmailTemplateCreatedCount },
+    { count: TELEMETRY_COUNT.FORGOT_PASSWORD, setter: manager.setForgotPasswordCount },
+    { count: TELEMETRY_COUNT.CONNECTOR_DEPLOYED, setter: manager.setConnectorDeployedCount },
+    { count: TELEMETRY_COUNT.USER_LOGIN, setter: manager.setUserLoginCount },
+    { count: TELEMETRY_COUNT.FORM_INTAKE_CREATED, setter: manager.setFormIntakeCreatedCount },
+    { count: TELEMETRY_COUNT.FORM_INTAKE_UPDATED, setter: manager.setFormIntakeUpdatedCount },
+    { count: TELEMETRY_COUNT.FORM_INTAKE_DELETED, setter: manager.setFormIntakeDeletedCount },
+    { count: TELEMETRY_COUNT.FORM_INTAKE_SUBMITTED, setter: manager.setFormIntakeSubmittedCount },
+  ];
+
+  await Promise.all(telemetryCounts.map(async ({ count, setter }) => {
+    const countInRedis = await redisGetTelemetry(count);
+    setter(countInRedis);
+  }));
+};
+
 export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
   try {
     const context = executionContext('telemetry_manager');
-
-    // region Settings information
-    const settings = await getEntityFromCache<BasicStoreSettings>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_SETTINGS);
-    manager.setIsEEActivated(settings.valid_enterprise_edition === true ? 1 : 0);
-    // endregion
-
-    // region Cluster information
-    const clusterInfo = await getClusterInformation();
-    manager.setInstancesCount(clusterInfo.info.instances_number);
-    // endregion
-
-    // region Users information
-    const users = await getEntitiesListFromCache(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_USER) as AuthUser[];
-    manager.setUsersCount(users.filter((user) => !user.user_service_account).length);
-    manager.setServiceAccountsCount(users.filter((user) => user.user_service_account === true).length);
-    // endregion
-
-    // region Connectors information
-    const connectors = await getEntitiesListFromCache<BasicStoreEntityConnector>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_CONNECTOR);
-    const activeConnectors = connectors.filter((c) => c.active);
-    manager.setActiveConnectorsCount(activeConnectors.length);
-    // endregion
-
-    // region Roles with draft capability information
-    const rolesWithCapabilityInDraft = await findRolesWithCapabilityInDraft(context, TELEMETRY_MANAGER_USER);
-    manager.setRolesWithCapabilityInDraftCount(rolesWithCapabilityInDraft.length);
-    // endregion
-
-    // region Draft information
-    const draftWorkspaces = await getEntitiesListFromCache(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_DRAFT_WORKSPACE);
-    manager.setDraftCount(draftWorkspaces.length);
-    // endregion
-
-    // region Workbenches information
-    const pendingFileFilter = {
-      mode: FilterMode.And,
-      filters: [{ key: ['internal_id'], values: ['import/pending'], operator: 'starts_with' }],
-      filterGroups: [],
-    };
-    const workbenchesCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, { filters: pendingFileFilter, types: [ENTITY_TYPE_INTERNAL_FILE] });
-    manager.setWorkbenchCount(workbenchesCount);
-    // endregion
-
-    // region PIR information
-    const pirs = await getEntitiesListFromCache(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_PIR);
-    manager.setPirCount(pirs.length);
-    // endregion
-
-    // region SSO providers configuration
-    manager.setSsoLocalStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_LOCAL) ? 1 : 0);
-    manager.setSsoOpenidStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_OPENID) ? 1 : 0);
-    manager.setSsoLDAPStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_LDAP) ? 1 : 0);
-    manager.setSsoSAMLStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_SAML) ? 1 : 0);
-    manager.setSsoAuthZeroStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_AUTH0) ? 1 : 0);
-    manager.setSsoCertStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_CERT) ? 1 : 0);
-    manager.setSsoHeaderStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_HEADER) ? 1 : 0);
-    manager.setSsoFacebookStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_FACEBOOK) ? 1 : 0);
-    manager.setSsoGoogleStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_GOOGLE) ? 1 : 0);
-    manager.setSsoGithubStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_GITHUB) ? 1 : 0);
-    // endregion SSO providers
-
-    // region Security Coverages
-    const securityCoveragesCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, {
-      types: [ENTITY_TYPE_SECURITY_COVERAGE],
-    });
-    manager.setSecurityCoveragesCount(securityCoveragesCount);
-    // endregion
-
-    // region Telemetry user events
-    const disseminationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DISSEMINATION);
-    manager.setDisseminationCount(disseminationCountInRedis);
-    const nlqQueryCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_NLQ);
-    manager.setNlqQueryCount(nlqQueryCountInRedis);
-    const requestAccessCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_REQUEST_ACCESS);
-    manager.setRequestAccessCreatedCount(requestAccessCountInRedis);
-    const draftCreationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DRAFT_CREATION);
-    manager.setDraftCreationCount(draftCreationCountInRedis);
-    const draftValidationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DRAFT_VALIDATION);
-    manager.setDraftValidationCount(draftValidationCountInRedis);
-    const capabilitiesInDraftUpdatedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CAPABILITIES_IN_DRAFT_UPDATED);
-    manager.setCapabilitiesInDraftUpdatedCount(capabilitiesInDraftUpdatedCountInRedis);
-    const workbenchUploadCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_WORKBENCH_UPLOAD);
-    manager.setWorkbenchUploadCount(workbenchUploadCountInRedis);
-    const workbenchDraftConvertionCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_WORKBENCH_DRAFT_CONVERTION);
-    manager.setWorkbenchDraftConvertionCount(workbenchDraftConvertionCountInRedis);
-    const workbenchValidationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_WORKBENCH_VALIDATION);
-    manager.setWorkbenchValidationCount(workbenchValidationCountInRedis);
-    const userIntoServiceAccountCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_USER_INTO_SERVICE_ACCOUNT);
-    manager.setUserIntoServiceAccountCount(userIntoServiceAccountCountInRedis);
-    const serviceAccountIntoUserCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_SERVICE_ACCOUNT_INTO_USER);
-    manager.setServiceAccountIntoUserCount(serviceAccountIntoUserCountInRedis);
-    const emailSendCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_USER_EMAIL_SEND);
-    manager.setUserEmailSendCount(emailSendCountInRedis);
-    const userBackgroundTaskCountInRedis = await redisGetTelemetry(TELEMETRY_BACKGROUND_TASK_USER);
-    manager.setUserBackgroundTaskCount(userBackgroundTaskCountInRedis);
-    const emailTemplateCreatedCountInRedis = await redisGetTelemetry(TELEMETRY_EMAIL_TEMPLATE_CREATED);
-    manager.setEmailTemplateCreatedCount(emailTemplateCreatedCountInRedis);
-    const forgotPasswordCountInRedis = await redisGetTelemetry(TELEMETRY_FORGOT_PASSWORD);
-    manager.setForgotPasswordCount(forgotPasswordCountInRedis);
-    const connectorDeployedCountInRedis = await redisGetTelemetry(TELEMETRY_CONNECTOR_DEPLOYED);
-    manager.setConnectorDeployedCount(connectorDeployedCountInRedis);
-    const userLoginCountInRedis = await redisGetTelemetry(TELEMETRY_USER_LOGIN);
-    manager.setUserLoginCount(userLoginCountInRedis);
-    const formIntakeCreatedCountInRedis = await redisGetTelemetry(TELEMETRY_FORM_INTAKE_CREATED);
-    manager.setFormIntakeCreatedCount(formIntakeCreatedCountInRedis);
-    const formIntakeUpdatedCountInRedis = await redisGetTelemetry(TELEMETRY_FORM_INTAKE_UPDATED);
-    manager.setFormIntakeUpdatedCount(formIntakeUpdatedCountInRedis);
-    const formIntakeDeletedCountInRedis = await redisGetTelemetry(TELEMETRY_FORM_INTAKE_DELETED);
-    manager.setFormIntakeDeletedCount(formIntakeDeletedCountInRedis);
-    const formIntakeSubmittedCountInRedis = await redisGetTelemetry(TELEMETRY_FORM_INTAKE_SUBMITTED);
-    manager.setFormIntakeSubmittedCount(formIntakeSubmittedCountInRedis);
-    // end region Telemetry user events
-
+    await fetchSettingsData(context, manager);
+    await fetchClusterData(manager);
+    await fetchUsersData(context, manager);
+    await fetchConnectorsData(context, manager);
+    await fetchRolesWithCapabilityInDraftData(context, manager);
+    await fetchDraftsData(context, manager);
+    await fetchWorkbenchesData(context, manager);
+    await fetchPirsData(context, manager);
+    await fetchSsoProvidersData(manager);
+    await fetchSecurityCoveragesData(context, manager);
+    await fetchTelemetryCountsData(manager);
     logApp.debug('[TELEMETRY] Fetching telemetry data successfully');
   } catch (e) {
     logApp.error('[TELEMETRY] Error fetching platform information', { cause: e });
