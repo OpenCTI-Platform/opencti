@@ -104,7 +104,7 @@
     "cors": "2.8.5",
     "csv-parse": "6.1.0",
     "dataloader": "2.2.3",
-    "ejs": "3.1.10",
+    "ejs": "4.0.1",
     "eventsource": "2.0.2",
     "express": "5.2.1",
     "express-rate-limit": "8.2.1",
