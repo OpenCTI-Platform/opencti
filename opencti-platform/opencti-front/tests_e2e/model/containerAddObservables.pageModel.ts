@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { Page } from '@playwright/test';
 
 export default class ContainerAddObservablesPage {
@@ -14,7 +13,7 @@ export default class ContainerAddObservablesPage {
   }
 
   getNewIPV4ValueInput() {
-    return this.page.getByLabel('value');
+    return this.page.getByRole('textbox', { name: 'value' });
   }
 
   async fillNewIPV4ValueInput(ipv4Value: string) {
