@@ -820,7 +820,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Value',
     percentWidth: 20,
     isSortable: false,
-    // Please check the String.jsx->renderObservableValue. It should have the same behavior and will replace it at the end.
+    // Please check the String.tsx->renderObservableValue. It should have the same behavior and will replace it at the end.
     render: (observable) => {
       const theme = useTheme<Theme>();
       switch (observable.entity_type) {
