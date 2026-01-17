@@ -464,8 +464,9 @@ const ContainerHeader = (props) => {
 
   const draftContext = useDraftContext();
   const currentDraftAccessRight = useGetCurrentUserAccessRight(draftContext?.currentUserAccessRight);
+  const currentAccessRight = useGetCurrentUserAccessRight(container.currentUserAccessRight);
 
-  const canDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]) && (!draftContext || currentDraftAccessRight.canEdit);
+  const canDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]) && currentAccessRight.canEdit && (!draftContext || currentDraftAccessRight.canEdit);
 
   const handleCloseEnrollPlaybook = () => {
     setOpenEnrollPlaybook(false);
@@ -533,7 +534,6 @@ const ContainerHeader = (props) => {
     },
   };
   const isAuthorizedMembersEnabled = !disableAuthorizedMembers;
-  const currentAccessRight = useGetCurrentUserAccessRight(container.currentUserAccessRight);
   const enableManageAuthorizedMembers = currentAccessRight.canManage && isAuthorizedMembersEnabled;
 
   // sharing buttons should be disabled for containers according to some autorized members conditions
