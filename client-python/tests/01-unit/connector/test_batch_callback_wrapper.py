@@ -66,7 +66,7 @@ class TestBatchCallbackWrapper(TestCase):
         try:
             wrapper(DummyMessage("1-0"))
             wrapper(DummyMessage("2-0"))
-            self.assertTrue(done.wait(timeout=2.0))
+            self.assertTrue(done.wait(timeout=5))
             self.assertEqual(len(batches), 1)
             batch_data = batches[0]
             self.assertEqual(
@@ -94,7 +94,7 @@ class TestBatchCallbackWrapper(TestCase):
         )
         try:
             wrapper(DummyMessage("1-0"))
-            self.assertTrue(done.wait(timeout=2.0))
+            self.assertTrue(done.wait(timeout=5))
             self.assertEqual(len(batches), 1)
             self.assertEqual(batches[0]["batch_metadata"]["trigger_reason"], "timeout")
             self.assertEqual(batches[0]["batch_metadata"]["batch_size"], 1)

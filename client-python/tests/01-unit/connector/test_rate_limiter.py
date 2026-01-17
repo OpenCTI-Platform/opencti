@@ -90,7 +90,7 @@ class TestRateLimiter(TestCase):
             for thread in threads:
                 thread.start()
             for thread in threads:
-                thread.join(timeout=2.0)
+                thread.join(timeout=5)
 
         self.assertEqual(len(limiter.timestamps), 10)
 

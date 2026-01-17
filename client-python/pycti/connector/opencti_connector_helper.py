@@ -1307,7 +1307,7 @@ class BatchCallbackWrapper:
         # This eliminates race conditions between the main thread and timer thread
         self._stop_event = threading.Event()
         self._batch_ready_event = threading.Event()  # Signal when batch_size reached
-        self._timer_thread = threading.Thread(target=self._timer_loop, daemon=True)
+        self._timer_thread = threading.Thread(target=self._timer_loop)
         self._timer_thread.start()
 
     def _timer_loop(self) -> None:
@@ -1447,6 +1447,7 @@ class BatchCallbackWrapper:
         finish processing any remaining messages in the batch.
         """
         self._stop_event.set()
+        self._batch_ready_event.set()
         self._timer_thread.join(timeout=30.0)
         if self._timer_thread.is_alive():
             self.helper.connector_logger.warning(
