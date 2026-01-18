@@ -149,6 +149,7 @@ export const setAiEnabled = (enabled: boolean) => {
     }
     initClients();
   });
+  return clientsUpdate;
 };
 
 if (AI_ENABLED && AI_TOKEN) {
