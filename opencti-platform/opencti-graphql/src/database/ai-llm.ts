@@ -155,7 +155,13 @@ if (AI_ENABLED && AI_TOKEN) {
   try {
     initClients();
   } catch (err) {
-    logApp.error('[AI] Failed to initialize AI clients', { cause: err });
+    // If initialization fails at startup, clearly disable AI and log why.
+    AI_ENABLED = false;
+    resetClients();
+    logApp.error(
+      '[AI] Failed to initialize AI clients at startup, AI functionality will be disabled. Check ai:type/endpoint/model configuration.',
+      { type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL, cause: err }
+    );
   }
 }
 
