@@ -198,6 +198,18 @@ describe('Settings resolver standard behavior', () => {
         variables: { id: settingsInternalId, input: [{ key: 'platform_ai_enabled', value: [initialAiEnabled] }] },
       });
       resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+
+      let isRestored = false;
+      for (let i = 0; i < 20; i += 1) {
+        const settingsResult = await queryAsAdmin({ query: READ_QUERY, variables: {} });
+        const currentEnabled = settingsResult.data.settings.platform_ai_enabled !== false;
+        isRestored = currentEnabled === initialAiEnabled;
+        if (isRestored) {
+          break;
+        }
+        await wait(100);
+      }
+      expect(isRestored).toEqual(true);
     }
   });
 });
