@@ -64,7 +64,7 @@ const checkPlatformAiEnabled = async (context: AuthContext) => {
     const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
     const aiEnabled = settings.platform_ai_enabled !== false;
     if (lastPlatformAiEnabled === null || lastPlatformAiEnabled !== aiEnabled) {
-      setAiEnabled(aiEnabled);
+      await setAiEnabled(aiEnabled);
       lastPlatformAiEnabled = aiEnabled;
     }
     return aiEnabled;
