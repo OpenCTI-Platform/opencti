@@ -58,7 +58,7 @@ import { NLQPromptTemplate } from './ai-nlq-utils';
 const SYSTEM_PROMPT = 'You are an assistant helping cyber threat intelligence analysts to generate text about cyber threat intelligence information or from a cyber threat intelligence knowledge graph based on the STIX 2.1 model.';
 
 let lastPlatformAiEnabled: boolean | null = null;
-let platformAiEnabledUpdate: Promise<boolean> = Promise.resolve(true);
+let platformAiEnabledUpdate: Promise<boolean | null> = Promise.resolve(null);
 const checkPlatformAiEnabled = async (context: AuthContext) => {
   platformAiEnabledUpdate = platformAiEnabledUpdate.then(async () => {
     const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
