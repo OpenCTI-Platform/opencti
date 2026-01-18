@@ -155,11 +155,13 @@ describe('Settings resolver standard behavior', () => {
     const settingsInternalId = await settingsId();
     const initialSettingsResult = await queryAsAdmin({ query: READ_QUERY, variables: {} });
     const initialAiEnabled = initialSettingsResult.data.settings.platform_ai_enabled !== false;
-    await queryAsAdmin({
-      query: UPDATE_SETTINGS_QUERY,
-      variables: { id: settingsInternalId, input: [{ key: 'platform_ai_enabled', value: [true] }] },
-    });
-    resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+    if (!initialAiEnabled) {
+      await queryAsAdmin({
+        query: UPDATE_SETTINGS_QUERY,
+        variables: { id: settingsInternalId, input: [{ key: 'platform_ai_enabled', value: [true] }] },
+      });
+      resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+    }
 
     try {
       await queryAsAdmin({
