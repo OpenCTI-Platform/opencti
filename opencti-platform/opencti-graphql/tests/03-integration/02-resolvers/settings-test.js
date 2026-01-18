@@ -40,6 +40,7 @@ const READ_QUERY = gql`
   query settings {
     settings {
       id
+      platform_ai_enabled
       platform_title
       platform_email
       platform_language
