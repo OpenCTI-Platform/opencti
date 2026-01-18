@@ -189,6 +189,7 @@ describe('Settings resolver standard behavior', () => {
         variables: { id: 'ai-test', content: 'Some content to check.' },
       });
       expect(aiResult).not.toBeNull();
+      expect(aiResult.errors).toBeDefined();
       expect(aiResult.errors.length).toEqual(1);
       expect(aiResult.errors.at(0).message).toEqual('AI is disabled in platform settings');
     } finally {
