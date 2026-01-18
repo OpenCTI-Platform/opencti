@@ -5,6 +5,8 @@ import { queryAsAdmin } from '../../utils/testQuery';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../../src/schema/internalObject';
 
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 const UPDATE_SETTINGS_QUERY = gql`
   mutation SettingsEdit($id: ID!, $input: [EditInput]!) {
     settingsEdit(id: $id) {
@@ -169,6 +171,17 @@ describe('Settings resolver standard behavior', () => {
         variables: { id: settingsInternalId, input: [{ key: 'platform_ai_enabled', value: [false] }] },
       });
       resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+
+      let isDisabled = false;
+      for (let i = 0; i < 20; i += 1) {
+        const settingsResult = await queryAsAdmin({ query: READ_QUERY, variables: {} });
+        isDisabled = settingsResult.data.settings.platform_ai_enabled === false;
+        if (isDisabled) {
+          break;
+        }
+        await wait(100);
+      }
+      expect(isDisabled).toEqual(true);
 
       const aiResult = await queryAsAdmin({
         query: AI_FIX_SPELLING_MUTATION,
