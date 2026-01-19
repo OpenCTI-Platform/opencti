@@ -35,6 +35,9 @@ jobs:
   wf-publish-package:
       name: Publish OpenCTI platform packages
       uses: ./.github/workflows/cd-publish-package.yml
+      with:
+        is_publish: ${{ github.ref_name == 'master' }}
+        is_client_python_local: true
 
   deploy-staging:
     name: Deploy images on staging
