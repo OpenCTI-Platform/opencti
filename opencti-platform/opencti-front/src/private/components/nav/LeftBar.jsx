@@ -207,6 +207,7 @@ const leftBarQuery = graphql`
         theme_logo
         theme_logo_collapsed
       }
+      platform_whitemark
     }
   }
 `;
@@ -792,34 +793,36 @@ const LeftBarComponent = ({ queryRef }) => {
             label={t_i18n('Collapse')}
             onClick={handleToggle}
           />
-          <Stack direction="row" alignItems="center" gap={0.5} paddingLeft={2.5} marginBottom={1}>
-            {
-              navOpen && (
-                <Typography
-                  component="span"
-                  sx={{
-                    fontFamily: 'IBM Plex Sans',
-                    fontSize: '10px',
-                    lineHeight: '16px',
-                    opacity: 0.8,
-                  }}
-                >
-                  {t_i18n('Made by')}
-                </Typography>
-              )
-            }
-            <img
-              alt="logo"
-              src={logoFiligran}
-              width={navOpen ? 48 : 12}
-              height="12"
-              style={{
-                opacity: 0.8,
-                objectFit: 'cover',
-                objectPosition: 'left center',
-              }}
-            />
-          </Stack>
+          {!data?.settings?.platform_whitemark && (
+            <Stack direction="row" alignItems="center" gap={0.5} paddingLeft={2.5} marginBottom={1}>
+              {
+                navOpen && (
+                  <Typography
+                    component="span"
+                    sx={{
+                      fontFamily: 'IBM Plex Sans',
+                      fontSize: '10px',
+                      lineHeight: '16px',
+                      opacity: 0.8,
+                    }}
+                  >
+                    {t_i18n('Made by')}
+                  </Typography>
+                )
+              }
+              <img
+                alt="logo"
+                src={logoFiligran}
+                width={navOpen ? 48 : 12}
+                height="12"
+                style={{
+                  opacity: 0.8,
+                  objectFit: 'cover',
+                  objectPosition: 'left center',
+                }}
+              />
+            </Stack>
+          )}
         </MenuList>
       </div>
     </Drawer>
