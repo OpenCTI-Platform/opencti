@@ -4,7 +4,6 @@ import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import IconButton from '@common/button/IconButton';
 import withStyles from '@mui/styles/withStyles';
-import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
 import { Add, Close } from '@mui/icons-material';
 import List from '@mui/material/List';
@@ -29,6 +28,8 @@ import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCre
 import SearchInput from '../../../../components/SearchInput';
 import StixCoreRelationshipCreationForm from './StixCoreRelationshipCreationForm';
 import { UserContext } from '../../../../utils/hooks/useAuth';
+import Drawer from '../drawer/Drawer';
+import { Stack } from '@mui/material';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -395,7 +396,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
 
   renderSelectEntity() {
     const { search } = this.state;
-    const { classes, t, stixCoreObjectTypes, onlyObservables } = this.props;
+    const { stixCoreObjectTypes, onlyObservables } = this.props;
     const stixDomainObjectsPaginationOptions = {
       search,
       types: stixCoreObjectTypes
@@ -405,84 +406,65 @@ class StixCoreRelationshipCreationFromRelation extends Component {
       orderMode: search.length > 0 ? null : 'desc',
     };
     return (
-      <div>
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={this.handleClose.bind(this)}
-          >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Create a relationship')}
-          </Typography>
-          <div className={classes.search}>
-            <SearchInput
-              variant="inDrawer"
-              onSubmit={this.handleSearch.bind(this)}
-            />
-          </div>
-          <div className="clearfix" />
-        </div>
-        <div className={classes.containerList}>
-          {!onlyObservables ? (
-            <QueryRenderer
-              query={
-                stixCoreRelationshipCreationFromRelationStixDomainObjectsLinesQuery
-              }
-              variables={{ count: 25, ...stixDomainObjectsPaginationOptions }}
-              render={({ props }) => {
-                if (props) {
-                  return (
-                    <StixCoreRelationshipCreationFromRelationStixDomainObjectsLines
-                      handleSelect={this.handleSelectEntity.bind(this)}
-                      data={props}
-                    />
-                  );
-                }
-                return this.renderFakeList();
-              }}
-            />
-          ) : (
-            ''
-          )}
+      <Stack>
+        {!onlyObservables ? (
           <QueryRenderer
             query={
-              stixCoreRelationshipCreationFromRelationStixCyberObservablesLinesQuery
+              stixCoreRelationshipCreationFromRelationStixDomainObjectsLinesQuery
             }
-            variables={{
-              search: this.state.search,
-              types: stixCoreObjectTypes,
-              count: 50,
-              orderBy: 'created_at',
-              orderMode: 'desc',
-            }}
+            variables={{ count: 25, ...stixDomainObjectsPaginationOptions }}
             render={({ props }) => {
               if (props) {
                 return (
-                  <StixCoreRelationshipCreationFromRelationStixCyberObservablesLines
+                  <StixCoreRelationshipCreationFromRelationStixDomainObjectsLines
                     handleSelect={this.handleSelectEntity.bind(this)}
                     data={props}
                   />
                 );
               }
-              return !stixCoreObjectTypes
-                || stixCoreObjectTypes.length === 0 ? (
-                    this.renderFakeList()
-                  ) : (
-                    <div> &nbsp; </div>
-                  );
+              return this.renderFakeList();
             }}
           />
+        ) : (
+          ''
+        )}
+        <QueryRenderer
+          query={
+            stixCoreRelationshipCreationFromRelationStixCyberObservablesLinesQuery
+          }
+          variables={{
+            search: this.state.search,
+            types: stixCoreObjectTypes,
+            count: 50,
+            orderBy: 'created_at',
+            orderMode: 'desc',
+          }}
+          render={({ props }) => {
+            if (props) {
+              return (
+                <StixCoreRelationshipCreationFromRelationStixCyberObservablesLines
+                  handleSelect={this.handleSelectEntity.bind(this)}
+                  data={props}
+                />
+              );
+            }
+            return !stixCoreObjectTypes
+              || stixCoreObjectTypes.length === 0 ? (
+                  this.renderFakeList()
+                ) : (
+                  <div> &nbsp; </div>
+                );
+          }}
+        />
+        <Stack direction="row" alignSelf="flex-end">
           <StixDomainObjectCreation
             display={this.state.open}
             inputValue={this.state.search}
             paginationOptions={stixDomainObjectsPaginationOptions}
             stixDomainObjectTypes={stixCoreObjectTypes}
           />
-        </div>
-      </div>
+        </Stack>
+      </Stack>
     );
   }
 
@@ -554,7 +536,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
   }
 
   render() {
-    const { classes, entityId, variant, paddingRight } = this.props;
+    const { classes, entityId, variant, paddingRight, t } = this.props;
     const { open, step } = this.state;
     return (
       <div>
@@ -583,11 +565,14 @@ class StixCoreRelationshipCreationFromRelation extends Component {
         )}
         <Drawer
           open={open}
-          anchor="right"
-          elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: this.props.classes.drawerPaper }}
           onClose={this.handleClose.bind(this)}
+          title={t('Create a relationship')}
+          header={(
+            <SearchInput
+              variant="inDrawer"
+              onSubmit={this.handleSearch.bind(this)}
+            />
+          )}
         >
           <QueryRenderer
             query={stixCoreRelationshipCreationFromRelationQuery}
@@ -595,7 +580,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
             render={({ props }) => {
               if (props && props.stixCoreRelationship) {
                 return (
-                  <div style={{ height: '100%' }}>
+                  <div>
                     {step === 0 ? this.renderSelectEntity() : ''}
                     {step === 1
                       ? this.renderForm(props.stixCoreRelationship)

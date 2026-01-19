@@ -1,58 +1,51 @@
-import React, { FunctionComponent, Suspense, useEffect, useRef, useState } from 'react';
-import { graphql } from 'react-relay';
-import * as R from 'ramda';
-import { Add, ChevronRightOutlined } from '@mui/icons-material';
-import Fab from '@mui/material/Fab';
-import CircularProgress from '@mui/material/CircularProgress';
-import { RecordSourceSelectorProxy } from 'relay-runtime';
-import makeStyles from '@mui/styles/makeStyles';
-import { StixCoreRelationshipCreationFromEntityQuery$data } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationFromEntityQuery.graphql';
-import { FormikConfig } from 'formik/dist/types';
-import { UsePreloadedPaginationFragment } from 'src/utils/hooks/usePreloadedPaginationFragment';
-import { usePaginationLocalStorage } from 'src/utils/hooks/useLocalStorage';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
 import BulkRelationDialogContainer from '@components/common/bulk/dialog/BulkRelationDialogContainer';
+import Drawer from '@components/common/drawer/Drawer';
+import { StixCoreRelationshipCreationFromEntityQuery$data } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationFromEntityQuery.graphql';
 import {
   StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery$variables,
 } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery.graphql';
 import {
   StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data$data,
 } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data.graphql';
-import { PaginationOptions } from 'src/components/list_lines';
-import Drawer from '@components/common/drawer/Drawer';
-import { getMainRepresentative } from 'src/utils/defaultRepresentatives';
+import { Add, ChevronRightOutlined } from '@mui/icons-material';
+import CircularProgress from '@mui/material/CircularProgress';
+import makeStyles from '@mui/styles/makeStyles';
+import { FormikConfig } from 'formik/dist/types';
+import * as R from 'ramda';
+import { FunctionComponent, Suspense, useEffect, useRef, useState } from 'react';
+import { graphql } from 'react-relay';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
 import Loader, { LoaderVariant } from 'src/components/Loader';
-import Button from '@common/button/Button';
-import IconButton from '@common/button/IconButton';
-import { commitMutation, handleErrorInForm, QueryRenderer } from '../../../../relay/environment';
+import { PaginationOptions } from 'src/components/list_lines';
+import { getMainRepresentative } from 'src/utils/defaultRepresentatives';
+import { usePaginationLocalStorage } from 'src/utils/hooks/useLocalStorage';
+import { UsePreloadedPaginationFragment } from 'src/utils/hooks/usePreloadedPaginationFragment';
+import type { Theme } from '../../../../components/Theme';
+import DataTable from '../../../../components/dataGrid/DataTable';
+import { DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
 import { useFormatter } from '../../../../components/i18n';
-import { formatDate } from '../../../../utils/Time';
-import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
-import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
-import { insertNode } from '../../../../utils/store';
-import StixCoreRelationshipCreationForm from './StixCoreRelationshipCreationForm';
+import { commitMutation, handleErrorInForm, QueryRenderer } from '../../../../relay/environment';
 import { resolveRelationsTypes } from '../../../../utils/Relation';
-import { UserContext } from '../../../../utils/hooks/useAuth';
+import { formatDate } from '../../../../utils/Time';
+import { FieldOption } from '../../../../utils/field';
 import { useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
+import { UserContext } from '../../../../utils/hooks/useAuth';
+import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import { ModuleHelper } from '../../../../utils/platformModulesHelper';
+import { insertNode } from '../../../../utils/store';
+import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
+import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
+import StixCoreRelationshipCreationForm from './StixCoreRelationshipCreationForm';
 import {
   type StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery as StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQueryType,
 } from './__generated__/StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery.graphql';
-import type { Theme } from '../../../../components/Theme';
-import { ModuleHelper } from '../../../../utils/platformModulesHelper';
-import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import DataTable from '../../../../components/dataGrid/DataTable';
-import { DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
-import { FieldOption } from '../../../../utils/field';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>(() => ({
-  continue: {
-    position: 'fixed',
-    bottom: 40,
-    right: 30,
-    zIndex: 1001,
-  },
   container: {
     flex: '1 0 0',
     overflow: 'hidden',
@@ -799,17 +792,18 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
               </>
             )}
           </UserContext.Consumer>
-          <Fab
-            variant="extended"
-            className={classes.continue}
-            size="small"
-            color="primary"
-            onClick={handleNextStep}
+          <Button
             disabled={targetEntities.length < 1}
+            onClick={handleNextStep}
+            endIcon={<ChevronRightOutlined />}
+            sx={{
+              position: 'fixed',
+              bottom: 40,
+              right: 30,
+            }}
           >
             {t_i18n('Continue')}
-            <ChevronRightOutlined />
-          </Fab>
+          </Button>
         </div>
       </div>
     );
@@ -931,7 +925,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
           onClick={() => setOpen(true)}
           size="small"
         >
-          <Add />
+          <Add fontSize="small" />
         </IconButton>
       )}
       <Drawer

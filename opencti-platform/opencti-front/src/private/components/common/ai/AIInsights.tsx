@@ -1,36 +1,34 @@
-import makeStyles from '@mui/styles/makeStyles';
-import React, { useState } from 'react';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
-import Dialog from '@mui/material/Dialog';
-import { createStyles } from '@mui/styles';
-import { Close } from '@mui/icons-material';
-import { LogoXtmOneIcon } from 'filigran-icon';
-import Typography from '@mui/material/Typography';
-import Drawer from '@mui/material/Drawer';
-import Tooltip from '@mui/material/Tooltip';
-import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
+import FeedbackCreation from '@components/cases/feedbacks/FeedbackCreation';
 import AISummaryActivity from '@components/common/ai/AISummaryActivity';
 import AISummaryContainers from '@components/common/ai/AISummaryContainers';
-import AISummaryHistory from '@components/common/ai/AISummaryHistory';
 import AISummaryForecast from '@components/common/ai/AISummaryForecast';
-import { v4 as uuid } from 'uuid';
-import FiligranIcon from '@components/common/FiligranIcon';
-import FeedbackCreation from '@components/cases/feedbacks/FeedbackCreation';
+import AISummaryHistory from '@components/common/ai/AISummaryHistory';
 import EnterpriseEditionAgreement from '@components/common/entreprise_edition/EnterpriseEditionAgreement';
+import FiligranIcon from '@components/common/FiligranIcon';
+import Box from '@mui/material/Box';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
+import Tooltip from '@mui/material/Tooltip';
+import { createStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles';
+import { LogoXtmOneIcon } from 'filigran-icon';
+import React, { useState } from 'react';
+import { v4 as uuid } from 'uuid';
 import { useFormatter } from '../../../../components/i18n';
-import type { Theme } from '../../../../components/Theme';
-import useAuth from '../../../../utils/hooks/useAuth';
-import useAI from '../../../../utils/hooks/useAI';
-import useFiltersState from '../../../../utils/filters/useFiltersState';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import type { Theme } from '../../../../components/Theme';
+import useFiltersState from '../../../../utils/filters/useFiltersState';
+import useAI from '../../../../utils/hooks/useAI';
+import useAuth from '../../../../utils/hooks/useAuth';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useGranted';
+import Drawer from '../drawer/Drawer';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -274,32 +272,21 @@ const AIInsights = ({
       />
       <Drawer
         open={display}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
-        onClick={(e) => e.stopPropagation()}
+        title={t_i18n('AI Insights')}
+        header={(
+          <>
+            <Button
+              color="ai"
+              variant="tertiary"
+              size="small"
+              startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" />}
+            >
+              {t_i18n('XTM AI')}
+            </Button>
+          </>
+        )}
       >
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            onClick={handleClose}
-          >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="subtitle2" style={{ textWrap: 'nowrap' }}>
-            {t_i18n('AI Insights')}
-          </Typography>
-          <Button
-            variant="secondary"
-            size="small"
-            className={classes.chipNoAction}
-            startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" />}
-          >
-            {t_i18n('XTM AI')}
-          </Button>
-        </div>
         <div className={classes.container}>
           <Box sx={{
             borderBottom: 1,

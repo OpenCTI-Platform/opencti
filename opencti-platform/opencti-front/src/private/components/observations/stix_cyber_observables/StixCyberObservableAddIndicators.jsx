@@ -1,16 +1,13 @@
-import React, { Component } from 'react';
+import withStyles from '@mui/styles/withStyles';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
-import Drawer from '@mui/material/Drawer';
-import IconButton from '@common/button/IconButton';
-import Typography from '@mui/material/Typography';
-import { Close } from '@mui/icons-material';
-import { QueryRenderer } from '../../../../relay/environment';
+import { Component } from 'react';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
-import StixCyberObservableAddIndicatorsLines, { stixCyberObservableAddIndicatorsLinesQuery } from './StixCyberObservableAddIndicatorsLines';
+import { QueryRenderer } from '../../../../relay/environment';
+import Drawer from '../../common/drawer/Drawer';
 import IndicatorCreation from '../indicators/IndicatorCreation';
+import StixCyberObservableAddIndicatorsLines, { stixCyberObservableAddIndicatorsLinesQuery } from './StixCyberObservableAddIndicatorsLines';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -85,43 +82,26 @@ class StixCyberObservableAddIndicators extends Component {
       <>
         <Drawer
           open={open}
-          keepMounted={true}
-          anchor="right"
-          sx={{ zIndex: 1202 }}
-          elevation={1}
-          classes={{ paper: classes.drawerPaper }}
           onClose={handleClose.bind(this)}
+          title={t('Add indicators')}
+          header={(
+            <SearchInput
+              variant="inDrawer"
+              onSubmit={this.handleSearch.bind(this)}
+            />
+          )}
         >
-          <div className={classes.header}>
-            <IconButton
-              aria-label="Close"
-              className={classes.closeButton}
-              onClick={handleClose.bind(this)}
-              color="primary"
-            >
-              <Close fontSize="small" color="primary" />
-            </IconButton>
-            <Typography variant="h6" classes={{ root: classes.title }}>
-              {t('Add indicators')}
-            </Typography>
-            <div className={classes.search}>
-              <SearchInput
-                variant="inDrawer"
-                onSubmit={this.handleSearch.bind(this)}
-              />
-            </div>
-          </div>
-          <div className={classes.container}>
-            <QueryRenderer
-              query={stixCyberObservableAddIndicatorsLinesQuery}
-              variables={{
-                search: this.state.search,
-                orderBy: 'created_at',
-                orderMode: 'desc',
-                count: 50,
-              }}
-              render={({ props }) => {
-                return (
+          <QueryRenderer
+            query={stixCyberObservableAddIndicatorsLinesQuery}
+            variables={{
+              search: this.state.search,
+              orderBy: 'created_at',
+              orderMode: 'desc',
+              count: 50,
+            }}
+            render={({ props }) => {
+              return (
+                <div>
                   <StixCyberObservableAddIndicatorsLines
                     stixCyberObservable={stixCyberObservable}
                     stixCyberObservableIndicators={
@@ -129,17 +109,17 @@ class StixCyberObservableAddIndicators extends Component {
                     }
                     data={props}
                   />
-                );
-              }}
-            />
-          </div>
-          <div className={classes.createButton}>
-            <IndicatorCreation
-              display={open}
-              contextual
-              paginationOptions={paginationOptions}
-            />
-          </div>
+                  <div className={classes.createButton}>
+                    <IndicatorCreation
+                      display={open}
+                      contextual
+                      paginationOptions={paginationOptions}
+                    />
+                  </div>
+                </div>
+              );
+            }}
+          />
         </Drawer>
       </>
     );

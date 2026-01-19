@@ -100,7 +100,6 @@ const GraphToolbarEditObject = ({
             handleClose={closeEditionForm}
           />
           <StixCoreRelationshipEdition
-            inGraph
             noStoreUpdate
             open={category === 'relation'}
             stixCoreRelationshipId={objectToEdit.id}

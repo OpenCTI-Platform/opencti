@@ -1,24 +1,19 @@
-import React, { FunctionComponent } from 'react';
-import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
-import { Field, Form, Formik } from 'formik';
-import Typography from '@mui/material/Typography';
-import IconButton from '@common/button/IconButton';
-import { Close } from '@mui/icons-material';
-import * as Yup from 'yup';
-import { useTheme } from '@mui/styles';
 import {
   StixNestedRefRelationshipEditionOverview_stixRefRelationship$key,
 } from '@components/common/stix_nested_ref_relationships/__generated__/StixNestedRefRelationshipEditionOverview_stixRefRelationship.graphql';
 import {
   StixNestedRefRelationshipEditionOverviewQuery,
 } from '@components/common/stix_nested_ref_relationships/__generated__/StixNestedRefRelationshipEditionOverviewQuery.graphql';
-import { buildDate } from '../../../../utils/Time';
-import { useFormatter } from '../../../../components/i18n';
-import { SubscriptionAvatars, SubscriptionFocus } from '../../../../components/Subscription';
+import { Field, Form, Formik } from 'formik';
+import { FunctionComponent } from 'react';
+import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
+import * as Yup from 'yup';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
+import { useFormatter } from '../../../../components/i18n';
+import { SubscriptionFocus } from '../../../../components/Subscription';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
-import type { Theme } from '../../../../components/Theme';
+import { buildDate } from '../../../../utils/Time';
 
 const StixNestedRefRelationshipEditionFragment = graphql`
   fragment StixNestedRefRelationshipEditionOverview_stixRefRelationship on StixRefRelationship {
@@ -72,16 +67,13 @@ export const stixNestedRefRelationshipEditionQuery = graphql`
 `;
 
 interface StixNestedRefRelationshipEditionOverviewProps {
-  handleClose?: () => void;
   queryRef: PreloadedQuery<StixNestedRefRelationshipEditionOverviewQuery>;
 }
 
 const StixNestedRefRelationshipEditionOverview: FunctionComponent<StixNestedRefRelationshipEditionOverviewProps> = ({
-  handleClose,
   queryRef,
 }) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme<Theme>();
   const { stixRefRelationship } = usePreloadedQuery<StixNestedRefRelationshipEditionOverviewQuery>(
     stixNestedRefRelationshipEditionQuery,
     queryRef,
@@ -136,87 +128,51 @@ const StixNestedRefRelationshipEditionOverview: FunctionComponent<StixNestedRefR
     stop_time: buildDate(stixRefRelationshipData.stop_time),
   };
   return (
-    <>
-      <div style={{
-        backgroundColor: theme.palette.background.nav,
-        padding: '20px 20px 20px 60px',
-      }}
-      >
-        <IconButton
-          aria-label="Close"
-          style={{
-            position: 'absolute',
-            top: 12,
-            left: 5,
-            color: 'inherit',
-          }}
-          onClick={handleClose}
-          color="primary"
-        >
-          <Close fontSize="small" color="primary" />
-        </IconButton>
-        <Typography
-          variant="h6"
-          style={{
-            float: 'left',
-          }}
-        >
-          {t_i18n('Update a relationship')}
-        </Typography>
-        <SubscriptionAvatars context={editContext} />
-        <div className="clearfix" />
-      </div>
-      <div style={{
-        padding: '10px 20px 20px 20px',
-      }}
-      >
-        <Formik
-          enableReinitialize={true}
-          initialValues={initialValues}
-          validationSchema={stixNestedRefRelationshipValidator}
-          onSubmit={() => {}}
-          render={() => (
-            <Form>
-              <Field
-                component={DateTimePickerField}
-                name="start_time"
-                onFocus={handleChangeFocus}
-                onSubmit={handleSubmitField}
-                textFieldProps={{
-                  label: t_i18n('Start time'),
-                  variant: 'standard',
-                  fullWidth: true,
-                  helperText: (
-                    <SubscriptionFocus
-                      context={editContext}
-                      fieldName="start_time"
-                    />
-                  ),
-                }}
-              />
-              <Field
-                component={DateTimePickerField}
-                name="stop_time"
-                onFocus={handleChangeFocus}
-                onSubmit={handleSubmitField}
-                textFieldProps={{
-                  label: t_i18n('Stop time'),
-                  variant: 'standard',
-                  fullWidth: true,
-                  style: { marginTop: 20 },
-                  helperText: (
-                    <SubscriptionFocus
-                      context={editContext}
-                      fieldName="stop_time"
-                    />
-                  ),
-                }}
-              />
-            </Form>
-          )}
-        />
-      </div>
-    </>
+    <Formik
+      enableReinitialize={true}
+      initialValues={initialValues}
+      validationSchema={stixNestedRefRelationshipValidator}
+      onSubmit={() => {}}
+      render={() => (
+        <Form>
+          <Field
+            component={DateTimePickerField}
+            name="start_time"
+            onFocus={handleChangeFocus}
+            onSubmit={handleSubmitField}
+            textFieldProps={{
+              label: t_i18n('Start time'),
+              variant: 'standard',
+              fullWidth: true,
+              helperText: (
+                <SubscriptionFocus
+                  context={editContext}
+                  fieldName="start_time"
+                />
+              ),
+            }}
+          />
+          <Field
+            component={DateTimePickerField}
+            name="stop_time"
+            onFocus={handleChangeFocus}
+            onSubmit={handleSubmitField}
+            textFieldProps={{
+              label: t_i18n('Stop time'),
+              variant: 'standard',
+              fullWidth: true,
+              style: { marginTop: 20 },
+              helperText: (
+                <SubscriptionFocus
+                  context={editContext}
+                  fieldName="stop_time"
+                />
+              ),
+            }}
+          />
+        </Form>
+      )}
+    />
   );
 };
 
