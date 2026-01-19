@@ -111,6 +111,7 @@ export const htmlToPdfReport = async (
     imagesByReference: true,
     ignoreStyles: ['font-family'], // Ignoring fonts to force Roboto later.
     defaultStyles: {
+      h1: { margin: [0, 20, 0, 10], color: DARK, fontSize: 32 },
       h2: { margin: [0, 20, 0, 10], color: DARK, fontSize: 28 },
       h3: { margin: [0, 20, 0, 10], color: DARK, fontSize: 24 },
       th: { bold: true, fillColor: '', font: selectedFont },

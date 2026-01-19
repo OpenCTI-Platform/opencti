@@ -26,7 +26,7 @@ const ingestionCreationUserHandlingDefaultGroupForIngestionUsersQuery = graphql`
 
 interface IngestionCreationUserHandlingProps {
   default_confidence_level: number;
-  labelTag: 'C' | 'F'; // C: Connector, F: Feed
+  labelTag: 'C' | 'F' | 'S'; // C: Connector, F: Feed, S: LiveStream
   isSensitive?: boolean;
 }
 

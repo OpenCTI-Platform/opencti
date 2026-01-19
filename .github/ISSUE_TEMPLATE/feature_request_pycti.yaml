@@ -2,6 +2,7 @@
 name: Client Python feature request
 description: Request a new feature for the Client Python (Pycti) package.
 title: "[FEATURE] <short summary>"
+type: feature
 labels:
   - needs triage
   - client-python

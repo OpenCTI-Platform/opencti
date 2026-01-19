@@ -817,6 +817,7 @@ type Synchronizer {
   ssl_verify: Boolean
   synchronized: Boolean
   queue_messages: Int!
+  toConfigurationExport: String!
 }
 
 type SynchronizerEdge {
@@ -834,13 +835,21 @@ input SynchronizerAddInput {
   uri: String! @constraint(minLength: 2)
   token: String
   stream_id: String! @constraint(minLength: 2)
-  user_id: String
+  user_id: String!
+  automatic_user: Boolean
+  confidence_level: Int
   recover: DateTime
   current_state_date: DateTime
   listen_deletion: Boolean!
   no_dependencies: Boolean!
   ssl_verify: Boolean
   synchronized: Boolean
+}
+
+
+input SynchronizerAddAutoUserInput {
+    user_name: String!
+    confidence_level: Int!
 }
 
 input SynchronizerFetchInput {
@@ -13845,6 +13854,17 @@ input StixRefRelationshipsAddInput {
   toIds: [StixRef!]!
 }
 
+type SynchronizerAddInputFromImport {
+    name: String!
+    uri: String!
+    stream_id: String!
+    current_state_date: DateTime
+    listen_deletion: Boolean!
+    ssl_verify: Boolean!
+    no_dependencies: Boolean!
+    synchronized: Boolean!
+}
+
 ### QUERIES
 
 type Query {
@@ -14087,7 +14107,9 @@ type Query {
   rules: [Rule] @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
   ruleManagerInfo: RuleManager @auth(for: [SETTINGS_SETCUSTOMIZATION])
   synchronizer(id: String!): Synchronizer @auth(for: [INGESTION])
-  synchronizers(
+    synchronizerAddInputFromImport(file: Upload!): SynchronizerAddInputFromImport! @auth(for: [CONNECTORAPI])
+
+    synchronizers(
     first: Int
     after: ID
     orderBy: SynchronizersOrdering
@@ -15598,6 +15620,7 @@ type Mutation {
 
   ### SYNC
   synchronizerAdd(input: SynchronizerAddInput!): Synchronizer @auth(for: [CONNECTORAPI])
+  synchronizerAddAutoUser(id: ID!, input: SynchronizerAddAutoUserInput!): Synchronizer @auth(for:[CONNECTORAPI])
   synchronizerEdit(id: ID!): SynchronizerEditMutations @auth(for: [CONNECTORAPI])
   synchronizerStart(id: ID!): Synchronizer @auth(for: [CONNECTORAPI])
   synchronizerStop(id: ID!): Synchronizer @auth(for: [CONNECTORAPI])

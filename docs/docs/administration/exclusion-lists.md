@@ -15,7 +15,11 @@ When creating a list, you can provide the following data:
 - Name
 - Description
 - Indicator observable types : this corresponds to the contents of the exclusion list
-- Content : you can upload a file or copy/paste your content using the toggle button
+- Content : you can upload a file or copy/paste your content using the toggle button 
+
+**Details on file upload** 
+- File format expected: .txt
+- Formatting of values within the file itself: please only add a flat list of value, one value per line.
 
 As said before, there are different indicator observable types possible :
 

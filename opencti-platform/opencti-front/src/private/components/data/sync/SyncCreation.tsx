@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Field, Form, Formik } from 'formik';
+import React, { FunctionComponent, useState } from 'react';
+import { Field, Form, Formik, FormikErrors } from 'formik';
 import Typography from '@mui/material/Typography';
 import Button from '@common/button/Button';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -11,47 +11,32 @@ import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
-import makeStyles from '@mui/styles/makeStyles';
 import Grid from '@mui/material/Grid';
-import Drawer from '../../common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
-import { commitMutation, fetchQuery, handleErrorInForm, MESSAGING$ } from '../../../../relay/environment';
+import { fetchQuery, handleErrorInForm, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { dayStartDate } from '../../../../utils/Time';
 import SelectField from '../../../../components/fields/SelectField';
 import { insertNode } from '../../../../utils/store';
-import CreatorField from '../../common/form/CreatorField';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import EnrichedTooltip from '../../../../components/EnrichedTooltip';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import { deserializeFilterGroupForFrontend } from '../../../../utils/filters/filtersUtils';
 import PasswordTextField from '../../../../components/PasswordTextField';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import IngestionCreationUserHandling from '../../../../private/components/data/IngestionCreationUserHandling';
+import { PaginationOptions } from '../../../../components/list_lines';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { FormikConfig, FormikHelpers } from 'formik/dist/types';
+import { SyncCreationCheckMutation$data } from '@components/data/sync/__generated__/SyncCreationCheckMutation.graphql';
+import { SyncCreationStreamCollectionQuery$data } from '@components/data/sync/__generated__/SyncCreationStreamCollectionQuery.graphql';
+import { RelayError } from '../../../../relay/relayTypes';
 import FormButtonContainer from '@common/form/FormButtonContainer';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
-  buttons: {
-    width: '100%',
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-  alert: {
-    width: '100%',
-    marginTop: 20,
-  },
-  message: {
-    width: '100%',
-    overflow: 'hidden',
-  },
-}));
+import { SyncImportQuery$data } from '../__generated__/SyncImportQuery.graphql';
 
 const syncCreationMutation = graphql`
   mutation SyncCreationMutation($input: SynchronizerAddInput!) {
@@ -67,19 +52,22 @@ export const syncCheckMutation = graphql`
   }
 `;
 
-const syncCreationValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  uri: Yup.string().required(t('This field is required')),
-  token: Yup.string(),
-  stream_id: Yup.string().required(t('This field is required')),
-  current_state_date: Yup.date()
-    .nullable()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-  listen_deletion: Yup.bool(),
-  no_dependencies: Yup.bool(),
-  ssl_verify: Yup.bool(),
-  synchronized: Yup.bool(),
-});
+const syncCreationValidation = () => {
+  const { t_i18n } = useFormatter();
+  Yup.object().shape({
+    name: Yup.string().required(t_i18n('This field is required')),
+    uri: Yup.string().required(t_i18n('This field is required')),
+    token: Yup.string(),
+    stream_id: Yup.string().required(t_i18n('This field is required')),
+    current_state_date: Yup.date()
+      .nullable()
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+    listen_deletion: Yup.bool(),
+    no_dependencies: Yup.bool(),
+    ssl_verify: Yup.bool(),
+    synchronized: Yup.bool(),
+  });
+};
 
 export const syncStreamCollectionQuery = graphql`
   query SyncCreationStreamCollectionQuery(
@@ -98,26 +86,76 @@ export const syncStreamCollectionQuery = graphql`
   }
 `;
 
-const CreateSynchronizerControlledDial = (props) => (
+interface SynchronizerAddInput {
+  name: string;
+  uri: string;
+  stream_id: string;
+  token: string;
+  current_state_date?: Date | null;
+  listen_deletion?: boolean;
+  ssl_verify?: boolean;
+  no_dependencies?: boolean;
+  synchronized?: boolean;
+  user_id: string | FieldOption;
+  automatic_user?: boolean;
+  confidence_level?: string;
+}
+type StreamOption = {
+  value: string;
+  label: string;
+  id: string;
+  name: string;
+  description?: string | null;
+  filters?: string | null;
+};
+
+const CreateSynchronizerControlledDial = (props: DrawerControlledDialProps) => (
   <CreateEntityControlledDial
     entityType="Synchronizer"
     {...props}
   />
 );
 
-const SyncCreation = ({ paginationOptions }) => {
+interface SyncCreationProps {
+  paginationOptions?: PaginationOptions;
+  handleClose?: () => void;
+  ingestionSynchronizerData?: SyncImportQuery$data['synchronizerAddInputFromImport'];
+  triggerButton?: boolean;
+  open?: boolean;
+  drawerSettings?: {
+    title: string;
+    button: string;
+  };
+}
+
+const SyncCreation: FunctionComponent<SyncCreationProps> = ({
+  paginationOptions,
+  handleClose,
+  ingestionSynchronizerData,
+  triggerButton = false,
+  open = false,
+  drawerSettings,
+}) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
 
   const [verified, setVerified] = useState(false);
-  const [streams, setStreams] = useState([]);
+  const [streams, setStreams] = useState<StreamOption[]>([]);
 
-  const handleVerify = (values, setErrors) => {
-    const input = { ...values, user_id: values.user_id?.value };
-    commitMutation({
-      mutation: syncCheckMutation,
+  const [commitVerify] = useApiMutation(syncCheckMutation);
+
+  const handleVerify = (values: SynchronizerAddInput, setErrors: FormikHelpers<SynchronizerAddInput>['setErrors']) => {
+    const userId
+      = typeof values.user_id === 'object'
+        ? values.user_id?.value
+        : values.user_id;
+    const input = { ...values, user_id: userId,
+      automatic_user: values.automatic_user ?? true,
+      ...((values.automatic_user !== false) && { confidence_level: Number(values.confidence_level) }),
+    };
+    commitVerify({
       variables: { input },
-      onCompleted: (data) => {
+      onCompleted: (response) => {
+        const data = response as SyncCreationCheckMutation$data;
         if (data && data.synchronizerTest === 'Connection success') {
           MESSAGING$.notifySuccess(t_i18n('Connection successfully verified'));
           setVerified(true);
@@ -130,10 +168,18 @@ const SyncCreation = ({ paginationOptions }) => {
     });
   };
 
-  const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
-    const input = { ...values, user_id: values.user_id?.value };
-    commitMutation({
-      mutation: syncCreationMutation,
+  const [commitCreation] = useApiMutation(syncCreationMutation);
+
+  const onSubmit: FormikConfig<SynchronizerAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+    const userId
+      = typeof values.user_id === 'object'
+        ? values.user_id?.value
+        : values.user_id;
+    const input = { ...values, user_id: userId,
+      automatic_user: values.automatic_user ?? true,
+      ...((values.automatic_user !== false) && { confidence_level: Number(values.confidence_level) }),
+    };
+    commitCreation({
       variables: { input },
       updater: (store) => {
         insertNode(
@@ -147,7 +193,6 @@ const SyncCreation = ({ paginationOptions }) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         setVerified(false);
@@ -157,18 +202,20 @@ const SyncCreation = ({ paginationOptions }) => {
     });
   };
   const handleGetStreams = (
-    { uri, token, ssl_verify },
-    setErrors,
-    currentErrors,
+    values: SynchronizerAddInput,
+    setErrors: FormikHelpers<SynchronizerAddInput>['setErrors'],
+    currentErrors: FormikErrors<SynchronizerAddInput>,
   ) => {
-    const args = { uri, token, ssl_verify: ssl_verify ?? false };
+    const args = { uri: values.uri, token: values.token, ssl_verify: values.ssl_verify ?? false };
     fetchQuery(syncStreamCollectionQuery, args)
       .toPromise()
       .then((result) => {
+        const data = result as SyncCreationStreamCollectionQuery$data;
+        const streamsData = data.synchronizerFetch ?? [];
         const resultStreams = [
-          ...result.synchronizerFetch.map((s) => ({
-            value: s.id,
-            label: s.name,
+          ...streamsData.map((s) => ({
+            value: s?.id,
+            label: s?.name,
             ...s,
           })),
         ];
@@ -179,12 +226,12 @@ const SyncCreation = ({ paginationOptions }) => {
           });
         } else {
           setErrors(R.dissoc('uri', currentErrors));
-          setStreams(resultStreams);
+          setStreams(resultStreams as StreamOption[]);
         }
       })
-      .catch((e) => {
+      .catch((e: RelayError) => {
         const errors = e.res.errors.map((err) => ({
-          [err.data.field]: err.data.message,
+          [err.data?.field ?? 'unknownField']: err.data?.message,
         }));
         const formError = R.mergeAll(errors);
         setErrors({ ...currentErrors, ...formError });
@@ -194,23 +241,27 @@ const SyncCreation = ({ paginationOptions }) => {
 
   return (
     <Drawer
-      title={t_i18n('Create a synchronizer')}
-      controlledDial={CreateSynchronizerControlledDial}
+      title={t_i18n('Create OpenCTI Stream')}
+      open={open}
+      onClose={handleClose}
+      controlledDial={triggerButton ? CreateSynchronizerControlledDial : undefined}
     >
       {({ onClose }) => (
-        <Formik
+        <Formik<SynchronizerAddInput>
           initialValues={{
-            name: '',
-            uri: '',
+            name: ingestionSynchronizerData?.name || '',
+            uri: ingestionSynchronizerData?.uri || '',
             token: '',
-            current_state_date: dayStartDate(),
-            stream_id: '',
-            no_dependencies: false,
-            listen_deletion: true,
-            ssl_verify: false,
-            synchronized: false,
+            current_state_date: ingestionSynchronizerData?.current_state_date ?? dayStartDate(),
+            stream_id: ingestionSynchronizerData?.stream_id || '',
+            no_dependencies: ingestionSynchronizerData?.no_dependencies ?? false,
+            listen_deletion: ingestionSynchronizerData?.listen_deletion ?? true,
+            ssl_verify: ingestionSynchronizerData?.ssl_verify ?? false,
+            synchronized: ingestionSynchronizerData?.synchronized ?? false,
+            user_id: '',
+            automatic_user: true,
           }}
-          validationSchema={syncCreationValidation(t_i18n)}
+          validationSchema={syncCreationValidation()}
           onSubmit={onSubmit}
           onReset={onClose}
         >
@@ -234,10 +285,11 @@ const SyncCreation = ({ paginationOptions }) => {
                 />
                 <Alert
                   icon={false}
-                  classes={{ root: classes.alert, message: classes.message }}
                   severity="warning"
                   variant="outlined"
-                  style={{ position: 'relative' }}
+                  style={{ position: 'relative',
+                    marginTop: 20, width: '100%',
+                    overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
                 >
                   <AlertTitle>{t_i18n('Remote OpenCTI configuration')}</AlertTitle>
                   <Tooltip
@@ -273,9 +325,7 @@ const SyncCreation = ({ paginationOptions }) => {
                       label={t_i18n('Remote OpenCTI stream ID')}
                       inputProps={{ name: 'stream_id', id: 'stream_id' }}
                       containerstyle={fieldSpacingContainerStyle}
-                      renderValue={(value) => streams.filter((stream) => stream.value === value).at(0)
-                        .name
-                      }
+                      renderValue={(value: string | undefined) => streams.filter((stream) => stream.value === value).at(0)?.name}
                     >
                       {streams.map(
                         ({ value, label, name, description, filters }) => {
@@ -316,14 +366,21 @@ const SyncCreation = ({ paginationOptions }) => {
                       )}
                     </Field>
                   )}
-                  <div className={classes.buttons}>
+                  <div style={{
+                    width: '100%',
+                    marginTop: 20,
+                    textAlign: 'right',
+                  }}
+                  >
                     {streams.length === 0 && (
                       <Button
                         color="secondary"
                         onClick={() => handleGetStreams(values, setErrors, errors)
                         }
                         disabled={isSubmitting}
-                        classes={{ root: classes.button }}
+                        style={{
+                          marginLeft: 10,
+                        }}
                       >
                         {t_i18n('Validate')}
                       </Button>
@@ -336,18 +393,18 @@ const SyncCreation = ({ paginationOptions }) => {
                           setStreams([]);
                         }}
                         disabled={isSubmitting}
-                        classes={{ root: classes.button }}
+                        style={{
+                          marginLeft: 10,
+                        }}
                       >
                         {t_i18n('Reset')}
                       </Button>
                     )}
                   </div>
                 </Alert>
-                <CreatorField
-                  name="user_id"
-                  label={t_i18n('User responsible for data creation (empty = System)')}
-                  containerStyle={fieldSpacingContainerStyle}
-                  showConfidence
+                <IngestionCreationUserHandling
+                  default_confidence_level={50}
+                  labelTag="S"
                 />
                 <Field
                   component={DateTimePickerField}
@@ -380,13 +437,11 @@ const SyncCreation = ({ paginationOptions }) => {
                   <AccordionDetails>
                     <Alert
                       icon={false}
-                      classes={{
-                        root: classes.alert,
-                        message: classes.message,
-                      }}
                       severity="error"
                       variant="outlined"
-                      style={{ position: 'relative' }}
+                      style={{ position: 'relative',
+                        marginTop: 20, width: '100%',
+                        overflow: 'hidden' }}
                     >
                       <div>
                         {t_i18n('Use these options if you know what you are doing')}
@@ -443,7 +498,7 @@ const SyncCreation = ({ paginationOptions }) => {
                     onClick={submitForm}
                     disabled={!values.stream_id || !verified || isSubmitting}
                   >
-                    {t_i18n('Create')}
+                    {drawerSettings?.button ?? t_i18n('Create')}
                   </Button>
                 </FormButtonContainer>
               </Form>

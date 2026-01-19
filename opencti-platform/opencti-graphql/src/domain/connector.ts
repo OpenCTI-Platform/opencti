@@ -42,12 +42,13 @@ import {
   type RegisterConnectorInput,
   type RegisterConnectorsManagerInput,
   type RequestConnectorStatusInput,
+  type SynchronizerAddAutoUserInput,
   type SynchronizerAddInput,
   type SynchronizerFetchInput,
   type UpdateConnectorManagerStatusInput,
   ValidationMode,
 } from '../generated/graphql';
-import { BUS_TOPICS, logApp } from '../config/conf';
+import { BUS_TOPICS, logApp, PLATFORM_VERSION } from '../config/conf';
 import { deleteWorkForConnector } from './work';
 import { testSync as testSyncUtils } from './connector-utils';
 import { defaultValidationMode, loadFile, uploadJobImport } from '../database/file-storage';
@@ -63,7 +64,11 @@ import { addDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-doma
 import type { Work } from '../types/work';
 import { AxiosError } from 'axios';
 import { URL } from 'node:url';
+import { isCompatibleVersionWithMinimal } from '../utils/version';
+import { extractContentFrom } from '../utils/fileToContent';
+import type { FileHandle } from 'fs/promises';
 
+const MINIMAL_SYNCHRONIZER_COMPATIBLE_VERSION = '6.9.6';
 // Sanitize name for K8s/Docker
 const sanitizeContainerName = (label: string): string => {
   const withHyphens = label.replace(/([a-z])([A-Z])/g, '$1-$2');
@@ -573,24 +578,94 @@ export const fetchRemoteStreams = async (context: AuthContext, user: AuthUser, i
     throw ValidationError('Error getting the streams from remote OpenCTI', 'uri', { cause: errorMessage });
   }
 };
-export const registerSync = async (context: AuthContext, user: AuthUser, syncData: SynchronizerAddInput) => {
-  const data = { ...syncData, running: false };
-  await testSyncUtils(context, user, data);
-  const { element, isCreation } = await createEntity(context, user, data, ENTITY_TYPE_SYNC, { complete: true });
+export const registerSync = async (
+  context: AuthContext,
+  user: AuthUser,
+  syncData: SynchronizerAddInput,
+) => {
+  let finalSyncData = { ...syncData, running: false };
+
+  if (finalSyncData.automatic_user) {
+    const onTheFlyCreatedUser = await createOnTheFlyUser(
+      context,
+      user,
+      {
+        userName: finalSyncData.user_id,
+        serviceAccount: true,
+        confidenceLevel: finalSyncData.confidence_level,
+      },
+    );
+
+    finalSyncData = {
+      ...finalSyncData,
+      user_id: onTheFlyCreatedUser.id,
+    };
+  }
+
+  const {
+    automatic_user: _automatic_user,
+    confidence_level: _confidence_level,
+    ...synchronizerToCreate
+  } = finalSyncData;
+
+  await testSyncUtils(context, user, synchronizerToCreate);
+
+  const { element, isCreation } = await createEntity(
+    context,
+    user,
+    synchronizerToCreate,
+    ENTITY_TYPE_SYNC,
+    { complete: true },
+  );
+
   if (isCreation) {
     const syncId = element.internal_id;
-    await registerConnectorQueues(syncId, `Sync ${syncId} queue`, 'internal', 'sync');
+
+    await registerConnectorQueues(
+      syncId,
+      `Sync ${syncId} queue`,
+      'internal',
+      'sync',
+    );
+
     await publishUserAction({
       user,
       event_type: 'mutation',
       event_scope: 'create',
       event_access: 'administration',
-      message: `creates synchronizer \`${syncData.name}\``,
-      context_data: { id: element.id, entity_type: ENTITY_TYPE_SYNC, input: data },
+      message: `creates synchronizer \`${finalSyncData.name}\``,
+      context_data: {
+        id: element.id,
+        entity_type: ENTITY_TYPE_SYNC,
+        input: synchronizerToCreate,
+      },
     });
   }
+
   return element;
 };
+
+export const syncAddInputFromImport = async (file: Promise<FileHandle>) => {
+  const parsedData = await extractContentFrom(file);
+
+  // check platform version compatibility
+  if (!isCompatibleVersionWithMinimal(parsedData.openCTI_version, MINIMAL_SYNCHRONIZER_COMPATIBLE_VERSION)) {
+    throw FunctionalError(
+      `Invalid version of the platform. Please upgrade your OpenCTI. Minimal version required: ${MINIMAL_SYNCHRONIZER_COMPATIBLE_VERSION}`,
+      { reason: parsedData.openCTI_version },
+    );
+  }
+
+  return parsedData.configuration;
+};
+
+export const synchronizerAddAutoUser = async (context: AuthContext, user: AuthUser, synchronizerId: string, input: SynchronizerAddAutoUserInput) => {
+  const onTheFlyCreatedUser = await createOnTheFlyUser(context, user,
+    { userName: input.user_name, confidenceLevel: input.confidence_level, serviceAccount: true });
+
+  return syncEditField(context, user, synchronizerId, [{ key: 'user_id', value: [onTheFlyCreatedUser.id] }]);
+};
+
 export const syncEditField = async (context: AuthContext, user: AuthUser, syncId: string, input: EditInput[]) => {
   const { element } = await updateAttribute(context, user, syncId, ENTITY_TYPE_SYNC, input);
   await publishUserAction({
@@ -615,6 +690,23 @@ export const syncDelete = async (context: AuthContext, user: AuthUser, syncId: s
     context_data: { id: syncId, entity_type: ENTITY_TYPE_SYNC, input: deleted },
   });
   return syncId;
+};
+export const synchronizerExport = async (synchronizer: BasicStoreEntitySynchronizer) => {
+  const { name, uri, stream_id, current_state_date, listen_deletion, ssl_verify, no_dependencies, synchronized } = synchronizer;
+  return JSON.stringify({
+    openCTI_version: PLATFORM_VERSION,
+    type: 'openCTI_stream',
+    configuration: {
+      name,
+      uri,
+      stream_id,
+      current_state_date,
+      listen_deletion,
+      ssl_verify,
+      no_dependencies,
+      synchronized,
+    },
+  });
 };
 export const syncCleanContext = async (context: AuthContext, user: AuthUser, syncId: string) => {
   await delEditContext(user, syncId);

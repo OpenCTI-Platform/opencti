@@ -12,6 +12,10 @@ export interface RelayError {
         };
         stacktrace?: string[];
       };
+      data?: {
+        field?: string;
+        message?: string;
+      };
     }[];
   };
 }
