@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import React from 'react';
-import { SearchIndexedFileLine_node$data } from '@components/search/__generated__/SearchIndexedFileLine_node.graphql';
+import { SearchIndexedFileLine_node$data } from './__generated__/SearchIndexedFileLine_node.graphql';
 import { Link, useParams } from 'react-router-dom';
 import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
 import Alert from '@mui/material/Alert';
