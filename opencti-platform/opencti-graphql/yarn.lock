@@ -6998,14 +6998,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ejs@npm:3.1.10":
-  version: 3.1.10
-  resolution: "ejs@npm:3.1.10"
+"ejs@npm:4.0.1":
+  version: 4.0.1
+  resolution: "ejs@npm:4.0.1"
   dependencies:
-    jake: "npm:^10.8.5"
+    jake: "npm:^10.9.1"
   bin:
     ejs: bin/cli.js
-  checksum: 10c0/52eade9e68416ed04f7f92c492183340582a36482836b11eab97b159fcdcfdedc62233a1bf0bf5e5e1851c501f2dca0e2e9afd111db2599e4e7f53ee29429ae1
+  checksum: 10c0/e937a011c5776e6a4775d79317caa9d5b4c64331d62214ff82de97de555ed338bc435d4fa54798ccc0a6e8a2e9096395cbeb79940ab2c3b29f11213ea79b48d6
   languageName: node
   linkType: hard
 
@@ -9322,7 +9322,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jake@npm:^10.8.5":
+"jake@npm:^10.9.1":
   version: 10.9.4
   resolution: "jake@npm:10.9.4"
   dependencies:
@@ -10756,7 +10756,7 @@ __metadata:
     cors: "npm:2.8.5"
     csv-parse: "npm:6.1.0"
     dataloader: "npm:2.2.3"
-    ejs: "npm:3.1.10"
+    ejs: "npm:4.0.1"
     esbuild: "npm:0.27.2"
     esbuild-plugin-copy: "npm:2.1.1"
     esbuild-plugin-import-glob: "npm:0.1.1"
