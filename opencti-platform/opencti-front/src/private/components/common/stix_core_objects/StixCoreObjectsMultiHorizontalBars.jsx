@@ -1,9 +1,4 @@
-import React from 'react';
 import { graphql } from 'react-relay';
-import CircularProgress from '@mui/material/CircularProgress';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
-import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
 import { useNavigate } from 'react-router-dom';
 import Chart from '../charts/Chart';
@@ -14,18 +9,10 @@ import { simpleNumberFormat } from '../../../../utils/Number';
 import { getMainRepresentative, isFieldForIdentifier } from '../../../../utils/defaultRepresentatives';
 import { itemColor } from '../../../../utils/Colors';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
-import { NO_DATA_WIDGET_MESSAGE } from '../../../../components/dashboard/WidgetNoData';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
-  paper: {
-    height: '100%',
-    marginTop: theme.spacing(1),
-    padding: 0,
-    borderRadius: 4,
-  },
-}));
+import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
+import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
+import { useState } from 'react';
 
 const stixCoreObjectsMultiHorizontalBarsDistributionQuery = graphql`
   query StixCoreObjectsMultiHorizontalBarsDistributionQuery(
@@ -394,13 +381,13 @@ const stixCoreObjectsMultiHorizontalBars = ({
   endDate,
   dataSelection,
   parameters = {},
-  withExportPopover = false,
-  isReadOnly = false,
+  popover,
 }) => {
-  const classes = useStyles();
   const theme = useTheme();
   const { t_i18n } = useFormatter();
+  const [chart, setChart] = useState();
   const navigate = useNavigate();
+
   const renderContent = () => {
     const selection = dataSelection[0];
     const dataSelectionTypes = ['Stix-Core-Object'];
@@ -505,65 +492,30 @@ const stixCoreObjectsMultiHorizontalBars = ({
                 type="bar"
                 width="100%"
                 height="100%"
-                withExportPopover={withExportPopover}
-                isReadOnly={isReadOnly}
+                onMounted={setChart}
               />
             );
           }
           if (props) {
-            return (
-              <div style={{ display: 'table', height: '100%', width: '100%' }}>
-                <span
-                  style={{
-                    display: 'table-cell',
-                    verticalAlign: 'middle',
-                    textAlign: 'center',
-                  }}
-                >
-                  {t_i18n(NO_DATA_WIDGET_MESSAGE)}
-                </span>
-              </div>
-            );
+            return <WidgetNoData />;
           }
-          return (
-            <div style={{ display: 'table', height: '100%', width: '100%' }}>
-              <span
-                style={{
-                  display: 'table-cell',
-                  verticalAlign: 'middle',
-                  textAlign: 'center',
-                }}
-              >
-                <CircularProgress size={40} thickness={2} />
-              </span>
-            </div>
-          );
+          return <Loader variant={LoaderVariant.inElement} />;
         }}
       />
     );
   };
+
   return (
-    <div style={{ height: height || '100%' }}>
-      <Typography
-        variant="h4"
-        gutterBottom={true}
-        style={{
-          margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-        }}
-      >
-        {parameters.title || t_i18n('Distribution of entities')}
-      </Typography>
-      {variant === 'inLine' ? (
-        renderContent()
-      ) : (
-        <Paper classes={{ root: classes.paper }} variant="outlined">
-          {renderContent()}
-        </Paper>
-      )}
-    </div>
+    <WidgetContainer
+      padding="small"
+      height={height}
+      title={parameters.title ?? t_i18n('Distribution of entities')}
+      variant={variant}
+      chart={chart}
+      action={popover}
+    >
+      {renderContent()}
+    </WidgetContainer>
   );
 };
 

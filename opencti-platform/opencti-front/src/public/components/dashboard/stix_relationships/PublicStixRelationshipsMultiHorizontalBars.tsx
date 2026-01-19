@@ -247,8 +247,6 @@ const PublicStixRelationshipsMultiHorizontalBarsComponent = ({
       <WidgetHorizontalBars
         series={chartData}
         distributed={!!parameters?.distributed}
-        withExport={false}
-        readonly={true}
         redirectionUtils={redirectionUtils}
         stacked
         total

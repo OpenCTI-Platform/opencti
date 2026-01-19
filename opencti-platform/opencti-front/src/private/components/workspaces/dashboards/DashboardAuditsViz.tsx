@@ -1,4 +1,5 @@
-import React, { memo } from 'react';
+import React, { memo, ReactNode } from 'react';
+import { Box } from '@mui/material';
 import AuditsNumber from '@components/common/audits/AuditsNumber';
 import AuditsList from '@components/common/audits/AuditsList';
 import AuditsDistributionList from '@components/common/audits/AuditsDistributionList';
@@ -18,7 +19,7 @@ import { useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../ut
 
 interface DashboardAuditsVizProps {
   widget: Widget;
-  isReadonly: boolean;
+  popover?: ReactNode;
   config: {
     relativeDate: string | undefined;
     startDate: string;
@@ -28,7 +29,7 @@ interface DashboardAuditsVizProps {
 
 const DashboardAuditsViz = ({
   widget,
-  isReadonly,
+  popover,
   config,
 }: DashboardAuditsVizProps) => {
   const startDate = config.relativeDate
@@ -61,6 +62,7 @@ const DashboardAuditsViz = ({
           dataSelection={dataSelection}
           entityType={undefined} // because calling js component in ts
           parameters={widget.parameters as object} // because calling js component in ts
+          popover={<Box mr={-2}>{popover}</Box>}
         />
       );
     case 'list':
@@ -72,6 +74,7 @@ const DashboardAuditsViz = ({
           dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
+          popover={popover}
         />
       );
     case 'distribution-list':
@@ -83,6 +86,7 @@ const DashboardAuditsViz = ({
           dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
+          popover={popover}
         />
       );
     case 'vertical-bar':
@@ -91,11 +95,10 @@ const DashboardAuditsViz = ({
           variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
-          isReadOnly={isReadonly}
-          withExportPopover={true}
           dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
+          popover={popover}
         />
       );
     case 'line':
@@ -104,11 +107,10 @@ const DashboardAuditsViz = ({
           variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
-          isReadOnly={isReadonly}
-          withExportPopover={true}
           dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
+          popover={popover}
         />
       );
     case 'area':
@@ -117,11 +119,10 @@ const DashboardAuditsViz = ({
           variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
-          isReadOnly={isReadonly}
-          withExportPopover={true}
           dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
+          popover={popover}
         />
       );
     case 'donut':
@@ -130,11 +131,10 @@ const DashboardAuditsViz = ({
           variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
-          isReadOnly={isReadonly}
-          withExportPopover={true}
           dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
+          popover={popover}
         />
       );
     case 'polar-area':
@@ -143,11 +143,10 @@ const DashboardAuditsViz = ({
           variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
-          isReadOnly={isReadonly}
-          withExportPopover={true}
           dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
+          popover={popover}
         />
       );
     case 'horizontal-bar':
@@ -156,11 +155,10 @@ const DashboardAuditsViz = ({
           variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
-          isReadOnly={isReadonly}
-          withExportPopover={true}
           dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
+          popover={popover}
         />
       );
     case 'radar':
@@ -169,11 +167,10 @@ const DashboardAuditsViz = ({
           variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
-          isReadOnly={isReadonly}
-          withExportPopover={true}
           dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
+          popover={popover}
         />
       );
     case 'heatmap':
@@ -182,10 +179,10 @@ const DashboardAuditsViz = ({
           variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
-          withExportPopover={true}
           dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
+          popover={popover}
         />
       );
     case 'tree':
@@ -194,11 +191,10 @@ const DashboardAuditsViz = ({
           variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
-          isReadOnly={isReadonly}
-          withExportPopover={true}
           dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
+          popover={popover}
         />
       );
     case 'wordcloud':
@@ -210,6 +206,7 @@ const DashboardAuditsViz = ({
           dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
+          popover={popover}
         />
       );
     default:

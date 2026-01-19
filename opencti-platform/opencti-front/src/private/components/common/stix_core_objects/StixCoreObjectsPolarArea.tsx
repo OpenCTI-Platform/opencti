@@ -1,5 +1,6 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import React, { CSSProperties } from 'react';
+import React, { CSSProperties, ReactNode, useState } from 'react';
+import ApexCharts from 'apexcharts';
 import { StixCoreObjectsPolarAreaDistributionQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsPolarAreaDistributionQuery.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
@@ -8,6 +9,7 @@ import WidgetPolarArea from '../../../../components/dashboard/WidgetPolarArea';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import type { WidgetDataSelection, WidgetParameters } from '../../../../utils/widget/widget';
+import { OpenCTIChartProps } from '../charts/Chart';
 
 const stixCoreObjectsPolarAreaDistributionQuery = graphql`
   query StixCoreObjectsPolarAreaDistributionQuery(
@@ -89,15 +91,13 @@ const stixCoreObjectsPolarAreaDistributionQuery = graphql`
 interface StixCoreObjectsPolarAreaComponentProps {
   dataSelection: WidgetDataSelection[];
   queryRef: PreloadedQuery<StixCoreObjectsPolarAreaDistributionQuery>;
-  withExportPopover: boolean;
-  isReadOnly: boolean;
+  onMounted?: OpenCTIChartProps['onMounted'];
 }
 
 const StixCoreObjectsPolarAreaComponent = ({
   dataSelection,
   queryRef,
-  withExportPopover,
-  isReadOnly,
+  onMounted,
 }: StixCoreObjectsPolarAreaComponentProps) => {
   const { stixCoreObjectsDistribution } = usePreloadedQuery(
     stixCoreObjectsPolarAreaDistributionQuery,
@@ -113,8 +113,7 @@ const StixCoreObjectsPolarAreaComponent = ({
       <WidgetPolarArea
         data={[...stixCoreObjectsDistribution]}
         groupBy={attributeField}
-        withExport={withExportPopover}
-        readonly={isReadOnly}
+        onMounted={onMounted}
       />
     );
   }
@@ -128,8 +127,7 @@ interface StixCoreObjectsPolarAreaProps {
   parameters?: WidgetParameters | null;
   variant?: string;
   height?: CSSProperties['height'];
-  withExportPopover?: boolean;
-  isReadOnly?: boolean;
+  popover?: ReactNode;
 }
 
 const StixCoreObjectsPolarArea = ({
@@ -139,10 +137,10 @@ const StixCoreObjectsPolarArea = ({
   parameters,
   height,
   variant,
-  withExportPopover = false,
-  isReadOnly = false,
+  popover,
 }: StixCoreObjectsPolarAreaProps) => {
   const { t_i18n } = useFormatter();
+  const [chart, setChart] = useState<ApexCharts>();
 
   const selection = dataSelection[0];
   const dataSelectionTypes = ['Stix-Core-Object'];
@@ -172,14 +170,15 @@ const StixCoreObjectsPolarArea = ({
       height={height}
       title={parameters?.title ?? t_i18n('Distribution of entities')}
       variant={variant}
+      chart={chart}
+      action={popover}
     >
       {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <StixCoreObjectsPolarAreaComponent
             queryRef={queryRef}
             dataSelection={dataSelection}
-            withExportPopover={withExportPopover}
-            isReadOnly={isReadOnly}
+            onMounted={setChart}
           />
         </React.Suspense>
       ) : (

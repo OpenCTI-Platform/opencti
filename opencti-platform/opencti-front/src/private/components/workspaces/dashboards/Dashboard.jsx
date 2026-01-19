@@ -71,7 +71,6 @@ const DashboardComponent = ({ data, noToolbar = false }) => {
     || workspace.currentUserAccessRight === 'edit';
   const userHasUpdateCapa = useGranted([EXPLORE_EXUPDATE]);
   const userCanEdit = userHasEditAccess && userHasUpdateCapa;
-  const isWrite = userCanEdit && !noToolbar;
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -300,49 +299,51 @@ const DashboardComponent = ({ data, noToolbar = false }) => {
       >
         {widgetsArray.map((widget) => {
           if (!widgetsLayouts[widget.id]) return null;
+          const popover = userCanEdit && !noToolbar && (
+            <WorkspaceWidgetPopover
+              widget={widget}
+              workspace={workspace}
+              onUpdate={handleUpdateWidget}
+              onDuplicate={handleDuplicateWidget}
+              onDelete={() => handleDeleteWidget(widget.id)}
+            />
+          );
+
           return (
             <div
               key={widget.id}
               data-grid={widgetsLayouts[widget.id]}
               style={{ display: 'relative' }}
             >
-              {userCanEdit && !noToolbar && (
-                <WorkspaceWidgetPopover
-                  widget={widget}
-                  manifest={manifest}
-                  workspace={workspace}
-                  onUpdate={handleUpdateWidget}
-                  onDuplicate={handleDuplicateWidget}
-                  onDelete={() => handleDeleteWidget(widget.id)}
-                  skipTitle={widget.type === 'number'}
-                />
-              )}
               <ErrorBoundary>
                 {widget.id === idToResize ? <div /> : (
                   <>
                     {widget.perspective === 'entities' && (
                       <DashboardEntitiesViz
                         widget={widget}
-                        isReadonly={!isWrite}
                         config={manifest.config}
+                        popover={popover}
                       />
                     )}
                     {widget.perspective === 'relationships' && (
                       <DashboardRelationshipsViz
                         widget={widget}
-                        isReadonly={!isWrite}
                         config={manifest.config}
+                        popover={popover}
                       />
                     )}
                     {widget.perspective === 'audits' && (
                       <DashboardAuditsViz
                         widget={widget}
-                        isReadonly={!isWrite}
                         config={manifest.config}
+                        popover={popover}
                       />
                     )}
                     {widget.perspective === null && (
-                      <DashboardRawViz widget={widget} />
+                      <DashboardRawViz
+                        widget={widget}
+                        popover={popover}
+                      />
                     )}
                   </>
                 )}

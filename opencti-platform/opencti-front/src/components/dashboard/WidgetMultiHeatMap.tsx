@@ -1,4 +1,4 @@
-import Chart from '@components/common/charts/Chart';
+import Chart, { OpenCTIChartProps } from '@components/common/charts/Chart';
 import React, { useMemo } from 'react';
 import { useTheme } from '@mui/styles';
 import { ApexOptions } from 'apexcharts';
@@ -40,8 +40,7 @@ interface WidgetMultiHeatMapProps {
   minValue: number;
   maxValue: number;
   isStacked?: boolean;
-  withExport?: boolean;
-  readonly?: boolean;
+  onMounted?: OpenCTIChartProps['onMounted'];
 }
 
 const WidgetMultiHeatMap = ({
@@ -49,8 +48,7 @@ const WidgetMultiHeatMap = ({
   minValue,
   maxValue,
   isStacked = false,
-  withExport = false,
-  readonly = false,
+  onMounted,
 }: WidgetMultiHeatMapProps) => {
   const theme = useTheme<Theme>();
   const { fsd } = useFormatter();
@@ -95,8 +93,7 @@ const WidgetMultiHeatMap = ({
       type="heatmap"
       width="100%"
       height="100%"
-      withExportPopover={withExport}
-      isReadOnly={readonly}
+      onMounted={onMounted}
     />
   );
 };

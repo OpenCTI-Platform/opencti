@@ -62,8 +62,6 @@ const PublicStixRelationshipsMultiAreaChartComponent = ({
         interval={parameters?.interval}
         isStacked={!!parameters?.stacked}
         hasLegend={!!parameters?.legend}
-        withExport={false}
-        readonly={true}
       />
     );
   }

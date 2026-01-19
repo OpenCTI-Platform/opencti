@@ -7,6 +7,7 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetHorizontalBars from '../../../../components/dashboard/WidgetHorizontalBars';
 import useDistributionGraphData from '../../../../utils/hooks/useDistributionGraphData';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import { useState } from 'react';
 
 export const stixRelationshipsHorizontalBarsDistributionQuery = graphql`
   query StixRelationshipsHorizontalBarsDistributionQuery(
@@ -113,10 +114,11 @@ const StixRelationshipsHorizontalBars = ({
   fromId,
   relationshipType,
   parameters = {},
-  withExportPopover = false,
-  isReadOnly = false,
+  popover,
 }) => {
   const { t_i18n } = useFormatter();
+  const [chart, setChart] = useState();
+
   const { buildWidgetProps } = useDistributionGraphData();
   const renderContent = () => {
     let selection = {};
@@ -156,8 +158,7 @@ const StixRelationshipsHorizontalBars = ({
               <WidgetHorizontalBars
                 series={series}
                 distributed={parameters.distributed}
-                withExport={withExportPopover}
-                readonly={isReadOnly}
+                onMounted={setChart}
                 redirectionUtils={redirectionUtils}
               />
             );
@@ -176,6 +177,8 @@ const StixRelationshipsHorizontalBars = ({
       height={height}
       title={parameters.title ?? title ?? t_i18n('Distribution of entities')}
       variant={variant}
+      chart={chart}
+      action={popover}
     >
       {renderContent()}
     </WidgetContainer>

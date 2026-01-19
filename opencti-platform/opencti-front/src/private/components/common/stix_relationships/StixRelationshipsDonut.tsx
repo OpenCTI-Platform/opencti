@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { ReactNode, useState } from 'react';
 import { graphql } from 'react-relay';
+import ApexCharts from 'apexcharts';
 import { StixRelationshipsDonutDistributionQuery$data } from '@components/common/stix_relationships/__generated__/StixRelationshipsDonutDistributionQuery.graphql';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
@@ -112,8 +113,7 @@ interface StixRelationshipsDonutProps {
   endDate: string | null;
   dataSelection: WidgetDataSelection[];
   parameters?: WidgetParameters;
-  withExportPopover?: boolean;
-  isReadOnly?: boolean;
+  popover?: ReactNode;
 }
 
 const StixRelationshipsDonut = ({
@@ -125,10 +125,11 @@ const StixRelationshipsDonut = ({
   endDate,
   dataSelection,
   parameters = {},
-  withExportPopover = false,
-  isReadOnly = false,
+  popover,
 }: StixRelationshipsDonutProps) => {
   const { t_i18n } = useFormatter();
+  const [chart, setChart] = useState<ApexCharts>();
+
   const renderContent = () => {
     let selection;
     let filtersAndOptions;
@@ -165,8 +166,7 @@ const StixRelationshipsDonut = ({
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 data={props.stixRelationshipsDistribution as any[]}
                 groupBy={finalField}
-                withExport={withExportPopover}
-                readonly={isReadOnly}
+                onMounted={setChart}
               />
             );
           }
@@ -184,6 +184,8 @@ const StixRelationshipsDonut = ({
       height={height}
       title={parameters.title ?? title ?? t_i18n('Relationships distribution')}
       variant={variant}
+      chart={chart}
+      action={popover}
     >
       {renderContent()}
     </WidgetContainer>

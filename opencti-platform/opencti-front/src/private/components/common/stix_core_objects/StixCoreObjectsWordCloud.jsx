@@ -94,6 +94,7 @@ const StixCoreObjectsWordCloud = ({
   endDate,
   dataSelection,
   parameters = {},
+  popover,
 }) => {
   const { t_i18n } = useFormatter();
   const renderContent = () => {
@@ -139,6 +140,7 @@ const StixCoreObjectsWordCloud = ({
       height={height}
       title={parameters.title ?? t_i18n('Distribution of entities')}
       variant={variant}
+      action={popover}
     >
       {renderContent()}
     </WidgetContainer>

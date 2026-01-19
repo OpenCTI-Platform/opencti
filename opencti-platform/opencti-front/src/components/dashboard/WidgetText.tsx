@@ -1,4 +1,4 @@
-import React, { CSSProperties } from 'react';
+import React, { CSSProperties, ReactNode } from 'react';
 import { useTheme } from '@mui/styles';
 import MarkdownDisplay from '../MarkdownDisplay';
 import WidgetContainer from './WidgetContainer';
@@ -7,6 +7,7 @@ import type { Theme } from '../Theme';
 interface WidgetTextProps {
   variant?: string;
   height?: CSSProperties['height'];
+  popover?: ReactNode;
   parameters?: {
     title?: string | null;
     content?: string | null;
@@ -17,6 +18,7 @@ const WidgetText = ({
   variant,
   height = undefined,
   parameters = {},
+  popover,
 }: WidgetTextProps) => {
   const theme = useTheme<Theme>();
   const renderContent = () => {
@@ -35,6 +37,7 @@ const WidgetText = ({
       height={height}
       variant={variant}
       title={parameters?.title ?? ''}
+      action={popover}
     >
       {renderContent()}
     </WidgetContainer>

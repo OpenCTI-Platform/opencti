@@ -27,6 +27,7 @@ import useDistributionGraphData from '../../../../utils/hooks/useDistributionGra
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
+import { useState } from 'react';
 
 const auditsHorizontalBarsDistributionQuery = graphql`
   query AuditsHorizontalBarsDistributionQuery(
@@ -97,11 +98,11 @@ const AuditsHorizontalBars = ({
   endDate,
   dataSelection,
   parameters = {},
-  withExportPopover = false,
-  isReadOnly = false,
+  popover,
 }) => {
   const theme = useTheme();
   const { t_i18n } = useFormatter();
+  const [chart, setChart] = useState();
   const navigate = useNavigate();
   const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -166,8 +167,7 @@ const AuditsHorizontalBars = ({
                 type="bar"
                 width="100%"
                 height="100%"
-                withExportPopover={withExportPopover}
-                isReadOnly={isReadOnly}
+                onMounted={setChart}
               />
             );
           }
@@ -185,6 +185,8 @@ const AuditsHorizontalBars = ({
       height={height}
       title={parameters.title || t_i18n('Distribution of history')}
       variant={variant}
+      chart={chart}
+      action={popover}
     >
       {renderContent()}
     </WidgetContainer>

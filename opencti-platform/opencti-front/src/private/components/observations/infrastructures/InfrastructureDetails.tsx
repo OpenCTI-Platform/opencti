@@ -139,6 +139,7 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
           height={300}
           startDate={undefined}
           endDate={undefined}
+          popover={undefined}
         />
       </Card>
     </div>

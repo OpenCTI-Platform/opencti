@@ -97,8 +97,6 @@ const PublicStixRelationshipsHorizontalBarsComponent = ({
       <WidgetHorizontalBars
         series={series}
         distributed={!!parameters?.distributed}
-        withExport={false}
-        readonly={true}
         redirectionUtils={redirectionUtils}
       />
     );

@@ -96,7 +96,7 @@ const Card = ({
 
   return (
     <Stack sx={{ height: '100%' }}>
-      {title && (
+      {(title || action) && (
         <CardTitle
           action={action}
           sx={titleSx}

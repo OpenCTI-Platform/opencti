@@ -56,6 +56,7 @@ const AuditsNumber = ({
   dataSelection,
   parameters = {},
   entityType,
+  popover,
 }) => {
   const { t_i18n } = useFormatter();
   const { translateEntityType } = useEntityTranslation();
@@ -93,6 +94,7 @@ const AuditsNumber = ({
               value={total}
               diffLabel={t_i18n('24 hours')}
               diffValue={total - count}
+              action={popover}
             />
           );
         }
@@ -103,7 +105,11 @@ const AuditsNumber = ({
             </WidgetContainer>
           );
         }
-        return <Loader variant={LoaderVariant.inElement} />;
+        return (
+          <WidgetContainer title={title}>
+            <Loader variant={LoaderVariant.inElement} />
+          </WidgetContainer>
+        );
       }}
     />
   );

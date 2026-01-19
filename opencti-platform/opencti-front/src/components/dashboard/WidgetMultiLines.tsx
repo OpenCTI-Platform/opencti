@@ -1,7 +1,7 @@
 import { useTheme } from '@mui/styles';
-import Chart from '@components/common/charts/Chart';
+import { useMemo } from 'react';
+import Chart, { OpenCTIChartProps } from '@components/common/charts/Chart';
 import { ApexOptions } from 'apexcharts';
-import React, { useMemo } from 'react';
 import type { Theme } from '../Theme';
 import { useFormatter } from '../i18n';
 import { lineChartOptions } from '../../utils/Charts';
@@ -11,16 +11,14 @@ interface WidgetMultiLinesProps {
   series: ApexAxisChartSeries;
   interval?: string | null;
   hasLegend?: boolean;
-  withExport?: boolean;
-  readonly?: boolean;
+  onMounted?: OpenCTIChartProps['onMounted'];
 }
 
 const WidgetMultiLines = ({
   series,
   interval,
   hasLegend = false,
-  withExport = false,
-  readonly = false,
+  onMounted,
 }: WidgetMultiLinesProps) => {
   const theme = useTheme<Theme>();
   const { fsd, mtdy, yd } = useFormatter();
@@ -52,8 +50,7 @@ const WidgetMultiLines = ({
       type="line"
       width="100%"
       height="100%"
-      withExportPopover={withExport}
-      isReadOnly={readonly}
+      onMounted={onMounted}
     />
   );
 };

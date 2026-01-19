@@ -92,6 +92,7 @@ const StixRelationshipsMap = ({
   endDate,
   dataSelection,
   parameters = {},
+  popover,
 }) => {
   const { t_i18n } = useFormatter();
   const renderContent = () => {
@@ -169,6 +170,7 @@ const StixRelationshipsMap = ({
       height={height}
       title={parameters.title ?? title ?? t_i18n('Relationships distribution')}
       variant={variant}
+      action={popover}
     >
       {renderContent()}
     </WidgetContainer>

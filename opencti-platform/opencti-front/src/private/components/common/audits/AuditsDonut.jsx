@@ -13,7 +13,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { graphql } from 'react-relay';
 import * as PropTypes from 'prop-types';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -85,12 +85,13 @@ const AuditsDonut = ({
   endDate,
   dataSelection,
   parameters = {},
-  withExportPopover = false,
-  isReadOnly = false,
+  popover,
 }) => {
   const { t_i18n } = useFormatter();
+  const [chart, setChart] = useState();
   const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
   const isEnterpriseEdition = useEnterpriseEdition();
+
   const renderContent = () => {
     if (!isGrantedToSettings || !isEnterpriseEdition) {
       return (
@@ -139,8 +140,7 @@ const AuditsDonut = ({
               <WidgetDonut
                 data={props.auditsDistribution}
                 groupBy={selection.attribute}
-                withExport={withExportPopover}
-                readonly={isReadOnly}
+                onMounted={setChart}
               />
             );
           }
@@ -158,6 +158,8 @@ const AuditsDonut = ({
       height={height}
       title={parameters.title ?? t_i18n('Distribution of history')}
       variant={variant}
+      chart={chart}
+      action={popover}
     >
       {renderContent()}
     </WidgetContainer>

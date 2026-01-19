@@ -1,22 +1,20 @@
 import ApexCharts, { ApexOptions } from 'apexcharts';
-import React, { CSSProperties, useState } from 'react';
+import { useState } from 'react';
 import IconButton from '@common/button/IconButton';
 import { FileDownloadOutlined } from '@mui/icons-material';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { useFormatter } from '../../../../components/i18n';
 
-interface ExportPopoverProps {
+interface ChartExportPopoverProps {
   chart?: ApexCharts;
   series?: ApexOptions['series'];
-  isReadOnly?: boolean;
 }
 
-const ExportPopover = ({
+const ChartExportPopover = ({
   chart,
-  isReadOnly,
   series,
-}: ExportPopoverProps) => {
+}: ChartExportPopoverProps) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 
@@ -46,15 +44,8 @@ const ExportPopover = ({
     }
   };
 
-  const styleContainer: CSSProperties = {
-    margin: 0,
-    top: 0,
-    right: isReadOnly ? 0 : 32,
-    position: 'absolute',
-  };
-
   return (
-    <div style={styleContainer}>
+    <>
       <IconButton
         onClick={(event) => {
           event.stopPropagation();
@@ -80,8 +71,8 @@ const ExportPopover = ({
         <MenuItem onClick={handleExportToSVG}>{t_i18n('Download as SVG')}</MenuItem>
         <MenuItem onClick={handleExportToCSV}>{t_i18n('Download as CSV')}</MenuItem>
       </Menu>
-    </div>
+    </>
   );
 };
 
-export default ExportPopover;
+export default ChartExportPopover;

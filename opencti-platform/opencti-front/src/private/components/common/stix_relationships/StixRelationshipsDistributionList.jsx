@@ -104,6 +104,7 @@ const StixRelationshipsDistributionList = ({
   endDate,
   dataSelection,
   parameters = {},
+  popover,
 }) => {
   const { t_i18n } = useFormatter();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
@@ -175,6 +176,7 @@ const StixRelationshipsDistributionList = ({
       height={height}
       title={parameters.title ?? title ?? t_i18n('Relationships distribution')}
       variant={variant}
+      action={popover}
     >
       {renderContent()}
     </WidgetContainer>

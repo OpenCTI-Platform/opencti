@@ -1,4 +1,4 @@
-import Chart from '@components/common/charts/Chart';
+import Chart, { OpenCTIChartProps } from '@components/common/charts/Chart';
 import React, { useMemo } from 'react';
 import { useTheme } from '@mui/styles';
 import { ApexOptions } from 'apexcharts';
@@ -9,15 +9,13 @@ import useDistributionGraphData, { DistributionQueryData } from '../../utils/hoo
 interface WidgetPolarAreaProps {
   data: DistributionQueryData;
   groupBy: string;
-  withExport?: boolean;
-  readonly?: boolean;
+  onMounted?: OpenCTIChartProps['onMounted'];
 }
 
 const WidgetPolarArea = ({
   data,
   groupBy,
-  withExport,
-  readonly,
+  onMounted,
 }: WidgetPolarAreaProps) => {
   const theme = useTheme<Theme>();
   const { buildWidgetLabelsOption, buildWidgetColorsOptions } = useDistributionGraphData();
@@ -44,8 +42,7 @@ const WidgetPolarArea = ({
       type="polarArea"
       width="100%"
       height="100%"
-      withExportPopover={withExport}
-      isReadOnly={readonly}
+      onMounted={onMounted}
     />
   );
 };

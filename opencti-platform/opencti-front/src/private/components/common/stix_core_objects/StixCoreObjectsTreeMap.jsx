@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { graphql } from 'react-relay';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
@@ -76,10 +76,11 @@ const StixCoreObjectsTreeMap = ({
   endDate,
   dataSelection,
   parameters = {},
-  withExportPopover = false,
-  isReadOnly = false,
+  popover,
 }) => {
   const { t_i18n } = useFormatter();
+  const [chart, setChart] = useState();
+
   const renderContent = () => {
     const selection = dataSelection[0];
     const dataSelectionTypes = ['Stix-Core-Object'];
@@ -114,8 +115,7 @@ const StixCoreObjectsTreeMap = ({
                 data={data}
                 groupBy={selection.attribute}
                 isDistributed={parameters.distributed}
-                readonly={isReadOnly}
-                withExport={withExportPopover}
+                onMounted={setChart}
               />
             );
           }
@@ -132,6 +132,8 @@ const StixCoreObjectsTreeMap = ({
       height={height}
       title={parameters.title ?? t_i18n('Distribution of entities')}
       variant={variant}
+      chart={chart}
+      action={popover}
     >
       {renderContent()}
     </WidgetContainer>

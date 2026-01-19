@@ -14,7 +14,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import React, { CSSProperties } from 'react';
+import React, { CSSProperties, ReactNode, useState } from 'react';
+import ApexCharts from 'apexcharts';
 import { AuditsPolarAreaDistributionQuery } from '@components/common/audits/__generated__/AuditsPolarAreaDistributionQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
@@ -26,6 +27,7 @@ import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import WidgetAccessDenied from '../../../../components/dashboard/WidgetAccessDenied';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import type { WidgetDataSelection, WidgetParameters } from '../../../../utils/widget/widget';
+import { OpenCTIChartProps } from '../charts/Chart';
 
 const auditsPolarAreaDistributionQuery = graphql`
   query AuditsPolarAreaDistributionQuery(
@@ -83,15 +85,13 @@ const auditsPolarAreaDistributionQuery = graphql`
 interface AuditsPolarAreaComponentProps {
   dataSelection: WidgetDataSelection[];
   queryRef: PreloadedQuery<AuditsPolarAreaDistributionQuery>;
-  withExportPopover: boolean;
-  isReadOnly: boolean;
+  onMounted?: OpenCTIChartProps['onMounted'];
 }
 
 const AuditsPolarAreaComponent = ({
   dataSelection,
   queryRef,
-  withExportPopover,
-  isReadOnly,
+  onMounted,
 }: AuditsPolarAreaComponentProps) => {
   const { auditsDistribution } = usePreloadedQuery(
     auditsPolarAreaDistributionQuery,
@@ -107,8 +107,7 @@ const AuditsPolarAreaComponent = ({
       <WidgetPolarArea
         data={[...auditsDistribution]}
         groupBy={attributeField}
-        withExport={withExportPopover}
-        readonly={isReadOnly}
+        onMounted={onMounted}
       />
     );
   }
@@ -122,8 +121,7 @@ interface AuditsPolarAreaProps {
   parameters: WidgetParameters;
   variant?: string;
   height?: CSSProperties['height'];
-  withExportPopover?: boolean;
-  isReadOnly?: boolean;
+  popover?: ReactNode;
 }
 
 const AuditsPolarAreaQueyRef = ({
@@ -133,11 +131,11 @@ const AuditsPolarAreaQueyRef = ({
   parameters,
   height,
   variant,
-  withExportPopover = false,
-  isReadOnly = false,
+  popover,
 }: AuditsPolarAreaProps) => {
   const selection = dataSelection[0];
   const { t_i18n } = useFormatter();
+  const [chart, setChart] = useState<ApexCharts>();
 
   const queryRef = useQueryLoading<AuditsPolarAreaDistributionQuery>(
     auditsPolarAreaDistributionQuery,
@@ -164,14 +162,15 @@ const AuditsPolarAreaQueyRef = ({
       height={height}
       title={parameters.title ?? t_i18n('Distribution of history')}
       variant={variant}
+      chart={chart}
+      action={popover}
     >
       {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <AuditsPolarAreaComponent
             queryRef={queryRef}
             dataSelection={dataSelection}
-            withExportPopover={withExportPopover}
-            isReadOnly={isReadOnly}
+            onMounted={setChart}
           />
         </React.Suspense>
       ) : (

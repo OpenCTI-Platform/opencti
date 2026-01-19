@@ -1,4 +1,4 @@
-import Chart from '@components/common/charts/Chart';
+import Chart, { OpenCTIChartProps } from '@components/common/charts/Chart';
 import React, { useMemo } from 'react';
 import { useTheme } from '@mui/styles';
 import { ApexOptions } from 'apexcharts';
@@ -12,8 +12,7 @@ interface WidgetVerticalBarsProps {
   interval?: string | null;
   isStacked?: boolean;
   hasLegend?: boolean;
-  withExport?: boolean;
-  readonly?: boolean;
+  onMounted?: OpenCTIChartProps['onMounted'];
 }
 
 const WidgetVerticalBars = ({
@@ -21,8 +20,7 @@ const WidgetVerticalBars = ({
   interval,
   isStacked = false,
   hasLegend = false,
-  withExport = false,
-  readonly = false,
+  onMounted,
 }: WidgetVerticalBarsProps) => {
   const theme = useTheme<Theme>();
   const { fsd, mtdy, yd } = useFormatter();
@@ -55,8 +53,7 @@ const WidgetVerticalBars = ({
       type="bar"
       width="100%"
       height="100%"
-      withExportPopover={withExport}
-      isReadOnly={readonly}
+      onMounted={onMounted}
     />
   );
 };

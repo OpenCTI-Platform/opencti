@@ -1,5 +1,5 @@
 import { useTheme } from '@mui/styles';
-import Chart from '@components/common/charts/Chart';
+import Chart, { OpenCTIChartProps } from '@components/common/charts/Chart';
 import { ApexOptions } from 'apexcharts';
 import React, { useMemo } from 'react';
 import type { Theme } from '../Theme';
@@ -12,8 +12,7 @@ interface WidgetMultiAreasProps {
   interval?: string | null;
   isStacked?: boolean;
   hasLegend?: boolean;
-  withExport?: boolean;
-  readonly?: boolean;
+  onMounted?: OpenCTIChartProps['onMounted'];
 }
 
 const WidgetMultiAreas = ({
@@ -21,8 +20,7 @@ const WidgetMultiAreas = ({
   interval,
   isStacked = false,
   hasLegend = false,
-  withExport = false,
-  readonly = false,
+  onMounted,
 }: WidgetMultiAreasProps) => {
   const theme = useTheme<Theme>();
   const { fsd, mtdy, yd } = useFormatter();
@@ -54,8 +52,7 @@ const WidgetMultiAreas = ({
       type="area"
       width="100%"
       height="100%"
-      withExportPopover={withExport}
-      isReadOnly={readonly}
+      onMounted={onMounted}
     />
   );
 };

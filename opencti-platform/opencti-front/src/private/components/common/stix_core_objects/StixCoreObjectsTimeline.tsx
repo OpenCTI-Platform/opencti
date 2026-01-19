@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { graphql } from 'react-relay';
 import { StixCoreObjectsTimelineQuery$data } from './__generated__/StixCoreObjectsTimelineQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
@@ -71,6 +71,7 @@ interface StixCoreObjectsTimelineProps {
   endDate: string | null;
   dataSelection: WidgetDataSelection[];
   parameters?: WidgetParameters;
+  popover?: ReactNode;
 }
 
 const StixCoreObjectsTimeline = ({
@@ -80,6 +81,7 @@ const StixCoreObjectsTimeline = ({
   endDate,
   dataSelection,
   parameters = {},
+  popover,
 }: StixCoreObjectsTimelineProps) => {
   const { t_i18n } = useFormatter();
   const renderContent = () => {
@@ -129,6 +131,7 @@ const StixCoreObjectsTimeline = ({
       height={height}
       title={parameters.title ?? t_i18n('Entities list')}
       variant={variant}
+      action={popover}
     >
       {renderContent()}
     </WidgetContainer>

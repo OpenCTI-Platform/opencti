@@ -26,7 +26,6 @@ import {
   ImportFilesDialogEntityMutation$variables,
 } from '@components/common/files/import_files/__generated__/ImportFilesDialogEntityMutation.graphql';
 import { Close } from '@mui/icons-material';
-import IconButton from '@mui/material/IconButton';
 import { AuthorizedMembersFieldValue } from '@components/common/form/AuthorizedMembersField';
 import { useFormatter } from '../../../../../components/i18n';
 import Transition from '../../../../../components/Transition';
@@ -39,6 +38,7 @@ import { RelayError } from '../../../../../relay/relayTypes';
 import { KNOWLEDGE_KNASKIMPORT } from '../../../../../utils/hooks/useGranted';
 import Security from '../../../../../utils/Security';
 import { FieldOption } from '../../../../../utils/field';
+import IconButton from '../../../../../components/common/button/IconButton';
 
 export const CSV_MAPPER_NAME = '[FILE] CSV Mapper import';
 
@@ -492,8 +492,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
         <IconButton
           aria-label="Close"
           onClick={handleClose}
-          size="large"
-          color="primary"
+          size="default"
         >
           <Close fontSize="small" color="primary" />
         </IconButton>

@@ -1,4 +1,4 @@
-import Chart from '@components/common/charts/Chart';
+import Chart, { OpenCTIChartProps } from '@components/common/charts/Chart';
 import React, { useMemo } from 'react';
 import { useTheme } from '@mui/styles';
 import { ApexOptions } from 'apexcharts';
@@ -11,16 +11,14 @@ interface WidgetTreeProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any[];
   groupBy: string;
-  withExport?: boolean;
-  readonly?: boolean;
+  onMounted?: OpenCTIChartProps['onMounted'];
   isDistributed?: boolean;
 }
 
 const WidgetTree = ({
   data,
   groupBy,
-  withExport = false,
-  readonly = false,
+  onMounted,
   isDistributed = false,
 }: WidgetTreeProps) => {
   const theme = useTheme();
@@ -55,8 +53,7 @@ const WidgetTree = ({
       type="treemap"
       width="100%"
       height="100%"
-      withExportPopover={withExport}
-      isReadOnly={readonly}
+      onMounted={onMounted}
     />
   );
 };

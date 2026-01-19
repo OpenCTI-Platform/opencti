@@ -424,6 +424,7 @@ const StixCoreObjectsList = ({
   dataSelection,
   widgetId,
   parameters = {},
+  popover,
 }) => {
   const { t_i18n } = useFormatter();
   const selection = dataSelection[0];
@@ -446,6 +447,7 @@ const StixCoreObjectsList = ({
       height={height}
       title={parameters.title ?? title ?? t_i18n('Entities list')}
       variant={variant}
+      action={popover}
     >
       <div ref={rootRef} style={{ height: '100%' }}>
         <QueryRenderer

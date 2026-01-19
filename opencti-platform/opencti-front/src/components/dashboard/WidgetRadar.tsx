@@ -1,4 +1,4 @@
-import Chart from '@components/common/charts/Chart';
+import Chart, { OpenCTIChartProps } from '@components/common/charts/Chart';
 import React, { useMemo } from 'react';
 import { useTheme } from '@mui/styles';
 import { ApexOptions } from 'apexcharts';
@@ -13,16 +13,14 @@ interface WidgetRadarProps {
   data: any[];
   label: string;
   groupBy: string;
-  withExport?: boolean;
-  readonly?: boolean;
+  onMounted?: OpenCTIChartProps['onMounted'];
 }
 
 const WidgetRadar = ({
   data,
   label,
   groupBy,
-  withExport = false,
-  readonly = false,
+  onMounted,
 }: WidgetRadarProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
@@ -51,8 +49,7 @@ const WidgetRadar = ({
       type="radar"
       width="100%"
       height="100%"
-      withExportPopover={withExport}
-      isReadOnly={readonly}
+      onMounted={onMounted}
     />
   );
 };

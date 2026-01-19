@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { graphql } from 'react-relay';
 import { StixRelationshipsTimelineStixRelationshipQuery$data } from '@components/common/stix_relationships/__generated__/StixRelationshipsTimelineStixRelationshipQuery.graphql';
 import { resolveLink } from '../../../../utils/Entity';
@@ -977,6 +977,7 @@ interface StixRelationshipsTimelineProps {
   endDate: string | null;
   dataSelection: WidgetDataSelection[];
   parameters?: WidgetParameters;
+  popover?: ReactNode;
 }
 
 const StixRelationshipsTimeline = ({
@@ -986,6 +987,7 @@ const StixRelationshipsTimeline = ({
   endDate,
   dataSelection,
   parameters = {},
+  popover,
 }: StixRelationshipsTimelineProps) => {
   const { t_i18n } = useFormatter();
   const renderContent = () => {
@@ -1053,6 +1055,7 @@ const StixRelationshipsTimeline = ({
       height={height}
       title={parameters.title ?? t_i18n('Relationships timeline')}
       variant={variant}
+      action={popover}
     >
       {renderContent()}
     </WidgetContainer>
