@@ -34,7 +34,7 @@ const RootArsenal = lazy(() => import('./components/arsenal/Root'));
 const RootTechnique = lazy(() => import('./components/techniques/Root'));
 const RootEntities = lazy(() => import('./components/entities/Root'));
 const RootLocation = lazy(() => import('./components/locations/Root'));
-const RootData = lazy(() => import('./components/data/Root'));
+const RootData = lazy(() => import('@components/data/Root'));
 const RootTrash = lazy(() => import('./components/trash/Root'));
 const RootDrafts = lazy(() => import('./components/drafts/Root'));
 const RootWorkspaces = lazy(() => import('./components/workspaces/Root'));
