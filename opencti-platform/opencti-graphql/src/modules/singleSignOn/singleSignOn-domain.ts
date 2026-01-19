@@ -113,7 +113,6 @@ export const fieldPatchSingleSignOn = async (context: AuthContext, user: AuthUse
   });
 
   await notify(BUS_TOPICS[ENTITY_TYPE_SINGLE_SIGN_ON].EDIT_TOPIC, singleSignOnEntityAfterUpdate, user);
-  // await refreshStrategy(singleSignOnEntityAfterUpdate); // is it done by cache manager too ??
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
 };
 
