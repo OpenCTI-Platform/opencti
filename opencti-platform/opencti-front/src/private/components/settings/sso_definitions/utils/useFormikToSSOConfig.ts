@@ -75,6 +75,7 @@ const useFormikToSSOConfig = (selectedStrategy: string) => {
       },
     ];
   };
+
   const formikToOpenIDConfig = (values: SSODefinitionFormValues) => {
     return [
       {
@@ -95,10 +96,10 @@ const useFormikToSSOConfig = (selectedStrategy: string) => {
       {
         key: 'redirect_uris',
         value: JSON.stringify(values.redirect_uris),
-        type: 'Array'
-      }
-    ]
-  }
+        type: 'Array',
+      },
+    ];
+  };
   
   switch (selectedStrategy) {
     case 'SAML': return formikToSamlConfig;

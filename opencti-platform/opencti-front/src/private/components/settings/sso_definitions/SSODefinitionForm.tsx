@@ -68,10 +68,10 @@ export interface SSODefinitionFormValues {
 export type SSOEditionFormInputKeys = keyof SSODefinitionFormValues;
 
 const validationSchemaConfiguration = (selectedStrategy: string, t_i18n: (s: string) => string) => {
-   let base = {
+   const base = {
      name: Yup.string().required(t_i18n('This field is required')),
      identifier: Yup.string().required(t_i18n('This field is required')),
-   }
+   };
 
    switch (selectedStrategy) {
      case 'SAML': {

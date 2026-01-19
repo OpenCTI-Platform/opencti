@@ -21,7 +21,7 @@ const openIDConfigKeys = [
   'client_id',
   'client_secret',
   'redirect_uris',
-  'issuer'
+  'issuer',
 ];
 
 type configType = ReadonlyArray<{
@@ -29,7 +29,6 @@ type configType = ReadonlyArray<{
   value: string;
   type: string;
 }>;
-
 
 export const getSSOConfigList = (strategy: string) => {
   switch (strategy) {
@@ -39,7 +38,7 @@ export const getSSOConfigList = (strategy: string) => {
     case 'OpenIDConnectStrategy': return openIDConfigKeys;
     default: return [];
   }
-}
+};
 
 export const getAdvancedConfigFromData = (config: configType, strategy: string): ConfigurationTypeInput[] => {
   const configKeys = getSSOConfigList(strategy);

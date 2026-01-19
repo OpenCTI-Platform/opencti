@@ -8,7 +8,7 @@ export const getStrategyConfigEnum = (selectedStrategy: string | null) => {
     case 'LocalAuth': return 'LocalStrategy';
     default: return null;
   }
-}
+};
 
 export const getStrategyConfigSelected = (selectedStrategy: string | null) => {
   switch (selectedStrategy) {
@@ -20,4 +20,4 @@ export const getStrategyConfigSelected = (selectedStrategy: string | null) => {
     case 'LocalStrategy': return 'LocalAuth';
     default: return null;
   }
-}
+};

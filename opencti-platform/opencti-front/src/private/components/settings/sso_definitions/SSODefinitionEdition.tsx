@@ -94,7 +94,7 @@ const SSODefinitionEdition = ({
       input.key = 'groups_management';
       input.value = [{
         ...sso.groups_management,
-        [field]: Array.isArray(value) ? value : [value]
+        [field]: Array.isArray(value) ? value : [value],
       }];
     }
 
@@ -102,7 +102,7 @@ const SSODefinitionEdition = ({
       input.key = 'organizations_management';
       input.value = [{
         ...sso.organizations_management,
-        [field]: Array.isArray(value) ? value : [value]
+        [field]: Array.isArray(value) ? value : [value],
       }];
     }
 
