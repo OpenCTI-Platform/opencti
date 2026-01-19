@@ -18,11 +18,11 @@ import StixCoreObjectsWordCloud from '@components/common/stix_core_objects/StixC
 import type { Widget } from '../../../../utils/widget/widget';
 import { computerRelativeDate, dayStartDate, formatDate } from '../../../../utils/Time';
 import { useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import { Box } from '@mui/material';
 
 interface DashboardEntitiesVizProps {
   widget: Widget;
   popover?: ReactNode;
-  isReadonly: boolean;
   config: {
     relativeDate: string | undefined;
     startDate: string;
@@ -33,7 +33,6 @@ interface DashboardEntitiesVizProps {
 const DashboardEntitiesViz = ({
   widget,
   popover,
-  isReadonly,
   config,
 }: DashboardEntitiesVizProps) => {
   const startDate = config.relativeDate
@@ -76,6 +75,7 @@ const DashboardEntitiesViz = ({
           dataSelection={dataSelection}
           entityType={undefined} // because calling js component in ts
           parameters={widget.parameters as object} // because calling js component in ts
+          popover={<Box mr={-2}>{popover}</Box>}
         />
       );
     case 'list':
@@ -185,11 +185,10 @@ const DashboardEntitiesViz = ({
             variant={undefined} // because calling js component in ts
             endDate={endDate}
             startDate={startDate}
-            isReadOnly={isReadonly}
-            withExportPopover={true}
             dataSelection={dataSelection}
             parameters={widget.parameters as object} // because calling js component in ts
             height={undefined} // because calling js component in ts
+            popover={popover}
           />
         );
       }

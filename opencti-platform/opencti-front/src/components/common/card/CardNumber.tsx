@@ -14,6 +14,7 @@ interface CardNumberProps {
   diffValue?: number;
   entityType?: string;
   icon?: ReactNode;
+  action?: ReactNode;
 }
 
 const CardNumber = ({
@@ -23,6 +24,7 @@ const CardNumber = ({
   diffValue,
   entityType,
   icon,
+  action,
 }: CardNumberProps) => {
   const { n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -35,20 +37,23 @@ const CardNumber = ({
 
   return (
     <Card sx={{ paddingY: 2 }}>
-      <Stack direction="row" alignItems="start" gap={1}>
-        <Typography
-          color={theme.palette.text.light}
-          variant="body2"
-          gutterBottom
-        >
-          {label}
-        </Typography>
-        {diffValue !== undefined && diffLabel && (
-          <NumberDifference
-            value={diffValue}
-            description={diffLabel}
-          />
-        )}
+      <Stack direction="row" alignItems="start">
+        <Stack direction="row" alignItems="start" gap={1} flex={1}>
+          <Typography
+            color={theme.palette.text.light}
+            variant="body2"
+            gutterBottom
+          >
+            {label}
+          </Typography>
+          {diffValue !== undefined && diffLabel && (
+            <NumberDifference
+              value={diffValue}
+              description={diffLabel}
+            />
+          )}
+        </Stack>
+        {action}
       </Stack>
 
       <Stack

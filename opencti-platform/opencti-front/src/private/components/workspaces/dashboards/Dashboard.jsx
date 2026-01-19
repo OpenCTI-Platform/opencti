@@ -71,7 +71,6 @@ const DashboardComponent = ({ data, noToolbar = false }) => {
     || workspace.currentUserAccessRight === 'edit';
   const userHasUpdateCapa = useGranted([EXPLORE_EXUPDATE]);
   const userCanEdit = userHasEditAccess && userHasUpdateCapa;
-  const isWrite = userCanEdit && !noToolbar;
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -322,7 +321,6 @@ const DashboardComponent = ({ data, noToolbar = false }) => {
                     {widget.perspective === 'entities' && (
                       <DashboardEntitiesViz
                         widget={widget}
-                        isReadonly={!isWrite}
                         config={manifest.config}
                         popover={popover}
                       />
@@ -330,7 +328,6 @@ const DashboardComponent = ({ data, noToolbar = false }) => {
                     {widget.perspective === 'relationships' && (
                       <DashboardRelationshipsViz
                         widget={widget}
-                        isReadonly={!isWrite}
                         config={manifest.config}
                         popover={popover}
                       />
@@ -343,7 +340,10 @@ const DashboardComponent = ({ data, noToolbar = false }) => {
                       />
                     )}
                     {widget.perspective === null && (
-                      <DashboardRawViz widget={widget} />
+                      <DashboardRawViz
+                        widget={widget}
+                        popover={popover}
+                      />
                     )}
                   </>
                 )}

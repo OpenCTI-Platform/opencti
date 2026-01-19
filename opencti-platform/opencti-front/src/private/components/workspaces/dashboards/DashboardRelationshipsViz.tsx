@@ -1,4 +1,5 @@
 import React, { memo, ReactNode } from 'react';
+import { Box } from '@mui/material';
 import StixRelationshipsNumber from '@components/common/stix_relationships/StixRelationshipsNumber';
 import StixRelationshipsList from '@components/common/stix_relationships/StixRelationshipsList';
 import StixRelationshipsDistributionList from '@components/common/stix_relationships/StixRelationshipsDistributionList';
@@ -22,7 +23,6 @@ import { useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../ut
 interface DashboardRelationshipsVizProps {
   widget: Widget;
   popover?: ReactNode;
-  isReadonly: boolean;
   config: {
     relativeDate: string | undefined;
     startDate: string;
@@ -33,7 +33,6 @@ interface DashboardRelationshipsVizProps {
 const DashboardRelationshipsViz = ({
   widget,
   popover,
-  isReadonly,
   config,
 }: DashboardRelationshipsVizProps) => {
   const startDate = config.relativeDate
@@ -66,6 +65,7 @@ const DashboardRelationshipsViz = ({
           dataSelection={dataSelection}
           entityType={undefined} // because calling js component in ts
           parameters={widget.parameters as object} // because calling js component in ts
+          popover={<Box mr={-2}>{popover}</Box>}
         />
       );
     case 'list':
@@ -170,13 +170,12 @@ const DashboardRelationshipsViz = ({
             variant={undefined} // because calling js component in ts
             endDate={endDate}
             startDate={startDate}
-            isReadOnly={isReadonly}
-            withExportPopover={true}
             dataSelection={dataSelection}
             parameters={widget.parameters as object} // because calling js component in ts
             height={undefined} // because calling js component in ts
             title={undefined} // because calling js component in ts
             field={undefined} // because calling js component in ts
+            popover={popover}
           />
         );
       }

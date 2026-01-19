@@ -6,7 +6,7 @@ import WidgetHorizontalBars from '../../../../../components/dashboard/WidgetHori
 import Loader from '../../../../../components/Loader';
 import { graphql, usePreloadedQuery } from 'react-relay';
 import { useStixRelationshipsMultiHorizontalBars } from './useStixRelationshipsMultiHorizontalBars';
-import { Suspense } from 'react';
+import { Suspense, useState } from 'react';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 
 const stixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery = graphql`
@@ -348,12 +348,11 @@ const stixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery = graphq
 const StixRelationshipsMultiHorizontalBarsComponent = ({
   queryRef,
   parameters = {},
-  withExportPopover = false,
-  isReadOnly = false,
   queryToCall,
   subSelection,
   finalSubDistributionField,
   finalField,
+  onMounted,
 }) => {
   const { stixRelationshipsDistribution } = usePreloadedQuery(queryToCall, queryRef);
   if (!stixRelationshipsDistribution || stixRelationshipsDistribution.length === 0) {
@@ -375,13 +374,12 @@ const StixRelationshipsMultiHorizontalBarsComponent = ({
     <WidgetHorizontalBars
       series={chartData}
       distributed={parameters.distributed}
-      withExport={withExportPopover}
-      readonly={isReadOnly}
       redirectionUtils={redirectionUtils}
       stacked
       total
       legend
       categories={categories}
+      onMounted={onMounted}
     />
   );
 };
@@ -395,10 +393,10 @@ const StixRelationshipsMultiHorizontalBars = ({
   endDate,
   dataSelection,
   parameters = {},
-  withExportPopover = false,
-  isReadOnly = false,
+  popover,
 }) => {
   const { t_i18n } = useFormatter();
+  const [chart, setChart] = useState();
 
   let selection = {};
   let filtersAndOptions;
@@ -476,18 +474,19 @@ const StixRelationshipsMultiHorizontalBars = ({
       height={height}
       title={parameters.title ?? title ?? t_i18n('Distribution of entities')}
       variant={variant}
+      chart={chart}
+      action={popover}
     >
       <Suspense fallback={<Loader />}>
         {queryRef && (
           <StixRelationshipsMultiHorizontalBarsComponent
             queryRef={queryRef}
-            isReadOnly={isReadOnly}
             parameters={parameters}
             finalField={finalField}
             queryToCall={queryToCall}
             subSelection={subSelection}
-            withExportPopover={withExportPopover}
             finalSubDistributionField={finalSubDistributionField}
+            onMounted={setChart}
           />
         )}
       </Suspense>
