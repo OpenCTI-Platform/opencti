@@ -28,6 +28,7 @@ import type { StixObject } from '../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type { BasicConnection, BasicStoreCommon, BasicStoreEntity } from '../types/store';
 import type { AuthContext, AuthUser, UserRole } from '../types/user';
+import { ID_SUBFILTER, INSTANCE_REGARDING_OF, RELATION_INFERRED_SUBFILTER, RELATION_TYPE_SUBFILTER } from './filtering/filtering-constants';
 
 export const DEFAULT_INVALID_CONF_VALUE = 'ChangeMe';
 
@@ -1007,7 +1008,7 @@ export const filterMembersUsersWithUsersOrgs = async (
     context,
     SYSTEM_USER, // we need to fetch all the organizations directly linked to the user, even if the user has not the right to see them
     [ENTITY_TYPE_IDENTITY_ORGANIZATION],
-    { filters: buildRegardingOfDirectParticipateToFilters([user.id], undefined) },
+    { filters: buildRegardingOfDirectParticipateToFilters([user.id]) },
   );
   const userDirectOrganizationsIds = userDirectOrganizations.edges.map((n) => n.node.id);
 
@@ -1059,19 +1060,19 @@ export const buildRegardingOfDirectParticipateToFilters = (ids: string[], filter
     mode: FilterMode.And,
     filters: [
       {
-        key: ['regardingOf'],
+        key: [INSTANCE_REGARDING_OF],
         operator: FilterOperator.Eq,
         values: [
           {
-            key: 'relationship_type',
-            values: ['participate-to'],
+            key: RELATION_TYPE_SUBFILTER,
+            values: [RELATION_PARTICIPATE_TO],
           },
           {
-            key: 'id',
+            key: ID_SUBFILTER,
             values: ids,
           },
           {
-            key: 'is_inferred',
+            key: RELATION_INFERRED_SUBFILTER,
             values: ['false'],
           },
         ],
@@ -1132,52 +1133,45 @@ const fetchMembersWithOrgaRestriction = async (
       { filters: buildRegardingOfDirectParticipateToFilters([user.id]) },
     );
     const userDirectOrganizationsIds = userDirectOrganizations.edges.map((n) => n.node.id);
-    // filter for the users that are in the user direct organizations
+    // construct the filter for the users that are in the user direct organizations
     const usersWithinUserOrgaFilters = userDirectOrganizationsIds.length > 0
-      ? buildRegardingOfDirectParticipateToFilters(userDirectOrganizationsIds, filters).filters
+      ? buildRegardingOfDirectParticipateToFilters(userDirectOrganizationsIds).filters
       : [];
+
+    // construct the filter on users
     // the users that are visible:
     // users in no organizations
     // OR internal_users
     // OR users with user_service_account=true
     // OR users that directly participate in an organization the user also participates directly to
     const usersFilterGroup = {
-      mode: FilterMode.Or,
+      mode: FilterMode.And,
       filters: [
-        { key: [RELATION_PARTICIPATE_TO], values: [], operator: FilterOperator.Nil },
-        { key: ['user_service_account'], values: ['true'] },
-        { key: ['internal_id'], values: Object.keys(INTERNAL_USERS) },
-        ...usersWithinUserOrgaFilters,
+        { key: ['entity_type'], values: [ENTITY_TYPE_USER] },
       ],
-      filterGroups: [],
+      filterGroups: [{
+        mode: FilterMode.Or,
+        filters: [
+          { key: [RELATION_PARTICIPATE_TO], values: [], operator: FilterOperator.Nil },
+          { key: ['user_service_account'], values: ['true'] },
+          { key: ['internal_id'], values: Object.keys(INTERNAL_USERS) },
+          ...usersWithinUserOrgaFilters,
+        ],
+        filterGroups: [],
+      }],
     };
 
-    // the members to fetch: (group OR organization OR user respecting user restrictions) AND args filters if defined
+    // eventually add groups and organizations entity types
     const typesWithoutUser = types.filter((t) => t !== ENTITY_TYPE_USER);
-
     const membersFilterGroup = typesWithoutUser.length > 0
       ? {
           mode: FilterMode.Or,
           filters: [
             { key: ['entity_type'], values: typesWithoutUser },
           ],
-          filterGroups: [
-            {
-              mode: FilterMode.And,
-              filters: [
-                { key: ['entity_type'], values: [ENTITY_TYPE_USER] },
-              ],
-              filterGroups: [usersFilterGroup],
-            },
-          ],
-        }
-      : {
-          mode: FilterMode.And,
-          filters: [
-            { key: ['entity_type'], values: [ENTITY_TYPE_USER] },
-          ],
           filterGroups: [usersFilterGroup],
-        };
+        }
+      : usersFilterGroup;
 
     // eventually add input filters
     const finalFilterGroup = filters
