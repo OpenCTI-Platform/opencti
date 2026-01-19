@@ -68,32 +68,32 @@ export interface SSODefinitionFormValues {
 export type SSOEditionFormInputKeys = keyof SSODefinitionFormValues;
 
 const validationSchemaConfiguration = (selectedStrategy: string, t_i18n: (s: string) => string) => {
-   const base = {
-     name: Yup.string().required(t_i18n('This field is required')),
-     identifier: Yup.string().required(t_i18n('This field is required')),
-   };
+  const base = {
+    name: Yup.string().required(t_i18n('This field is required')),
+    identifier: Yup.string().required(t_i18n('This field is required')),
+  };
 
-   switch (selectedStrategy) {
-     case 'SAML': {
-       return  Yup.object().shape({
-         ...base,
-         idpCert: Yup.string().required(t_i18n('This field is required')),
-         callbackUrl: Yup.string().required(t_i18n('This field is required')),
-         entryPoint: Yup.string().required(t_i18n('This field is required')),
-       });
-     }
-     case 'OpenID': {
-       return Yup.object().shape({
-         ...base,
-         issuer: Yup.string().required(t_i18n('This field is required')),
-         client_id: Yup.string().required(t_i18n('This field is required')),
-         client_secret: Yup.string().required(t_i18n('This field is required')),
-         redirect_uris: Yup.array().min(1, t_i18n('Minimum one entity type')).required(t_i18n('This field is required')),
-       });
-     }
-     default: return undefined;
-   }
-}
+  switch (selectedStrategy) {
+    case 'SAML': {
+      return Yup.object().shape({
+        ...base,
+        idpCert: Yup.string().required(t_i18n('This field is required')),
+        callbackUrl: Yup.string().required(t_i18n('This field is required')),
+        entryPoint: Yup.string().required(t_i18n('This field is required')),
+      });
+    }
+    case 'OpenID': {
+      return Yup.object().shape({
+        ...base,
+        issuer: Yup.string().required(t_i18n('This field is required')),
+        client_id: Yup.string().required(t_i18n('This field is required')),
+        client_secret: Yup.string().required(t_i18n('This field is required')),
+        redirect_uris: Yup.array().min(1, t_i18n('Minimum one entity type')).required(t_i18n('This field is required')),
+      });
+    }
+    default: return undefined;
+  }
+};
 
 const SSODefinitionForm = ({
   data,
@@ -110,7 +110,7 @@ const SSODefinitionForm = ({
     setCurrentTab(value);
   };
 
-  const validationSchema = validationSchemaConfiguration(selectedStrategy ?? '', t_i18n)
+  const validationSchema = validationSchemaConfiguration(selectedStrategy ?? '', t_i18n);
 
   const initialValues: SSODefinitionFormValues = {
     name: '',
@@ -214,7 +214,7 @@ const SSODefinitionForm = ({
       case 'LDAP': return 'group_attribute';
       default: return '';
     }
-  }
+  };
 
   return (
     <Formik
@@ -295,13 +295,13 @@ const SSODefinitionForm = ({
               />
               {selectedStrategy === 'OpenID' && (
                 <Field
-                  sx={{marginTop: '20x'}}
+                  sx={{ marginTop: '20x' }}
                   component={TextField}
                   variant="standard"
                   name="groups_path"
                   onSubmit={updateField}
                   label={t_i18n('Group path')}
-                  containerstyle={{marginTop: 12}}
+                  containerstyle={{ marginTop: 12 }}
                   fullWidth
                 />
               )}

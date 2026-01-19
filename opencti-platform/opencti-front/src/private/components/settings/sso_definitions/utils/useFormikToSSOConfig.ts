@@ -100,12 +100,16 @@ const useFormikToSSOConfig = (selectedStrategy: string) => {
       },
     ];
   };
-  
-  switch (selectedStrategy) {
-    case 'SAML': return formikToSamlConfig;
-    case 'OpenID': return formikToOpenIDConfig;
-    default: return () => [];
-  }
+
+  const getConfigFromStrategy = () => {
+    switch (selectedStrategy) {
+      case 'SAML': return formikToSamlConfig;
+      case 'OpenID': return formikToOpenIDConfig;
+      default: return () => [];
+    }
+  };
+
+  return getConfigFromStrategy();
 };
 
 export default useFormikToSSOConfig;
