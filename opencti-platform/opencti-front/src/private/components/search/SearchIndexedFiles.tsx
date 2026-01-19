@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import React from 'react';
-import { SearchIndexedFileLine_node$data } from './__generated__/SearchIndexedFileLine_node.graphql';
+import { SearchIndexedFilesFile_node$data } from './__generated__/SearchIndexedFilesFile_node.graphql';
 import { Link, useParams } from 'react-router-dom';
 import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
 import Alert from '@mui/material/Alert';
@@ -163,19 +163,19 @@ const SearchIndexedFilesComponent = () => {
         label: 'File name',
         percentWidth: 30,
         isSortable: false,
-        render: (node: SearchIndexedFileLine_node$data) => defaultRender(node.name),
+        render: (node: SearchIndexedFilesFile_node$data) => defaultRender(node.name),
       },
       uploaded_at: {
         label: 'Upload date',
         percentWidth: 10,
         isSortable: false,
-        render: (node: SearchIndexedFileLine_node$data) => fd(node.uploaded_at),
+        render: (node: SearchIndexedFilesFile_node$data) => fd(node.uploaded_at),
       },
       occurrences: {
         label: 'Occurrences',
         percentWidth: 10,
         isSortable: false,
-        render: (node: SearchIndexedFileLine_node$data) => {
+        render: (node: SearchIndexedFilesFile_node$data) => {
           return (node.searchOccurrences && node.searchOccurrences > 99) ? '99+' : node.searchOccurrences;
         },
       },
@@ -183,7 +183,7 @@ const SearchIndexedFilesComponent = () => {
         label: 'Attached entity type',
         percentWidth: 15,
         isSortable: false,
-        render: (node: SearchIndexedFileLine_node$data) => (
+        render: (node: SearchIndexedFilesFile_node$data) => (
           <>
             {node.entity && (
               <ItemEntityType entityType={node.entity.entity_type} />
@@ -195,7 +195,7 @@ const SearchIndexedFilesComponent = () => {
         label: 'Attached entity name',
         percentWidth: 25,
         isSortable: false,
-        render: (node: SearchIndexedFileLine_node$data) => (
+        render: (node: SearchIndexedFilesFile_node$data) => (
           <>
             {node.entity && (
               <>{defaultRender(node.entity?.representative.main)}</>
@@ -206,7 +206,7 @@ const SearchIndexedFilesComponent = () => {
       objectMarking: {
         percentWidth: 10,
         isSortable: false,
-        render: (node: SearchIndexedFileLine_node$data) => (
+        render: (node: SearchIndexedFilesFile_node$data) => (
           <>
             {node.entity && (
               <ItemMarkings
