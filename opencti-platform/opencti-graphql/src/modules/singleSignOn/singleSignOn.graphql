@@ -29,6 +29,7 @@ type OrganizationsManagement {
 }
 
 type GroupsManagement {
+  groups_attributes: [String!]
   group_attributes: [String!]
   group_attribute: String
   groups_path: [String!]
@@ -96,8 +97,9 @@ input OrganizationsManagementInput {
 }
 
 input GroupsManagementInput {
-  group_attributes: [String!]
-  group_attribute: String
+  groups_attributes: [String!] # OpenID
+  group_attributes: [String!] # SAML
+  group_attribute: String # LDAP
   groups_path: [String!]
   groups_mapping: [String!]
   groups_scope: String

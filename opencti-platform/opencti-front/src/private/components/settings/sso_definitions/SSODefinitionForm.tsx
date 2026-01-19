@@ -14,6 +14,7 @@ import { SSODefinitionEditionFragment$data } from '@components/settings/sso_defi
 import TextField from '../../../../components/TextField';
 import { getAdvancedConfigFromData } from '@components/settings/sso_definitions/utils/getConfigAndAdvancedConfigFromData';
 import SAMLConfig from '@components/settings/sso_definitions/SAMLConfig';
+import OpenIDConfig from '@components/settings/sso_definitions/OpenIDConfig';
 import { ConfigurationTypeInput } from '@components/settings/sso_definitions/__generated__/SSODefinitionCreationMutation.graphql';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
@@ -53,13 +54,46 @@ export interface SSODefinitionFormValues {
     value: string;
     type: string;
   }[];
+  groups_path: string[];
   group_attributes: string[];
+  groups_attributes: string[];
   groups_mapping: string[];
   organizations_path: string[];
   organizations_mapping: string[];
   read_userinfo: boolean;
+  client_id: string;
+  client_secret: string;
+  redirect_uris: string[];
 }
 export type SSOEditionFormInputKeys = keyof SSODefinitionFormValues;
+
+const validationSchemaConfiguration = (selectedStrategy: string, t_i18n: (s: string) => string) => {
+   let base = {
+     name: Yup.string().required(t_i18n('This field is required')),
+     identifier: Yup.string().required(t_i18n('This field is required')),
+   }
+
+   switch (selectedStrategy) {
+     case 'SAML': {
+       return  Yup.object().shape({
+         ...base,
+         idpCert: Yup.string().required(t_i18n('This field is required')),
+         callbackUrl: Yup.string().required(t_i18n('This field is required')),
+         entryPoint: Yup.string().required(t_i18n('This field is required')),
+       });
+     }
+     case 'OpenID': {
+       return Yup.object().shape({
+         ...base,
+         issuer: Yup.string().required(t_i18n('This field is required')),
+         client_id: Yup.string().required(t_i18n('This field is required')),
+         client_secret: Yup.string().required(t_i18n('This field is required')),
+         redirect_uris: Yup.array().min(1, t_i18n('Minimum one entity type')).required(t_i18n('This field is required')),
+       });
+     }
+     default: return undefined;
+   }
+}
 
 const SSODefinitionForm = ({
   data,
@@ -75,14 +109,8 @@ const SSODefinitionForm = ({
   const handleChangeTab = (value: number) => {
     setCurrentTab(value);
   };
-  const validationSchema = Yup.object().shape({
-    name: Yup.string().required(t_i18n('This field is required')),
-    identifier: Yup.string().required(t_i18n('This field is required')),
-    issuer: Yup.string().required(t_i18n('This field is required')),
-    idpCert: Yup.string().required(t_i18n('This field is required')),
-    callbackUrl: Yup.string().required(t_i18n('This field is required')),
-    entryPoint: Yup.string().required(t_i18n('This field is required')),
-  });
+
+  const validationSchema = validationSchemaConfiguration(selectedStrategy ?? '', t_i18n)
 
   const initialValues: SSODefinitionFormValues = {
     name: '',
@@ -105,11 +133,17 @@ const SSODefinitionForm = ({
     enableDebugMode: false,
     entryPoint: '',
     advancedConfigurations: [],
+    groups_path: [],
     group_attributes: [],
+    groups_attributes: [],
     groups_mapping: [],
     read_userinfo: false,
     organizations_path: [],
     organizations_mapping: [],
+    // OpenID
+    client_id: '',
+    client_secret: '',
+    redirect_uris: [],
   };
 
   const privateField = data?.configuration?.find((e) => e.key === 'privateKey');
@@ -126,11 +160,17 @@ const SSODefinitionForm = ({
   const forceReauthenticationField = data?.configuration?.find((e) => e.key === 'forceReauthentication');
   // const enableDebugModeField = data?.configuration?.find((e) => e.key === 'enableDebugMode');
   const entryPointField = data?.configuration?.find((e) => e.key === 'entryPoint');
-  const advancedConfigurations = getAdvancedConfigFromData((data?.configuration ?? []) as ConfigurationTypeInput[]);
-  const groupsAttributes = Array.from(data?.groups_management?.group_attributes ?? []);
+  const advancedConfigurations = getAdvancedConfigFromData((data?.configuration ?? []) as ConfigurationTypeInput[], selectedStrategy ?? '');
+  const groupAttributes = Array.from(data?.groups_management?.group_attributes ?? []);
+  const groupsAttributes = Array.from(data?.groups_management?.groups_attributes ?? []);
+  const groupsPath = Array.from(data?.groups_management?.groups_path ?? []);
   const groupsMapping = Array.from(data?.groups_management?.groups_mapping ?? []);
   const organizationsPath = Array.from(data?.organizations_management?.organizations_path ?? []);
   const organizationsMapping = Array.from(data?.organizations_management?.organizations_mapping ?? []);
+
+  const clientId = data?.configuration?.find((e) => e.key === 'client_id');
+  const clientSecret = data?.configuration?.find((e) => e.key === 'client_secret');
+  const redirectUris = data?.configuration?.find((e) => e.key === 'redirect_uris');
 
   if (data) {
     initialValues.name = data.name;
@@ -152,20 +192,29 @@ const SSODefinitionForm = ({
     initialValues.forceReauthentication = forceReauthenticationField ? forceReauthenticationField?.value === 'true' : false;
     // initialValues.enableDebugMode = enableDebugModeField ? enableDebugModeField?.value === 'true' : false;
     initialValues.advancedConfigurations = advancedConfigurations ?? [];
-    initialValues.group_attributes = groupsAttributes;
+    initialValues.groups_attributes = groupsAttributes;
+    initialValues.group_attributes = groupAttributes;
+    initialValues.groups_path = groupsPath;
     initialValues.groups_mapping = groupsMapping;
     initialValues.organizations_path = organizationsPath;
     initialValues.organizations_mapping = organizationsMapping;
-  }
 
+    initialValues.client_id = clientId?.value ?? '';
+    initialValues.client_secret = clientSecret?.value ?? '';
+    initialValues.redirect_uris = redirectUris?.value ? JSON.parse(redirectUris.value ?? '') : [];
+  }
   const updateField = async (field: SSOEditionFormInputKeys, value: unknown) => {
-    if (onSubmitField) {
-      // validationSchema.validateAt(field, { [field]: value })
-      //   .then(() => onSubmitField(field, value))
-      //   .catch(() => false);
-      onSubmitField(field, value);
-    }
+    if (onSubmitField) onSubmitField(field, value);
   };
+
+  const getGroupAttributeKeyName = () => {
+    switch (selectedStrategy) {
+      case 'SAML': return 'group_attributes';
+      case 'OpenID': return 'groups_attributes';
+      case 'LDAP': return 'group_attribute';
+      default: return '';
+    }
+  }
 
   return (
     <Formik
@@ -229,21 +278,33 @@ const SSODefinitionForm = ({
                 style={{ marginTop: 10 }}
               />
               {selectedStrategy === 'SAML' && <SAMLConfig updateField={updateField} />}
+              {selectedStrategy === 'OpenID' && <OpenIDConfig updateField={updateField} />}
             </>
           )}
           {currentTab === 1 && (
             <>
-              <div style={{ marginTop: 20 }}>
+              <Field
+                sx={{ marginTop: '20x' }}
+                component={TextField}
+                variant="standard"
+                name={getGroupAttributeKeyName()}
+                onSubmit={updateField}
+                label={t_i18n('Attribute in token')}
+                containerstyle={{ marginTop: 12 }}
+                fullWidth
+              />
+              {selectedStrategy === 'OpenID' && (
                 <Field
+                  sx={{marginTop: '20x'}}
                   component={TextField}
                   variant="standard"
-                  name="group_attributes"
+                  name="groups_path"
                   onSubmit={updateField}
-                  label={t_i18n('Attribute/path in token')}
-                  containerstyle={{ marginTop: 12 }}
+                  label={t_i18n('Group path')}
+                  containerstyle={{marginTop: 12}}
                   fullWidth
                 />
-              </div>
+              )}
               <FieldArray name="groups_mapping">
                 {({ push, remove, form }) => (
                   <>

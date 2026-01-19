@@ -17,16 +17,36 @@ const samlConfigKeys = [
   'entryPoint',
 ];
 
+const openIDConfigKeys = [
+  'client_id',
+  'client_secret',
+  'redirect_uris',
+  'issuer'
+];
+
 type configType = ReadonlyArray<{
   key: string;
   value: string;
   type: string;
 }>;
 
-export const getAdvancedConfigFromData = (config: configType): ConfigurationTypeInput[] => {
-  return config.filter((item) => !samlConfigKeys.includes(item.key));
+
+export const getSSOConfigList = (strategy: string) => {
+  switch (strategy) {
+    case 'SAML':
+    case 'SamlStrategy': return samlConfigKeys;
+    case 'OpenID':
+    case 'OpenIDConnectStrategy': return openIDConfigKeys;
+    default: return [];
+  }
+}
+
+export const getAdvancedConfigFromData = (config: configType, strategy: string): ConfigurationTypeInput[] => {
+  const configKeys = getSSOConfigList(strategy);
+  return config.filter((item) => !configKeys.includes(item.key));
 };
 
-export const getConfigFromData = (config: configType): ConfigurationTypeInput[] => {
-  return config.filter((item) => samlConfigKeys.includes(item.key));
+export const getConfigFromData = (config: configType, strategy: string): ConfigurationTypeInput[] => {
+  const configKeys = getSSOConfigList(strategy);
+  return config.filter((item) => configKeys.includes(item.key));
 };

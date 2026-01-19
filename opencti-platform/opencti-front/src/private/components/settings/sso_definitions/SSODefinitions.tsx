@@ -53,7 +53,9 @@ const ssoDefinitionsLineFragment = graphql`
       organizations_mapping
     }
     groups_management{
+      groups_attributes
       group_attributes
+      group_attribute
       groups_path
       groups_mapping
       read_userinfo

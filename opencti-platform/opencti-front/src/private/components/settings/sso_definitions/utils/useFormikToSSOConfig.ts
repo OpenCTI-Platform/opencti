@@ -1,6 +1,6 @@
 import { SSODefinitionFormValues } from '@components/settings/sso_definitions/SSODefinitionForm';
 
-const useFormikToSSOConfig = () => {
+const useFormikToSSOConfig = (selectedStrategy: string) => {
   const formikToSamlConfig = (values: SSODefinitionFormValues) => {
     return [
       {
@@ -75,7 +75,36 @@ const useFormikToSSOConfig = () => {
       },
     ];
   };
-  return { formikToSamlConfig };
+  const formikToOpenIDConfig = (values: SSODefinitionFormValues) => {
+    return [
+      {
+        key: 'client_id',
+        value: values.client_id,
+        type: 'String',
+      },
+      {
+        key: 'client_secret',
+        value: values.client_secret,
+        type: 'String',
+      },
+      {
+        key: 'issuer',
+        value: values.issuer,
+        type: 'String',
+      },
+      {
+        key: 'redirect_uris',
+        value: JSON.stringify(values.redirect_uris),
+        type: 'Array'
+      }
+    ]
+  }
+  
+  switch (selectedStrategy) {
+    case 'SAML': return formikToSamlConfig;
+    case 'OpenID': return formikToOpenIDConfig;
+    default: return () => [];
+  }
 };
 
 export default useFormikToSSOConfig;
