@@ -9,7 +9,6 @@ import Typography from '@mui/material/Typography';
 import { SSODefinitionFormValues } from '@components/settings/sso_definitions/SSODefinitionForm';
 import TextField from '../../../../components/TextField';
 
-
 interface OpenIDConfigProps {
   updateField: (field: keyof SSODefinitionFormValues, value: unknown) => void;
 }
