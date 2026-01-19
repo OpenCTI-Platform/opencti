@@ -6,9 +6,7 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import SwitchField from '../../../../components/fields/SwitchField';
 import Typography from '@mui/material/Typography';
-import { IconButton } from '@mui/material';
 import { Add, Delete } from '@mui/icons-material';
-import Button from '@mui/material/Button';
 import React, { useState } from 'react';
 import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../../components/Theme';
@@ -17,6 +15,8 @@ import TextField from '../../../../components/TextField';
 import { getAdvancedConfigFromData } from '@components/settings/sso_definitions/utils/getConfigAndAdvancedConfigFromData';
 import SAMLConfig from '@components/settings/sso_definitions/SAMLConfig';
 import { ConfigurationTypeInput } from '@components/settings/sso_definitions/__generated__/SSODefinitionCreationMutation.graphql';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
 
 interface SSODefinitionFormProps {
   onCancel: () => void;
@@ -256,9 +256,9 @@ const SSODefinitionForm = ({
                     >
                       <Typography variant="h2">{t_i18n('Add a group mapping')}</Typography>
                       <IconButton
+                        size="default"
                         color="secondary"
                         aria-label={t_i18n('Add a new value')}
-                        size="large"
                         style={{ marginBottom: 12 }}
                         onClick={() => push('')}
                       >
@@ -301,6 +301,7 @@ const SSODefinitionForm = ({
                             {/*  /> */}
                             {/* </div> */}
                             <IconButton
+                              size="default"
                               color="primary"
                               aria-label={t_i18n('Delete')}
                               style={{ marginTop: 10 }}
@@ -361,9 +362,9 @@ const SSODefinitionForm = ({
                     >
                       <Typography variant="h2">{t_i18n('Add a new value')}</Typography>
                       <IconButton
+                        size="default"
                         color="secondary"
                         aria-label={t_i18n('Add a new value')}
-                        size="large"
                         style={{ marginBottom: 12 }}
                         onClick={() => push('')}
                       >
@@ -431,7 +432,7 @@ const SSODefinitionForm = ({
               }}
             >
               <Button
-                variant="contained"
+                variant="secondary"
                 onClick={handleReset}
                 disabled={isSubmitting}
                 style={{ marginLeft: theme.spacing(2) }}
@@ -439,8 +440,6 @@ const SSODefinitionForm = ({
                 {t_i18n('Cancel')}
               </Button>
               <Button
-                variant="contained"
-                color="secondary"
                 onClick={submitForm}
                 disabled={isSubmitting}
                 style={{ marginLeft: theme.spacing(2) }}
