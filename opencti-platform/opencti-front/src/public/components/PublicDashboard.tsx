@@ -3,7 +3,6 @@ import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useNavigate, useParams } from 'react-router-dom';
 import RGL, { WidthProvider } from 'react-grid-layout';
 import { ErrorBoundary } from '@components/Error';
-import Paper from '@mui/material/Paper';
 import Loader, { LoaderVariant } from '../../components/Loader';
 import { PublicDashboardQuery } from './__generated__/PublicDashboardQuery.graphql';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
@@ -83,18 +82,9 @@ const PublicDashboardComponent = ({
         isResizable={false}
       >
         {Object.values(widgets ?? {}).map((widget) => (
-          <Paper
+          <div
             key={widget.id}
             data-grid={widget.layout}
-            variant="outlined"
-            sx={{
-              height: '100%',
-              margin: 0,
-              padding: '20px',
-              borderRadius: '6px',
-              display: 'relative',
-              overflow: 'hidden',
-            }}
           >
             <ErrorBoundary>
               {widget.perspective === 'entities' && entityWidget(widget)}
@@ -102,7 +92,7 @@ const PublicDashboardComponent = ({
               {widget.perspective === 'audits' && auditWidget(widget)}
               {widget.perspective === null && rawWidget(widget)}
             </ErrorBoundary>
-          </Paper>
+          </div>
         ))}
       </ReactGridLayout>
 
