@@ -71,7 +71,7 @@ const OpenIDConfig = ({ updateField }: OpenIDConfigProps) => {
                 <Add fontSize="small" />
               </IconButton>
             </div>
-            {form.values.redirect_uris && form.values.redirect_uris.map((value, index) => (
+            {form.values.redirect_uris && form.values.redirect_uris.map((value: string, index: number) => (
               <div
                 key={index}
                 style={{
