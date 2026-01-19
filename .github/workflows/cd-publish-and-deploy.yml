@@ -2,7 +2,7 @@ name: Publish and deploy to staging
 
 on:
   push:
-    # branches: [master,release/current]
+    # branches: [master,release/current]  ## TODO To uncomment when ready to activate
     branches: [issue/13571-build-images]
 
 jobs:
@@ -11,6 +11,9 @@ jobs:
       name: Build and push alpine image
       uses: ./.github/workflows/ci-docker-build.yml
       with:
+        ## TODO: Publish to docker.io public registry instead of filigran private
+        # registry: "docker.io/opencti"
+        ## TODO: Remove the build for issue/13571-build-images branch
         image_tag: ${{ github.ref_name == 'master'  && 'rolling' || github.ref_name == 'release/current' && 'prerelease' || github.ref_name == 'issue/13571-build-images' && 'test-13571'  }}
         is_client_python_local: true
         is_publish_to_registry: true
@@ -20,6 +23,9 @@ jobs:
       name: Build and push FIPS image
       uses: ./.github/workflows/ci-docker-build.yml
       with:
+        ## TODO: Publish to docker.io public registry instead of filigran private
+        # registry: "docker.io/opencti"
+        ## TODO Remove the build for issue/13571-build-images branch
         image_tag: ${{ github.ref_name == 'master'  && 'rolling' || github.ref_name == 'release/current' && 'prerelease' || github.ref_name == 'issue/13571-build-images' && 'test-13571'  }}
         is_client_python_local: true
         is_publish_to_registry: true
@@ -70,6 +76,7 @@ jobs:
             --inventory aws-staging \
             --extra_vars '{"customer":"prerelease-aws","solution": "opencti" }'
 
+## TODO : remove when test on the branch are done
       - name: Deploy on cicd-test
         if: ${{ github.ref_name == 'issue/13571-build-images' }}
         run: |

@@ -44,7 +44,7 @@ jobs:
         git clone https://github.com/OpenCTI-Platform/connectors release/opencti/connectors
         cd release
         tar -zcvf "${{ steps.package_name.outputs.value }}.tar.gz" opencti
-#        curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T opencti-$(date '+%Y%m%d').tar.gz "https://filigran.jfrog.io/artifactory/opencti/opencti-$(date '+%Y%m%d').tar.gz"
+#        curl -usamuel.hassine@filigran.io:${{ secrets.JFROG_TOKEN }} -T opencti-$(date '+%Y%m%d').tar.gz "https://filigran.jfrog.io/artifactory/opencti/opencti-$(date '+%Y%m%d').tar.gz"
 
     - name: Upload  OpenCTI debian package
       uses: actions/upload-artifact@v5
@@ -94,7 +94,7 @@ jobs:
         git clone https://github.com/OpenCTI-Platform/connectors release/opencti/connectors
         cd release
         tar -zcvf "${{ steps.package_name.outputs.value }}.tar.gz" opencti
-#        curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T opencti-$(date '+%Y%m%d').tar.gz "https://filigran.jfrog.io/artifactory/opencti/opencti-$(date '+%Y%m%d').tar.gz"
+#        curl -usamuel.hassine@filigran.io:${{ secrets.JFROG_TOKEN }} -T opencti-$(date '+%Y%m%d').tar.gz "https://filigran.jfrog.io/artifactory/opencti/opencti-$(date '+%Y%m%d').tar.gz"
 
     - name: Upload OpenCTI musl package
       uses: actions/upload-artifact@v5
