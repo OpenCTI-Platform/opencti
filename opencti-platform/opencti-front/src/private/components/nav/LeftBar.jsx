@@ -794,7 +794,14 @@ const LeftBarComponent = ({ queryRef }) => {
             onClick={handleToggle}
           />
           {!data?.settings?.platform_whitemark && (
-            <Stack direction="row" alignItems="center" gap={0.5} paddingLeft={2.5} marginBottom={1} minHeight={16}>
+            <Stack
+              direction="row"
+              alignItems="center"
+              gap={0.5}
+              paddingLeft={2.5}
+              marginBottom={1}
+              minHeight={16}
+            >
               {
                 navOpen && (
                   <Typography
