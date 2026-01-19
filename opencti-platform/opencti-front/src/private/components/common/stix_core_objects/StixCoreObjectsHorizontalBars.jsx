@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { graphql } from 'react-relay';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
@@ -96,10 +96,10 @@ const StixCoreObjectsHorizontalBars = ({
   endDate,
   dataSelection,
   parameters = {},
-  withExportPopover = false,
-  isReadOnly = false,
+  popover,
 }) => {
   const { t_i18n } = useFormatter();
+  const [chart, setChart] = useState();
   const { buildWidgetProps } = useDistributionGraphData();
 
   const renderContent = () => {
@@ -135,9 +135,8 @@ const StixCoreObjectsHorizontalBars = ({
               <WidgetHorizontalBars
                 series={series}
                 distributed={parameters.distributed}
-                withExport={withExportPopover}
-                readonly={isReadOnly}
                 redirectionUtils={redirectionUtils}
+                onMounted={setChart}
               />
             );
           }
@@ -155,6 +154,8 @@ const StixCoreObjectsHorizontalBars = ({
       height={height}
       title={parameters.title ?? t_i18n('Distribution of entities')}
       variant={variant}
+      chart={chart}
+      action={popover}
     >
       {renderContent()}
     </WidgetContainer>

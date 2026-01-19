@@ -1,4 +1,4 @@
-import Chart from '@components/common/charts/Chart';
+import Chart, { OpenCTIChartProps } from '@components/common/charts/Chart';
 import React, { useMemo } from 'react';
 import { useTheme } from '@mui/styles';
 import type { ApexOptions } from 'apexcharts';
@@ -10,15 +10,13 @@ interface WidgetDonutProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any[];
   groupBy: string;
-  withExport?: boolean;
-  readonly?: boolean;
+  onMounted?: OpenCTIChartProps['onMounted'];
 }
 
 const WidgetDonut = ({
   data,
   groupBy,
-  withExport = false,
-  readonly = false,
+  onMounted,
 }: WidgetDonutProps) => {
   const theme = useTheme<Theme>();
   const { buildWidgetLabelsOption } = useDistributionGraphData();
@@ -60,8 +58,7 @@ const WidgetDonut = ({
       type="donut"
       width="100%"
       height="100%"
-      withExportPopover={withExport}
-      isReadOnly={readonly}
+      onMounted={onMounted}
     />
   );
 };

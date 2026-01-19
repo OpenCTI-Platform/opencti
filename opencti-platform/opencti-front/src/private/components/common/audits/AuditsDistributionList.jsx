@@ -91,6 +91,7 @@ const AuditsDistributionList = ({
   endDate,
   dataSelection,
   parameters = {},
+  popover,
 }) => {
   const { t_i18n } = useFormatter();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
@@ -172,6 +173,7 @@ const AuditsDistributionList = ({
       height={height}
       title={parameters.title ?? t_i18n('Distribution of entities')}
       variant={variant}
+      action={popover}
     >
       {renderContent()}
     </WidgetContainer>

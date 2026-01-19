@@ -7,6 +7,7 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetMultiAreas from '../../../../components/dashboard/WidgetMultiAreas';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import { useState } from 'react';
 
 const stixRelationshipsMultiAreaChartTimeSeriesQuery = graphql`
   query StixRelationshipsMultiAreaChartTimeSeriesQuery(
@@ -41,11 +42,12 @@ const StixRelationshipsMultiAreaChart = ({
   endDate,
   dataSelection,
   parameters = {},
-  withExportPopover = false,
-  isReadOnly = false,
+  popover,
   relationshipTypes,
 }) => {
   const { t_i18n } = useFormatter();
+  const [chart, setChart] = useState();
+
   const renderContent = () => {
     const timeSeriesParameters = dataSelection.map((selection) => {
       const dataSelectionDateAttribute = selection.date_attribute && selection.date_attribute.length > 0
@@ -87,8 +89,7 @@ const StixRelationshipsMultiAreaChart = ({
                 interval={parameters.interval}
                 isStacked={parameters.stacked}
                 hasLegend={parameters.legend}
-                withExport={withExportPopover}
-                readonly={isReadOnly}
+                onMounted={setChart}
               />
             );
           }
@@ -106,6 +107,8 @@ const StixRelationshipsMultiAreaChart = ({
       height={height}
       title={parameters.title ?? title ?? t_i18n('Entities history')}
       variant={variant}
+      chart={chart}
+      action={popover}
     >
       {renderContent()}
     </WidgetContainer>

@@ -167,6 +167,7 @@ const StixDomainObjectBookmarksList = ({
   height,
   dataSelection,
   parameters = {},
+  popover,
 }) => {
   const { t_i18n } = useFormatter();
   const renderContent = () => {
@@ -196,6 +197,7 @@ const StixDomainObjectBookmarksList = ({
       height={height}
       title={parameters.title ?? t_i18n('Entities list')}
       variant={variant}
+      action={popover}
     >
       {renderContent()}
     </WidgetContainer>

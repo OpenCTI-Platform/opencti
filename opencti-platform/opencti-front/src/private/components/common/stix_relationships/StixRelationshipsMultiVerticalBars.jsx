@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { graphql } from 'react-relay';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
@@ -39,10 +39,11 @@ const StixRelationshipsMultiVerticalBars = ({
   endDate,
   dataSelection,
   parameters = {},
-  withExportPopover = false,
-  isReadOnly = false,
+  popover,
 }) => {
   const { t_i18n } = useFormatter();
+  const [chart, setChart] = useState();
+
   const renderContent = () => {
     const timeSeriesParameters = dataSelection.map((selection) => {
       const dataSelectionDateAttribute = selection.date_attribute && selection.date_attribute.length > 0
@@ -83,8 +84,7 @@ const StixRelationshipsMultiVerticalBars = ({
                 interval={parameters.interval}
                 isStacked={parameters.stacked}
                 hasLegend={parameters.legend}
-                withExport={withExportPopover}
-                readonly={isReadOnly}
+                onMounted={setChart}
               />
             );
           }
@@ -102,6 +102,8 @@ const StixRelationshipsMultiVerticalBars = ({
       height={height}
       title={parameters.title ?? t_i18n('Entities history')}
       variant={variant}
+      chart={chart}
+      action={popover}
     >
       {renderContent()}
     </WidgetContainer>

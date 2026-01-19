@@ -85,6 +85,7 @@ const AuditsWordCloud = ({
   endDate,
   dataSelection,
   parameters = {},
+  popover,
 }) => {
   const { t_i18n } = useFormatter();
   const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
@@ -150,6 +151,7 @@ const AuditsWordCloud = ({
       height={height}
       title={parameters.title ?? t_i18n('Distribution of history')}
       variant={variant}
+      action={popover}
     >
       {renderContent()}
     </WidgetContainer>

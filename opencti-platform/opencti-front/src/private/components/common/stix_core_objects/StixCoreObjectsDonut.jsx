@@ -6,6 +6,7 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetDonut from '../../../../components/dashboard/WidgetDonut';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import { useState } from 'react';
 
 const stixCoreObjectsDonutDistributionQuery = graphql`
   query StixCoreObjectsDonutDistributionQuery(
@@ -93,11 +94,12 @@ const StixCoreObjectsDonut = ({
   endDate,
   dataSelection,
   parameters = {},
-  withExportPopover = false,
-  isReadOnly = false,
   withoutTitle = false,
+  popover,
 }) => {
   const { t_i18n } = useFormatter();
+  const [chart, setChart] = useState();
+
   const defaultTitle = withoutTitle ? undefined : t_i18n('Distribution of entities');
 
   const renderContent = () => {
@@ -130,8 +132,7 @@ const StixCoreObjectsDonut = ({
               <WidgetDonut
                 data={props.stixCoreObjectsDistribution}
                 groupBy={selection.attribute}
-                withExport={withExportPopover}
-                readonly={isReadOnly}
+                onMounted={setChart}
               />
             );
           }
@@ -149,6 +150,8 @@ const StixCoreObjectsDonut = ({
       height={height}
       title={parameters.title ?? defaultTitle}
       variant={variant}
+      chart={chart}
+      action={popover}
     >
       {renderContent()}
     </WidgetContainer>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { graphql } from 'react-relay';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
@@ -94,10 +94,11 @@ const StixRelationshipsTreeMap = ({
   endDate,
   dataSelection,
   parameters = {},
-  withExportPopover = false,
-  isReadOnly = false,
+  popover,
 }) => {
   const { t_i18n } = useFormatter();
+  const [chart, setChart] = useState();
+
   const renderContent = () => {
     let selection = {};
     let filtersAndOptions;
@@ -134,8 +135,7 @@ const StixRelationshipsTreeMap = ({
                 data={data}
                 groupBy={finalField}
                 isDistributed={parameters.distributed}
-                readonly={isReadOnly}
-                withExport={withExportPopover}
+                onMounted={setChart}
               />
             );
           }
@@ -152,6 +152,8 @@ const StixRelationshipsTreeMap = ({
       height={height}
       title={parameters.title ?? title ?? t_i18n('Relationships distribution')}
       variant={variant}
+      chart={chart}
+      action={popover}
     >
       {renderContent()}
     </WidgetContainer>

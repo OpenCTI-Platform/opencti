@@ -13,7 +13,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, ReactNode } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { AuditsListComponentQuery, LogsOrdering, OrderingMode } from './__generated__/AuditsListComponentQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
@@ -93,6 +93,7 @@ interface AuditsListProps {
   endDate?: string | null;
   dataSelection: WidgetDataSelection[];
   parameters?: WidgetParameters;
+  popover?: ReactNode;
 }
 
 const AuditsList: FunctionComponent<AuditsListProps> = ({
@@ -102,6 +103,7 @@ const AuditsList: FunctionComponent<AuditsListProps> = ({
   endDate,
   dataSelection,
   parameters,
+  popover,
 }) => {
   const { t_i18n } = useFormatter();
   const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
@@ -130,6 +132,7 @@ const AuditsList: FunctionComponent<AuditsListProps> = ({
       height={height}
       title={parameters?.title ?? t_i18n('Audits list')}
       variant={variant}
+      action={popover}
     >
       {(!isGrantedToSettings || !isEnterpriseEdition)
         ? (

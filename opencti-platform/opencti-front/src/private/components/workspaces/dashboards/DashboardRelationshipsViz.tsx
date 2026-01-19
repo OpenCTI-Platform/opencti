@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, ReactNode } from 'react';
 import StixRelationshipsNumber from '@components/common/stix_relationships/StixRelationshipsNumber';
 import StixRelationshipsList from '@components/common/stix_relationships/StixRelationshipsList';
 import StixRelationshipsDistributionList from '@components/common/stix_relationships/StixRelationshipsDistributionList';
@@ -21,6 +21,7 @@ import { useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../ut
 
 interface DashboardRelationshipsVizProps {
   widget: Widget;
+  popover?: ReactNode;
   isReadonly: boolean;
   config: {
     relativeDate: string | undefined;
@@ -31,6 +32,7 @@ interface DashboardRelationshipsVizProps {
 
 const DashboardRelationshipsViz = ({
   widget,
+  popover,
   isReadonly,
   config,
 }: DashboardRelationshipsVizProps) => {
@@ -76,6 +78,7 @@ const DashboardRelationshipsViz = ({
           dataSelection={dataSelection} // dynamicFrom and dynamicTo TODO
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
+          popover={popover}
         />
       );
     case 'distribution-list':
@@ -90,6 +93,7 @@ const DashboardRelationshipsViz = ({
           title={undefined} // because calling js component in ts
           field={undefined} // because calling js component in ts
           overflow={undefined} // because calling js component in ts
+          popover={popover}
         />
       );
     case 'vertical-bar':
@@ -98,11 +102,10 @@ const DashboardRelationshipsViz = ({
           variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
-          isReadOnly={isReadonly}
-          withExportPopover={true}
           dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
+          popover={popover}
         />
       );
     case 'line':
@@ -111,11 +114,10 @@ const DashboardRelationshipsViz = ({
           variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
-          isReadOnly={isReadonly}
-          withExportPopover={true}
           dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
+          popover={popover}
         />
       );
     case 'area':
@@ -124,13 +126,12 @@ const DashboardRelationshipsViz = ({
           variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
-          isReadOnly={isReadonly}
-          withExportPopover={true}
           dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           title={undefined} // because calling js component in ts
           relationshipTypes={undefined}
+          popover={popover}
         />
       );
     case 'timeline':
@@ -142,6 +143,7 @@ const DashboardRelationshipsViz = ({
           dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
+          popover={popover}
         />
       );
     case 'donut':
@@ -150,13 +152,12 @@ const DashboardRelationshipsViz = ({
           variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
-          isReadOnly={isReadonly}
-          withExportPopover={true}
           dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           title={undefined} // because calling js component in ts
           field={undefined} // because calling js component in ts
+          popover={popover}
         />
       );
     case 'horizontal-bar':
@@ -184,8 +185,6 @@ const DashboardRelationshipsViz = ({
           variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
-          isReadOnly={isReadonly}
-          withExportPopover={true}
           dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
@@ -193,6 +192,7 @@ const DashboardRelationshipsViz = ({
           field={undefined} // because calling js component in ts
           fromId={undefined} // because calling js component in ts
           relationshipType={undefined} // because calling js component in ts
+          popover={popover}
         />
       );
     case 'radar':
@@ -201,13 +201,12 @@ const DashboardRelationshipsViz = ({
           variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
-          isReadOnly={isReadonly}
-          withExportPopover={true}
           dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           title={undefined} // because calling js component in ts
           field={undefined} // because calling js component in ts
+          popover={popover}
         />
       );
     case 'polar-area':
@@ -216,13 +215,12 @@ const DashboardRelationshipsViz = ({
           variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
-          isReadOnly={isReadonly}
-          withExportPopover={true}
           dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           title={undefined} // because calling js component in ts
           field={undefined} // because calling js component in ts
+          popover={popover}
         />
       );
     case 'heatmap':
@@ -231,11 +229,10 @@ const DashboardRelationshipsViz = ({
           variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
-          isReadOnly={isReadonly}
-          withExportPopover={true}
           dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
+          popover={popover}
         />
       );
     case 'tree':
@@ -244,13 +241,12 @@ const DashboardRelationshipsViz = ({
           variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
-          isReadOnly={isReadonly}
-          withExportPopover={true}
           dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           title={undefined} // because calling js component in ts
           field={undefined} // because calling js component in ts
+          popover={popover}
         />
       );
     case 'map':
@@ -264,6 +260,7 @@ const DashboardRelationshipsViz = ({
           height={undefined} // because calling js component in ts
           title={undefined} // because calling js component in ts
           field={undefined} // because calling js component in ts
+          popover={popover}
         />
       );
     case 'wordcloud':
@@ -277,6 +274,7 @@ const DashboardRelationshipsViz = ({
           height={undefined} // because calling js component in ts
           title={undefined} // because calling js component in ts
           field={undefined} // because calling js component in ts
+          popover={popover}
         />
       );
     default:

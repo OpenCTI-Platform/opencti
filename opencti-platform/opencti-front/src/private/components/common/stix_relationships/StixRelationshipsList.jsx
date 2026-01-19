@@ -4516,6 +4516,7 @@ const StixRelationshipsList = ({
   dataSelection,
   widgetId,
   parameters = {},
+  popover,
 }) => {
   const { t_i18n } = useFormatter();
   const renderContent = () => {
@@ -4575,6 +4576,7 @@ const StixRelationshipsList = ({
       height={height}
       title={parameters.title ?? t_i18n('Relationships list')}
       variant={variant}
+      action={popover}
     >
       {renderContent()}
     </WidgetContainer>

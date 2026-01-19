@@ -1,4 +1,4 @@
-import Chart from '@components/common/charts/Chart';
+import Chart, { OpenCTIChartProps } from '@components/common/charts/Chart';
 import React, { useMemo } from 'react';
 import { useTheme } from '@mui/styles';
 import { useNavigate } from 'react-router-dom';
@@ -15,13 +15,12 @@ interface WidgetHorizontalBarsProps {
   total?: boolean;
   legend?: boolean;
   categories?: string[];
-  withExport?: boolean;
-  readonly?: boolean;
   redirectionUtils?: {
     id?: string;
     entity_type?: string;
   }[];
   stackType?: string;
+  onMounted?: OpenCTIChartProps['onMounted'];
 }
 
 const WidgetHorizontalBars = ({
@@ -31,10 +30,9 @@ const WidgetHorizontalBars = ({
   total,
   legend,
   categories,
-  withExport,
-  readonly,
   redirectionUtils,
   stackType,
+  onMounted,
 }: WidgetHorizontalBarsProps) => {
   const theme = useTheme<Theme>();
   const navigate = useNavigate();
@@ -76,8 +74,7 @@ const WidgetHorizontalBars = ({
       type="bar"
       width="100%"
       height="100%"
-      withExportPopover={withExport}
-      isReadOnly={readonly}
+      onMounted={onMounted}
     />
   );
 };

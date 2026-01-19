@@ -338,7 +338,6 @@ const DashboardComponent = ({ data, noToolbar = false }) => {
                     {widget.perspective === 'audits' && (
                       <DashboardAuditsViz
                         widget={widget}
-                        isReadonly={!isWrite}
                         config={manifest.config}
                         popover={popover}
                       />
