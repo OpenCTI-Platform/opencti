@@ -1,13 +1,13 @@
-import { ReactNode, useCallback } from 'react';
-import { Add } from '@mui/icons-material';
-import { TextField, Autocomplete, AutocompleteProps, TextFieldProps, AutocompleteValue } from '@mui/material';
 import IconButton from '@common/button/IconButton';
+import { Add } from '@mui/icons-material';
+import { Autocomplete, AutocompleteProps, AutocompleteValue, TextField, TextFieldProps } from '@mui/material';
 import { FieldProps, useField } from 'formik';
-import { truncate } from '../utils/String';
-import { useFormatter } from './i18n';
-import { isNilField } from '../utils/utils';
-import { FieldOption } from '../utils/field';
 import { fieldToAutocomplete } from 'formik-mui';
+import { ReactNode, useCallback } from 'react';
+import { FieldOption } from '../utils/field';
+import { truncate } from '../utils/String';
+import { isNilField } from '../utils/utils';
+import { useFormatter } from './i18n';
 
 type Bool = boolean | undefined;
 type PossibleValue = FieldOption | string;
@@ -140,10 +140,14 @@ const AutocompleteField = <
         <IconButton
           disabled={disabled}
           onClick={() => openCreate()}
-          style={{ position: 'absolute', top: 5, right: 35 }}
+          sx={{
+            position: 'absolute',
+            bottom: 4,
+            right: 25,
+          }}
           title={t_i18n('Add')}
         >
-          <Add />
+          <Add fontSize="small" />
         </IconButton>
       )}
     </div>
