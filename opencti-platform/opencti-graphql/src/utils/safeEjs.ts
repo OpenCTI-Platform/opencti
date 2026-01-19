@@ -83,10 +83,7 @@ const forbiddenGlobals = [
 
 const noop = () => {};
 
-const createSafeContext = (
-  async: boolean,
-  { maxExecutedStatementCount = 0, maxExecutionDuration = 0, yieldMethod, escape }: SafeOptions & { escape?: (str: string) => string },
-) => {
+const createSafeContext = (async: boolean, { maxExecutedStatementCount = 0, maxExecutionDuration = 0, yieldMethod }: SafeOptions) => {
   let executedStatementCount = 0;
   const checkMaxExecutedStatementCount = maxExecutedStatementCount > 0 ? () => {
     executedStatementCount += 1;
@@ -102,7 +99,7 @@ const createSafeContext = (
     }
   } : noop;
 
-  const context: Record<string, unknown> = {
+  return {
     [safeName('statement')]: async
       ? async () => {
         checkMaxExecutedStatementCount();
@@ -144,13 +141,6 @@ const createSafeContext = (
       },
     }),
   };
-
-  // If a custom escape function is provided, make it available in template context
-  if (escape) {
-    context.escape = escape;
-  }
-
-  return context;
 };
 
 const extractEJSCode = (template: string, openTag: string, closeTag: string) => {
