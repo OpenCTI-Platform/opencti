@@ -1690,9 +1690,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@filigran/chatbot@npm:1.0.2":
-  version: 1.0.2
-  resolution: "@filigran/chatbot@npm:1.0.2"
+"@filigran/chatbot@npm:1.1.0":
+  version: 1.1.0
+  resolution: "@filigran/chatbot@npm:1.1.0"
   dependencies:
     "@microsoft/fetch-event-source": "npm:2.0.1"
     "@ts-stack/markdown": "npm:1.5.0"
@@ -1701,7 +1701,7 @@ __metadata:
     solid-element: "npm:1.9.1"
     solid-js: "npm:1.9.10"
     uuid: "npm:13.0.0"
-  checksum: 10c0/3ee0f9561b3905ebc7691a5dd0ef7ea84d321a9684f42acb418e8a03baa569ae48560d4ace305229351772f95118f663761baaaea8fc96e14e7f92cce2e81d7b
+  checksum: 10c0/3f808a7a24d0758b61693eb4e2d88be9cfdce557dd4dd8202ad460610fbc8251219e33ecce17cbcf9b370efafc25d93a728a7514e7a0b7da073af0a0a714b69c
   languageName: node
   linkType: hard
 
@@ -12228,7 +12228,7 @@ __metadata:
     "@ckeditor/ckeditor5-react": "npm:9.5.0"
     "@eslint/js": "npm:9.39.2"
     "@faker-js/faker": "npm:10.2.0"
-    "@filigran/chatbot": "npm:1.0.2"
+    "@filigran/chatbot": "npm:1.1.0"
     "@fontsource/geologica": "npm:5.2.8"
     "@fontsource/ibm-plex-sans": "npm:5.2.8"
     "@graphiql/toolkit": "npm:0.11.3"
