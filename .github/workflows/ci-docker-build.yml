@@ -23,12 +23,12 @@ on:
         default: false
       is_fips:
         description: "Registry used to publish the image"
-        type: string
+        type: boolean
         required: false
         default: false
       is_publish_to_registry:
         description: "Publish image to registry. If false, will save the image as github artifact"
-        type: string
+        type: boolean
         required: false
         default: false
       registry:
@@ -67,7 +67,7 @@ jobs:
         name: gha-builder-platform
 
     - name: Login to DockerHub
-      if: inputs.is_publish_to_registry == 'true'
+      if: inputs.is_publish_to_registry == true
       uses: docker/login-action@v3
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -78,35 +78,35 @@ jobs:
       uses: docker/metadata-action@v5
       with:
         images: ${{ inputs.registry }}/platform
-        tags: type=raw,value=${{ inputs.image_tag }}${{ inputs.is_fips == 'true' && '-fips' || '' }}
+        tags: type=raw,value=${{ inputs.image_tag }}${{ inputs.is_fips == true && '-fips' || '' }}
 
-    - name: Build and push ${{ inputs.is_fips == 'true' && 'FIPS' || '' }}
+    - name: Build and push ${{ inputs.is_fips == true && 'FIPS' || '' }}
       uses: docker/build-push-action@v6
-      if: inputs.is_publish_to_registry == 'true'
+      if: inputs.is_publish_to_registry == true
       with:
         context: opencti-platform
         file: opencti-platform/Dockerfile_featurebranch
         target: ${{ inputs.dockerfile_target }}
-        build-args: "BASE_TYPE=${{ inputs.is_fips == 'true'  && 'fips' || 'alpine' }}"
+        build-args: "BASE_TYPE=${{ inputs.is_fips == true  && 'fips' || 'alpine' }}"
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
 
-    - name: Build and export as tar ${{ inputs.is_fips == 'true' && ' FIPS' || '' }}
+    - name: Build and export as tar ${{ inputs.is_fips == true && ' FIPS' || '' }}
       uses: docker/build-push-action@v6
-      if: inputs.is_publish_to_registry == 'false'
+      if: inputs.is_publish_to_registry == false
       with:
         context: opencti-platform
         file: opencti-platform/Dockerfile_featurebranch
         target: ${{ inputs.dockerfile_target }}
-        build-args: "BASE_TYPE=${{ inputs.is_fips == 'true'  && 'fips' || 'alpine' }}"
+        build-args: "BASE_TYPE=${{ inputs.is_fips == true  && 'fips' || 'alpine' }}"
         push: false
         outputs: 'type=docker,dest=/tmp/opencti-platform.tar'
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
 
     - name: Upload opencti docker image artifact
-      if: ${{ inputs.is_publish_to_registry == 'false' }}
+      if: ${{ inputs.is_publish_to_registry == false }}
       uses: actions/upload-artifact@v6
       with:
         name: docker-image-opencti-platform
@@ -135,7 +135,7 @@ jobs:
         name: gha-builder-worker
 
     - name: Login to DockerHub
-      if: inputs.is_publish_to_registry == 'true'
+      if: inputs.is_publish_to_registry == true
       uses: docker/login-action@v3
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -146,34 +146,34 @@ jobs:
       uses: docker/metadata-action@v5
       with:
         images: ${{ inputs.registry }}/worker
-        tags: type=raw,value=${{ inputs.image_tag }}${{ inputs.is_fips == 'true'  && '-fips' || '' }}
+        tags: type=raw,value=${{ inputs.image_tag }}${{ inputs.is_fips == true  && '-fips' || '' }}
 
-    - name: Build and push ${{ inputs.is_fips == 'true' && 'FIPS' || '' }}
+    - name: Build and push ${{ inputs.is_fips == true && 'FIPS' || '' }}
       uses: docker/build-push-action@v6
-      if: inputs.is_publish_to_registry == 'true'
+      if: inputs.is_publish_to_registry == true
       with:
         context: opencti-worker
         file: opencti-worker/Dockerfile
-        build-args: "BASE_TYPE=${{ inputs.is_fips == 'true'  && 'fips' || 'alpine' }}"
+        build-args: "BASE_TYPE=${{ inputs.is_fips == true  && 'fips' || 'alpine' }}"
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
 
 
-    - name: Build and export as tar ${{ inputs.is_fips == 'true' && ' FIPS' || '' }}
+    - name: Build and export as tar ${{ inputs.is_fips == true && ' FIPS' || '' }}
       uses: docker/build-push-action@v6
-      if: inputs.is_publish_to_registry == 'false'
+      if: inputs.is_publish_to_registry == false
       with:
         context: opencti-worker
         file: opencti-worker/Dockerfile
-        build-args: "BASE_TYPE=${{ inputs.is_fips == 'true'  && 'fips' || 'alpine' }}"
+        build-args: "BASE_TYPE=${{ inputs.is_fips == true  && 'fips' || 'alpine' }}"
         push: false
         outputs: 'type=docker,dest=/tmp/opencti-worker.tar'
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
 
     - name: Upload worker docker image artifact
-      if: inputs.is_publish_to_registry == 'false'
+      if: inputs.is_publish_to_registry == false
       uses: actions/upload-artifact@v4
       with:
         name: docker-image-opencti-worker
