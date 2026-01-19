@@ -4,7 +4,6 @@ import {
 import {
   StixNestedRefRelationshipEditionOverviewQuery,
 } from '@components/common/stix_nested_ref_relationships/__generated__/StixNestedRefRelationshipEditionOverviewQuery.graphql';
-import { useTheme } from '@mui/styles';
 import { Field, Form, Formik } from 'formik';
 import { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
@@ -12,7 +11,6 @@ import * as Yup from 'yup';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import type { Theme } from '../../../../components/Theme';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import { buildDate } from '../../../../utils/Time';
@@ -69,16 +67,13 @@ export const stixNestedRefRelationshipEditionQuery = graphql`
 `;
 
 interface StixNestedRefRelationshipEditionOverviewProps {
-  handleClose?: () => void;
   queryRef: PreloadedQuery<StixNestedRefRelationshipEditionOverviewQuery>;
 }
 
 const StixNestedRefRelationshipEditionOverview: FunctionComponent<StixNestedRefRelationshipEditionOverviewProps> = ({
-  handleClose,
   queryRef,
 }) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme<Theme>();
   const { stixRefRelationship } = usePreloadedQuery<StixNestedRefRelationshipEditionOverviewQuery>(
     stixNestedRefRelationshipEditionQuery,
     queryRef,

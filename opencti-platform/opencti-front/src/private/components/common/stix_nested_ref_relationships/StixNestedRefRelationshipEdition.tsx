@@ -83,7 +83,6 @@ const StixNestedRefRelationshipEditionContent: FunctionComponent<
         <React.Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
           <StixNestedRefRelationshipEditionOverview
             queryRef={queryRef}
-            handleClose={handleClose}
           />
         </React.Suspense>
       ) : (
