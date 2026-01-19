@@ -552,6 +552,10 @@ describe('Users visibility according to their direct organizations', () => {
       expect(queryResult.data?.users.edges.length).toEqual(2); // the users participating directly in organizationA
       expect(['userA', 'userA2'].every((u) => queryResult.data?.users.edges.map((n: any) => n.node.name).includes(u))).toBeTruthy();
 
+      queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFilters('eq', RELATION_PARTICIPATE_TO, 'false', [orgaABInternalId]) } });
+      expect(queryResult.data?.users.edges.length).toEqual(1); // the users participating directly in organizationAB
+      expect(queryResult.data?.users.edges[0].node.name).toEqual('userAB');
+
       queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFilters('eq', RELATION_PARTICIPATE_TO, 'false', [orgaAInternalId, orgaABInternalId]) } });
       expect(queryResult.data?.users.edges.length).toEqual(3); // the users participating directly in organizationA or organizationAB
       expect(['userA', 'userA2', 'userAB'].every((u) => queryResult.data?.users.edges.map((n: any) => n.node.name).includes(u))).toBeTruthy();
@@ -621,7 +625,7 @@ describe('Users visibility according to their direct organizations', () => {
     });
 
     it('should load members according to the user visibility if organization sharing is activated', async () => {
-      const filters = {
+      const thisTestfileUsersFilters = {
         mode: 'and',
         filters: [{
           key: 'name',
@@ -629,63 +633,60 @@ describe('Users visibility according to their direct organizations', () => {
         }],
         filterGroups: [],
       };
-      // 01. with no entityTypes props
-      let queryResult = await queryAsAdmin({ query: READ_MEMBERS_QUERY, variables: { filters } });
-      expect(queryResult.data?.members.edges.length).toEqual(6); // the admin can see all the users
-
-      let paginatedMembersResult = await findMembersPaginated(testContext, USER_A, { filters });
+      // 01. pagination with no entityTypes and no filters props
+      let paginatedMembersResult = await findMembersPaginated(testContext, USER_A, { filters: thisTestfileUsersFilters });
       expect(paginatedMembersResult.edges.length).toEqual(4); // the users visible by userA: userA, userA2, userO, userServiceAccount
 
-      paginatedMembersResult = await findMembersPaginated(testContext, USER_A2, { filters });
+      paginatedMembersResult = await findMembersPaginated(testContext, USER_A2, { filters: thisTestfileUsersFilters });
       expect(paginatedMembersResult.edges.length).toEqual(4); // the users visible by userA2: userA, userA2, userO, userServiceAccount
 
-      let membersResult = await findAllMembers(testContext, USER_AB, { filters });
-      expect(membersResult.length).toEqual(3); // the users visible by userAB: userAB, userO, userServiceAccount
+      paginatedMembersResult = await findMembersPaginated(testContext, USER_AB, { filters: thisTestfileUsersFilters });
+      expect(paginatedMembersResult.edges.length).toEqual(3); // the users visible by userAB: userAB, userO, userServiceAccount
 
-      // 02. with entityTypes props
+      // 02. pagination with entityTypes props
       // query
-      queryResult = await queryAsAdmin({ query: READ_MEMBERS_QUERY, variables: { filters, entityTypes: [ENTITY_TYPE_USER] } });
+      let queryResult = await queryAsAdmin({ query: READ_MEMBERS_QUERY, variables: { filters: thisTestfileUsersFilters, entityTypes: [ENTITY_TYPE_USER] } });
       expect(queryResult.data?.members.edges.length).toEqual(6); // the admin can see all the users
 
-      queryResult = await editorQuery({ query: READ_MEMBERS_QUERY, variables: { filters, entityTypes: [ENTITY_TYPE_USER] } });
+      queryResult = await editorQuery({ query: READ_MEMBERS_QUERY, variables: { filters: thisTestfileUsersFilters, entityTypes: [ENTITY_TYPE_USER] } });
       expect(queryResult.data?.members.edges.length).toEqual(2); // userO which is in no organization, and userServiceAccount
       expect([userOInternalId, userServiceAccountInternalId].every((u) => queryResult.data?.members.edges.map((n: any) => n.node.id).includes(u))).toBeTruthy();
 
-      queryResult = await securityQuery({ query: READ_MEMBERS_QUERY, variables: { filters, entityTypes: [ENTITY_TYPE_USER] } });
+      queryResult = await securityQuery({ query: READ_MEMBERS_QUERY, variables: { filters: thisTestfileUsersFilters, entityTypes: [ENTITY_TYPE_USER] } });
       expect(queryResult.data?.members.edges.length).toEqual(6); // user with set_access rights can see all the users
 
       // fetch members with pagination
-      paginatedMembersResult = await findMembersPaginated(testContext, USER_A, { filters, entityTypes: [ENTITY_TYPE_USER] });
+      paginatedMembersResult = await findMembersPaginated(testContext, USER_A, { filters: thisTestfileUsersFilters, entityTypes: [ENTITY_TYPE_USER] });
       expect(paginatedMembersResult.edges.length).toEqual(4); // the users visible by userA: userA, userA2, userO, userServiceAccount
       expect([userAInternalId, userA2InternalId, userOInternalId, userServiceAccountInternalId]
         .every((u) => paginatedMembersResult.edges.map((n) => n.node.id).includes(u))).toBeTruthy();
 
-      paginatedMembersResult = await findMembersPaginated(testContext, USER_A2, { filters, entityTypes: [ENTITY_TYPE_USER] });
+      paginatedMembersResult = await findMembersPaginated(testContext, USER_A2, { filters: thisTestfileUsersFilters, entityTypes: [ENTITY_TYPE_USER] });
       expect(paginatedMembersResult.edges.length).toEqual(4); // the users visible by userA2: userA, userA2, userO, userServiceAccount
       expect([userAInternalId, userA2InternalId, userOInternalId, userServiceAccountInternalId]
         .every((u) => paginatedMembersResult.edges.map((n) => n.node.id).includes(u))).toBeTruthy();
 
-      paginatedMembersResult = await findMembersPaginated(testContext, USER_AB, { filters, entityTypes: [ENTITY_TYPE_USER] });
+      paginatedMembersResult = await findMembersPaginated(testContext, USER_AB, { filters: thisTestfileUsersFilters, entityTypes: [ENTITY_TYPE_USER] });
       expect(paginatedMembersResult.edges.length).toEqual(3); // the users visible by userAB: userAB, userO, userServiceAccount
       expect([userABInternalId, userOInternalId, userServiceAccountInternalId]
         .every((u) => paginatedMembersResult.edges.map((n) => n.node.id).includes(u))).toBeTruthy();
 
-      paginatedMembersResult = await findMembersPaginated(testContext, USER_O, { filters, entityTypes: [ENTITY_TYPE_USER] });
+      paginatedMembersResult = await findMembersPaginated(testContext, USER_O, { filters: thisTestfileUsersFilters, entityTypes: [ENTITY_TYPE_USER] });
       expect(paginatedMembersResult.edges.length).toEqual(2); // the users visible by userO: userO and userServiceAccount
       expect([userOInternalId, userServiceAccountInternalId]
         .every((u) => paginatedMembersResult.edges.map((n) => n.node.id).includes(u))).toBeTruthy();
 
-      // fetch members with no pagination
-      membersResult = await findAllMembers(testContext, USER_A, { filters });
+      // 03. fetch members with no pagination
+      let membersResult = await findAllMembers(testContext, USER_A, { filters: thisTestfileUsersFilters });
       expect(membersResult.length).toEqual(4);
 
-      membersResult = await findAllMembers(testContext, USER_A2, { filters });
+      membersResult = await findAllMembers(testContext, USER_A2, { filters: thisTestfileUsersFilters });
       expect(membersResult.length).toEqual(4);
 
-      membersResult = await findAllMembers(testContext, USER_AB, { filters });
+      membersResult = await findAllMembers(testContext, USER_AB, { filters: thisTestfileUsersFilters });
       expect(membersResult.length).toEqual(3);
 
-      membersResult = await findAllMembers(testContext, USER_O, { filters });
+      membersResult = await findAllMembers(testContext, USER_O, { filters: thisTestfileUsersFilters });
       expect(membersResult.length).toEqual(2);
     });
 

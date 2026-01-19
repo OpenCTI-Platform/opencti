@@ -1133,10 +1133,9 @@ const fetchMembersWithOrgaRestriction = async (
     );
     const userDirectOrganizationsIds = userDirectOrganizations.edges.map((n) => n.node.id);
     // filter for the users that are in the user direct organizations
-    const usersWithinUserOrgaFilter = userDirectOrganizationsIds.length > 0
+    const usersWithinUserOrgaFilters = userDirectOrganizationsIds.length > 0
       ? buildRegardingOfDirectParticipateToFilters(userDirectOrganizationsIds, filters).filters
       : [];
-
     // the users that are visible:
     // users in no organizations
     // OR internal_users
@@ -1148,7 +1147,7 @@ const fetchMembersWithOrgaRestriction = async (
         { key: [RELATION_PARTICIPATE_TO], values: [], operator: FilterOperator.Nil },
         { key: ['user_service_account'], values: ['true'] },
         { key: ['internal_id'], values: Object.keys(INTERNAL_USERS) },
-        ...usersWithinUserOrgaFilter,
+        ...usersWithinUserOrgaFilters,
       ],
       filterGroups: [],
     };
