@@ -162,7 +162,7 @@ const SAMLConfig = ({ updateField }: Props) => {
             <div style={{ display: 'flex', alignItems: 'center', marginTop: 20 }}>
               <Typography variant="h2">{t_i18n('Add more fields')}</Typography>
               <IconButton
-                color="secondary"
+                color="primary"
                 aria-label="Add"
                 size="large"
                 style={{ marginBottom: 12 }}
@@ -226,7 +226,7 @@ const SAMLConfig = ({ updateField }: Props) => {
                         const advancedConfigurations = [...form.values.advancedConfigurations];
                         advancedConfigurations.splice(index, 1);
                         updateField('advancedConfigurations', advancedConfigurations);
-                      }} // Delete
+                      }}
                     >
                       <Delete fontSize="small" />
                     </IconButton>

@@ -39,23 +39,26 @@ const SSODefinitionHeader = (
   ];
 
   return (
-    <>
+    <div style={{ paddingRight: '200px' }}>
       <Breadcrumbs elements={breadcrumb} />
       <>
         <Stack direction="row" alignItems="center" gap={0.5} marginBottom={3}>
-          <TitleMainEntity sx={{ flex: 1 }}>
-            {name}
-          </TitleMainEntity>
-          <div style={{ display: 'flex', gap: 4 }}>
-            <Button
-              onClick={() => setIsEditionOpen(true)}
-              aria-label={t_i18n('Update')}
-              title={t_i18n('Update')}
-            >
-              {t_i18n('Update')}
-            </Button>
-            <SSODefinitionPopover data={sso} />
-          </div>
+          <>
+            <TitleMainEntity sx={{ flex: 1 }}>
+              {name}
+            </TitleMainEntity>
+            <div style={{ display: 'flex', gap: 4 }}>
+              <SSODefinitionPopover data={sso} />
+              <Button
+                onClick={() => setIsEditionOpen(true)}
+                aria-label={t_i18n('Update')}
+                title={t_i18n('Update')}
+              >
+                {t_i18n('Update')}
+              </Button>
+
+            </div>
+          </>
         </Stack>
         <SSODefinitionEdition
           isOpen={isEditionOpen}
@@ -64,7 +67,7 @@ const SSODefinitionHeader = (
           data={editionData}
         />
       </>
-    </>
+    </div>
   );
 };
 

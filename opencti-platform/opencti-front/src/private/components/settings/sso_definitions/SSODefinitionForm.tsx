@@ -262,7 +262,7 @@ const SSODefinitionForm = ({
                         style={{ marginBottom: 12 }}
                         onClick={() => push('')}
                       >
-                        <Add fontSize="small" />
+                        <Add fontSize="small" color="primary" />
                       </IconButton>
                     </div>
                     {form.values.groups_mapping
@@ -367,7 +367,7 @@ const SSODefinitionForm = ({
                         style={{ marginBottom: 12 }}
                         onClick={() => push('')}
                       >
-                        <Add fontSize="small" />
+                        <Add fontSize="small" color="primary" />
                       </IconButton>
                     </div>
                     {form.values.organizations_mapping

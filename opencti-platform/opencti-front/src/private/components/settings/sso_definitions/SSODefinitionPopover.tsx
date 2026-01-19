@@ -44,7 +44,7 @@ export const SSODefinitionPopover = ({ data }: SsoDefinitionPopoverProps) => {
         size="small"
         aria-label={t_i18n('Popover of actions')}
       >
-        <MoreVert fontSize="small" />
+        <MoreVert fontSize="small" color="primary" />
       </ToggleButton>
 
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={onCloseMenu}>
