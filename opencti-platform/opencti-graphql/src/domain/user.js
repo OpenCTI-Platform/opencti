@@ -13,25 +13,10 @@ import {
   getRequestAuditHeaders,
   logApp,
 } from '../config/conf';
-import {
-  AuthenticationFailure,
-  DatabaseError,
-  DraftLockedError,
-  ForbiddenAccess,
-  FunctionalError,
-  UnsupportedError
-} from '../config/errors';
+import { AuthenticationFailure, DatabaseError, DraftLockedError, ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { elLoadBy, elRawDeleteByQuery } from '../database/engine';
-import {
-  createEntity,
-  createRelation,
-  deleteElementById,
-  deleteRelationsByFromAndTo,
-  patchAttribute,
-  updateAttribute,
-  updatedInputsToData
-} from '../database/middleware';
+import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute, updatedInputsToData } from '../database/middleware';
 import {
   fullEntitiesList,
   fullEntitiesThoughAggregationConnection,
@@ -45,26 +30,13 @@ import {
 } from '../database/middleware-loader';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { findUserSessions, killSessions, killUserSessions } from '../database/session';
-import {
-  buildPagination,
-  isEmptyField,
-  isNotEmptyField,
-  READ_INDEX_INTERNAL_OBJECTS,
-  READ_INDEX_STIX_DOMAIN_OBJECTS,
-  READ_RELATIONSHIPS_INDICES
-} from '../database/utils';
+import { buildPagination, isEmptyField, isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_RELATIONSHIPS_INDICES } from '../database/utils';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { publishUserAction } from '../listener/UserActionListener';
 import { authorizedMembers } from '../schema/attribute-definition';
 import { ABSTRACT_INTERNAL_RELATIONSHIP, ABSTRACT_STIX_DOMAIN_OBJECT, OPENCTI_ADMIN_UUID } from '../schema/general';
 import { generateStandardId } from '../schema/identifier';
-import {
-  ENTITY_TYPE_CAPABILITY,
-  ENTITY_TYPE_GROUP,
-  ENTITY_TYPE_ROLE,
-  ENTITY_TYPE_SETTINGS,
-  ENTITY_TYPE_USER
-} from '../schema/internalObject';
+import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import {
   isInternalRelationship,
   RELATION_ACCESSES_TO,
@@ -110,12 +82,7 @@ import { cleanMarkings } from '../utils/markingDefinition-utils';
 import { UnitSystem } from '../generated/graphql';
 import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
-import {
-  addCapabilitiesInDraftUpdatedCount,
-  addServiceAccountIntoUserCount,
-  addUserEmailSendCount,
-  addUserIntoServiceAccountCount
-} from '../manager/telemetryManager';
+import { addCapabilitiesInDraftUpdatedCount, addServiceAccountIntoUserCount, addUserEmailSendCount, addUserIntoServiceAccountCount } from '../manager/telemetryManager';
 import { sendMail, smtpComputeFrom } from '../database/smtp';
 import { checkEnterpriseEdition } from '../enterprise-edition/ee';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
