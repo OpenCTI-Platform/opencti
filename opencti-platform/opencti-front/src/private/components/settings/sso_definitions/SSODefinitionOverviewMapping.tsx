@@ -14,6 +14,7 @@ import { SSODefinitionOverviewMappingFragment$key } from '@components/settings/s
 import ItemBoolean from '../../../../components/ItemBoolean';
 import Tooltip from '@mui/material/Tooltip';
 import AccessesMenu from '@components/settings/AccessesMenu';
+import { CheckCircleOutlined, CloseOutlined } from '@mui/icons-material';
 
 export const ssoDefinitionOverviewMappingFragment = graphql`
   fragment SSODefinitionOverviewMappingFragment on SingleSignOn {
@@ -233,7 +234,11 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
           </Grid>
 
           <Grid size={{ xs: 12, md: 6 }}>
-            {row.value || row.key == 'enabled' ? renderValue(row.value) : '-'}
+            {row.value == 'true' || (row.key === 'enabled' && row.value)
+              ? <CheckCircleOutlined fontSize="small" color="success" />
+              : row.value == 'false' || (row.key === 'enabled' && row.value == 'false')
+                ? <CloseOutlined fontSize="small" color="error" />
+                : row.value ? renderValue(row.value) : '-'}
           </Grid>
 
           <Grid size={{ xs: 12, md: 3 }}>
