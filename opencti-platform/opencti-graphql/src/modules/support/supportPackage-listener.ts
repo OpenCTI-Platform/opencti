@@ -1,15 +1,15 @@
-import { logApp, NODE_INSTANCE_ID, TOPIC_PREFIX } from '../config/conf';
-import { pubSubSubscription } from '../database/redis';
-import type { BasicStoreEntity, StoreEntity } from '../types/store';
-import { ENTITY_TYPE_SUPPORT_PACKAGE, type StoreEntitySupportPackage } from '../modules/support/support-types';
-import { registerNodeInSupportPackage, sendCurrentNodeSupportLogToS3 } from '../modules/support/support-domain';
-import { executionContext, SYSTEM_USER } from '../utils/access';
-import type { AuthContext } from '../types/user';
-import { PackageStatus } from '../generated/graphql';
-import { wait } from '../database/utils';
+import { logApp, NODE_INSTANCE_ID, TOPIC_PREFIX } from '../../config/conf';
+import { executionContext, SYSTEM_USER } from '../../utils/access';
+import { pubSubSubscription } from '../../database/redis';
+import type { BasicStoreEntity, StoreEntity } from '../../types/store';
+import { PackageStatus } from '../../generated/graphql';
+import { registerNodeInSupportPackage, sendCurrentNodeSupportLogToS3 } from './support-domain';
+import { wait } from '../../database/utils';
+import { ENTITY_TYPE_SUPPORT_PACKAGE, type StoreEntitySupportPackage } from './support-types';
+import type { AuthContext } from '../../types/user';
 
 let context: AuthContext;
-
+let supportPackagePuSub: { topic: string; unsubscribe: () => void };
 /**
  * -- Main process of listener --
  * This listener is running on all cluster nodes.
@@ -43,11 +43,14 @@ const initSupportPackageListener = () => {
     init: () => {}, // Use for testing
     start: async () => {
       context = executionContext(`support_package_manager-${NODE_INSTANCE_ID}`);
-      await pubSubSubscription<{ instance: StoreEntity }>(`${TOPIC_PREFIX}ENTITY_TYPE_SUPPORT_PACKAGE_EDIT_TOPIC`, onSupportPackageMessage);
+      supportPackagePuSub = await pubSubSubscription<{ instance: StoreEntity }>(`${TOPIC_PREFIX}ENTITY_TYPE_SUPPORT_PACKAGE_EDIT_TOPIC`, onSupportPackageMessage);
       logApp.info('[OPENCTI-MODULE] Support Package pub sub listener initialized');
     },
     shutdown: async () => {
       logApp.info('[OPENCTI-MODULE] Stopping Support Package pub sub listener');
+      try {
+        supportPackagePuSub.unsubscribe();
+      } catch { /* dont care */ }
       return true;
     },
   };

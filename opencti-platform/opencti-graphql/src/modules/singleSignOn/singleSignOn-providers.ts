@@ -22,8 +22,8 @@ import { isNotEmptyField } from '../../database/utils';
 import * as R from 'ramda';
 import { registerAuthenticationProvider, unregisterAuthenticationProvider } from '../../config/providers-initialization';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
-import { registerOpenIdStrategy } from './singleSignOn-provider-openid';
 import { GraphQLError } from 'graphql/index';
+import { registerOpenIdStrategy2 } from './singleSignOn-provider-openid2';
 
 export const providerLoginHandler = (userInfo: any, done: any, opts = {}) => {
   loginFromProvider(userInfo, opts)
@@ -311,7 +311,8 @@ export const registerStrategy = async (authenticationStrategy: BasicStoreEntityS
           break;
         case StrategyType.OpenIdConnectStrategy:
           logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_OPENID);
-          await registerOpenIdStrategy(authenticationStrategy);
+          await registerOpenIdStrategy2(authenticationStrategy);
+          // await registerOpenIdStrategy(authenticationStrategy);
           break;
         case StrategyType.LdapStrategy:
         case StrategyType.HeaderStrategy:
@@ -340,7 +341,7 @@ export const registerStrategy = async (authenticationStrategy: BasicStoreEntityS
         data: e.extensions.data,
       });
     } else {
-      logAuthError(`Unknown error when initializing an authentication provider ${authenticationStrategy?.identifier ?? 'no identifier'}`, undefined);
+      logAuthError(`Unknown error when initializing an authentication provider ${authenticationStrategy?.identifier ?? 'no identifier'}`, undefined, e);
     }
   }
 };

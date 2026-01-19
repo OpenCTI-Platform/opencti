@@ -14,6 +14,7 @@ import { parseSingleSignOnRunConfiguration } from './singleSignOn-migration';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import { refreshStrategy, registerStrategy, unregisterStrategy } from './singleSignOn-providers';
 import { EnvStrategyType } from '../../config/providers-configuration';
+import { SUPPORT_BUS } from '../support/support-types';
 
 const toEnv = (newStrategyType: StrategyType) => {
   switch (newStrategyType) {
@@ -82,7 +83,8 @@ export const internalAddSingleSignOn = async (context: AuthContext, user: AuthUs
 
   if (created.enabled && !skipRegister) {
     logAuthInfo('Activating new strategy', toEnv(input.strategy), { identifier: input.identifier });
-    await registerStrategy(created);
+    await notify(BUS_TOPICS[ENTITY_TYPE_SINGLE_SIGN_ON].EDIT_TOPIC, created, user);
+    // await registerStrategy(created);
   }
   return created;
 };
@@ -112,7 +114,8 @@ export const fieldPatchSingleSignOn = async (context: AuthContext, user: AuthUse
     context_data: { id, entity_type: ENTITY_TYPE_SINGLE_SIGN_ON, input },
   });
 
-  await refreshStrategy(singleSignOnEntityAfterUpdate); // is it done by cache manager too ??
+  await notify(BUS_TOPICS[ENTITY_TYPE_SINGLE_SIGN_ON].EDIT_TOPIC, singleSignOnEntityAfterUpdate, user);
+  // await refreshStrategy(singleSignOnEntityAfterUpdate); // is it done by cache manager too ??
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
 };
 
