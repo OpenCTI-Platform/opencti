@@ -34,6 +34,7 @@ import { useFormatter } from '../../../components/i18n';
 import type { Widget } from '../../../utils/widget/widget';
 import PublicStixCoreObjectsWordCloud from './stix_core_objects/PublicStixCoreObjectsWordCloud';
 import PublicStixRelationshipsWordCloud from './stix_relationships/PublicStixRelationshipsWordCloud';
+import Card from '../../../components/common/card/Card';
 
 const usePublicDashboardWidgets = (uriKey: string, config?: PublicManifestConfig) => {
   const { t_i18n } = useFormatter();
@@ -44,7 +45,11 @@ const usePublicDashboardWidgets = (uriKey: string, config?: PublicManifestConfig
   const entityWidget = (widget: Widget) => {
     switch (widget.type) {
       case 'bookmark':
-        return t_i18n('Bookmarks are not supported in public dashboards');
+        return (
+          <Card>
+            {t_i18n('Bookmarks are not supported in public dashboards')}
+          </Card>
+        );
       case 'number':
         return (
           <PublicStixCoreObjectsNumber
@@ -176,7 +181,9 @@ const usePublicDashboardWidgets = (uriKey: string, config?: PublicManifestConfig
           />
         );
       default:
-        return t_i18n('Not implemented yet');
+        return (
+          <Card>{t_i18n('Not implemented yet')}</Card>
+        );
     }
   };
 
@@ -328,14 +335,20 @@ const usePublicDashboardWidgets = (uriKey: string, config?: PublicManifestConfig
           />
         );
       default:
-        return t_i18n('Not implemented yet');
+        return (
+          <Card>{t_i18n('Not implemented yet')}</Card>
+        );
     }
   };
 
   const auditWidget = (widget: Widget) => {
     switch (widget.type) {
       default:
-        return t_i18n('Audits are not supported in public dashboards');
+        return (
+          <Card>
+            {t_i18n('Audits are not supported in public dashboards')}
+          </Card>
+        );
     }
   };
 
@@ -345,11 +358,12 @@ const usePublicDashboardWidgets = (uriKey: string, config?: PublicManifestConfig
         return (
           <WidgetText
             parameters={widget.parameters}
-            variant="inLine"
           />
         );
       default:
-        return t_i18n('Not implemented yet');
+        return (
+          <Card>{t_i18n('Not implemented yet')}</Card>
+        );
     }
   };
 

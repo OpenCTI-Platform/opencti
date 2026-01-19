@@ -479,7 +479,6 @@ const PublicStixCoreObjectsList = ({
   return (
     <WidgetContainer
       title={parameters?.title ?? title ?? t_i18n('Entities number')}
-      variant="inLine"
     >
       <div ref={rootRef} style={{ height: '100%' }}>
         {queryRef ? (

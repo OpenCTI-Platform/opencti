@@ -106,7 +106,6 @@ const PublicStixCoreObjectsWordCloud = ({
   return (
     <WidgetContainer
       title={parameters?.title ?? title ?? t_i18n('Distribution of entities')}
-      variant="inLine"
     >
       {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
