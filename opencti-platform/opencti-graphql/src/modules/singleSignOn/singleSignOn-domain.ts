@@ -12,9 +12,8 @@ import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import nconf from 'nconf';
 import { parseSingleSignOnRunConfiguration } from './singleSignOn-migration';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
-import { refreshStrategy, registerStrategy, unregisterStrategy } from './singleSignOn-providers';
+import { unregisterStrategy } from './singleSignOn-providers';
 import { EnvStrategyType } from '../../config/providers-configuration';
-import { SUPPORT_BUS } from '../support/support-types';
 
 const toEnv = (newStrategyType: StrategyType) => {
   switch (newStrategyType) {
