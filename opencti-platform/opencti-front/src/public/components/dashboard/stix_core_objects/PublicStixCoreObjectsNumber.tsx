@@ -1,13 +1,13 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import React from 'react';
+import React, { Suspense } from 'react';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { PublicStixCoreObjectsNumberQuery } from './__generated__/PublicStixCoreObjectsNumberQuery.graphql';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { useFormatter } from '../../../../components/i18n';
-import WidgetNumber from '../../../../components/dashboard/WidgetNumber';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import CardNumber from '../../../../components/common/card/CardNumber';
 
 const publicStixCoreObjectsNumberQuery = graphql`
   query PublicStixCoreObjectsNumberQuery(
@@ -29,12 +29,15 @@ const publicStixCoreObjectsNumberQuery = graphql`
 `;
 
 interface PublicStixCoreObjectsNumberComponentProps {
+  title: string;
   queryRef: PreloadedQuery<PublicStixCoreObjectsNumberQuery>;
 }
 
 const PublicStixCoreObjectsNumberComponent = ({
+  title,
   queryRef,
 }: PublicStixCoreObjectsNumberComponentProps) => {
+  const { t_i18n } = useFormatter();
   const { publicStixCoreObjectsNumber } = usePreloadedQuery(
     publicStixCoreObjectsNumberQuery,
     queryRef,
@@ -42,9 +45,20 @@ const PublicStixCoreObjectsNumberComponent = ({
 
   if (publicStixCoreObjectsNumber) {
     const { total, count } = publicStixCoreObjectsNumber;
-    return <WidgetNumber total={total} value={count} />;
+    return (
+      <CardNumber
+        label={title}
+        value={total}
+        diffLabel={t_i18n('24 hours')}
+        diffValue={total - count}
+      />
+    );
   }
-  return <WidgetNoData />;
+  return (
+    <WidgetContainer>
+      <WidgetNoData />
+    </WidgetContainer>
+  );
 };
 
 const PublicStixCoreObjectsNumber = ({
@@ -67,17 +81,20 @@ const PublicStixCoreObjectsNumber = ({
   );
 
   return (
-    <WidgetContainer
-      title={parameters?.title ?? title ?? t_i18n('Entities number')}
-    >
+    <>
       {queryRef ? (
-        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <PublicStixCoreObjectsNumberComponent queryRef={queryRef} />
-        </React.Suspense>
+        <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <PublicStixCoreObjectsNumberComponent
+            title={parameters?.title ?? title ?? t_i18n('Entities number')}
+            queryRef={queryRef}
+          />
+        </Suspense>
       ) : (
-        <Loader variant={LoaderVariant.inElement} />
+        <WidgetContainer>
+          <Loader variant={LoaderVariant.inElement} />
+        </WidgetContainer>
       )}
-    </WidgetContainer>
+    </>
   );
 };
 
