@@ -11,20 +11,22 @@ import {
 import { logApp } from '../../config/conf';
 import { now } from 'moment';
 import { nowTime } from '../../utils/format';
-import { internalAddSingleSignOn } from './singleSignOn-domain';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { v4 as uuid } from 'uuid';
-import { EnvStrategyType, isAuthenticationProviderMigrated, LOCAL_STRATEGY_IDENTIFIER } from '../../config/providers-configuration';
-import { configRemapping, MIGRATED_STRATEGY } from '../../config/providers-initialization';
-import { getEntityFromCache } from '../../database/cache';
-import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
-import type { BasicStoreSettings } from '../../types/settings';
-import { settingsEditField } from '../../domain/settings';
+import { StrategyType as EnvStrategyType } from '../../config/providers-configuration';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES } from '../../utils/access';
 import { AuthRequired } from '../../config/errors';
+import { configRemapping } from '../../config/providers-initialization';
 
 // Key that should not be present after migration
 const DEPRECATED_KEYS = ['roles_management'];
+
+export const MIGRATED_STRATEGY = [
+  EnvStrategyType.STRATEGY_LOCAL,
+  EnvStrategyType.STRATEGY_SAML,
+  EnvStrategyType.STRATEGY_OPENID,
+  EnvStrategyType.STRATEGY_LDAP,
+];
 
 // Key that have dedicated usage in OpenCTI and must not be in the configuration array
 const NO_CONFIGURATION_KEY = ['label', 'disabled'];
@@ -39,7 +41,7 @@ interface ConfigurationType {
   skipped_configuration: string[];
 }
 
-const computeConfiguration = (envConfiguration: any, strategy: StrategyType) => {
+const computeConfiguration = (envConfiguration: any, strategy: EnvStrategyType) => {
   const configuration: ConfigurationTypeInput[] = [];
   let groups_management: GroupsManagementInput | undefined;
   let organizations_management: OrganizationsManagementInput | undefined;
@@ -47,7 +49,7 @@ const computeConfiguration = (envConfiguration: any, strategy: StrategyType) => 
 
   if (envConfiguration.config) {
     // TODO we will need to move this function inside current file
-    const mappedConfig = strategy === StrategyType.OpenIdConnectStrategy ? envConfiguration.config : configRemapping(envConfiguration.config);
+    const mappedConfig = strategy === EnvStrategyType.STRATEGY_OPENID ? envConfiguration.config : configRemapping(envConfiguration.config);
     for (const configKey in mappedConfig) {
       logApp.debug(`[SSO MIGRATION] current config key:${configKey}`);
 
@@ -71,36 +73,36 @@ const computeConfiguration = (envConfiguration: any, strategy: StrategyType) => 
         // SAML only
         if (group_attributes) {
           groups_management['group_attributes'] = group_attributes;
-        } else if (strategy === StrategyType.SamlStrategy) {
+        } else if (strategy === EnvStrategyType.STRATEGY_SAML) {
           groups_management['group_attributes'] = ['groups'];
         }
 
         // OpenId only
         if (groups_path) {
           groups_management['groups_path'] = groups_path;
-        } else if (strategy === StrategyType.OpenIdConnectStrategy) {
+        } else if (strategy === EnvStrategyType.STRATEGY_OPENID) {
           groups_management['groups_path'] = ['groups'];
         }
         // OpenId only
         if (read_userinfo) {
           groups_management['read_userinfo'] = read_userinfo;
-        } else if (strategy === StrategyType.OpenIdConnectStrategy) {
+        } else if (strategy === EnvStrategyType.STRATEGY_OPENID) {
           groups_management['read_userinfo'] = false;
         }
         // OpenId only
-        if (strategy === StrategyType.OpenIdConnectStrategy && groups_scope) {
+        if (strategy === EnvStrategyType.STRATEGY_OPENID && groups_scope) {
           groups_management['groups_scope'] = groups_scope;
         }
         // OpenId only
         if (token_reference) {
           groups_management['token_reference'] = token_reference;
-        } else if (strategy === StrategyType.OpenIdConnectStrategy) {
+        } else if (strategy === EnvStrategyType.STRATEGY_OPENID) {
           groups_management['token_reference'] = 'access_token';
         }
         // LDAP only
         if (group_attribute) {
           groups_management['group_attribute'] = group_attribute;
-        } else if (strategy === StrategyType.LdapStrategy) {
+        } else if (strategy === EnvStrategyType.STRATEGY_LDAP) {
           groups_management['group_attribute'] = 'cn';
         }
       } else if (configKey === ORG_MANAGEMENT_KEY) {
@@ -114,23 +116,23 @@ const computeConfiguration = (envConfiguration: any, strategy: StrategyType) => 
         // SAML, OpenId and LDAP
         if (organizations_path) {
           organizations_management['organizations_path'] = organizations_path;
-        } else if ([StrategyType.SamlStrategy, StrategyType.OpenIdConnectStrategy, StrategyType.LdapStrategy].includes(strategy)) {
+        } else if ([EnvStrategyType.STRATEGY_SAML, EnvStrategyType.STRATEGY_OPENID, EnvStrategyType.STRATEGY_LDAP].includes(strategy)) {
           organizations_management['organizations_path'] = ['organizations'];
         }
         // OpenId only
-        if (strategy === StrategyType.OpenIdConnectStrategy && organizations_scope) {
+        if (strategy === EnvStrategyType.STRATEGY_OPENID && organizations_scope) {
           organizations_management['organizations_scope'] = organizations_scope;
         }
         // OpenId only
         if (read_userinfo) {
           organizations_management['read_userinfo'] = read_userinfo;
-        } else if (strategy === StrategyType.OpenIdConnectStrategy) {
+        } else if (strategy === EnvStrategyType.STRATEGY_OPENID) {
           organizations_management['read_userinfo'] = false;
         }
         // OpenId only
         if (token_reference) {
           organizations_management['token_reference'] = token_reference;
-        } else if (strategy === StrategyType.OpenIdConnectStrategy) {
+        } else if (strategy === EnvStrategyType.STRATEGY_OPENID) {
           organizations_management['token_reference'] = 'access_token';
         }
 
@@ -191,7 +193,7 @@ const computeAuthenticationLabel = (ssoKey: string, envConfiguration: any) => {
 };
 
 const parseSAMLStrategyConfiguration = (ssoKey: string, envConfiguration: any, dryRun: boolean) => {
-  const { configuration, groups_management, organizations_management } = computeConfiguration(envConfiguration, StrategyType.SamlStrategy);
+  const { configuration, groups_management, organizations_management } = computeConfiguration(envConfiguration, EnvStrategyType.STRATEGY_SAML);
   const identifier = envConfiguration?.identifier || 'saml';
 
   const authEntity: SingleSignOnAddInput = {
@@ -199,7 +201,7 @@ const parseSAMLStrategyConfiguration = (ssoKey: string, envConfiguration: any, d
     name: computeAuthenticationName(ssoKey, envConfiguration, identifier),
     identifier,
     label: computeAuthenticationLabel(ssoKey, envConfiguration),
-    description: `${StrategyType.SamlStrategy} Automatically ${dryRun ? 'detected' : 'created'} from ${ssoKey} at ${now()}`,
+    description: `${EnvStrategyType.STRATEGY_SAML} Automatically ${dryRun ? 'detected' : 'created'} from ${ssoKey} at ${now()}`,
     enabled: computeEnabled(envConfiguration),
     configuration,
     groups_management,
@@ -209,7 +211,7 @@ const parseSAMLStrategyConfiguration = (ssoKey: string, envConfiguration: any, d
 };
 
 const parseOpenIdStrategyConfiguration = (ssoKey: string, envConfiguration: any, dryRun: boolean) => {
-  const { configuration, groups_management, organizations_management } = computeConfiguration(envConfiguration, StrategyType.OpenIdConnectStrategy);
+  const { configuration, groups_management, organizations_management } = computeConfiguration(envConfiguration, EnvStrategyType.STRATEGY_OPENID);
   const identifier = envConfiguration?.identifier || 'oic';
 
   const authEntity: SingleSignOnAddInput = {
@@ -217,7 +219,7 @@ const parseOpenIdStrategyConfiguration = (ssoKey: string, envConfiguration: any,
     strategy: StrategyType.OpenIdConnectStrategy,
     name: computeAuthenticationName(ssoKey, envConfiguration, identifier),
     label: computeAuthenticationLabel(ssoKey, envConfiguration),
-    description: `${StrategyType.OpenIdConnectStrategy} Automatically ${dryRun ? 'detected' : 'created'} from ${ssoKey} at ${now()}`,
+    description: `${EnvStrategyType.STRATEGY_OPENID} Automatically ${dryRun ? 'detected' : 'created'} from ${ssoKey} at ${now()}`,
     enabled: computeEnabled(envConfiguration),
     configuration,
     groups_management,
@@ -227,7 +229,7 @@ const parseOpenIdStrategyConfiguration = (ssoKey: string, envConfiguration: any,
 };
 
 const parseLDAPStrategyConfiguration = (ssoKey: string, envConfiguration: any, dryRun: boolean) => {
-  const { configuration, groups_management, organizations_management } = computeConfiguration(envConfiguration, StrategyType.LdapStrategy);
+  const { configuration, groups_management, organizations_management } = computeConfiguration(envConfiguration, EnvStrategyType.STRATEGY_LDAP);
   const identifier = envConfiguration?.identifier || 'ldapauth';
 
   const authEntity: SingleSignOnAddInput = {
@@ -235,7 +237,7 @@ const parseLDAPStrategyConfiguration = (ssoKey: string, envConfiguration: any, d
     strategy: StrategyType.LdapStrategy,
     name: computeAuthenticationName(ssoKey, envConfiguration, identifier),
     label: computeAuthenticationLabel(ssoKey, envConfiguration),
-    description: `${StrategyType.LdapStrategy} Automatically ${dryRun ? 'detected' : 'created'} from ${ssoKey} at ${now()}`,
+    description: `${EnvStrategyType.STRATEGY_LDAP} Automatically ${dryRun ? 'detected' : 'created'} from ${ssoKey} at ${now()}`,
     enabled: computeEnabled(envConfiguration),
     configuration,
     groups_management,
@@ -247,11 +249,11 @@ const parseLDAPStrategyConfiguration = (ssoKey: string, envConfiguration: any, d
 const parseLocalStrategyConfiguration = (ssoKey: string, envConfiguration: any, dryRun: boolean) => {
   const authEntity: SingleSignOnAddInput = {
     strategy: StrategyType.LocalStrategy,
-    name: computeAuthenticationName(ssoKey, envConfiguration, LOCAL_STRATEGY_IDENTIFIER),
+    name: computeAuthenticationName(ssoKey, envConfiguration, 'local'),
     label: computeAuthenticationLabel(ssoKey, envConfiguration),
-    description: `${StrategyType.LocalStrategy} Automatically ${dryRun ? 'detected' : 'created'} from ${ssoKey} at ${now()}`,
+    description: `${EnvStrategyType.STRATEGY_LOCAL} Automatically ${dryRun ? 'detected' : 'created'} from ${ssoKey} at ${now()}`,
     enabled: computeEnabled(envConfiguration),
-    identifier: LOCAL_STRATEGY_IDENTIFIER,
+    identifier: 'local',
   };
   return authEntity;
 };
@@ -336,49 +338,6 @@ export const parseSingleSignOnRunConfiguration = async (context: AuthContext, us
       };
       authenticationStrategies.push(queryResult);
     }
-    return authenticationStrategies;
-  } else {
-    // When no dry run: save in database, and then convert BasicStore into display object
-    logApp.info('[SSO MIGRATION] starting to write migrated SSO in database');
-    const authenticationStrategies: SingleSignOnMigrationResult[] = [];
-    const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
-    const migratedIdentifier: string[] = [];
-    for (let i = 0; i < authenticationStrategiesInput.length; i++) {
-      const currentAuthProvider = authenticationStrategiesInput[i];
-      const identifier = currentAuthProvider.identifier;
-      if (identifier && !isAuthenticationProviderMigrated(settings, identifier)) {
-        logApp.info(`[SSO MIGRATION] creating new configuration for ${identifier}`);
-        const created = await internalAddSingleSignOn(context, user, currentAuthProvider, true);
-        const queryResult: SingleSignOnMigrationResult = {
-          enabled: created.enabled,
-          name: created.name,
-          label: created.label,
-          strategy: created.strategy,
-          description: created.description,
-          id: created.id,
-          configuration: created.configuration,
-          identifier: created.identifier,
-        };
-        migratedIdentifier.push(identifier);
-        authenticationStrategies.push(queryResult);
-      } else {
-        logApp.info(`[SSO MIGRATION] skipping ${currentAuthProvider.strategy} - ${identifier} as it's already in database.`, { auth_strategy_migrated: settings?.auth_strategy_migrated });
-      }
-    }
-
-    if (migratedIdentifier.length > 0) {
-      let newList: string[];
-      if (settings.auth_strategy_migrated) {
-        newList = migratedIdentifier.concat(settings.auth_strategy_migrated);
-      } else {
-        newList = migratedIdentifier;
-      }
-      logApp.info('[SSO MIGRATION] New list of migrated identifier saved in settings', { newList });
-      await settingsEditField(context, user, settings.id, [
-        { key: 'auth_strategy_migrated', value: newList },
-      ]);
-    }
-
     return authenticationStrategies;
   }
 };

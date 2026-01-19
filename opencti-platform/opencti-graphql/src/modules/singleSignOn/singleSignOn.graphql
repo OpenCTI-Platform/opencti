@@ -68,18 +68,6 @@ type SingleSignOnConnection {
   edges: [SingleSignOnEdge!]!
 }
 
-type Query {
-  singleSignOn(id: String!): SingleSignOn @auth(for: [SETTINGS_SETAUTH])
-  singleSignOns(
-    first: Int
-    after: ID
-    orderBy: SingleSignOnOrdering
-    orderMode: OrderingMode
-    filters: FilterGroup
-    search: String
-  ): SingleSignOnConnection @auth(for: [SETTINGS_SETAUTH])
-}
-
 input OrganizationsManagementInput {
   organizations_path: [String!]
   organizations_mapping: [String!]
@@ -137,8 +125,5 @@ input SingleSignMigrationInput {
 }
 
 type Mutation {
-  singleSignOnAdd(input: SingleSignOnAddInput!): SingleSignOn @auth(for: [SETTINGS_SETAUTH])
-  singleSignOnFieldPatch(id: ID!, input: [EditInput!]!): SingleSignOn @auth(for: [SETTINGS_SETAUTH])
-  singleSignOnDelete(id: ID!): ID @auth(for: [SETTINGS_SETAUTH])
   singleSignOnRunMigration(input: SingleSignMigrationInput!): [SingleSignOnMigrationResult] @auth(for: [BYPASS])
 }
