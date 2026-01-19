@@ -7,6 +7,7 @@ import { convertStoreToStix_2_1 } from '../../../src/database/stix-2-1-converter
 import type { StixSingleSignOn, StoreEntitySingleSignOn } from '../../../src/modules/singleSignOn/singleSignOn-types';
 import { v4 as uuid } from 'uuid';
 import { logApp } from '../../../src/config/conf';
+import { registerStrategy } from '../../../src/modules/singleSignOn/singleSignOn-providers';
 
 describe('Single sign on Domain coverage tests', () => {
   describe('SAML coverage tests', () => {
@@ -31,6 +32,8 @@ describe('Single sign on Domain coverage tests', () => {
       expect(samlEntity.enabled).toBe(true);
       expect(samlEntity.label).toBe('Nice SAML button');
 
+      // Here there is a pub/sub on redis, let's just call the same method than listener
+      await registerStrategy(samlEntity);
       expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'samlTestDomain')).toBeTruthy();
     });
 
@@ -45,7 +48,11 @@ describe('Single sign on Domain coverage tests', () => {
         enabled: true,
         label: 'Nice SAML button',
       };
-      await addSingleSignOn(testContext, ADMIN_USER, input);
+      const samlEntity = await addSingleSignOn(testContext, ADMIN_USER, input);
+
+      // Here there is a pub/sub on redis, let's just call the same method than listener
+      await registerStrategy(samlEntity);
+
       expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'samlTestNotOk')).toBeFalsy();
       expect(logAppErrorSpy, 'No exception should be throw, but an error message should be present')
         .toHaveBeenCalledWith(
@@ -65,7 +72,11 @@ describe('Single sign on Domain coverage tests', () => {
         label: 'Nice SAML button',
         configuration: [{ key: 'idpCert', value: 'mszfrhazmfghqzefh', type: 'string' }],
       };
-      await addSingleSignOn(testContext, ADMIN_USER, input);
+      const samlEntity = await addSingleSignOn(testContext, ADMIN_USER, input);
+
+      // Here there is a pub/sub on redis, let's just call the same method than listener
+      await registerStrategy(samlEntity);
+
       expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'samlTestNotOk2')).toBeFalsy();
       expect(logAppErrorSpy, 'No exception should be throw, but an error message should be present')
         .toHaveBeenCalledWith(
@@ -84,7 +95,11 @@ describe('Single sign on Domain coverage tests', () => {
         label: 'Nice SAML button',
         configuration: [{ key: 'idpCert', value: 'mszfrhazmfghqzefh', type: 'string' }],
       };
-      await addSingleSignOn(testContext, ADMIN_USER, input);
+      const samlEntity = await addSingleSignOn(testContext, ADMIN_USER, input);
+
+      // Here there is a pub/sub on redis, let's just call the same method than listener
+      await registerStrategy(samlEntity);
+
       expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'samlTestNotOk3')).toBeFalsy();
       expect(logAppErrorSpy, 'No exception should be throw, but an error message should be present')
         .toHaveBeenCalledWith(
@@ -103,7 +118,11 @@ describe('Single sign on Domain coverage tests', () => {
         label: 'Nice SAML button',
         configuration: [{ key: 'callbackUrl', value: 'http://opencti/saml', type: 'string' }],
       };
-      await addSingleSignOn(testContext, ADMIN_USER, input);
+      const samlEntity = await addSingleSignOn(testContext, ADMIN_USER, input);
+
+      // Here there is a pub/sub on redis, let's just call the same method than listener
+      await registerStrategy(samlEntity);
+
       expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'samlTestNotOk4')).toBeFalsy();
       expect(logAppErrorSpy, 'No exception should be throw, but an error message should be present')
         .toHaveBeenCalledWith(
@@ -124,7 +143,11 @@ describe('Single sign on Domain coverage tests', () => {
           { key: 'idpCert', value: 'mszfrhazmfghqzefh', type: 'string' },
           { key: 'callbackUrl', value: 'http://opencti/saml', type: 'string' }],
       };
-      await addSingleSignOn(testContext, ADMIN_USER, input);
+      const samlEntity = await addSingleSignOn(testContext, ADMIN_USER, input);
+
+      // Here there is a pub/sub on redis, let's just call the same method than listener
+      await registerStrategy(samlEntity);
+
       expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'samlTestNotOk5')).toBeFalsy();
       expect(logAppErrorSpy, 'No exception should be throw, but an error message should be present')
         .toHaveBeenCalledWith(

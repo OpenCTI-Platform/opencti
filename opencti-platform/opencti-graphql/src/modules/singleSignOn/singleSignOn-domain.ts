@@ -83,7 +83,6 @@ export const internalAddSingleSignOn = async (context: AuthContext, user: AuthUs
   if (created.enabled && !skipRegister) {
     logAuthInfo('Activating new strategy', toEnv(input.strategy), { identifier: input.identifier });
     await notify(BUS_TOPICS[ENTITY_TYPE_SINGLE_SIGN_ON].EDIT_TOPIC, created, user);
-    // await registerStrategy(created);
   }
   return created;
 };
