@@ -47,7 +47,6 @@ const Tag = ({
   const chipStyle: CSSProperties = {
     backgroundColor: applyAlpha ? alpha(color ?? defaultColor, 0.2) : defaultColor,
     borderRadius: 4,
-    height: 25,
     fontSize: 12,
     fontWeight: 400,
     paddingLeft: '8px',
@@ -61,6 +60,7 @@ const Tag = ({
       backgroundColor: onClick ? lighten(bgColor, 0.2) : undefined,
     },
     maxWidth: typeof maxWidth === 'number' ? `${maxWidth}px` : maxWidth,
+    height: 25,
     '& .MuiChip-label': {
       overflow: 'hidden',
       textOverflow: 'ellipsis',
@@ -73,6 +73,7 @@ const Tag = ({
     ...(icon && {
       '& .MuiChip-icon': {
         color: color,
+        mr: 0.1,
       },
     }),
     '& .MuiChip-deleteIcon': {

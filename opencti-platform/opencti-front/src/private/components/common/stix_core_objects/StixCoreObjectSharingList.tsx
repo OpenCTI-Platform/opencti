@@ -1,15 +1,13 @@
+import { useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import Tooltip from '@mui/material/Tooltip';
-import Chip from '@mui/material/Chip';
-import { AccountBalanceOutlined } from '@mui/icons-material';
-import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { truncate } from '../../../../utils/String';
-import { StixCoreObjectSharingListFragment$key } from './__generated__/StixCoreObjectSharingListFragment.graphql';
-import { StixCoreObjectSharingListDeleteMutation } from './__generated__/StixCoreObjectSharingListDeleteMutation.graphql';
-import useDraftContext from '../../../../utils/hooks/useDraftContext';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { useFormatter } from '../../../../components/i18n';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
+import { StixCoreObjectSharingListDeleteMutation } from './__generated__/StixCoreObjectSharingListDeleteMutation.graphql';
+import { StixCoreObjectSharingListFragment$key } from './__generated__/StixCoreObjectSharingListFragment.graphql';
+import Tag from '@common/tag/Tag';
+import { AccountBalanceOutlined } from '@mui/icons-material';
 
 const objectOrganizationFragment = graphql`
   fragment StixCoreObjectSharingListFragment on StixCoreObject {
@@ -77,25 +75,17 @@ const StixCoreObjectSharingList = ({ data, disabled, inContainer }: StixCoreObje
   return (
     <div>
       {objectOrganization?.map((organization) => (
-        <Tooltip key={organization.id} title={organization.name}>
-          <Chip
-            sx={{
-              '&.MuiChip-root': {
-                margin: '4px 7px 0 0',
-                fontSize: 12,
-                lineHeight: '12px',
-                height: 28,
-                borderRadius: 1,
-              },
-            }}
-            icon={<AccountBalanceOutlined />}
-            color="primary"
-            variant="outlined"
-            label={truncate(organization.name, 15)}
-            onDelete={() => removeOrganization(organization.id)}
-            disabled={fullyDisabled || disabledOrgs.includes(organization.id)}
-          />
-        </Tooltip>
+        <Tag
+          key={organization.id}
+          label={organization.name}
+          onDelete={() => removeOrganization(organization.id)}
+          disabled={fullyDisabled || disabledOrgs.includes(organization.id)}
+          sx={{
+            height: 36,
+            maxWidth: 160,
+          }}
+          icon={<AccountBalanceOutlined fontSize="small" />}
+        />
       ))}
     </div>
   );
