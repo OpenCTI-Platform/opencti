@@ -70,8 +70,6 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
 
   type Row = { key: string; value: unknown; mandatory: boolean };
 
-  const entryPointConfiguration = configuration?.filter((e) => e.key === 'entryPoint');
-  console.log('entryPointConfiguration', entryPointConfiguration);
   const getSsoConfigRows = (): Row[] => {
     const rows: Row[] = [
       { key: 'name', value: name, mandatory: true },
