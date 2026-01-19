@@ -92,8 +92,6 @@ const PublicStixCoreObjectsRadarComponent = ({
         data={[...publicStixCoreObjectsDistribution]}
         label={dataSelection[0].label ?? ''}
         groupBy={dataSelection[0].attribute ?? 'entity_type'}
-        withExport={false}
-        readonly={true}
       />
     );
   }

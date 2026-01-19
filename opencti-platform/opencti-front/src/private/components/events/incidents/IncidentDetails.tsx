@@ -182,6 +182,7 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
               height={250}
               startDate={undefined}
               endDate={undefined}
+              popover={undefined}
             />
           </Grid>
           <Grid item xs={6}>
@@ -192,6 +193,7 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
               height={250}
               startDate={undefined}
               endDate={undefined}
+              popover={undefined}
             />
           </Grid>
         </Grid>

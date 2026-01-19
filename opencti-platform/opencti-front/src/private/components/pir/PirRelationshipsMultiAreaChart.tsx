@@ -103,8 +103,6 @@ const PirRelationshipsMultiAreaChart = ({
                   ),
                 })) as ApexAxisChartSeries}
                 interval="month"
-                withExport={false}
-                readonly
               />
             );
           }

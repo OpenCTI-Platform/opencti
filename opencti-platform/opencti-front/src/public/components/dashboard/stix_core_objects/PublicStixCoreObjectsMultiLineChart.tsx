@@ -61,8 +61,6 @@ const PublicStixCoreObjectsMultiLineChartComponent = ({
         }))}
         interval={parameters?.interval}
         hasLegend={!!parameters?.legend}
-        withExport={false}
-        readonly={true}
       />
     );
   }

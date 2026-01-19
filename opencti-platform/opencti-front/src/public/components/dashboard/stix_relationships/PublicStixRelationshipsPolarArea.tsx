@@ -92,8 +92,6 @@ const PublicStixRelationshipsPolarAreaComponent = ({
       <WidgetPolarArea
         data={[...publicStixRelationshipsDistribution]}
         groupBy={attributeField}
-        withExport={false}
-        readonly={true}
       />
     );
   }

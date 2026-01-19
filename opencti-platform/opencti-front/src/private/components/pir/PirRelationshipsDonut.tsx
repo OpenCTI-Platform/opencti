@@ -126,8 +126,6 @@ const PirRelationshipsDonut = ({ pirId }: PirRelationshipsDonutProps) => {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 data={props.pirRelationshipsDistribution as any[]}
                 groupBy={finalField}
-                withExport={false}
-                readonly={false}
               />
             );
           }

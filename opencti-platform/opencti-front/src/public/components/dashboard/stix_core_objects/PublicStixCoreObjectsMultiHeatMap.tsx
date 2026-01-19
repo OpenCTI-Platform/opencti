@@ -68,8 +68,6 @@ const PublicStixCoreObjectsMultiHeatMapComponent = ({
         minValue={minValue}
         maxValue={maxValue}
         isStacked={!!parameters?.stacked}
-        withExport={false}
-        readonly={true}
       />
     );
   }
