@@ -18,7 +18,7 @@ jobs:
   generate_package_name:
     runs-on: ubuntu-latest
     outputs:
-      date: ${{ steps.package_name.outputs.value }}
+      package_name: ${{ steps.package_name.outputs.value }}
     steps:
       - name: Generate package name
         id: package_name
@@ -43,7 +43,7 @@ jobs:
             apt-get update --allow-insecure-repositories --allow-unauthenticated && apt-get install -y build-essential libffi-dev curl g++ make python3 python3-dev
             npm install -g node-gyp
             if [ "${{ inputs.is_client_python_local }}" == "true" ]; then
-              echo "Updating requirements.txt to use pycti from {{ github.ref_name }} "
+              echo "Updating requirements.txt to use pycti from ${{ github.ref_name }} "
               find . -name requirements.txt -exec sed "s|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@${{ github.ref_name }}#subdirectory=client-python|" -i {} \;
             fi
             cd opencti-platform/opencti-graphql
@@ -63,7 +63,7 @@ jobs:
         git clone https://github.com/OpenCTI-Platform/docker release/opencti/docker
         git clone https://github.com/OpenCTI-Platform/connectors release/opencti/connectors
         cd release
-        tar -zcvf "${{ needs.generate_package_name.outputs.value }}.tar.gz" opencti
+        tar -zcvf "${{ needs.generate_package_name.outputs.package_name }}.tar.gz" opencti
         if [ "${{ inputs.is_publish_jfrog }}" == "true" ]; then
 #        curl -usamuel.hassine@filigran.io:${{ secrets.JFROG_TOKEN }} -T opencti-$(date '+%Y%m%d').tar.gz "https://filigran.jfrog.io/artifactory/opencti/opencti-$(date '+%Y%m%d').tar.gz"
         fi
@@ -72,7 +72,7 @@ jobs:
       uses: actions/upload-artifact@v5
       with:
         name: opencti-debian
-        path: package/${{ needs.generate_package_name.outputs.value }}.tar.gz
+        path: release/${{ needs.generate_package_name.outputs.package_name }}.tar.gz
         retention-days: 1
 
 
@@ -99,7 +99,7 @@ jobs:
             apk update && apk upgrade && apk --no-cache add git tini gcc g++ make musl-dev python3 python3-dev postfix postfix-pcre build-base libmagic libffi-dev curl
             npm install -g node-gyp
             if [ "${{ inputs.is_client_python_local }}" == "true" ]; then
-              echo "Updating requirements.txt to use pycti from {{ github.ref_name }} "
+              echo "Updating requirements.txt to use pycti from ${{ github.ref_name }} "
               find . -name requirements.txt -exec sed "s|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@${{ github.ref_name }}#subdirectory=client-python|" -i {} \;
             fi
             cd opencti-platform/opencti-graphql
@@ -119,7 +119,7 @@ jobs:
         git clone https://github.com/OpenCTI-Platform/docker release/opencti/docker
         git clone https://github.com/OpenCTI-Platform/connectors release/opencti/connectors
         cd release
-        tar -zcvf "${{ needs.generate_package_name.outputs.value }}.tar.gz" opencti
+        tar -zcvf "${{ needs.generate_package_name.outputs.package_name }}.tar.gz" opencti
         if [ "${{ inputs.is_publish_jfrog }}" == "true" ]; then
 #        curl -usamuel.hassine@filigran.io:${{ secrets.JFROG_TOKEN }} -T opencti-$(date '+%Y%m%d').tar.gz "https://filigran.jfrog.io/artifactory/opencti/opencti-$(date '+%Y%m%d').tar.gz"
         fi
@@ -128,5 +128,5 @@ jobs:
       uses: actions/upload-artifact@v5
       with:
         name: opencti-musl
-        path: release/${{ needs.generate_package_name.outputs.value }}.tar.gz
+        path: release/${{ needs.generate_package_name.outputs.package_name }}.tar.gz
         retention-days: 1

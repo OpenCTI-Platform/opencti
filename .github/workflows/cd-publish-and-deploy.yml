@@ -36,7 +36,7 @@ jobs:
       name: Publish OpenCTI platform packages
       uses: ./.github/workflows/cd-publish-package.yml
       with:
-        is_publish: ${{ github.ref_name == 'master' }}
+        is_publish_jfrog: ${{ github.ref_name == 'master' }}
         is_client_python_local: true
 
   deploy-staging:
@@ -44,38 +44,44 @@ jobs:
     needs: wf-build-image
     runs-on: ubuntu-latest
     steps:
-      - name: Install AWX cli
-        run: pip install awxkit
+      - name: Install AWX cli and login
+        env:
+          AWX_HOST: ${{ secrets.AWX_URL }}
+          AWX_USERNAME: ${{ secrets.AWX_USER }}
+          AWX_PASSWORD: ${{ secrets.AWX_PASSWORD }}
+        run: |
+          pip install awxkit
+          awx login \
+            --conf.host "$AWX_HOST" \
+            --conf.username "$AWX_USERNAME" \
+            --conf.password "$AWX_PASSWORD" \
+            --conf.insecure
 
       - name: Deploy on testing
         if: ${{ github.ref_name == 'master' }}
         run: |
-          awx --conf.host ${{ secrets.AWX_URL }} --conf.username ${{ secrets.AWX_USER }} --conf.password ${{ secrets.AWX_PASSWORD }} \
-            job_templates launch 'Rollout restart an instance resources' --wait -f human \
+          awx job_templates launch 'Rollout restart an instance resources' --wait -f human \
             --inventory eu-west-staging \
-            --extra_vars '{"customer":"testing","solution": "opencti" }' 
+            --extra_vars '{"customer":"testing","solution": "opencti" }'
 
       - name: Deploy on dev
         if: ${{ github.ref_name == 'master' }}
         run: |
-          awx --conf.host ${{ secrets.AWX_URL }} --conf.username ${{ secrets.AWX_USER }} --conf.password ${{ secrets.AWX_PASSWORD }} \
-            job_templates launch 'Rollout restart an instance resources' --wait -f human \
+          awx job_templates launch 'Rollout restart an instance resources' --wait -f human \
             --inventory eu-west-staging \
-            --extra_vars '{"customer":"dev","solution": "opencti" }' 
+            --extra_vars '{"customer":"dev","solution": "opencti" }'
 
       - name: Deploy on prerelease CE
         if: ${{ github.ref_name == 'master' }}
         run: |
-          awx --conf.host ${{ secrets.AWX_URL }} --conf.username ${{ secrets.AWX_USER }} --conf.password ${{ secrets.AWX_PASSWORD }} \
-            job_templates launch 'Rollout restart an instance resources' --wait -f human \
+          awx job_templates launch 'Rollout restart an instance resources' --wait -f human \
             --inventory gcp-staging \
-            --extra_vars '{"customer":"prerelease-ce","solution": "opencti" }' 
+            --extra_vars '{"customer":"prerelease-ce","solution": "opencti" }'
 
       - name: Deploy on prerelease
-        if: ${{ github.ref_name == 'prerelease' }}
+        if: ${{ github.ref_name == 'release/current' }}
         run: |
-          awx --conf.host ${{ secrets.AWX_URL }} --conf.username ${{ secrets.AWX_USER }} --conf.password ${{ secrets.AWX_PASSWORD }} \
-            job_templates launch 'Rollout restart an instance resources' --wait -f human \
+          awx job_templates launch 'Rollout restart an instance resources' --wait -f human \
             --inventory aws-staging \
             --extra_vars '{"customer":"prerelease-aws","solution": "opencti" }'
 
@@ -83,7 +89,6 @@ jobs:
       - name: Deploy on cicd-test
         if: ${{ github.ref_name == 'issue/13571-build-images' }}
         run: |
-          awx --conf.host ${{ secrets.AWX_URL }} --conf.username ${{ secrets.AWX_USER }} --conf.password ${{ secrets.AWX_PASSWORD }} \
-            job_templates launch 'Rollout restart an instance resources' --wait -f human \
+          awx job_templates launch 'Rollout restart an instance resources' --wait -f human \
             --inventory eu-west-staging \
             --extra_vars '{"customer":"cicd-test","solution": "opencti" }'
