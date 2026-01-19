@@ -38,18 +38,18 @@ jobs:
         docker run --name build-package \
           -v ${{ github.workspace }}:/home/workspace \
           nikolaik/python-nodejs:python3.11-nodejs22 \
-          sh -c "set -eux
+          sh -c 'set -eux
             cd /home/workspace
             apt-get update --allow-insecure-repositories --allow-unauthenticated && apt-get install -y build-essential libffi-dev curl g++ make python3 python3-dev
             npm install -g node-gyp
             if [ "${{ inputs.is_client_python_local }}" == "true" ]; then
               echo "Updating requirements.txt to use pycti from {{ github.ref_name }} "
-              find . -name requirements.txt -exec sed 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@${{ github.ref_name }}#subdirectory=client-python|' -i {} \;
+              find . -name requirements.txt -exec sed "s|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@${{ github.ref_name }}#subdirectory=client-python|" -i {} \;
             fi
             cd opencti-platform/opencti-graphql
             yarn install
             yarn build
-          "
+          '
 
     - name: Prepare OpenCTI debian package
       run: |
@@ -94,18 +94,18 @@ jobs:
         docker run --name build-package \
           -v ${{ github.workspace }}:/home/workspace \
           nikolaik/python-nodejs:python3.11-nodejs22-alpine \
-          sh -c "set -eux
+          sh -c 'set -eux
             cd /home/workspace
             apk update && apk upgrade && apk --no-cache add git tini gcc g++ make musl-dev python3 python3-dev postfix postfix-pcre build-base libmagic libffi-dev curl
             npm install -g node-gyp
             if [ "${{ inputs.is_client_python_local }}" == "true" ]; then
               echo "Updating requirements.txt to use pycti from {{ github.ref_name }} "
-              find . -name requirements.txt -exec sed 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@${{ github.ref_name }}#subdirectory=client-python|' -i {} \;
+              find . -name requirements.txt -exec sed "s|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@${{ github.ref_name }}#subdirectory=client-python|" -i {} \;
             fi
             cd opencti-platform/opencti-graphql
             yarn install
             yarn build
-          "
+          '
 
     - name: Prepare OpenCTI musl package
       run: |
