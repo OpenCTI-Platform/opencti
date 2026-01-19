@@ -14,11 +14,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import React from 'react';
-import SearchIndexedFilesLines, { searchIndexedFilesLinesQuery } from '@components/search/SearchIndexedFilesLines';
-import {
-  SearchIndexedFilesLinesPaginationQuery,
-  SearchIndexedFilesLinesPaginationQuery$variables,
-} from '@components/search/__generated__/SearchIndexedFilesLinesPaginationQuery.graphql';
 import { SearchIndexedFileLine_node$data } from '@components/search/__generated__/SearchIndexedFileLine_node.graphql';
 import { Link, useParams } from 'react-router-dom';
 import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
@@ -26,9 +21,7 @@ import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Button from '@common/button/Button';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import Loader from '../../../components/Loader';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import ListLines from '../../../components/list_lines/ListLines';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { useFormatter } from '../../../components/i18n';
 import ItemEntityType from '../../../components/ItemEntityType';
@@ -38,10 +31,93 @@ import { decodeSearchKeyword } from '../../../utils/SearchUtils';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import useManagerConfiguration from '../../../utils/hooks/useManagerConfiguration';
 import Security from '../../../utils/Security';
-import { SETTINGS_FILEINDEXING } from '../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD, SETTINGS_FILEINDEXING } from '../../../utils/hooks/useGranted';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { graphql } from 'react-relay';
+import DataTable from '../../../components/dataGrid/DataTable';
+import { SearchIndexedFilesPaginationQuery, SearchIndexedFilesPaginationQuery$variables } from './__generated__/SearchIndexedFilesPaginationQuery.graphql';
+import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
+import { SearchIndexedFiles_data$data } from '@components/search/__generated__/SearchIndexedFiles_data.graphql';
+import Tooltip from '@mui/material/Tooltip';
+import IconButton from '@common/button/IconButton';
+import { OpenInNewOutlined } from '@mui/icons-material';
+import { resolveLink } from '../../../utils/Entity';
+import { getFileUri } from '../../../utils/utils';
+import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
+
+const SearchIndexedFileLineFragment = graphql`
+  fragment SearchIndexedFilesFile_node on IndexedFile {
+    id
+    name
+    uploaded_at
+    file_id
+    searchOccurrences
+    entity {
+      ...on StixObject {
+        id
+        entity_type
+        representative {
+          main
+        }
+      }
+      ...on StixCoreObject {
+        objectMarking {
+          id
+          definition_type
+          definition
+          x_opencti_order
+          x_opencti_color
+        }
+      }
+    }
+  }
+`;
+
+export const searchIndexedFilesLinesQuery = graphql`
+  query SearchIndexedFilesPaginationQuery(
+    $search: String
+    $first: Int
+    $cursor: ID
+  ) {
+    ...SearchIndexedFiles_data
+    @arguments(
+      search: $search
+      first: $first
+      cursor: $cursor
+    )
+  }
+`;
+
+export const searchIndexedFilesLinesFragment = graphql`
+  fragment SearchIndexedFiles_data on Query
+  @argumentDefinitions(
+    search: { type: "String" }
+    first: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+  )
+  @refetchable(queryName: "SearchIndexedFilesLinesRefetchQuery") {
+    indexedFiles(
+      search: $search
+      first: $first
+      after: $cursor
+    ) @connection(key: "Pagination_indexedFiles") {
+      edges {
+        node {
+          id
+          ...SearchIndexedFilesFile_node
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
+    }
+  }
+`;
 
 const LOCAL_STORAGE_KEY = 'view-files';
+
 const SearchIndexedFilesComponent = () => {
   const { fd, t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
@@ -49,32 +125,34 @@ const SearchIndexedFilesComponent = () => {
   const {
     platformModuleHelpers: { isFileIndexManagerEnable },
   } = useAuth();
+  const isGrantedToFiles = useGranted([KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]);
+
   const managerConfiguration = useManagerConfiguration();
   const isFileIndexingRunning = managerConfiguration?.manager_running || false;
   const { keyword } = useParams() as { keyword: string };
   const searchTerm = decodeSearchKeyword(keyword);
+
+  const initialValues = {
+    sortBy: '_score',
+    orderAsc: true,
+  };
   const {
-    viewStorage,
     helpers: storageHelpers,
     paginationOptions,
-  } = usePaginationLocalStorage<SearchIndexedFilesLinesPaginationQuery$variables>(
+  } = usePaginationLocalStorage<SearchIndexedFilesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
-    {
-      sortBy: '_score',
-      orderAsc: true,
-    },
+    initialValues,
     true,
   );
 
-  const {
-    numberOfElements,
-    sortBy,
-    orderAsc,
-  } = viewStorage;
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    search: searchTerm,
+  };
 
-  const queryRef = useQueryLoading<SearchIndexedFilesLinesPaginationQuery>(
+  const queryRef = useQueryLoading(
     searchIndexedFilesLinesQuery,
-    { ...paginationOptions, search: searchTerm },
+    queryPaginationOptions,
   );
 
   const fileSearchEnabled = isFileIndexManagerEnable();
@@ -83,19 +161,19 @@ const SearchIndexedFilesComponent = () => {
     const dataColumns = {
       name: {
         label: 'File name',
-        width: '25%',
+        percentWidth: 30,
         isSortable: false,
-        render: (node: SearchIndexedFileLine_node$data) => node.name,
+        render: (node: SearchIndexedFileLine_node$data) => defaultRender(node.name),
       },
       uploaded_at: {
         label: 'Upload date',
-        width: '10%',
+        percentWidth: 10,
         isSortable: false,
         render: (node: SearchIndexedFileLine_node$data) => fd(node.uploaded_at),
       },
       occurrences: {
         label: 'Occurrences',
-        width: '10%',
+        percentWidth: 10,
         isSortable: false,
         render: (node: SearchIndexedFileLine_node$data) => {
           return (node.searchOccurrences && node.searchOccurrences > 99) ? '99+' : node.searchOccurrences;
@@ -103,7 +181,7 @@ const SearchIndexedFilesComponent = () => {
       },
       entity_type: {
         label: 'Attached entity type',
-        width: '15%',
+        percentWidth: 15,
         isSortable: false,
         render: (node: SearchIndexedFileLine_node$data) => (
           <>
@@ -115,19 +193,18 @@ const SearchIndexedFilesComponent = () => {
       },
       entity_name: {
         label: 'Attached entity name',
-        width: '25%',
+        percentWidth: 25,
         isSortable: false,
         render: (node: SearchIndexedFileLine_node$data) => (
           <>
             {node.entity && (
-              <span>{node.entity?.representative.main}</span>
+              <>{defaultRender(node.entity?.representative.main)}</>
             )}
           </>
         ),
       },
       objectMarking: {
-        label: 'Marking',
-        width: '10%',
+        percentWidth: 10,
         isSortable: false,
         render: (node: SearchIndexedFileLine_node$data) => (
           <>
@@ -142,36 +219,51 @@ const SearchIndexedFilesComponent = () => {
       },
     };
 
+    const preloadedPaginationOptions = {
+      linesQuery: searchIndexedFilesLinesQuery,
+      linesFragment: searchIndexedFilesLinesFragment,
+      queryRef,
+      nodePath: ['indexedFiles', 'pageInfo', 'globalCount'],
+      setNumberOfElements: storageHelpers.handleSetNumberOfElements,
+    } as UsePreloadedPaginationFragment<SearchIndexedFilesPaginationQuery>;
+
     return (
       <>
-        <ListLines
-          helpers={storageHelpers}
-          sortBy={sortBy}
-          orderAsc={orderAsc}
-          dataColumns={dataColumns}
-          handleSort={storageHelpers.handleSort}
-          handleAddFilter={storageHelpers.handleAddFilter}
-          handleRemoveFilter={storageHelpers.handleRemoveFilter}
-          disableCards={true}
-          secondaryAction={true}
-          paginationOptions={paginationOptions}
-          numberOfElements={numberOfElements}
-        >
-          {queryRef && (
-            <React.Suspense fallback={<Loader />}>
-              <SearchIndexedFilesLines
-                queryRef={queryRef}
-                paginationOptions={paginationOptions}
-                dataColumns={dataColumns}
-                onLabelClick={storageHelpers.handleAddFilter}
-                setNumberOfElements={storageHelpers.handleSetNumberOfElements}
-              />
-            </React.Suspense>
-          )}
-        </ListLines>
+        {queryRef && (
+          <DataTable
+            dataColumns={dataColumns}
+            resolvePath={(data: SearchIndexedFiles_data$data) => data.indexedFiles?.edges?.map((n) => n?.node)}
+            storageKey={LOCAL_STORAGE_KEY}
+            initialValues={initialValues}
+            globalSearch={searchTerm}
+            lineFragment={SearchIndexedFileLineFragment}
+            preloadedPaginationProps={preloadedPaginationOptions}
+            hideSearch
+            disableLineSelection
+            onLineClick={(file) => window.open(getFileUri(file.file_id), '_blank')}
+            actions={(node) => {
+              let entityLink = node.entity ? `${resolveLink(node.entity.entity_type)}/${node.entity.id}` : '';
+              if (entityLink && isGrantedToFiles && node.entity?.entity_type !== 'External-Reference') {
+                entityLink = entityLink.concat('/files');
+              }
+              if (node.entity && entityLink) {
+                return (
+                  <Tooltip title={t_i18n('Open the entity overview in a separated tab')}>
+                    <IconButton
+                      onClick={() => window.open(entityLink, '_blank')}
+                    >
+                      <OpenInNewOutlined fontSize="medium" />
+                    </IconButton>
+                  </Tooltip>
+                );
+              }
+            }}
+          />
+        )}
       </>
     );
   };
+
   return (
     <ExportContextProvider>
       <div>
