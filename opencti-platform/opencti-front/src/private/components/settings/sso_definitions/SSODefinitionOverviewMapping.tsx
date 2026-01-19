@@ -13,6 +13,7 @@ import { graphql, useFragment } from 'react-relay';
 import { SSODefinitionOverviewMappingFragment$key } from '@components/settings/sso_definitions/__generated__/SSODefinitionOverviewMappingFragment.graphql';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import Tooltip from '@mui/material/Tooltip';
+import AccessesMenu from '@components/settings/AccessesMenu';
 
 export const ssoDefinitionOverviewMappingFragment = graphql`
   fragment SSODefinitionOverviewMappingFragment on SingleSignOn {
@@ -234,7 +235,7 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
           </Grid>
 
           <Grid size={{ xs: 12, md: 6 }}>
-            {renderValue(row.value)}
+            {row.value || row.key == 'enabled' ? renderValue(row.value) : '-'}
           </Grid>
 
           <Grid size={{ xs: 12, md: 3 }}>
@@ -252,22 +253,25 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
   ];
 
   return (
-    <Grid size={{ xs: 12 }}>
-      <Card title="SSO Mapping">
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs
-            value={currentTab}
-            onChange={(event, value) => setCurrentTab(value)}
-          >
-            <Tab label={t_i18n('SSO Configuration')} />
-            <Tab label={t_i18n('Groups configuration')} />
-            <Tab label={t_i18n('Organizations configuration')} />
-          </Tabs>
-        </Box>
+    <div style={{ paddingRight: '200px' }}>
+      <AccessesMenu />
+      <Grid size={{ xs: 12 }}>
+        <Card title="SSO Mapping">
+          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <Tabs
+              value={currentTab}
+              onChange={(event, value) => setCurrentTab(value)}
+            >
+              <Tab label={t_i18n('SSO Configuration')} />
+              <Tab label={t_i18n('Groups configuration')} />
+              <Tab label={t_i18n('Organizations configuration')} />
+            </Tabs>
+          </Box>
 
-        {renderRows(rowsByTab[currentTab])}
-      </Card>
-    </Grid>
+          {renderRows(rowsByTab[currentTab])}
+        </Card>
+      </Grid>
+    </div>
   );
 };
 
