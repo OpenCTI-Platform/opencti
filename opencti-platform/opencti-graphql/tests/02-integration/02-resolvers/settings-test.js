@@ -7,6 +7,25 @@ import { ENTITY_TYPE_SETTINGS } from '../../../src/schema/internalObject';
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+const WAIT_FOR_SETTINGS_TIMEOUT_MS = 10000;
+const WAIT_FOR_SETTINGS_INTERVAL_MS = 250;
+
+const waitForPlatformAiEnabled = async (expectedEnabled) => {
+  const startTime = Date.now();
+  let lastValue = undefined;
+  while (Date.now() - startTime < WAIT_FOR_SETTINGS_TIMEOUT_MS) {
+    const settingsResult = await queryAsAdmin({ query: READ_QUERY, variables: {} });
+    lastValue = settingsResult.data.settings.platform_ai_enabled !== false;
+    if (lastValue === expectedEnabled) {
+      return;
+    }
+    await wait(WAIT_FOR_SETTINGS_INTERVAL_MS);
+  }
+  throw new Error(
+    `Timed out waiting for settings.platform_ai_enabled to become ${expectedEnabled} (last observed: ${lastValue})`
+  );
+};
+
 const UPDATE_SETTINGS_QUERY = gql`
   mutation SettingsEdit($id: ID!, $input: [EditInput]!) {
     settingsEdit(id: $id) {
@@ -173,16 +192,7 @@ describe('Settings resolver standard behavior', () => {
       });
       resetCacheForEntity(ENTITY_TYPE_SETTINGS);
 
-      let isDisabled = false;
-      for (let i = 0; i < 20; i += 1) {
-        const settingsResult = await queryAsAdmin({ query: READ_QUERY, variables: {} });
-        isDisabled = settingsResult.data.settings.platform_ai_enabled === false;
-        if (isDisabled) {
-          break;
-        }
-        await wait(100);
-      }
-      expect(isDisabled).toEqual(true);
+      await waitForPlatformAiEnabled(false);
 
       const aiResult = await queryAsAdmin({
         query: AI_FIX_SPELLING_MUTATION,
@@ -199,17 +209,7 @@ describe('Settings resolver standard behavior', () => {
       });
       resetCacheForEntity(ENTITY_TYPE_SETTINGS);
 
-      let isRestored = false;
-      for (let i = 0; i < 20; i += 1) {
-        const settingsResult = await queryAsAdmin({ query: READ_QUERY, variables: {} });
-        const currentEnabled = settingsResult.data.settings.platform_ai_enabled !== false;
-        isRestored = currentEnabled === initialAiEnabled;
-        if (isRestored) {
-          break;
-        }
-        await wait(100);
-      }
-      expect(isRestored).toEqual(true);
+      await waitForPlatformAiEnabled(initialAiEnabled);
     }
   });
 });
