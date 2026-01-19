@@ -37,7 +37,7 @@ import { graphql } from 'react-relay';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { SearchIndexedFilesPaginationQuery, SearchIndexedFilesPaginationQuery$variables } from './__generated__/SearchIndexedFilesPaginationQuery.graphql';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
-import { SearchIndexedFiles_data$data } from '@components/search/__generated__/SearchIndexedFiles_data.graphql';
+import { SearchIndexedFiles_data$data } from './__generated__/SearchIndexedFiles_data.graphql';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@common/button/IconButton';
 import { OpenInNewOutlined } from '@mui/icons-material';
