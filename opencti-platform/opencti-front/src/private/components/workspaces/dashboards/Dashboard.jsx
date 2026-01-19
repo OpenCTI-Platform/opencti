@@ -300,23 +300,22 @@ const DashboardComponent = ({ data, noToolbar = false }) => {
       >
         {widgetsArray.map((widget) => {
           if (!widgetsLayouts[widget.id]) return null;
+          const popover = userCanEdit && !noToolbar && (
+            <WorkspaceWidgetPopover
+              widget={widget}
+              workspace={workspace}
+              onUpdate={handleUpdateWidget}
+              onDuplicate={handleDuplicateWidget}
+              onDelete={() => handleDeleteWidget(widget.id)}
+            />
+          );
+
           return (
             <div
               key={widget.id}
               data-grid={widgetsLayouts[widget.id]}
               style={{ display: 'relative' }}
             >
-              {userCanEdit && !noToolbar && (
-                <WorkspaceWidgetPopover
-                  widget={widget}
-                  manifest={manifest}
-                  workspace={workspace}
-                  onUpdate={handleUpdateWidget}
-                  onDuplicate={handleDuplicateWidget}
-                  onDelete={() => handleDeleteWidget(widget.id)}
-                  skipTitle={widget.type === 'number'}
-                />
-              )}
               <ErrorBoundary>
                 {widget.id === idToResize ? <div /> : (
                   <>
@@ -325,6 +324,7 @@ const DashboardComponent = ({ data, noToolbar = false }) => {
                         widget={widget}
                         isReadonly={!isWrite}
                         config={manifest.config}
+                        popover={popover}
                       />
                     )}
                     {widget.perspective === 'relationships' && (
@@ -332,6 +332,7 @@ const DashboardComponent = ({ data, noToolbar = false }) => {
                         widget={widget}
                         isReadonly={!isWrite}
                         config={manifest.config}
+                        popover={popover}
                       />
                     )}
                     {widget.perspective === 'audits' && (
@@ -339,6 +340,7 @@ const DashboardComponent = ({ data, noToolbar = false }) => {
                         widget={widget}
                         isReadonly={!isWrite}
                         config={manifest.config}
+                        popover={popover}
                       />
                     )}
                     {widget.perspective === null && (

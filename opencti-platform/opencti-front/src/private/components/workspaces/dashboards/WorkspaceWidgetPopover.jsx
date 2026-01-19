@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@common/button/Button';
@@ -20,35 +20,32 @@ import useDeletion from '../../../../utils/hooks/useDeletion';
 const WorkspaceWidgetPopover = ({
   onUpdate,
   onDuplicate,
-  widget,
   onDelete,
+  widget,
   workspace,
-  skipTitle = false,
 }) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState(null);
   const [displayDuplicate, setDisplayDuplicate] = useState(false);
+
   const handleClose = () => {
     setAnchorEl(null);
   };
+
   const deletion = useDeletion({ handleClose });
   const { handleOpenDelete } = deletion;
+
   const handleOpenDuplicate = () => {
     setDisplayDuplicate(true);
     handleClose();
   };
+
   const handleExportWidget = () => {
     handleWidgetExportJson(workspace.id, widget);
   };
+
   return (
-    <div style={{
-      margin: 0,
-      position: 'absolute',
-      top: skipTitle ? 0 : 27,
-      right: 0,
-      zIndex: 999,
-    }}
-    >
+    <>
       <IconButton
         onClick={(event) => {
           event.stopPropagation();
@@ -114,7 +111,7 @@ const WorkspaceWidgetPopover = ({
           </Button>
         </DialogActions>
       </Dialog>
-    </div>
+    </>
   );
 };
 

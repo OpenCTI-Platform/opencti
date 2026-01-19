@@ -1,11 +1,9 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import ApexChart, { Props as ApexProps } from 'react-apexcharts';
 import ApexCharts from 'apexcharts';
-import ChartExportPopover from './ChartExportPopover';
 
-interface OpenCTIChartProps extends ApexProps {
-  withExportPopover?: boolean;
-  isReadOnly?: boolean;
+export interface OpenCTIChartProps extends ApexProps {
+  onMounted?: (chart: ApexCharts) => void;
 }
 
 const Chart = ({
@@ -14,11 +12,8 @@ const Chart = ({
   type,
   width,
   height,
-  withExportPopover,
-  isReadOnly,
+  onMounted,
 }: OpenCTIChartProps) => {
-  const [chart, setChart] = useState<ApexCharts>();
-
   // Add in config a callback on 'mounted event' to retrieve chart context.
   // This context is used to export in different format.
   const apexOptions: ApexProps['options'] = useMemo(() => ({
@@ -27,30 +22,19 @@ const Chart = ({
       ...options?.chart,
       events: {
         ...options?.chart?.events,
-        mounted(c) {
-          setChart(c);
-        },
+        mounted: onMounted,
       },
     },
   }), [options]);
 
   return (
-    <>
-      <ApexChart
-        options={apexOptions}
-        series={series}
-        type={type}
-        width={width}
-        height={height}
-      />
-      {withExportPopover === true && (
-        <ChartExportPopover
-          chart={chart}
-          series={series}
-          isReadOnly={isReadOnly}
-        />
-      )}
-    </>
+    <ApexChart
+      options={apexOptions}
+      series={series}
+      type={type}
+      width={width}
+      height={height}
+    />
   );
 };
 
