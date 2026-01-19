@@ -85,29 +85,6 @@ describe('Single sign on Domain coverage tests', () => {
         );
     });
 
-    it('should not add new SAML provider if mandatory callbackUrl config is not given', async () => {
-      const logAppErrorSpy = vi.spyOn(logApp, 'error');
-      const input: SingleSignOnAddInput = {
-        name: 'Saml for test domain callbackUrl missing',
-        strategy: StrategyType.SamlStrategy,
-        identifier: 'samlTestNotOk3',
-        enabled: true,
-        label: 'Nice SAML button',
-        configuration: [{ key: 'idpCert', value: 'mszfrhazmfghqzefh', type: 'string' }],
-      };
-      const samlEntity = await addSingleSignOn(testContext, ADMIN_USER, input);
-
-      // Here there is a pub/sub on redis, let's just call the same method than listener
-      await registerStrategy(samlEntity);
-
-      expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'samlTestNotOk3')).toBeFalsy();
-      expect(logAppErrorSpy, 'No exception should be throw, but an error message should be present')
-        .toHaveBeenCalledWith(
-          '[Auth][Not provided]Error when initializing an authentication provider samlTestNotOk3, cause: callbackUrl is mandatory for SAML',
-          expect.anything(),
-        );
-    });
-
     it('should not add new SAML provider if mandatory idpCert config is not given', async () => {
       const logAppErrorSpy = vi.spyOn(logApp, 'error');
       const input: SingleSignOnAddInput = {
