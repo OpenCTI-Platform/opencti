@@ -132,8 +132,8 @@ const stixBaseCyberObservableContribution = {
     [C.ENTITY_SSH_KEY]: [{ src: 'fingerprint_sha256' }],
     [C.ENTITY_PERSONA]: [{ src: 'persona_name' }, { src: 'persona_type' }],
     // Types embedded
-    [C.ENTITY_EMAIL_MIME_PART_TYPE]: [], // ALL
-    [C.ENTITY_WINDOWS_REGISTRY_VALUE_TYPE]: [], // ALL
+    [C.ENTITY_EMAIL_MIME_PART_TYPE]: [{ src: 'body' }, { src: 'content_type' }, { src: 'data_content_dispositiontype' }],
+    [C.ENTITY_WINDOWS_REGISTRY_VALUE_TYPE]: [{ src: 'name' }, { src: 'data' }, { src: 'data_type' }],
   },
   resolvers: {
     from(from) {
