@@ -90,6 +90,7 @@ const ThemeDark = (
       shadow: 'rgba(200, 200, 200, 0.15)',
       secondary: '#0C1524',
       drawer: '#0f1d34',
+      disabled: '#363B46',
       gradient: {
         start: background || THEME_DARK_DEFAULT_BACKGROUND,
         end: getAppBodyGradientEndColor(background),
@@ -98,6 +99,7 @@ const ThemeDark = (
     text: {
       secondary: '#AFB0B6',
       light: '#AFB0B6',
+      disabled: '#75829A',
     },
     leftBar: {
       header: {
@@ -114,43 +116,88 @@ const ThemeDark = (
       none: '#424242',
       default: '#1C2F49',
     },
-    tertiary: {
-      grey: {
-        400: '#95969D',
-        700: '#494A50',
-        800: '#313235',
+    designSystem: {
+      primary: {
+        main: '#0FBCFF',
+        light: '#B2ECFF',
+        dark: '#007399',
       },
-      blue: {
-        500: '#0099CC',
-        900: '#003242',
+      secondary: {
+        main: '#00F1BD',
+        light: '#BDFFED',
+        dark: '#009474',
       },
-      darkBlue: {
-        300: '#7587FF',
-        500: '#0F2DFF',
+      destructive: {
+        main: '#F44336',
+        light: '#F8958C',
+        dark: '#881106',
       },
-      turquoise: {
-        600: '#00BD94',
-        800: '#005744',
+      ia: {
+        main: '#B286FF',
+        light: '#D6C2FA',
+        dark: '#5E1AD5',
       },
-      green: {
-        400: '#41E149',
-        600: '#17AB1F',
-        800: '#094E0B',
+      alert: {
+        info: {
+          primary: '#4DCCFF',
+          secondary: '#004C66',
+        },
+        success: {
+          primary: '#17AB1F',
+          secondary: '#094E0B',
+          tertiary: '#75F8B9',
+        },
+        alert: {
+          primary: '#F2BE3A',
+          secondary: '#573E05',
+        },
+        warning: {
+          primary: '#E6700F',
+          secondary: '#884106',
+        },
+        error: {
+          primary: '#F14337',
+          secondary: '#881106',
+        },
       },
-      red: {
-        100: '#FBCBC5',
-        200: '#F8958C',
-        400: '#F14337',
-        500: '#E51E10',
-        600: '#B8180A',
-        700: '#881106',
-      },
-      orange: {
-        400: '#F2933A',
-        500: '#E6700F',
-      },
-      yellow: {
-        400: '#F2BE3A',
+      tertiary: {
+        grey: {
+          400: '#95969D',
+          700: '#494A50',
+          800: '#313235',
+        },
+        blue: {
+          500: '#0099CC',
+          900: '#003242',
+        },
+        darkBlue: {
+          300: '#7587FF',
+          500: '#0F2DFF',
+        },
+        turquoise: {
+          600: '#00BD94',
+          800: '#005744',
+        },
+        green: {
+          400: '#41E149',
+          600: '#17AB1F',
+          800: '#094E0B',
+        },
+        red: {
+          100: '#FBCBC5',
+          200: '#F8958C',
+          400: '#F14337',
+          500: '#E51E10',
+          600: '#B8180A',
+          700: '#881106',
+        },
+        orange: {
+          400: '#F2933A',
+          500: '#E6700F',
+        },
+        yellow: {
+          400: '#F2BE3A',
+        },
       },
     },
   },

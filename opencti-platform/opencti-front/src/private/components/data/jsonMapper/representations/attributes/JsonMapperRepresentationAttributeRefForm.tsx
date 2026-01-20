@@ -54,7 +54,7 @@ const JsonMapperRepresentationAttributeRefForm: FunctionComponent<
       },
     },
     redStar: {
-      color: theme.palette.tertiary.red[400],
+      color: theme.palette.designSystem.tertiary.red[400],
       marginLeft: '5px',
     },
   }));

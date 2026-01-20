@@ -175,6 +175,7 @@ interface ExtendedBackground extends TypeBackground {
   accent: string;
   shadow: string;
   secondary: string;
+  disabled: string;
   gradient: {
     start: string;
     end: string;
@@ -186,12 +187,46 @@ interface ExtendedText extends TypeText {
   light: string;
 }
 
-type ColorScale = Partial<Record<
-  50 | 100 | 150 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | 1000,
-  string
->>;
+// === Definitions for our Design System ===
+// =========================================
 
+// Main colors
+type MainPalette = {
+  main: string;
+  light: string;
+  dark: string;
+};
+
+// Alert levels
+type AlertType = {
+  primary: string;
+  secondary: string;
+};
+type AlertPalette = {
+  info: AlertType;
+  success: AlertType & { tertiary: string };
+  alert: AlertType;
+  warning: AlertType;
+  error: AlertType;
+};
+
+// Tertiary colors
+type ScaleLevels = 50 | 100 | 150 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | 1000;
+type ColorScale = Partial<Record<ScaleLevels, string>>;
 type TertiaryPalette = Record<string, ColorScale>;
+
+type DesignSystemPalette = {
+  primary: MainPalette;
+  secondary: MainPalette;
+  destructive: MainPalette;
+  ia: MainPalette;
+  alert: AlertPalette;
+  tertiary: TertiaryPalette;
+};
+
+// =========================================
+// =========================================
+
 interface ExtendedPaletteOptions extends PaletteOptions {
   common: Partial<CommonColors & { grey: string; lightGrey: string }>;
   background: Partial<ExtendedBackground>;
@@ -220,7 +255,6 @@ interface ExtendedPaletteOptions extends PaletteOptions {
   ai: Partial<ExtendedColor>;
   gradient: Partial<ExtendedColor>;
   secondary: Partial<ExtendedColor>;
-  tertiary: TertiaryPalette;
   mode: PaletteMode;
   text: Partial<ExtendedText>;
   severity: {
@@ -232,6 +266,8 @@ interface ExtendedPaletteOptions extends PaletteOptions {
     none: string;
     default: string;
   };
+  // Design System
+  designSystem: DesignSystemPalette;
 }
 
 interface ExtendedThemeOptions extends ThemeOptions {

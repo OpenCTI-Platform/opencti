@@ -112,7 +112,7 @@ const CsvMapperConditionalEntityMapping: FunctionComponent<
                 sx: {
                   '& fieldset': {
                     borderColor: (!columnBased?.column_reference)
-                      ? theme.palette.tertiary.red[400]
+                      ? theme.palette.designSystem.tertiary.red[400]
                       : '',
                   },
                 },
@@ -144,7 +144,7 @@ const CsvMapperConditionalEntityMapping: FunctionComponent<
                 sx: {
                   '& fieldset': {
                     borderColor: (!columnBased?.operator)
-                      ? theme.palette.tertiary.red[400]
+                      ? theme.palette.designSystem.tertiary.red[400]
                       : '',
                   },
                 },

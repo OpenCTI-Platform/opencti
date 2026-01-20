@@ -42,7 +42,7 @@ const ScaleBar = ({ scale }: { scale: ScaleConfig }) => {
       {ticks.map((tick, index) => (
         <div key={index} className={classes.tickContainer}>
           <div className={classes.tickValue}>
-            <span style={{ color: `${index === 0 ? theme.palette.tertiary.grey[400] : tick.color}` }}>
+            <span style={{ color: `${index === 0 ? theme.palette.designSystem.tertiary.grey[400] : tick.color}` }}>
               {tick.value}
             </span>
             {index === scale.ticks.length && (
@@ -52,7 +52,7 @@ const ScaleBar = ({ scale }: { scale: ScaleConfig }) => {
           <div>
             <span
               className={classes.railSpan}
-              style={{ backgroundColor: `${tick.color ? tick.color : theme.palette.tertiary.blue[500]}` }}
+              style={{ backgroundColor: `${tick.color ? tick.color : theme.palette.designSystem.tertiary.blue[500]}` }}
             >
             </span>
           </div>

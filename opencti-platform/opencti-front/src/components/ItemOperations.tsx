@@ -14,35 +14,35 @@ const ItemOperations: FunctionComponent<ItemOperationsProps> = ({ draftOperation
   const { t_i18n } = useFormatter();
   const operationStylesLight = {
     green: {
-      backgroundColor: theme.palette.tertiary.green[800],
+      backgroundColor: theme.palette.designSystem.tertiary.green[800],
       color: theme.palette.common.white,
     },
     red: {
-      backgroundColor: theme.palette.tertiary.red[700],
+      backgroundColor: theme.palette.designSystem.tertiary.red[700],
       color: theme.palette.common.white,
     },
     yellow: {
-      backgroundColor: theme.palette.tertiary.yellow[400],
+      backgroundColor: theme.palette.designSystem.tertiary.yellow[400],
       color: theme.palette.common.white,
     },
     lightYellow: {
-      backgroundColor: theme.palette.tertiary.orange[500],
+      backgroundColor: theme.palette.designSystem.tertiary.orange[500],
       color: theme.palette.common.white,
     },
   };
 
   const operationStylesDark = {
     green: {
-      backgroundColor: theme.palette.tertiary.green[800],
+      backgroundColor: theme.palette.designSystem.tertiary.green[800],
     },
     red: {
-      backgroundColor: theme.palette.tertiary.red[700],
+      backgroundColor: theme.palette.designSystem.tertiary.red[700],
     },
     yellow: {
-      backgroundColor: theme.palette.tertiary.yellow[400],
+      backgroundColor: theme.palette.designSystem.tertiary.yellow[400],
     },
     lightYellow: {
-      backgroundColor: theme.palette.tertiary.orange[500],
+      backgroundColor: theme.palette.designSystem.tertiary.orange[500],
     },
   };
 
