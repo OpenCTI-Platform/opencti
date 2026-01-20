@@ -43,20 +43,11 @@ jobs:
     name: Deploy images on staging
     needs: wf-build-image
     runs-on: ubuntu-latest
+    env:
+      CONTROLLER_HOST: ${{ secrets.AWX_URL }}
+      CONTROLLER_USERNAME: ${{ secrets.AWX_USER }}
+      CONTROLLER_PASSWORD: ${{ secrets.AWX_PASSWORD }}
     steps:
-      - name: Install AWX cli and login
-        env:
-          AWX_HOST: ${{ secrets.AWX_URL }}
-          AWX_USERNAME: ${{ secrets.AWX_USER }}
-          AWX_PASSWORD: ${{ secrets.AWX_PASSWORD }}
-        run: |
-          pip install awxkit
-          awx login \
-            --conf.host "$AWX_HOST" \
-            --conf.username "$AWX_USERNAME" \
-            --conf.password "$AWX_PASSWORD" \
-            --conf.insecure
-
       - name: Deploy on testing
         if: ${{ github.ref_name == 'master' }}
         run: |
