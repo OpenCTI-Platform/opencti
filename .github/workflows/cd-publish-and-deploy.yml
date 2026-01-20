@@ -2,7 +2,8 @@ name: Publish and deploy to staging
 
 on:
   push:
-    # branches: [master,release/current]  ## TODO To uncomment when ready to activate
+    ## TODO Switch branches when ready to activate
+    # branches: [master,release/current]
     branches: [issue/13571-build-images]
 
 jobs:
@@ -13,8 +14,7 @@ jobs:
       with:
         ## TODO: Publish to docker.io public registry instead of filigran private
         # registry: "docker.io/opencti"
-        ## TODO: Remove the build for issue/13571-build-images branch
-        image_tag: ${{ github.ref_name == 'master'  && 'rolling' || github.ref_name == 'release/current' && 'prerelease' || github.ref_name == 'issue/13571-build-images' && 'test-13571'  }}
+        image_tag: ${{ github.ref_name == 'master'  && 'rolling' || github.ref_name == 'release/current' && 'prerelease' }}
         is_client_python_local: true
         is_publish_to_registry: true
       secrets: inherit
@@ -25,8 +25,7 @@ jobs:
       with:
         ## TODO: Publish to docker.io public registry instead of filigran private
         # registry: "docker.io/opencti"
-        ## TODO Remove the build for issue/13571-build-images branch
-        image_tag: ${{ github.ref_name == 'master'  && 'rolling' || github.ref_name == 'release/current' && 'prerelease' || github.ref_name == 'issue/13571-build-images' && 'test-13571'  }}
+        image_tag: ${{ github.ref_name == 'master'  && 'rolling' || github.ref_name == 'release/current' && 'prerelease' }}
         is_client_python_local: true
         is_publish_to_registry: true
         is_fips: true
@@ -78,11 +77,3 @@ jobs:
           awx job_templates launch 'Rollout restart an instance resources' --wait -f human \
             --inventory aws-staging \
             --extra_vars '{"customer":"prerelease-aws","solution": "opencti" }'
-
-## TODO : remove when test on the branch are done
-      - name: Deploy on cicd-test
-        if: ${{ github.ref_name == 'issue/13571-build-images' }}
-        run: |
-          awx job_templates launch 'Rollout restart an instance resources' --wait -f human \
-            --inventory eu-west-staging \
-            --extra_vars '{"customer":"cicd-test","solution": "opencti" }'
