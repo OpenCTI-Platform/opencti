@@ -1,13 +1,15 @@
+import React, { ReactNode, useCallback } from 'react';
 import IconButton from '@common/button/IconButton';
 import { Add } from '@mui/icons-material';
 import { Autocomplete, AutocompleteProps, AutocompleteValue, TextField, TextFieldProps } from '@mui/material';
 import { FieldProps, useField } from 'formik';
-import { fieldToAutocomplete } from 'formik-mui';
-import { ReactNode, useCallback } from 'react';
 import { FieldOption } from '../utils/field';
 import { truncate } from '../utils/String';
-import { isNilField } from '../utils/utils';
 import { useFormatter } from './i18n';
+import { isNilField } from '../utils/utils';
+import { FieldOption } from '../utils/field';
+import { fieldToAutocomplete } from 'formik-mui';
+import Tag from '@common/tag/Tag';
 
 type Bool = boolean | undefined;
 type PossibleValue = FieldOption | string;
@@ -24,6 +26,7 @@ export type AutocompleteFieldProps<
     required?: boolean;
     endAdornment?: ReactNode;
     textfieldprops?: TextFieldProps;
+    applyLabelTextTransform?: boolean;
     onFocus?: (name: string) => void;
     onChange?: (name: string, value: AutocompleteValue<Value, M, DC, FSolo>) => void;
     onInternalChange?: (name: string, value: AutocompleteValue<Value, M, DC, FSolo>) => void;
@@ -53,6 +56,7 @@ const AutocompleteField = <
     renderOption,
     isOptionEqualToValue,
     textfieldprops,
+    applyLabelTextTransform,
     getOptionLabel,
     endAdornment,
     disabled,
@@ -125,6 +129,15 @@ const AutocompleteField = <
         noOptionsText={noOptionsText}
         {...fieldProps}
         renderOption={renderOption}
+        renderTags={(values) => (
+          values.map((option) => (
+            <Tag
+              applyLabelTextTransform={applyLabelTextTransform}
+              key={(option as FieldOption).value}
+              label={truncate((option as FieldOption).label, 50)}
+            />
+          ))
+        )}
         onChange={internalOnChange}
         onFocus={internalOnFocus}
         onBlur={internalOnBlur}
