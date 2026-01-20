@@ -13,6 +13,7 @@ import { SSODefinitionsLines_data$data } from './__generated__/SSODefinitionsLin
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import SSODefinitionCreation from '@components/settings/sso_definitions/SSODefinitionCreation';
 import ItemBoolean from '../../../../components/ItemBoolean';
+import { CheckCircleOutlined, CloseOutlined } from '@mui/icons-material';
 
 const LOCAL_STORAGE_KEY = 'SSODefinitions';
 
@@ -139,11 +140,8 @@ const SSODefinitions = () => {
       label: 'Enabled',
       percentWidth: 25,
       render: (node: { enabled: boolean }) => (
-        <ItemBoolean
-          variant="large"
-          label={node.enabled ? t_i18n('True') : t_i18n('False')}
-          status={node.enabled}
-        />
+        node.enabled ? <CheckCircleOutlined fontSize="small" color="success" />
+          : <CloseOutlined fontSize="small" color="error" />
       ) },
     label: {
       label: 'Login Name Button',
