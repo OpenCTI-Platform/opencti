@@ -62,22 +62,22 @@ const ExternalReferenceDetailsComponent = ({
             <ItemCreators creators={externalReference.creators ?? []} />
           </Grid>
           <Grid item xs={6}>
-            <Label>
-              {t_i18n('URL')}
-            </Label>
-            <pre style={{ position: 'relative', minHeight: 35 }}>
-              {externalReference.url}
+            <Label action={(
               <Tooltip title={t_i18n('Browse the link')}>
                 <IconButton
-                  onClick={() => handleOpenExternalLink(externalReference.url ?? '')
-                  }
+                  onClick={() => handleOpenExternalLink(externalReference.url ?? '')}
                   color="primary"
-                  style={{ position: 'absolute', right: 0, top: 0 }}
                   disabled={!externalReference.url}
                 >
                   <OpenInBrowserOutlined />
                 </IconButton>
               </Tooltip>
+            )}
+            >
+              {t_i18n('URL')}
+            </Label>
+            <pre style={{ minHeight: 35 }}>
+              {externalReference.url}
             </pre>
           </Grid>
         </Grid>
