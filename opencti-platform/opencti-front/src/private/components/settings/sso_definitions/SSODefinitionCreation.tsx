@@ -39,22 +39,22 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
       entityType="SSODefinition"
       options={[
         'Create SAML',
-        'Create OpenID',
-        'Create Header',
-        'Create ClientCert',
-        'Create Ldap',
+        // 'Create OpenID',
+        // 'Create Header',
+        // 'Create ClientCert',
+        // 'Create Ldap',
       ]}
       onOptionClick={(option) => {
         if (option === 'Create SAML') {
           setSelectedStrategy('SAML');
-        } else if (option === 'Create OpenID') {
-          setSelectedStrategy('OpenID');
-        } else if (option === 'Create Header') {
-          setSelectedStrategy('Header');
-        } else if (option === 'Create ClientCert') {
-          setSelectedStrategy('ClientCert');
-        } else if (option === 'Create Ldap') {
-          setSelectedStrategy('Ldap');
+        // } else if (option === 'Create OpenID') {
+        //   setSelectedStrategy('OpenID');
+        // } else if (option === 'Create Header') {
+        //   setSelectedStrategy('Header');
+        // } else if (option === 'Create ClientCert') {
+        //   setSelectedStrategy('ClientCert');
+        // } else if (option === 'Create Ldap') {
+        //   setSelectedStrategy('Ldap');
         } else {
           setSelectedStrategy(null);
         }
