@@ -307,6 +307,8 @@ const iconSelector = (
       return (
         <SurroundSoundOutlined style={style} fontSize={fontSize} role="img" />
       );
+    case 'draftworkspace':
+      return <ArchitectureOutlined style={style} fontSize={fontSize} role="img" />;
     case 'event':
       return <EventOutlined style={style} fontSize={fontSize} role="img" />;
     case 'narrative':

@@ -11,6 +11,7 @@ import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../schema/stixCyberObservable
 import { telemetry } from '../config/tracing';
 import type { AuthContext, AuthUser } from '../types/user';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 
 // -- ENTITY TYPES --
 
@@ -26,6 +27,7 @@ export const queryDefaultSubTypesPaginated = async (context: AuthContext, user: 
       R.append({ node: { id: ABSTRACT_STIX_CYBER_OBSERVABLE, label: ABSTRACT_STIX_CYBER_OBSERVABLE } }),
       R.append({ node: { id: ENTITY_TYPE_EXTERNAL_REFERENCE, label: ENTITY_TYPE_EXTERNAL_REFERENCE } }),
       R.append({ node: { id: ENTITY_HASHED_OBSERVABLE_ARTIFACT, label: ENTITY_HASHED_OBSERVABLE_ARTIFACT } }),
+      R.append({ node: { id: ENTITY_TYPE_DRAFT_WORKSPACE, label: ENTITY_TYPE_DRAFT_WORKSPACE } }),
       R.uniqBy(R.path(['node', 'id'])),
     )(types);
     return buildPagination(0, null, finalResult, finalResult.length);

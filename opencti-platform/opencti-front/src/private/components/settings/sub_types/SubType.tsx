@@ -88,6 +88,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
 
   const hasRequestAccessConfig = subType.settings?.requestAccessConfiguration && isEnterpriseEdition && subType.settings?.availableSettings.includes('request_access_workflow');
 
+  const isDraftWorkspaceType = subType.label === 'DraftWorkspace';
   return (
     <div style={{ margin: 0, padding: '0 200px 50px 0' }}>
       <Breadcrumbs elements={[
@@ -105,43 +106,47 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
       </TitleMainEntity>
 
       <Grid container spacing={3}>
-        <Grid item xs={hasTemplates ? 6 : 12}>
-          <Card title={t_i18n('Configuration')}>
-            <EntitySettingSettings entitySettingsData={subType.settings} />
-          </Card>
-        </Grid>
+        {!isDraftWorkspaceType && (
+          <Grid item xs={hasTemplates ? 6 : 12}>
+            <Card title={t_i18n('Configuration')}>
+              <EntitySettingSettings entitySettingsData={subType.settings} />
+            </Card>
+          </Grid>
+        )}
 
         {hasTemplates && <FintelTemplatesGrid data={subType.settings} />}
 
-        <Grid item xs={12}>
-          <Card title={t_i18n('Workflow')}>
-            <div style={{ display: 'flex' }}>
-              <Grid item xs={hasRequestAccessConfig ? 6 : 12}>
-                {subType.settings?.availableSettings.includes('workflow_configuration')
-                  && <GlobalWorkflowSettings data={subType} subTypeId={subType.id} workflowEnabled={subType.workflowEnabled ?? false} />
-                }
-              </Grid>
-              {hasRequestAccessConfig && (
-                <>
-                  <Grid item>
-                    <Divider
-                      orientation="vertical"
-                      style={{
-                        display: 'inline-block',
-                        verticalAlign: 'middle',
-                        height: '100%',
-                        margin: '0 20px',
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={6}>
-                    <RequestAccessSettings data={subType} subTypeId={subType.id} dataConfiguration={subType.settings.requestAccessConfiguration} />
-                  </Grid>
-                </>
-              )}
-            </div>
-          </Card>
-        </Grid>
+        {!isDraftWorkspaceType && (
+          <Grid item xs={12}>
+            <Card title={t_i18n('Workflow')}>
+              <div style={{ display: 'flex' }}>
+                <Grid item xs={hasRequestAccessConfig ? 6 : 12}>
+                  {subType.settings?.availableSettings.includes('workflow_configuration')
+                    && <GlobalWorkflowSettings data={subType} subTypeId={subType.id} workflowEnabled={subType.workflowEnabled ?? false} />
+                  }
+                </Grid>
+                {hasRequestAccessConfig && (
+                  <>
+                    <Grid item>
+                      <Divider
+                        orientation="vertical"
+                        style={{
+                          display: 'inline-block',
+                          verticalAlign: 'middle',
+                          height: '100%',
+                          margin: '0 20px',
+                        }}
+                      />
+                    </Grid>
+                    <Grid item xs={6}>
+                      <RequestAccessSettings data={subType} subTypeId={subType.id} dataConfiguration={subType.settings.requestAccessConfiguration} />
+                    </Grid>
+                  </>
+                )}
+              </div>
+            </Card>
+          </Grid>
+        )}
 
         {subType.settings?.availableSettings.includes('attributes_configuration') && (
           <Grid item xs={12}>
