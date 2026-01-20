@@ -178,7 +178,7 @@ const Drawer = forwardRef(({
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="subtitle2" style={{ textWrap: 'nowrap' }}>{title}</Typography>
+          <Typography variant="subtitle2" style={{ textWrap: 'nowrap', marginRight: 12 }}>{title}</Typography>
           {context && <SubscriptionAvatars context={context} />}
           {header}
         </div>

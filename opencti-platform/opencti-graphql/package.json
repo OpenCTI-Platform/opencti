@@ -1,6 +1,6 @@
 {
   "name": "opencti-graphql",
-  "version": "6.9.7",
+  "version": "6.9.8",
   "private": true,
   "scripts": {
     "check-ts": "tsc --noEmit",
@@ -51,10 +51,10 @@
   "dependencies": {
     "@apollo/server": "5.2.0",
     "@as-integrations/express5": "1.1.2",
-    "@aws-sdk/client-s3": "3.965.0",
-    "@aws-sdk/client-sts": "3.965.0",
-    "@aws-sdk/credential-provider-node": "3.965.0",
-    "@aws-sdk/lib-storage": "3.965.0",
+    "@aws-sdk/client-s3": "3.970.0",
+    "@aws-sdk/client-sts": "3.970.0",
+    "@aws-sdk/credential-provider-node": "3.970.0",
+    "@aws-sdk/lib-storage": "3.970.0",
     "@datadog/pprof": "5.13.1",
     "@elastic/elasticsearch": "8.19.1",
     "@escape.tech/graphql-armor": "3.2.0",
@@ -104,7 +104,7 @@
     "cors": "2.8.5",
     "csv-parse": "6.1.0",
     "dataloader": "2.2.3",
-    "ejs": "3.1.10",
+    "ejs": "4.0.1",
     "eventsource": "2.0.2",
     "express": "5.2.1",
     "express-rate-limit": "8.2.1",
@@ -173,12 +173,12 @@
   },
   "devDependencies": {
     "@eslint/js": "9.39.2",
-    "@graphql-codegen/cli": "6.1.0",
+    "@graphql-codegen/cli": "6.1.1",
     "@graphql-codegen/introspection": "5.0.0",
     "@graphql-codegen/typescript-resolvers": "5.1.5",
     "@luckycatfactory/esbuild-graphql-loader": "3.8.1",
     "@rollup/plugin-graphql": "2.0.5",
-    "@stylistic/eslint-plugin": "5.6.1",
+    "@stylistic/eslint-plugin": "5.7.0",
     "@types/archiver": "7.0.0",
     "@types/bluebird": "3.5.42",
     "@types/content-type": "1.1.9",
@@ -204,7 +204,7 @@
     "globals": "17.0.0",
     "graphql-tag": "2.12.6",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.52.0",
+    "typescript-eslint": "8.53.0",
     "vitest": "3.2.4"
   },
   "resolutions": {

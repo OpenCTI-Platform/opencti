@@ -103,7 +103,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
     no_dependencies: synchronizer.no_dependencies,
     ssl_verify: synchronizer.ssl_verify,
     synchronized: synchronizer.synchronized,
-    current_state_date: buildDate(synchronizer.current_state_date),
+    current_state_date: buildDate(synchronizer?.current_state_date),
     user_id: relatedUser,
     automatic_user: true,
   };

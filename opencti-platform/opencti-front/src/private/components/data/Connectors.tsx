@@ -7,6 +7,7 @@ import ConnectorsStatus from './connectors/ConnectorsStatus';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import PageContainer from '../../../components/PageContainer';
+import { WorkersStatusQuery$data } from './connectors/__generated__/WorkersStatusQuery.graphql';
 
 const Connectors = () => {
   const { t_i18n } = useFormatter();
@@ -19,13 +20,12 @@ const Connectors = () => {
       <IngestionMenu />
       <PageContainer withRightMenu withGap>
         <Breadcrumbs
-          variant="list"
           elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('Monitoring'), current: true }]}
           noMargin
         />
         <QueryRenderer
           query={workersStatusQuery}
-          render={({ props }) => {
+          render={({ props }: { props: WorkersStatusQuery$data }) => {
             return <WorkersStatus data={props} />;
           }}
         />

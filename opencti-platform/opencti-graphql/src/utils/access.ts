@@ -25,6 +25,7 @@ import type { StixObject } from '../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type { BasicStoreCommon } from '../types/store';
 import type { AuthContext, AuthUser, UserRole } from '../types/user';
+import { isFilterGroupNotEmpty } from './filtering/filtering-utils';
 
 export const DEFAULT_INVALID_CONF_VALUE = 'ChangeMe';
 
@@ -599,6 +600,41 @@ export const isUserHasCapabilities = (user: AuthUser, capabilities: string[] = [
 
 export const isOnlyOrgaAdmin = (user: AuthUser) => {
   return !isUserHasCapability(user, SETTINGS_SET_ACCESSES) && isUserHasCapability(user, VIRTUAL_ORGANIZATION_ADMIN);
+};
+
+/**
+ * Construct a filter to restrict users visibility in case the user has not set_access capa and is organization administrator
+ */
+export const buildUserOrganizationRestrictedFiltersOptions = (user: AuthUser, inputFilters?: FilterGroup) => {
+  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+    // If user is not a set access administrator, user can only see attached organization users
+    const organizationIds = user.administrated_organizations.map((organization) => organization.id);
+    const filters = {
+      mode: 'and',
+      filters: [
+        {
+          key: 'regardingOf',
+          operator: 'eq',
+          values: [
+            {
+              key: 'relationship_type',
+              values: ['participate-to'],
+            },
+            {
+              key: 'id',
+              values: organizationIds,
+            },
+          ],
+          mode: 'or',
+        },
+      ],
+      filterGroups: inputFilters && isFilterGroupNotEmpty(inputFilters) ? [inputFilters] : [],
+    };
+    // dont check regardingOf filter id if user is admin of an orga, to avoid regardingOf filter error if the user has not access to his own organization
+    const noRegardingOfFilterIdsCheck = isOnlyOrgaAdmin(user) ? true : false;
+    return { filters, noRegardingOfFilterIdsCheck };
+  }
+  return { filters: inputFilters, noRegardingOfFilterIdsCheck: false };
 };
 
 // returns all user member access ids : his id, his organizations ids (and parent organizations), his groups ids

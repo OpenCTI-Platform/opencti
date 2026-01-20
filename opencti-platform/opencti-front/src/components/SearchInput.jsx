@@ -39,6 +39,8 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: 4,
     padding: '0 10px 0 10px',
     height: 30,
+    width: '100%',
+    minWidth: 100,
   },
   searchRootThin: {
     borderRadius: 4,
@@ -52,6 +54,9 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: theme.palette.background.default,
   },
   searchInputTopBar: {
+    width: '100%',
+  },
+  searchInputInDrawer: {
     width: '100%',
   },
   searchInput: {
@@ -117,6 +122,8 @@ const SearchInput = (props) => {
     classInput = classes.searchInputTopBar;
   } else if (variant === 'noAnimation') {
     classInput = classes.searchInputNoAnimation;
+  } else if (variant === 'inDrawer') {
+    classInput = classes.searchInputInDrawer;
   }
 
   const handleChangeAskAI = () => {

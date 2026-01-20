@@ -25,11 +25,13 @@ import {
   syncDelete,
   syncEditContext,
   syncEditField,
+  synchronizerExport,
   synchronizerAddAutoUser,
   testSync,
   updateConnectorCurrentStatus,
   updateConnectorManagerStatus,
   updateConnectorRequestedStatus,
+  syncAddInputFromImport,
 } from '../domain/connector';
 import {
   addDraftContext,
@@ -84,6 +86,7 @@ const connectorResolvers = {
     work: (_, { id }, context) => findById(context, context.user, id),
     isWorkAlive: (_, { id }, context) => isWorkAlive(context, context.user, id),
     synchronizer: (_, { id }, context) => findSyncById(context, context.user, id, true),
+    synchronizerAddInputFromImport: (_, { file }) => syncAddInputFromImport(file),
     synchronizers: (_, args, context) => findSyncPaginated(context, context.user, args),
     synchronizerFetch: (_, { input }, context) => fetchRemoteStreams(context, context.user, input),
     // region new managed connectors
@@ -128,6 +131,7 @@ const connectorResolvers = {
   Synchronizer: {
     user: (sync, _, context) => context.batch.creatorBatchLoader.load(sync.user_id),
     queue_messages: async (sync, _, context) => getConnectorQueueSize(context, context.user, sync.id),
+    toConfigurationExport: (synchronizer) => synchronizerExport(synchronizer),
   },
   Mutation: {
     deleteConnector: (_, { id }, context) => connectorDelete(context, context.user, id),

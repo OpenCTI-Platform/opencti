@@ -14,7 +14,7 @@ services:
       - 5540:5540
   opencti-dev-elasticsearch:
     container_name: opencti-dev-elasticsearch
-    image: elasticsearch:8.19.9
+    image: elasticsearch:8.19.10
     volumes:
       - esdata:/usr/share/elasticsearch/data
       - essnapshots:/usr/share/elasticsearch/snapshots
@@ -36,7 +36,7 @@ services:
       - 9300:9300
   opencti-dev-kibana:
     container_name: opencti-dev-kibana
-    image: kibana:8.19.9
+    image: kibana:8.19.10
     environment:
       - ELASTICSEARCH_HOSTS=http://opencti-dev-elasticsearch:9200
     restart: unless-stopped
@@ -143,7 +143,7 @@ services:
       - "telemetry"
   opencti-dev-telemetry-otlp:
     container_name: opencti-telemetry-otlp
-    image: otel/opentelemetry-collector-contrib:0.142.0
+    image: otel/opentelemetry-collector-contrib:0.143.1
     restart: unless-stopped
     volumes:
       - "./otlp-config.yaml:/etc/config/otlp-config.yaml"
