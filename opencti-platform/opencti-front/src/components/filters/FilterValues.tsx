@@ -221,7 +221,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
           >
             <WarningOutlined
               color="inherit"
-              style={{ fontSize: 20, color: '#f44336', marginRight: 4 }}
+              style={{ fontSize: 20, color: theme.palette.error.main, marginRight: 4 }}
             />
           </Tooltip>
         )}

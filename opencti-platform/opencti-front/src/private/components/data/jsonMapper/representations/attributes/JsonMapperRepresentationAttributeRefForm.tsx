@@ -23,28 +23,6 @@ import { useFormatter } from '../../../../../../components/i18n';
 import { isStixCoreObjects } from '../../../../../../utils/stixTypeUtils';
 import type { Theme } from '../../../../../../components/Theme';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  container: {
-    width: '100%',
-    display: 'inline-grid',
-    gridTemplateColumns: '2fr 3fr 50px',
-    alignItems: 'center',
-    marginTop: '10px',
-    gap: '10px',
-  },
-  inputError: {
-    '& fieldset': {
-      borderColor: 'rgb(244, 67, 54)',
-    },
-  },
-  redStar: {
-    color: 'rgb(244, 67, 54)',
-    marginLeft: '5px',
-  },
-}));
-
 export type RepresentationAttributeForm = JsonMapperRepresentationAttributeFormData | undefined;
 
 interface JsonMapperRepresentationAttributeRefFormProps
@@ -58,9 +36,30 @@ interface JsonMapperRepresentationAttributeRefFormProps
 const JsonMapperRepresentationAttributeRefForm: FunctionComponent<
   JsonMapperRepresentationAttributeRefFormProps
 > = ({ form, field, representation, schemaAttribute, label, handleErrors }) => {
+  const theme = useTheme<Theme>();
+  // Deprecated - https://mui.com/system/styles/basics/
+  // Do not use it for new code.
+  const useStyles = makeStyles(() => ({
+    container: {
+      width: '100%',
+      display: 'inline-grid',
+      gridTemplateColumns: '2fr 3fr 50px',
+      alignItems: 'center',
+      marginTop: '10px',
+      gap: '10px',
+    },
+    inputError: {
+      '& fieldset': {
+        borderColor: theme.palette.error.main,
+      },
+    },
+    redStar: {
+      color: theme.palette.tertiary.red[400],
+      marginLeft: '5px',
+    },
+  }));
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const theme = useTheme<Theme>();
 
   const { name, value } = field;
   const isRelationFromOrTo = name.endsWith('from') || name.endsWith('to');

@@ -1,10 +1,11 @@
 import Tag from '@common/tag/Tag';
-import { Box, Chip, Stack } from '@mui/material';
+import { Box, Stack } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import React, { CSSProperties, SyntheticEvent } from 'react';
+import React, { SyntheticEvent } from 'react';
 import { useFormatter } from '../../../../components/i18n';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 import useChipOverflow from '../../data/IngestionCatalog/components/card/usecases/useChipOverflow';
+import { Theme } from '../../../../components/Theme';
 
 interface StixCoreObjectLabelsProps {
   labels: readonly {
@@ -20,34 +21,13 @@ interface StixCoreObjectLabelsProps {
 const StixCoreObjectLabels = ({
   labels,
   onClick,
-  variant,
   revoked,
 }: StixCoreObjectLabelsProps) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme();
+  const theme = useTheme<Theme>();
 
   const labelValues = labels?.map((l) => l.value || l.id) ?? [];
   const { containerRef, chipRefs, visibleCount, shouldTruncate } = useChipOverflow(labelValues);
-
-  let variantStyle: CSSProperties = {
-    height: 25,
-    fontSize: 12,
-    borderRadius: 4,
-  };
-  if (variant === 'inList') {
-    variantStyle = {
-      fontSize: 12,
-      height: 20,
-      borderRadius: 4,
-    };
-  }
-  if (variant === 'inSearch') {
-    variantStyle = {
-      height: 25,
-      fontSize: 12,
-      borderRadius: 4,
-    };
-  }
 
   if (!revoked && labels && labels.length > 0) {
     const hiddenCount = labels.length - visibleCount;
@@ -111,21 +91,15 @@ const StixCoreObjectLabels = ({
   return (
     <>
       {revoked ? (
-        <Chip
+        <Tag
           variant="outlined"
           label={t_i18n('Revoked')}
-          style={{
-            ...variantStyle,
-            margin: '0 7px 7px 0',
-            color: '#d32f2f',
-            borderColor: '#d32f2f',
-            backgroundColor: 'rgba(211, 47, 47, .1)',
-          }}
           onClick={(e: SyntheticEvent) => {
             e.preventDefault();
             e.stopPropagation();
             onClick?.('objectLabel', null, 'eq');
           }}
+          color={theme.palette.tertiary.red[400]}
         />
       ) : (
         <Tag
@@ -135,7 +109,7 @@ const StixCoreObjectLabels = ({
             e.stopPropagation();
             onClick?.('objectLabel', null, 'eq');
           }}
-          color="#1C2F49"
+          color={theme.palette.tertiary.blue[900]}
         />
       )}
     </>

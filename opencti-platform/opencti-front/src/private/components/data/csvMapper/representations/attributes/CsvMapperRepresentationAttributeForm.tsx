@@ -12,28 +12,8 @@ import { CsvMapperRepresentationAttributeFormData } from '@components/data/csvMa
 import { SchemaAttribute } from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationAttributesForm';
 import { useFormatter } from '../../../../../../components/i18n';
 import { isEmptyField } from '../../../../../../utils/utils';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  container: {
-    width: '100%',
-    display: 'inline-grid',
-    gridTemplateColumns: '2fr 3fr 50px',
-    alignItems: 'center',
-    marginTop: '10px',
-    gap: '10px',
-  },
-  inputError: {
-    '& fieldset': {
-      borderColor: 'rgb(244, 67, 54)',
-    },
-  },
-  redStar: {
-    color: 'rgb(244, 67, 54)',
-    marginLeft: '5px',
-  },
-}));
+import { useTheme } from '@mui/styles';
+import { Theme } from '../../../../../../components/Theme';
 
 export type RepresentationAttributeForm = CsvMapperRepresentationAttributeFormData | undefined;
 
@@ -47,9 +27,30 @@ interface CsvMapperRepresentationAttributeFormProps
 const CsvMapperRepresentationAttributeForm: FunctionComponent<
   CsvMapperRepresentationAttributeFormProps
 > = ({ form, field, schemaAttribute, label, handleErrors }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
-
+  const theme = useTheme<Theme>();
+  // Deprecated - https://mui.com/system/styles/basics/
+  // Do not use it for new code.
+  const useStyles = makeStyles(() => ({
+    container: {
+      width: '100%',
+      display: 'inline-grid',
+      gridTemplateColumns: '2fr 3fr 50px',
+      alignItems: 'center',
+      marginTop: '10px',
+      gap: '10px',
+    },
+    inputError: {
+      '& fieldset': {
+        borderColor: theme.palette.error.main,
+      },
+    },
+    redStar: {
+      color: theme.palette.tertiary.red[400],
+      marginLeft: '5px',
+    },
+  }));
+  const classes = useStyles();
   const { name, value } = field;
   const { setFieldValue } = form;
 

@@ -38,6 +38,7 @@ import { CGUStatus } from '../settings/Experience';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import { TopBarNotificationNumberSubscription$data } from './__generated__/TopBarNotificationNumberSubscription.graphql';
 import { TopBarQuery } from './__generated__/TopBarQuery.graphql';
+import { THEME_DARK_DEFAULT_BACKGROUND, THEME_DARK_DEFAULT_BODY_END_GRADIENT } from '../../../components/ThemeDark';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -198,9 +199,15 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   // draft
   const draftModeColor = getDraftModeColor(theme);
 
-  const appBarGradient = theme.palette.background.gradient?.start && theme.palette.background.gradient?.end
-    ? `${alpha(theme.palette.background.gradient.start, 0.9)} 0%, ${alpha(theme.palette.background.gradient.end, 0.9)}`
-    : 'rgba(7, 13, 25, 0.90) 0%, rgba(12, 21, 36, 0.90)}';
+  const getAppTopBarGradient = (): string => {
+    const defaultGradientDark = `${alpha(THEME_DARK_DEFAULT_BACKGROUND, 0.9)} 0%, ${alpha(THEME_DARK_DEFAULT_BODY_END_GRADIENT, 0.9)}`;
+    if (theme.palette.background.gradient?.start && theme.palette.background.gradient?.start) {
+      return `${alpha(theme.palette.background.gradient?.start, 0.9)} 0%, ${alpha(theme.palette.background.gradient?.end, 0.9)}`;
+    }
+    return defaultGradientDark;
+  };
+
+  const appBarGradient = getAppTopBarGradient();
 
   return (
     <AppBar

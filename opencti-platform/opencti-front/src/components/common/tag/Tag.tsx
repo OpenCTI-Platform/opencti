@@ -28,7 +28,7 @@ const Tag = ({
   ...chipProps
 }: TagProps) => {
   const theme = useTheme();
-  const defaultColor = theme.palette.severity?.default ?? '#1C2F49';
+  const defaultColor = theme.palette.severity?.default ?? '#004C66';
 
   const applyAlpha = color && color !== defaultColor;
 

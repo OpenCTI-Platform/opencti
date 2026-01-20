@@ -19,10 +19,10 @@ export const getColorDefinitions = (theme: Theme): Record<ButtonColorKey, ColorD
     },
     ai: {
       main: theme.palette.ai?.main ?? '#B286FF',
-      hover: theme.palette?.ai?.dark ?? '#B286FF',
+      hover: theme.palette?.ai?.dark ?? '#5E1AD5',
       focus: theme.palette?.ai?.main ?? '#B286FF',
-      text: theme.palette.ai?.contrastText ?? '#B286FF',
-      border: theme.palette?.ai?.light ?? '#B286FF',
+      text: theme.palette.ai?.contrastText ?? '#000000',
+      border: theme.palette?.ai?.light ?? '#D6C2FA',
     },
     primary: {
       main: theme.palette.primary.main,
@@ -91,8 +91,8 @@ export const getGradientColors = (
   switch (gradientVariant) {
     case 'ai':
       return {
-        start: theme.palette?.ai?.dark || '#B286FF',
-        end: theme.palette?.ai?.light || '#D6C2FA',
+        start: theme.palette.mode === 'light' ? theme.palette?.ai?.dark || '#3C108C' : theme.palette?.ai?.light || '#D6C2FA',
+        end: theme.palette?.ai?.main || '#B286FF',
       };
     case 'disabled':
       return {
