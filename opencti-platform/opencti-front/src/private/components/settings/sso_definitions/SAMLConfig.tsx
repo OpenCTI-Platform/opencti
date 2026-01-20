@@ -20,11 +20,57 @@ const SAMLConfig = ({ updateField }: Props) => {
       <Field
         component={TextField}
         variant="standard"
+        name="issuer"
+        label={t_i18n('SAML Entity ID/Issuer')}
+        onSubmit={updateField}
+        required
+        fullWidth
+        style={{ marginTop: 10 }}
+      />
+      <Field
+        component={TextField}
+        variant="standard"
+        name="callbackUrl"
+        label={t_i18n('SAML SSO URL')}
+        onSubmit={updateField}
+        fullWidth
+        required
+        style={{ marginTop: 10 }}
+      />
+      <Field
+        id="filled-multiline-flexible"
+        component={TextField}
+        variant="standard"
+        name="idpCert"
+        label={t_i18n('Identity Provider Encryption Certificate')}
+        onSubmit={updateField}
+        required
+        fullWidth
+        multiline
+        rows={4}
+        style={{ marginTop: 10 }}
+      />
+      <Field
+        id="filled-multiline-flexible"
+        component={TextField}
+        variant="standard"
+        name="entryPoint"
+        label={t_i18n('Entry point')}
+        onSubmit={updateField}
+        required
+        fullWidth
+        multiline
+        rows={4}
+        style={{ marginTop: 10 }}
+      />
+      <Field
+        component={TextField}
+        variant="standard"
         name="privateKey"
         label={t_i18n('Private key')}
         onSubmit={updateField}
         fullWidth
-        style={{ marginTop: 20 }}
+        style={{ marginTop: 10 }}
       />
       <Field
         component={SwitchField}
@@ -32,8 +78,8 @@ const SAMLConfig = ({ updateField }: Props) => {
         type="checkbox"
         name="wantAssertionsSigned"
         label={t_i18n('Want assertion signed')}
-        onSubmit={updateField}
-        containerstyle={{ marginLeft: 2, marginTop: 20 }}
+        onChange={updateField}
+        containerstyle={{ marginLeft: 2, marginTop: 10 }}
       />
       <Field
         component={SwitchField}
@@ -41,17 +87,17 @@ const SAMLConfig = ({ updateField }: Props) => {
         type="checkbox"
         name="wantAuthnResponseSigned"
         label={t_i18n('Requires SAML responses to be signed')}
-        onSubmit={updateField}
+        onChange={updateField}
         containerstyle={{ marginLeft: 2 }}
       />
-      <div style={{ marginTop: 40, marginBottom: 20 }}>
+      <div style={{ marginTop: 40, marginBottom: 10 }}>
         <Typography variant="h2">Identity Provider Information</Typography>
         <Field
           component={SwitchField}
           variant="standard"
           type="checkbox"
           name="loginIdpDirectly"
-          onSubmit={updateField}
+          onChange={updateField}
           label={t_i18n('Allow login from identity provider directly')}
           containerstyle={{ marginLeft: 2 }}
         />
@@ -60,7 +106,7 @@ const SAMLConfig = ({ updateField }: Props) => {
           variant="standard"
           type="checkbox"
           name="logoutRemote"
-          onSubmit={updateField}
+          onChange={updateField}
           label={t_i18n('Allow logout from Identity provider directly')}
           containerstyle={{ marginLeft: 2 }}
         />
@@ -78,26 +124,6 @@ const SAMLConfig = ({ updateField }: Props) => {
         <MenuItem value="Upload">Upload</MenuItem>
       </Field>
       <Field
-        component={TextField}
-        variant="standard"
-        name="issuer"
-        label={t_i18n('SAML Entity ID/Issuer')}
-        onSubmit={updateField}
-        required
-        fullWidth
-        style={{ marginTop: 20 }}
-      />
-      <Field
-        component={TextField}
-        variant="standard"
-        name="callbackUrl"
-        label={t_i18n('SAML SSO URL')}
-        onSubmit={updateField}
-        fullWidth
-        required
-        style={{ marginTop: 20 }}
-      />
-      <Field
         id="filled-multiline-flexible"
         component={TextField}
         variant="standard"
@@ -107,20 +133,7 @@ const SAMLConfig = ({ updateField }: Props) => {
         fullWidth
         multiline
         rows={4}
-        style={{ marginTop: 20 }}
-      />
-      <Field
-        id="filled-multiline-flexible"
-        component={TextField}
-        variant="standard"
-        name="idpCert"
-        label={t_i18n('Identity Provider Encryption Certificate')}
-        onSubmit={updateField}
-        required
-        fullWidth
-        multiline
-        rows={4}
-        style={{ marginTop: 20 }}
+        style={{ marginTop: 10 }}
       />
       <Field
         component={SelectField}
@@ -129,7 +142,7 @@ const SAMLConfig = ({ updateField }: Props) => {
         label={t_i18n('SSO Binding type')}
         onSubmit={updateField}
         fullWidth
-        containerstyle={{ width: '100%' }}
+        containerstyle={{ width: '100%', marginBottom: 20, marginTop: 10 }}
       >
         <MenuItem value="Redirect">Redirect</MenuItem>
         <MenuItem value="Post">Post</MenuItem>
@@ -140,29 +153,25 @@ const SAMLConfig = ({ updateField }: Props) => {
         type="checkbox"
         name="forceReauthentication"
         label={t_i18n('Force re-authentication even if user has valid SSO session')}
-        onSubmit={updateField}
+        onChange={updateField}
         containerstyle={{ marginLeft: 2 }}
       />
-      <Field
-        id="filled-multiline-flexible"
-        component={TextField}
-        variant="standard"
-        name="entryPoint"
-        label={t_i18n('Entry point')}
-        onSubmit={updateField}
-        required
-        fullWidth
-        multiline
-        rows={4}
-        style={{ marginTop: 20 }}
-      />
+      {/* <Field */}
+      {/*  component={SwitchField} */}
+      {/*  variant="standard" */}
+      {/*  type="checkbox" */}
+      {/*  name="enableDebugMode" */}
+      {/*  label={t_i18n('Enable debug mode to troubleshoot for this authentication')} */}
+      {/*  onChange={updateField} */}
+      {/*  containerstyle={{ marginLeft: 2 }} */}
+      {/* /> */}
       <FieldArray name="advancedConfigurations">
         {({ push, remove, form }) => (
           <>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginTop: 20 }}>
               <Typography variant="h2">{t_i18n('Add more fields')}</Typography>
               <IconButton
-                color="secondary"
+                color="primary"
                 aria-label="Add"
                 size="large"
                 style={{ marginBottom: 12 }}
@@ -226,7 +235,7 @@ const SAMLConfig = ({ updateField }: Props) => {
                         const advancedConfigurations = [...form.values.advancedConfigurations];
                         advancedConfigurations.splice(index, 1);
                         updateField('advancedConfigurations', advancedConfigurations);
-                      }} // Delete
+                      }}
                     >
                       <Delete fontSize="small" />
                     </IconButton>

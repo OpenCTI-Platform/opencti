@@ -67,7 +67,7 @@ const SSODefinitionEdition = ({
   const selectedStrategy = sso.strategy;
 
   const onEdit = (field: SSOEditionFormInputKeys, value: unknown) => {
-    const configurationKeyList = ['privateKey', 'providerMethod', 'issuer', 'callbackUrl', 'signingCert', 'idpCert', 'ssoBindingType', 'entryPoint'];
+    const configurationKeyList = ['privateKey', 'providerMethod', 'issuer', 'callbackUrl', 'signingCert', 'idpCert', 'ssoBindingType', 'entryPoint', 'wantAssertionsSigned', 'wantAuthnResponseSigned', 'loginIdpDirectly', 'logoutRemote', 'forceReauthentication', 'enableDebugMode'];
     const groupManagementKeyList = ['group_attributes', 'groups_mapping'];
     const organizationsManagementKeyList = ['organizations_path', 'organizations_mapping'];
 

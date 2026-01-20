@@ -12,6 +12,8 @@ import { SSODefinitionsLinesPaginationQuery } from './__generated__/SSODefinitio
 import { SSODefinitionsLines_data$data } from './__generated__/SSODefinitionsLines_data.graphql';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import SSODefinitionCreation from '@components/settings/sso_definitions/SSODefinitionCreation';
+import ItemBoolean from '../../../../components/ItemBoolean';
+import { CheckCircleOutlined, CloseOutlined } from '@mui/icons-material';
 
 const LOCAL_STORAGE_KEY = 'SSODefinitions';
 
@@ -119,25 +121,38 @@ const SSODefinitions = () => {
 
   const dataColumns = {
     strategy: {
-      label: 'Authentication strategy',
+      label: t_i18n('Authentication strategy'),
       percentWidth: 25,
-      render: (node: { strategy: string }) => <div>{node.strategy}</div>,
+      render: (node: { strategy: string }) => (
+        <ItemBoolean
+          variant="large"
+          neutralLabel={node.strategy}
+          status={null}
+        />
+      ),
     },
     name: {
-      label: 'Configuration name',
+      label: t_i18n('Configuration name'),
       percentWidth: 25,
       render: (node: { name: string }) => <div>{node.name}</div>,
     },
     enabled: {
-      label: 'Enabled',
+      label: t_i18n('Enabled'),
       percentWidth: 25,
-      render: (node: { enabled: boolean }) => <div>{JSON.stringify(node.enabled)}</div>,
-    },
+      render: (node: { enabled: boolean }) => (
+        node.enabled ? <CheckCircleOutlined fontSize="small" color="success" />
+          : <CloseOutlined fontSize="small" color="error" />
+      ) },
     label: {
-      label: 'Login Name Button',
+      label: t_i18n('Login Button Name'),
       percentWidth: 25,
-      render: (node: { label: string }) => <div>{node.label}</div>,
-    },
+      render: (node: { label: string; identifier: string }) => (
+        <ItemBoolean
+          variant="large"
+          neutralLabel={node.label || node.identifier}
+          status={null}
+        />
+      ) },
   };
 
   const queryRef = useQueryLoading(
@@ -180,6 +195,7 @@ const SSODefinitions = () => {
           searchContextFinal={{ entityTypes: ['SingleSignOn'] }}
           disableToolBar
           removeSelectAll
+          disableLineSelection
           createButton={<SSODefinitionCreation paginationOptions={queryPaginationOptions} />}
         />
       )}

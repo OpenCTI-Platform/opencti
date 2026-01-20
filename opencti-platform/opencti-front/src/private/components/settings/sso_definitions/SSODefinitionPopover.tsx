@@ -4,10 +4,10 @@ import { useFormatter } from '../../../../components/i18n';
 import React, { UIEvent, useState } from 'react';
 import { Menu, MenuItem, PopoverProps } from '@mui/material';
 import stopEvent from '../../../../utils/domEvent';
-import IconButton from '@common/button/IconButton';
 import MoreVert from '@mui/icons-material/MoreVert';
 import SSODefinitionDeletion from '@components/settings/sso_definitions/SSODefinitionDeletion';
 import { SSODefinitionPopoverFragment$key } from '@components/settings/sso_definitions/__generated__/SSODefinitionPopoverFragment.graphql';
+import ToggleButton from '@mui/material/ToggleButton';
 
 const ssoDefinitionPopoverFragment = graphql`
   fragment SSODefinitionPopoverFragment on SingleSignOn {
@@ -38,15 +38,14 @@ export const SSODefinitionPopover = ({ data }: SsoDefinitionPopoverProps) => {
 
   return (
     <>
-      <IconButton
+      <ToggleButton
         onClick={onOpenMenu}
-        aria-haspopup="true"
-        className="icon-outlined"
-        variant="secondary"
+        value="open-menu"
+        size="small"
         aria-label={t_i18n('Popover of actions')}
       >
-        <MoreVert fontSize="small" />
-      </IconButton>
+        <MoreVert fontSize="small" color="primary" />
+      </ToggleButton>
 
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={onCloseMenu}>
         <SSODefinitionDeletion

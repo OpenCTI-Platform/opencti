@@ -6,9 +6,7 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import SwitchField from '../../../../components/fields/SwitchField';
 import Typography from '@mui/material/Typography';
-import { IconButton } from '@mui/material';
 import { Add, Delete } from '@mui/icons-material';
-import Button from '@mui/material/Button';
 import React, { useState } from 'react';
 import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../../components/Theme';
@@ -17,6 +15,8 @@ import TextField from '../../../../components/TextField';
 import { getAdvancedConfigFromData } from '@components/settings/sso_definitions/utils/getConfigAndAdvancedConfigFromData';
 import SAMLConfig from '@components/settings/sso_definitions/SAMLConfig';
 import { ConfigurationTypeInput } from '@components/settings/sso_definitions/__generated__/SSODefinitionCreationMutation.graphql';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
 
 interface SSODefinitionFormProps {
   onCancel: () => void;
@@ -124,7 +124,7 @@ const SSODefinitionForm = ({
   const signingCertField = data?.configuration?.find((e) => e.key === 'signingCert');
   const ssoBindingTypeField = data?.configuration?.find((e) => e.key === 'ssoBindingType');
   const forceReauthenticationField = data?.configuration?.find((e) => e.key === 'forceReauthentication');
-  const enableDebugModeField = data?.configuration?.find((e) => e.key === 'enableDebugMode');
+  // const enableDebugModeField = data?.configuration?.find((e) => e.key === 'enableDebugMode');
   const entryPointField = data?.configuration?.find((e) => e.key === 'entryPoint');
   const advancedConfigurations = getAdvancedConfigFromData((data?.configuration ?? []) as ConfigurationTypeInput[]);
   const groupsAttributes = Array.from(data?.groups_management?.group_attributes ?? []);
@@ -150,7 +150,7 @@ const SSODefinitionForm = ({
     initialValues.ssoBindingType = ssoBindingTypeField?.value ?? '';
     initialValues.entryPoint = entryPointField?.value ?? '';
     initialValues.forceReauthentication = forceReauthenticationField ? forceReauthenticationField?.value === 'true' : false;
-    initialValues.enableDebugMode = enableDebugModeField ? enableDebugModeField?.value === 'true' : false;
+    // initialValues.enableDebugMode = enableDebugModeField ? enableDebugModeField?.value === 'true' : false;
     initialValues.advancedConfigurations = advancedConfigurations ?? [];
     initialValues.group_attributes = groupsAttributes;
     initialValues.groups_mapping = groupsMapping;
@@ -183,8 +183,8 @@ const SSODefinitionForm = ({
               onChange={(event, value) => handleChangeTab(value)}
             >
               <Tab label={t_i18n('SSO Configuration')} />
-              <Tab label={t_i18n('Groups mapping')} />
-              <Tab label={t_i18n('Organization mapping')} />
+              <Tab label={t_i18n('Groups configuration')} />
+              <Tab label={t_i18n('Organizations configuration')} />
             </Tabs>
           </Box>
           {currentTab === 0 && (
@@ -211,15 +211,6 @@ const SSODefinitionForm = ({
                 />
               </div>
               <Field
-                component={TextField}
-                variant="standard"
-                name="label"
-                onSubmit={updateField}
-                label={t_i18n('Login Button Name')}
-                fullWidth
-                style={{ marginTop: 20 }}
-              />
-              <Field
                 component={SwitchField}
                 variant="standard"
                 name="enabled"
@@ -227,6 +218,15 @@ const SSODefinitionForm = ({
                 onChange={updateField}
                 label={t_i18n('Enable SAML authentication')}
                 containerstyle={{ marginLeft: 2, marginTop: 20 }}
+              />
+              <Field
+                component={TextField}
+                variant="standard"
+                name="label"
+                onSubmit={updateField}
+                label={t_i18n('Login Button Name')}
+                fullWidth
+                style={{ marginTop: 10 }}
               />
               {selectedStrategy === 'SAML' && <SAMLConfig updateField={updateField} />}
             </>
@@ -254,15 +254,15 @@ const SSODefinitionForm = ({
                         marginTop: 20,
                       }}
                     >
-                      <Typography variant="h2">{t_i18n('Add a group mapping')}</Typography>
+                      <Typography variant="h2">{t_i18n('Add a new value')}</Typography>
                       <IconButton
+                        size="default"
                         color="secondary"
                         aria-label={t_i18n('Add a new value')}
-                        size="large"
                         style={{ marginBottom: 12 }}
                         onClick={() => push('')}
                       >
-                        <Add fontSize="small" />
+                        <Add fontSize="small" color="primary" />
                       </IconButton>
                     </div>
                     {form.values.groups_mapping
@@ -301,6 +301,7 @@ const SSODefinitionForm = ({
                             {/*  /> */}
                             {/* </div> */}
                             <IconButton
+                              size="default"
                               color="primary"
                               aria-label={t_i18n('Delete')}
                               style={{ marginTop: 10 }}
@@ -327,14 +328,14 @@ const SSODefinitionForm = ({
                   </>
                 )}
               </FieldArray>
-              <Field
-                component={SwitchField}
-                variant="standard"
-                type="checkbox"
-                name="read_userinfo"
-                label={t_i18n('Automatically add users to default groups')}
-                containerstyle={{ marginLeft: 2, marginTop: 30 }}
-              />
+              {/* <Field */}
+              {/*  component={SwitchField} */}
+              {/*  variant="standard" */}
+              {/*  type="checkbox" */}
+              {/*  name="read_userinfo" */}
+              {/*  label={t_i18n('Automatically add users to default groups')} */}
+              {/*  containerstyle={{ marginLeft: 2, marginTop: 30 }} */}
+              {/* /> */}
             </>
           )}
           {currentTab === 2 && (
@@ -361,13 +362,13 @@ const SSODefinitionForm = ({
                     >
                       <Typography variant="h2">{t_i18n('Add a new value')}</Typography>
                       <IconButton
+                        size="default"
                         color="secondary"
                         aria-label={t_i18n('Add a new value')}
-                        size="large"
                         style={{ marginBottom: 12 }}
                         onClick={() => push('')}
                       >
-                        <Add fontSize="small" />
+                        <Add fontSize="small" color="primary" />
                       </IconButton>
                     </div>
                     {form.values.organizations_mapping
@@ -431,7 +432,7 @@ const SSODefinitionForm = ({
               }}
             >
               <Button
-                variant="contained"
+                variant="secondary"
                 onClick={handleReset}
                 disabled={isSubmitting}
                 style={{ marginLeft: theme.spacing(2) }}
@@ -439,8 +440,6 @@ const SSODefinitionForm = ({
                 {t_i18n('Cancel')}
               </Button>
               <Button
-                variant="contained"
-                color="secondary"
                 onClick={submitForm}
                 disabled={isSubmitting}
                 style={{ marginLeft: theme.spacing(2) }}
