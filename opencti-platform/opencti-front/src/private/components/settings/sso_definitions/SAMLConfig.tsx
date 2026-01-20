@@ -78,7 +78,7 @@ const SAMLConfig = ({ updateField }: Props) => {
         type="checkbox"
         name="wantAssertionsSigned"
         label={t_i18n('Want assertion signed')}
-        onSubmit={updateField}
+        onChange={updateField}
         containerstyle={{ marginLeft: 2, marginTop: 10 }}
       />
       <Field
@@ -87,7 +87,7 @@ const SAMLConfig = ({ updateField }: Props) => {
         type="checkbox"
         name="wantAuthnResponseSigned"
         label={t_i18n('Requires SAML responses to be signed')}
-        onSubmit={updateField}
+        onChange={updateField}
         containerstyle={{ marginLeft: 2 }}
       />
       <div style={{ marginTop: 40, marginBottom: 10 }}>
@@ -97,7 +97,7 @@ const SAMLConfig = ({ updateField }: Props) => {
           variant="standard"
           type="checkbox"
           name="loginIdpDirectly"
-          onSubmit={updateField}
+          onChange={updateField}
           label={t_i18n('Allow login from identity provider directly')}
           containerstyle={{ marginLeft: 2 }}
         />
@@ -106,7 +106,7 @@ const SAMLConfig = ({ updateField }: Props) => {
           variant="standard"
           type="checkbox"
           name="logoutRemote"
-          onSubmit={updateField}
+          onChange={updateField}
           label={t_i18n('Allow logout from Identity provider directly')}
           containerstyle={{ marginLeft: 2 }}
         />
