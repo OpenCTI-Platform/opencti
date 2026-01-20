@@ -96,7 +96,7 @@ const ThemeDark = (
       },
     },
     text: {
-      secondary: '#AFB0B6',
+      secondary: THEME_DARK_DEFAULT_TEXT,
       light: '#AFB0B6',
     },
     leftBar: {
