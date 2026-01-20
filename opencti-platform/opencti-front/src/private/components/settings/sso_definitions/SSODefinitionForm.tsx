@@ -46,7 +46,7 @@ export interface SSODefinitionFormValues {
   signingCert: string;
   ssoBindingType: string;
   forceReauthentication: boolean;
-  // enableDebugMode: boolean;
+  enableDebugMode: boolean;
   entryPoint: string;
   advancedConfigurations: {
     key: string;
@@ -102,7 +102,7 @@ const SSODefinitionForm = ({
     signingCert: '',
     ssoBindingType: '',
     forceReauthentication: false,
-    // enableDebugMode: false,
+    enableDebugMode: false,
     entryPoint: '',
     advancedConfigurations: [],
     group_attributes: [],
