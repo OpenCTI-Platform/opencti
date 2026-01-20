@@ -149,8 +149,8 @@ const SSODefinitionForm = ({
     initialValues.signingCert = signingCertField?.value ?? '';
     initialValues.ssoBindingType = ssoBindingTypeField?.value ?? '';
     initialValues.entryPoint = entryPointField?.value ?? '';
-    initialValues.forceReauthentication = !!forceReauthenticationField?.value;
-    initialValues.enableDebugMode = !!enableDebugModeField?.value;
+    initialValues.forceReauthentication = forceReauthenticationField ? forceReauthenticationField?.value === 'true' : false;
+    initialValues.enableDebugMode = enableDebugModeField ? enableDebugModeField?.value === 'true' : false;
     initialValues.advancedConfigurations = advancedConfigurations ?? [];
     initialValues.group_attributes = groupsAttributes;
     initialValues.groups_mapping = groupsMapping;
