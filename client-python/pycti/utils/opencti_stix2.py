@@ -3306,7 +3306,7 @@ class OpenCTIStix2:
         """
         processing_count = 0
         worker_logger = self.opencti.logger_class("worker")
-        error_msg = "TEST ERROR MSG"
+        error_msg = ""
         while processing_count <= -1:
             try:
                 self.opencti.set_retry_number(processing_count)
