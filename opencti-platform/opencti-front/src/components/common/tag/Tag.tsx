@@ -1,5 +1,5 @@
 import { CloseOutlined } from '@mui/icons-material';
-import { Chip, ChipProps, SxProps, Theme, Tooltip, alpha, useTheme } from '@mui/material';
+import { Chip, ChipProps, SxProps, Theme, Tooltip, alpha, lighten, useTheme } from '@mui/material';
 import React, { CSSProperties } from 'react';
 
 interface TagProps extends Omit<ChipProps, 'color'> {
@@ -30,7 +30,19 @@ const Tag = ({
   const theme = useTheme();
   const defaultColor = theme.palette.severity?.default ?? '#1C2F49';
 
-  const applyAlpha = color && color !== defaultColor;
+  const getBackgroundColor = () => {
+    if (!color || color === defaultColor) {
+      return defaultColor;
+    }
+
+    try {
+      return alpha(color, 0.2);
+    } catch {
+      return defaultColor;
+    }
+  };
+
+  const bgColor = getBackgroundColor();
 
   const chipStyle: CSSProperties = {
     borderRadius: 4,
@@ -43,7 +55,10 @@ const Tag = ({
   };
 
   const sxStyles: SxProps<Theme> = {
-    backgroundColor: applyAlpha ? alpha(color ?? defaultColor, 0.2) : defaultColor,
+    backgroundColor: bgColor,
+    '&:hover': {
+      backgroundColor: onClick ? lighten(bgColor, 0.2) : undefined,
+    },
     maxWidth: typeof maxWidth === 'number' ? `${maxWidth}px` : maxWidth,
     '& .MuiChip-label': {
       overflow: 'hidden',

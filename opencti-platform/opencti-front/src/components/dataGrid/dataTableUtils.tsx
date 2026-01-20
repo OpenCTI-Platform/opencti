@@ -71,18 +71,27 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 export const Truncate = ({ children }: { children: ReactNode }) => (
-  <div style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+  <div
+    style={{
+      textOverflow: 'ellipsis',
+      overflow: 'hidden',
+      whiteSpace: 'nowrap',
+    }}
+  >
     {children}
   </div>
 );
 
-export const defaultRender: NonNullable<DataTableColumn['render']> = (data, displayDraftChip = false) => {
+export const defaultRender: NonNullable<DataTableColumn['render']> = (
+  data,
+  displayDraftChip = false,
+) => {
   return (
     <FieldOrEmpty source={data}>
       <Tooltip title={data}>
         <div style={{ maxWidth: '100%', display: 'flex' }}>
           <Truncate>{data}</Truncate>
-          {displayDraftChip && (<DraftChip />)}
+          {displayDraftChip && <DraftChip />}
         </div>
       </Tooltip>
     </FieldOrEmpty>
@@ -99,11 +108,21 @@ const defaultColumns: DataTableProps['dataColumns'] = {
 
       return aliases ? (
         <Tooltip title={aliases.join(', ')}>
-          <div style={{ maxWidth: '100%', display: 'flex', gap: theme.spacing(0.5) }}>
-            {aliases.map((value: string) => (<Chip key={value} label={value} size="small" />))}
+          <div
+            style={{
+              maxWidth: '100%',
+              display: 'flex',
+              gap: theme.spacing(0.5),
+            }}
+          >
+            {aliases.map((value: string) => (
+              <Chip key={value} label={value} size="small" />
+            ))}
           </div>
         </Tooltip>
-      ) : defaultRender('-');
+      ) : (
+        defaultRender('-')
+      );
     },
   },
   allowed_markings: {
@@ -112,10 +131,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Allowed markings',
     isSortable: false,
     render: ({ allowed_markings }) => (
-      <ItemMarkings
-        markingDefinitions={allowed_markings ?? []}
-        limit={2}
-      />
+      <ItemMarkings markingDefinitions={allowed_markings ?? []} limit={2} />
     ),
   },
   analyses: {
@@ -125,37 +141,25 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: false,
     render: ({ id, entity_type, containersNumber }) => {
       const { n } = useFormatter();
-      const theme = useTheme<Theme>();
       const navigate = useNavigate();
       const analysesNumber = containersNumber?.total;
       const link = `${resolveLink(entity_type)}/${id}`;
       const linkAnalyses = `${link}/analyses`;
       return (
         <>
-          {typesWithNoAnalysesTab.includes(entity_type)
-            ? (
-                <Tag
-                  label={n(analysesNumber)}
-                  disableTooltip
-                />
-              )
-            : (
-                <Tag
-                  sx={{
-                    '&:hover': {
-                      backgroundColor: theme.palette.primary.main,
-                    },
-                  }}
-                  label={n(analysesNumber)}
-                  disableTooltip
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    navigate(linkAnalyses);
-                  }}
-                />
-              )
-          }
+          {typesWithNoAnalysesTab.includes(entity_type) ? (
+            <Tag label={n(analysesNumber)} disableTooltip />
+          ) : (
+            <Tag
+              label={n(analysesNumber)}
+              disableTooltip
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                navigate(linkAnalyses);
+              }}
+            />
+          )}
         </>
       );
     },
@@ -164,7 +168,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     id: 'authorized_members_activation_date',
     label: 'Restriction Date',
     isSortable: true,
-    render: ({ authorized_members_activation_date }, helpers) => defaultRender(helpers.fd(authorized_members_activation_date)),
+    render: ({ authorized_members_activation_date }, helpers) =>
+      defaultRender(helpers.fd(authorized_members_activation_date)),
   },
   attribute_abstract: {
     id: 'attribute_abstract',
@@ -188,7 +193,9 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 20,
     isSortable: true,
     render: ({ channel_types }) => {
-      const value = isNotEmptyField(channel_types) ? channel_types.join(', ') : '-';
+      const value = isNotEmptyField(channel_types)
+        ? channel_types.join(', ')
+        : '-';
       return defaultRender(value);
     },
   },
@@ -221,10 +228,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: true,
     render: ({ confidence, entity_type }) => (
-      <ItemConfidence
-        confidence={confidence}
-        entityType={entity_type}
-      />
+      <ItemConfidence confidence={confidence} entityType={entity_type} />
     ),
   },
   context: {
@@ -233,9 +237,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: true,
     render: ({ context }) => {
-      return (
-        <Tag label={context} />
-      );
+      return <Tag label={context} />;
     },
   },
   created: {
@@ -270,7 +272,9 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Creators',
     percentWidth: 12,
     render: ({ creators }) => {
-      const value = isNotEmptyField(creators) ? creators.map((c: { name: string }) => c.name).join(', ') : '-';
+      const value = isNotEmptyField(creators)
+        ? creators.map((c: { name: string }) => c.name).join(', ')
+        : '-';
       return defaultRender(value);
     },
   },
@@ -279,7 +283,9 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Creators',
     percentWidth: 12,
     render: ({ creators }) => {
-      const value = isNotEmptyField(creators) ? creators.map((c: { name: string }) => c.name).join(', ') : '-';
+      const value = isNotEmptyField(creators)
+        ? creators.map((c: { name: string }) => c.name).join(', ')
+        : '-';
       return defaultRender(value);
     },
   },
@@ -288,7 +294,11 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 12,
     isSortable: false,
     render: ({ coverage_information }) => {
-      return <SecurityCoverageInformation coverage_information={coverage_information} />;
+      return (
+        <SecurityCoverageInformation
+          coverage_information={coverage_information}
+        />
+      );
     },
   },
   definition: {
@@ -318,23 +328,24 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: false,
     render: ({ draftVersion }) => (
-      <ItemOperations
-        draftOperation={draftVersion?.draft_operation}
-      />
+      <ItemOperations draftOperation={draftVersion?.draft_operation} />
     ),
   },
   due_date: {
     id: 'due_date',
     label: 'Due Date',
     percentWidth: 15,
-    render: ({ due_date }) => <ItemDueDate due_date={due_date} variant="inList" />,
+    render: ({ due_date }) => (
+      <ItemDueDate due_date={due_date} variant="inList" />
+    ),
   },
   effective_confidence_level: {
     id: 'effective_confidence_level',
     label: 'Max Confidence',
     percentWidth: 10,
     isSortable: false,
-    render: ({ effective_confidence_level }) => defaultRender(effective_confidence_level?.max_confidence),
+    render: ({ effective_confidence_level }) =>
+      defaultRender(effective_confidence_level?.max_confidence),
   },
   event_scope: {
     id: 'event_scope',
@@ -361,11 +372,13 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       <>
         {data.category.entity_types?.map((type: string) => (
           <Tooltip key={`entity_${type}`} title={t_i18n(`entity_${type}`)}>
-            <div style={{
-              float: 'left',
-              marginRight: 7,
-              overflow: 'hidden',
-              whiteSpace: 'nowrap' }}
+            <div
+              style={{
+                float: 'left',
+                marginRight: 7,
+                overflow: 'hidden',
+                whiteSpace: 'nowrap',
+              }}
             >
               <Chip
                 key={type}
@@ -406,9 +419,10 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 12,
     isSortable: false,
     render: (data) => {
-      const file = (data.importFiles?.edges && data.importFiles.edges.length > 0)
-        ? data.importFiles.edges[0]?.node
-        : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
+      const file
+        = data.importFiles?.edges && data.importFiles.edges.length > 0
+          ? data.importFiles.edges[0]?.node
+          : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
       return (
         <Tooltip title={file?.name}>
           <Truncate>{file?.name}</Truncate>
@@ -422,9 +436,10 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 8,
     isSortable: false,
     render: (data) => {
-      const file = (data.importFiles?.edges && data.importFiles.edges.length > 0)
-        ? data.importFiles.edges[0]?.node
-        : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
+      const file
+        = data.importFiles?.edges && data.importFiles.edges.length > 0
+          ? data.importFiles.edges[0]?.node
+          : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
       return (
         <Tooltip title={file?.metaData?.mimetype}>
           <Truncate>{file?.metaData.mimetype}</Truncate>
@@ -438,9 +453,10 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 8,
     isSortable: false,
     render: (data, { b }) => {
-      const file = (data.importFiles?.edges && data.importFiles.edges.length > 0)
-        ? data.importFiles.edges[0]?.node
-        : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
+      const file
+        = data.importFiles?.edges && data.importFiles.edges.length > 0
+          ? data.importFiles.edges[0]?.node
+          : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
       return (
         <Tooltip title={file?.metaData?.mimetype}>
           <>{b(file?.size)}</>
@@ -475,7 +491,9 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 18,
     isSortable: false,
     render: ({ from }, helpers) => {
-      const value = from ? getMainRepresentative(from) : helpers.t_i18n('Restricted');
+      const value = from
+        ? getMainRepresentative(from)
+        : helpers.t_i18n('Restricted');
       const displayDraftChip = !!from?.draftVersion;
       return defaultRender(value, displayDraftChip);
     },
@@ -509,7 +527,9 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 12,
     render: ({ from }) => {
       const { creators } = from;
-      const value = isNotEmptyField(creators) ? creators.map((c: { name: string }) => c.name).join(', ') : '-';
+      const value = isNotEmptyField(creators)
+        ? creators.map((c: { name: string }) => c.name).join(', ')
+        : '-';
       return defaultRender(value);
     },
   },
@@ -517,7 +537,9 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     id: 'from_entity_type',
     label: 'Source type',
     percentWidth: 10,
-    render: ({ from }) => (<ItemEntityType showIcon entityType={from?.entity_type} />),
+    render: ({ from }) => (
+      <ItemEntityType showIcon entityType={from?.entity_type} />
+    ),
   },
   from_objectLabel: {
     id: 'from_objectLabel',
@@ -527,12 +549,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     render: ({ from }) => {
       if (!from) return '-';
       const { objectLabel } = from;
-      return (
-        <StixCoreObjectLabels
-          variant="inList"
-          labels={objectLabel}
-        />
-      );
+      return <StixCoreObjectLabels variant="inList" labels={objectLabel} />;
     },
   },
   from_objectMarking: {
@@ -557,7 +574,9 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Source name',
     percentWidth: 10,
     render: ({ from }, helpers) => {
-      const value = from ? getMainRepresentative(from) : helpers.t_i18n('Restricted');
+      const value = from
+        ? getMainRepresentative(from)
+        : helpers.t_i18n('Restricted');
       return defaultRender(value);
     },
   },
@@ -566,7 +585,10 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Incident type',
     percentWidth: 9,
     isSortable: true,
-    render: ({ incident_type }, { t_i18n, storageHelpers: { handleAddFilter } }) => {
+    render: (
+      { incident_type },
+      { t_i18n, storageHelpers: { handleAddFilter } },
+    ) => {
       return (
         <Tag
           label={incident_type || t_i18n('Unknown')}
@@ -584,14 +606,21 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Information type',
     percentWidth: 9,
     isSortable: true,
-    render: ({ information_types }, { t_i18n, storageHelpers: { handleAddFilter } }) => {
+    render: (
+      { information_types },
+      { t_i18n, storageHelpers: { handleAddFilter } },
+    ) => {
       return (
         <Tag
           label={information_types?.at(0) ?? t_i18n('Unknown')}
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            handleAddFilter('information_types', information_types?.at(0) ?? null, 'eq');
+            handleAddFilter(
+              'information_types',
+              information_types?.at(0) ?? null,
+              'eq',
+            );
           }}
         />
       );
@@ -602,14 +631,21 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Type',
     percentWidth: 8,
     isSortable: true,
-    render: ({ infrastructure_types }, { t_i18n, storageHelpers: { handleAddFilter } }) => {
+    render: (
+      { infrastructure_types },
+      { t_i18n, storageHelpers: { handleAddFilter } },
+    ) => {
       return (
         <Tag
           label={infrastructure_types?.at(0) ?? t_i18n('Unknown')}
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            handleAddFilter('infrastructure_types', infrastructure_types?.at(0) ?? null, 'eq');
+            handleAddFilter(
+              'infrastructure_types',
+              infrastructure_types?.at(0) ?? null,
+              'eq',
+            );
           }}
         />
       );
@@ -645,9 +681,10 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 15,
     isSortable: false,
     render: ({ killChainPhases }) => {
-      const formattedKillChainPhase = (killChainPhases && killChainPhases.length > 0)
-        ? `[${killChainPhases[0].kill_chain_name}] ${killChainPhases[0].phase_name}`
-        : '-';
+      const formattedKillChainPhase
+        = killChainPhases && killChainPhases.length > 0
+          ? `[${killChainPhases[0].kill_chain_name}] ${killChainPhases[0].phase_name}`
+          : '-';
       return defaultRender(formattedKillChainPhase);
     },
   },
@@ -711,7 +748,10 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Type',
     percentWidth: 10,
     isSortable: true,
-    render: ({ note_types }, { t_i18n, storageHelpers: { handleAddFilter } }) => {
+    render: (
+      { note_types },
+      { t_i18n, storageHelpers: { handleAddFilter } },
+    ) => {
       return (
         <Tag
           label={note_types?.at(0) ?? t_i18n('Unknown')}
@@ -730,7 +770,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 8,
     isSortable: true,
     render: ({ number_observed }, { n }) => (
-      <Tooltip title={number_observed}><>{n(number_observed)}</>
+      <Tooltip title={number_observed}>
+        <>{n(number_observed)}</>
       </Tooltip>
     ),
   },
@@ -740,7 +781,9 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: false,
     render: ({ objectAssignee }) => {
-      const value = isNotEmptyField(objectAssignee) ? objectAssignee.map((c: { name: string }) => c.name).join(', ') : '-';
+      const value = isNotEmptyField(objectAssignee)
+        ? objectAssignee.map((c: { name: string }) => c.name).join(', ')
+        : '-';
       return defaultRender(value);
     },
   },
@@ -777,7 +820,9 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Participant',
     percentWidth: 10,
     render: ({ objectParticipant }) => {
-      const value = isNotEmptyField(objectParticipant) ? objectParticipant.map((c: { name: string }) => c.name).join(', ') : '-';
+      const value = isNotEmptyField(objectParticipant)
+        ? objectParticipant.map((c: { name: string }) => c.name).join(', ')
+        : '-';
       return defaultRender(value);
     },
   },
@@ -794,10 +839,18 @@ const defaultColumns: DataTableProps['dataColumns'] = {
         case 'IPv6-Addr': {
           const country = observable.countries?.edges?.[0]?.node;
           if (country) {
-            const flag = (country.x_opencti_aliases ?? []).filter((n: string) => n.length === 2)[0];
+            const flag = (country.x_opencti_aliases ?? []).filter(
+              (n: string) => n.length === 2,
+            )[0];
             if (flag) {
               return (
-                <div style={{ display: 'flex', gap: theme.spacing(1), alignItems: 'center' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: theme.spacing(1),
+                    alignItems: 'center',
+                  }}
+                >
                   <Tooltip title={country.name}>
                     <img
                       style={{ width: 20 }}
@@ -806,16 +859,25 @@ const defaultColumns: DataTableProps['dataColumns'] = {
                     />
                   </Tooltip>
                   <div>
-                    {defaultRender(observable.observable_value, observable.draftVersion)}
+                    {defaultRender(
+                      observable.observable_value,
+                      observable.draftVersion,
+                    )}
                   </div>
                 </div>
               );
             }
           }
-          return defaultRender(observable.observable_value, observable.draftVersion);
+          return defaultRender(
+            observable.observable_value,
+            observable.draftVersion,
+          );
         }
         default:
-          return defaultRender(observable.observable_value, observable.draftVersion);
+          return defaultRender(
+            observable.observable_value,
+            observable.draftVersion,
+          );
       }
     },
   },
@@ -825,9 +887,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 15,
     isSortable: false,
     render: ({ operatingSystem }) => (
-      <Tooltip
-        title={operatingSystem?.name}
-      >
+      <Tooltip title={operatingSystem?.name}>
         <>{operatingSystem?.name ?? '-'}</>
       </Tooltip>
     ),
@@ -836,7 +896,11 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     id: 'opinions_metrics_mean',
     label: 'Opinions mean',
     percentWidth: 10,
-    render: ({ opinions_metrics }) => <span style={{ fontWeight: 700, fontSize: 15 }}>{opinions_metrics?.mean ?? '-'}</span>,
+    render: ({ opinions_metrics }) => (
+      <span style={{ fontWeight: 700, fontSize: 15 }}>
+        {opinions_metrics?.mean ?? '-'}
+      </span>
+    ),
   },
   order: {
     id: 'order',
@@ -872,7 +936,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Pattern type',
     percentWidth: 10,
     isSortable: true,
-    render: ({ pattern_type }) => (<ItemPatternType label={pattern_type} />),
+    render: ({ pattern_type }) => <ItemPatternType label={pattern_type} />,
   },
   phase_name: {
     id: 'phase_name',
@@ -887,9 +951,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Type',
     render: ({ pir_type }: Pirs_PirFragment$data) => {
       const { t_i18n } = useFormatter();
-      return (
-        <Tag label={t_i18n(pir_type)} />
-      );
+      return <Tag label={t_i18n(pir_type)} />;
     },
   },
   primary_motivation: {
@@ -898,10 +960,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: true,
     render: ({ primary_motivation }) => (
-      <ItemOpenVocab
-        type="attack-motivation-ov"
-        value={primary_motivation}
-      />
+      <ItemOpenVocab type="attack-motivation-ov" value={primary_motivation} />
     ),
   },
   priority: {
@@ -950,14 +1009,23 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Type',
     percentWidth: 7,
     isSortable: true,
-    render: ({ relationship_type }, { t_i18n, storageHelpers: { handleAddFilter } }) => {
+    render: (
+      { relationship_type },
+      { t_i18n, storageHelpers: { handleAddFilter } },
+    ) => {
       return (
         <Tag
-          label={t_i18n(`relationship_${relationship_type}`) ?? t_i18n('Unknown')}
+          label={
+            t_i18n(`relationship_${relationship_type}`) ?? t_i18n('Unknown')
+          }
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            handleAddFilter('relationship_type', relationship_type ?? null, 'eq');
+            handleAddFilter(
+              'relationship_type',
+              relationship_type ?? null,
+              'eq',
+            );
           }}
         />
       );
@@ -968,7 +1036,10 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Type',
     percentWidth: 10,
     isSortable: true,
-    render: ({ report_types }, { t_i18n, storageHelpers: { handleAddFilter } }) => {
+    render: (
+      { report_types },
+      { t_i18n, storageHelpers: { handleAddFilter } },
+    ) => {
       return (
         <Tag
           label={report_types?.at(0) ?? t_i18n('Unknown')}
@@ -998,7 +1069,10 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Response type',
     percentWidth: 9,
     isSortable: true,
-    render: ({ response_types }, { t_i18n, storageHelpers: { handleAddFilter } }) => {
+    render: (
+      { response_types },
+      { t_i18n, storageHelpers: { handleAddFilter } },
+    ) => {
       const classes = useStyles();
       return (
         <Chip
@@ -1009,7 +1083,11 @@ const defaultColumns: DataTableProps['dataColumns'] = {
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            handleAddFilter('response_types', response_types?.at(0) ?? null, 'eq');
+            handleAddFilter(
+              'response_types',
+              response_types?.at(0) ?? null,
+              'eq',
+            );
           }}
         />
       );
@@ -1020,7 +1098,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Result name',
     percentWidth: 15,
     isSortable: true,
-    render: ({ result_name, draftVersion }) => defaultRender(result_name, draftVersion),
+    render: ({ result_name, draftVersion }) =>
+      defaultRender(result_name, draftVersion),
   },
   secondary_motivations: {
     id: 'secondary_motivations',
@@ -1028,7 +1107,9 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: false,
     render: ({ secondary_motivations }) => {
-      const value = secondary_motivations ? secondary_motivations.join(', ') : '-';
+      const value = secondary_motivations
+        ? secondary_motivations.join(', ')
+        : '-';
       return defaultRender(value);
     },
   },
@@ -1038,7 +1119,9 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 20,
     isSortable: true,
     render: ({ security_platform_type }) => {
-      const value = isNotEmptyField(security_platform_type) ? security_platform_type : '-';
+      const value = isNotEmptyField(security_platform_type)
+        ? security_platform_type
+        : '-';
       return defaultRender(value);
     },
   },
@@ -1072,7 +1155,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Source name',
     percentWidth: 15,
     isSortable: true,
-    render: ({ source_name, draftVersion }) => defaultRender(source_name, draftVersion),
+    render: ({ source_name, draftVersion }) =>
+      defaultRender(source_name, draftVersion),
   },
   start_date: {
     id: 'start_date',
@@ -1107,7 +1191,10 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Takedown type',
     percentWidth: 9,
     isSortable: true,
-    render: ({ takedown_types }, { t_i18n, storageHelpers: { handleAddFilter } }) => {
+    render: (
+      { takedown_types },
+      { t_i18n, storageHelpers: { handleAddFilter } },
+    ) => {
       const classes = useStyles();
       return (
         <Chip
@@ -1118,7 +1205,11 @@ const defaultColumns: DataTableProps['dataColumns'] = {
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            handleAddFilter('takedown_types', takedown_types?.at(0) ?? null, 'eq');
+            handleAddFilter(
+              'takedown_types',
+              takedown_types?.at(0) ?? null,
+              'eq',
+            );
           }}
         />
       );
@@ -1155,7 +1246,9 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 20,
     isSortable: true,
     render: ({ threat_actor_types }) => {
-      const value = isNotEmptyField(threat_actor_types) ? threat_actor_types.join(', ') : '-';
+      const value = isNotEmptyField(threat_actor_types)
+        ? threat_actor_types.join(', ')
+        : '-';
       return defaultRender(value);
     },
   },
@@ -1172,7 +1265,9 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 18,
     isSortable: false,
     render: ({ to }, helpers) => {
-      const value = to ? getMainRepresentative(to) : helpers.t_i18n('Restricted');
+      const value = to
+        ? getMainRepresentative(to)
+        : helpers.t_i18n('Restricted');
       const displayDraftChip = !!to?.draftVersion;
       return defaultRender(value, displayDraftChip);
     },
@@ -1182,7 +1277,10 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Type',
     percentWidth: 10,
     isSortable: true,
-    render: ({ tool_types }, { t_i18n, storageHelpers: { handleAddFilter } }) => {
+    render: (
+      { tool_types },
+      { t_i18n, storageHelpers: { handleAddFilter } },
+    ) => {
       const classes = useStyles();
       return (
         <Chip
@@ -1216,14 +1314,18 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     id: 'to_entity_type',
     label: 'Target type',
     percentWidth: 10,
-    render: ({ to }) => (<ItemEntityType showIcon entityType={to?.entity_type} />),
+    render: ({ to }) => (
+      <ItemEntityType showIcon entityType={to?.entity_type} />
+    ),
   },
   to_relationship_type: {
     id: 'to_relationship_type',
     label: 'Target name',
     percentWidth: 10,
     render: ({ to }, helpers) => {
-      const value = to ? getMainRepresentative(to) : helpers.t_i18n('Restricted');
+      const value = to
+        ? getMainRepresentative(to)
+        : helpers.t_i18n('Restricted');
       return defaultRender(value);
     },
   },
@@ -1263,14 +1365,18 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Valid until',
     percentWidth: 10,
     isSortable: true,
-    render: ({ valid_until }, { nsdt }) => <Tooltip title={nsdt(valid_until)}>{nsdt(valid_until)}</Tooltip>,
+    render: ({ valid_until }, { nsdt }) => (
+      <Tooltip title={nsdt(valid_until)}>{nsdt(valid_until)}</Tooltip>
+    ),
   },
   valid_from: {
     id: 'valid_from',
     label: 'Valid from',
     percentWidth: 10,
     isSortable: true,
-    render: ({ valid_from }, { nsdt }) => <Tooltip title={nsdt(valid_from)}>{nsdt(valid_from)}</Tooltip>,
+    render: ({ valid_from }, { nsdt }) => (
+      <Tooltip title={nsdt(valid_from)}>{nsdt(valid_from)}</Tooltip>
+    ),
   },
   value: {
     id: 'value',
@@ -1334,7 +1440,11 @@ const defaultColumns: DataTableProps['dataColumns'] = {
               ? t_i18n('False positive')
               : t_i18n('True positive')
           }
-          color={x_opencti_negative ? theme.palette.severity.low : theme.palette.severity.critical}
+          color={
+            x_opencti_negative
+              ? theme.palette.severity.low
+              : theme.palette.severity.critical
+          }
         />
       );
     },
@@ -1344,7 +1454,9 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'CVSS3 - Score',
     percentWidth: 15,
     render: ({ x_opencti_cvss_base_score }) => {
-      const value = x_opencti_cvss_base_score ? Math.trunc(x_opencti_cvss_base_score * 10) / 10 : null;
+      const value = x_opencti_cvss_base_score
+        ? Math.trunc(x_opencti_cvss_base_score * 10) / 10
+        : null;
       return <ItemCvssScore score={value} />;
     },
   },
@@ -1353,7 +1465,9 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'CVSS4 - Score',
     percentWidth: 15,
     render: ({ x_opencti_cvss_v4_base_score }) => {
-      const value = x_opencti_cvss_v4_base_score ? Math.trunc(x_opencti_cvss_v4_base_score * 10) / 10 : null;
+      const value = x_opencti_cvss_v4_base_score
+        ? Math.trunc(x_opencti_cvss_v4_base_score * 10) / 10
+        : null;
       return <ItemCvssScore score={value} />;
     },
   },
@@ -1373,7 +1487,9 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'EPSS Score',
     percentWidth: 15,
     render: ({ x_opencti_epss_score }) => {
-      const value = x_opencti_epss_score ? Math.trunc(x_opencti_epss_score * 100000) / 100000 : '-';
+      const value = x_opencti_epss_score
+        ? Math.trunc(x_opencti_epss_score * 100000) / 100000
+        : '-';
       return defaultRender(value);
     },
   },
@@ -1382,7 +1498,9 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'EPSS Percentile',
     percentWidth: 15,
     render: ({ x_opencti_epss_percentile }) => {
-      const value = x_opencti_epss_percentile ? Math.trunc(x_opencti_epss_percentile * 100000) / 100000 : '-';
+      const value = x_opencti_epss_percentile
+        ? Math.trunc(x_opencti_epss_percentile * 100000) / 100000
+        : '-';
       return defaultRender(value);
     },
   },
@@ -1415,7 +1533,10 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Type',
     percentWidth: 15,
     isSortable: true,
-    render: ({ x_opencti_organization_type }, { storageHelpers: { handleAddFilter } }) => {
+    render: (
+      { x_opencti_organization_type },
+      { storageHelpers: { handleAddFilter } },
+    ) => {
       const classes = useStyles();
       return (
         <Chip
@@ -1426,7 +1547,11 @@ const defaultColumns: DataTableProps['dataColumns'] = {
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            handleAddFilter('x_opencti_organization_type', x_opencti_organization_type ?? null, 'eq');
+            handleAddFilter(
+              'x_opencti_organization_type',
+              x_opencti_organization_type ?? null,
+              'eq',
+            );
           }}
         />
       );
@@ -1437,7 +1562,10 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Status',
     percentWidth: 8,
     isSortable: true,
-    render: ({ status, workflowEnabled }, { storageHelpers: { handleAddFilter } }) => (
+    render: (
+      { status, workflowEnabled },
+      { storageHelpers: { handleAddFilter } },
+    ) => (
       <ItemStatus
         status={status}
         disabled={!workflowEnabled}
@@ -1459,7 +1587,13 @@ const defaultColumns: DataTableProps['dataColumns'] = {
         const flag = x_opencti_aliases.filter((n: string) => n.length === 2)[0];
         if (flag) {
           return (
-            <div style={{ display: 'flex', gap: theme.spacing(1), alignItems: 'center' }}>
+            <div
+              style={{
+                display: 'flex',
+                gap: theme.spacing(1),
+                alignItems: 'center',
+              }}
+            >
               <Tooltip title={x_opencti_aliases}>
                 <img
                   style={{ width: 20 }}
@@ -1467,9 +1601,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
                   alt={x_opencti_aliases}
                 />
               </Tooltip>
-              <div>
-                {x_opencti_aliases[0]}
-              </div>
+              <div>{x_opencti_aliases[0]}</div>
             </div>
           );
         }
@@ -1477,8 +1609,16 @@ const defaultColumns: DataTableProps['dataColumns'] = {
 
       return (
         <Tooltip title={x_opencti_aliases.join(', ')}>
-          <div style={{ maxWidth: '100%', display: 'flex', gap: theme.spacing(0.5) }}>
-            {x_opencti_aliases.map((value: string) => (<Chip key={value} label={value} size="small" />))}
+          <div
+            style={{
+              maxWidth: '100%',
+              display: 'flex',
+              gap: theme.spacing(0.5),
+            }}
+          >
+            {x_opencti_aliases.map((value: string) => (
+              <Chip key={value} label={value} size="small" />
+            ))}
           </div>
         </Tooltip>
       );
@@ -1513,7 +1653,9 @@ export const buildMetricsColumns = (
   metricsDefinition: readonly MetricsDefinition[],
 ): DataTableProps['dataColumns'] => {
   if (!entityType || !metricsDefinition) return {};
-  const metricsForEntity = metricsDefinition.find((m) => m.entity_type === entityType.toLowerCase());
+  const metricsForEntity = metricsDefinition.find(
+    (m) => m.entity_type === entityType.toLowerCase(),
+  );
   if (!metricsForEntity?.metrics) return {};
 
   const metricsColumns: DataTableProps['dataColumns'] = {};
@@ -1526,7 +1668,9 @@ export const buildMetricsColumns = (
       isSortable: false,
       render: (data) => {
         if (Array.isArray(data.metrics)) {
-          const metricFound = data.metrics.find((m: Metric) => m.name === metricDefinition.attribute);
+          const metricFound = data.metrics.find(
+            (m: Metric) => m.name === metricDefinition.attribute,
+          );
           if (metricFound) {
             return defaultRender(metricFound.value);
           }
@@ -1539,4 +1683,6 @@ export const buildMetricsColumns = (
   return metricsColumns;
 };
 
-export const defaultColumnsMap = new Map<string, Partial<DataTableColumn>>(Object.entries(defaultColumns));
+export const defaultColumnsMap = new Map<string, Partial<DataTableColumn>>(
+  Object.entries(defaultColumns),
+);
