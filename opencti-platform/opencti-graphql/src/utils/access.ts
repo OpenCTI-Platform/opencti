@@ -7,7 +7,7 @@ import { ACCOUNT_STATUS_ACTIVE, isFeatureEnabled } from '../config/conf';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { telemetry } from '../config/tracing';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
-import { extractIdsFromStoreObject, isNotEmptyField, REDACTED_INFORMATION, RESTRICTED_INFORMATION } from '../database/utils';
+import { extractIdsFromStoreObject, isNotEmptyField, READ_INDEX_INTERNAL_RELATIONSHIPS, REDACTED_INFORMATION, RESTRICTED_INFORMATION } from '../database/utils';
 import { type Creator, type FilterGroup, FilterMode, FilterOperator, type Participant } from '../generated/graphql';
 import type { BasicStoreEntityDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-types';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
@@ -20,13 +20,13 @@ import { STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import type { UpdateEvent } from '../types/event';
-import { fullEntitiesList, pageEntitiesConnection } from '../database/middleware-loader';
+import { fullEntitiesList, fullRelationsList, pageEntitiesConnection } from '../database/middleware-loader';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { isFilterGroupNotEmpty } from './filtering/filtering-utils';
 import type { BasicStoreSettings } from '../types/settings';
 import type { StixObject } from '../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
-import type { BasicConnection, BasicStoreCommon, BasicStoreEntity } from '../types/store';
+import type { BasicConnection, BasicStoreCommon, BasicStoreEntity, BasicStoreRelation } from '../types/store';
 import type { AuthContext, AuthUser, UserRole } from '../types/user';
 import { ID_SUBFILTER, INSTANCE_REGARDING_OF, RELATION_INFERRED_SUBFILTER, RELATION_TYPE_SUBFILTER } from './filtering/filtering-constants';
 
@@ -1126,13 +1126,16 @@ const fetchMembersWithOrgaRestriction = async (
 
     // case 1.2. add orga restriction on user visibility
     // fetch organizations directly linked to the user to construct the filter
-    const userDirectOrganizations = await pageEntitiesConnection(
+    const userDirectOrganizationRelations = await fullRelationsList<BasicStoreRelation>(
       context,
       SYSTEM_USER, // we need to fetch all the organizations directly linked to the user, even if the user has not the right to see them
-      [ENTITY_TYPE_IDENTITY_ORGANIZATION],
-      { filters: buildRegardingOfDirectParticipateToFilters([user.id]) },
+      [RELATION_PARTICIPATE_TO],
+      {
+        fromId: user.id,
+        indices: [READ_INDEX_INTERNAL_RELATIONSHIPS], // we only fetch direct (no inferred) internal relationships
+      },
     );
-    const userDirectOrganizationsIds = userDirectOrganizations.edges.map((n) => n.node.id);
+    const userDirectOrganizationsIds = userDirectOrganizationRelations.map((n) => n.toId);
     // construct the filter for the users that are in the user direct organizations
     const usersWithinUserOrgaFilters = userDirectOrganizationsIds.length > 0
       ? buildRegardingOfDirectParticipateToFilters(userDirectOrganizationsIds).filters

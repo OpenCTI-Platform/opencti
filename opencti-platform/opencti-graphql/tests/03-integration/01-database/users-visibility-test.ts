@@ -25,7 +25,7 @@ import { findAllMembers, findMembersPaginated, resolveUserById } from '../../../
 import { getSettings, settingsEditField } from '../../../src/domain/settings';
 import { getEntityFromCache, resetCacheForEntity } from '../../../src/database/cache';
 import type { BasicStoreSettings } from '../../../src/types/settings';
-import { SYSTEM_USER } from '../../../src/utils/access';
+import { MEMBERS_ENTITY_TYPES, SYSTEM_USER } from '../../../src/utils/access';
 import type { AuthUser } from '../../../src/types/user';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
 import { stixDomainObjectDelete } from '../../../src/domain/stixDomainObject';
@@ -556,9 +556,36 @@ describe('Users visibility according to their direct organizations', () => {
       expect(queryResult.data?.users.edges.length).toEqual(1); // the users participating directly in organizationAB
       expect(queryResult.data?.users.edges[0].node.name).toEqual('userAB');
 
-      queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFilters('eq', RELATION_PARTICIPATE_TO, 'false', [orgaAInternalId, orgaABInternalId]) } });
+      queryResult = await queryAsAdmin({
+        query: LIST_USERS_QUERY,
+        variables: { filters: generateRegardingOfFilters('eq', RELATION_PARTICIPATE_TO, 'false', [orgaAInternalId, orgaABInternalId]) },
+      });
       expect(queryResult.data?.users.edges.length).toEqual(3); // the users participating directly in organizationA or organizationAB
       expect(['userA', 'userA2', 'userAB'].every((u) => queryResult.data?.users.edges.map((n: any) => n.node.name).includes(u))).toBeTruthy();
+    });
+
+    it('regardingOf filter imbricated in several filter groups should be correctly taken into account', async () => {
+      const directParticipateOrgaABFilterGroup = generateRegardingOfFilters('eq', RELATION_PARTICIPATE_TO, 'false', [orgaABInternalId]);
+      const filters = {
+        mode: 'and',
+        filters: [{ key: 'entity_type', values: MEMBERS_ENTITY_TYPES }],
+        filterGroups: [
+          {
+            mode: 'or',
+            filters: [{ key: 'objectLabel', values: ['label1'] }],
+            filterGroups: [
+              {
+                mode: 'and',
+                filters: [{ key: 'entity_type', values: [ENTITY_TYPE_USER] }],
+                filterGroups: [directParticipateOrgaABFilterGroup],
+              },
+            ],
+          },
+        ],
+      };
+      const queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters } });
+      expect(queryResult.data?.users.edges.length).toEqual(1); // the users participating directly in organizationAB
+      expect(queryResult.data?.users.edges[0].node.name).toEqual('userAB');
     });
 
     it('regardingOf filter with inferred subfilter set to true should fetch entities having an inferred rel to provided ids with provided relationship type', async () => {
