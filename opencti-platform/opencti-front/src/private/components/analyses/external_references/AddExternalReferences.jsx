@@ -64,9 +64,9 @@ const AddExternalReferences = ({
             marginLeft: 'auto',
             marginRight: '20px',
             display: 'flex',
-            flexWrap: 'wrap',
-            alignItems: 'flex-end',
+            alignItems: 'center',
             justifyContent: 'flex-end',
+            gap: '12px',
           }}
           >
             <SearchInput
@@ -74,7 +74,6 @@ const AddExternalReferences = ({
               onSubmit={handleSearch}
             />
             <Button
-              sx={{ margin: '5px 0 0 5px' }}
               onClick={() => setDialogOpen(true)}
               color="primary"
               size="small"
