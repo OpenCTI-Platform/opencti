@@ -271,7 +271,7 @@ const SearchIndexedFilesComponent = () => {
           <Alert
             severity="warning"
             variant="outlined"
-            style={{ position: 'relative', marginBottom: 30 }}
+            style={{ marginBottom: 30 }}
           >
             <AlertTitle style={{ marginBottom: 0 }}>
               {t_i18n('File indexing is not started.')}
@@ -282,7 +282,7 @@ const SearchIndexedFilesComponent = () => {
                   to="/dashboard/settings/file_indexing"
                   color="warning"
                   variant="secondary"
-                  style={{ marginLeft: 20 }}
+                  sx={{ marginLeft: 1 }}
                 >
                   {t_i18n('Configure file indexing')}
                 </Button>
