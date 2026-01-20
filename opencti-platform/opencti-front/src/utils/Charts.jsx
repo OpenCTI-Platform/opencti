@@ -725,8 +725,9 @@ export const polarAreaChartOptions = (
     legend: {
       show: true,
       position: legendPosition,
-      floating: legendPosition === 'bottom',
+      floating: false,
       fontFamily: '"IBM Plex Sans", sans-serif',
+      markers: { strokeWidth: 0 },
     },
     tooltip: {
       theme: theme.palette.mode,
