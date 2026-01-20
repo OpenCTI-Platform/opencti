@@ -598,7 +598,7 @@ describe('Users visibility according to their direct organizations', () => {
         ],
         filterGroups: [generateRegardingOfFilters('eq', RELATION_PARTICIPATE_TO, 'false', [orgaABInternalId]) as FilterGroupWithNested],
       };
-      let queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters } });
+      let queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters, noRegardingOfFilterIdsCheck: true } });
       expect(queryResult.data?.users.edges.length).toEqual(2); // the users participating directly in organizationAB or userO
       expect(['userO', 'userAB'].every((u) => queryResult.data?.users.edges.map((e: any) => e.node.name).includes(u))).toBeTruthy();
 
