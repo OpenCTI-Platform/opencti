@@ -1371,6 +1371,7 @@
   "Enable AI powered platform": "AIプラットフォームの有効化",
   "Enable Ask Ariane": "アリアンに聞く",
   "Enable commit messages": "コミットメッセージの有効化",
+  "Enable debug mode to troubleshoot for this authentication": "この認証のトラブルシューティングを行うために、デバッグモードを有効にします。",
   "Enable Enterprise Edition": "エンタープライズ版を有効にする",
   "Enable forces": "強制モードにする",
   "Enable horizontal tree mode": "水平ツリーモードを有効にする",

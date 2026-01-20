@@ -1371,6 +1371,7 @@
   "Enable AI powered platform": "AI 지원 플랫폼 활성화",
   "Enable Ask Ariane": "아리안에게 질문하기 사용 설정",
   "Enable commit messages": "커밋 메시지 활성화",
+  "Enable debug mode to troubleshoot for this authentication": "디버그 모드를 활성화하여 이 인증에 대한 문제를 해결합니다",
   "Enable Enterprise Edition": "Enterprise Edition 활성화",
   "Enable forces": "강제 활성화",
   "Enable horizontal tree mode": "수평 트리 모드 활성화",
