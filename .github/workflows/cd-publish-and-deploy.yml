@@ -48,6 +48,9 @@ jobs:
       CONTROLLER_USERNAME: ${{ secrets.AWX_USER }}
       CONTROLLER_PASSWORD: ${{ secrets.AWX_PASSWORD }}
     steps:
+      - name: Install AWX CLI
+        run: pip install awxkit
+
       - name: Deploy on testing
         if: ${{ github.ref_name == 'master' }}
         run: |
