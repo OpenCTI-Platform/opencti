@@ -413,7 +413,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
               <Tooltip title={toolTip !== 'null' ? toolTip : ''}>
                 <WarningOutlined
                   color={nested ? 'primary' : 'inherit'}
-                  style={{ fontSize: 15, color: '#f44336', marginLeft: 4 }}
+                  style={{ fontSize: 15, color: theme.palette.error.main, marginLeft: 4 }}
                 />
               </Tooltip>
             )}

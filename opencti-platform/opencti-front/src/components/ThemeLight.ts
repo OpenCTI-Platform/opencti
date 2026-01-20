@@ -1,18 +1,28 @@
 import { buttonClasses } from '@mui/material/Button';
 import type { ExtendedThemeOptions } from './Theme';
 import { fileUri } from '../relay/environment';
-import LogoText from '../static/images/logo_text_light.png';
-import LogoCollapsed from '../static/images/logo_light.png';
+import LogoText from '../static/images/logo_text_light.svg';
+import LogoCollapsed from '../static/images/logo_light.svg';
 import { hexToRGB } from '../utils/Colors';
+import { alpha, lighten } from '@mui/material';
 
-const EE_COLOR = '#0c7e69';
+const EE_COLOR = '#00BD94';
 
-export const THEME_LIGHT_DEFAULT_BACKGROUND = '#f8f8f8';
-const THEME_LIGHT_DEFAULT_PRIMARY = '#001bda';
-const THEME_LIGHT_DEFAULT_SECONDARY = '#0c7e69';
+export const THEME_LIGHT_DEFAULT_BACKGROUND = '#ececf2';
+export const THEME_LIGHT_DEFAULT_BODY_END_GRADIENT = '#F7F7F7';
+const THEME_LIGHT_DEFAULT_PRIMARY = '#0015a8';
+const THEME_LIGHT_DEFAULT_SECONDARY = '#00BD94';
 const THEME_LIGHT_DEFAULT_ACCENT = '#dfdfdf';
+const THEME_LIGHT_DEFAULT_TEXT = '#18191B';
 const THEME_LIGHT_DEFAULT_PAPER = '#ffffff';
 const THEME_LIGHT_DEFAULT_NAV = '#ffffff';
+
+const getAppBodyGradientEndColor = (background: string | null): string => {
+  if (background && background !== THEME_LIGHT_DEFAULT_BACKGROUND) {
+    return lighten(background, 0.05);
+  }
+  return THEME_LIGHT_DEFAULT_BODY_END_GRADIENT;
+};
 
 const ThemeLight = (
   logo: string | null = null,
@@ -23,26 +33,32 @@ const ThemeLight = (
   primary: string | null = null,
   secondary: string | null = null,
   accent: string | null = null,
-  text_color = 'rgba(0, 0, 0, 0.87)',
+  text_color = THEME_LIGHT_DEFAULT_TEXT,
 ): ExtendedThemeOptions => ({
   logo: logo || fileUri(LogoText),
   logo_collapsed: logo_collapsed || fileUri(LogoCollapsed),
   borderRadius: 4,
   palette: {
     mode: 'light',
-    common: { white: '#ffffff', grey: '#494A50', lightGrey: 'rgba(0, 0, 0, 0.6)' },
+    common: { white: '#ffffff', grey: '#494A50', lightGrey: '#AFB0B6' },
     error: {
-      main: '#f44336',
-      dark: '#c62828',
+      main: '#F14337',
+      dark: '#881106',
     },
     warn: {
-      main: '#ffa726',
+      main: '#E6700F',
     },
-    dangerZone: { main: '#f6685e', light: '#fbc2be', dark: '#d1584f', contrastText: '#000000', text: { primary: '#d1584f' } },
-    success: { main: '#03a847' },
-    primary: { main: primary || THEME_LIGHT_DEFAULT_PRIMARY },
+    dangerZone: {
+      main: '#E51E10',
+      light: '#F8958C',
+      dark: '#881106',
+      contrastText: '#000000',
+      text: { primary: '#881106' },
+    },
+    success: { main: '#1CA55E', dark: '#0D7E39' },
+    primary: { main: primary || THEME_LIGHT_DEFAULT_PRIMARY, light: primary ? alpha(primary, 0.08) : '#7587FF' },
     secondary: { main: secondary || THEME_LIGHT_DEFAULT_SECONDARY },
-    gradient: { main: '#00f1bd' },
+    gradient: { main: '#00BD94' },
     border: {
       lightBackground: hexToRGB('#000000', 0.15),
       primary: hexToRGB((primary || THEME_LIGHT_DEFAULT_PRIMARY), 0.3),
@@ -58,31 +74,28 @@ const ThemeLight = (
     ai: {
       main: '#5E1AD5',
       light: '#D6C2FA',
-      dark: '#B286FF',
+      dark: '#3C108C',
       contrastText: '#000000',
       background: 'rgba(221, 225, 254, 0.94)',
-      text: {
-        primary: '#673ab7',
-      },
     },
     ee: {
       main: EE_COLOR,
       background: hexToRGB(EE_COLOR, 0.2),
       lightBackground: hexToRGB(EE_COLOR, 0.08),
-      contrastText: '#ffffff',
+      contrastText: '#F2F2F3',
     },
     background: {
       default: background || THEME_LIGHT_DEFAULT_BACKGROUND,
       paper: paper || THEME_LIGHT_DEFAULT_PAPER,
       nav: nav || THEME_LIGHT_DEFAULT_NAV,
       accent: accent || THEME_LIGHT_DEFAULT_ACCENT,
-      shadow: 'rgba(0, 0, 0, .15)',
+      shadow: alpha('#000000', 0.15),
       secondary: '#FFFFFF',
-      gradient: {
-        start: '#ECECF2',
-        end: '#F7F7F7',
-      },
       drawer: '#f4f1f1',
+      gradient: {
+        start: background || THEME_LIGHT_DEFAULT_BACKGROUND,
+        end: getAppBodyGradientEndColor(background),
+      },
     },
     text: {
       secondary: '#494A50',
@@ -102,6 +115,45 @@ const ThemeLight = (
       info: '#1565c0',
       none: '#424242',
       default: '#DDE1FE',
+    },
+    tertiary: {
+      grey: {
+        400: '#95969D',
+        700: '#494A50',
+        800: '#313235',
+      },
+      blue: {
+        500: '#0099CC',
+        900: '#003242',
+      },
+      darkBlue: {
+        300: '#7587FF',
+        500: '#0F2DFF',
+      },
+      turquoise: {
+        600: '#00BD94',
+        800: '#005744',
+      },
+      green: {
+        400: '#41E149',
+        600: '#17AB1F',
+        800: '#094E0B',
+      },
+      red: {
+        100: '#FBCBC5',
+        200: '#F8958C',
+        400: '#F14337',
+        500: '#E51E10',
+        600: '#B8180A',
+        700: '#881106',
+      },
+      orange: {
+        400: '#F2933A',
+        500: '#E6700F',
+      },
+      yellow: {
+        400: '#F2BE3A',
+      },
     },
   },
   tag: {
@@ -312,6 +364,7 @@ const ThemeLight = (
           scrollbarWidth: 'thin',
         },
         body: {
+          background: `linear-gradient(100deg, ${background || THEME_LIGHT_DEFAULT_BACKGROUND} 0%, ${getAppBodyGradientEndColor(background)} 100%)`,
           scrollbarColor: `${accent || THEME_LIGHT_DEFAULT_ACCENT} ${paper || THEME_LIGHT_DEFAULT_PAPER}`,
           scrollbarWidth: 'thin',
           html: {
@@ -355,14 +408,14 @@ const ThemeLight = (
           },
           '.error .react-mde textarea': {
             border: '0 !important',
-            borderBottom: '2px solid #f44336 !important',
+            borderBottom: '2px solid #F14337 !important',
             '&:hover': {
               border: '0 !important',
-              borderBottom: '2px solid #f44336 !important',
+              borderBottom: '2px solid #F14337 !important',
             },
             '&:focus': {
               border: '0 !important',
-              borderBottom: '2px solid #f44336 !important',
+              borderBottom: '2px solid #F14337 !important',
             },
           },
           '.mde-header': {
@@ -410,8 +463,8 @@ const ThemeLight = (
             backgroundColor: `${paper || '#ffffff'} !important`,
           },
           '.react-grid-item .react-resizable-handle::after': {
-            borderRight: '2px solid rgba(0, 0, 0, 0.6) !important',
-            borderBottom: '2px solid rgba(0, 0, 0, 0.6) !important',
+            borderRight: '2px solid #AFB0B6 !important',
+            borderBottom: '2px solid #AFB0B6 !important',
           },
         },
       },

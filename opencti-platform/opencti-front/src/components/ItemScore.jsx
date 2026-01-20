@@ -1,62 +1,16 @@
 import React from 'react';
 import { compose } from 'ramda';
 import * as PropTypes from 'prop-types';
-import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
-import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
 import inject18n from './i18n';
 import { isEmptyField } from '../utils/utils';
+import { useTheme } from '@mui/styles';
+import Tag from '@common/tag/Tag';
 
-const styles = () => ({
-  chip: {
-    fontSize: 12,
-    lineHeight: '12px',
-    height: 25,
-    marginRight: 7,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-  },
-  chipInList: {
-    fontSize: 12,
-    lineHeight: '12px',
-    height: 20,
-    float: 'right',
-    textTransform: 'uppercase',
-    borderRadius: 4,
-  },
-});
+const ItemScore = ({ score }) => {
+  const theme = useTheme();
 
-const inlineStyles = {
-  white: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    color: '#ffffff',
-  },
-  whiteLight: {
-    backgroundColor: 'rgba(0, 0, 0, 0.08)',
-    color: '#000000',
-  },
-  green: {
-    backgroundColor: 'rgba(76, 175, 80, 0.08)',
-    color: '#4caf50',
-  },
-  blue: {
-    backgroundColor: 'rgba(92, 123, 245, 0.08)',
-    color: '#5c7bf5',
-  },
-  red: {
-    backgroundColor: 'rgba(244, 67, 54, 0.08)',
-    color: '#f44336',
-  },
-  orange: {
-    backgroundColor: 'rgba(255, 152, 0, 0.08)',
-    color: '#ff9800',
-  },
-};
-
-const ItemScore = (props) => {
-  const { score, classes, variant } = props;
-  const style = variant === 'inList' ? classes.chipInList : classes.chip;
   if (isEmptyField(score)) {
     return (
       <Typography
@@ -70,44 +24,39 @@ const ItemScore = (props) => {
   }
   if (score <= 20) {
     return (
-      <Chip
-        classes={{ root: style }}
-        style={inlineStyles.green}
+      <Tag
+        color={theme.palette.severity.low}
         label={`${score} / 100`}
       />
     );
   }
   if (score <= 50) {
     return (
-      <Chip
-        classes={{ root: style }}
-        style={inlineStyles.blue}
+      <Tag
+        color={theme.palette.severity.info}
         label={`${score} / 100`}
       />
     );
   }
   if (score <= 75) {
     return (
-      <Chip
-        classes={{ root: style }}
-        style={inlineStyles.orange}
+      <Tag
+        color={theme.palette.severity.high}
         label={`${score} / 100`}
       />
     );
   }
   if (score <= 100) {
     return (
-      <Chip
-        classes={{ root: style }}
-        style={inlineStyles.red}
+      <Tag
+        color={theme.palette.severity.critical}
         label={`${score} / 100`}
       />
     );
   }
   return (
-    <Chip
-      classes={{ root: style }}
-      style={inlineStyles.white}
+    <Tag
+      color={theme.palette.common.grey}
       label={`${score} / 100`}
     />
   );
@@ -119,4 +68,4 @@ ItemScore.propTypes = {
   score: PropTypes.number,
 };
 
-export default compose(withTheme, inject18n, withStyles(styles))(ItemScore);
+export default compose(withTheme, inject18n)(ItemScore);

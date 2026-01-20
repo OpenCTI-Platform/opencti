@@ -39,6 +39,7 @@ import Transition from '../../../../components/Transition';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { stixSightingRelationshipEditionDeleteMutation } from './StixSightingRelationshipEdition';
 import Card from '@common/card/Card';
+import { alpha } from '@mui/material';
 import Label from '../../../../components/common/label/Label';
 
 const styles = (theme) => ({
@@ -128,8 +129,8 @@ const styles = (theme) => ({
     fontSize: 12,
     lineHeight: '12px',
     height: 20,
-    backgroundColor: 'rgba(244, 67, 54, 0.08)',
-    color: '#f44336',
+    backgroundColor: alpha(theme.palette.error.main || '#F14337', 0.08),
+    color: theme.palette.error.main,
     textTransform: 'uppercase',
     borderRadius: 4,
   },
@@ -137,8 +138,8 @@ const styles = (theme) => ({
     fontSize: 12,
     lineHeight: '12px',
     height: 20,
-    backgroundColor: 'rgba(76, 175, 80, 0.08)',
-    color: '#4caf50',
+    backgroundColor: alpha(theme.palette.success.main, 0.08),
+    color: theme.palette.success.main,
     textTransform: 'uppercase',
     borderRadius: 4,
   },

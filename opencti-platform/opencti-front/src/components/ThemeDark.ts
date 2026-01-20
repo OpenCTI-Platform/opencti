@@ -1,18 +1,28 @@
 import { buttonClasses } from '@mui/material/Button';
 import type { ExtendedThemeOptions } from './Theme';
 import { fileUri } from '../relay/environment';
-import LogoText from '../static/images/logo_text_dark.png';
-import LogoCollapsed from '../static/images/logo_dark.png';
+import LogoText from '../static/images/logo_text_dark.svg';
+import LogoCollapsed from '../static/images/logo_dark.svg';
 import { hexToRGB } from '../utils/Colors';
+import { alpha, lighten } from '@mui/material';
 
-const EE_COLOR = '#00f1bd';
+const EE_COLOR = '#00f18d';
 
 export const THEME_DARK_DEFAULT_BACKGROUND = '#070d19';
-const THEME_DARK_DEFAULT_PRIMARY = '#0fbcff';
-const THEME_DARK_DEFAULT_SECONDARY = '#00f1bd';
-const THEME_DARK_DEFAULT_ACCENT = '#0f1e38';
-const THEME_DARK_DEFAULT_PAPER = '#09101e';
+export const THEME_DARK_DEFAULT_BODY_END_GRADIENT = '#0C1524';
+export const THEME_DARK_DEFAULT_PRIMARY = '#0fbcff';
+export const THEME_DARK_DEFAULT_SECONDARY = '#00f18d';
+export const THEME_DARK_DEFAULT_ACCENT = '#0f1e38';
+export const THEME_DARK_DEFAULT_PAPER = '#09101e';
+export const THEME_DARK_DEFAULT_TEXT = '#F2F2F3';
 const THEME_DARK_DEFAULT_NAV = '#070d19';
+
+const getAppBodyGradientEndColor = (background: string | null): string => {
+  if (background && background !== THEME_DARK_DEFAULT_BACKGROUND) {
+    return lighten(background, 0.05);
+  }
+  return THEME_DARK_DEFAULT_BODY_END_GRADIENT;
+};
 
 const ThemeDark = (
   logo: string | null = null,
@@ -23,32 +33,37 @@ const ThemeDark = (
   primary: string | null = null,
   secondary: string | null = null,
   accent: string | null = null,
-  text_color = 'rgba(255, 255, 255, 0.7)',
+  text_color = THEME_DARK_DEFAULT_TEXT,
 ): ExtendedThemeOptions => ({
   logo: logo || fileUri(LogoText),
   logo_collapsed: logo_collapsed || fileUri(LogoCollapsed),
   borderRadius: 4,
   palette: {
     mode: 'dark',
-    common: { white: '#ffffff', grey: '#7A7C85', lightGrey: '#ffffffb3' },
+    common: { white: '#ffffff', grey: '#95969D', lightGrey: '#E4E5E7' },
     error: {
-      main: '#f44336',
-      dark: '#c62828',
+      main: '#F14337',
+      dark: '#881106',
     },
     warn: {
-      main: '#ffa726',
+      main: '#E6700F',
     },
-    dangerZone: { main: '#f6685e', light: '#fbc2be', dark: '#f44336', contrastText: '#000000', text: { primary: '#fbc2be' } },
-    success: { main: '#03a847' },
-    primary: { main: primary || THEME_DARK_DEFAULT_PRIMARY },
+    dangerZone: {
+      main: '#F44336',
+      light: '#F8958C',
+      dark: '#881106',
+      contrastText: '#000000',
+      text: { primary: '#F8958C' } },
+    success: { main: '#17AB1F', dark: '#094E0B' },
+    primary: { main: primary || THEME_DARK_DEFAULT_PRIMARY, light: primary ? alpha(primary, 0.08) : '#B2ECFF' },
     secondary: { main: secondary || THEME_DARK_DEFAULT_SECONDARY },
-    gradient: { main: '#00f1bd' },
+    gradient: { main: '#00f18d' },
     border: {
       primary: hexToRGB((primary || THEME_DARK_DEFAULT_PRIMARY), 0.3),
       secondary: '#424751',
       pagination: hexToRGB('#ffffff', 0.5),
       paper: hexToRGB('#ffffff', 0.12),
-      main: '#2B3447',
+      main: '#252A35',
     },
     pagination: {
       main: '#ffffff',
@@ -57,16 +72,13 @@ const ThemeDark = (
     ai: {
       main: '#B286FF',
       light: '#D6C2FA',
-      dark: '#B286FF',
+      dark: '#5E1AD5',
       contrastText: '#000000',
       background: 'rgba(28, 47, 73, 0.94)',
-      text: {
-        primary: '#B286FF',
-      },
     },
     ee: {
       main: EE_COLOR,
-      contrastText: '#ffffff',
+      contrastText: THEME_DARK_DEFAULT_TEXT,
       background: hexToRGB(EE_COLOR, 0.2),
       lightBackground: hexToRGB(EE_COLOR, 0.08),
     },
@@ -76,12 +88,12 @@ const ThemeDark = (
       nav: nav || THEME_DARK_DEFAULT_NAV,
       accent: accent || THEME_DARK_DEFAULT_ACCENT,
       shadow: 'rgba(200, 200, 200, 0.15)',
-      secondary: '#0D182A',
-      gradient: {
-        start: '#070d19',
-        end: '#0C1524',
-      },
+      secondary: '#0C1524',
       drawer: '#0f1d34',
+      gradient: {
+        start: background || THEME_DARK_DEFAULT_BACKGROUND,
+        end: getAppBodyGradientEndColor(background),
+      },
     },
     text: {
       secondary: '#AFB0B6',
@@ -101,6 +113,45 @@ const ThemeDark = (
       info: '#1565c0',
       none: '#424242',
       default: '#1C2F49',
+    },
+    tertiary: {
+      grey: {
+        400: '#95969D',
+        700: '#494A50',
+        800: '#313235',
+      },
+      blue: {
+        500: '#0099CC',
+        900: '#003242',
+      },
+      darkBlue: {
+        300: '#7587FF',
+        500: '#0F2DFF',
+      },
+      turquoise: {
+        600: '#00BD94',
+        800: '#005744',
+      },
+      green: {
+        400: '#41E149',
+        600: '#17AB1F',
+        800: '#094E0B',
+      },
+      red: {
+        100: '#FBCBC5',
+        200: '#F8958C',
+        400: '#F14337',
+        500: '#E51E10',
+        600: '#B8180A',
+        700: '#881106',
+      },
+      orange: {
+        400: '#F2933A',
+        500: '#E6700F',
+      },
+      yellow: {
+        400: '#F2BE3A',
+      },
     },
   },
   tag: {
@@ -315,6 +366,7 @@ const ThemeDark = (
           scrollbarWidth: 'thin',
         },
         body: {
+          background: `linear-gradient(100deg, ${background || THEME_DARK_DEFAULT_BACKGROUND} 0%, ${getAppBodyGradientEndColor(background)} 100%)`,
           scrollbarColor: `${background || THEME_DARK_DEFAULT_BACKGROUND} ${accent || THEME_DARK_DEFAULT_ACCENT}`,
           scrollbarWidth: 'thin',
           html: {
@@ -358,14 +410,14 @@ const ThemeDark = (
           },
           '.error .react-mde textarea': {
             border: '0 !important',
-            borderBottom: '2px solid #f44336 !important',
+            borderBottom: '2px solid #F14337 !important',
             '&:hover': {
               border: '0 !important',
-              borderBottom: '2px solid #f44336 !important',
+              borderBottom: '2px solid #F14337 !important',
             },
             '&:focus': {
               border: '0 !important',
-              borderBottom: '2px solid #f44336 !important',
+              borderBottom: '2px solid #F14337 !important',
             },
           },
           '.mde-header': {

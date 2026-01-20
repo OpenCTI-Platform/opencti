@@ -27,55 +27,54 @@ const styles = () => ({
   },
 });
 
-const inlineStylesDark = {
-  white: {
-    backgroundColor: '#ffffff',
-    color: '#2b2b2b',
-  },
-  green: {
-    backgroundColor: '#2e7d32',
-  },
-  blue: {
-    backgroundColor: '#283593',
-  },
-  red: {
-    backgroundColor: '#c62828',
-  },
-  orange: {
-    backgroundColor: '#d84315',
-  },
-};
-
-const inlineStylesLight = {
-  white: {
-    backgroundColor: '#ffffff',
-    color: '#2b2b2b',
-    border: '1px solid #2b2b2b',
-  },
-  green: {
-    backgroundColor: '#2e7d32',
-    color: '#ffffff',
-  },
-  blue: {
-    backgroundColor: '#283593',
-    color: '#ffffff',
-  },
-  red: {
-    backgroundColor: '#c62828',
-    color: '#ffffff',
-  },
-  orange: {
-    backgroundColor: '#d84315',
-    color: '#ffffff',
-  },
-};
-
 const StixItemMarkings = (props) => {
   const { classes, variant, markingDefinitions, limit, theme } = props;
   const className = variant === 'inList' ? classes.chipInList : classes.chip;
   const number = limit || 1;
   const sortBy = R.sortWith([R.descend(R.prop('name'))]);
   const markings = R.pipe(sortBy, R.take(number))(markingDefinitions);
+  const inlineStylesDark = {
+    white: {
+      backgroundColor: theme.palette.common.white,
+      color: theme.palette.tertiary.grey[700],
+    },
+    green: {
+      backgroundColor: theme.palette.tertiary.green[600],
+    },
+    blue: {
+      backgroundColor: theme.palette.tertiary.darkBlue[500],
+    },
+    red: {
+      backgroundColor: theme.palette.tertiary.red[700],
+    },
+    orange: {
+      backgroundColor: theme.palette.tertiary.orange[500],
+    },
+  };
+
+  const inlineStylesLight = {
+    white: {
+      backgroundColor: theme.palette.common.white,
+      color: theme.palette.tertiary.grey[700],
+    },
+    green: {
+      backgroundColor: theme.palette.tertiary.green[600],
+      color: theme.palette.common.white,
+    },
+    blue: {
+      backgroundColor: theme.palette.tertiary.darkBlue[500],
+      color: theme.palette.common.white,
+    },
+    red: {
+      backgroundColor: theme.palette.tertiary.red[700],
+      color: theme.palette.common.white,
+    },
+    orange: {
+      backgroundColor: theme.palette.tertiary.orange[500],
+      color: theme.palette.common.white,
+    },
+  };
+
   return (
     <div>
       {markings.map((markingDefinition) => {
@@ -88,15 +87,15 @@ const StixItemMarkings = (props) => {
           let textColor = theme.palette.text.primary;
           let border = '0';
           if (theme.palette.mode === 'light') {
-            if (backgroundColor === '#ffffff') {
-              backgroundColor = '#ffffff';
-              textColor = '#2b2b2b';
-              border = '1px solid #2b2b2b';
+            if (backgroundColor === theme.palette.common.white) {
+              backgroundColor = theme.palette.common.white;
+              textColor = theme.palette.tertiary.grey[700];
+              border = `1px solid ${theme.palette.tertiary.grey[700]}`;
             } else {
-              textColor = '#ffffff';
+              textColor = theme.palette.common.white;
             }
-          } else if (backgroundColor === '#ffffff') {
-            textColor = '#2b2b2b';
+          } else if (backgroundColor === theme.palette.common.white) {
+            textColor = theme.palette.tertiary.grey[700];
           }
           return (
             <Chip

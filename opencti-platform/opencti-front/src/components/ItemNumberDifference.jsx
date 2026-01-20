@@ -5,6 +5,8 @@ import withStyles from '@mui/styles/withStyles';
 import { ArrowUpward, ArrowDownward, ArrowForward } from '@mui/icons-material';
 
 import inject18n from './i18n';
+import { alpha } from '@mui/material';
+import { useTheme } from '@mui/styles';
 
 const styles = (theme) => ({
   diff: {
@@ -29,23 +31,25 @@ const styles = (theme) => ({
   },
 });
 
-const inlineStyles = {
-  green: {
-    backgroundColor: 'rgba(76, 175, 80, 0.08)',
-    color: '#4caf50',
-  },
-  red: {
-    backgroundColor: 'rgba(244, 67, 54, 0.08)',
-    color: '#f44336',
-  },
-  blueGrey: {
-    backgroundColor: 'rgba(96, 125, 139, 0.08)',
-    color: '#607d8b',
-  },
-};
-
 const ItemNumberDifference = (props) => {
   const { t, difference, classes, description } = props;
+  const theme = useTheme();
+
+  const inlineStyles = {
+    green: {
+      backgroundColor: alpha(theme.palette.severity.low, 0.08),
+      color: theme.palette.severity.low,
+    },
+    red: {
+      backgroundColor: alpha(theme.palette.severity.critical, 0.08),
+      color: theme.palette.severity.critical,
+    },
+    blueGrey: {
+      backgroundColor: alpha(theme.palette.severity.default, 0.08),
+      color: theme.palette.severity.default,
+    },
+  };
+
   if (difference < 0) {
     return (
       <div className={classes.diff} style={inlineStyles.red}>
