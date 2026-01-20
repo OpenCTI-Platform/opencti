@@ -1,6 +1,5 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React from 'react';
-import WidgetNumber from '../../../../components/dashboard/WidgetNumber';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
 import { useFormatter } from '../../../../components/i18n';
@@ -8,6 +7,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { PublicStixRelationshipsNumberQuery } from './__generated__/PublicStixRelationshipsNumberQuery.graphql';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import CardNumber from '../../../../components/common/card/CardNumber';
 
 const publicStixRelationshipsNumberQuery = graphql`
   query PublicStixRelationshipsNumberQuery(
@@ -29,12 +29,15 @@ const publicStixRelationshipsNumberQuery = graphql`
 `;
 
 interface PublicStixCoreRelationshipsNumberComponentProps {
+  title: string;
   queryRef: PreloadedQuery<PublicStixRelationshipsNumberQuery>;
 }
 
 const PublicStixCoreRelationshipsNumberComponent = ({
+  title,
   queryRef,
 }: PublicStixCoreRelationshipsNumberComponentProps) => {
+  const { t_i18n } = useFormatter();
   const { publicStixRelationshipsNumber } = usePreloadedQuery(
     publicStixRelationshipsNumberQuery,
     queryRef,
@@ -42,9 +45,20 @@ const PublicStixCoreRelationshipsNumberComponent = ({
 
   if (publicStixRelationshipsNumber) {
     const { total, count } = publicStixRelationshipsNumber;
-    return <WidgetNumber total={total} value={count} />;
+    return (
+      <CardNumber
+        label={title}
+        value={total}
+        diffLabel={t_i18n('24 hours')}
+        diffValue={total - count}
+      />
+    );
   }
-  return <WidgetNoData />;
+  return (
+    <WidgetContainer>
+      <WidgetNoData />
+    </WidgetContainer>
+  );
 };
 
 const PublicStixCoreRelationshipsNumber = ({
@@ -67,18 +81,20 @@ const PublicStixCoreRelationshipsNumber = ({
   );
 
   return (
-    <WidgetContainer
-      title={parameters?.title ?? title ?? t_i18n('Entities number')}
-      variant="inLine"
-    >
+    <>
       {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <PublicStixCoreRelationshipsNumberComponent queryRef={queryRef} />
+          <PublicStixCoreRelationshipsNumberComponent
+            title={parameters?.title ?? title ?? t_i18n('Entities number')}
+            queryRef={queryRef}
+          />
         </React.Suspense>
       ) : (
-        <Loader variant={LoaderVariant.inElement} />
+        <WidgetContainer>
+          <Loader variant={LoaderVariant.inElement} />
+        </WidgetContainer>
       )}
-    </WidgetContainer>
+    </>
   );
 };
 

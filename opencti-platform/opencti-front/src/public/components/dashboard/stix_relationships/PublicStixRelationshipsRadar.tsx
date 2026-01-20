@@ -123,7 +123,6 @@ const PublicStixRelationshipsRadar = ({
   return (
     <WidgetContainer
       title={parameters?.title ?? title ?? t_i18n('Entities number')}
-      variant="inLine"
     >
       {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
