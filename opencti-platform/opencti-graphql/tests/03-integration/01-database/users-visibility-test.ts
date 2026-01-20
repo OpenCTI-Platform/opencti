@@ -15,7 +15,7 @@ import {
 import { getInferences } from '../../utils/rule-utils';
 import ParticipateToPartsRule from '../../../src/rules/participate-to-parts/ParticipateToPartsRule';
 import { RELATION_PARTICIPATE_TO } from '../../../src/schema/internalRelationship';
-import { adminQueryWithSuccess, unSetOrganization, setOrganization } from '../../utils/testQueryHelper';
+import { adminQueryWithSuccess, setOrganization, unSetOrganization } from '../../utils/testQueryHelper';
 import type { BasicStoreBase, BasicStoreRelation } from '../../../src/types/store';
 import { createRuleContent } from '../../../src/rules/rules-utils';
 import { createInferredRelation, deleteInferredRuleElement } from '../../../src/database/middleware';
@@ -33,6 +33,8 @@ import { addReport } from '../../../src/domain/report';
 import type { AxiosInstance } from 'axios';
 import { INPUT_ASSIGNEE, INPUT_PARTICIPANT } from '../../../src/schema/general';
 import { MARKING_TLP_GREEN } from '../../../src/schema/identifier';
+import { type FilterGroupWithNested, pageEntitiesConnection } from '../../../src/database/middleware-loader';
+import { FilterMode, FilterOperator } from '../../../src/generated/graphql';
 
 const CREATE_USER_QUERY = gql`
   mutation UserAdd($input: UserAddInput!) {
@@ -505,14 +507,14 @@ describe('Users visibility according to their direct organizations', () => {
         });
       };
       return {
-        mode: 'and',
+        mode: FilterMode.And,
         filters: [
           {
-            key: 'name',
+            key: ['name'],
             values: usersNames, // we only consider the users created in this file
           },
           {
-            key: 'regardingOf',
+            key: ['regardingOf'],
             operator: regardingOfOperator,
             values,
           },
@@ -529,6 +531,30 @@ describe('Users visibility according to their direct organizations', () => {
     it('regardingOf filter used with ids of entities the user has not access to should throw an error', async () => {
       const queryResult = await userQuery(USER_A2_CLIENT, { query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFilters('eq', RELATION_PARTICIPATE_TO, 'false', [orgaAInternalId]) } });
       expect(queryResult.errors?.[0].message).toEqual('You are not allowed to do this.');
+    });
+
+    it('regardingOf filter with inferred subfilter with noRegardingOf filter ids check should bypass organization visibility rights', async () => {
+      let users = await pageEntitiesConnection(
+        testContext,
+        USER_A2,
+        [ENTITY_TYPE_USER],
+        {
+          filters: generateRegardingOfFilters('eq', RELATION_PARTICIPATE_TO, 'false', [orgaAInternalId]) as FilterGroupWithNested,
+          noRegardingOfFilterIdsCheck: true,
+        },
+      );
+      expect(users.edges.length).toEqual(2);
+
+      users = await pageEntitiesConnection(
+        testContext,
+        USER_AB,
+        [ENTITY_TYPE_USER],
+        {
+          filters: generateRegardingOfFilters('eq', RELATION_PARTICIPATE_TO, 'false', [orgaABInternalId]) as FilterGroupWithNested,
+          noRegardingOfFilterIdsCheck: true,
+        },
+      );
+      expect(users.edges.length).toEqual(1);
     });
 
     it('regardingOf filter with no inferred subfilter and participate-to relationship type should fetch users participating in an organization', async () => {
@@ -565,27 +591,51 @@ describe('Users visibility according to their direct organizations', () => {
     });
 
     it('regardingOf filter imbricated in several filter groups should be correctly taken into account', async () => {
-      const directParticipateOrgaABFilterGroup = generateRegardingOfFilters('eq', RELATION_PARTICIPATE_TO, 'false', [orgaABInternalId]);
-      const filters = {
-        mode: 'and',
-        filters: [{ key: 'entity_type', values: MEMBERS_ENTITY_TYPES }],
+      let filters: FilterGroupWithNested = {
+        mode: FilterMode.Or,
+        filters: [
+          { key: ['name'], values: ['userO'] },
+        ],
+        filterGroups: [generateRegardingOfFilters('eq', RELATION_PARTICIPATE_TO, 'false', [orgaABInternalId]) as FilterGroupWithNested],
+      };
+      let queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters } });
+      expect(queryResult.data?.users.edges.length).toEqual(2); // the users participating directly in organizationAB or userO
+      expect(['userO', 'userAB'].every((u) => queryResult.data?.users.edges.map((e: any) => e.node.name).includes(u))).toBeTruthy();
+
+      filters = {
+        mode: FilterMode.And,
+        filters: [
+          { key: [RELATION_PARTICIPATE_TO], values: [], operator: FilterOperator.Nil },
+        ],
+        filterGroups: [generateRegardingOfFilters('eq', RELATION_PARTICIPATE_TO, 'false', [orgaABInternalId]) as FilterGroupWithNested],
+      };
+      queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters } });
+      expect(queryResult.data?.users.edges.length).toEqual(0); // the users participating directly in organizationAB and having no orga: no user in this case
+
+      const directParticipateOrgaABFilterGroup = generateRegardingOfFilters('eq', RELATION_PARTICIPATE_TO, 'false', [orgaABInternalId]) as FilterGroupWithNested;
+      filters = {
+        mode: FilterMode.And,
+        filters: [{ key: ['entity_type'], values: MEMBERS_ENTITY_TYPES }],
         filterGroups: [
           {
-            mode: 'or',
-            filters: [{ key: 'objectLabel', values: ['label1'] }],
+            mode: FilterMode.Or,
+            filters: [
+              { key: ['objectLabel'], values: ['label1'] },
+              { key: ['name'], values: ['userB'] },
+            ],
             filterGroups: [
               {
-                mode: 'and',
-                filters: [{ key: 'entity_type', values: [ENTITY_TYPE_USER] }],
+                mode: FilterMode.And,
+                filters: [{ key: ['entity_type'], values: [ENTITY_TYPE_USER] }],
                 filterGroups: [directParticipateOrgaABFilterGroup],
               },
             ],
           },
         ],
       };
-      const queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters } });
-      expect(queryResult.data?.users.edges.length).toEqual(1); // the users participating directly in organizationAB
-      expect(queryResult.data?.users.edges[0].node.name).toEqual('userAB');
+      queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters } });
+      expect(queryResult.data?.users.edges.length).toEqual(2); // the users participating directly in organizationAB
+      expect(['userB', 'userAB'].every((u) => queryResult.data?.users.edges.map((e: any) => e.node.name).includes(u))).toBeTruthy();
     });
 
     it('regardingOf filter with inferred subfilter set to true should fetch entities having an inferred rel to provided ids with provided relationship type', async () => {
