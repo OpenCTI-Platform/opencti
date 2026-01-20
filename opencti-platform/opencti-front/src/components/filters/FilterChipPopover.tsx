@@ -1,16 +1,17 @@
-import React, { Dispatch, FunctionComponent, ReactNode, SyntheticEvent, useState } from 'react';
-import Popover from '@mui/material/Popover';
-import TextField from '@mui/material/TextField';
-import Checkbox from '@mui/material/Checkbox';
-import Tooltip from '@mui/material/Tooltip';
-import FilterDate from '@components/common/lists/FilterDate';
-import { Autocomplete, MenuItem, Select } from '@mui/material';
-import { SelectChangeEvent } from '@mui/material/Select';
-import SearchScopeElement from '@components/common/lists/SearchScopeElement';
-import Chip from '@mui/material/Chip';
 import { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
-import { addDays, subDays } from 'date-fns';
+import FilterDate from '@components/common/lists/FilterDate';
+import SearchScopeElement from '@components/common/lists/SearchScopeElement';
+import { Autocomplete, MenuItem, Select } from '@mui/material';
+import Checkbox from '@mui/material/Checkbox';
+import Chip from '@mui/material/Chip';
+import Popover from '@mui/material/Popover';
+import { SelectChangeEvent } from '@mui/material/Select';
 import { useTheme } from '@mui/material/styles';
+import TextField from '@mui/material/TextField';
+import Tooltip from '@mui/material/Tooltip';
+import { addDays, subDays } from 'date-fns';
+import { Dispatch, FunctionComponent, ReactNode, SyntheticEvent, useState } from 'react';
+import { Filter, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
 import {
   DEFAULT_WITHIN_FILTER_VALUES,
   emptyFilterGroup,
@@ -24,20 +25,18 @@ import {
   SELF_ID_VALUE,
   useFilterDefinition,
 } from '../../utils/filters/filtersUtils';
+import { getOptionsFromEntities } from '../../utils/filters/SearchEntitiesUtil';
+import useSearchEntities from '../../utils/filters/useSearchEntities';
+import useAttributes from '../../utils/hooks/useAttributes';
+import { FilterDefinition } from '../../utils/hooks/useAuth';
 import { useFormatter } from '../i18n';
 import ItemIcon from '../ItemIcon';
-import { getOptionsFromEntities } from '../../utils/filters/SearchEntitiesUtil';
-import { FilterDefinition } from '../../utils/hooks/useAuth';
-import { FilterRepresentative } from './FiltersModel';
-import useSearchEntities from '../../utils/filters/useSearchEntities';
-import { Filter, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
-import useAttributes from '../../utils/hooks/useAttributes';
 import BasicFilterInput from './BasicFilterInput';
-import QuickRelativeDateFiltersButtons from './QuickRelativeDateFiltersButtons';
 import DateRangeFilter from './DateRangeFilter';
+import { FilterRepresentative } from './FiltersModel';
+import QuickRelativeDateFiltersButtons from './QuickRelativeDateFiltersButtons';
 // eslint-disable-next-line import/no-cycle
 import FilterFiltersInput from './FilterFiltersInput';
-import stopEvent from '../../utils/domEvent';
 
 interface FilterChipMenuProps {
   handleClose: () => void;
@@ -57,6 +56,7 @@ interface FilterChipMenuProps {
 export interface FilterChipsParameter {
   filterId?: string;
   anchorEl?: HTMLElement;
+  anchorPosition?: { top: number; left: number };
 }
 
 const OperatorKeyValues: {
@@ -101,7 +101,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   const filterOperator = filter?.operator ?? '';
   const filterValues = filter?.values ?? [];
   const filterDefinition = useFilterDefinition(filterKey, entityTypes);
-  const filterLabel = t_i18n(filterDefinition?.label ?? filterKey);
+  const filterLabel = filterKey ? t_i18n(filterDefinition?.label ?? filterKey) : '';
   const { typesWithFintelTemplates } = useAttributes();
 
   const [inputValues, setInputValues] = useState<{
@@ -402,22 +402,6 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
             onChange={(event) => handleChangeOperator(event, finalFilterDefinition)}
             style={{ marginBottom: 15 }}
             disabled={disabled}
-            MenuProps={{
-            // Force MUI to use a backdrop
-              hideBackdrop: false,
-              BackdropProps: {
-                style: {
-                // Make the backdrop invisible because we already have one
-                  backgroundColor: 'rgba(0, 0, 0, 0)',
-                },
-                // Prevent clicks from going through
-                onClick: (e) => {
-                  stopEvent(e);
-                  handleClose();
-                },
-                onMouseDown: stopEvent,
-              },
-            }}
           >
             {availableOperators.map((value) => (
               <MenuItem key={value} value={value}>
@@ -453,30 +437,17 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   return (
     <Popover
       open={open}
-      anchorEl={params.anchorEl}
+      anchorReference="anchorPosition"
+      anchorPosition={params.anchorPosition ?? { top: 0, left: 0 }}
       onClose={handleClose}
       anchorOrigin={{
         vertical: 'bottom',
         horizontal: 'left',
       }}
-      // Force MUI to use a backdrop
-      hideBackdrop={false}
       slotProps={{
         paper: {
           elevation: 1,
           style: { marginTop: 10 },
-        },
-        backdrop: {
-          style: {
-            // Make the backdrop invisible because we already have one
-            backgroundColor: 'rgba(0, 0, 0, 0)',
-          },
-          // Prevent clicks from going through
-          onClick: (e) => {
-            stopEvent(e);
-            handleClose();
-          },
-          onMouseDown: stopEvent,
         },
       }}
     >

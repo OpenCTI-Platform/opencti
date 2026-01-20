@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { emptyFilterGroup } from './filtersUtils';
 import {
   handleAddFilterWithEmptyValueUtil,
@@ -22,7 +22,10 @@ const useFiltersState = (initFilters: FilterGroup | null = emptyFilterGroup, def
     filters: initFilters ?? emptyFilterGroup,
     latestAddFilterId: undefined,
   });
-  const helpers: handleFilterHelpers = {
+
+  // Memoize helpers to prevent unnecessary re-renders when filter state changes
+  // This is important for FilterIconButton popover state stability
+  const helpers: handleFilterHelpers = useMemo(() => ({
     getLatestAddFilterId: (): string | undefined => {
       return filtersState.latestAddFilterId;
     },
@@ -35,18 +38,21 @@ const useFiltersState = (initFilters: FilterGroup | null = emptyFilterGroup, def
     },
     handleAddRepresentationFilter: (id: string, value: string | null) => {
       if (value === null) { // handle clicking on 'no label' in entities list
-        const findCorrespondingFilter = filtersState.filters?.filters.find((f) => id === f.id);
-        if (findCorrespondingFilter && ['objectLabel'].includes(findCorrespondingFilter.key)) {
-          setFiltersState((prevState) => ({
-            ...prevState,
-            filters: handleChangeOperatorFiltersUtil({
-              filters: prevState.filters,
-              id,
-              operator: findCorrespondingFilter.operator === 'not_eq' ? 'not_nil' : 'nil',
-            }),
-            latestAddFilterId: id,
-          }));
-        }
+        setFiltersState((prevState) => {
+          const findCorrespondingFilter = prevState.filters?.filters.find((f) => id === f.id);
+          if (findCorrespondingFilter && ['objectLabel'].includes(findCorrespondingFilter.key)) {
+            return {
+              ...prevState,
+              filters: handleChangeOperatorFiltersUtil({
+                filters: prevState.filters,
+                id,
+                operator: findCorrespondingFilter.operator === 'not_eq' ? 'not_nil' : 'nil',
+              }),
+              latestAddFilterId: id,
+            };
+          }
+          return prevState;
+        });
       } else {
         setFiltersState((prevState) => ({
           ...prevState,
@@ -99,8 +105,8 @@ const useFiltersState = (initFilters: FilterGroup | null = emptyFilterGroup, def
       setFiltersState((prevState) => ({
         ...prevState,
         filters: {
-          ...filtersState.filters,
-          mode: filtersState.filters.mode === 'and' ? 'or' : 'and',
+          ...prevState.filters,
+          mode: prevState.filters.mode === 'and' ? 'or' : 'and',
         },
         latestAddFilterId: undefined,
       }));
@@ -133,7 +139,7 @@ const useFiltersState = (initFilters: FilterGroup | null = emptyFilterGroup, def
         }));
       }
     },
-  };
+  }), [filtersState.latestAddFilterId, filtersState.filters, defaultClearFilters]);
 
   return [filtersState.filters, helpers];
 };
