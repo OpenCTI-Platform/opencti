@@ -88,7 +88,7 @@ const validationSchemaConfiguration = (selectedStrategy: string, t_i18n: (s: str
         issuer: Yup.string().required(t_i18n('This field is required')),
         client_id: Yup.string().required(t_i18n('This field is required')),
         client_secret: Yup.string().required(t_i18n('This field is required')),
-        redirect_uris: Yup.array().min(1, t_i18n('Minimum one entity type')).required(t_i18n('This field is required')),
+        redirect_uris: Yup.array().of(Yup.string().required(t_i18n('This field is required'))),
       });
     }
     default: return undefined;
@@ -143,7 +143,7 @@ const SSODefinitionForm = ({
     // OpenID
     client_id: '',
     client_secret: '',
-    redirect_uris: [],
+    redirect_uris: [''],
   };
 
   const privateField = data?.configuration?.find((e) => e.key === 'privateKey');
@@ -201,7 +201,7 @@ const SSODefinitionForm = ({
 
     initialValues.client_id = clientId?.value ?? '';
     initialValues.client_secret = clientSecret?.value ?? '';
-    initialValues.redirect_uris = redirectUris?.value ? JSON.parse(redirectUris.value ?? '') : [];
+    initialValues.redirect_uris = redirectUris?.value ? JSON.parse(redirectUris.value) : [''];
   }
   const updateField = async (field: SSOEditionFormInputKeys, value: unknown) => {
     if (onSubmitField) onSubmitField(field, value);
@@ -284,7 +284,7 @@ const SSODefinitionForm = ({
           {currentTab === 1 && (
             <>
               <Field
-                sx={{ marginTop: '20x' }}
+                sx={{ marginTop: '20px' }}
                 component={TextField}
                 variant="standard"
                 name={getGroupAttributeKeyName()}
@@ -295,7 +295,7 @@ const SSODefinitionForm = ({
               />
               {selectedStrategy === 'OpenID' && (
                 <Field
-                  sx={{ marginTop: '20x' }}
+                  sx={{ marginTop: '20px' }}
                   component={TextField}
                   variant="standard"
                   name="groups_path"

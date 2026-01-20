@@ -76,31 +76,33 @@ const OpenIDConfig = ({ updateField }: OpenIDConfigProps) => {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  marginBottom: 8,
                 }}
               >
                 <Field
                   component={TextField}
                   variant="standard"
+                  required
                   onSubmit={() => updateField('redirect_uris', form.values.redirect_uris)}
                   name={`redirect_uris[${index}]`}
                   label={t_i18n('Redirect url value')}
                   fullWidth
-                  style={{ marginTop: 20 }}
                 />
-                <IconButton
-                  color="primary"
-                  aria-label={t_i18n('Delete')}
-                  style={{ marginTop: 10 }}
-                  onClick={() => {
-                    remove(index);
-                    const redirectUris = [...form.values.redirect_uris];
-                    redirectUris.splice(index, 1);
-                    updateField('redirect_uris', redirectUris);
-                  }} // Delete
-                >
-                  <Delete fontSize="small" />
-                </IconButton>
+                {index !== 0 && (
+                  <IconButton
+                    color="primary"
+                    aria-label={t_i18n('Delete')}
+                    style={{ marginTop: 10 }}
+                    onClick={() => {
+                      const redirectUris = [...form.values.redirect_uris];
+                      if (redirectUris.length === 1) return;
+                      redirectUris.splice(index, 1);
+                      remove(index);
+                      updateField('redirect_uris', redirectUris);
+                    }} // Delete
+                  >
+                    <Delete fontSize="small" />
+                  </IconButton>
+                )}
               </div>
             ))}
           </>
@@ -109,7 +111,7 @@ const OpenIDConfig = ({ updateField }: OpenIDConfigProps) => {
       <FieldArray name="advancedConfigurations">
         {({ push, remove, form }) => (
           <>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center',  marginTop: 20 }}>
               <Typography variant="h2">{t_i18n('Add more fields')}</Typography>
               <IconButton
                 color="secondary"
