@@ -148,10 +148,10 @@ const SSODefinitions = () => {
     label: {
       label: 'Login Name Button',
       percentWidth: 25,
-      render: (node: { label: string }) => (
+      render: (node: { label: string; identifier: string }) => (
         <ItemBoolean
           variant="large"
-          neutralLabel={node.label}
+          neutralLabel={node.label || node.identifier}
           status={null}
         />
       ) },
