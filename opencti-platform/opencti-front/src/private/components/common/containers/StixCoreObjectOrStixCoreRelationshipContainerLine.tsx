@@ -96,7 +96,7 @@ export const StixCoreObjectOrStixCoreRelationshipContainerLineComponent: Functio
               className={classes.bodyItem}
               style={{ width: dataColumns.createdBy.width }}
             >
-              {node.createdBy?.name ?? ''}
+              {node.createdBy?.name ?? '-'}
             </div>
             <div
               className={classes.bodyItem}
