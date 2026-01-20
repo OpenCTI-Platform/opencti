@@ -17,19 +17,27 @@ import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWork
 
 export const queryDefaultSubTypesPaginated = async (context: AuthContext, user: AuthUser, search: string | null = null) => {
   const queryDefaultSubTypesFn = async () => {
-    const sortByLabel = R.sortBy(R.toLower);
-    const types = schemaTypesDefinition.get(ABSTRACT_STIX_DOMAIN_OBJECT).filter((n) => n.includes(search ?? ''));
-    const finalResult = R.pipe(
-      sortByLabel,
-      R.map((n) => ({ node: { id: n, label: n } })),
-      R.append({ node: { id: ABSTRACT_STIX_CORE_RELATIONSHIP, label: ABSTRACT_STIX_CORE_RELATIONSHIP } }),
-      R.append({ node: { id: STIX_SIGHTING_RELATIONSHIP, label: STIX_SIGHTING_RELATIONSHIP } }),
-      R.append({ node: { id: ABSTRACT_STIX_CYBER_OBSERVABLE, label: ABSTRACT_STIX_CYBER_OBSERVABLE } }),
-      R.append({ node: { id: ENTITY_TYPE_EXTERNAL_REFERENCE, label: ENTITY_TYPE_EXTERNAL_REFERENCE } }),
-      R.append({ node: { id: ENTITY_HASHED_OBSERVABLE_ARTIFACT, label: ENTITY_HASHED_OBSERVABLE_ARTIFACT } }),
-      R.append({ node: { id: ENTITY_TYPE_DRAFT_WORKSPACE, label: ENTITY_TYPE_DRAFT_WORKSPACE } }),
-      R.uniqBy(R.path(['node', 'id'])),
-    )(types);
+    const domainObjectTypes = schemaTypesDefinition
+      .get(ABSTRACT_STIX_DOMAIN_OBJECT)
+      .filter((n) => n.includes(search ?? ''))
+      .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+
+    const customTypes = [
+      ABSTRACT_STIX_CORE_RELATIONSHIP,
+      STIX_SIGHTING_RELATIONSHIP,
+      ABSTRACT_STIX_CYBER_OBSERVABLE,
+      ENTITY_TYPE_EXTERNAL_REFERENCE,
+      ENTITY_HASHED_OBSERVABLE_ARTIFACT,
+      ENTITY_TYPE_DRAFT_WORKSPACE,
+    ];
+
+    const allTypes = [...domainObjectTypes, ...customTypes].map((id) => ({ node: { id, label: id } }));
+
+    // Remove duplicates types
+    const finalResult = [
+      ...new Map(allTypes.map((item) => [item.node.id, item])).values(),
+    ];
+
     return buildPagination(0, null, finalResult, finalResult.length);
   };
 
