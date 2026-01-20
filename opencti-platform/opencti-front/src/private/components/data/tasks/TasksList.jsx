@@ -19,7 +19,6 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Slide from '@mui/material/Slide';
 import { Delete } from 'mdi-material-ui';
-import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
 import TasksFilterValueContainer from '../../../../components/TasksFilterValueContainer';
 import TaskStatus from '../../../../components/TaskStatus';
@@ -34,20 +33,16 @@ import { convertFiltersFromOldFormat } from '../../../../utils/filters/filtersFr
 import { deleteNode } from '../../../../utils/store';
 import Card from '@common/card/Card';
 import { Stack } from '@mui/material';
+import Tag from '@common/tag/Tag';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   progress: {
     borderRadius: 4,
     height: 10,
   },
   filter: {
-    margin: '5px 10px 5px 0',
-  },
-  operator: {
-    fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: theme.palette.background.accent,
     margin: '5px 10px 5px 0',
   },
 }));
@@ -294,8 +289,7 @@ const TasksList = ({ data, options }) => {
                       </Typography>
                       {task.task_search && (
                         <span>
-                          <Chip
-                            classes={{ root: classes.filter }}
+                          <Tag
                             label={(
                               <div>
                                 <strong>{t_i18n('Search')}</strong>:{' '}
@@ -303,8 +297,7 @@ const TasksList = ({ data, options }) => {
                               </div>
                             )}
                           />
-                          <Chip
-                            classes={{ root: classes.operator }}
+                          <Tag
                             label={t_i18n('AND')}
                           />
                         </span>
@@ -318,7 +311,7 @@ const TasksList = ({ data, options }) => {
                               />
                             )
                           : (
-                              <Chip
+                              <Tag
                                 classes={{ root: classes.filter }}
                                 label={(
                                   <div>
@@ -331,8 +324,7 @@ const TasksList = ({ data, options }) => {
                         )
                       }
                       {task.type === 'RULE' && (
-                        <Chip
-                          classes={{ root: classes.filter }}
+                        <Tag
                           label={<div>{t_i18n('All rule targets')}</div>}
                         />
                       )}
@@ -342,8 +334,7 @@ const TasksList = ({ data, options }) => {
                         {t_i18n('Actions')}
                       </Typography>
                       {task.type === 'RULE' && (
-                        <Chip
-                          classes={{ root: classes.operator }}
+                        <Tag
                           label={<div>{t_i18n('APPLY RULE')}</div>}
                         />
                       )}
@@ -351,13 +342,11 @@ const TasksList = ({ data, options }) => {
                         && R.map(
                           (action) => (
                             <div key={task.actions.indexOf(action)}>
-                              <Chip
-                                classes={{ root: classes.operator }}
+                              <Tag
                                 label={action.type}
                               />
                               {action.context && (
-                                <Chip
-                                  classes={{ root: classes.filter }}
+                                <Tag
                                   label={(
                                     <div>
                                       {action.context.field && (
