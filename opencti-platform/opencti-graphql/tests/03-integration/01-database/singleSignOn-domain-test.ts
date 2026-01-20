@@ -56,7 +56,7 @@ describe('Single sign on Domain coverage tests', () => {
       expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'samlTestNotOk')).toBeFalsy();
       expect(logAppErrorSpy, 'No exception should be throw, but an error message should be present')
         .toHaveBeenCalledWith(
-          '[Auth][Not provided]Error when initializing an authentication provider samlTestNotOk, cause: SSO configuration is empty',
+          `[Auth][Not provided]Error when initializing an authentication provider (id: ${samlEntity.id}, identifier: samlTestNotOk), cause: SSO configuration is empty`,
           expect.anything(),
         );
     });
@@ -80,7 +80,7 @@ describe('Single sign on Domain coverage tests', () => {
       expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'samlTestNotOk2')).toBeFalsy();
       expect(logAppErrorSpy, 'No exception should be throw, but an error message should be present')
         .toHaveBeenCalledWith(
-          '[Auth][Not provided]Error when initializing an authentication provider samlTestNotOk2, cause: callbackUrl is mandatory for SAML',
+          `[Auth][Not provided]Error when initializing an authentication provider (id: ${samlEntity.id}, identifier: samlTestNotOk2), cause: callbackUrl is mandatory for SAML`,
           expect.anything(),
         );
     });
@@ -103,7 +103,7 @@ describe('Single sign on Domain coverage tests', () => {
       expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'samlTestNotOk4')).toBeFalsy();
       expect(logAppErrorSpy, 'No exception should be throw, but an error message should be present')
         .toHaveBeenCalledWith(
-          '[Auth][Not provided]Error when initializing an authentication provider samlTestNotOk4, cause: idpCert is mandatory for SAML',
+          `[Auth][Not provided]Error when initializing an authentication provider (id: ${samlEntity.id}, identifier: samlTestNotOk4), cause: idpCert is mandatory for SAML`,
           expect.anything(),
         );
     });
@@ -128,7 +128,7 @@ describe('Single sign on Domain coverage tests', () => {
       expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'samlTestNotOk5')).toBeFalsy();
       expect(logAppErrorSpy, 'No exception should be throw, but an error message should be present')
         .toHaveBeenCalledWith(
-          '[Auth][Not provided]Error when initializing an authentication provider samlTestNotOk5, cause: issuer is mandatory for SAML',
+          `[Auth][Not provided]Error when initializing an authentication provider (id: ${samlEntity.id}, identifier: samlTestNotOk5), cause: issuer is mandatory for SAML`,
           expect.anything(),
         );
     });
@@ -138,7 +138,7 @@ describe('Single sign on Domain coverage tests', () => {
 
       const allSso = await findAllSingleSignOn(testContext, ADMIN_USER);
       for (let i = 0; i < allSso.length; i++) {
-        if (allSso[i].identifier !== 'samlTestNotOk') {
+        if (allSso[i].identifier?.startsWith('samlTest')) {
           await deleteSingleSignOn(testContext, ADMIN_USER, allSso[i].id);
         }
       }

@@ -338,16 +338,13 @@ export const registerStrategy = async (authenticationStrategy: BasicStoreEntityS
       logAuthError(
         `Error when initializing an authentication provider (id: ${authenticationStrategy?.id ?? 'no id'}, identifier: ${authenticationStrategy?.identifier ?? 'no identifier'}), cause: ${e.message}`,
         undefined,
-        {
-          message: e.message,
-          data: e.extensions.data,
-        }
+        { message: e.message, data: e.extensions.data },
       );
     } else {
       logAuthError(
         `Unknown error when initializing an authentication provider (id: ${authenticationStrategy?.id ?? 'no id'}, identifier: ${authenticationStrategy?.identifier ?? 'no identifier'})`,
         undefined,
-        e
+        e,
       );
     }
   }
