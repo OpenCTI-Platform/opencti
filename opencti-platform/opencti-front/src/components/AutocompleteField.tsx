@@ -129,9 +129,10 @@ const AutocompleteField = <
         noOptionsText={noOptionsText}
         {...fieldProps}
         renderOption={renderOption}
-        renderTags={(values) => (
-          values.map((option) => (
+        renderTags={(values, getTagProps) => (
+          values.map((option, index) => (
             <Tag
+              {...getTagProps({ index })}
               applyLabelTextTransform={applyLabelTextTransform}
               key={(option as FieldOption).value}
               label={truncate((option as FieldOption).label, 50)}

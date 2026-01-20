@@ -6,7 +6,7 @@ interface TagProps extends Omit<ChipProps, 'color'> {
   label: string;
   color?: string;
   onClick?: (e: React.MouseEvent) => void;
-  onDelete?: () => void;
+  onDelete?: (event?: any) => void;
   maxWidth?: number | string;
   icon?: React.ReactElement;
   tooltipTitle?: string;
