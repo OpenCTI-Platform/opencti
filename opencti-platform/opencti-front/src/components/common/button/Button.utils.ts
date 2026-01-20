@@ -1,21 +1,22 @@
-import { Theme } from '@mui/material/styles';
 import type { GradientVariant, ColorDefinition, GradientColor, ButtonSize, ButtonColorKey } from './Button.types';
+import { ButtonVariant } from './Button';
+import { Theme } from '../../Theme';
 
 export const getColorDefinitions = (theme: Theme): Record<ButtonColorKey, ColorDefinition> => {
   return {
     default: {
-      main: theme.palette.primary.main,
-      hover: theme.palette.primary.dark,
-      focus: theme.palette.text.primary,
-      text: theme.palette.primary.contrastText,
-      border: theme.palette.primary.main,
+      main: theme.palette.primary.main ?? '',
+      hover: theme.palette.primary.dark ?? '',
+      focus: theme.palette.text.primary ?? '',
+      text: theme.palette.primary.contrastText ?? '',
+      border: theme.palette.primary.main ?? '',
     },
     destructive: {
-      main: theme.palette.error.main,
-      hover: theme.palette.error.dark,
-      focus: theme.palette.text.primary,
-      text: theme.palette.error.main,
-      border: theme.palette.error.main,
+      main: theme.palette.error.main ?? '',
+      hover: theme.palette.error.dark ?? '',
+      focus: theme.palette.text.primary ?? '',
+      text: theme.palette.error.main ?? '',
+      border: theme.palette.error.main ?? '',
     },
     ai: {
       main: theme.palette.ai?.main ?? '#B286FF',
@@ -25,46 +26,32 @@ export const getColorDefinitions = (theme: Theme): Record<ButtonColorKey, ColorD
       border: theme.palette?.ai?.light ?? '#D6C2FA',
     },
     primary: {
-      main: theme.palette.primary.main,
-      hover: theme.palette.primary.dark,
-      focus: theme.palette.primary.light,
-      text: theme.palette.primary.contrastText,
-      border: theme.palette.primary.main,
+      main: theme.palette.primary.main ?? '',
+      hover: theme.palette.primary.dark ?? '',
+      focus: theme.palette.primary.light ?? '',
+      text: theme.palette.primary.contrastText ?? '',
+      border: theme.palette.primary.main ?? '',
     },
     secondary: {
-      main: theme.palette.primary.main,
-      hover: theme.palette.primary.dark,
-      focus: theme.palette.primary.light,
-      text: theme.palette.primary.contrastText,
-      border: theme.palette.border.main,
+      main: theme.palette.primary.main ?? '',
+      hover: theme.palette.primary.dark ?? '',
+      focus: theme.palette.primary.light ?? '',
+      text: theme.palette.primary.contrastText ?? '',
+      border: theme.palette.border.main ?? '',
     },
     success: {
-      main: theme.palette.success.main,
-      hover: theme.palette.success.dark,
-      focus: theme.palette.success.light,
-      text: theme.palette.success.contrastText,
-      border: theme.palette.success.main,
+      main: theme.palette.success.main ?? '',
+      hover: theme.palette.success.dark ?? '',
+      focus: theme.palette.success.light ?? '',
+      text: theme.palette.success.contrastText ?? '',
+      border: theme.palette.success.main ?? '',
     },
     error: {
-      main: theme.palette.error.main,
-      hover: theme.palette.error.dark,
-      focus: theme.palette.error.light,
-      text: theme.palette.error.contrastText,
-      border: theme.palette.error.main,
-    },
-    warning: {
-      main: theme.palette.warning.main,
-      hover: theme.palette.warning.dark,
-      focus: theme.palette.warning.light,
-      text: theme.palette.warning.contrastText,
-      border: theme.palette.warning.main,
-    },
-    info: {
-      main: theme.palette.info.main,
-      hover: theme.palette.info.dark,
-      focus: theme.palette.info.light,
-      text: theme.palette.info.contrastText,
-      border: theme.palette.info.main,
+      main: theme.palette.error.main ?? '',
+      hover: theme.palette.error.dark ?? '',
+      focus: theme.palette.error.light ?? '',
+      text: theme.palette.error.contrastText ?? '',
+      border: theme.palette.error.main ?? '',
     },
   };
 };
@@ -161,10 +148,26 @@ export const createTextGradientSx = (
   };
 };
 
-export const getDisabledSx = (theme: Theme) => ({
-  backgroundColor: theme.palette.action?.disabledBackground ?? '#363B46',
-  color: theme.palette.action?.disabled ?? '#363B46',
-});
+export const getDisabledSx = (theme: Theme, variant?: ButtonVariant) => {
+  const color = variant === 'primary'
+    ? theme.palette.text.primary
+    : theme.palette.text.disabled;
+  const backgroundColor = variant === 'primary'
+    ? theme.palette.background.disabled
+    : 'transparent';
+  const borderColor = variant === 'secondary'
+    ? theme.palette.border.main
+    : undefined;
+  const transition = variant === 'tertiary'
+    ? 'none'
+    : undefined;
+  return {
+    backgroundColor,
+    borderColor,
+    color,
+    transition,
+  };
+};
 
 export const getButtonContentSx = () => ({
   display: 'inline-flex',

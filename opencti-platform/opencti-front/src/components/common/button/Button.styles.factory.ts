@@ -1,7 +1,8 @@
-import type { SxProps, Theme } from '@mui/material/styles';
+import type { SxProps } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import type { ColorDefinition, GradientColor, SizeConfig } from './Button.types';
 import { getDisabledSx, createGradientSx, createTextGradientSx, getButtonContentSx } from './Button.utils';
+import type { Theme } from '../../Theme';
 
 interface StyleFactoryParams {
   theme: Theme;
@@ -64,7 +65,7 @@ export const createPrimaryGradientStyles = (params: StyleFactoryParams): SxProps
 
     '&:active': createGradientSx(theme, gradientColors, gradientAngle, { active: true }),
 
-    '&.Mui-disabled': getDisabledSx(theme),
+    '&.Mui-disabled': getDisabledSx(theme, 'primary'),
   };
 };
 
@@ -83,7 +84,7 @@ export const createPrimarySolidStyles = (params: StyleFactoryParams): SxProps<Th
       backgroundColor: currentColor.hover,
     },
 
-    '&.Mui-disabled': getDisabledSx(theme),
+    '&.Mui-disabled': getDisabledSx(theme, 'primary'),
   };
 };
 
@@ -146,11 +147,7 @@ export const createSecondarySolidStyles = (params: StyleFactoryParams): SxProps<
       boxShadow: 'none',
     },
 
-    '&.Mui-disabled': {
-      ...getDisabledSx(theme),
-      backgroundColor: 'transparent',
-      borderColor: theme.palette.border?.main ?? '#252A35',
-    },
+    '&.Mui-disabled': getDisabledSx(theme, 'secondary'),
   };
 };
 
@@ -181,10 +178,7 @@ export const createTertiaryGradientStyles = (params: StyleFactoryParams): SxProp
       backgroundColor: alpha(gradientColors.start, 0.25),
     },
 
-    '&.Mui-disabled': {
-      ...getDisabledSx(theme),
-      transition: 'none',
-    },
+    '&.Mui-disabled': getDisabledSx(theme, 'tertiary'),
   };
 };
 
@@ -214,10 +208,7 @@ export const createTertiarySolidStyles = (params: StyleFactoryParams): SxProps<T
       boxShadow: `0 0 0 2px ${alpha(currentColor.focus, 0.4)}`,
     },
 
-    '&.Mui-disabled': {
-      ...getDisabledSx(theme),
-      backgroundColor: 'transparent',
-    },
+    '&.Mui-disabled': getDisabledSx(theme, 'tertiary'),
   };
 };
 

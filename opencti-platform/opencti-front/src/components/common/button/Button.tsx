@@ -1,9 +1,9 @@
 import React from 'react';
 import { Button as MuiButton, ButtonProps as MuiButtonProps } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
-import type { SxProps, Theme } from '@mui/material/styles';
+import { useTheme } from '@mui/styles';
 import type { ButtonColorKey, ButtonIntent, ButtonSize, GradientVariant } from './Button.types';
 import { getColorDefinitions, getGradientColors, getSizeConfig } from './Button.utils';
+import type { Theme } from '../../Theme';
 import {
   createBaseStyles,
   createPrimaryGradientStyles,
@@ -71,7 +71,7 @@ const Button: React.FC<CustomButtonProps> = ({
   sx: externalSx,
   ...props
 }) => {
-  const theme = useTheme();
+  const theme = useTheme<Theme>();
 
   const determineColorKey = (): ButtonColorKey => {
     // color takes over intent
@@ -138,7 +138,7 @@ const Button: React.FC<CustomButtonProps> = ({
     }
   })();
 
-  const combinedSx: SxProps<Theme> = [
+  const combinedSx = [
     baseSx,
     variantSx,
     ...(Array.isArray(externalSx) ? externalSx : [externalSx]),
