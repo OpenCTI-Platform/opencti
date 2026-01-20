@@ -3,7 +3,6 @@ import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
 import StixCoreObjectLabels from '@components/common/stix_core_objects/StixCoreObjectLabels';
 import Tooltip from '@mui/material/Tooltip';
-import { Link } from 'react-router-dom';
 import { useTheme } from '@mui/styles';
 import { DraftChip } from '@components/common/draft/DraftChip';
 import { HorizontalRule, Security } from '@mui/icons-material';
@@ -34,6 +33,9 @@ import FieldOrEmpty from '../FieldOrEmpty';
 import ItemHistory from '../ItemHistory';
 import { useFormatter } from '../i18n';
 import Tag from '../common/tag/Tag';
+import { resolveLink } from '../../utils/Entity';
+import { typesWithNoAnalysesTab } from '../../utils/hooks/useAttributes';
+import { useNavigate } from 'react-router-dom';
 
 const chipStyle: CSSProperties = {
   fontSize: '12px',
@@ -65,13 +67,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     '&:hover': {
       backgroundColor: theme.palette.primary.main,
     },
-  },
-  chipNoLink: {
-    fontSize: 13,
-    lineHeight: '12px',
-    height: 20,
-    textTransform: 'uppercase',
-    borderRadius: 4,
   },
 }));
 
@@ -128,33 +123,39 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Analyses',
     percentWidth: 8,
     isSortable: false,
-    render: ({ id, entity_type, containersNumber }, { n }) => {
-      const classes = useStyles();
-      const link = `/dashboard/observations/${
-        entity_type === 'Artifact' ? 'artifacts' : 'observables'
-      }/${id}`;
+    render: ({ id, entity_type, containersNumber }) => {
+      const { n } = useFormatter();
+      const theme = useTheme<Theme>();
+      const navigate = useNavigate();
+      const analysesNumber = containersNumber?.total;
+      const link = `${resolveLink(entity_type)}/${id}`;
       const linkAnalyses = `${link}/analyses`;
       return (
         <>
-          {[
-            'Note',
-            'Opinion',
-            'Course-Of-Action',
-            'Data-Component',
-            'Data-Source',
-          ].includes(entity_type) ? (
-                <Chip
-                  classes={{ root: classes.chipNoLink }}
-                  label={n(containersNumber.total)}
+          {typesWithNoAnalysesTab.includes(entity_type)
+            ? (
+                <Tag
+                  label={n(analysesNumber)}
+                  disableTooltip
                 />
-              ) : (
-                <Chip
-                  classes={{ root: classes.chip }}
-                  label={n(containersNumber.total)}
-                  component={Link}
-                  to={linkAnalyses}
+              )
+            : (
+                <Tag
+                  sx={{
+                    '&:hover': {
+                      backgroundColor: theme.palette.primary.main,
+                    },
+                  }}
+                  label={n(analysesNumber)}
+                  disableTooltip
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    navigate(linkAnalyses);
+                  }}
                 />
-              )}
+              )
+          }
         </>
       );
     },

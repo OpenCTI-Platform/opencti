@@ -33,7 +33,6 @@ const Tag = ({
   const applyAlpha = color && color !== defaultColor;
 
   const chipStyle: CSSProperties = {
-    backgroundColor: applyAlpha ? alpha(color ?? defaultColor, 0.2) : defaultColor,
     borderRadius: 4,
     height: 25,
     fontSize: 12,
@@ -44,6 +43,7 @@ const Tag = ({
   };
 
   const sxStyles: SxProps<Theme> = {
+    backgroundColor: applyAlpha ? alpha(color ?? defaultColor, 0.2) : defaultColor,
     maxWidth: typeof maxWidth === 'number' ? `${maxWidth}px` : maxWidth,
     '& .MuiChip-label': {
       overflow: 'hidden',
