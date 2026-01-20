@@ -1157,7 +1157,6 @@ const fetchMembersWithOrgaRestriction = async (
         filters: [
           { key: [RELATION_PARTICIPATE_TO], values: [], operator: FilterOperator.Nil },
           { key: ['user_service_account'], values: ['true'] },
-          { key: ['internal_id'], values: Object.keys(INTERNAL_USERS) },
           ...usersWithinUserOrgaFilters,
         ],
         filterGroups: [],
