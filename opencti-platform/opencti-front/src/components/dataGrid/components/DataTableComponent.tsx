@@ -43,6 +43,7 @@ type DataTableComponentProps = Pick<DataTableProps,
   | 'getComputeLink'
   | 'selectOnLineClick'
   | 'onLineClick'
+  | 'onSort'
   | 'data'
   | 'emptyStateMessage'
   | 'disableLineSelection'
@@ -75,6 +76,7 @@ const DataTableComponent = ({
   removeSelectAll,
   selectOnLineClick,
   onLineClick,
+  onSort,
   emptyStateMessage,
   pageSize,
 }: DataTableComponentProps) => {
@@ -256,7 +258,7 @@ const DataTableComponent = ({
         useDataTableColumnsLocalStorage: columnsLocalStorage,
         useDataTablePaginationLocalStorage: paginationLocalStorage,
         onAddFilter: (id) => helpers.handleAddFilterWithEmptyValue(getDefaultFilterObject(id)),
-        onSort: helpers.handleSort,
+        onSort: onSort ?? helpers.handleSort,
         formatter: useDataTableFormatter(),
         variant,
         rootRef,
