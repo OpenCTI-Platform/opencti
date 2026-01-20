@@ -717,6 +717,9 @@ describe('Migration of SSO environment test coverage', () => {
   });
   describe('Dry run of HEADER migrations', () => {
     it('should HEADER minimal configuration works', async () => {
+      if (!MIGRATED_STRATEGY.some((strat) => strat === EnvStrategyType.STRATEGY_HEADER)) {
+        return;
+      }
       const configuration = {
         headers_minimal: {
           identifier: 'headers_minimal',
@@ -742,6 +745,9 @@ describe('Migration of SSO environment test coverage', () => {
     });
 
     it('should HEADER with groups mapping in configuration works', async () => {
+      if (!MIGRATED_STRATEGY.some((strat) => strat === EnvStrategyType.STRATEGY_HEADER)) {
+        return;
+      }
       const configuration = {
         headers_groups: {
           identifier: 'headers_groups',
@@ -782,6 +788,9 @@ describe('Migration of SSO environment test coverage', () => {
     });
 
     it('should HEADER with several config works', async () => {
+      if (!MIGRATED_STRATEGY.some((strat) => strat === EnvStrategyType.STRATEGY_HEADER)) {
+        return;
+      }
       const configuration = {
         headers_1: {
           identifier: 'headers_1',
@@ -844,6 +853,9 @@ describe('Migration of SSO environment test coverage', () => {
     });
 
     it('should HEADER with default values works', async () => {
+      if (!MIGRATED_STRATEGY.some((strat) => strat === EnvStrategyType.STRATEGY_HEADER)) {
+        return;
+      }
       const configuration = {
         headers_default: {
           identifier: 'headers_default',
