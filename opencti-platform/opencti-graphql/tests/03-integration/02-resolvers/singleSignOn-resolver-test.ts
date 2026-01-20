@@ -1,7 +1,15 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
-import { type SingleSignMigrationInput, type SingleSignOnAddInput, type SingleSignOnMigrationResult, StrategyType } from '../../../src/generated/graphql';
+import {
+  type ConfigurationTypeInput,
+  type EditInput,
+  EditOperation,
+  type SingleSignMigrationInput,
+  type SingleSignOnAddInput,
+  type SingleSignOnMigrationResult,
+  StrategyType,
+} from '../../../src/generated/graphql';
 import { USER_PARTICIPATE, USER_SECURITY } from '../../utils/testQuery';
 
 export const SINGLE_SIGN_ON_LIST_QUERY = gql`
@@ -35,10 +43,18 @@ export const SINGLE_SIGN_ON_UPDATE = gql`
             name
             strategy
             enabled
+            configuration {
+                key
+                value
+                type
+            }
           groups_management {
             groups_path
             groups_mapping
           }
+            organizations_management {
+                organizations_mapping
+            }
         }
     }
 `;
@@ -144,6 +160,66 @@ describe('Single Sign On', () => {
       expect(result?.data?.singleSignOnFieldPatch).toBeDefined();
       expect(result?.data?.singleSignOnFieldPatch?.name).toBe('updated name 1');
     });
+
+    it('should edit whole configuration entity', async () => {
+      const editFieldInConfig: EditInput = {
+        key: 'configuration',
+        value: [
+          { key: 'callbackUrl', value: 'http://myopencti/auth/samlTestDomain/callback', type: 'string' },
+          { key: 'idpCert', value: '21341234', type: 'string' },
+          { key: 'issuer', value: 'issuer', type: 'string' },
+          { key: 'newKey', value: 'newKey', type: 'string' },
+        ],
+      };
+
+      const result = await queryAsAdminWithSuccess({
+        query: SINGLE_SIGN_ON_UPDATE,
+        variables: {
+          id: createdSingleSignOn1Id,
+          input: [editFieldInConfig],
+        },
+      });
+
+      expect(result?.data?.singleSignOnFieldPatch).toBeDefined();
+      expect(result?.data?.singleSignOnFieldPatch?.name).toBe('updated name 1');
+      const configurationData: ConfigurationTypeInput[] = result?.data?.singleSignOnFieldPatch?.configuration as ConfigurationTypeInput[];
+      expect(configurationData).toEqual([
+        { key: 'callbackUrl', value: 'http://myopencti/auth/samlTestDomain/callback', type: 'string' },
+        { key: 'idpCert', value: '21341234', type: 'string' },
+        { key: 'issuer', value: 'issuer', type: 'string' },
+        { key: 'newKey', value: 'newKey', type: 'string' },
+      ]);
+    });
+
+    it('should edit one single configuration entity', async () => {
+      const editFieldInConfig: EditInput = {
+        key: 'configuration',
+        object_path: 'configuration',
+        operation: EditOperation.Add,
+        value: [{ key: 'issuer2', value: 'issuer2', type: 'string' }],
+      };
+
+      const result = await queryAsAdminWithSuccess({
+        query: SINGLE_SIGN_ON_UPDATE,
+        variables: {
+          id: createdSingleSignOn1Id,
+          input: [editFieldInConfig],
+        },
+      });
+
+      expect(result?.data?.singleSignOnFieldPatch).toBeDefined();
+      expect(result?.data?.singleSignOnFieldPatch?.name).toBe('updated name 1');
+
+      const configurationData: ConfigurationTypeInput[] = result?.data?.singleSignOnFieldPatch?.configuration as ConfigurationTypeInput[];
+      expect(configurationData).toEqual([
+        { key: 'callbackUrl', value: 'http://myopencti/auth/samlTestDomain/callback', type: 'string' },
+        { key: 'idpCert', value: '21341234', type: 'string' },
+        { key: 'issuer', value: 'issuer', type: 'string' },
+        { key: 'newKey', value: 'newKey', type: 'string' },
+        { key: 'issuer2', value: 'issuer2', type: 'string' },
+      ]);
+    });
+
     it('should edit single sign on entity with group management', async () => {
       const result = await queryAsAdminWithSuccess({
         query: SINGLE_SIGN_ON_UPDATE,
