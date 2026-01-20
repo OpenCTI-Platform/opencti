@@ -3306,14 +3306,16 @@ class OpenCTIStix2:
         """
         processing_count = 0
         worker_logger = self.opencti.logger_class("worker")
-        while processing_count <= MAX_PROCESSING_COUNT:
+        error_msg = "TEST ERROR MSG"
+        while processing_count <= -1:
             try:
                 self.opencti.set_retry_number(processing_count)
                 self.import_item(item, update, types, work_id)
                 return None
             except (RequestException, Timeout):
                 bundles_timeout_error_counter.add(1)
-                worker_logger.warning("A connection error or timeout occurred")
+                error_msg = "A connection error or timeout occurred"
+                worker_logger.warning(error_msg)
                 # Platform is under heavy load: wait for unlock & retry almost indefinitely.
                 sleep_jitter = round(random.uniform(10, 30), 2)
                 time.sleep(sleep_jitter)
@@ -3400,6 +3402,10 @@ class OpenCTIStix2:
                     ),
                 },
             )
+        item["rejection_info"] = {
+            "reject_reason": "MAX_RETRY",
+            "last_error_msg": error_msg,
+        }
         return item
 
     def import_bundle(
@@ -3469,6 +3475,10 @@ class OpenCTIStix2:
                 if 0 < objects_max_refs <= nb_refs:
                     too_large_element_message = "Too large element in bundle"
                     worker_logger.warning(too_large_element_message)
+                    item["rejection_info"] = {
+                        "reject_reason": "ELEMENT_TOO_LARGE",
+                        "objects_max_refs": objects_max_refs,
+                    }
                     self.opencti.work.report_expectation(
                         work_id,
                         {
