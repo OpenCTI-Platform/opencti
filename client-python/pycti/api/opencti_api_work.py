@@ -243,7 +243,10 @@ class OpenCTIApiWork:
         :return: empty string if error, None otherwise
         :rtype: str or None
         """
+        state = self.get_work(work_id=work_id)
         status = ""
+        if len(state) > 0:
+            status = state["status"]
         while status != "complete":
             state = self.get_work(work_id=work_id)
             if len(state) > 0:

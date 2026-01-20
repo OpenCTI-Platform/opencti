@@ -382,11 +382,23 @@ export const ruleApplyAsync = async (context: AuthContext, user: AuthUser, eleme
   const ruleApplyAsyncWork = await createWork(context, SYSTEM_USER, connector, `rule apply async @ ${now()}`, ruleId, args);
   await updateExpectationsNumber(context, user, ruleApplyAsyncWork?.id, 1);
 
-  ruleApply(context, user, elementId, ruleId).catch((err) => {
-    logApp.error('[OPENCTI] Error loading Pyroscope', { cause: err });
-  }).finally(async () => {
+  const timeoutPromise = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error('Timeout')), 1000),
+  );
+  const ruleApplyPromise = ruleApply(context, user, elementId, ruleId);
+  try {
+    await Promise.race([ruleApplyPromise, timeoutPromise]);
+    // If rule apply promise is the first to finish, we move the work to complete here
     await reportExpectation(context, user, ruleApplyAsyncWork?.id);
-  });
+  } catch {
+    // If timeout promise is the first to finish, we do not await the rule apply but instead we return the ongoing work
+    // The work will be moved to complete when the rule apply is finished
+    ruleApplyPromise.finally().catch((err) => {
+      logApp.error('[OPENCTI] Error during rule apply', { cause: err });
+    }).finally(async () => {
+      await reportExpectation(context, user, ruleApplyAsyncWork?.id);
+    });
+  }
 
   return ruleApplyAsyncWork;
 };
