@@ -2,49 +2,10 @@ import { useTheme } from '@mui/styles';
 import type { Theme } from './Theme';
 import Tag from './common/tag/Tag';
 
-const inlineStyles = {
-  whiteDark: {
-    backgroundColor: '#ffffff',
-    color: '#2b2b2b',
-  },
-  whiteLight: {
-    backgroundColor: '#ffffff',
-    color: '#2b2b2b',
-    border: '1px solid #2b2b2b',
-  },
-  blueGrey: {
-    backgroundColor: 'rgba(96, 125, 139, 0.08)',
-    color: '#607d8b',
-    borderColor: '#607d8b',
-    fontStyle: 'italic',
-  },
-  green: {
-    backgroundColor: 'rgba(76, 175, 80, 0.08)',
-    color: '#4caf50',
-  },
-  blue: {
-    backgroundColor: 'rgba(92, 123, 245, 0.08)',
-    color: '#5c7bf5',
-  },
-  red: {
-    backgroundColor: 'rgba(244, 67, 54, 0.08)',
-    color: '#f44336',
-  },
-  orange: {
-    backgroundColor: 'rgba(255, 152, 0, 0.08)',
-    color: '#ff9800',
-  },
-  black: {
-    backgroundColor: '#000000',
-    color: '#ffffff',
-  },
-};
-
 type ItemCvssScoreProps = {
   score?: number | null;
 };
 
-const ItemCvssScore = ({ score }: ItemCvssScoreProps) => {
 const ItemCvssScore = ({ score }: ItemCvssScoreProps) => {
   const theme = useTheme<Theme>();
 
