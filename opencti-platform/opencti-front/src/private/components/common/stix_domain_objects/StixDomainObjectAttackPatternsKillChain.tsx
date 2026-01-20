@@ -305,6 +305,91 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             marginTop: -12,
           }}
         >
+          {currentView === 'matrix' && (
+            <>
+              <Box
+                style={{
+                  float: 'left',
+                  display: 'flex',
+                  paddingInline: 10,
+                  paddingBlock: 10,
+                  gap: 1,
+                }}
+              >
+                <InputLabel
+                  style={{ paddingInlineEnd: 10, marginTop: 1 }}
+                >
+                  {t_i18n('Kill chain :')}
+                </InputLabel>
+                <FormControl>
+                  <Select
+                    size="small"
+                    value={selectedKillChain}
+                    onChange={handleKillChainChange}
+                  >
+                    {killChains.map((killChainName) => (
+                      <MenuItem key={killChainName} value={killChainName}>
+                        {killChainName}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
+              <Box
+                style={{
+                  float: 'left',
+                  display: 'flex',
+                  marginBlockStart: -4,
+                  paddingInline: 10,
+                  marginTop: 2,
+                }}
+              >
+                <Tooltip
+                  title={
+                    isModeOnlyActive
+                      ? t_i18n('Display the whole matrix')
+                      : t_i18n('Display only used techniques')
+                  }
+                >
+                  <span>
+                    <IconButton
+                      color={isModeOnlyActive ? 'secondary' : 'primary'}
+                      onClick={() => setIsModeOnlyActive((value) => !value)}
+                    >
+                      <VisibilityOutlined />
+                    </IconButton>
+                  </span>
+                </Tooltip>
+              </Box>
+
+              {!isSecurityPlatform && (
+                <Box
+                  style={{
+                    float: 'right',
+                    display: 'flex',
+                    paddingInline: 10,
+                  }}
+                >
+                  <FormControl style={{ display: 'flex', paddingInlineEnd: 10, minWidth: 300, maxWidth: 500 }}>
+                    <EntitySelect
+                      multiple
+                      variant="outlined"
+                      size="small"
+                      value={selectedSecurityPlatforms}
+                      label={t_i18n('Compare with my security posture')}
+                      types={['SecurityPlatform']}
+                      onChange={(newSelectedSecurityPlatforms) => {
+                        handleSecurityPlatformsChange(newSelectedSecurityPlatforms as EntityOption[]);
+                      }}
+                    />
+                  </FormControl>
+                </Box>
+              )}
+            </>
+          )}
+
+          <div className="clearfix" />
+
           <div
             style={{
               float: 'left',
@@ -333,100 +418,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
               searchContext={{ entityTypes: ['Attack-Pattern'] }}
             />
           </Box>
-          <Box
-            style={{
-              float: 'left',
-              display: 'flex',
-              margin: '-6px 4px 0 0',
-            }}
-          >
-            <FilterIconButton
-              filters={filters}
-              helpers={helpers}
-              styleNumber={2}
-              redirection
-              searchContext={{ entityTypes: ['Attack-Pattern'] }}
-            />
-          </Box>
-          {currentView === 'matrix' && (
-            <>
-              <Box
-                style={{
-                  float: 'left',
-                  display: 'flex',
-                  paddingInline: 10,
-                  paddingBlock: 10,
-                  gap: 1,
-                }}
-              >
-                <InputLabel style={{ paddingInlineEnd: 10 }}>
-                  {t_i18n('Kill chain :')}
-                </InputLabel>
-                <FormControl>
-                  <Select
-                    size="small"
-                    value={selectedKillChain}
-                    onChange={handleKillChainChange}
-                  >
-                    {killChains.map((killChainName) => (
-                      <MenuItem key={killChainName} value={killChainName}>
-                        {killChainName}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Box>
-              <Box
-                style={{
-                  float: 'left',
-                  display: 'flex',
-                  marginBlockStart: -4,
-                  paddingInline: 10,
-                }}
-              >
-                <Tooltip
-                  title={
-                    isModeOnlyActive
-                      ? t_i18n('Display the whole matrix')
-                      : t_i18n('Display only used techniques')
-                  }
-                >
-                  <span>
-                    <IconButton
-                      color={isModeOnlyActive ? 'secondary' : 'primary'}
-                      onClick={() => setIsModeOnlyActive((value) => !value)}
-                    >
-                      <VisibilityOutlined />
-                    </IconButton>
-                  </span>
-                </Tooltip>
-              </Box>
 
-              {!isSecurityPlatform && (
-                <Box
-                  style={{
-                    float: 'left',
-                    display: 'flex',
-                    paddingInline: 10,
-                  }}
-                >
-                  <FormControl style={{ display: 'flex', paddingInlineEnd: 10, minWidth: 300, maxWidth: 500 }}>
-                    <EntitySelect
-                      multiple
-                      variant="outlined"
-                      size="small"
-                      value={selectedSecurityPlatforms}
-                      label={t_i18n('Compare with my security posture')}
-                      types={['SecurityPlatform']}
-                      onChange={(newSelectedSecurityPlatforms) => {
-                        handleSecurityPlatformsChange(newSelectedSecurityPlatforms as EntityOption[]);
-                      }}
-                    />
-                  </FormControl>
-                </Box>
-              )}
-            </>
-          )}
           {displayButtons
             && (
               <div style={{ float: 'right', margin: 0 }} id="container-view-buttons">
@@ -472,6 +464,22 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
                 </div>
               </div>
             )}
+
+          <div className="clearfix" />
+
+          <Box
+            style={{
+              float: 'left',
+            }}
+          >
+            <FilterIconButton
+              filters={filters}
+              helpers={helpers}
+              styleNumber={2}
+              redirection
+              searchContext={{ entityTypes: ['Attack-Pattern'] }}
+            />
+          </Box>
           <div className="clearfix" />
         </div>
       )}
