@@ -1879,7 +1879,6 @@ const WorkbenchFileContentComponent = ({
                               key={attribute}
                               name={attribute}
                               label={attribute}
-                              fullWidth
                               multiline
                               rows="4"
                               style={{ marginTop: 20 }}
@@ -2354,7 +2353,6 @@ const WorkbenchFileContentComponent = ({
                               key={attribute}
                               name={attribute}
                               label={attribute}
-                              fullWidth={true}
                               multiline={true}
                               rows="4"
                               style={{ marginTop: 20 }}
@@ -2617,7 +2615,6 @@ const WorkbenchFileContentComponent = ({
                               key={attribute}
                               name={attribute}
                               label={attribute}
-                              fullWidth
                               multiline
                               rows="4"
                               style={{ marginTop: 20 }}
@@ -2823,7 +2820,6 @@ const WorkbenchFileContentComponent = ({
                               key={attribute}
                               name={attribute}
                               label={attribute}
-                              fullWidth
                               multiline
                               rows="4"
                               style={{ marginTop: 20 }}

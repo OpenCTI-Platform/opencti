@@ -417,7 +417,6 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
                   name="description"
                   label={t_i18n('Description')}
                   required={(mandatoryAttributes.includes('description'))}
-                  fullWidth={true}
                   multiline={true}
                   rows="4"
                   style={{ marginTop: 20 }}
@@ -609,7 +608,6 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
                   id="job_title"
                   label={t_i18n('Job Title')}
                   required={(mandatoryAttributes.includes('job_title'))}
-                  fullWidth={true}
                   multiline={false}
                   rows="1"
                   style={{ marginTop: 20 }}

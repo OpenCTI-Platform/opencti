@@ -150,7 +150,6 @@ const DecayRuleCreationForm: FunctionComponent<DecayRuleCreationFormProps> = ({
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
-            fullWidth={true}
             multiline={true}
             rows={2}
             style={{ marginTop: 20 }}

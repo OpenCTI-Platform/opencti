@@ -180,7 +180,6 @@ class IdentityCreation extends Component {
                     component={MarkdownField}
                     name="description"
                     label={t('Description')}
-                    fullWidth={true}
                     multiline={true}
                     rows="4"
                     style={{ marginTop: 20 }}

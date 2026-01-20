@@ -200,7 +200,6 @@ const DefaultValueField = ({
         component={MarkdownField}
         name={name}
         label={label}
-        fullWidth={true}
         multiline={true}
         rows="4"
         style={{ marginTop: 20 }}

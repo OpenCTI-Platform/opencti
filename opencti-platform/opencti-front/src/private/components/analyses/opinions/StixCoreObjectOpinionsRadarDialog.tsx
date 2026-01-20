@@ -247,7 +247,6 @@ const StixCoreObjectOpinionsDialogComponent: FunctionComponent<
                       name="explanation"
                       label={t_i18n('Explanation')}
                       required={(mandatoryAttributes.includes('explanation'))}
-                      fullWidth={true}
                       multiline={true}
                       rows="4"
                       style={fieldSpacingContainerStyle}

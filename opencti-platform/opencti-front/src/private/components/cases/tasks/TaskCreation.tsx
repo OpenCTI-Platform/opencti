@@ -193,7 +193,6 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
             name="description"
             label={t_i18n('Description')}
             required={(mandatoryAttributes.includes('description'))}
-            fullWidth
             multiline
             rows="4"
             style={fieldSpacingContainerStyle}

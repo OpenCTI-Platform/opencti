@@ -162,7 +162,6 @@ const CaseTemplateEdition: FunctionComponent<CaseTemplateEditionProps> = ({
               component={MarkdownField}
               name="description"
               label={t_i18n('Description')}
-              fullWidth
               multiline
               rows="4"
               style={fieldSpacingContainerStyle}

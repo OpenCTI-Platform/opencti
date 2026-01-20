@@ -214,7 +214,6 @@ const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryR
                 component={MarkdownField}
                 name="description"
                 label={t_i18n('Description')}
-                fullWidth={true}
                 multiline={true}
                 rows="4"
                 onSubmit={handleSubmitField}

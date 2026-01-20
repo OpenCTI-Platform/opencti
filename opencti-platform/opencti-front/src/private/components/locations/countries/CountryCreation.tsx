@@ -215,7 +215,6 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({
               name="description"
               label={t_i18n('Description')}
               required={(mandatoryAttributes.includes('description'))}
-              fullWidth={true}
               multiline={true}
               rows="4"
               style={fieldSpacingContainerStyle}

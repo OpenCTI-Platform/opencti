@@ -625,7 +625,6 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                         component={MarkdownField}
                         name="platform_login_message"
                         label={t_i18n('Platform login message')}
-                        fullWidth
                         multiline={true}
                         rows="3"
                         onSubmit={handleSubmitField}
@@ -635,7 +634,6 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                         component={MarkdownField}
                         name="platform_consent_message"
                         label={t_i18n('Platform consent message')}
-                        fullWidth
                         style={{ marginTop: 20 }}
                         onSubmit={handleSubmitField}
                         variant="standard"
@@ -644,7 +642,6 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                         component={MarkdownField}
                         name="platform_consent_confirm_text"
                         label={t_i18n('Platform consent confirm text')}
-                        fullWidth
                         style={{ marginTop: 20 }}
                         height={38}
                         onSubmit={handleSubmitField}

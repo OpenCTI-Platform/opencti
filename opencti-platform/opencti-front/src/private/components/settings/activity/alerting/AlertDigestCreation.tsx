@@ -191,7 +191,6 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
         component={MarkdownField}
         name="description"
         label={t_i18n('Description')}
-        fullWidth={true}
         multiline={true}
         rows="4"
         style={{ marginTop: 20 }}

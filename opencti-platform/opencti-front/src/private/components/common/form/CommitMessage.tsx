@@ -117,7 +117,6 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
             component={MarkdownField}
             name="message"
             label={t_i18n('Message')}
-            fullWidth
             multiline
             rows="2"
             style={{ marginTop: 20 }}

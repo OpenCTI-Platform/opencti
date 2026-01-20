@@ -244,7 +244,6 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
             name="content"
             label={t_i18n('Content')}
             required={(mandatoryAttributes.includes('content'))}
-            fullWidth={true}
             multiline={true}
             rows="4"
             style={{ marginTop: 20 }}

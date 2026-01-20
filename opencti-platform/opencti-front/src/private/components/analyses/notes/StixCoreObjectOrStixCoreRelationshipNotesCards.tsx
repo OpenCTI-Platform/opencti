@@ -233,7 +233,6 @@ const NoteForm = ({ defaultMarkings, onToggleWrite, onToggleMore, onSubmit }: No
               name="content"
               label={t_i18n('Content')}
               required={(mandatoryAttributes.includes('content'))}
-              fullWidth={true}
               multiline={true}
               rows="4"
             />

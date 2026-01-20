@@ -98,7 +98,6 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
-            fullWidth={true}
             multiline={true}
             rows={2}
             onSubmit={handleSubmitField}
