@@ -156,15 +156,15 @@ const SAMLConfig = ({ updateField }: Props) => {
         onChange={updateField}
         containerstyle={{ marginLeft: 2 }}
       />
-      <Field
-        component={SwitchField}
-        variant="standard"
-        type="checkbox"
-        name="enableDebugMode"
-        label={t_i18n('Enable debug mode to troubleshoot for this authentication')}
-        onChange={updateField}
-        containerstyle={{ marginLeft: 2 }}
-      />
+      {/* <Field */}
+      {/*  component={SwitchField} */}
+      {/*  variant="standard" */}
+      {/*  type="checkbox" */}
+      {/*  name="enableDebugMode" */}
+      {/*  label={t_i18n('Enable debug mode to troubleshoot for this authentication')} */}
+      {/*  onChange={updateField} */}
+      {/*  containerstyle={{ marginLeft: 2 }} */}
+      {/* /> */}
       <FieldArray name="advancedConfigurations">
         {({ push, remove, form }) => (
           <>

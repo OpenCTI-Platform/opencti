@@ -220,8 +220,8 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
       </Grid>
 
       {rows.map((row) => {
-        const valueExists = row.value == 'true' || (row.key === 'enabled' && row.value);
-        const valueDoesntExists = row.value == 'false' || (row.key === 'enabled' && !row.value);
+        const valueIsTrue = row.value == 'true' || (row.key === 'enabled' && row.value);
+        const valueIsFalse = row.value == 'false' || (row.key === 'enabled' && !row.value);
         return (
           <Grid
             container
@@ -237,9 +237,9 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
             </Grid>
 
             <Grid size={{ xs: 12, md: 6 }}>
-              {valueExists
+              {valueIsTrue
                 ? <CheckCircleOutlined fontSize="small" color="success" />
-                : valueDoesntExists
+                : valueIsFalse
                   ? <CloseOutlined fontSize="small" color="error" />
                   : row.value ? renderValue(row.value) : '-'}
             </Grid>

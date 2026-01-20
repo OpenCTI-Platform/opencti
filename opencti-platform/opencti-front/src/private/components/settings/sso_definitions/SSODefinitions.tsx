@@ -121,7 +121,7 @@ const SSODefinitions = () => {
 
   const dataColumns = {
     strategy: {
-      label: 'Authentication strategy',
+      label: t_i18n('Authentication strategy'),
       percentWidth: 25,
       render: (node: { strategy: string }) => (
         <ItemBoolean
@@ -132,19 +132,19 @@ const SSODefinitions = () => {
       ),
     },
     name: {
-      label: 'Configuration name',
+      label: t_i18n('Configuration name'),
       percentWidth: 25,
       render: (node: { name: string }) => <div>{node.name}</div>,
     },
     enabled: {
-      label: 'Enabled',
+      label: t_i18n('Enabled'),
       percentWidth: 25,
       render: (node: { enabled: boolean }) => (
         node.enabled ? <CheckCircleOutlined fontSize="small" color="success" />
           : <CloseOutlined fontSize="small" color="error" />
       ) },
     label: {
-      label: 'Login Name Button',
+      label: t_i18n('Login Button Name'),
       percentWidth: 25,
       render: (node: { label: string; identifier: string }) => (
         <ItemBoolean
@@ -195,6 +195,7 @@ const SSODefinitions = () => {
           searchContextFinal={{ entityTypes: ['SingleSignOn'] }}
           disableToolBar
           removeSelectAll
+          disableLineSelection
           createButton={<SSODefinitionCreation paginationOptions={queryPaginationOptions} />}
         />
       )}

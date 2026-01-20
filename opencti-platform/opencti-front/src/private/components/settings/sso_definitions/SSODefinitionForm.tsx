@@ -46,7 +46,7 @@ export interface SSODefinitionFormValues {
   signingCert: string;
   ssoBindingType: string;
   forceReauthentication: boolean;
-  enableDebugMode: boolean;
+  // enableDebugMode: boolean;
   entryPoint: string;
   advancedConfigurations: {
     key: string;
@@ -102,7 +102,7 @@ const SSODefinitionForm = ({
     signingCert: '',
     ssoBindingType: '',
     forceReauthentication: false,
-    enableDebugMode: false,
+    // enableDebugMode: false,
     entryPoint: '',
     advancedConfigurations: [],
     group_attributes: [],
@@ -124,7 +124,7 @@ const SSODefinitionForm = ({
   const signingCertField = data?.configuration?.find((e) => e.key === 'signingCert');
   const ssoBindingTypeField = data?.configuration?.find((e) => e.key === 'ssoBindingType');
   const forceReauthenticationField = data?.configuration?.find((e) => e.key === 'forceReauthentication');
-  const enableDebugModeField = data?.configuration?.find((e) => e.key === 'enableDebugMode');
+  // const enableDebugModeField = data?.configuration?.find((e) => e.key === 'enableDebugMode');
   const entryPointField = data?.configuration?.find((e) => e.key === 'entryPoint');
   const advancedConfigurations = getAdvancedConfigFromData((data?.configuration ?? []) as ConfigurationTypeInput[]);
   const groupsAttributes = Array.from(data?.groups_management?.group_attributes ?? []);
@@ -150,7 +150,7 @@ const SSODefinitionForm = ({
     initialValues.ssoBindingType = ssoBindingTypeField?.value ?? '';
     initialValues.entryPoint = entryPointField?.value ?? '';
     initialValues.forceReauthentication = forceReauthenticationField ? forceReauthenticationField?.value === 'true' : false;
-    initialValues.enableDebugMode = enableDebugModeField ? enableDebugModeField?.value === 'true' : false;
+    // initialValues.enableDebugMode = enableDebugModeField ? enableDebugModeField?.value === 'true' : false;
     initialValues.advancedConfigurations = advancedConfigurations ?? [];
     initialValues.group_attributes = groupsAttributes;
     initialValues.groups_mapping = groupsMapping;
@@ -254,7 +254,7 @@ const SSODefinitionForm = ({
                         marginTop: 20,
                       }}
                     >
-                      <Typography variant="h2">{t_i18n('Add a group mapping')}</Typography>
+                      <Typography variant="h2">{t_i18n('Add a new value')}</Typography>
                       <IconButton
                         size="default"
                         color="secondary"
@@ -328,14 +328,14 @@ const SSODefinitionForm = ({
                   </>
                 )}
               </FieldArray>
-              <Field
-                component={SwitchField}
-                variant="standard"
-                type="checkbox"
-                name="read_userinfo"
-                label={t_i18n('Automatically add users to default groups')}
-                containerstyle={{ marginLeft: 2, marginTop: 30 }}
-              />
+              {/* <Field */}
+              {/*  component={SwitchField} */}
+              {/*  variant="standard" */}
+              {/*  type="checkbox" */}
+              {/*  name="read_userinfo" */}
+              {/*  label={t_i18n('Automatically add users to default groups')} */}
+              {/*  containerstyle={{ marginLeft: 2, marginTop: 30 }} */}
+              {/* /> */}
             </>
           )}
           {currentTab === 2 && (
