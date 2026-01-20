@@ -153,7 +153,7 @@ const SAMLConfig = ({ updateField }: Props) => {
         type="checkbox"
         name="forceReauthentication"
         label={t_i18n('Force re-authentication even if user has valid SSO session')}
-        onSubmit={updateField}
+        onChange={updateField}
         containerstyle={{ marginLeft: 2 }}
       />
       <FieldArray name="advancedConfigurations">
