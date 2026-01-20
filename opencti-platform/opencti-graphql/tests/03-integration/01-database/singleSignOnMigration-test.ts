@@ -715,6 +715,248 @@ describe('Migration of SSO environment test coverage', () => {
       });
     });
   });
+  describe('Dry run of HEADER migrations', () => {
+    it('should HEADER minimal configuration works', async () => {
+      if (!MIGRATED_STRATEGY.some((strat) => strat === EnvStrategyType.STRATEGY_HEADER)) {
+        return;
+      }
+      const configuration = {
+        headers_minimal: {
+          identifier: 'headers_minimal',
+          strategy: 'HeaderStrategy',
+          config: {
+            header_email: 'X-MY-USER-EMAIL',
+            header_name: 'X-MY-USER-NAME',
+          },
+        },
+      };
+
+      const result = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
+
+      const minimalHEADERSConfiguration = result[0];
+
+      expect(minimalHEADERSConfiguration.strategy).toBe('HeaderStrategy');
+      expect(minimalHEADERSConfiguration.label).toBe('headers_minimal');
+      expect(minimalHEADERSConfiguration.enabled).toBeTruthy();
+      expect(minimalHEADERSConfiguration.configuration).toStrictEqual([
+        { key: 'header_email', type: 'string', value: 'X-MY-USER-EMAIL' },
+        { key: 'header_name', type: 'string', value: 'X-MY-USER-NAME' },
+      ]);
+    });
+
+    it('should HEADER with groups mapping in configuration works', async () => {
+      if (!MIGRATED_STRATEGY.some((strat) => strat === EnvStrategyType.STRATEGY_HEADER)) {
+        return;
+      }
+      const configuration = {
+        headers_groups: {
+          identifier: 'headers_groups',
+          strategy: 'HeaderStrategy',
+          config: {
+            header_email: 'X-MY-USER-EMAIL',
+            header_name: 'X-MY-USER-NAME',
+            header_firstname: 'X-MY-USER-FIRSTNAME',
+            header_lastname: 'X-MY-USER-LASTNAME',
+            headers_audit: ['X-MY-USER-AUDIT'],
+            groups_management: {
+              groups_mapping: ['default-roles-master:Connectors'],
+              groups_splitter: '/',
+              groups_header: 'header',
+            },
+          },
+        },
+      };
+
+      const result = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
+      const groupManagementHEADERConfiguration = result[0];
+      expect(groupManagementHEADERConfiguration.strategy).toBe('HeaderStrategy');
+      expect(groupManagementHEADERConfiguration.label).toBe('headers_groups');
+      expect(groupManagementHEADERConfiguration.enabled).toBeTruthy();
+      expect(groupManagementHEADERConfiguration.configuration).toStrictEqual([
+        { key: 'header_email', type: 'string', value: 'X-MY-USER-EMAIL' },
+        { key: 'header_name', type: 'string', value: 'X-MY-USER-NAME' },
+        { key: 'header_firstname', type: 'string', value: 'X-MY-USER-FIRSTNAME' },
+        { key: 'header_lastname', type: 'string', value: 'X-MY-USER-LASTNAME' },
+        { key: 'headers_audit', type: 'array', value: '["X-MY-USER-AUDIT"]' },
+      ]);
+
+      expect(groupManagementHEADERConfiguration.groups_management).toStrictEqual({
+        groups_mapping: ['default-roles-master:Connectors'],
+        groups_splitter: '/',
+        groups_header: 'header',
+      });
+    });
+
+    it('should HEADER with several config works', async () => {
+      if (!MIGRATED_STRATEGY.some((strat) => strat === EnvStrategyType.STRATEGY_HEADER)) {
+        return;
+      }
+      const configuration = {
+        headers_1: {
+          identifier: 'headers_1',
+          strategy: 'HeaderStrategy',
+          config: {
+            header_email: 'X-MY-USER-EMAIL1',
+            header_name: 'X-MY-USER-NAME1',
+            header_firstname: 'X-MY-USER-FIRSTNAME1',
+            header_lastname: 'X-MY-USER-LASTNAME1',
+            headers_audit: ['X-MY-USER-AUDIT1'],
+            groups_management: {
+              groups_header: 'X-MY-USER-GROUPS1',
+            },
+            organizations_management: {
+              organizations_header: 'X-MY-USER-ORGANIZATIONS1',
+            },
+          },
+        },
+        headers_2: {
+          identifier: 'headers_2',
+          strategy: 'HeaderStrategy',
+          config: {
+            header_email: 'X-MY-USER-EMAIL2',
+            header_name: 'X-MY-USER-NAME2',
+            header_firstname: 'X-MY-USER-FIRSTNAME2',
+            header_lastname: 'X-MY-USER-LASTNAME2',
+            headers_audit: ['X-MY-USER-AUDIT2'],
+            groups_management: {
+              groups_header: 'X-MY-USER-GROUPS2',
+            },
+            organizations_management: {
+              organizations_header: 'X-MY-USER-ORGANIZATIONS2',
+            },
+          },
+        },
+      };
+
+      const multiOicConfigurations = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
+
+      expect(multiOicConfigurations[0].strategy).toBe('HeaderStrategy');
+      expect(multiOicConfigurations[0].label).toBe('headers_1');
+      expect(multiOicConfigurations[0].enabled).toBeTruthy();
+      expect(multiOicConfigurations[0].configuration).toStrictEqual([
+        { key: 'header_email', type: 'string', value: 'X-MY-USER-EMAIL1' },
+        { key: 'header_name', type: 'string', value: 'X-MY-USER-NAME1' },
+        { key: 'header_firstname', type: 'string', value: 'X-MY-USER-FIRSTNAME1' },
+        { key: 'header_lastname', type: 'string', value: 'X-MY-USER-LASTNAME1' },
+        { key: 'headers_audit', type: 'array', value: '["X-MY-USER-AUDIT1"]' },
+      ]);
+      expect(multiOicConfigurations[1].strategy).toBe('HeaderStrategy');
+      expect(multiOicConfigurations[1].label).toBe('headers_2');
+      expect(multiOicConfigurations[1].enabled).toBeTruthy();
+      expect(multiOicConfigurations[1].configuration).toStrictEqual([
+        { key: 'header_email', type: 'string', value: 'X-MY-USER-EMAIL2' },
+        { key: 'header_name', type: 'string', value: 'X-MY-USER-NAME2' },
+        { key: 'header_firstname', type: 'string', value: 'X-MY-USER-FIRSTNAME2' },
+        { key: 'header_lastname', type: 'string', value: 'X-MY-USER-LASTNAME2' },
+        { key: 'headers_audit', type: 'array', value: '["X-MY-USER-AUDIT2"]' },
+      ]);
+    });
+
+    it('should HEADER with default values works', async () => {
+      if (!MIGRATED_STRATEGY.some((strat) => strat === EnvStrategyType.STRATEGY_HEADER)) {
+        return;
+      }
+      const configuration = {
+        headers_default: {
+          identifier: 'headers_default',
+          strategy: 'HeaderStrategy',
+          config: {
+            header_email: 'X-MY-USER-EMAIL',
+            header_name: 'X-MY-USER-NAME',
+            header_firstname: 'X-MY-USER-FIRSTNAME',
+            header_lastname: 'X-MY-USER-LASTNAME',
+            headers_audit: ['X-MY-USER-AUDIT'],
+            groups_management: {
+            },
+            organizations_management: {
+            },
+          },
+        },
+      };
+
+      const result = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
+      const defaultValuesConfiguration = result[0];
+      expect(defaultValuesConfiguration.strategy).toBe('HeaderStrategy');
+      expect(defaultValuesConfiguration.label).toBe('headers_default');
+      expect(defaultValuesConfiguration.enabled).toBeTruthy();
+      expect(defaultValuesConfiguration.configuration).toStrictEqual([
+        { key: 'header_email', type: 'string', value: 'X-MY-USER-EMAIL' },
+        { key: 'header_name', type: 'string', value: 'X-MY-USER-NAME' },
+        { key: 'header_firstname', type: 'string', value: 'X-MY-USER-FIRSTNAME' },
+        { key: 'header_lastname', type: 'string', value: 'X-MY-USER-LASTNAME' },
+        { key: 'headers_audit', type: 'array', value: '["X-MY-USER-AUDIT"]' },
+      ]);
+
+      expect(defaultValuesConfiguration.groups_management).toStrictEqual({
+        groups_mapping: [],
+        groups_splitter: ',',
+        groups_header: '',
+      });
+      expect(defaultValuesConfiguration.organizations_management).toStrictEqual({
+        organizations_mapping: [],
+        organizations_splitter: ',',
+        organizations_header: '',
+      });
+    });
+  });
+  describe.todo('Dry run of CERT migrations', () => {
+    it('should CERT minimal configuration works', async () => {
+      const configuration = {
+        cert_minimal: {
+          identifier: 'cert_minimal',
+          strategy: 'ClientCertStrategy',
+          config: {
+
+          },
+        },
+      };
+
+      const result = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
+
+      const minimalCERTConfiguration = result[0];
+
+      expect(minimalCERTConfiguration.strategy).toBe('ClientCertStrategy');
+      expect(minimalCERTConfiguration.label).toBe('cert_minimal');
+      expect(minimalCERTConfiguration.enabled).toBeTruthy();
+      expect(minimalCERTConfiguration.configuration).toStrictEqual([
+
+      ]);
+    });
+
+    it('should CERT with several CERT config works', async () => {
+      const configuration = {
+        cert_1: {
+          identifier: 'cert_1',
+          strategy: 'ClientCertStrategy',
+          config: {
+
+          },
+        },
+        cert_2: {
+          identifier: 'cert_2',
+          strategy: 'ClientCertStrategy',
+          config: {
+
+          },
+        },
+      };
+
+      const multiOicConfigurations = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
+
+      expect(multiOicConfigurations[0].strategy).toBe('ClientCertStrategy');
+      expect(multiOicConfigurations[0].label).toBe('cert_1');
+      expect(multiOicConfigurations[0].enabled).toBeTruthy();
+      expect(multiOicConfigurations[0].configuration).toStrictEqual([
+
+      ]);
+      expect(multiOicConfigurations[1].strategy).toBe('ClientCertStrategy');
+      expect(multiOicConfigurations[1].label).toBe('cert_2');
+      expect(multiOicConfigurations[1].enabled).toBeTruthy();
+      expect(multiOicConfigurations[1].configuration).toStrictEqual([
+
+      ]);
+    });
+  });
   describe('Actual run of migrations', () => {
     it('should SAML configuration works', async () => {
       const configuration = {
