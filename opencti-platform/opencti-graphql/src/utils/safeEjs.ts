@@ -1,6 +1,6 @@
 import { parser as jsParser } from '@lezer/javascript';
 import type { Data, Options } from 'ejs';
-import { render } from 'ejs';
+import ejs from 'ejs';
 import NotificationTool from './NotificationTool';
 
 export abstract class VerifierError extends Error {
@@ -400,5 +400,5 @@ export const safeRender = (template: string, data: Data, options: SafeRenderOpti
   const code = extractEJSCode(template, `${openDelimiter}${delimiter}`, `${delimiter}${closeDelimiter}`);
   const safeTemplate = transformTemplate(template, code, Object.keys(data ?? {}));
   const safeContext = createSafeContext(async, options);
-  return render(safeTemplate, { ...(data ?? {}), ...safeContext }, options);
+  return ejs.render(safeTemplate, { ...(data ?? {}), ...safeContext }, options);
 };
