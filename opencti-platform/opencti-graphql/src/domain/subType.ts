@@ -8,6 +8,7 @@ import { schemaTypesDefinition } from '../schema/schema-types';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { ABSTRACT_STIX_NESTED_REF_RELATIONSHIP } from '../schema/stixRefRelationship';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../schema/stixCyberObservable';
+import { isFeatureEnabled } from '../config/conf';
 import { telemetry } from '../config/tracing';
 import type { AuthContext, AuthUser } from '../types/user';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
@@ -28,8 +29,11 @@ export const queryDefaultSubTypesPaginated = async (context: AuthContext, user: 
       ABSTRACT_STIX_CYBER_OBSERVABLE,
       ENTITY_TYPE_EXTERNAL_REFERENCE,
       ENTITY_HASHED_OBSERVABLE_ARTIFACT,
-      ENTITY_TYPE_DRAFT_WORKSPACE,
     ];
+
+    if (isFeatureEnabled('DRAFT_WORKFLOW')) {
+      customTypes.push(ENTITY_TYPE_DRAFT_WORKSPACE);
+    }
 
     const allTypes = [...domainObjectTypes, ...customTypes].map((id) => ({ node: { id, label: id } }));
 
