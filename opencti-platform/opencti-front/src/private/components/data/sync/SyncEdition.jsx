@@ -71,20 +71,6 @@ export const syncEditionUserHandlingPatch = graphql`
   }
 `;
 
-export const syncEditionUserHandlingPatch = graphql`
-  mutation SyncEditionUserHandlingMutation($id: ID!, $input: SynchronizerAddAutoUserInput!) {
-      synchronizerAddAutoUser(id: $id, input: $input) {
-        id
-        name
-        user {
-            id
-            entity_type
-            name
-        }
-    }
-  }
-`;
-
 const syncValidation = (t) => Yup.object().shape({
   name: Yup.string().trim().required(t('This field is required')),
   uri: Yup.string().trim().required(t('This field is required')),
