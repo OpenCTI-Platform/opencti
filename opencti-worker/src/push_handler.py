@@ -64,7 +64,6 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                         content_encoding="utf-8",  # make message persistent
                     ),
                 )
-                self.logger.debug("Bundle has been sent")
                 return
             except (UnroutableError, NackError):
                 self.logger.error("Unable to send bundle, retry...")

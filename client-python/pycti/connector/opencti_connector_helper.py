@@ -2355,9 +2355,11 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 )
                 self.connector_logger.debug("Bundle has been sent")
                 self.metric.inc("bundle_send")
+                self.connector_info.buffering = False
                 return
             except (UnroutableError, NackError):
                 self.connector_logger.error("Unable to send bundle, retry...")
+                self.connector_info.buffering = True
                 self.metric.inc("error_count")
                 time.sleep(10)
 
