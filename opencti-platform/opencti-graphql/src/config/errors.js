@@ -142,6 +142,7 @@ export const TECHNICAL_ERRORS = [
 
 // region CATEGORY_FUNCTIONAL
 export const FUNCTIONAL_ERROR = 'FUNCTIONAL_ERROR';
+export const INSUFFICIENT_CONFIDENCE_LEVEL = 'INSUFFICIENT_CONFIDENCE_LEVEL';
 export const FunctionalError = (reason, data) => error('FUNCTIONAL_ERROR', reason || 'Business validation', {
   http_status: 400,
   genre: CATEGORY_BUSINESS,

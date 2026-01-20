@@ -642,7 +642,6 @@ export const getAuthUser = async (id: string) => {
     origin: { referer: 'test', user_id: user.internal_id },
   } as AuthUser;
 };
-
 // endregion
 
 // Search for test organizations
@@ -665,7 +664,6 @@ export const getOrganizationIdByName = async (name: string) => {
   }
   return data.organizations.edges[0].node.id;
 };
-
 // endregion
 
 // Search for test group
@@ -696,6 +694,7 @@ export const buildStandardUser = (
   allowedMarkings: markingType[],
   allMarkings?: markingType[],
   capabilities?: { name: string }[],
+  maxConfidence?: number,
 ): AuthUser => {
   return {
     administrated_organizations: [],
@@ -717,11 +716,11 @@ export const buildStandardUser = (
     account_status: ACCOUNT_STATUS_ACTIVE,
     account_lock_after_date: undefined,
     effective_confidence_level: {
-      max_confidence: 100,
+      max_confidence: maxConfidence ?? 100,
       overrides: [],
     },
     user_confidence_level: {
-      max_confidence: 100,
+      max_confidence: maxConfidence ?? 100,
       overrides: [],
     },
     restrict_delete: false,

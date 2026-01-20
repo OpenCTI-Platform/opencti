@@ -13,6 +13,7 @@ import {
   DatabaseError,
   ForbiddenAccess,
   FunctionalError,
+  INSUFFICIENT_CONFIDENCE_LEVEL,
   LockTimeoutError,
   MissingReferenceError,
   TYPE_LOCK_ERROR,
@@ -2582,7 +2583,6 @@ export const updateAttributeFromLoadedWithRefs = async (context, user, initial, 
   const newInputs = adaptUpdateInputsConfidence(user, inputs, initial);
   // endregion
   const revolvedInputs = await resolveRefsForInputs(context, user, initial.entity_type, newInputs);
-
   return updateAttributeMetaResolved(context, user, initial, revolvedInputs, opts);
 };
 
@@ -2952,6 +2952,8 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
   const { from, to } = resolvedInput;
 
   // when creating stix ref, we must check confidence on from side (this count has modifying this element itself)
+  // Through UI we use direct relationship creation ref to add label, external ref ...
+  // That's also true for some connectors that directly used the API. It's a bad practice but still a reality
   if (isStixRefRelationship(relationshipType) && shouldCheckConfidenceOnRefRelationship(relationshipType)) {
     controlUserConfidenceAgainstElement(user, from);
   }
@@ -3163,7 +3165,6 @@ export const createRelations = async (context, user, inputs, opts = {}) => {
 // endregion
 
 // region mutation entity
-
 export const getExistingEntities = async (context, user, input, type) => {
   const participantIds = getInputIds(type, input);
   const existingByIdsPromise = internalFindByIds(context, SYSTEM_USER, participantIds, { type });
@@ -3177,7 +3178,23 @@ export const getExistingEntities = async (context, user, input, type) => {
   return existingEntities;
 };
 
-const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
+const cleanEntityForIdsCollision = (input, type, target, foundEntities) => {
+  // We can upsert element except the aliases that are part of other entities
+  const key = resolveAliasesField(type).name;
+  const concurrentAliases = R.flatten(R.map((c) => [c[key], c.name], foundEntities));
+  const normedAliases = R.uniq(concurrentAliases.map((c) => normalizeName(c)));
+  const filteredAliases = R.filter((i) => !normedAliases.includes(normalizeName(i)), input[key] || []);
+  // We need also to filter eventual STIX IDs present in other entities
+  const concurrentStixIds = R.flatten(R.map((c) => [c.x_opencti_stix_ids, c.standard_id], foundEntities));
+  const normedStixIds = R.uniq(concurrentStixIds);
+  const filteredStixIds = R.filter(
+    (i) => isNotEmptyField(i) && !normedStixIds.includes(i) && i !== target.standard_id,
+    [...(input.x_opencti_stix_ids ?? []), input.stix_id],
+  );
+  return { ...input, [key]: filteredAliases, x_opencti_stix_ids: filteredStixIds };
+};
+
+const internalCreateEntityRaw = async (context, user, rawInput, type, opts = {}) => {
   // region confidence control
   const input = { ...rawInput };
   const { confidenceLevelToApply } = controlCreateInputWithUserConfidence(user, input, type);
@@ -3314,21 +3331,9 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
           }
         }
         // In this mode we can safely consider this entity like the existing one.
-        const concurrentEntities = R.filter((e) => e.standard_id !== standardId, filteredEntities);
-        // We can upsert element except the aliases that are part of other entities
-        const key = resolveAliasesField(type).name;
-        const concurrentAliases = R.flatten(R.map((c) => [c[key], c.name], concurrentEntities));
-        const normedAliases = R.uniq(concurrentAliases.map((c) => normalizeName(c)));
-        const filteredAliases = R.filter((i) => !normedAliases.includes(normalizeName(i)), resolvedInput[key] || []);
-        // We need also to filter eventual STIX IDs present in other entities
-        const concurrentStixIds = R.flatten(R.map((c) => [c.x_opencti_stix_ids, c.standard_id], concurrentEntities));
-        const normedStixIds = R.uniq(concurrentStixIds);
-        const filteredStixIds = R.filter(
-          (i) => isNotEmptyField(i) && !normedStixIds.includes(i) && i !== existingByStandard.standard_id,
-          [...(resolvedInput.x_opencti_stix_ids ?? []), resolvedInput.stix_id],
-        );
-        const finalEntity = { ...resolvedInput, [key]: filteredAliases, x_opencti_stix_ids: filteredStixIds };
-        return upsertElement(context, user, existingByStandard, type, finalEntity, { ...opts, locks: participantIds });
+        const otherEntities = R.filter((e) => e.standard_id !== standardId, filteredEntities);
+        const cleanInputPatch = cleanEntityForIdsCollision(resolvedInput, type, existingByStandard, otherEntities);
+        return upsertElement(context, user, existingByStandard, type, cleanInputPatch, { ...opts, locks: participantIds });
       }
       if (resolvedInput.update === true) {
         // The new one is new reference, merge all found entities
@@ -3339,14 +3344,14 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
         await mergeEntities(context, user, target.internal_id, sources.map((s) => s.internal_id), { locks: participantIds });
         return upsertElement(context, user, target, type, resolvedInput, { ...opts, locks: participantIds });
       }
-      if (resolvedInput.stix_id && !existingEntities.map((n) => getInstanceIds(n)).flat().includes(resolvedInput.stix_id)) {
-        // Upsert others
-        const target = R.head(filteredEntities);
-        const resolvedStixIds = { ...target, x_opencti_stix_ids: [...target.x_opencti_stix_ids, resolvedInput.stix_id] };
-        return upsertElement(context, user, target, type, resolvedStixIds, { ...opts, locks: participantIds });
-      }
-      // Return the matching STIX IDs in others
-      return { element: R.head(filteredEntities.filter((n) => getInstanceIds(n).includes(resolvedInput.stix_id))), event: null, isCreation: false };
+      // We can't merge, so we need a least to upsert one element.
+      // First, looking for an instance that directly has the provided stix id
+      // If we found an entity by the official stix_id, no need to cumulate the id, only upsert information.
+      const targetByStixId = R.head(filteredEntities.filter((n) => getInstanceIds(n).includes(resolvedInput.stix_id)));
+      // If not found by stix id, we select the first one, cumulate the stix id for upsert
+      const selectedTarget = targetByStixId ?? R.head(filteredEntities.filter((n) => !getInstanceIds(n).includes(resolvedInput.stix_id)));
+      const cleanInputPatch = cleanEntityForIdsCollision(resolvedInput, type, selectedTarget, filteredEntities);
+      return upsertElement(context, user, selectedTarget, type, cleanInputPatch, { ...opts, locks: participantIds });
     }
     // Create the object
     const dataEntity = await buildEntityData(context, user, resolvedInput, type, opts);
@@ -3418,6 +3423,24 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
   }
 };
 
+const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
+  try {
+    // Await is mandatory here to correctly catch the promise exception.
+    return await internalCreateEntityRaw(context, user, rawInput, type, opts);
+  } catch (e) {
+    // In case of insufficient confidence level, don't reject continue to upsert
+    // as upsert have a complex strategy about confidence that doesn't reject everything
+    if (e?.extensions?.data?.doc_code === INSUFFICIENT_CONFIDENCE_LEVEL) {
+      logApp.warn('Merging stopped because of user confidence level, applying upsert', { cause: e });
+      // Try to execute the method forcing update to false, prevent auto merging.
+      return await internalCreateEntityRaw(context, user, { ...rawInput, update: false }, type, opts);
+    }
+    // For other errors, propagate the error.
+    // noinspection ExceptionCaughtLocallyJS
+    throw e;
+  }
+};
+
 export const createEntity = async (context, user, input, type, opts = {}) => {
   const isCompleteResult = opts.complete === true;
   // volumes of objects relationships must be controlled
@@ -3448,7 +3471,6 @@ export const createInferredEntity = async (context, input, ruleContent, type) =>
 // endregion
 
 // region mutation deletion
-
 const draftInternalDeleteElement = async (context, user, draftElement) => {
   let lock;
   const participantIds = [draftElement.internal_id];
