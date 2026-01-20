@@ -358,10 +358,10 @@ const processAndStoreInput = (
     delete input.__froms;
     delete input.__tos;
   } else {
-    if (results.has(representation.id)) {
-      const current = results.get(representation.id);
-      if (!current?.has(input.__identifier)) {
-        current?.set(input.__identifier, input);
+    const current = results.get(representation.id);
+    if (current) {
+      if (!current.has(input.__identifier)) {
+        current.set(input.__identifier, input);
       }
     } else {
       results.set(representation.id, new Map([[input.__identifier, input]]));
