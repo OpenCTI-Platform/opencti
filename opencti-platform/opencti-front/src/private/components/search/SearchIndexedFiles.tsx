@@ -183,12 +183,14 @@ const SearchIndexedFilesComponent = () => {
           >
             <AlertTitle style={{ marginBottom: 0 }}>
               {t_i18n('File indexing is not started.')}
-              <Security needs={[SETTINGS_FILEINDEXING]} placeholder={<span>&nbsp;{t_i18n('Please contact your administrator.')}</span>}>
+              <Security
+                needs={[SETTINGS_FILEINDEXING]}
+                placeholder={<span>&nbsp;{t_i18n('Please contact your administrator.')}</span>}
+              >
                 <Button
                   component={Link}
                   size="small"
                   to="/dashboard/settings/file_indexing"
-                  color="warning"
                   variant="secondary"
                   style={{ marginLeft: 20 }}
                 >

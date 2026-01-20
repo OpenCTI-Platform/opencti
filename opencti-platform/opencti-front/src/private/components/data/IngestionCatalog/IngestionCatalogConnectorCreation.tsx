@@ -260,7 +260,6 @@ const IngestionCatalogConnectorCreation = ({
               size="small"
               to={buildConnectorsUrl()}
               startIcon={<HubOutlined />}
-              color="warning"
               disabled={deploymentCount === 0}
             >
               {`${deploymentCount} ${t_i18n('instances deployed')}`}

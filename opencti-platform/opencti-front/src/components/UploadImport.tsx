@@ -11,7 +11,6 @@ import useDraftContext from '../utils/hooks/useDraftContext';
 import { useFormatter } from './i18n';
 
 interface UploadImportProps {
-  color?: 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning';
   size?: 'small' | 'default';
   fontSize?: 'small' | 'medium' | 'large';
   variant?: 'text' | 'contained' | 'outlined' | 'icon';
@@ -21,7 +20,6 @@ interface UploadImportProps {
 }
 
 const UploadImport = ({
-  color = 'primary',
   size = 'default',
   variant = 'icon',
   fontSize = 'medium',
@@ -53,7 +51,6 @@ const UploadImport = ({
       {variant === 'icon' ? (
         <Tooltip title={title} aria-label={title}>
           <IconButton
-            color={color}
             size={size}
             aria-haspopup="true"
             onClick={() => setOpenImportFilesDialog(true)}
@@ -64,7 +61,6 @@ const UploadImport = ({
       ) : (
         <Button
           onClick={() => setOpenImportFilesDialog(true)}
-          color={color}
           size={size}
           aria-label={title}
           title={title}

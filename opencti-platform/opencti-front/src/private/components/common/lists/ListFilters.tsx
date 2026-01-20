@@ -44,7 +44,7 @@ type ParametersType = {
   icon: ReactNode;
   tooltip: string;
   placeholder: string;
-  color: 'primary' | 'success' | 'warning';
+  color: 'primary';
 };
 
 type OptionType = {
@@ -82,13 +82,13 @@ const ListFilters = ({
         icon: <RayStartArrow fontSize="medium" />,
         tooltip: t_i18n('Dynamic source filters'),
         placeholder: t_i18n('Dynamic source filters'),
-        color: 'warning',
+        color: 'primary',
       };
       case 'to': return {
         icon: <RayEndArrow fontSize="medium" />,
         tooltip: t_i18n('Dynamic target filters'),
         placeholder: t_i18n('Dynamic target filters'),
-        color: 'success',
+        color: 'primary',
       };
       default: return {
         icon: <FilterListOutlined fontSize="medium" />,

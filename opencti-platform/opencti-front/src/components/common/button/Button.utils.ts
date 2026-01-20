@@ -15,7 +15,7 @@ export const getColorDefinitions = (theme: Theme): Record<ButtonColorKey, ColorD
       main: theme.palette.error.main ?? '',
       hover: theme.palette.error.dark ?? '',
       focus: theme.palette.text.primary ?? '',
-      text: theme.palette.error.main ?? '',
+      text: theme.palette.text.primary ?? '',
       border: theme.palette.error.main ?? '',
     },
     ai: {
