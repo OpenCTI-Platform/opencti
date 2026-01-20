@@ -45,7 +45,6 @@ const Tag = ({
   const bgColor = getBackgroundColor();
 
   const chipStyle: CSSProperties = {
-    backgroundColor: applyAlpha ? alpha(color ?? defaultColor, 0.2) : defaultColor,
     borderRadius: 4,
     fontSize: 12,
     fontWeight: 400,
