@@ -219,33 +219,37 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
         </Grid>
       </Grid>
 
-      {rows.map((row) => (
-        <Grid
-          container
-          key={row.key}
-          sx={{
-            py: 1,
-            borderTop: '1px solid',
-            borderColor: 'divider',
-          }}
-        >
-          <Grid size={{ xs: 12, md: 3 }}>
-            <Typography variant="body1">{row.key}</Typography>
-          </Grid>
+      {rows.map((row) => {
+        const valueExists = row.value == 'true' || (row.key === 'enabled' && row.value);
+        const valueDoesntExists = row.value == 'false' || (row.key === 'enabled' && !row.value);
+        return (
+          <Grid
+            container
+            key={row.key}
+            sx={{
+              py: 1,
+              borderTop: '1px solid',
+              borderColor: 'divider',
+            }}
+          >
+            <Grid size={{ xs: 12, md: 3 }}>
+              <Typography variant="body1">{row.key}</Typography>
+            </Grid>
 
-          <Grid size={{ xs: 12, md: 6 }}>
-            {row.value == 'true' || (row.key === 'enabled' && row.value)
-              ? <CheckCircleOutlined fontSize="small" color="success" />
-              : row.value == 'false' || (row.key === 'enabled' && row.value == 'false')
-                ? <CloseOutlined fontSize="small" color="error" />
-                : row.value ? renderValue(row.value) : '-'}
-          </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              {valueExists
+                ? <CheckCircleOutlined fontSize="small" color="success" />
+                : valueDoesntExists
+                  ? <CloseOutlined fontSize="small" color="error" />
+                  : row.value ? renderValue(row.value) : '-'}
+            </Grid>
 
-          <Grid size={{ xs: 12, md: 3 }}>
-            {renderMandatory(row.mandatory)}
+            <Grid size={{ xs: 12, md: 3 }}>
+              {renderMandatory(row.mandatory)}
+            </Grid>
           </Grid>
-        </Grid>
-      ))}
+        );
+      })}
     </Box>
   );
 
