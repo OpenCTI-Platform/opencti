@@ -1163,6 +1163,7 @@ describe('Upsert and merge entities', () => {
       stix_id: 'threat-actor--d1e2ff9a-60e2-43a2-9896-986b6fcd9f03',
       name: 'THREAT_UPDATE_UPSERT_03',
       description: 'THREAT_UPDATE_UPSERT_03',
+      x_opencti_stix_ids: ['threat-actor--d1e2ff9a-60e2-43a2-9896-986b6fcd9f02'],
       aliases: ['upsert_update_alias01', 'upsert_update_alias02'],
       objectLabel: ['malware', 'identity'], // will be added by upsert
       update: true,
@@ -1172,6 +1173,9 @@ describe('Upsert and merge entities', () => {
     expect(threat03.id).toEqual(threat01.id);
     expect(threat03.name).toEqual(threat01.name);
     expect(threat03.description).toEqual(threat01.description);
+    expect(threat03.x_opencti_stix_ids.length).toEqual(2);
+    expect(threat03.x_opencti_stix_ids.sort()).toEqual(['threat-actor--d1e2ff9a-60e2-43a2-9896-986b6fcd9f01',
+      'threat-actor--d1e2ff9a-60e2-43a2-9896-986b6fcd9f03']);
     expect(threat03.creator_id.length).toEqual(2);
     expect(threat03.creator_id.sort()).toEqual([lowConfidenceUser.id, ADMIN_USER.id]);
     expect(threat03.objectLabel.length).toEqual(2);
