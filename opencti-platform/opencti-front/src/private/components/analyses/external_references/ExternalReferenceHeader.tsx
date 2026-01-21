@@ -75,19 +75,19 @@ const ExternalReferenceHeaderComponent = ({
               />
             )
           }
-          {canDelete && (
-            <PopoverMenu>
-              {({ closeMenu }) => (
-                <Box>
-                  {displayEnrollPlaybook && (
-                    <StixCoreObjectMenuItemUnderEE
-                      title={t_i18n('Enroll in playbook')}
-                      setOpen={setOpenEnrollPlaybook}
-                      handleCloseMenu={closeMenu}
-                      needs={[AUTOMATION]}
-                      matchAll
-                    />
-                  )}
+          <PopoverMenu>
+            {({ closeMenu }) => (
+              <Box>
+                {displayEnrollPlaybook && (
+                  <StixCoreObjectMenuItemUnderEE
+                    title={t_i18n('Enroll in playbook')}
+                    setOpen={setOpenEnrollPlaybook}
+                    handleCloseMenu={closeMenu}
+                    needs={[AUTOMATION]}
+                    matchAll
+                  />
+                )}
+                {canDelete && (
                   <MenuItem onClick={() => {
                     handleOpenDelete();
                     closeMenu();
@@ -95,10 +95,10 @@ const ExternalReferenceHeaderComponent = ({
                   >
                     {t_i18n('Delete')}
                   </MenuItem>
-                </Box>
-              )}
-            </PopoverMenu>
-          )}
+                )}
+              </Box>
+            )}
+          </PopoverMenu>
           {EditComponent}
           <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
             <ExternalReferenceDeletion id={externalReference.id} isOpen={openDelete} handleClose={handleCloseDelete} />

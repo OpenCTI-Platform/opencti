@@ -41,7 +41,6 @@ const StixSightingRelationshipHeader = ({
     setOpenEnrollPlaybook(false);
   };
   const displayEnrollPlaybook = enableEnrollPlaybook;
-  console.log('stixSightingId', stixSightingId);
 
   return (
     <div style={{
@@ -74,19 +73,19 @@ const StixSightingRelationshipHeader = ({
             />
           )
         }
-        {canDelete && (
-          <PopoverMenu>
-            {({ closeMenu }) => (
-              <Box>
-                {displayEnrollPlaybook && (
-                  <StixCoreObjectMenuItemUnderEE
-                    title={t_i18n('Enroll in playbook')}
-                    setOpen={setOpenEnrollPlaybook}
-                    handleCloseMenu={closeMenu}
-                    needs={[AUTOMATION]}
-                    matchAll
-                  />
-                )}
+        <PopoverMenu>
+          {({ closeMenu }) => (
+            <Box>
+              {displayEnrollPlaybook && (
+                <StixCoreObjectMenuItemUnderEE
+                  title={t_i18n('Enroll in playbook')}
+                  setOpen={setOpenEnrollPlaybook}
+                  handleCloseMenu={closeMenu}
+                  needs={[AUTOMATION]}
+                  matchAll
+                />
+              )}
+              {canDelete && (
                 <MenuItem onClick={() => {
                   onOpenDelete();
                   closeMenu();
@@ -94,10 +93,10 @@ const StixSightingRelationshipHeader = ({
                 >
                   {t_i18n('Delete')}
                 </MenuItem>
-              </Box>
-            )}
-          </PopoverMenu>
-        )}
+              )}
+            </Box>
+          )}
+        </PopoverMenu>
         {canEdit && (
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <Button
