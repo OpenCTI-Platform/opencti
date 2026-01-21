@@ -393,7 +393,7 @@ export const ruleApplyAsync = async (context: AuthContext, user: AuthUser, eleme
   } catch {
     // If timeout promise is the first to finish, we do not await the rule apply but instead we return the ongoing work
     // The work will be moved to complete when the rule apply is finished
-    ruleApplyPromise.finally().catch((err) => {
+    ruleApplyPromise.catch((err) => {
       logApp.error('[OPENCTI] Error during rule apply', { cause: err });
     }).finally(async () => {
       await reportExpectation(context, user, ruleApplyAsyncWork?.id);
