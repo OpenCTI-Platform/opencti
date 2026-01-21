@@ -1,7 +1,6 @@
 import React, { ChangeEvent, FunctionComponent, useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import Grid from '@mui/material/Grid';
-import Tooltip from '@mui/material/Tooltip';
 import XtmHubSettings from '@components/settings/xtm-hub/XtmHubSettings';
 import SupportPackages from '@components/settings/support/SupportPackages';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
@@ -274,14 +273,13 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                   <ListItem divider={true}>
                     <ListItemText
                       primary={(
-                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                          <span style={{ flex: '0 0 auto', marginRight: '8px' }}>{t_i18n('Agentic AI (Ariane Assistant)')}</span>
-                          <Tooltip title={t_i18n('This feature is in preview and will improve over time with user\'s feedback.')}>
-                            <Tag
-                              label={t_i18n('Preview')}
-                            />
-                          </Tooltip>
-                        </div>
+                        <Stack direction="row" alignItems="center" gap={1}>
+                          <span>{t_i18n('Agentic AI (Ariane Assistant)')}</span>
+                          <Tag
+                            label={t_i18n('Preview')}
+                            tooltipTitle={t_i18n('This feature is in preview and will improve over time with user\'s feedback.')}
+                          />
+                        </Stack>
                       )}
                     />
                     {filigran_chatbot_ai_cgu_status === CGUStatus.pending ? (

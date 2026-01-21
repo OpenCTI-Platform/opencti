@@ -42,9 +42,6 @@ const useStyles = makeStyles(() => ({
     borderRadius: 4,
     height: 10,
   },
-  filter: {
-    margin: '5px 10px 5px 0',
-  },
 }));
 
 const Transition = React.forwardRef((props, ref) => (
@@ -284,94 +281,100 @@ const TasksList = ({ data, options }) => {
                       </Grid>
                     )}
                     <Grid item xs={12}>
-                      <Typography variant="h3" gutterBottom={true}>
-                        {t_i18n('Targeted entities')} ({n(task.task_expected_number)})
-                      </Typography>
-                      {task.task_search && (
-                        <span>
-                          <Tag
-                            label={(
-                              <div>
-                                <strong>{t_i18n('Search')}</strong>:{' '}
-                                {task.task_search}
-                              </div>
-                            )}
-                          />
-                          <Tag
-                            label={t_i18n('AND')}
-                          />
-                        </span>
-                      )}
-                      {task.type !== 'RULE'
-                        && (isFilterGroupNotEmpty(filters)
-                          ? (
-                              <TasksFilterValueContainer
-                                filters={filters}
-                                entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Notification', 'User']}
-                              />
-                            )
-                          : (
-                              <Tag
-                                classes={{ root: classes.filter }}
-                                label={(
-                                  <div>
-                                    <strong>{t_i18n('List of entities')}</strong>:{' '}
-                                    {listIds}
-                                  </div>
-                                )}
-                              />
-                            )
-                        )
-                      }
-                      {task.type === 'RULE' && (
-                        <Tag
-                          label={<div>{t_i18n('All rule targets')}</div>}
-                        />
-                      )}
-                    </Grid>
-                    <Grid item xs={12}>
-                      <Typography variant="h3" gutterBottom={true}>
-                        {t_i18n('Actions')}
-                      </Typography>
-                      {task.type === 'RULE' && (
-                        <Tag
-                          label={<div>{t_i18n('APPLY RULE')}</div>}
-                        />
-                      )}
-                      {task.actions
-                        && R.map(
-                          (action) => (
-                            <div key={task.actions.indexOf(action)}>
-                              <Tag
-                                label={action.type}
-                              />
-                              {action.context && (
+                      <Stack gap={1}>
+                        <Typography variant="h3" gutterBottom={true}>
+                          {t_i18n('Targeted entities')} ({n(task.task_expected_number)})
+                        </Typography>
+                        {task.task_search && (
+                          <Stack direction="row" gap={1}>
+                            <Tag
+                              label={(
+                                <div>
+                                  <strong>{t_i18n('Search')}</strong>:{' '}
+                                  {task.task_search}
+                                </div>
+                              )}
+                            />
+                            <Tag
+                              label={t_i18n('AND')}
+                            />
+                          </Stack>
+                        )}
+                        {task.type !== 'RULE'
+                          && (isFilterGroupNotEmpty(filters)
+                            ? (
+                                <TasksFilterValueContainer
+                                  filters={filters}
+                                  entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Notification', 'User']}
+                                />
+                              )
+                            : (
                                 <Tag
                                   label={(
                                     <div>
-                                      {action.context.field && (
-                                        <span>
-                                          <strong>
-                                            {t_i18n(action.context.field)}
-                                          </strong>
-                                          :{' '}
-                                        </span>
-                                      )}
-                                      {truncate(
-                                        R.join(
-                                          ', ',
-                                          action.context.values || [],
-                                        ),
-                                        80,
-                                      )}
+                                      <strong>{t_i18n('List of entities')}</strong>:{' '}
+                                      {listIds}
                                     </div>
                                   )}
+                                  sx={{
+                                    width: 'fit-content',
+                                  }}
                                 />
-                              )}
-                            </div>
-                          ),
-                          task.actions,
+                              )
+                          )
+                        }
+                        {task.type === 'RULE' && (
+                          <Tag
+                            label={<div>{t_i18n('All rule targets')}</div>}
+                          />
                         )}
+                      </Stack>
+                    </Grid>
+                    <Grid item xs={12}>
+                      <Stack gap={1}>
+                        <Typography variant="h3" gutterBottom={true}>
+                          {t_i18n('Actions')}
+                        </Typography>
+                        {task.type === 'RULE' && (
+                          <Tag
+                            label={<div>{t_i18n('APPLY RULE')}</div>}
+                          />
+                        )}
+                        {task.actions
+                          && R.map(
+                            (action) => (
+                              <div key={task.actions.indexOf(action)}>
+                                <Tag
+                                  label={action.type}
+                                />
+                                {action.context && (
+                                  <Tag
+                                    label={(
+                                      <div>
+                                        {action.context.field && (
+                                          <span>
+                                            <strong>
+                                              {t_i18n(action.context.field)}
+                                            </strong>
+                                            :{' '}
+                                          </span>
+                                        )}
+                                        {truncate(
+                                          R.join(
+                                            ', ',
+                                            action.context.values || [],
+                                          ),
+                                          80,
+                                        )}
+                                      </div>
+                                    )}
+                                  />
+                                )}
+                              </div>
+                            ),
+                            task.actions,
+                          )}
+                      </Stack>
                     </Grid>
                   </Grid>
                 </Grid>
