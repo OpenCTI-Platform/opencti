@@ -1,17 +1,11 @@
-import React, { FunctionComponent, useState } from 'react';
-import { useCookies } from 'react-cookie';
-import Markdown from 'react-markdown';
+import { FunctionComponent, useState } from 'react';
 import Paper from '@mui/material/Paper';
-import Box from '@mui/material/Box';
 import makeStyles from '@mui/styles/makeStyles';
-import Checkbox from '@mui/material/Checkbox';
-import { Alert, AlertTitle } from '@mui/material';
 import LoginForm from './LoginForm';
 import OtpValidation from './OtpValidation';
 import OtpActivationComponent from './OtpActivation';
 import type { Theme } from '../../../components/Theme';
 import { LoginRootPublicQuery$data } from '../../__generated__/LoginRootPublicQuery.graphql';
-import { useFormatter } from '../../../components/i18n';
 import { isNotEmptyField } from '../../../utils/utils';
 import useDimensions from '../../../utils/hooks/useDimensions';
 import SystemBanners from '../SystemBanners';
@@ -19,6 +13,9 @@ import ResetPassword from './ResetPassword';
 import ExternalAuths from './ExternalAuths';
 import LoginLogo from './LoginLogo';
 import AlertLogout from './AlertLogout';
+import AlertFlashError from './AlertFlashError';
+import ConsentMessage from './ConsentMessage';
+import LoginLayout from './LoginLayout';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -39,12 +36,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     padding: theme.spacing(3),
     maxWidth: 500,
   },
-  paperMessage: {
-    margin: '0 auto 20px auto',
-    maxWidth: 500,
-    padding: `10px ${theme.spacing(3)}`, // Markdown child component has 14px margin Top and Bottom => theme.spacing(3) = 24 - 14 = 10
-    textAlign: 'justify',
-  },
 }));
 
 interface LoginProps {
@@ -52,22 +43,14 @@ interface LoginProps {
   settings: LoginRootPublicQuery$data['publicSettings'];
 }
 
-const FLASH_COOKIE = 'opencti_flash';
 const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
   const classes = useStyles();
-  const { t_i18n } = useFormatter();
   const { dimension } = useDimensions();
 
   const [resetPassword, setResetPassword] = useState(false);
   const [email, setEmail] = useState('');
-  const [cookies, , removeCookie] = useCookies([FLASH_COOKIE]);
-  const flashError = cookies[FLASH_COOKIE] || '';
-  removeCookie(FLASH_COOKIE);
 
   const consentMessage = settings.platform_consent_message;
-  const consentConfirmText = settings.platform_consent_confirm_text
-    ? settings.platform_consent_confirm_text
-    : t_i18n('I have read and comply with the above statement');
   const loginMessage = settings.platform_login_message;
   const providers = settings.platform_providers;
   const isAuthForm = providers.filter((p) => p?.type === 'FORM').length > 0;
@@ -112,41 +95,12 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
   const loginScreen = () => (
     <div style={{ marginBottom: 10 }} data-testid="login-page">
       <AlertLogout />
-      {flashError && (
-        <Paper
-          classes={{ root: classes.paper }}
-          style={{
-            backgroundImage: 'none',
-            backgroundColor: 'transparent',
-            boxShadow: 'none',
-          }}
-        >
-          <Alert severity="error">
-            <AlertTitle style={{ textAlign: 'left' }}>Error</AlertTitle>
-            {flashError}
-          </Alert>
-        </Paper>
-      )}
-      {isLoginMessage && (
-        <Paper classes={{ root: classes.paperMessage }} variant="outlined">
-          <Markdown>{loginMessage}</Markdown>
-        </Paper>
-      )}
-      {isConsentMessage && (
-        <Paper classes={{ root: classes.paperMessage }} variant="outlined">
-          <Markdown>{consentMessage}</Markdown>
-          <Box display="flex" justifyContent="center" alignItems="center">
-            <Markdown>{consentConfirmText}</Markdown>
-            <Checkbox
-              name="consent"
-              edge="start"
-              onChange={handleChange}
-              style={{ margin: 0 }}
-            >
-            </Checkbox>
-          </Box>
-        </Paper>
-      )}
+      <AlertFlashError />
+      <ConsentMessage
+        data={settings}
+        onToggle={handleChange}
+      />
+
       {isAuthForm && !isConsentMessage && !resetPassword && (
         <Paper variant="outlined" classes={{ root: classes.login }}>
           <LoginForm onClickForgotPassword={() => setResetPassword(true)} email={email} setEmail={setEmail} />
@@ -162,6 +116,7 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
           <ResetPassword onCancel={() => setResetPassword(false)} email={email} setEmail={setEmail} />
         </Paper>
       )}
+
       <ExternalAuths
         data={settings}
         consentValue={checked}
@@ -182,6 +137,8 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
     }
     return loginScreen();
   };
+
+  return <LoginLayout />;
 
   return (
     <div>

@@ -32,6 +32,7 @@ const Card = ({
   onClick,
   to,
   disabled,
+  variant,
   ...otherProps
 }: CardProps) => {
   const theme = useTheme<Theme>();
@@ -62,7 +63,9 @@ const Card = ({
     position: 'relative',
     flexGrow: fullHeight ? 1 : 0,
     borderRadius: theme.spacing(0.5),
-    background: theme.palette.background.secondary,
+    background: variant !== 'outlined'
+      ? theme.palette.background.secondary
+      : 'transparent',
     ...(applyStyleToContainer ? paddingStyle : {}),
     ...(applyStyleToContainer ? sx : {}),
   };
@@ -108,6 +111,7 @@ const Card = ({
       <CardMui
         elevation={0}
         sx={containerSx}
+        variant={variant}
         {...otherProps}
       >
         {content}
