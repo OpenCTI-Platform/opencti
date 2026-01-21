@@ -94,6 +94,12 @@ const AutocompleteField = <
       : truncate(option, optionLength);
   };
 
+  const getOptionData = (option: Value) => {
+    return typeof option === 'object' && option !== null
+      ? { label: option.label, value: option.value }
+      : { label: String(option), value: String(option) };
+  };
+
   const helperText = textfieldprops?.helperText;
   const showError = !isNilField(meta.error) && (meta.touched || submitCount > 0);
   const fieldProps = fieldToAutocomplete({
@@ -130,14 +136,17 @@ const AutocompleteField = <
         {...fieldProps}
         renderOption={renderOption}
         renderTags={(values, getTagProps) => (
-          values.map((option, index) => (
-            <Tag
-              {...getTagProps({ index })}
-              applyLabelTextTransform={applyLabelTextTransform}
-              key={(option as FieldOption).value}
-              label={truncate((option as FieldOption).label, 50)}
-            />
-          ))
+          values.map((option, index) => {
+            const { label, value } = getOptionData(option);
+            return (
+              <Tag
+                {...getTagProps({ index })}
+                applyLabelTextTransform={applyLabelTextTransform}
+                key={value}
+                label={truncate(label, 50)}
+              />
+            );
+          })
         )}
         onChange={internalOnChange}
         onFocus={internalOnFocus}
