@@ -15,13 +15,13 @@ interface OtpValidationProps {
 }
 
 const otpMutation = graphql`
-  mutation OTPFormMutation($input: UserOTPLoginInput) {
+  mutation OtpValidationMutation($input: UserOTPLoginInput) {
     otpLogin(input: $input)
   }
 `;
 
 const ResetPasswordMfaMutation = graphql`
-  mutation OTPFormResetPasswordOtpLoginMutation($input: VerifyMfaInput!) {
+  mutation OtpValidationResetPasswordOtpLoginMutation($input: VerifyMfaInput!) {
     verifyMfa(input: $input)
   }
 `;

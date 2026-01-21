@@ -13,9 +13,9 @@ import { useFormatter } from '../../../components/i18n';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../../relay/environment';
 import OtpValidation from './OtpValidation';
-import { ResetPasswordVerifyOtpMutation, ResetPasswordVerifyOtpMutation$data } from '../__generated__/ResetPasswordVerifyOtpMutation.graphql';
-import { ResetPasswordAskSendOtpMutation } from '../__generated__/ResetPasswordAskSendOtpMutation.graphql';
-import { ResetPasswordChangePasswordMutation } from '../__generated__/ResetPasswordChangePasswordMutation.graphql';
+import { ResetPasswordVerifyOtpMutation, ResetPasswordVerifyOtpMutation$data } from './__generated__/ResetPasswordVerifyOtpMutation.graphql';
+import { ResetPasswordAskSendOtpMutation } from './__generated__/ResetPasswordAskSendOtpMutation.graphql';
+import { ResetPasswordChangePasswordMutation } from './__generated__/ResetPasswordChangePasswordMutation.graphql';
 
 interface ResetProps {
   onCancel: () => void;
