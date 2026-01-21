@@ -2342,6 +2342,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             message["work_id"] = work_id
 
         # Send the message
+        retry_count = 0
         while True:
             try:
                 channel.basic_publish(
@@ -2358,7 +2359,10 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 self.connector_info.buffering = False
                 return
             except (UnroutableError, NackError):
-                self.connector_logger.error("Unable to send bundle, retry...")
+                retry_count = retry_count + 1
+                self.connector_logger.info(
+                    "Unable to send bundle, retrying...", {"retry_count": retry_count}
+                )
                 self.connector_info.buffering = True
                 self.metric.inc("error_count")
                 time.sleep(10)

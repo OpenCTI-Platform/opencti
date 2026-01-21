@@ -53,6 +53,7 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
         ).decode("utf-8")
 
         # Send the message
+        retry_count = 0
         while True:
             try:
                 push_channel.basic_publish(
@@ -66,7 +67,10 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                 )
                 return
             except (UnroutableError, NackError):
-                self.logger.error("Unable to send bundle, retry...")
+                retry_count = retry_count + 1
+                self.logger.info(
+                    "Unable to send bundle, retrying...", {"retry_count": ++retry_count}
+                )
                 time.sleep(10)
 
     def handle_message(
