@@ -76,7 +76,7 @@ const OpenIDConfig = ({ updateField }: OpenIDConfigProps) => {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  marginTop: 10
+                  marginTop: 10,
                 }}
               >
                 <Field

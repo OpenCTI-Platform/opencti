@@ -308,8 +308,7 @@ const SSODefinitionForm = ({
               <FieldArray name="groups_mapping">
                 {({ push, remove, form }) => (
                   <>
-                    <div
-                      style={{ display: 'flex', alignItems: 'center', marginTop: 20 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', marginTop: 20 }}>
                       <Typography variant="h2">{t_i18n('Add a new value')}</Typography>
                       <IconButton
                         size="default"
