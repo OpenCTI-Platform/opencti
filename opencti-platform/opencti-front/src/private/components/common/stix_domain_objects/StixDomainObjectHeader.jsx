@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import Chip from '@mui/material/Chip';
@@ -6,7 +6,7 @@ import IconButton from '@common/button/IconButton';
 import Slide from '@mui/material/Slide';
 import Tooltip from '@mui/material/Tooltip';
 import { Add, Close, Delete } from '@mui/icons-material';
-import { DotsHorizontalCircleOutline } from 'mdi-material-ui';
+import { DotsHorizontal, DotsHorizontalCircleOutline, StackExchange } from 'mdi-material-ui';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
@@ -14,7 +14,7 @@ import Button from '@common/button/Button';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import { Box, DialogTitle } from '@mui/material';
+import { Box, DialogTitle, Stack } from '@mui/material';
 import InputLabel from '@mui/material/InputLabel';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
@@ -61,6 +61,9 @@ import { resolveLink } from '../../../../utils/Entity';
 import { authorizedMembersToOptions, CAN_USE_ENTITY_TYPES, useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
+import Tag from '@common/tag/Tag';
+import TagsOverflow from '../../../../components/common/tag/TagsOverflow';
+import { OverflowContainer } from '../../../../components/common/tag/OverflowContainer';
 
 export const stixDomainObjectMutation = graphql`
   mutation StixDomainObjectHeaderFieldMutation(
@@ -480,17 +483,305 @@ const StixDomainObjectHeader = (props) => {
 
   return (
     <React.Suspense fallback={<span />}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: theme.spacing(3) }}>
+      <Stack gap={1}>
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          gap={3}
+        >
+          <Stack
+            direction="row"
+            sx={{
+              flex: 1,
+              minWidth: 0,
+            }}
+            gap={1}
+          >
+            <Stack
+              sx={{
+                minWidth: 0,
+                overflow: 'hidden',
+              }}
+            >
+              <Tooltip title={getMainRepresentative(stixDomainObject)}>
+                <span>
+                  <TitleMainEntity
+                    preserveCase
+                    sx={{
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {getMainRepresentative(stixDomainObject)}
+                  </TitleMainEntity>
+                </span>
+              </Tooltip>
+            </Stack>
+
+            {typeof onViewAs === 'function' && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(0.5) }}>
+                <InputLabel>
+                  {t_i18n('Display as')}
+                </InputLabel>
+                <FormControl
+                  variant="outlined"
+                >
+                  <Select
+                    size="small"
+                    name="view-as"
+                    value={viewAs}
+                    onChange={onViewAs}
+                    inputProps={{
+                      name: 'view-as',
+                      id: 'view-as',
+                    }}
+                    variant="outlined"
+                  >
+                    <MenuItem value="knowledge">{t_i18n('Knowledge entity')}</MenuItem>
+                    <MenuItem value="author">{t_i18n('Author')}</MenuItem>
+                  </Select>
+                </FormControl>
+              </div>
+            )}
+          </Stack>
+
+          <Stack
+            direction="row"
+            alignItems="center"
+            gap={1}
+          >
+            {disableSharing !== true && (
+              <StixCoreObjectSharing
+                elementId={stixDomainObject.id}
+                open={isSharingOpen}
+                variant="header"
+                handleClose={displaySharingButton ? undefined : handleCloseSharing}
+              />
+            )}
+            <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
+              <StixCoreObjectFileExport
+                scoId={stixDomainObject.id}
+                scoEntityType={entityType}
+                OpenFormComponent={StixCoreObjectFileExportButton}
+                onExportCompleted={handleExportCompleted}
+              />
+            </Security>
+            {isKnowledgeUpdater && (
+              <StixCoreObjectContainer elementId={stixDomainObject.id} />
+            )}
+            {enableQuickSubscription && (
+              <StixCoreObjectQuickSubscription
+                instanceId={stixDomainObject.id}
+                instanceName={getMainRepresentative(stixDomainObject)}
+                paginationOptions={triggersPaginationOptions}
+                triggerData={triggerData}
+              />
+            )}
+            {(enableEnricher && isKnowledgeEnricher) && (
+              <StixCoreObjectEnrichment
+                onClose={handleCloseEnrichment}
+                isOpen={isEnrichmentOpen}
+                stixCoreObjectId={stixDomainObject.id}
+              />
+            )}
+            {enableEnrollPlaybook && (
+              <StixCoreObjectEnrollPlaybook
+                open={isEnrollPlaybookOpen}
+                handleClose={displayEnrollPlaybookButton ? undefined : handleCloseEnrollPlaybook}
+                stixCoreObjectId={stixDomainObject.id}
+              />
+            )}
+            {enableManageAuthorizedMembers && (
+              <FormAuthorizedMembersDialog
+                id={stixDomainObject.id}
+                owner={stixDomainObject.creators?.[0]}
+                authorizedMembers={authorizedMembersToOptions(
+                  stixDomainObject.authorized_members,
+                )}
+                mutation={stixDomainObjectHeaderEditAuthorizedMembersMutation}
+                open={openAccessRestriction}
+                handleClose={handleCloseAccessRestriction}
+                isCanUseEnable={CAN_USE_ENTITY_TYPES.includes(stixDomainObject.entity_type)}
+                canDeactivate={true}
+              />
+            )}
+            {displayPopoverMenu ? (
+              <PopoverMenu>
+                {({ closeMenu }) => (
+                  <Box>
+                    {disableSharing !== true && !displaySharingButton && (
+                      <StixCoreObjectMenuItemUnderEE
+                        setOpen={setIsSharingOpen}
+                        title={t_i18n('Share with an organization')}
+                        handleCloseMenu={closeMenu}
+                        needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}
+                      />
+                    )}
+                    {enableManageAuthorizedMembers && (
+                      <StixCoreObjectMenuItemUnderEE
+                        setOpen={setOpenAccessRestriction}
+                        title={t_i18n('Manage access restriction')}
+                        handleCloseMenu={closeMenu}
+                        isDisabled={!enableManageAuthorizedMembers}
+                        needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
+                      />
+                    )}
+                    {(enableEnricher && isKnowledgeEnricher) && (
+                      <MenuItem onClick={() => {
+                        handleOpenEnrichment();
+                        closeMenu();
+                      }}
+                      >
+                        {t_i18n('Enrichment')}
+                      </MenuItem>
+                    )}
+                    {enableEnrollPlaybook && !displayEnrollPlaybookButton && (
+                      <StixCoreObjectMenuItemUnderEE
+                        title={t_i18n('Enroll in playbook')}
+                        setOpen={setEnrollPlaybookOpen}
+                        handleCloseMenu={closeMenu}
+                        needs={[AUTOMATION]}
+                        matchAll
+                      />
+                    )}
+                    {isKnowledgeDeleter && (
+                      <MenuItem onClick={() => {
+                        handleOpenDelete();
+                        closeMenu();
+                      }}
+                      >
+                        {t_i18n('Delete')}
+                      </MenuItem>
+                    )}
+                  </Box>
+                )}
+              </PopoverMenu>
+            ) : null}
+            {RelateComponent}
+            {EditComponent}
+            <DeleteComponent isOpen={openDelete} onClose={handleCloseDelete} />
+          </Stack>
+        </Stack>
+
+        <Stack
+          direction="row"
+          alignContent="center"
+          justifyContent="space-between"
+          gap={3}
+        >
+          <Stack
+            direction="row"
+            gap={1}
+            sx={{
+              flex: '1 1 50%',
+              minWidth: 0,
+              maxWidth: '50%',
+              overflow: 'hidden',
+            }}
+          >
+            {stixDomainObject.draftVersion && (
+              <DraftChip />
+            )}
+
+            {!noAliases && (
+              <TagsOverflow
+                items={aliases || []}
+                getKey={(label) => label}
+                getLabel={(label) => label}
+                onTagCounterClick={handleToggleOpenAliases}
+                renderTag={(label) => (
+                  <Security
+                    needs={[KNOWLEDGE_KNUPDATE]}
+                    key={label}
+                    placeholder={<Tag label={label} />}
+                  >
+                    <Tag
+                      label={label}
+                      disableTooltip
+                      onDelete={
+                        enableReferences
+                          ? () => handleOpenCommitDelete(label)
+                          : () => deleteAlias(label)
+                      }
+                    />
+                  </Security>
+                )}
+              >
+                <Button
+                  color="primary"
+                  aria-label="Alias"
+                  onClick={handleToggleOpenAliases}
+                  size="small"
+                  variant="tertiary"
+                  startIcon={openAlias ? <Close fontSize="small" /> : <Add fontSize="small" />}
+                >
+                  {t_i18n('add alias')}
+                </Button>
+              </TagsOverflow>
+            )}
+          </Stack>
+
+          <Stack
+            direction="row"
+            alignItems="center"
+            sx={{
+              flex: 1,
+              minWidth: 0,
+              maxWidth: '50%',
+            }}
+          >
+            {/* {enableQuickSubscription && (
+              <StixCoreObjectSubscribers triggerData={triggerData} />
+            )} */}
+            {disableSharing !== true && (
+              <StixCoreObjectSharingList data={stixDomainObject} />
+            )}
+          </Stack>
+
+          {/* <Stack
+            direction="row"
+            alignItems="center"
+            gap={1}
+            sx={{
+              flex: '1 1 50%',
+              minWidth: 0,
+              maxWidth: '50%',
+              overflow: 'hidden',
+              justifyContent: 'flex-end',
+            }}
+          >
+            {enableQuickSubscription && (
+              <StixCoreObjectSubscribers triggerData={triggerData} />
+            )}
+
+            {disableSharing !== true && (
+              <StixCoreObjectSharingList data={stixDomainObject} />
+            )}
+          </Stack> */}
+        </Stack>
+      </Stack>
+
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: theme.spacing(3),
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
-          <Tooltip title={getMainRepresentative(stixDomainObject)}>
+          {/* <Tooltip title={getMainRepresentative(stixDomainObject)}>
             <TitleMainEntity preserveCase>
               {truncate(getMainRepresentative(stixDomainObject), 80)}
             </TitleMainEntity>
-          </Tooltip>
-          {stixDomainObject.draftVersion && (
+          </Tooltip> */}
+
+          {/* {stixDomainObject.draftVersion && (
             <DraftChip />
-          )}
-          {typeof onViewAs === 'function' && (
+          )} */}
+
+          {/* {typeof onViewAs === 'function' && (
             <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(0.5) }}>
               <InputLabel>
                 {t_i18n('Display as')}
@@ -514,9 +805,10 @@ const StixDomainObjectHeader = (props) => {
                 </Select>
               </FormControl>
             </div>
-          )}
+          )} */}
+
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            {(!noAliases && aliases.length > 0) && (
+            {/* {(!noAliases && aliases.length > 0) && (
               <>
                 {aliases.slice(0, 5).map(
                   (label) => label.length > 0 && (
@@ -524,28 +816,14 @@ const StixDomainObjectHeader = (props) => {
                       needs={[KNOWLEDGE_KNUPDATE]}
                       key={label}
                       placeholder={(
-                        <Tooltip title={label}>
-                          <Chip
-                            sx={{
-                              marginRight: '4px',
-                              fontSize: 12,
-                              lineHeight: '12px',
-                              height: 28,
-                            }}
-                            label={truncate(label, 40)}
-                          />
-                        </Tooltip>
+                        <Tag
+                          label={label}
+                        />
                       )}
                     >
                       <Tooltip title={label}>
-                        <Chip
-                          sx={{
-                            marginRight: '4px',
-                            fontSize: 12,
-                            lineHeight: '12px',
-                            height: 28,
-                          }}
-                          label={truncate(label, 40)}
+                        <Tag
+                          label={label}
                           onDelete={
                             enableReferences
                               ? () => handleOpenCommitDelete(label)
@@ -557,8 +835,9 @@ const StixDomainObjectHeader = (props) => {
                   ),
                 )}
               </>
-            )}
-            {!noAliases && (
+            )} */}
+
+            {/* {!noAliases && (
               <Slide
                 direction="right"
                 in={openAlias}
@@ -610,8 +889,9 @@ const StixDomainObjectHeader = (props) => {
                   </Formik>
                 </div>
               </Slide>
-            )}
-            {!noAliases && (
+            )} */}
+
+            {/* {!noAliases && (
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 {aliases.length > 5 ? (
                   <IconButton
@@ -637,129 +917,12 @@ const StixDomainObjectHeader = (props) => {
                   </IconButton>
                 )}
               </Security>
-            )}
+            )} */}
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          {enableQuickSubscription && (
-            <StixCoreObjectSubscribers triggerData={triggerData} />
-          )}
-          {disableSharing !== true && (
-            <StixCoreObjectSharingList data={stixDomainObject} />
-          )}
-          {disableSharing !== true && (
-            <StixCoreObjectSharing
-              elementId={stixDomainObject.id}
-              open={isSharingOpen}
-              variant="header"
-              handleClose={displaySharingButton ? undefined : handleCloseSharing}
-            />
-          )}
-          <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
-            <StixCoreObjectFileExport
-              scoId={stixDomainObject.id}
-              scoEntityType={entityType}
-              OpenFormComponent={StixCoreObjectFileExportButton}
-              onExportCompleted={handleExportCompleted}
-            />
-          </Security>
-          {isKnowledgeUpdater && (
-            <StixCoreObjectContainer elementId={stixDomainObject.id} />
-          )}
-          {enableQuickSubscription && (
-            <StixCoreObjectQuickSubscription
-              instanceId={stixDomainObject.id}
-              instanceName={getMainRepresentative(stixDomainObject)}
-              paginationOptions={triggersPaginationOptions}
-              triggerData={triggerData}
-            />
-          )}
-          {(enableEnricher && isKnowledgeEnricher) && (
-            <StixCoreObjectEnrichment
-              onClose={handleCloseEnrichment}
-              isOpen={isEnrichmentOpen}
-              stixCoreObjectId={stixDomainObject.id}
-            />
-          )}
-          {enableEnrollPlaybook && (
-            <StixCoreObjectEnrollPlaybook
-              open={isEnrollPlaybookOpen}
-              handleClose={displayEnrollPlaybookButton ? undefined : handleCloseEnrollPlaybook}
-              stixCoreObjectId={stixDomainObject.id}
-            />
-          )}
-          {enableManageAuthorizedMembers && (
-            <FormAuthorizedMembersDialog
-              id={stixDomainObject.id}
-              owner={stixDomainObject.creators?.[0]}
-              authorizedMembers={authorizedMembersToOptions(
-                stixDomainObject.authorized_members,
-              )}
-              mutation={stixDomainObjectHeaderEditAuthorizedMembersMutation}
-              open={openAccessRestriction}
-              handleClose={handleCloseAccessRestriction}
-              isCanUseEnable={CAN_USE_ENTITY_TYPES.includes(stixDomainObject.entity_type)}
-              canDeactivate={true}
-            />
-          )}
-          {displayPopoverMenu ? (
-            <PopoverMenu>
-              {({ closeMenu }) => (
-                <Box>
-                  {disableSharing !== true && !displaySharingButton && (
-                    <StixCoreObjectMenuItemUnderEE
-                      setOpen={setIsSharingOpen}
-                      title={t_i18n('Share with an organization')}
-                      handleCloseMenu={closeMenu}
-                      needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}
-                    />
-                  )}
-                  {enableManageAuthorizedMembers && (
-                    <StixCoreObjectMenuItemUnderEE
-                      setOpen={setOpenAccessRestriction}
-                      title={t_i18n('Manage access restriction')}
-                      handleCloseMenu={closeMenu}
-                      isDisabled={!enableManageAuthorizedMembers}
-                      needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
-                    />
-                  )}
-                  {(enableEnricher && isKnowledgeEnricher) && (
-                    <MenuItem onClick={() => {
-                      handleOpenEnrichment();
-                      closeMenu();
-                    }}
-                    >
-                      {t_i18n('Enrichment')}
-                    </MenuItem>
-                  )}
-                  {enableEnrollPlaybook && !displayEnrollPlaybookButton && (
-                    <StixCoreObjectMenuItemUnderEE
-                      title={t_i18n('Enroll in playbook')}
-                      setOpen={setEnrollPlaybookOpen}
-                      handleCloseMenu={closeMenu}
-                      needs={[AUTOMATION]}
-                      matchAll
-                    />
-                  )}
-                  {isKnowledgeDeleter && (
-                    <MenuItem onClick={() => {
-                      handleOpenDelete();
-                      closeMenu();
-                    }}
-                    >
-                      {t_i18n('Delete')}
-                    </MenuItem>
-                  )}
-                </Box>
-              )}
-            </PopoverMenu>
-          ) : null}
-          {RelateComponent}
-          {EditComponent}
-          <DeleteComponent isOpen={openDelete} onClose={handleCloseDelete} />
-        </div>
       </div>
+
       {!noAliases && (
         <Dialog
           slotProps={{ paper: { elevation: 1 } }}
