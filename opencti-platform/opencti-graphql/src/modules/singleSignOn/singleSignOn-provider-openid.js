@@ -80,11 +80,12 @@ export const registerOpenIdStrategy = async (ssoEntity) => {
             const readUserinfo = groupManagement?.read_userinfo || false;
             const token = groupManagement?.token_reference || 'access_token';
             const groupsPath = groupManagement?.groups_path || ['groups'];
-            const groupsMapping = groupManagement?.groups_management?.groups_mapping || [];
+            const groupsMapping = groupManagement?.groups_mapping || [];
             const decodedUser = jwtDecode(tokenset[token]);
             if (!readUserinfo) {
               logAuthInfo(`Groups mapping on decoded ${token}`, EnvStrategyType.STRATEGY_OPENID, { decoded: decodedUser });
             }
+            logAuthInfo(`Groups mapping readUserinfo:${readUserinfo}, token:${token}, groupsPath:${groupsPath}, groupsMapping:${groupsMapping}`, EnvStrategyType.STRATEGY_OPENID, { decoded: decodedUser });
             const availableGroups = R.flatten(groupsPath.map((path) => {
               const userClaims = (readUserinfo) ? userinfo : decodedUser;
               const value = R.path(path.split('.'), userClaims) || [];
