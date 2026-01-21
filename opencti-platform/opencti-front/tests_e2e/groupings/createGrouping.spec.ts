@@ -3,6 +3,7 @@ import { expect, test } from '../fixtures/baseFixtures';
 import GroupingsPage from '../model/grouping.pageModel';
 import GroupingFormPage from '../model/form/groupingForm.pageModel';
 import GroupingDetailsPage from '../model/groupingDetails.pageModel';
+import { format } from 'date-fns';
 
 test('Create a new grouping', { tag: ['@ce'] }, async ({ page }) => {
   const groupingsPage = new GroupingsPage(page);
@@ -26,11 +27,14 @@ test('Create a new grouping', { tag: ['@ce'] }, async ({ page }) => {
   await groupingDetails.goToTab('Content');
   await expect(stixDomainObjectContentTab.getPage()).toBeVisible();
   await stixDomainObjectContentTab.editMainContent('Main content text');
-  await stixDomainObjectContentTab.addFile('Test file');
+  await stixDomainObjectContentTab.addTextFile('Test file');
   await expect(page.getByText('Write something awesome...')).toBeVisible();
-  await stixDomainObjectContentTab.editFile('Test file.html', 'Test file content text');
+  const now = format(new Date(), 'MMMM d');
+  await stixDomainObjectContentTab.getEditorViewButton().click();
+  await stixDomainObjectContentTab.editFile(`Test file.txt ${now},`, 'Test file content text');
   await stixDomainObjectContentTab.selectMainContent();
-  await expect(page.getByText('Main content text')).toBeVisible();
+  await expect(page.getByTestId('text-area')).toBeVisible();
+  await stixDomainObjectContentTab.addHtmlFile('test file');
   await stixDomainObjectContentTab.selectFile('test file.html');
-  await expect(page.getByText('Test file content text')).toBeVisible();
+  await expect(page.getByText('No changes detected')).toBeVisible();
 });

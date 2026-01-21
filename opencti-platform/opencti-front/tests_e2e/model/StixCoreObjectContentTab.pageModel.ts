@@ -9,8 +9,7 @@ export default class StixCoreObjectContentTabPage {
 
   async selectMainContent() {
     await this.page.getByRole('button', { name: 'Description & Main content' }).click();
-    await this.getEditorViewButton().click();
-    return this.page.getByLabel('Editing area: main');
+    return this.getEditorViewButton().click();
   }
 
   async selectFile(name: string) {
@@ -24,20 +23,31 @@ export default class StixCoreObjectContentTabPage {
   }
 
   async editTextArea(input: string, isAutoSave = false) {
-    const element = this.page.getByLabel('Editing area: main');
+    const element = this.page.getByTestId('text-area');
     await element.click();
     if (isAutoSave) {
       await element.fill(input);
       // We wait for changes to be saved before leaving page
-      return new Promise((r) => { setTimeout(r, 4000); });
+      return new Promise((r) => {
+        setTimeout(r, 4000);
+      });
     }
 
     await element.fill(input);
     return this.page.getByLabel('Save').click();
   }
 
-  // only in HTML (default) for now
-  async addFile(name: string) {
+  async addTextFile(name: string) {
+    await this.page.getByLabel('Add a file').click();
+    const element = this.page.getByLabel('Name');
+    await element.click();
+    await element.fill(name);
+    await this.page.getByRole('combobox', { name: 'Type HTML' }).click();
+    await this.page.getByRole('option', { name: 'Text' }).click();
+    return this.page.getByRole('button', { name: 'Create' }).click();
+  }
+
+  async addHtmlFile(name: string) {
     await this.page.getByLabel('Add a file').click();
     const element = this.page.getByLabel('Name');
     await element.click();
@@ -46,16 +56,19 @@ export default class StixCoreObjectContentTabPage {
   }
 
   async editFile(name: string, input: string) {
-    await this.page.getByText(name).click();
-    return this.editTextArea(input);
+    await this.page.getByRole('button', { name: name }).click();
+    await this.page.getByText('Write something awesome...').click();
+    return this.page.getByText('Write something awesome...').fill(input);
   }
 
   getContentMappingViewButton() {
     return this.page.getByLabel('Content mapping view');
   }
+
   getContentViewButton() {
     return this.page.getByLabel('Content view');
   }
+
   getEditorViewButton() {
     return this.page.getByLabel('Editor view');
   }
