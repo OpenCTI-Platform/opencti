@@ -1,9 +1,8 @@
 import { useTheme } from '@mui/material/styles';
-import { Badge, Stack } from '@mui/material';
+import { Badge, Stack, Tooltip } from '@mui/material';
 import Tag from '@common/tag/Tag';
 import type { Theme } from './Theme';
 import stopEvent from '../utils/domEvent';
-import EnrichedTooltip from './EnrichedTooltip';
 
 interface Marking {
   id: string;
@@ -20,11 +19,13 @@ interface ItemMarkingsProps {
 interface ChipMarkingProps {
   markingDefinition: Marking;
   onClick?: ItemMarkingsProps['onClick'];
+  disableTooltip?: boolean;
 }
 
 const ChipMarking = ({
   markingDefinition,
   onClick,
+  disableTooltip = false,
 }: ChipMarkingProps) => {
   const theme = useTheme<Theme>();
 
@@ -72,6 +73,7 @@ const ChipMarking = ({
     <Tag
       label={markingDefinition.definition || 'no definition'}
       applyLabelTextTransform={false}
+      disableTooltip={disableTooltip}
       {...itemMarkingColor && { color: itemMarkingColor }}
       {...hasClickCallback && {
         onClick: (e) => {
@@ -88,6 +90,7 @@ const ItemMarkings = ({
   limit = 0,
   onClick,
 }: ItemMarkingsProps) => {
+  const theme = useTheme<Theme>();
   const markings = markingDefinitions ?? [];
 
   if (!limit || markings.length <= 1) {
@@ -110,20 +113,41 @@ const ItemMarkings = ({
     );
   }
 
+  // return a multiple marking tags in the tooltip
   return (
-    <EnrichedTooltip
-      placement="bottom"
+    <Tooltip
       title={(
-        <Stack direction="row" gap={1} flexWrap="wrap">
-          {markings.map((markingDefinition) => (
-            <ChipMarking
-              key={markingDefinition.id}
-              markingDefinition={markingDefinition}
-              onClick={onClick}
-            />
-          ))}
+        <Stack
+          gap={1}
+          direction="row"
+          flexWrap="wrap"
+          sx={{
+            alignItems: 'flex-start',
+            p: 1,
+          }}
+        >
+          {
+            markings.map((markingDefinition) => (
+              <ChipMarking
+                key={markingDefinition.id}
+                markingDefinition={markingDefinition}
+                onClick={onClick}
+                disableTooltip
+              />
+            ))
+          }
         </Stack>
       )}
+      slotProps={{
+        tooltip: {
+          sx: {
+            backgroundColor: theme.palette.mode === 'light'
+              ? theme.palette.common.white
+              : theme.palette.common.black,
+            maxWidth: 260,
+          },
+        },
+      }}
     >
       <Stack direction="row" gap={1} flexWrap="wrap">
         {markings.slice(0, limit).map((markingDefinition) => (
@@ -131,6 +155,7 @@ const ItemMarkings = ({
             key={markingDefinition.id}
             markingDefinition={markingDefinition}
             onClick={onClick}
+            disableTooltip
           />
         ))}
         <Badge
@@ -144,7 +169,7 @@ const ItemMarkings = ({
           }}
         />
       </Stack>
-    </EnrichedTooltip>
+    </Tooltip>
   );
 };
 

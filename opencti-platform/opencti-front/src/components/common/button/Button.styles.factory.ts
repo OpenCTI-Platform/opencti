@@ -28,6 +28,7 @@ export const createBaseStyles = (params: StyleFactoryParams): SxProps<Theme> => 
     borderRadius: `${theme.shape.borderRadius}px`,
     transition: 'all 0.2s ease-in-out',
     fontFamily: theme.typography.fontFamily,
+    flexShrink: 0,
 
     '& .MuiButton-startIcon, & .MuiButton-endIcon': {
       '& > *:nth-of-type(1)': {
