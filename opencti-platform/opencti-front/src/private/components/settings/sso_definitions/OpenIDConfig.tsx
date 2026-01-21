@@ -1,6 +1,6 @@
 import React from 'react';
 import { Field, FieldArray } from 'formik';
-import { IconButton } from '@mui/material';
+import IconButton from '@common/button/IconButton';
 import { useFormatter } from '../../../../components/i18n';
 import SelectField from '../../../../components/fields/SelectField';
 import MenuItem from '@mui/material/MenuItem';
@@ -60,9 +60,9 @@ const OpenIDConfig = ({ updateField }: OpenIDConfigProps) => {
             >
               <Typography variant="h2">{t_i18n('Add redirect uris')}</Typography>
               <IconButton
+                size="default"
                 color="secondary"
                 aria-label="Add"
-                size="large"
                 style={{ marginBottom: 8 }}
                 onClick={() => push('')}
               >
@@ -76,6 +76,7 @@ const OpenIDConfig = ({ updateField }: OpenIDConfigProps) => {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
+                  marginTop: 10
                 }}
               >
                 <Field
@@ -89,6 +90,7 @@ const OpenIDConfig = ({ updateField }: OpenIDConfigProps) => {
                 />
                 {index !== 0 && (
                   <IconButton
+                    size="default"
                     color="primary"
                     aria-label={t_i18n('Delete')}
                     style={{ marginTop: 10 }}
@@ -111,16 +113,16 @@ const OpenIDConfig = ({ updateField }: OpenIDConfigProps) => {
       <FieldArray name="advancedConfigurations">
         {({ push, remove, form }) => (
           <>
-            <div style={{ display: 'flex', alignItems: 'center',  marginTop: 20 }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginTop: 20 }}>
               <Typography variant="h2">{t_i18n('Add more fields')}</Typography>
               <IconButton
+                size="default"
                 color="secondary"
-                aria-label="Add"
-                size="large"
+                // size="large"
                 style={{ marginBottom: 8 }}
                 onClick={() => push({ key: '', value: '', type: 'String' })}
               >
-                <Add fontSize="small" />
+                <Add fontSize="small" color="primary" />
               </IconButton>
             </div>
             {form.values.advancedConfigurations
@@ -171,6 +173,7 @@ const OpenIDConfig = ({ updateField }: OpenIDConfigProps) => {
                       color="primary"
                       aria-label={t_i18n('Delete')}
                       style={{ marginTop: 10 }}
+                      size="default"
                       onClick={() => {
                         remove(index);
                         const advancedConfigurations = [...form.values.advancedConfigurations];

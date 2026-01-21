@@ -309,12 +309,7 @@ const SSODefinitionForm = ({
                 {({ push, remove, form }) => (
                   <>
                     <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        marginTop: 20,
-                      }}
-                    >
+                      style={{ display: 'flex', alignItems: 'center', marginTop: 20 }}>
                       <Typography variant="h2">{t_i18n('Add a new value')}</Typography>
                       <IconButton
                         size="default"
@@ -367,9 +362,9 @@ const SSODefinitionForm = ({
                               aria-label={t_i18n('Delete')}
                               style={{ marginTop: 10 }}
                               onClick={() => {
-                                remove(index);
                                 const groupsMapping = [...form.values.groups_mapping];
                                 groupsMapping.splice(index, 1);
+                                remove(index);
                                 updateField('groups_mapping', groupsMapping);
                               }} // Delete
                             >

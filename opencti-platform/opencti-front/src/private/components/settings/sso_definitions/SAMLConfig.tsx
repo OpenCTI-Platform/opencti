@@ -1,6 +1,5 @@
 import React from 'react';
 import { Field, FieldArray } from 'formik';
-import { IconButton } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import SelectField from '../../../../components/fields/SelectField';
 import MenuItem from '@mui/material/MenuItem';
@@ -9,6 +8,8 @@ import Typography from '@mui/material/Typography';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { SSODefinitionFormValues } from '@components/settings/sso_definitions/SSODefinitionForm';
 import TextField from '../../../../components/TextField';
+import IconButton from '@common/button/IconButton';
+
 interface Props {
   updateField: (field: keyof SSODefinitionFormValues, value: unknown) => void;
 }
@@ -173,13 +174,13 @@ const SAMLConfig = ({ updateField }: Props) => {
               <IconButton
                 color="primary"
                 aria-label="Add"
-                size="large"
+                size="default"
                 style={{ marginBottom: 12 }}
                 onClick={() =>
                   push({ key: '', value: '', type: 'String' })
                 }
               >
-                <Add fontSize="small" />
+                <Add fontSize="small" color="primary" />
               </IconButton>
             </div>
             {form.values.advancedConfigurations
@@ -231,9 +232,9 @@ const SAMLConfig = ({ updateField }: Props) => {
                       aria-label={t_i18n('Delete')}
                       style={{ marginTop: 10 }}
                       onClick={() => {
-                        remove(index);
                         const advancedConfigurations = [...form.values.advancedConfigurations];
                         advancedConfigurations.splice(index, 1);
+                        remove(index);
                         updateField('advancedConfigurations', advancedConfigurations);
                       }}
                     >
