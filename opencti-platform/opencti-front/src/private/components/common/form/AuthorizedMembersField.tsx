@@ -357,7 +357,7 @@ const AuthorizedMembersField = ({
         }) => (
           <>
             {(!hideInfo && !!accessInfoMessage) && (
-              <Alert severity="info">{accessInfoMessage}</Alert>
+              <Alert severity="info" variant="outlined">{accessInfoMessage}</Alert>
             )}
             {isDisabledInDraft && (
               <Alert style={{ marginTop: 15 }} severity="warning">
