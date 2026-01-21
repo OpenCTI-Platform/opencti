@@ -392,9 +392,12 @@ const ThemeDark = (
       styleOverrides: {
         root: {
           color: text_color,
-          backgroundColor: '#0D182A',
+          backgroundColor: '#0C1524',
           '& fieldset': {
             border: 'none',
+          },
+          '.opencti-drawer-container &': {
+            backgroundColor: 'transparent',
           },
         },
       },
@@ -606,7 +609,7 @@ const ThemeDark = (
       styleOverrides: {
         root: {
           '& .MuiOutlinedInput-root': {
-            backgroundColor: '#0D182A',
+            backgroundColor: '#0C1524',
             '& fieldset': {
               borderColor: 'transparent',
             },

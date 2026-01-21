@@ -1,4 +1,4 @@
-import { Tooltip } from '@mui/material';
+import { Tooltip, TooltipProps } from '@mui/material';
 import React, { ReactElement, useState } from 'react';
 import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
@@ -12,6 +12,23 @@ import EnterpriseEditionAgreement from './EnterpriseEditionAgreement';
 import useAI from '../../../../utils/hooks/useAI';
 import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useGranted';
 import useAuth from '../../../../utils/hooks/useAuth';
+
+const EETooltipComponent = ({ children, ...tooltipProps }: TooltipProps) => {
+  return (
+    <Tooltip
+      {...tooltipProps}
+      slotProps={{
+        popper: {
+          sx: {
+            textTransform: 'none',
+          },
+        },
+      }}
+    >
+      {children}
+    </Tooltip>
+  );
+};
 
 const EETooltip = ({
   children,
@@ -31,13 +48,21 @@ const EETooltip = ({
   const {
     settings: { id: settingsId },
   } = useAuth();
+
   if (isEnterpriseEdition && (!forAi || (forAi && enabled && configured))) {
-    return <Tooltip title={title ? t_i18n(title) : undefined}>{children}</Tooltip>;
+    return (
+      <EETooltipComponent
+        title={title ? t_i18n(title) : undefined}
+      >
+        {children}
+      </EETooltipComponent>
+    );
   }
+
   if (isEnterpriseEdition && forAi && !configured) {
     return (
       <>
-        <Tooltip title={title ? t_i18n(title) : undefined}>
+        <EETooltipComponent title={title ? t_i18n(title) : undefined}>
           <span onClick={(e) => {
             setOpenConfigAI(true);
             e.preventDefault();
@@ -46,7 +71,7 @@ const EETooltip = ({
           >
             {children}
           </span>
-        </Tooltip>
+        </EETooltipComponent>
         <Dialog
           slotProps={{ paper: { elevation: 1 } }}
           open={openConfigAI}
@@ -69,7 +94,7 @@ const EETooltip = ({
   }
   return (
     <>
-      <Tooltip title={title ? t_i18n(title) : undefined}>
+      <EETooltipComponent title={title ? t_i18n(title) : undefined}>
         <span onClickCapture={(e) => {
           setFeedbackCreation(true);
           e.preventDefault();
@@ -78,7 +103,7 @@ const EETooltip = ({
         >
           {children}
         </span>
-      </Tooltip>
+      </EETooltipComponent>
       {isAdmin ? (
         <EnterpriseEditionAgreement
           open={feedbackCreation}
