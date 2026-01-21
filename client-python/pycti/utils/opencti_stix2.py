@@ -3494,7 +3494,7 @@ class OpenCTIStix2:
                         item, update, types, work_id
                     )
                     if failed_item is not None:
-                        too_large_elements_bundles.append(item)
+                        too_large_elements_bundles.append(failed_item)
                     else:
                         imported_elements.append(
                             {"id": item["id"], "type": item["type"]}
