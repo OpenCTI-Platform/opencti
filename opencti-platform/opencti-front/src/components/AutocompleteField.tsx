@@ -1,13 +1,14 @@
+import React, { ReactNode, useCallback } from 'react';
 import IconButton from '@common/button/IconButton';
 import { Add } from '@mui/icons-material';
 import { Autocomplete, AutocompleteProps, AutocompleteValue, TextField, TextFieldProps } from '@mui/material';
 import { FieldProps, useField } from 'formik';
-import { fieldToAutocomplete } from 'formik-mui';
-import { ReactNode, useCallback } from 'react';
 import { FieldOption } from '../utils/field';
 import { truncate } from '../utils/String';
-import { isNilField } from '../utils/utils';
 import { useFormatter } from './i18n';
+import { isNilField } from '../utils/utils';
+import { fieldToAutocomplete } from 'formik-mui';
+import Tag from '@common/tag/Tag';
 
 type Bool = boolean | undefined;
 type PossibleValue = FieldOption | string;
@@ -24,6 +25,7 @@ export type AutocompleteFieldProps<
     required?: boolean;
     endAdornment?: ReactNode;
     textfieldprops?: TextFieldProps;
+    applyLabelTextTransform?: boolean;
     onFocus?: (name: string) => void;
     onChange?: (name: string, value: AutocompleteValue<Value, M, DC, FSolo>) => void;
     onInternalChange?: (name: string, value: AutocompleteValue<Value, M, DC, FSolo>) => void;
@@ -53,6 +55,7 @@ const AutocompleteField = <
     renderOption,
     isOptionEqualToValue,
     textfieldprops,
+    applyLabelTextTransform,
     getOptionLabel,
     endAdornment,
     disabled,
@@ -90,6 +93,12 @@ const AutocompleteField = <
       : truncate(option, optionLength);
   };
 
+  const getOptionData = (option: Value) => {
+    return typeof option === 'object' && option !== null
+      ? { label: option.label, value: option.value }
+      : { label: String(option), value: String(option) };
+  };
+
   const helperText = textfieldprops?.helperText;
   const showError = !isNilField(meta.error) && (meta.touched || submitCount > 0);
   const fieldProps = fieldToAutocomplete({
@@ -125,6 +134,19 @@ const AutocompleteField = <
         noOptionsText={noOptionsText}
         {...fieldProps}
         renderOption={renderOption}
+        renderTags={(values, getTagProps) => (
+          values.map((option, index) => {
+            const { label, value } = getOptionData(option);
+            return (
+              <Tag
+                {...getTagProps({ index })}
+                applyLabelTextTransform={applyLabelTextTransform}
+                key={value}
+                label={label}
+              />
+            );
+          })
+        )}
         onChange={internalOnChange}
         onFocus={internalOnFocus}
         onBlur={internalOnBlur}

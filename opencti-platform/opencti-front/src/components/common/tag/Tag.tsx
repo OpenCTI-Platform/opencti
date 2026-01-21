@@ -6,7 +6,7 @@ interface TagProps extends Omit<ChipProps, 'color'> {
   label: string;
   color?: string;
   onClick?: (e: React.MouseEvent) => void;
-  onDelete?: () => void;
+  onDelete?: (e: React.MouseEvent) => void;
   maxWidth?: number | string;
   icon?: React.ReactElement;
   tooltipTitle?: string;
@@ -105,7 +105,17 @@ const Tag = ({
   }
 
   return (
-    <Tooltip title={tooltipTitle ?? label} placement="bottom-start">
+    <Tooltip
+      title={tooltipTitle ?? label}
+      placement="bottom-start"
+      slotProps={{
+        tooltip: {
+          sx: {
+            textTransform: applyLabelTextTransform ? 'inherit' : 'none',
+          },
+        },
+      }}
+    >
       {chip}
     </Tooltip>
   );
