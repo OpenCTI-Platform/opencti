@@ -9,13 +9,13 @@ import { useCookies } from 'react-cookie';
 import { graphql } from 'react-relay';
 import { useTheme } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';
-import { useFormatter } from '../../components/i18n';
-import useApiMutation from '../../utils/hooks/useApiMutation';
-import { handleErrorInForm } from '../../relay/environment';
-import OTPForm from './OTPForm';
-import { ResetPasswordVerifyOtpMutation, ResetPasswordVerifyOtpMutation$data } from './__generated__/ResetPasswordVerifyOtpMutation.graphql';
-import { ResetPasswordAskSendOtpMutation } from './__generated__/ResetPasswordAskSendOtpMutation.graphql';
-import { ResetPasswordChangePasswordMutation } from './__generated__/ResetPasswordChangePasswordMutation.graphql';
+import { useFormatter } from '../../../components/i18n';
+import useApiMutation from '../../../utils/hooks/useApiMutation';
+import { handleErrorInForm } from '../../../relay/environment';
+import OtpValidation from './OtpValidation';
+import { ResetPasswordVerifyOtpMutation, ResetPasswordVerifyOtpMutation$data } from '../__generated__/ResetPasswordVerifyOtpMutation.graphql';
+import { ResetPasswordAskSendOtpMutation } from '../__generated__/ResetPasswordAskSendOtpMutation.graphql';
+import { ResetPasswordChangePasswordMutation } from '../__generated__/ResetPasswordChangePasswordMutation.graphql';
 
 interface ResetProps {
   onCancel: () => void;
@@ -326,7 +326,7 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmai
       )}
 
       {step === Step.MFA && (
-        <OTPForm variant="resetPassword" transactionId={transactionId} onCompleted={onCompletedVerifyMfa} />
+        <OtpValidation variant="resetPassword" transactionId={transactionId} onCompleted={onCompletedVerifyMfa} />
       )}
 
       {step === Step.RESET_PASSWORD && (

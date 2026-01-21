@@ -4,7 +4,7 @@ import { StyledEngineProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ConnectedThemeProvider } from '../components/AppThemeProvider';
 import { ConnectedIntlProvider } from '../components/AppIntlProvider';
-import Login from './components/Login';
+import Login from './components/login/Login';
 import { environment } from '../relay/environment';
 import { LoginRootPublicQuery } from './__generated__/LoginRootPublicQuery.graphql';
 
@@ -38,6 +38,8 @@ export const rootPublicQuery = graphql`
         provider
       }
       playground_enabled
+      ...ExternalAuthsFragment
+      ...LoginLogoFragment
       ...AppIntlProvider_settings
       ...AppThemeProvider_settings
       ...PublicSettingsProvider_settings

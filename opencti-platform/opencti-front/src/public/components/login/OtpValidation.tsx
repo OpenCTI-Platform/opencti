@@ -2,13 +2,13 @@ import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import Alert from '@mui/material/Alert';
 import { useTheme } from '@mui/styles';
-import { useFormatter } from '../../components/i18n';
-import type { Theme } from '../../components/Theme';
+import { useFormatter } from '../../../components/i18n';
+import type { Theme } from '../../../components/Theme';
 import OtpInputField, { OTP_CODE_SIZE } from './OtpInputField';
-import useApiMutation from '../../utils/hooks/useApiMutation';
-import { APP_BASE_PATH } from '../../relay/environment';
+import useApiMutation from '../../../utils/hooks/useApiMutation';
+import { APP_BASE_PATH } from '../../../relay/environment';
 
-interface OTPFormProps {
+interface OtpValidationProps {
   variant?: 'login' | 'resetPassword';
   transactionId?: string;
   onCompleted?: () => void;
@@ -26,7 +26,7 @@ const ResetPasswordMfaMutation = graphql`
   }
 `;
 
-const OTPForm: FunctionComponent<OTPFormProps> = ({ variant = 'login', transactionId, onCompleted }) => {
+const OtpValidation: FunctionComponent<OtpValidationProps> = ({ variant = 'login', transactionId, onCompleted }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [code, setCode] = useState('');
@@ -88,4 +88,4 @@ const OTPForm: FunctionComponent<OTPFormProps> = ({ variant = 'login', transacti
   );
 };
 
-export default OTPForm;
+export default OtpValidation;

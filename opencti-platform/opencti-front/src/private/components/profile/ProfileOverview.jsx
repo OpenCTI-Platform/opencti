@@ -29,7 +29,7 @@ import { convertOrganizations } from '../../../utils/edition';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
 import PasswordPolicies from '../common/form/PasswordPolicies';
 import { fieldSpacingContainerStyle } from '../../../utils/field';
-import OtpInputField, { OTP_CODE_SIZE } from '../../../public/components/OtpInputField';
+import OtpInputField, { OTP_CODE_SIZE } from '../../../public/components/login/OtpInputField';
 import ItemCopy from '../../../components/ItemCopy';
 import { availableLanguage } from '../../../components/AppIntlProvider';
 import { maskString } from '../../../utils/String';

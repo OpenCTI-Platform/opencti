@@ -8,19 +8,14 @@ import { RelayResponsePayload } from 'relay-runtime/lib/store/RelayStoreTypes';
 import { useTheme } from '@mui/styles';
 import Button from '@common/button/Button';
 import { Theme } from '@mui/material/styles/createTheme';
-import { useFormatter } from '../../components/i18n';
-import useApiMutation from '../../utils/hooks/useApiMutation';
+import { useFormatter } from '../../../components/i18n';
+import useApiMutation from '../../../utils/hooks/useApiMutation';
 
 const loginMutation = graphql`
   mutation LoginFormMutation($input: UserLoginInput!) {
     token(input: $input)
   }
 `;
-
-const loginValidation = (t: (v: string) => string) => Yup.object().shape({
-  email: Yup.string().required(t('This field is required')),
-  password: Yup.string().required(t('This field is required')),
-});
 
 interface LoginFormValues {
   email: string;
@@ -42,22 +37,17 @@ const LoginForm: FunctionComponent<LoginFormProps> = ({ onClickForgotPassword, e
   const { t_i18n } = useFormatter();
   const [commitLoginMutation] = useApiMutation(loginMutation);
   const onSubmit: FormikConfig<LoginFormValues>['onSubmit'] = (
-    values,
+    input,
     { setSubmitting, setErrors },
   ) => {
     commitLoginMutation({
-      variables: {
-        input: values,
-      },
+      variables: { input },
+      onCompleted: () => window.location.reload(),
       onError: (error: RelayResponseError) => {
-        const errorMessage = t_i18n(
-          error.res?.errors?.at?.(0)?.message ?? 'Unknown',
-        );
+        const errorMsg = error.res?.errors?.at?.(0)?.message;
+        const errorMessage = t_i18n(errorMsg ?? 'Unknown');
         setErrors({ email: errorMessage });
         setSubmitting(false);
-      },
-      onCompleted: () => {
-        window.location.reload();
       },
     });
   };
@@ -67,11 +57,16 @@ const LoginForm: FunctionComponent<LoginFormProps> = ({ onClickForgotPassword, e
     password: '',
   };
 
+  const loginValidation = Yup.object().shape({
+    email: Yup.string().required(t_i18n('This field is required')),
+    password: Yup.string().required(t_i18n('This field is required')),
+  });
+
   return (
     <>
       <Formik
         initialValues={initialValues}
-        validationSchema={loginValidation(t_i18n)}
+        validationSchema={loginValidation}
         onSubmit={onSubmit}
       >
         {({ isSubmitting, isValid }) => (
