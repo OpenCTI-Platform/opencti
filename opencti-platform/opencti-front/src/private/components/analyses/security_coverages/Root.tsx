@@ -88,7 +88,7 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
     connectorsForImport,
   } = usePreloadedQuery<RootSecurityCoverageQuery>(securityCoverageQuery, queryRef);
   const isOverview = location.pathname === `/dashboard/analyses/security_coverages/${securityCoverageId}`;
-  const paddingRight = getPaddingRight(location.pathname, securityCoverageId, '/dashboard/analyses/security_coverages');
+  const paddingRight = getPaddingRight(location.pathname, securityCoverageId, '/dashboard/analyses/security_coverages', false);
   return (
     <>
       {securityCoverage ? (
