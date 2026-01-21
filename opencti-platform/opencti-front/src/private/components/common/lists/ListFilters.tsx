@@ -166,11 +166,11 @@ const ListFilters = ({
             groupBy={isNotUniqEntityTypes ? (option) => option?.groupLabel ?? '' : undefined}
             sx={{ width: 200 }}
             value={null}
-            onChange={(event, selectOptionValue) => {
+            onChange={(_, selectOptionValue) => {
               if (selectOptionValue?.value) handleChange(selectOptionValue.value);
             }}
             inputValue={inputValue}
-            onInputChange={(event, newValue, reason) => {
+            onInputChange={(_, newValue, reason) => {
               if (reason === 'reset') {
                 return;
               }

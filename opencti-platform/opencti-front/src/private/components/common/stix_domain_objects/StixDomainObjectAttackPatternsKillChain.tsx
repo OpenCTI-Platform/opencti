@@ -49,6 +49,7 @@ import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import { fetchQuery } from '../../../../relay/environment';
 import { containerTypes } from '../../../../utils/hooks/useAttributes';
 import { useInitCreateRelationshipContext } from '../stix_core_relationships/CreateRelationshipContextProvider';
+import Stack from '@mui/material/Stack';
 
 export const stixDomainObjectAttackPatternsKillChainQuery = graphql`
   query StixDomainObjectAttackPatternsKillChainQuery(
@@ -298,92 +299,46 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   return (
     <>
       {currentView !== 'matrix-in-line' && currentView !== 'relationships' && (
-        <div
-          style={{
-            marginBottom: 20,
+        <Stack
+          sx={{
+            marginBottom: 2,
             padding: 0,
-            marginTop: -12,
+            marginTop: -1,
+            gap: 1,
           }}
         >
-          <div
-            style={{
-              float: 'left',
-            }}
-          >
-            <SearchInput
-              variant="small"
-              keyword={searchTerm}
-              onSubmit={handleSearch}
-            />
-          </div>
-          <Box
-            style={{
-              display: 'flex',
-              float: 'left',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              marginRight: 20,
-              marginLeft: 8,
-              gap: 10,
-            }}
-          >
-            <Filters
-              availableFilterKeys={availableFilterKeys}
-              helpers={helpers}
-              searchContext={{ entityTypes: ['Attack-Pattern'] }}
-            />
-          </Box>
-          <Box
-            style={{
-              float: 'left',
-              display: 'flex',
-              margin: '-6px 4px 0 0',
-            }}
-          >
-            <FilterIconButton
-              filters={filters}
-              helpers={helpers}
-              styleNumber={2}
-              redirection
-              searchContext={{ entityTypes: ['Attack-Pattern'] }}
-            />
-          </Box>
           {currentView === 'matrix' && (
-            <>
-              <Box
-                style={{
-                  float: 'left',
-                  display: 'flex',
-                  paddingInline: 10,
-                  paddingBlock: 10,
-                  gap: 1,
-                }}
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="space-between"
+            >
+              <Stack
+                direction="row"
+                alignItems="center"
+                gap={1}
               >
-                <InputLabel style={{ paddingInlineEnd: 10 }}>
-                  {t_i18n('Kill chain :')}
-                </InputLabel>
-                <FormControl>
-                  <Select
-                    size="small"
-                    value={selectedKillChain}
-                    onChange={handleKillChainChange}
+                <Stack direction="row">
+                  <InputLabel
+                    style={{ paddingInlineEnd: 10, marginTop: 1 }}
                   >
-                    {killChains.map((killChainName) => (
-                      <MenuItem key={killChainName} value={killChainName}>
-                        {killChainName}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Box>
-              <Box
-                style={{
-                  float: 'left',
-                  display: 'flex',
-                  marginBlockStart: -4,
-                  paddingInline: 10,
-                }}
-              >
+                    {t_i18n('Kill chain :')}
+                  </InputLabel>
+                  <FormControl>
+                    <Select
+                      size="small"
+                      value={selectedKillChain}
+                      onChange={handleKillChainChange}
+                    >
+                      {killChains.map((killChainName) => (
+                        <MenuItem key={killChainName} value={killChainName}>
+                          {killChainName}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Stack>
+
                 <Tooltip
                   title={
                     isModeOnlyActive
@@ -400,17 +355,16 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
                     </IconButton>
                   </span>
                 </Tooltip>
-              </Box>
+              </Stack>
 
               {!isSecurityPlatform && (
                 <Box
                   style={{
-                    float: 'left',
+                    float: 'right',
                     display: 'flex',
-                    paddingInline: 10,
                   }}
                 >
-                  <FormControl style={{ display: 'flex', paddingInlineEnd: 10, minWidth: 300, maxWidth: 500 }}>
+                  <FormControl style={{ display: 'flex', minWidth: 300, maxWidth: 500 }}>
                     <EntitySelect
                       multiple
                       variant="outlined"
@@ -425,55 +379,89 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
                   </FormControl>
                 </Box>
               )}
-            </>
+            </Stack>
           )}
-          {displayButtons
-            && (
-              <div style={{ float: 'right', margin: 0 }} id="container-view-buttons">
-                <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
-                  {[...viewButtons]}
-                  {typeof handleToggleExports === 'function' && (
-                    <Tooltip
-                      key="export"
-                      title={
-                        exportDisabled
-                          ? `${t_i18n('Export is disabled because too many entities are targeted (maximum number of entities is: ') + export_max_size})`
-                          : t_i18n('Open export panel')
-                      }
-                    >
-                      <ToggleButton
-                        size="small"
-                        value="export"
-                        aria-label="export"
-                        onClick={exportDisabled ? undefined : handleToggleExports}
-                        disabled={exportDisabled}
-                      >
-                        <FileDownloadOutlined
-                          fontSize="small"
-                          color={!exportDisabled && openExports ? 'secondary' : 'primary'}
-                        />
-                      </ToggleButton>
-                    </Tooltip>
-                  )}
-                </ToggleButtonGroup>
 
-                <div
-                  style={{
-                    float: 'right',
-                    margin: '0 0 0 20px',
-                  }}
-                >
-                  <ExportButtons
-                    domElementId="container"
-                    name={t_i18n('Attack patterns kill chain')}
-                    csvData={csvData}
-                    csvFileName={`${t_i18n('Attack pattern courses of action')}.csv`}
-                  />
-                </div>
-              </div>
-            )}
-          <div className="clearfix" />
-        </div>
+          <Stack>
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="space-between"
+            >
+              <Stack
+                direction="row"
+                gap={1}
+                alignItems="center"
+              >
+                <SearchInput
+                  variant="small"
+                  keyword={searchTerm}
+                  onSubmit={handleSearch}
+                />
+                <Filters
+                  availableFilterKeys={availableFilterKeys}
+                  helpers={helpers}
+                  searchContext={{ entityTypes: ['Attack-Pattern'] }}
+                />
+              </Stack>
+
+              {displayButtons
+                && (
+                  <div id="container-view-buttons">
+                    <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
+                      {[...viewButtons]}
+                      {typeof handleToggleExports === 'function' && (
+                        <Tooltip
+                          key="export"
+                          title={
+                            exportDisabled
+                              ? `${t_i18n('Export is disabled because too many entities are targeted (maximum number of entities is: ') + export_max_size})`
+                              : t_i18n('Open export panel')
+                          }
+                        >
+                          <ToggleButton
+                            size="small"
+                            value="export"
+                            aria-label="export"
+                            onClick={exportDisabled ? undefined : handleToggleExports}
+                            disabled={exportDisabled}
+                          >
+                            <FileDownloadOutlined
+                              fontSize="small"
+                              color={!exportDisabled && openExports ? 'secondary' : 'primary'}
+                            />
+                          </ToggleButton>
+                        </Tooltip>
+                      )}
+                    </ToggleButtonGroup>
+
+                    <div
+                      style={{
+                        float: 'right',
+                        margin: '0 0 0 20px',
+                      }}
+                    >
+                      <ExportButtons
+                        domElementId="container"
+                        name={t_i18n('Attack patterns kill chain')}
+                        csvData={csvData}
+                        csvFileName={`${t_i18n('Attack pattern courses of action')}.csv`}
+                      />
+                    </div>
+                  </div>
+                )}
+
+            </Stack>
+
+          </Stack>
+          <FilterIconButton
+            filters={filters}
+            helpers={helpers}
+            styleNumber={2}
+            redirection
+            searchContext={{ entityTypes: ['Attack-Pattern'] }}
+          />
+        </Stack>
       )}
       <div
         style={{
