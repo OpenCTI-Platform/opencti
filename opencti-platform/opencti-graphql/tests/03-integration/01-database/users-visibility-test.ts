@@ -591,14 +591,37 @@ describe('Users visibility according to their direct organizations', () => {
     });
 
     it('regardingOf filter imbricated in several filter groups should be correctly taken into account', async () => {
+      const directParticipateOrgaABFilterGroup = generateRegardingOfFilters('eq', RELATION_PARTICIPATE_TO, 'false', [orgaABInternalId]) as FilterGroupWithNested;
+
       let filters: FilterGroupWithNested = {
         mode: FilterMode.Or,
         filters: [
           { key: ['name'], values: ['userO'] },
         ],
-        filterGroups: [generateRegardingOfFilters('eq', RELATION_PARTICIPATE_TO, 'false', [orgaABInternalId]) as FilterGroupWithNested],
+        filterGroups: [directParticipateOrgaABFilterGroup],
       };
       let queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters, noRegardingOfFilterIdsCheck: true } });
+      expect(queryResult.data?.users.edges.length).toEqual(2); // the users participating directly in organizationAB or userO
+      expect(['userO', 'userAB'].every((u) => queryResult.data?.users.edges.map((e: any) => e.node.name).includes(u))).toBeTruthy();
+
+      filters = {
+        mode: FilterMode.And,
+        filters: [{
+          key: ['name'],
+          values: usersNames, // we only consider the users created in this file
+        }],
+        filterGroups: [
+          {
+            mode: FilterMode.Or,
+            filters: [
+              { key: ['name'], values: ['userO'] },
+              ...directParticipateOrgaABFilterGroup.filters.filter((f) => f.key.includes('regardingOf')),
+            ],
+            filterGroups: [],
+          },
+        ],
+      };
+      queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters, noRegardingOfFilterIdsCheck: true } });
       expect(queryResult.data?.users.edges.length).toEqual(2); // the users participating directly in organizationAB or userO
       expect(['userO', 'userAB'].every((u) => queryResult.data?.users.edges.map((e: any) => e.node.name).includes(u))).toBeTruthy();
 
@@ -607,12 +630,11 @@ describe('Users visibility according to their direct organizations', () => {
         filters: [
           { key: [RELATION_PARTICIPATE_TO], values: [], operator: FilterOperator.Nil },
         ],
-        filterGroups: [generateRegardingOfFilters('eq', RELATION_PARTICIPATE_TO, 'false', [orgaABInternalId]) as FilterGroupWithNested],
+        filterGroups: [directParticipateOrgaABFilterGroup],
       };
       queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters } });
       expect(queryResult.data?.users.edges.length).toEqual(0); // the users participating directly in organizationAB and having no orga: no user in this case
 
-      const directParticipateOrgaABFilterGroup = generateRegardingOfFilters('eq', RELATION_PARTICIPATE_TO, 'false', [orgaABInternalId]) as FilterGroupWithNested;
       filters = {
         mode: FilterMode.And,
         filters: [{ key: ['entity_type'], values: MEMBERS_ENTITY_TYPES }],
@@ -634,7 +656,7 @@ describe('Users visibility according to their direct organizations', () => {
         ],
       };
       queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters } });
-      expect(queryResult.data?.users.edges.length).toEqual(2); // the users participating directly in organizationAB
+      expect(queryResult.data?.users.edges.length).toEqual(2); // the users participating directly in organizationAB (ie userAB) or userB
       expect(['userB', 'userAB'].every((u) => queryResult.data?.users.edges.map((e: any) => e.node.name).includes(u))).toBeTruthy();
     });
 
