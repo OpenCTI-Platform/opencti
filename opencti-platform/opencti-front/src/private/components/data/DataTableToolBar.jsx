@@ -2305,7 +2305,7 @@ class DataTableToolBar extends Component {
                               aria-label={t('Mark as unread')}
                               disabled={numberOfSelectedElements === 0 || this.state.processing}
                               onClick={this.handleLaunchRead.bind(this, false)}
-                              color="warning"
+                              color="error"
                               size="small"
                             >
                               <UnpublishedOutlined />
@@ -2538,7 +2538,7 @@ class DataTableToolBar extends Component {
                                 || selectedElementsList.find((element) => element.currentUserAccessRight === 'view')
                               }
                               onClick={this.handleLaunchDelete.bind(this)}
-                              color={warning ? 'warning' : 'primary'}
+                              color={warning ? 'error' : 'primary'}
                               size="small"
                             >
                               <DeleteOutlined fontSize="small" />
@@ -2576,7 +2576,7 @@ class DataTableToolBar extends Component {
                                 || this.state.processing
                               }
                               onClick={this.handleLaunchRestore.bind(this)}
-                              color={warning ? 'warning' : 'primary'}
+                              color={warning ? 'error' : 'primary'}
                               size="small"
                             >
                               <RestoreOutlined fontSize="small" />
@@ -2592,7 +2592,7 @@ class DataTableToolBar extends Component {
                                 || this.state.processing
                               }
                               onClick={this.handleLaunchCompleteDelete.bind(this)}
-                              color={warning ? 'warning' : 'primary'}
+                              color={warning ? 'error' : 'primary'}
                               size="small"
                             >
                               <DeleteOutlined fontSize="small" />

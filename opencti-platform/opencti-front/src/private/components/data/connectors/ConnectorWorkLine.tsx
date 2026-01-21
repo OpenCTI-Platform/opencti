@@ -152,7 +152,8 @@ const ConnectorWorkLine: FunctionComponent<
         <Button
           sx={{ position: 'absolute', right: 16, top: 16 }}
           variant="secondary"
-          color={(workErrors ?? []).length === 0 ? 'success' : 'error'}
+          color={(workErrors ?? []).length === 0 ? 'success' : undefined}
+          intent={(workErrors ?? []).length >= 0 ? 'destructive' : undefined}
           onClick={() => handleOpenDrawerErrors(workErrors ?? [])}
           size="small"
         >
