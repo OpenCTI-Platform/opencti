@@ -98,7 +98,7 @@ const ThemeLight = (
       },
     },
     text: {
-      secondary: '#494A50',
+      secondary: THEME_LIGHT_DEFAULT_TEXT,
       light: '#494A50',
     },
     leftBar: {

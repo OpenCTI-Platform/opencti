@@ -93,7 +93,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
             >
               {t_i18n('Score')}
             </Label>
-            <Stack direction="row">
+            <Stack direction="row" gap={1}>
               <ItemScore score={indicator.x_opencti_score} />
               {(indicator.decay_applied_rule
                 || !!indicator.decay_exclusion_applied_rule) && (

@@ -21,10 +21,10 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
-import Chip from '@mui/material/Chip';
 import { EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from 'src/utils/hooks/useGranted';
 import Security from 'src/utils/Security';
 import useApiMutation from 'src/utils/hooks/useApiMutation';
+import Tag from '@common/tag/Tag';
 
 const workspaceMutation = graphql`
   mutation WorkspaceHeaderTagManagerFieldMutation($id: ID!, $input: [EditInput!]!) {
@@ -199,7 +199,7 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
       <div style={{ display: 'flex', gap: 7 }}>
         {tags.slice(0, 2).map(
           (tag) => tag.length > 0 && (
-            <Chip
+            <Tag
               key={tag}
               label={tag}
               onDelete={deleteTag(tag)}

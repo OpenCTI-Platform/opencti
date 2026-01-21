@@ -1,7 +1,6 @@
 import React, { ChangeEvent, FunctionComponent, useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import Grid from '@mui/material/Grid';
-import Tooltip from '@mui/material/Tooltip';
 import XtmHubSettings from '@components/settings/xtm-hub/XtmHubSettings';
 import SupportPackages from '@components/settings/support/SupportPackages';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
@@ -23,7 +22,6 @@ import DialogActions from '@mui/material/DialogActions';
 import * as Yup from 'yup';
 import Box from '@mui/material/Box';
 import { Stack, Switch } from '@mui/material';
-import Chip from '@mui/material/Chip';
 import { ExperienceFieldPatchMutation$data } from '@components/settings/__generated__/ExperienceFieldPatchMutation.graphql';
 import getEEWarningMessage from '@components/settings/EEActivation';
 import { ExperienceQuery } from './__generated__/ExperienceQuery.graphql';
@@ -42,6 +40,7 @@ import useGranted, { SETTINGS_SETPARAMETERS, SETTINGS_SUPPORT } from '../../../u
 import ValidateTermsOfUseDialog from './ValidateTermsOfUseDialog';
 import useAuth from '../../../utils/hooks/useAuth';
 import Card from '../../../components/common/card/Card';
+import Tag from '@common/tag/Tag';
 
 export enum CGUStatus {
   pending = 'pending',
@@ -274,20 +273,13 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                   <ListItem divider={true}>
                     <ListItemText
                       primary={(
-                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <Stack direction="row" alignItems="center" gap={1}>
                           <span>{t_i18n('Agentic AI (Ariane Assistant)')}</span>
-                          <Tooltip title={t_i18n('This feature is in preview and will improve over time with user\'s feedback.')}>
-                            <Chip
-                              label={t_i18n('Preview')}
-                              color="primary"
-                              variant="outlined"
-                              size="small"
-                              style={{
-                                marginLeft: theme.spacing(1),
-                              }}
-                            />
-                          </Tooltip>
-                        </div>
+                          <Tag
+                            label={t_i18n('Preview')}
+                            tooltipTitle={t_i18n('This feature is in preview and will improve over time with user\'s feedback.')}
+                          />
+                        </Stack>
                       )}
                     />
                     {filigran_chatbot_ai_cgu_status === CGUStatus.pending ? (
@@ -295,7 +287,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                         size="small"
                         variant="secondary"
                         onClick={() => setOpenValidateTermsOfUse(true)}
-                        style={{ marginRight: 7, lineHeight: '12px', width: 250 }}
+                        style={{ lineHeight: '12px', width: 200 }}
                       >
                         {t_i18n('Validate the Filigran AI Terms')}
                       </Button>

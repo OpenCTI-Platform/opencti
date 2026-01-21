@@ -19,7 +19,6 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Slide from '@mui/material/Slide';
 import { Delete } from 'mdi-material-ui';
-import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
 import TasksFilterValueContainer from '../../../../components/TasksFilterValueContainer';
 import TaskStatus from '../../../../components/TaskStatus';
@@ -34,21 +33,14 @@ import { convertFiltersFromOldFormat } from '../../../../utils/filters/filtersFr
 import { deleteNode } from '../../../../utils/store';
 import Card from '@common/card/Card';
 import { Stack } from '@mui/material';
+import Tag from '@common/tag/Tag';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   progress: {
     borderRadius: 4,
     height: 10,
-  },
-  filter: {
-    margin: '5px 10px 5px 0',
-  },
-  operator: {
-    fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: theme.palette.background.accent,
-    margin: '5px 10px 5px 0',
   },
 }));
 
@@ -289,100 +281,100 @@ const TasksList = ({ data, options }) => {
                       </Grid>
                     )}
                     <Grid item xs={12}>
-                      <Typography variant="h3" gutterBottom={true}>
-                        {t_i18n('Targeted entities')} ({n(task.task_expected_number)})
-                      </Typography>
-                      {task.task_search && (
-                        <span>
-                          <Chip
-                            classes={{ root: classes.filter }}
-                            label={(
-                              <div>
-                                <strong>{t_i18n('Search')}</strong>:{' '}
-                                {task.task_search}
-                              </div>
-                            )}
-                          />
-                          <Chip
-                            classes={{ root: classes.operator }}
-                            label={t_i18n('AND')}
-                          />
-                        </span>
-                      )}
-                      {task.type !== 'RULE'
-                        && (isFilterGroupNotEmpty(filters)
-                          ? (
-                              <TasksFilterValueContainer
-                                filters={filters}
-                                entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Notification', 'User']}
-                              />
-                            )
-                          : (
-                              <Chip
-                                classes={{ root: classes.filter }}
-                                label={(
-                                  <div>
-                                    <strong>{t_i18n('List of entities')}</strong>:{' '}
-                                    {listIds}
-                                  </div>
-                                )}
-                              />
-                            )
-                        )
-                      }
-                      {task.type === 'RULE' && (
-                        <Chip
-                          classes={{ root: classes.filter }}
-                          label={<div>{t_i18n('All rule targets')}</div>}
-                        />
-                      )}
-                    </Grid>
-                    <Grid item xs={12}>
-                      <Typography variant="h3" gutterBottom={true}>
-                        {t_i18n('Actions')}
-                      </Typography>
-                      {task.type === 'RULE' && (
-                        <Chip
-                          classes={{ root: classes.operator }}
-                          label={<div>{t_i18n('APPLY RULE')}</div>}
-                        />
-                      )}
-                      {task.actions
-                        && R.map(
-                          (action) => (
-                            <div key={task.actions.indexOf(action)}>
-                              <Chip
-                                classes={{ root: classes.operator }}
-                                label={action.type}
-                              />
-                              {action.context && (
-                                <Chip
-                                  classes={{ root: classes.filter }}
+                      <Stack gap={1}>
+                        <Typography variant="h3" gutterBottom={true}>
+                          {t_i18n('Targeted entities')} ({n(task.task_expected_number)})
+                        </Typography>
+                        {task.task_search && (
+                          <Stack direction="row" gap={1}>
+                            <Tag
+                              label={(
+                                <div>
+                                  <strong>{t_i18n('Search')}</strong>:{' '}
+                                  {task.task_search}
+                                </div>
+                              )}
+                            />
+                            <Tag
+                              label={t_i18n('AND')}
+                            />
+                          </Stack>
+                        )}
+                        {task.type !== 'RULE'
+                          && (isFilterGroupNotEmpty(filters)
+                            ? (
+                                <TasksFilterValueContainer
+                                  filters={filters}
+                                  entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Notification', 'User']}
+                                />
+                              )
+                            : (
+                                <Tag
                                   label={(
                                     <div>
-                                      {action.context.field && (
-                                        <span>
-                                          <strong>
-                                            {t_i18n(action.context.field)}
-                                          </strong>
-                                          :{' '}
-                                        </span>
-                                      )}
-                                      {truncate(
-                                        R.join(
-                                          ', ',
-                                          action.context.values || [],
-                                        ),
-                                        80,
-                                      )}
+                                      <strong>{t_i18n('List of entities')}</strong>:{' '}
+                                      {listIds}
                                     </div>
                                   )}
+                                  sx={{
+                                    width: 'fit-content',
+                                  }}
                                 />
-                              )}
-                            </div>
-                          ),
-                          task.actions,
+                              )
+                          )
+                        }
+                        {task.type === 'RULE' && (
+                          <Tag
+                            label={<div>{t_i18n('All rule targets')}</div>}
+                          />
                         )}
+                      </Stack>
+                    </Grid>
+                    <Grid item xs={12}>
+                      <Stack gap={1}>
+                        <Typography variant="h3" gutterBottom={true}>
+                          {t_i18n('Actions')}
+                        </Typography>
+                        {task.type === 'RULE' && (
+                          <Tag
+                            label={<div>{t_i18n('APPLY RULE')}</div>}
+                          />
+                        )}
+                        {task.actions
+                          && R.map(
+                            (action) => (
+                              <div key={task.actions.indexOf(action)}>
+                                <Tag
+                                  label={action.type}
+                                />
+                                {action.context && (
+                                  <Tag
+                                    label={(
+                                      <div>
+                                        {action.context.field && (
+                                          <span>
+                                            <strong>
+                                              {t_i18n(action.context.field)}
+                                            </strong>
+                                            :{' '}
+                                          </span>
+                                        )}
+                                        {truncate(
+                                          R.join(
+                                            ', ',
+                                            action.context.values || [],
+                                          ),
+                                          80,
+                                        )}
+                                      </div>
+                                    )}
+                                  />
+                                )}
+                              </div>
+                            ),
+                            task.actions,
+                          )}
+                      </Stack>
                     </Grid>
                   </Grid>
                 </Grid>
