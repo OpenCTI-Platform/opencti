@@ -898,7 +898,7 @@ describe('Migration of SSO environment test coverage', () => {
       });
     });
   });
-  describe.todo('Dry run of CERT migrations', () => {
+  describe('Dry run of CERT migrations', () => {
     it('should CERT minimal configuration works', async () => {
       const configuration = {
         cert_minimal: {
