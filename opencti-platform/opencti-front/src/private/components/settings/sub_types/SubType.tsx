@@ -21,6 +21,8 @@ import Loader from '../../../../components/Loader';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import Card from '../../../../components/common/card/Card';
 import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
+import SubTypeMenu from './SubTypeMenu';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const entitySettingSubscription = graphql`
   subscription SubTypeEntitySettingSubscription($id: ID!) {
@@ -88,18 +90,22 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
 
   const hasRequestAccessConfig = subType.settings?.requestAccessConfiguration && isEnterpriseEdition && subType.settings?.availableSettings.includes('request_access_workflow');
 
-  const isDraftWorkspaceType = subType.label === 'DraftWorkspace';
+  const { isFeatureEnable } = useHelper();
+  const isDraftWorkflowFeatureEnabled = isFeatureEnable('DRAFT_WORKFLOW');
+  const isDraftWorkspaceType = subType.label === 'DraftWorkspace' && isDraftWorkflowFeatureEnabled;
   return (
     <div style={{ margin: 0, padding: '0 200px 50px 0' }}>
       <Breadcrumbs elements={[
         { label: t_i18n('Settings') },
         { label: t_i18n('Customization') },
         { label: t_i18n('Entity types'), link: '/dashboard/settings/customization/entity_types' },
-        { label: t_i18n(`entity_${subType.label}`) },
+        { label: t_i18n(`entity_${subType.label}`), current: true },
       ]}
       />
 
       <CustomizationMenu />
+
+      {isDraftWorkspaceType && (<SubTypeMenu entityType={subType.label} />)}
 
       <TitleMainEntity sx={{ mb: 3 }}>
         {t_i18n(`entity_${subType.label}`)}
