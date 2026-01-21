@@ -7,7 +7,6 @@ import { FieldOption } from '../utils/field';
 import { truncate } from '../utils/String';
 import { useFormatter } from './i18n';
 import { isNilField } from '../utils/utils';
-import { FieldOption } from '../utils/field';
 import { fieldToAutocomplete } from 'formik-mui';
 import Tag from '@common/tag/Tag';
 
