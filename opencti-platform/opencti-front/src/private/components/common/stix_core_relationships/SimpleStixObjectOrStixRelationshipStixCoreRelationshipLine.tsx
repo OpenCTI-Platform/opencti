@@ -619,7 +619,7 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine = ({
             + (data.x_opencti_inferences?.[0]?.rule.name ?? '')
           }
         >
-          <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
+          <AutoFix fontSize="small" sx={{ mt: 1 }} />
         </Tooltip>
       ) : (
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
