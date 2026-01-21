@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterAll, describe, expect, it, vi } from 'vitest';
 import { addSingleSignOn, deleteSingleSignOn, findAllSingleSignOn } from '../../../src/modules/singleSignOn/singleSignOn-domain';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { type SingleSignOnAddInput, StrategyType } from '../../../src/generated/graphql';
@@ -11,7 +11,15 @@ import { registerStrategy } from '../../../src/modules/singleSignOn/singleSignOn
 
 describe('Single sign on Domain coverage tests', () => {
   describe('SAML coverage tests', () => {
-    let createdSamlId: string;
+    afterAll(async () => {
+      const allSso = await findAllSingleSignOn(testContext, ADMIN_USER);
+      for (let i = 0; i < allSso.length; i++) {
+        if (allSso[i].identifier?.startsWith('samlTest')) {
+          await deleteSingleSignOn(testContext, ADMIN_USER, allSso[i].id);
+        }
+      }
+    });
+
     it('should add new minimal SAML provider', async () => {
       const input: SingleSignOnAddInput = {
         name: 'Saml for test domain',
@@ -26,7 +34,6 @@ describe('Single sign on Domain coverage tests', () => {
         ],
       };
       const samlEntity = await addSingleSignOn(testContext, ADMIN_USER, input);
-      createdSamlId = samlEntity.id;
 
       expect(samlEntity.identifier).toBe('samlTestDomain');
       expect(samlEntity.enabled).toBe(true);
@@ -132,26 +139,22 @@ describe('Single sign on Domain coverage tests', () => {
           expect.anything(),
         );
     });
-
-    it('should remove SAML provider created', async () => {
-      await deleteSingleSignOn(testContext, ADMIN_USER, createdSamlId);
-
+  });
+  describe('OpenID coverage tests', () => {
+    afterAll(async () => {
       const allSso = await findAllSingleSignOn(testContext, ADMIN_USER);
       for (let i = 0; i < allSso.length; i++) {
-        if (allSso[i].identifier?.startsWith('samlTest')) {
+        if (allSso[i].identifier?.startsWith('openidTest')) {
           await deleteSingleSignOn(testContext, ADMIN_USER, allSso[i].id);
         }
       }
     });
-  });
-  describe('OpenID coverage tests', () => {
-    let createdOpenIdId: string;
 
     it('should add new minimal OpenID provider', async () => {
       const input: SingleSignOnAddInput = {
         name: 'OpenID for test domain',
         strategy: StrategyType.OpenIdConnectStrategy,
-        identifier: 'oicTestDomain',
+        identifier: 'openidTestDomain',
         enabled: false,
         label: 'Nice OIC button',
         configuration: [
@@ -162,15 +165,130 @@ describe('Single sign on Domain coverage tests', () => {
         ],
       };
       const oicEntity = await addSingleSignOn(testContext, ADMIN_USER, input);
-      createdOpenIdId = oicEntity.id;
 
-      expect(oicEntity.identifier).toBe('oicTestDomain');
+      expect(oicEntity.identifier).toBe('openidTestDomain');
       expect(oicEntity.enabled).toBe(false);
       expect(oicEntity.label).toBe('Nice OIC button');
     });
 
-    it('should remove OpenID provider created', async () => {
-      await deleteSingleSignOn(testContext, ADMIN_USER, createdOpenIdId);
+    it('should missing redirect_uris throw error', async () => {
+      const logAppErrorSpy = vi.spyOn(logApp, 'error');
+      const input: SingleSignOnAddInput = {
+        name: 'OpenID for test domain no redirect_uris',
+        strategy: StrategyType.OpenIdConnectStrategy,
+        identifier: 'openidTestKo1',
+        enabled: true,
+        label: 'Nice OIC button',
+        configuration: [
+          { key: 'client_secret', value: 'graceHopper', type: 'string' },
+          { key: 'client_id', value: 'myoicclient', type: 'string' },
+          { key: 'issuer', value: 'issuer', type: 'string' },
+        ],
+      };
+      const oicEntity = await addSingleSignOn(testContext, ADMIN_USER, input);
+      expect(oicEntity.identifier).toBe('openidTestKo1');
+      expect(oicEntity.enabled).toBe(true);
+      expect(oicEntity.label).toBe('Nice OIC button');
+
+      // Here there is a pub/sub on redis, let's just call the same method than listener
+      await registerStrategy(oicEntity);
+      expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'openidTestKo1')).toBeFalsy();
+
+      expect(logAppErrorSpy, 'No exception should be throw, but an error message should be present')
+        .toHaveBeenCalledWith(
+          `[Auth][Not provided]Error when initializing an authentication provider (id: ${oicEntity.id}, identifier: openidTestKo1), cause: redirect_uris is mandatory for OpenID`,
+          expect.anything(),
+        );
+    });
+
+    it('should missing client_id throw error', async () => {
+      const logAppErrorSpy = vi.spyOn(logApp, 'error');
+      const input: SingleSignOnAddInput = {
+        name: 'OpenID for test domain no client_id',
+        strategy: StrategyType.OpenIdConnectStrategy,
+        identifier: 'openidTestKo2',
+        enabled: true,
+        label: 'Nice OIC button',
+        configuration: [
+          { key: 'redirect_uris', value: '["http://fake.invalid"]', type: 'array' },
+          { key: 'client_secret', value: 'graceHopper', type: 'string' },
+          { key: 'issuer', value: 'issuer', type: 'string' },
+        ],
+      };
+      const oicEntity = await addSingleSignOn(testContext, ADMIN_USER, input);
+      expect(oicEntity.identifier).toBe('openidTestKo2');
+      expect(oicEntity.enabled).toBe(true);
+      expect(oicEntity.label).toBe('Nice OIC button');
+
+      // Here there is a pub/sub on redis, let's just call the same method than listener
+      await registerStrategy(oicEntity);
+      expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'openidTestKo2')).toBeFalsy();
+
+      expect(logAppErrorSpy, 'No exception should be throw, but an error message should be present')
+        .toHaveBeenCalledWith(
+          `[Auth][Not provided]Error when initializing an authentication provider (id: ${oicEntity.id}, identifier: openidTestKo2), cause: client_id is mandatory for OpenID`,
+          expect.anything(),
+        );
+    });
+
+    it('should missing issuer throw error', async () => {
+      const logAppErrorSpy = vi.spyOn(logApp, 'error');
+      const input: SingleSignOnAddInput = {
+        name: 'OpenID for test domain no issuer',
+        strategy: StrategyType.OpenIdConnectStrategy,
+        identifier: 'openidTestKo3',
+        enabled: true,
+        label: 'Nice OIC button',
+        configuration: [
+          { key: 'redirect_uris', value: '["http://fake.invalid"]', type: 'array' },
+          { key: 'client_secret', value: 'graceHopper', type: 'string' },
+          { key: 'client_id', value: 'myoicclient', type: 'string' },
+        ],
+      };
+      const oicEntity = await addSingleSignOn(testContext, ADMIN_USER, input);
+      expect(oicEntity.identifier).toBe('openidTestKo3');
+      expect(oicEntity.enabled).toBe(true);
+      expect(oicEntity.label).toBe('Nice OIC button');
+
+      // Here there is a pub/sub on redis, let's just call the same method than listener
+      await registerStrategy(oicEntity);
+      expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'openidTestKo1')).toBeFalsy();
+
+      expect(logAppErrorSpy, 'No exception should be throw, but an error message should be present')
+        .toHaveBeenCalledWith(
+          `[Auth][Not provided]Error when initializing an authentication provider (id: ${oicEntity.id}, identifier: openidTestKo3), cause: issuer is mandatory for OpenID`,
+          expect.anything(),
+        );
+    });
+
+    it('should missing client_secret throw error', async () => {
+      const logAppErrorSpy = vi.spyOn(logApp, 'error');
+      const input: SingleSignOnAddInput = {
+        name: 'OpenID for test domain no client_secret',
+        strategy: StrategyType.OpenIdConnectStrategy,
+        identifier: 'openidTestKo4',
+        enabled: true,
+        label: 'Nice OIC button',
+        configuration: [
+          { key: 'redirect_uris', value: '["http://fake.invalid"]', type: 'array' },
+          { key: 'client_id', value: 'myoicclient', type: 'string' },
+          { key: 'issuer', value: 'issuer', type: 'string' },
+        ],
+      };
+      const oicEntity = await addSingleSignOn(testContext, ADMIN_USER, input);
+      expect(oicEntity.identifier).toBe('openidTestKo4');
+      expect(oicEntity.enabled).toBe(true);
+      expect(oicEntity.label).toBe('Nice OIC button');
+
+      // Here there is a pub/sub on redis, let's just call the same method than listener
+      await registerStrategy(oicEntity);
+      expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'openidTestKo4')).toBeFalsy();
+
+      expect(logAppErrorSpy, 'No exception should be throw, but an error message should be present')
+        .toHaveBeenCalledWith(
+          `[Auth][Not provided]Error when initializing an authentication provider (id: ${oicEntity.id}, identifier: openidTestKo4), cause: client_secret is mandatory for OpenID`,
+          expect.anything(),
+        );
     });
   });
 
