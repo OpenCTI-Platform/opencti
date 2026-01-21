@@ -232,7 +232,6 @@ class StixCoreObjectContentComponent extends Component {
       }
       currentFileId = params.currentFileId;
     }
-    this.props.setEditorHeaderDisabled(!isContentCompatible);
     this.state = {
       currentFileId: isContentCompatible && params.contentSelected && params.forceFile !== true ? null : currentFileId,
       contentSelected: isContentCompatible && params.forceFile !== true && (params.contentSelected || isEmptyField(currentFileId)),
