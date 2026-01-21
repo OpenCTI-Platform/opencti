@@ -143,7 +143,7 @@ const AutocompleteField = <
                 {...getTagProps({ index })}
                 applyLabelTextTransform={applyLabelTextTransform}
                 key={value}
-                label={truncate(label, 50)}
+                label={label}
               />
             );
           })
