@@ -15,35 +15,35 @@ const TaskScope: FunctionComponent<TaskScopeProps> = ({ label, scope }) => {
     case 'SETTINGS':
       return (
         <Tag
-          color={theme.palette.tertiary.red[400]}
+          color={theme.palette.designSystem.tertiary.red[400]}
           label={label}
         />
       );
     case 'USER':
       return (
         <Tag
-          color={theme.palette.tertiary.orange[400]}
+          color={theme.palette.designSystem.tertiary.orange[400]}
           label={label}
         />
       );
     case 'KNOWLEDGE':
       return (
         <Tag
-          color={theme.palette.tertiary.darkBlue[300]}
+          color={theme.palette.designSystem.tertiary.darkBlue[300]}
           label={label}
         />
       );
     case 'RULE':
       return (
         <Tag
-          color={theme.palette.tertiary.red[100]}
+          color={theme.palette.designSystem.tertiary.red[100]}
           label={label}
         />
       );
     case 'IMPORT':
       return (
         <Tag
-          color={theme.palette.tertiary.orange[400]}
+          color={theme.palette.designSystem.tertiary.orange[400]}
           label={label}
         />
       );
@@ -52,14 +52,14 @@ const TaskScope: FunctionComponent<TaskScopeProps> = ({ label, scope }) => {
     case 'INVESTIGATION':
       return (
         <Tag
-          color={theme.palette.tertiary.orange[400]}
+          color={theme.palette.designSystem.tertiary.orange[400]}
           label={label}
         />
       );
     default:
       return (
         <Tag
-          color={theme.palette.tertiary.grey[400]}
+          color={theme.palette.designSystem.tertiary.grey[400]}
           label={label}
         />
       );

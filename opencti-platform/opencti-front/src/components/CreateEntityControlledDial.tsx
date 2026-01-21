@@ -10,7 +10,6 @@ import { ButtonSize } from './common/button/Button.types';
 
 interface CreateEntityControlledDialProps extends DrawerControlledDialProps {
   entityType: string;
-  color?: 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning';
   size?: ButtonSize;
   variant?: ButtonVariant;// 'text' | 'contained' | 'outlined';
   style?: React.CSSProperties;
@@ -19,7 +18,6 @@ interface CreateEntityControlledDialProps extends DrawerControlledDialProps {
 const CreateEntityControlledDial: FunctionComponent<CreateEntityControlledDialProps> = ({
   onOpen,
   entityType,
-  color = 'primary',
   size = 'default',
   variant = 'primary',
   style,
@@ -39,7 +37,6 @@ const CreateEntityControlledDial: FunctionComponent<CreateEntityControlledDialPr
   return canDisplayButton ? (
     <Button
       onClick={onOpen}
-      color={color}
       size={size}
       variant={variant}
       aria-label={buttonValue}

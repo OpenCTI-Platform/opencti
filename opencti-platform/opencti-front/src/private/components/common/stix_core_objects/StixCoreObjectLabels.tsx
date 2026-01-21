@@ -99,7 +99,7 @@ const StixCoreObjectLabels = ({
             e.stopPropagation();
             onClick?.('objectLabel', null, 'eq');
           }}
-          color={theme.palette.tertiary.red[400]}
+          color={theme.palette.designSystem.tertiary.red[400]}
         />
       ) : (
         <Tag
@@ -109,7 +109,7 @@ const StixCoreObjectLabels = ({
             e.stopPropagation();
             onClick?.('objectLabel', null, 'eq');
           }}
-          color={theme.palette.tertiary.blue[900]}
+          color={theme.palette.designSystem.tertiary.blue[900]}
         />
       )}
     </>

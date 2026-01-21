@@ -233,7 +233,7 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
                       startIcon={<PauseOutlined />}
                       aria-label="Pause"
                       onClick={handlePause}
-                      color="warning"
+                      variant="secondary"
                       disabled={disabled}
                     >
                       {t_i18n('Pause')}
@@ -243,7 +243,6 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
                       startIcon={<PlayArrowOutlined />}
                       aria-label="Start"
                       onClick={handleStart}
-                      color="success"
                       disabled={disabled}
                     >
                       {t_i18n('Start')}
@@ -258,7 +257,7 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
                     startIcon={<ClearOutlined />}
                     aria-label="Reset"
                     onClick={handleReset}
-                    color="error"
+                    intent="destructive"
                     disabled={disabled || indexedFiles === 0}
                   >
                     {t_i18n('Reset')}

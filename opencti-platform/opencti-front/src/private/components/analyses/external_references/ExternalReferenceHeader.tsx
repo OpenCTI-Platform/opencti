@@ -31,7 +31,7 @@ const ExternalReferenceHeaderComponent = ({
       <TitleMainEntity>
         {truncate(externalReference.source_name, 80)}
       </TitleMainEntity>
-      <div>
+      <Stack direction="row" gap={1}>
         {canDelete && (
           <PopoverMenu>
             {({ closeMenu }) => (
@@ -55,7 +55,7 @@ const ExternalReferenceHeaderComponent = ({
             handleClose={handleCloseDelete}
           />
         </Security>
-      </div>
+      </Stack>
     </Stack>
   );
 };

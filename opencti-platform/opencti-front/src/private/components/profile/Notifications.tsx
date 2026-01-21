@@ -384,9 +384,12 @@ const Notifications: FunctionComponent = () => {
               handleRead(data.id, !data.is_read);
             }}
             size="small"
-            color={data.is_read ? 'warning' : 'success'}
+            color={data.is_read ? 'primary' : 'success'}
           >
-            {data.is_read ? <UnpublishedOutlined /> : <CheckCircleOutlined />}
+            {data.is_read
+              ? <UnpublishedOutlined fontSize="small" />
+              : <CheckCircleOutlined fontSize="small" />
+            }
           </IconButton>
         </Tooltip>
         <Tooltip title={t_i18n('Delete this notification')}>
@@ -401,7 +404,7 @@ const Notifications: FunctionComponent = () => {
               size="small"
               color="primary"
             >
-              <DeleteOutlined />
+              <DeleteOutlined fontSize="small" />
             </IconButton>
           </span>
         </Tooltip>
