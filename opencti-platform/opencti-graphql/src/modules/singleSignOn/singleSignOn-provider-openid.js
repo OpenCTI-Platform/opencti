@@ -72,14 +72,15 @@ export const registerOpenIdStrategy = async (ssoEntity) => {
         const openIDStrategy = new OpenIDStrategy(options, debugCallback, (_, tokenset, userinfo, done) => {
           logAuthInfo('Successfully logged', EnvStrategyType.STRATEGY_OPENID, { userinfo });
           addUserLoginCount();
-          const isGroupMapping = (isNotEmptyField(ssoConfig.groups_management) && isNotEmptyField(ssoConfig.groups_management?.groups_mapping));
-          logAuthInfo('Groups management configuration', EnvStrategyType.STRATEGY_OPENID, { groupsManagement: ssoConfig.groups_management });
+          const isGroupMapping = (isNotEmptyField(ssoEntity?.groups_management) && isNotEmptyField(ssoEntity?.groups_management.groups_mapping));
+          logAuthInfo('Groups management configuration', EnvStrategyType.STRATEGY_OPENID, { groupsManagement: ssoEntity?.groups_management });
+          const groupManagement = ssoEntity?.groups_management;
           // region groups mapping
           const computeGroupsMapping = () => {
-            const readUserinfo = ssoConfig.groups_management?.read_userinfo || false;
-            const token = ssoConfig.groups_management?.token_reference || 'access_token';
-            const groupsPath = ssoConfig.groups_management?.groups_path || ['groups'];
-            const groupsMapping = ssoConfig.groups_management?.groups_mapping || [];
+            const readUserinfo = groupManagement?.read_userinfo || false;
+            const token = groupManagement?.token_reference || 'access_token';
+            const groupsPath = groupManagement?.groups_path || ['groups'];
+            const groupsMapping = groupManagement?.groups_management?.groups_mapping || [];
             const decodedUser = jwtDecode(tokenset[token]);
             if (!readUserinfo) {
               logAuthInfo(`Groups mapping on decoded ${token}`, EnvStrategyType.STRATEGY_OPENID, { decoded: decodedUser });
@@ -96,13 +97,14 @@ export const registerOpenIdStrategy = async (ssoEntity) => {
           const groupsToAssociate = R.uniq(mappedGroups);
           // endregion
           // region organizations mapping
-          const isOrgaMapping = isNotEmptyField(ssoConfig.organizations_default) || isNotEmptyField(ssoConfig.organizations_management);
+          const isOrgaMapping = isNotEmptyField(ssoConfig.organizations_default) || isNotEmptyField(ssoEntity.organizations_management);
+          const orgsManagement = ssoEntity.organizations_management;
           const computeOrganizationsMapping = () => {
             const orgaDefault = ssoConfig.organizations_default ?? [];
-            const readUserinfo = ssoConfig.organizations_management?.read_userinfo || false;
-            const orgasMapping = ssoConfig.organizations_management?.organizations_mapping || [];
-            const token = ssoConfig.organizations_management?.token_reference || 'access_token';
-            const orgaPath = ssoConfig.organizations_management?.organizations_path || ['organizations'];
+            const readUserinfo = orgsManagement?.read_userinfo || false;
+            const orgasMapping = orgsManagement?.organizations_mapping || [];
+            const token = orgsManagement?.token_reference || 'access_token';
+            const orgaPath = orgsManagement?.organizations_path || ['organizations'];
             const decodedUser = jwtDecode(tokenset[token]);
             const availableOrgas = R.flatten(orgaPath.map((path) => {
               const userClaims = (readUserinfo) ? userinfo : decodedUser;
