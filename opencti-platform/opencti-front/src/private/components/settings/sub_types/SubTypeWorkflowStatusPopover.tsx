@@ -19,7 +19,7 @@ const workflowStatusDeletionMutation = graphql`
   ) {
     subTypeEdit(id: $id) {
       statusDelete(statusId: $statusId) {
-        ...SubTypeWorkflow_subType
+        ...SubTypeWorkflowDrawer_subType
       }
     }
   }

@@ -10,9 +10,9 @@ import Skeleton from '@mui/material/Skeleton';
 import Drawer from '@components/common/drawer/Drawer';
 import SubTypeWorkflowStatusAdd from './SubTypeWorkflowStatusAdd';
 import { hexToRGB } from '../../../../utils/Colors';
-import { SubTypeWorkflowEditionQuery } from './__generated__/SubTypeWorkflowEditionQuery.graphql';
+import { SubTypeWorkflowDrawerEditionQuery } from './__generated__/SubTypeWorkflowDrawerEditionQuery.graphql';
 import SubTypeWorkflowStatusPopover from './SubTypeWorkflowStatusPopover';
-import { SubTypeWorkflow_subType$data } from './__generated__/SubTypeWorkflow_subType.graphql';
+import { SubTypeWorkflowDrawer_subType$data } from './__generated__/SubTypeWorkflowDrawer_subType.graphql';
 import ItemCopy from '../../../../components/ItemCopy';
 import { useFormatter } from '../../../../components/i18n';
 import { StatusScopeEnum } from '../../../../utils/statusConstants';
@@ -31,16 +31,16 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-export const subTypeWorkflowEditionQuery = graphql`
-  query SubTypeWorkflowEditionQuery($id: String!) {
+export const subTypeWorkflowDrawerEditionQuery = graphql`
+  query SubTypeWorkflowDrawerEditionQuery($id: String!) {
     subType(id: $id) {
-      ...SubTypeWorkflow_subType
+      ...SubTypeWorkflowDrawer_subType
     }
   }
 `;
 
-export const subTypeWorkflowEditionFragment = graphql`
-  fragment SubTypeWorkflow_subType on SubType {
+export const subTypeWorkflowDrawerEditionFragment = graphql`
+  fragment SubTypeWorkflowDrawer_subType on SubType {
     id
     label
     workflowEnabled
@@ -65,14 +65,14 @@ export const subTypeWorkflowEditionFragment = graphql`
   }
 `;
 
-interface SubTypeEditionContainerProps {
+interface SubTypeWorkflowDrawer {
   handleClose: () => void;
-  queryRef: PreloadedQuery<SubTypeWorkflowEditionQuery>;
+  queryRef: PreloadedQuery<SubTypeWorkflowDrawerEditionQuery>;
   open?: boolean;
   scope: string;
 }
 
-const SubTypeWorkflow: FunctionComponent<SubTypeEditionContainerProps> = ({
+const SubTypeWorkflowDrawer: FunctionComponent<SubTypeWorkflowDrawer> = ({
   queryRef,
   handleClose,
   open,
@@ -80,12 +80,12 @@ const SubTypeWorkflow: FunctionComponent<SubTypeEditionContainerProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const queryData = usePreloadedQuery(subTypeWorkflowEditionQuery, queryRef);
+  const queryData = usePreloadedQuery(subTypeWorkflowDrawerEditionQuery, queryRef);
   if (queryData.subType) {
     const subType = useFragment(
-      subTypeWorkflowEditionFragment,
+      subTypeWorkflowDrawerEditionFragment,
       queryData.subType,
-    ) as SubTypeWorkflow_subType$data;
+    ) as SubTypeWorkflowDrawer_subType$data;
 
     let statusesToDisplay = subType.statuses;
     if (scope === StatusScopeEnum.REQUEST_ACCESS) {
@@ -174,4 +174,4 @@ const SubTypeWorkflow: FunctionComponent<SubTypeEditionContainerProps> = ({
   return <div />;
 };
 
-export default SubTypeWorkflow;
+export default SubTypeWorkflowDrawer;
