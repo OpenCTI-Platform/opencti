@@ -21,7 +21,6 @@ import useGranted, {
 } from '../../../utils/hooks/useGranted';
 import Loader from '../../../components/Loader';
 import useAuth from '../../../utils/hooks/useAuth';
-import useHelper from '../../../utils/hooks/useHelper';
 
 const Security = lazy(() => import('../../../utils/Security'));
 const CaseTemplates = lazy(() => import('./case_templates/CaseTemplates'));
@@ -47,7 +46,6 @@ const FileIndexing = lazy(() => import('./file_indexing/FileIndexing'));
 const StatusTemplates = lazy(() => import('./status_templates/StatusTemplates'));
 const RootSubType = lazy(() => import('./sub_types/Root'));
 const SubTypes = lazy(() => import('./sub_types/SubTypes'));
-const SubTypeWorkflow = lazy(() => import('./sub_types/SubTypeWorkflow'));
 const Users = lazy(() => import('./Users'));
 const RootUser = lazy(() => import('./users/Root'));
 const Vocabularies = lazy(() => import('./Vocabularies'));
@@ -105,9 +103,6 @@ const Root = () => {
     if (isGrantedToVocabularies) return '/dashboard/settings/vocabularies/fields';
     return '/dashboard';
   };
-
-  const { isFeatureEnable } = useHelper();
-  const isDraftWorkflowFeatureEnabled = isFeatureEnable('DRAFT_WORKFLOW');
 
   return (
     <div data-testid="settings-page">
@@ -405,16 +400,6 @@ const Root = () => {
               </Security>
             )}
           />
-          {isDraftWorkflowFeatureEnabled && (
-            <Route
-              path="/customization/entity_types/:subTypeId/workflow"
-              element={(
-                <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={urlWithCapabilities()} />}>
-                  <SubTypeWorkflow />
-                </Security>
-              )}
-            />
-          )}
           <Route
             path="/customization/rules"
             element={(

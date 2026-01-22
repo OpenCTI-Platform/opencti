@@ -6,7 +6,7 @@ import { Tooltip } from '@mui/material';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import SubTypeWorkflowDrawer, { subTypeWorkflowDrawerEditionQuery } from './SubTypeWorkflowDrawer';
-import { SubTypeWorkflowEditionQuery } from './__generated__/SubTypeWorkflowEditionQuery.graphql';
+import { SubTypeWorkflowDrawerEditionQuery } from './__generated__/SubTypeWorkflowDrawerEditionQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 
 interface SubTypeStatusPopoverProps {
@@ -15,7 +15,7 @@ interface SubTypeStatusPopoverProps {
 }
 
 const SubTypeStatusPopover: FunctionComponent<SubTypeStatusPopoverProps> = ({ subTypeId, scope }) => {
-  const queryRef = useQueryLoading<SubTypeWorkflowEditionQuery>(
+  const queryRef = useQueryLoading<SubTypeWorkflowDrawerEditionQuery>(
     subTypeWorkflowDrawerEditionQuery,
     { id: subTypeId },
   );

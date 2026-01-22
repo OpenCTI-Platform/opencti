@@ -79,14 +79,13 @@ const SubTypeWorkflowStatusEdit: FunctionComponent<StatusEditionProps> = ({
   const { t_i18n } = useFormatter();
 
   const initialValues: StatusEditForm = {
-    template: data.template
-      ? {
+    template: data.template ? (
+      {
         label: data.template.name,
         value: data.template.id,
         color: data.template.color,
-
       }
-      : null,
+    ) : null,
     order: String(data.order) || '',
   };
 
