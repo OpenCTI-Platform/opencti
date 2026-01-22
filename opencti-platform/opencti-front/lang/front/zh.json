@@ -3264,6 +3264,7 @@
   "Reliability is an open vocabulary based on Admiralty code used to assess the reliability of a source.": "可靠性（Reliability）是一个基于金钟代码的开放式词汇表，用于评估源的可靠性。",
   "Remaining": "剩余",
   "remaining": "剩余的",
+  "Remediated by": "补救措施",
   "Remediation Level (RL)": "补救级别 (RL)",
   "Remote OCTI Streams | Ingestion | Data": "远程 OCTI 流 | 输入 | 数据",
   "Remote OpenCTI configuration": "远程 OpenCTI 配置",

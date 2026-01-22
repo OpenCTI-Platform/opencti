@@ -3264,6 +3264,7 @@
   "Reliability is an open vocabulary based on Admiralty code used to assess the reliability of a source.": "신뢰성은 소스의 신뢰성을 평가하는 데 사용되는 Admiralty 코드를 기반으로 하는 개방형 어휘입니다.",
   "Remaining": "남아있음",
   "remaining": "남은",
+  "Remediated by": "해결 방법",
   "Remediation Level (RL)": "수정 수준(RL)",
   "Remote OCTI Streams | Ingestion | Data": "원격 OCTI 스트림 | 수집 | 데이터",
   "Remote OpenCTI configuration": "원격 OpenCTI 구성",
