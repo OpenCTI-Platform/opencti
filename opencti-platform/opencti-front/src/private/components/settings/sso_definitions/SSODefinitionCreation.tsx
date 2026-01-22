@@ -115,7 +115,7 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
     const organizationsMapping = getOrganizationsMapping(values);
     const organizations_management = {
       organizations_path: values.organizations_path ?? null,
-      organizations_mapping: organizationsMapping ?? null
+      organizations_mapping: organizationsMapping ?? null,
     };
 
     const finalValues = {
