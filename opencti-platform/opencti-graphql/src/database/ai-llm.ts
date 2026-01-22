@@ -27,7 +27,12 @@ const AI_AZURE_DEPLOYMENT = conf.get('ai:ai_azure_deployment');
 let AI_ENABLED = true;
 let client: Mistral | OpenAI | AzureOpenAI | null = null;
 let nlqChat: ChatOpenAI | ChatMistralAI | AzureChatOpenAI | null = null;
-let clientsUpdate: Promise<void> = Promise.resolve();
+// Promise chain used to serialize all client initialization and state-change operations.
+// Prefer using `clientsOperationChain`; `clientsUpdate` is kept as a deprecated alias
+// for backward compatibility with existing code.
+let clientsOperationChain: Promise<void> = Promise.resolve();
+// DEPRECATED: use `clientsOperationChain` instead.
+let clientsUpdate: Promise<void> = clientsOperationChain;
 
 const resetClients = () => {
   client = null;
