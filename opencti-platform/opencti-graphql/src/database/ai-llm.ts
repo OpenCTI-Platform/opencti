@@ -28,11 +28,8 @@ let AI_ENABLED = true;
 let client: Mistral | OpenAI | AzureOpenAI | null = null;
 let nlqChat: ChatOpenAI | ChatMistralAI | AzureChatOpenAI | null = null;
 // Promise chain used to serialize all client initialization and state-change operations.
-// Prefer using `clientsOperationChain`; `clientsUpdate` is kept as a deprecated alias
-// for backward compatibility with existing code.
-let clientsOperationChain: Promise<void> = Promise.resolve();
-// DEPRECATED: use `clientsOperationChain` instead.
-let clientsUpdate: Promise<void> = clientsOperationChain;
+// NOTE: `clientsUpdate` is the canonical promise chain used throughout this module.
+let clientsUpdate: Promise<void> = Promise.resolve();
 
 const resetClients = () => {
   client = null;
