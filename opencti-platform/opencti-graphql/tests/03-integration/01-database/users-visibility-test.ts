@@ -605,19 +605,28 @@ describe('Users visibility according to their direct organizations', () => {
       expect(['userO', 'userAB'].every((u) => queryResult.data?.users.edges.map((e: any) => e.node.name).includes(u))).toBeTruthy();
 
       filters = {
-        mode: FilterMode.And,
-        filters: [{
-          key: ['name'],
-          values: usersNames, // we only consider the users created in this file
-        }],
+        mode: FilterMode.Or,
+        filters: [
+          { key: ['entity_type'], values: ['fake_entity_type'] },
+        ],
         filterGroups: [
           {
-            mode: FilterMode.Or,
-            filters: [
-              { key: ['name'], values: ['userO'] },
-              ...directParticipateOrgaABFilterGroup.filters.filter((f) => f.key.includes('regardingOf')),
+            mode: FilterMode.And,
+            filters: [{
+              key: ['name'],
+              values: usersNames, // we only consider the users created in this file
+            }],
+            filterGroups: [
+              {
+                mode: FilterMode.Or,
+                filters: [
+                  { key: ['name'], values: ['userO'] },
+                  { key: ['name'], values: ['unexisting-user'] },
+                  ...directParticipateOrgaABFilterGroup.filters.filter((f) => f.key.includes('regardingOf')),
+                ],
+                filterGroups: [],
+              },
             ],
-            filterGroups: [],
           },
         ],
       };
