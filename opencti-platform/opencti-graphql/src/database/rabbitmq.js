@@ -48,6 +48,214 @@ const amqpCred = () => {
   return { credentials: amqp.credentials.plain(USERNAME, PASSWORD) };
 };
 
+const getConnectionOptions = () => {
+  return USE_SSL ? {
+    ...amqpCred(),
+    ...configureCA(RABBITMQ_CA),
+    cert: RABBITMQ_CA_CERT,
+    key: RABBITMQ_CA_KEY,
+    pfx: RABBITMQ_CA_PFX,
+    passphrase: RABBITMQ_CA_PASSPHRASE,
+    rejectUnauthorized: RABBITMQ_REJECT_UNAUTHORIZED,
+  } : amqpCred();
+};
+
+// region Persistent Publisher Connection
+// Single persistent connection for sequential message publishing
+// This avoids creating a new connection for every message while maintaining order
+// Connection will automatically reconnect and block sends until recovery
+let persistentConnection = null;
+let persistentChannel = null;
+let connectionPromise = null;
+let isReconnecting = false;
+
+// Configuration for reconnection
+const RECONNECT_INITIAL_DELAY = 1000; // 1 second
+const RECONNECT_MAX_DELAY = 30000; // 30 seconds max
+const RECONNECT_MULTIPLIER = 2; // Exponential backoff
+
+/**
+ * Wait for a specified duration
+ */
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Create a new connection to RabbitMQ with automatic reconnection
+ */
+const createConnection = () => {
+  return new Promise((resolve, reject) => {
+    const connOptions = getConnectionOptions();
+    amqp.connect(amqpUri(), connOptions, (err, conn) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+
+      persistentConnection = conn;
+      logApp.info('[RABBITMQ] Persistent publisher connection established');
+
+      conn.on('error', (connError) => {
+        logApp.error('[RABBITMQ] Persistent connection error', { cause: connError });
+      });
+
+      conn.on('close', () => {
+        logApp.warn('[RABBITMQ] Persistent connection closed');
+        persistentConnection = null;
+        persistentChannel = null;
+        connectionPromise = null;
+        // Trigger reconnection in background
+        if (!isReconnecting) {
+          reconnectWithBackoff();
+        }
+      });
+
+      // Create a confirm channel for reliable publishing
+      conn.createConfirmChannel((channelError, channel) => {
+        if (channelError) {
+          reject(channelError);
+          return;
+        }
+
+        channel.on('error', (chError) => {
+          logApp.error('[RABBITMQ] Persistent channel error', { cause: chError });
+          persistentChannel = null;
+        });
+
+        channel.on('close', () => {
+          logApp.warn('[RABBITMQ] Persistent channel closed');
+          persistentChannel = null;
+        });
+
+        persistentChannel = channel;
+        resolve(channel);
+      });
+    });
+  });
+};
+
+/**
+ * Reconnect with exponential backoff
+ * This runs in the background and keeps trying until successful
+ */
+const reconnectWithBackoff = async () => {
+  if (isReconnecting) {
+    return; // Already reconnecting
+  }
+
+  isReconnecting = true;
+  let currentDelay = RECONNECT_INITIAL_DELAY;
+  let attempt = 1;
+
+  while (!persistentChannel) {
+    logApp.info(`[RABBITMQ] Attempting to reconnect (attempt ${attempt})...`);
+    try {
+      connectionPromise = createConnection();
+      await connectionPromise;
+      connectionPromise = null;
+      logApp.info('[RABBITMQ] Reconnection successful');
+      isReconnecting = false;
+      return;
+    } catch (err) {
+      connectionPromise = null;
+      logApp.warn(`[RABBITMQ] Reconnection attempt ${attempt} failed, retrying in ${currentDelay}ms`, { cause: err.message });
+      await delay(currentDelay);
+      // Exponential backoff with max limit
+      currentDelay = Math.min(currentDelay * RECONNECT_MULTIPLIER, RECONNECT_MAX_DELAY);
+      attempt += 1;
+    }
+  }
+
+  isReconnecting = false;
+};
+
+/**
+ * Get a healthy channel, waiting for reconnection if necessary
+ * This will block until a connection is available
+ */
+const getPersistentChannel = async () => {
+  // If channel is healthy, return it immediately
+  if (persistentChannel) {
+    return persistentChannel;
+  }
+
+  // If connection is in progress (initial or reconnection), wait for it
+  if (connectionPromise) {
+    await connectionPromise;
+    return persistentChannel;
+  }
+
+  // If reconnection is in progress, wait for it to complete
+  if (isReconnecting) {
+    logApp.debug('[RABBITMQ] Waiting for reconnection to complete...');
+    while (isReconnecting || !persistentChannel) {
+      await delay(100);
+      // If connectionPromise was set during waiting, await it
+      if (connectionPromise) {
+        await connectionPromise;
+      }
+    }
+    return persistentChannel;
+  }
+
+  // No connection exists, create one
+  connectionPromise = createConnection();
+  try {
+    await connectionPromise;
+    connectionPromise = null;
+    return persistentChannel;
+  } catch (err) {
+    connectionPromise = null;
+    // Start reconnection in background and wait for it
+    logApp.error('[RABBITMQ] Initial connection failed, starting reconnection', { cause: err.message });
+    reconnectWithBackoff();
+    // Wait for reconnection to succeed
+    while (!persistentChannel) {
+      await delay(100);
+      if (connectionPromise) {
+        try {
+          await connectionPromise;
+        } catch (e) {
+          // Reconnection attempt failed, continue waiting
+        }
+      }
+    }
+    return persistentChannel;
+  }
+};
+
+/**
+ * Send a message using the persistent connection (sequential, maintains order)
+ * This will block and wait for reconnection if the connection is lost
+ */
+const sendPersistent = async (exchangeName, routingKey, message) => {
+  // Get channel, waiting for reconnection if necessary
+  const channel = await getPersistentChannel();
+
+  return new Promise((resolve, reject) => {
+    try {
+      channel.publish(
+        exchangeName,
+        routingKey,
+        Buffer.from(message),
+        { deliveryMode: 2 },
+        (err) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(true);
+          }
+        }
+      );
+    } catch (err) {
+      // Channel might have been closed between getting it and publishing
+      // Reset channel and reject so caller can retry
+      persistentChannel = null;
+      reject(err);
+    }
+  });
+};
+// endregion
+
 export const rabbitmqConnectionConfig = () => {
   return {
     host: HOSTNAME,
@@ -156,11 +364,32 @@ const amqpExecute = async (execute) => {
   });
 };
 
-export const send = (exchangeName, routingKey, message) => {
-  return amqpExecute(async (channel) => {
-    const publish = util.promisify(channel.publish).bind(channel);
-    return publish(exchangeName, routingKey, Buffer.from(message), { deliveryMode: 2 });
-  });
+/**
+ * Send a message using the persistent connection for high performance
+ * Messages are sent sequentially, maintaining order
+ * If connection is lost, this will block and retry until connection is recovered
+ */
+export const send = async (exchangeName, routingKey, message) => {
+  const MAX_SEND_RETRIES = 3;
+  let lastError = null;
+
+  for (let attempt = 1; attempt <= MAX_SEND_RETRIES; attempt += 1) {
+    try {
+      return await sendPersistent(exchangeName, routingKey, message);
+    } catch (err) {
+      lastError = err;
+      logApp.warn(`[RABBITMQ] Send failed (attempt ${attempt}/${MAX_SEND_RETRIES})`, { cause: err.message });
+
+      // If channel was lost, wait for reconnection before retry
+      if (!persistentChannel) {
+        logApp.info('[RABBITMQ] Waiting for connection recovery before retry...');
+        await getPersistentChannel();
+      }
+    }
+  }
+
+  // All retries exhausted
+  throw lastError;
 };
 
 export const metrics = async (context, user) => {

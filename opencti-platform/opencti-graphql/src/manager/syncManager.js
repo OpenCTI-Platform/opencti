@@ -160,8 +160,10 @@ const syncManagerInstance = (syncId) => {
           } catch (e) {
             logApp.error('[OPENCTI-MODULE] Sync manager event handling error', { cause: e, id: syncId, manager: 'SYNC_MANAGER' });
           }
+        } else {
+          // Only wait when queue is empty to avoid CPU spinning
+          await wait(100);
         }
-        await wait(10);
       }
       logApp.info(`[OPENCTI] Sync ${syncId}: manager stopped`);
     },
