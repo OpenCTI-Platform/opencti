@@ -68,6 +68,7 @@ let _persistentConnection = null; // Prefixed with _ as it's assigned but read a
 let persistentChannel = null;
 let connectionPromise = null;
 let isReconnecting = false;
+let isIntentionalClose = false; // Flag to prevent reconnection during intentional cleanup
 
 // Mutex for sequential publishing - ensures messages are sent in order
 let publishMutexPromise = Promise.resolve();
@@ -106,17 +107,19 @@ const createConnection = () => {
         _persistentConnection = null;
         persistentChannel = null;
         connectionPromise = null;
-        // Trigger reconnection in background
-        if (!isReconnecting) {
+        // Trigger reconnection in background (unless this is an intentional cleanup close)
+        if (!isReconnecting && !isIntentionalClose) {
           void reconnectWithBackoff();
         }
+        isIntentionalClose = false; // Reset flag after handling
       });
 
       // Create a confirm channel for reliable publishing
       conn.createConfirmChannel((channelError, channel) => {
         if (channelError) {
           logApp.error('[RABBITMQ] Failed to create confirm channel', { cause: channelError });
-          // Clean up the connection to avoid leaks
+          // Clean up the connection to avoid leaks - set flag to prevent auto-reconnect
+          isIntentionalClose = true;
           _persistentConnection = null;
           persistentChannel = null;
           connectionPromise = null;
@@ -124,6 +127,7 @@ const createConnection = () => {
             conn.close();
           } catch (_closeError) {
             // Ignore close errors during cleanup
+            isIntentionalClose = false; // Reset flag if close fails
           }
           reject(channelError);
           return;
@@ -219,17 +223,17 @@ const safeAwaitConnection = async () => {
  * This will block until a connection is available - never throws
  */
 const getPersistentChannel = async () => {
+  // Return immediately if channel is already available
+  if (persistentChannel) {
+    return persistentChannel;
+  }
+
   // Loop until we have a healthy channel
   while (!persistentChannel) {
-    // If channel became available, return it
-    if (persistentChannel) {
-      return persistentChannel;
-    }
-
     // If connection is in progress, wait for it (with error handling)
     if (connectionPromise) {
       await safeAwaitConnection();
-      // Check if we got a channel, if not continue the loop
+      // Check if we got a channel
       if (persistentChannel) {
         return persistentChannel;
       }
@@ -265,12 +269,16 @@ const getPersistentChannel = async () => {
 };
 
 /**
- * Internal publish function that handles backpressure
+ * Internal publish function with confirm channel
+ * Uses confirm callback for reliable delivery acknowledgment
+ * Backpressure is naturally handled by waiting for each message to be confirmed
  */
-const publishWithBackpressure = (channel, exchangeName, routingKey, message) => {
+const publishWithConfirm = (channel, exchangeName, routingKey, message) => {
   return new Promise((resolve, reject) => {
     try {
-      const canSend = channel.publish(
+      // With confirm channels, the callback is called when broker acknowledges the message
+      // Even if publish() returns false (buffer full), the message is queued and will be confirmed
+      channel.publish(
         exchangeName,
         routingKey,
         Buffer.from(message),
@@ -283,13 +291,6 @@ const publishWithBackpressure = (channel, exchangeName, routingKey, message) => 
           }
         },
       );
-
-      // Handle backpressure: if channel buffer is full, wait for drain
-      if (!canSend) {
-        channel.once('drain', () => {
-          // Buffer drained, message was already queued so just resolve
-        });
-      }
     } catch (err) {
       // Channel might have been closed between getting it and publishing
       // Reset channel and reject so caller can retry
@@ -321,8 +322,8 @@ const sendPersistent = async (exchangeName, routingKey, message) => {
     // Get channel, waiting for reconnection if necessary
     const channel = await getPersistentChannel();
 
-    // Publish with backpressure handling
-    return await publishWithBackpressure(channel, exchangeName, routingKey, message);
+    // Publish with confirm callback for reliable delivery
+    return await publishWithConfirm(channel, exchangeName, routingKey, message);
   } finally {
     // Release mutex for next caller
     resolveCurrentMutex();
@@ -391,15 +392,7 @@ export const getConnectorQueueDetails = async (connectorId) => {
 };
 
 const amqpExecute = async (execute) => {
-  const connOptions = USE_SSL ? {
-    ...amqpCred(),
-    ...configureCA(RABBITMQ_CA),
-    cert: RABBITMQ_CA_CERT,
-    key: RABBITMQ_CA_KEY,
-    pfx: RABBITMQ_CA_PFX,
-    passphrase: RABBITMQ_CA_PASSPHRASE,
-    rejectUnauthorized: RABBITMQ_REJECT_UNAUTHORIZED,
-  } : amqpCred();
+  const connOptions = getConnectionOptions();
   return new Promise((resolve, reject) => {
     try {
       amqp.connect(amqpUri(), connOptions, (err, conn) => {
@@ -694,15 +687,7 @@ export const getRabbitMQVersion = (context) => {
 export const consumeQueue = async (context, connectorId, connectionSetterCallback, callback) => {
   const cfg = connectorConfig(connectorId);
   const listenQueue = cfg.listen;
-  const connOptions = USE_SSL ? {
-    ...amqpCred(),
-    ...configureCA(RABBITMQ_CA),
-    cert: RABBITMQ_CA_CERT,
-    key: RABBITMQ_CA_KEY,
-    pfx: RABBITMQ_CA_PFX,
-    passphrase: RABBITMQ_CA_PASSPHRASE,
-    rejectUnauthorized: RABBITMQ_REJECT_UNAUTHORIZED,
-  } : amqpCred();
+  const connOptions = getConnectionOptions();
   return new Promise((_, reject) => {
     try {
       amqp.connect(amqpUri(), connOptions, (err, conn) => {
