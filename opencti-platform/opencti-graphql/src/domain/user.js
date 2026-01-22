@@ -1,5 +1,4 @@
 import bcrypt from 'bcryptjs';
-import { authenticator } from 'otplib';
 import * as R from 'ramda';
 import { uniq } from 'ramda';
 import { v4 as uuid } from 'uuid';
@@ -89,6 +88,7 @@ import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTempla
 import { doYield } from '../utils/eventloop-utils';
 import { sanitizeUser } from '../utils/templateContextSanitizer';
 import { safeRender } from '../utils/safeEjs.client';
+import { totp } from '../utils/totp';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -1383,8 +1383,8 @@ export const login = async (email, password) => {
 };
 
 export const otpUserGeneration = (user) => {
-  const secret = authenticator.generateSecret();
-  const uri = authenticator.keyuri(user.user_email, 'OpenCTI', secret);
+  const secret = totp.generateSecret();
+  const uri = totp.generateURI({ label: user.user_email, issuer: 'OpenCTI', secret });
   return { secret, uri };
 };
 
@@ -1412,12 +1412,12 @@ export const otpUserActivation = async (context, user, { secret, code }) => {
   if (user.otp_activated) {
     throw UnsupportedError('You need to deactivate your current 2FA before generating a new one');
   }
-  const isValidated = authenticator.check(code, secret);
-  if (isValidated) {
-    const uri = authenticator.keyuri(user.user_email, 'OpenCTI', secret);
+  const { valid } = await totp.verify({ secret, token: code });
+  if (valid) {
+    const uri = totp.generateURI({ label: user.user_email, issuer: 'OpenCTI', secret });
     const patch = { otp_activated: true, otp_secret: secret, otp_qr: uri };
     const { element } = await patchAttribute(context, user, user.id, ENTITY_TYPE_USER, patch);
-    context.req.session.user.otp_validated = isValidated;
+    context.req.session.user.otp_validated = valid;
     return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
   }
   throw AuthenticationFailure();
@@ -1436,13 +1436,13 @@ export const otpUserLogin = async (req, user, { code }) => {
   if (!user.otp_activated) {
     throw AuthenticationFailure();
   }
-  const isValidated = authenticator.check(code, user.otp_secret);
-  if (!isValidated) {
+  const { valid } = await totp.verify({ secret: user.otp_secret, token: code });
+  if (!valid) {
     throw AuthenticationFailure();
   }
-  req.session.user.otp_validated = isValidated;
+  req.session.user.otp_validated = valid;
   req.session.save();
-  return isValidated;
+  return valid;
 };
 
 const virtualOrganizationAdminCapability = {
