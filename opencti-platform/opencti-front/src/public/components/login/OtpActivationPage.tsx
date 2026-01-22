@@ -4,7 +4,6 @@ import qrcode from 'qrcode';
 import Loader from '../../../components/Loader';
 import { APP_BASE_PATH, QueryRenderer } from '../../../relay/environment';
 import { useFormatter } from '../../../components/i18n';
-import { OtpActivationQuery$data } from './__generated__/OtpActivationQuery.graphql';
 import OtpInputField, { OTP_CODE_SIZE } from './OtpInputField';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { LoginRootPublicQuery$data } from '../../__generated__/LoginRootPublicQuery.graphql';
@@ -13,9 +12,10 @@ import { Stack } from '@mui/material';
 import LoginAlert from './LoginAlert';
 import Card from '../../../components/common/card/Card';
 import Button from '../../../components/common/button/Button';
+import { OtpActivationPageQuery$data } from './__generated__/OtpActivationPageQuery.graphql';
 
 const generateOtp = graphql`
-  query OtpActivationQuery {
+  query OtpActivationPageQuery {
     otpGeneration {
       secret
       uri
@@ -24,7 +24,7 @@ const generateOtp = graphql`
 `;
 
 const validateOtpPatch = graphql`
-  mutation OtpActivationMutation($input: UserOTPActivationInput) {
+  mutation OtpActivationPageMutation($input: UserOTPActivationInput) {
     otpActivation(input: $input) {
       ...ProfileOverview_me
     }
@@ -119,7 +119,7 @@ const Otp: FunctionComponent<OtpProps> = ({ secret, uri, settings }) => {
 const OtpActivationPage = ({ settings }: Pick<OtpProps, 'settings'>) => (
   <QueryRenderer
     query={generateOtp}
-    render={({ props }: { props: OtpActivationQuery$data }) => {
+    render={({ props }: { props: OtpActivationPageQuery$data }) => {
       if (props && props.otpGeneration) {
         return (
           <Otp
