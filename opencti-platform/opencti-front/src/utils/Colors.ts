@@ -235,6 +235,7 @@ const ENTITY_TYPE_TO_FAMILY: Record<string, keyof typeof COLOR_FAMILIES> = {
   'known-as': 'relationships',
   'reports-to': 'relationships',
   supports: 'relationships',
+  'has-covered': 'relationships',
 
   // Restricted
   Restricted: 'restricted',
