@@ -270,12 +270,12 @@ const getPersistentChannel = async () => {
 
 /**
  * Internal publish function with confirm channel and backpressure handling
- * 
+ *
  * Guarantees:
  * - At-least-once delivery: Messages are retried on failure
  * - Ordering: Mutex ensures sequential publishing
  * - Backpressure: Waits for drain when channel buffer is full
- * 
+ *
  * Note: Around connection failures, there's a small window where a message
  * could be accepted by the buffer but the confirm never received. Retry logic
  * may cause duplicate delivery in this edge case (at-least-once, not exactly-once).
@@ -450,13 +450,13 @@ const amqpExecute = async (execute) => {
 
 /**
  * Send a message using the persistent connection for high performance
- * 
+ *
  * Guarantees:
  * - Sequential ordering via mutex (messages sent in call order)
  * - At-least-once delivery with retries on failure
  * - Blocking reconnection: waits for RabbitMQ recovery if connection lost
  * - Backpressure: respects channel buffer limits
- * 
+ *
  * Note: In rare edge cases around connection failures, duplicate delivery
  * is possible (at-least-once semantics). Consumers should be idempotent.
  */
