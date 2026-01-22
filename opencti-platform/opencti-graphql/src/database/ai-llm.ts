@@ -5,7 +5,7 @@ import { Mistral } from '@mistralai/mistralai';
 import type { ChatCompletionStreamRequest } from '@mistralai/mistralai/models/components';
 import { AuthenticationError, AzureOpenAI, OpenAI } from 'openai';
 import conf, { BUS_TOPICS, logApp } from '../config/conf';
-import { UnknownError, UnsupportedError } from '../config/errors';
+import { FunctionalError, UnknownError, UnsupportedError } from '../config/errors';
 import { OutputSchema } from '../modules/ai/ai-nlq-schema';
 import type { Output } from '../modules/ai/ai-nlq-schema';
 import { AI_BUS } from '../modules/ai/ai-types';
@@ -171,7 +171,7 @@ if (AI_ENABLED && AI_TOKEN) {
 // Query MistralAI (Streaming)
 export const queryMistralAi = async (busId: string | null, systemMessage: string, userMessage: string, user: AuthUser) => {
   if (!AI_ENABLED) {
-    throw UnsupportedError('AI is disabled in platform settings');
+    throw FunctionalError('AI is disabled in platform settings');
   }
   await ensureClientsInitialized();
   if (!client) {
@@ -215,7 +215,7 @@ export const queryMistralAi = async (busId: string | null, systemMessage: string
 // Query OpenAI (Streaming)
 export const queryChatGpt = async (busId: string | null, developerMessage: string, userMessage: string, user: AuthUser) => {
   if (!AI_ENABLED) {
-    throw UnsupportedError('AI is disabled in platform settings');
+    throw FunctionalError('AI is disabled in platform settings');
   }
   await ensureClientsInitialized();
   if (!client) {
@@ -277,7 +277,7 @@ export const queryNLQAi = async (promptValue: ChatPromptValueInterface) => {
     model: AI_MODEL,
   });
   if (!AI_ENABLED) {
-    throw UnsupportedError('AI is disabled in platform settings');
+    throw FunctionalError('AI is disabled in platform settings');
   }
   await ensureClientsInitialized();
   if (!nlqChat) {
