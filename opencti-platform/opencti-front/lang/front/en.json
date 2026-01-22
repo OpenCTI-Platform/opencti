@@ -4588,6 +4588,7 @@
   "Your OpenCTI platform is successfully registered": "Your OpenCTI platform is successfully registered",
   "Your OpenCTI platform is successfully unregistered": "Your OpenCTI platform is successfully unregistered",
   "Your organization does not have permission...": "Your account or organization does not have the permission to create or update a knowledge that already exists in the platform but is under restriction. This form allows you to request access to the organizations that can provide you access to this knowledge. They will be notified of this request.",
+  "Your password has been updated.": "Your password has been updated.",
   "Your request for access has been successfully taken into account": "Your request for access has been successfully taken into account",
   "your trial license online": "your trial license online",
   "Your url contains filters in a deprecated format, parameters stored in the url have been removed.": "Your url contains filters in a deprecated format, parameters stored in the url have been removed.",

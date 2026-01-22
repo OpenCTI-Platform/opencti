@@ -4588,6 +4588,7 @@
   "Your OpenCTI platform is successfully registered": "Su plataforma OpenCTI se ha registrado correctamente",
   "Your OpenCTI platform is successfully unregistered": "Su plataforma OpenCTI se ha dado de baja con éxito",
   "Your organization does not have permission...": "Su cuenta u organización no tiene permiso para crear o actualizar un conocimiento que ya existe en la plataforma pero que está bajo restricción. Este formulario le permite solicitar acceso a las organizaciones que pueden proporcionarle acceso a este conocimiento. Se les notificará esta solicitud.",
+  "Your password has been updated.": "Su contraseña ha sido actualizada.",
   "Your request for access has been successfully taken into account": "Su solicitud de acceso se ha tenido en cuenta correctamente",
   "your trial license online": "su licencia de prueba online",
   "Your url contains filters in a deprecated format, parameters stored in the url have been removed.": "Su URL contiene filtros en un formato obsoleto, los parámetros almacenados en la URL han sido eliminados.",
