@@ -1,12 +1,10 @@
 import { useFormatter } from '../../../../components/i18n';
 import * as Yup from 'yup';
-import { Field, FieldArray, Form, Formik } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import SwitchField from '../../../../components/fields/SwitchField';
-import Typography from '@mui/material/Typography';
-import { Add, Delete } from '@mui/icons-material';
 import React, { useState } from 'react';
 import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../../components/Theme';

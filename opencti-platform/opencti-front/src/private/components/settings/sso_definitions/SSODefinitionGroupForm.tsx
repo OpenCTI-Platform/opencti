@@ -10,16 +10,16 @@ import { useFormatter } from 'src/components/i18n';
 type SSODefinitionGroupFormProps = {
   updateField: (field: keyof SSODefinitionFormValues, value: unknown) => void;
   selectedStrategy: string | null;
-}
+};
 
 const SSODefinitionGroupForm = ({ updateField, selectedStrategy }: SSODefinitionGroupFormProps) => {
   const { t_i18n } = useFormatter();
 
   const getGroupAttributeKeyName = () => {
     let name = null;
-    if (selectedStrategy === "SAML") name = 'group_attributes';
-    if (selectedStrategy === "OpenID") name = 'groups_attributes';
-    if (selectedStrategy === "LDAP") name = 'group_attribute';
+    if (selectedStrategy === 'SAML') name = 'group_attributes';
+    if (selectedStrategy === 'OpenID') name = 'groups_attributes';
+    if (selectedStrategy === 'LDAP') name = 'group_attribute';
 
     if (!name) return null;
 
@@ -34,7 +34,7 @@ const SSODefinitionGroupForm = ({ updateField, selectedStrategy }: SSODefinition
         containerstyle={{ marginTop: 12 }}
         fullWidth
       />
-    )
+    );
   };
 
   return (

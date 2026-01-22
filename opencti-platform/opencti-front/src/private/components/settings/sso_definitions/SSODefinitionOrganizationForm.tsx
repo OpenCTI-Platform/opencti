@@ -4,12 +4,13 @@ import Typography from '@mui/material/Typography';
 import IconButton from '@common/button/IconButton';
 import { Add, Delete } from '@mui/icons-material';
 import React from 'react';
-import {SSODefinitionFormValues} from '@components/settings/sso_definitions/SSODefinitionForm';
+import { SSODefinitionFormValues } from '@components/settings/sso_definitions/SSODefinitionForm';
 import { useFormatter } from 'src/components/i18n';
 
 type SSODefinitionOrganizationFormProps = {
   updateField: (field: keyof SSODefinitionFormValues, value: unknown) => void;
-}
+};
+
 const SSODefinitionOrganizationForm = ({ updateField }: SSODefinitionOrganizationFormProps) => {
   const { t_i18n } = useFormatter();
 
