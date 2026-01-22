@@ -224,8 +224,6 @@ const ADD_REQUEST_ACCESS_STATUS_MUTATION = gql`
     }
 `;
 
-// TODO : find a way to mock EE
-
 describe('Add Request Access to an entity and create an RFI.', async () => {
   let caseRfiIdForApproval: string;
   let caseRfiIdForReject: string;
