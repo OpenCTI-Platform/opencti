@@ -1,24 +1,18 @@
-import { makeStyles } from '@mui/styles';
 import { FunctionComponent, useEffect, useState } from 'react';
-import Alert from '@mui/material/Alert';
 import { graphql } from 'react-relay';
 import qrcode from 'qrcode';
 import Loader from '../../../components/Loader';
-import { QueryRenderer } from '../../../relay/environment';
+import { APP_BASE_PATH, QueryRenderer } from '../../../relay/environment';
 import { useFormatter } from '../../../components/i18n';
 import { OtpActivationQuery$data } from './__generated__/OtpActivationQuery.graphql';
-import type { Theme } from '../../../components/Theme';
 import OtpInputField, { OTP_CODE_SIZE } from './OtpInputField';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>(() => ({
-  input: {
-    display: 'flex',
-    justifyContent: 'center',
-  },
-}));
+import { LoginRootPublicQuery$data } from '../../__generated__/LoginRootPublicQuery.graphql';
+import LoginLayout from './LoginLayout';
+import { Stack } from '@mui/material';
+import LoginAlert from './LoginAlert';
+import Card from '../../../components/common/card/Card';
+import Button from '../../../components/common/button/Button';
 
 const generateOtp = graphql`
   query OtpActivationQuery {
@@ -40,17 +34,18 @@ const validateOtpPatch = graphql`
 interface OtpProps {
   secret: string;
   uri: string;
+  settings: LoginRootPublicQuery$data['publicSettings'];
 }
 
-const Otp: FunctionComponent<OtpProps> = ({ secret, uri }) => {
+const Otp: FunctionComponent<OtpProps> = ({ secret, uri, settings }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const [otpQrImage, setOtpQrImage] = useState('');
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [inputDisable, setInputDisable] = useState(false);
   const handleChange = (data: string) => setCode(data);
   const [commit] = useApiMutation(validateOtpPatch);
+
   if (code.length === OTP_CODE_SIZE && !inputDisable) {
     setInputDisable(true);
     commit({
@@ -65,6 +60,7 @@ const Otp: FunctionComponent<OtpProps> = ({ secret, uri }) => {
       },
     });
   }
+
   useEffect(() => {
     qrcode.toDataURL(
       uri,
@@ -76,41 +72,51 @@ const Otp: FunctionComponent<OtpProps> = ({ secret, uri }) => {
         setOtpQrImage(imageUrl);
       },
     );
-  }, [uri, classes.color]);
+  }, [uri]);
+
+  const alertSeverity = error ? 'error' : 'info';
+  const alertMessage = error
+    ? error
+    : t_i18n('You need to activate a two-factor authentication. Please type the code generated in your application.');
+
   return (
-    <div style={{ textAlign: 'center', margin: '0 auto', maxWidth: 500 }}>
-      <img src={otpQrImage} style={{ width: 265 }} alt="" />
-      {error ? (
-        <Alert
-          severity="error"
-          variant="outlined"
-          style={{ margin: '10px 0 10px 0' }}
+    <LoginLayout settings={settings}>
+      <Stack gap={1} sx={{ width: 380 }}>
+        <LoginAlert severity={alertSeverity}>
+          {alertMessage}
+        </LoginAlert>
+        <Card
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 3,
+          }}
         >
-          {error}
-        </Alert>
-      ) : (
-        <Alert
-          severity="info"
-          variant="outlined"
-          style={{ margin: '10px 0 10px 0', justifyContent: 'center' }}
-        >
-          {t_i18n(
-            'You need to activate a two-factor authentication. Please type the code generated in your application.',
-          )}
-        </Alert>
-      )}
-      <div className={classes.input}>
-        <OtpInputField
-          value={code}
-          onChange={handleChange}
-          isDisabled={inputDisable}
-        />
-      </div>
-    </div>
+          <img src={otpQrImage} style={{ width: 265 }} alt="" />
+          <OtpInputField
+            value={code}
+            onChange={handleChange}
+            isDisabled={inputDisable}
+          />
+          <a
+            href={`${APP_BASE_PATH}/logout`}
+            rel="noreferrer"
+          >
+            <Button
+              size="small"
+              variant="tertiary"
+            >
+              {t_i18n('Back to login')}
+            </Button>
+          </a>
+        </Card>
+      </Stack>
+    </LoginLayout>
   );
 };
 
-const OtpActivation = () => (
+const OtpActivationPage = ({ settings }: Pick<OtpProps, 'settings'>) => (
   <QueryRenderer
     query={generateOtp}
     render={({ props }: { props: OtpActivationQuery$data }) => {
@@ -119,6 +125,7 @@ const OtpActivation = () => (
           <Otp
             secret={props.otpGeneration.secret}
             uri={props.otpGeneration.uri}
+            settings={settings}
           />
         );
       }
@@ -127,4 +134,4 @@ const OtpActivation = () => (
   />
 );
 
-export default OtpActivation;
+export default OtpActivationPage;

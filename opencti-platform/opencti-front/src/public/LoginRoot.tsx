@@ -9,7 +9,7 @@ import { environment } from '../relay/environment';
 import { LoginRootPublicQuery } from './__generated__/LoginRootPublicQuery.graphql';
 import { LoginContextProvider } from './components/login/loginContext';
 import OtpValidationPage from './components/login/OtpValidationPage';
-import OtpActivation from './components/login/OtpActivation';
+import OtpActivationPage from './components/login/OtpActivationPage';
 
 export const rootPublicQuery = graphql`
   query LoginRootPublicQuery {
@@ -80,7 +80,7 @@ const LoginRoot = ({ type }: { type: string }) => {
               <OtpValidationPage settings={data.publicSettings} />
             )}
             {type === '2FA_ACTIVATION' && (
-              <OtpActivation />
+              <OtpActivationPage settings={data.publicSettings} />
             )}
             {type === 'LOGIN' && (
               <LoginPage settings={data.publicSettings} />
