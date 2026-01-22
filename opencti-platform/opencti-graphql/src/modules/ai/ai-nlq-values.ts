@@ -687,7 +687,7 @@ export const entityObservableDescription = {
     description: 'An identifier used to identify a specific SIM card.',
   },
   [EntityObservableEnum.IMSI]: {
-    description: 'An identifier used to identify a specific cellular network subscriber.',
+    description: 'An identifier used to identify a specific mobile network subscriber.',
   },
 };
 

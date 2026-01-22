@@ -475,7 +475,6 @@ describe('StixCyberObservable resolver standard behavior', () => {
       query: CREATE_QUERY,
       variables: STIX_OBSERVABLE_TO_CREATE,
     });
-    console.log(stixCyberObservableICCID);
     expect(stixCyberObservableICCID.errors[0].message).toEqual('Observable is not correctly formatted');
   });
   it('should stixCyberObservable ICCID create', async () => {
@@ -549,7 +548,6 @@ describe('StixCyberObservable resolver standard behavior', () => {
       query: CREATE_QUERY,
       variables: STIX_OBSERVABLE_TO_CREATE,
     });
-    console.log(stixCyberObservableIMEI);
     expect(stixCyberObservableIMEI.errors[0].message).toEqual('Observable is not correctly formatted');
   });
   it('should stixCyberObservable IMEI created', async () => {
@@ -624,7 +622,6 @@ describe('StixCyberObservable resolver standard behavior', () => {
       query: CREATE_QUERY,
       variables: STIX_OBSERVABLE_TO_CREATE,
     });
-    console.log(stixCyberObservableIMSI);
     expect(stixCyberObservableIMSI.errors[0].message).toEqual('Observable is not correctly formatted');
   });
   it('should stixCyberObservable IMSI created', async () => {

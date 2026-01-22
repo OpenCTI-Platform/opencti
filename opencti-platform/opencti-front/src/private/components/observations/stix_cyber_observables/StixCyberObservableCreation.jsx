@@ -368,10 +368,6 @@ const StixCyberObservableCreation = ({
           });
         }
       }
-      // remove any non-numbers from IMEI on submit
-      if (bulkConf.type === 'IMEI') {
-        adaptedValue.value = adaptedValue.value.replace(/[^0-9]/g, '');
-      }
       adaptedValue = pipe(
         dissoc('x_opencti_description'),
         dissoc('x_opencti_score'),
