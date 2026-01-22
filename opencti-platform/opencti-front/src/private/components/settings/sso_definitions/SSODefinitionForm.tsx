@@ -162,10 +162,12 @@ const SSODefinitionForm = ({
   // const enableDebugModeField = data?.configuration?.find((e) => e.key === 'enableDebugMode');
   const entryPointField = data?.configuration?.find((e) => e.key === 'entryPoint');
   const advancedConfigurations = getAdvancedConfigFromData((data?.configuration ?? []) as ConfigurationTypeInput[], selectedStrategy ?? '');
+
   const groupAttributes = Array.from(data?.groups_management?.group_attributes ?? []);
   const groupsAttributes = Array.from(data?.groups_management?.groups_attributes ?? []);
   const groupsPath = Array.from(data?.groups_management?.groups_path ?? []);
   const groupsMapping = Array.from(data?.groups_management?.groups_mapping ?? []);
+
   const organizationsPath = Array.from(data?.organizations_management?.organizations_path ?? []);
   const organizationsMapping = Array.from(data?.organizations_management?.organizations_mapping ?? []);
 

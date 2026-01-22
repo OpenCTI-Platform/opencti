@@ -16,26 +16,30 @@ const SSODefinitionGroupForm = ({ updateField, selectedStrategy }: SSODefinition
   const { t_i18n } = useFormatter();
 
   const getGroupAttributeKeyName = () => {
-    switch (selectedStrategy) {
-      case 'SAML': return 'group_attributes';
-      case 'OpenID': return 'groups_attributes';
-      case 'LDAP': return 'group_attribute';
-      default: return '';
-    }
-  };
+    let name = null;
+    if (selectedStrategy === "SAML") name = 'group_attributes';
+    if (selectedStrategy === "OpenID") name = 'groups_attributes';
+    if (selectedStrategy === "LDAP") name = 'group_attribute';
 
-  return (
-    <>
+    if (!name) return null;
+
+    return (
       <Field
         sx={{ marginTop: '20px' }}
         component={TextField}
         variant="standard"
-        name={getGroupAttributeKeyName()}
+        name={name}
         onSubmit={updateField}
         label={t_i18n('Attribute in token')}
         containerstyle={{ marginTop: 12 }}
         fullWidth
       />
+    )
+  };
+
+  return (
+    <>
+      {getGroupAttributeKeyName()}
       {selectedStrategy === 'OpenID' && (
         <Field
           sx={{ marginTop: '20px' }}
