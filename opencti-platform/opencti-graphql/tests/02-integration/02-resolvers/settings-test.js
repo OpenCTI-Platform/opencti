@@ -183,6 +183,7 @@ describe('Settings resolver standard behavior', () => {
         variables: { id: settingsInternalId, input: [{ key: 'platform_ai_enabled', value: [true] }] },
       });
       resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+      await waitForPlatformAiEnabled(true);
     }
 
     try {
