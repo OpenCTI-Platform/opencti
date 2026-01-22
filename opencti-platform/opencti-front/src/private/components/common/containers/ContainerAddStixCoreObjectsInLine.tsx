@@ -21,8 +21,8 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { DataColumns } from '../../../../components/list_lines';
 
 interface ControlledDialProps {
-  onOpen: () => void
-  title: string
+  onOpen: () => void;
+  title: string;
 }
 
 const ControlledDial = ({ onOpen, title }: ControlledDialProps) => {
@@ -32,7 +32,7 @@ const ControlledDial = ({ onOpen, title }: ControlledDialProps) => {
       variant="contained"
       style={{ marginLeft: theme.spacing(0.5) }}
       aria-label={title}
-      size={'small'}
+      size="small"
       onClick={() => onOpen()}
     >
       {title}
@@ -50,31 +50,31 @@ const GraphControlledDial = ({ onOpen }: { onOpen: () => void }) => {
         aria-label={t_i18n('Add')}
         onClick={() => onOpen()}
       >
-        <Add/>
+        <Add />
       </IconButton>
     </Tooltip>
   );
 };
 
 type scoEdge = {
-  types: string[],
+  types: string[];
   node: {
-    id: string,
-  }
+    id: string;
+  };
 };
 
 interface ContainerAddStixCreObjectsInLineLoaderProps {
-  queryRef: PreloadedQuery<ContainerAddStixCoreObjectsLinesQuery>
-  containerId: string
-  buildColumns: () => DataColumns
-  linesPaginationOptions: ContainerStixDomainObjectsLinesQuery$variables | ContainerStixCyberObservablesLinesQuery$variables
-  knowledgeGraph?: boolean
-  selectedElements: unknown[]
-  handleSelect: (o: { id: string }) => void
-  handleDeselect: (o: { id: string }) => void
-  helpers: PaginationLocalStorage['helpers']
-  containerRef: HTMLInputElement
-  enableReferences?: boolean
+  queryRef: PreloadedQuery<ContainerAddStixCoreObjectsLinesQuery>;
+  containerId: string;
+  buildColumns: () => DataColumns;
+  linesPaginationOptions: ContainerStixDomainObjectsLinesQuery$variables | ContainerStixCyberObservablesLinesQuery$variables;
+  knowledgeGraph?: boolean;
+  selectedElements: unknown[];
+  handleSelect: (o: { id: string }) => void;
+  handleDeselect: (o: { id: string }) => void;
+  helpers: PaginationLocalStorage['helpers'];
+  containerRef: HTMLInputElement;
+  enableReferences?: boolean;
 }
 
 const ContainerAddStixCreObjectsInLineLoader: FunctionComponent<ContainerAddStixCreObjectsInLineLoaderProps> = ({
@@ -111,18 +111,18 @@ const ContainerAddStixCreObjectsInLineLoader: FunctionComponent<ContainerAddStix
 };
 
 interface ContainerAddStixCoreObjectsInLineProps {
-  containerId: string,
-  targetStixCoreObjectTypes: string[],
-  paginationOptions: ContainerStixDomainObjectsLinesQuery$variables | ContainerStixCyberObservablesLinesQuery$variables,
-  containerStixCoreObjects: unknown[],
-  onAdd?: (node: { id: string }) => void,
-  onDelete?: (node: { id: string }) => void,
-  confidence?: number,
-  defaultCreatedBy?: unknown,
-  defaultMarkingDefinitions?: unknown[],
-  selectedText?: string,
-  enableReferences?: boolean | undefined,
-  knowledgeGraph?: boolean | undefined,
+  containerId: string;
+  targetStixCoreObjectTypes: string[];
+  paginationOptions: ContainerStixDomainObjectsLinesQuery$variables | ContainerStixCyberObservablesLinesQuery$variables;
+  containerStixCoreObjects: unknown[];
+  onAdd?: (node: { id: string }) => void;
+  onDelete?: (node: { id: string }) => void;
+  confidence?: number;
+  defaultCreatedBy?: unknown;
+  defaultMarkingDefinitions?: unknown[];
+  selectedText?: string;
+  enableReferences?: boolean | undefined;
+  knowledgeGraph?: boolean | undefined;
 }
 
 const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreObjectsInLineProps> = ({
@@ -149,7 +149,7 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
 
   const LOCAL_STORAGE_KEY = `container-${containerId}-add-${targetStixCoreObjectTypes}`;
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<
-  ContainerAddStixCoreObjectsLinesQuery$variables
+    ContainerAddStixCoreObjectsLinesQuery$variables
   >(
     LOCAL_STORAGE_KEY,
     {
@@ -221,75 +221,77 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
   const Header = () => {
     const [openCreateEntity, setOpenCreateEntity] = useState<boolean>(false);
     const [openCreateObservable, setOpenCreateObservable] = useState<boolean>(false);
-    return (<>
-      <div
-        style={{
-          width: '100%',
-          display: 'flex',
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
-        <Typography variant='subtitle2'>
-          {showSDOCreation ? t_i18n('Add entities') : t_i18n('Add observables')}
-        </Typography>
-        <div style={{ marginRight: '10px' }}>
-          {showSDOCreation && (
-            <Button
-              style={{ fontSize: 'small' }}
-              variant='contained'
-              disableElevation
-              size='small'
-              aria-label={t_i18n('Create an entity')}
-              onClick={() => setOpenCreateEntity(true)}
-            >
-              {t_i18n('Create an entity')}
-            </Button>
-          )}
-          {showSCOCreation && (
-            <Button
-              style={{ fontSize: 'small', marginLeft: '3px' }}
-              variant='contained'
-              disableElevation
-              size='small'
-              aria-label={t_i18n('Create an observable')}
-              onClick={() => setOpenCreateObservable(true)}
-            >
-              {t_i18n('Create an observable')}
-            </Button>
-          )}
+    return (
+      <>
+        <div
+          style={{
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <Typography variant="subtitle2">
+            {showSDOCreation ? t_i18n('Add entities') : t_i18n('Add observables')}
+          </Typography>
+          <div style={{ marginRight: '10px' }}>
+            {showSDOCreation && (
+              <Button
+                style={{ fontSize: 'small' }}
+                variant="contained"
+                disableElevation
+                size="small"
+                aria-label={t_i18n('Create an entity')}
+                onClick={() => setOpenCreateEntity(true)}
+              >
+                {t_i18n('Create an entity')}
+              </Button>
+            )}
+            {showSCOCreation && (
+              <Button
+                style={{ fontSize: 'small', marginLeft: '3px' }}
+                variant="contained"
+                disableElevation
+                size="small"
+                aria-label={t_i18n('Create an observable')}
+                onClick={() => setOpenCreateObservable(true)}
+              >
+                {t_i18n('Create an observable')}
+              </Button>
+            )}
+          </div>
         </div>
-      </div>
-      <StixDomainObjectCreation
-        display={true}
-        inputValue={''}
-        speeddial={true}
-        open={openCreateEntity}
-        handleClose={() => setOpenCreateEntity(false)}
-        creationCallback={undefined}
-        onCompleted={undefined}
-        isFromBulkRelation={undefined}
-        confidence={confidence}
-        defaultCreatedBy={defaultCreatedBy}
-        defaultMarkingDefinitions={defaultMarkingDefinitions}
-        stixDomainObjectTypes={targetStixCoreObjectTypes}
-        paginationKey={'Pagination_stixCoreObjects'}
-        paginationOptions={searchPaginationOptions}
-      />
-      <StixCyberObservableCreation
-        display={true}
-        contextual={true}
-        inputValue={''}
-        paginationKey={'Pagination_stixCoreObjects'}
-        paginationOptions={searchPaginationOptions}
-        speeddial={true}
-        open={openCreateObservable}
-        handleClose={() => setOpenCreateObservable(false)}
-        type={undefined}
-        defaultCreatedBy={undefined}
-      />
-    </>);
+        <StixDomainObjectCreation
+          display={true}
+          inputValue=""
+          speeddial={true}
+          open={openCreateEntity}
+          handleClose={() => setOpenCreateEntity(false)}
+          creationCallback={undefined}
+          onCompleted={undefined}
+          isFromBulkRelation={undefined}
+          confidence={confidence}
+          defaultCreatedBy={defaultCreatedBy}
+          defaultMarkingDefinitions={defaultMarkingDefinitions}
+          stixDomainObjectTypes={targetStixCoreObjectTypes}
+          paginationKey="Pagination_stixCoreObjects"
+          paginationOptions={searchPaginationOptions}
+        />
+        <StixCyberObservableCreation
+          display={true}
+          contextual={true}
+          inputValue=""
+          paginationKey="Pagination_stixCoreObjects"
+          paginationOptions={searchPaginationOptions}
+          speeddial={true}
+          open={openCreateObservable}
+          handleClose={() => setOpenCreateObservable(false)}
+          type={undefined}
+          defaultCreatedBy={undefined}
+        />
+      </>
+    );
   };
 
   const Dial = showSDOCreation
@@ -298,7 +300,7 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
 
   return (
     <Drawer
-      title={''} // Defined in custom header prop
+      title="" // Defined in custom header prop
       controlledDial={knowledgeGraph ? GraphControlledDial : Dial}
       header={<Header />}
       ref={setRef}

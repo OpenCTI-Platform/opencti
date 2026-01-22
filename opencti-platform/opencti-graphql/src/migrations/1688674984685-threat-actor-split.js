@@ -7,7 +7,7 @@ import {
   READ_INDEX_INTERNAL_OBJECTS,
   READ_INDEX_STIX_DOMAIN_OBJECTS,
   READ_INDEX_STIX_META_OBJECTS,
-  READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED
+  READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
 } from '../database/utils';
 import { DatabaseError } from '../config/errors';
 import { ENTITY_TYPE_THREAT_ACTOR_GROUP } from '../schema/stixDomainObject';
@@ -24,13 +24,13 @@ const entitySettingTypeChange = async () => {
   const updateQuery = {
     script: {
       params: { toType: 'Threat-Actor-Group' },
-      source: 'ctx._source.target_type = params.toType;'
+      source: 'ctx._source.target_type = params.toType;',
     },
     query: {
       bool: {
         must: [
           { term: { 'entity_type.keyword': { value: 'EntitySetting' } } },
-          { term: { 'target_type.keyword': { value: 'Threat-Actor' } } }
+          { term: { 'target_type.keyword': { value: 'Threat-Actor' } } },
         ],
       },
     },
@@ -39,7 +39,7 @@ const entitySettingTypeChange = async () => {
     index: [READ_INDEX_INTERNAL_OBJECTS],
     refresh: true,
     wait_for_completion: true,
-    body: updateQuery
+    body: updateQuery,
   }).catch((err) => {
     throw DatabaseError('Error updating elastic', { cause: err });
   });
@@ -64,7 +64,7 @@ const updateOVCategory = async (fromOV, toOV) => {
     index: [READ_INDEX_STIX_META_OBJECTS],
     refresh: true,
     wait_for_completion: true,
-    body: updateIndividualQuery
+    body: updateIndividualQuery,
   }).catch((err) => {
     throw DatabaseError('Error updating elastic', { cause: err });
   });
@@ -74,7 +74,7 @@ const createIndividualThreatCategories = async (context) => {
   const categories = [
     { individual: 'threat_actor_individual_type_ov', group: 'threat_actor_group_type_ov' },
     { individual: 'threat_actor_individual_role_ov', group: 'threat_actor_group_role_ov' },
-    { individual: 'threat_actor_individual_sophistication_ov', group: 'threat_actor_group_sophistication_ov' }
+    { individual: 'threat_actor_individual_sophistication_ov', group: 'threat_actor_group_sophistication_ov' },
   ];
   for (let indexCategory = 0; indexCategory < categories.length; indexCategory += 1) {
     const { individual, group } = categories[indexCategory];
@@ -98,7 +98,7 @@ const createIndividualThreatCategories = async (context) => {
         description: description ?? '',
         aliases: aliases ?? [],
         category: individual,
-        builtIn: builtInOv.includes(individual)
+        builtIn: builtInOv.includes(individual),
       };
       await addVocabulary(context, SYSTEM_USER, data);
     }
@@ -135,18 +135,18 @@ export const up = async (next) => {
         script: {
           params: { original: ENTITY_TYPE_THREAT_ACTOR, toType, standardId },
           source: 'ctx._source.entity_type = params.toType; '
-                + 'ctx._source.standard_id = params.standardId; '
-                + 'if (!ctx._source.parent_types.contains(params.original)) { ctx._source.parent_types.add(params.original); }',
+            + 'ctx._source.standard_id = params.standardId; '
+            + 'if (!ctx._source.parent_types.contains(params.original)) { ctx._source.parent_types.add(params.original); }',
         },
         query: {
-          term: { 'internal_id.keyword': { value: threatActor.internal_id } }
+          term: { 'internal_id.keyword': { value: threatActor.internal_id } },
         },
       };
       const entityPromise = elRawUpdateByQuery({
         index: [READ_INDEX_STIX_DOMAIN_OBJECTS],
         refresh: true,
         wait_for_completion: true,
-        body: updateEntityQuery
+        body: updateEntityQuery,
       }).catch((err) => {
         throw DatabaseError('Error updating elastic', { cause: err });
       });
@@ -155,10 +155,10 @@ export const up = async (next) => {
         script: {
           params: { toType, toId: threatActor.internal_id },
           source: 'for(def connection : ctx._source.connections) {'
-                + ' if (connection.internal_id == params.toId && !connection.types.contains(params.toType)) { connection.types.add(params.toType); }'
-                + ' if (connection.internal_id == params.toId && connection.role.endsWith("_from")) { ctx._source.fromType = params.toType; }'
-                + ' if (connection.internal_id == params.toId && connection.role.endsWith("_to")) { ctx._source.toType = params.toType; }'
-                + '}'
+            + ' if (connection.internal_id == params.toId && !connection.types.contains(params.toType)) { connection.types.add(params.toType); }'
+            + ' if (connection.internal_id == params.toId && connection.role.endsWith("_from")) { ctx._source.fromType = params.toType; }'
+            + ' if (connection.internal_id == params.toId && connection.role.endsWith("_to")) { ctx._source.toType = params.toType; }'
+            + '}',
         },
         query: {
           nested: {
@@ -167,19 +167,19 @@ export const up = async (next) => {
               bool: {
                 should: [
                   { term: { 'connections.internal_id.keyword': { value: threatActor.internal_id } } },
-                  { term: { 'connections.internal_id.keyword': { value: threatActor.internal_id } } }
+                  { term: { 'connections.internal_id.keyword': { value: threatActor.internal_id } } },
                 ],
-                minimum_should_match: 1
-              }
-            }
-          }
+                minimum_should_match: 1,
+              },
+            },
+          },
         },
       };
       const relationsPromise = elRawUpdateByQuery({
         index: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
         refresh: true,
         wait_for_completion: true,
-        body: updateRelationsQuery
+        body: updateRelationsQuery,
       }).catch((err) => {
         throw DatabaseError('Error updating elastic', { cause: err });
       });

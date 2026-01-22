@@ -52,8 +52,8 @@ const groupQuery = graphql`
 `;
 
 interface RootGroupComponentProps {
-  queryRef: PreloadedQuery<RootGroupQuery>,
-  groupId: string,
+  queryRef: PreloadedQuery<RootGroupQuery>;
+  groupId: string;
 }
 
 const RootGroupComponent: FunctionComponent<RootGroupComponentProps> = ({ queryRef, groupId }) => {
@@ -88,7 +88,7 @@ const RootGroupComponent: FunctionComponent<RootGroupComponentProps> = ({ queryR
   return (
     <Security needs={[SETTINGS_SETACCESSES]}>
       <>
-        <AccessesMenu/>
+        <AccessesMenu />
         <Breadcrumbs
           isSensitive={isSensitive}
           elements={[
@@ -107,27 +107,27 @@ const RootGroupComponent: FunctionComponent<RootGroupComponentProps> = ({ queryR
             >
               {group.name}
             </Typography>
-            <div className="clearfix"/>
+            <div className="clearfix" />
           </div>
           <div style={{ display: 'flex', alignItems: 'center', paddingRight: 200 }}>
             <div style={{ display: 'flex' }}>
               <div style={{ marginRight: theme.spacing(0.5) }}>
                 {canDelete && (
-                <PopoverMenu>
-                  {({ closeMenu }) => (
-                    <Box>
-                      <MenuItem
-                        disabled={!isAllowed && isSensitive}
-                        onClick={() => {
-                          handleOpenDelete();
-                          closeMenu();
-                        }}
-                      >
-                        {t_i18n('Delete')}
-                      </MenuItem>
-                    </Box>
-                  )}
-                </PopoverMenu>
+                  <PopoverMenu>
+                    {({ closeMenu }) => (
+                      <Box>
+                        <MenuItem
+                          disabled={!isAllowed && isSensitive}
+                          onClick={() => {
+                            handleOpenDelete();
+                            closeMenu();
+                          }}
+                        >
+                          {t_i18n('Delete')}
+                        </MenuItem>
+                      </Box>
+                    )}
+                  </PopoverMenu>
                 )}
               </div>
               <GroupDeletionDialog
@@ -146,7 +146,7 @@ const RootGroupComponent: FunctionComponent<RootGroupComponentProps> = ({ queryR
           <Route
             path="/"
             element={
-              <Group groupData={group}/>
+              <Group groupData={group} />
             }
           />
         </Routes>

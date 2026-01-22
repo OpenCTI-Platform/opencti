@@ -4,8 +4,8 @@ import Tooltip from '@mui/material/Tooltip';
 import type { Theme } from '../../../../components/Theme';
 
 interface RulesListItemTagProps extends PropsWithChildren {
-  variant?: 'if' | 'then' | 'action'
-  color?: string | null
+  variant?: 'if' | 'then' | 'action';
+  color?: string | null;
 }
 
 const RulesListItemTag = ({ variant, color, children }: RulesListItemTagProps) => {

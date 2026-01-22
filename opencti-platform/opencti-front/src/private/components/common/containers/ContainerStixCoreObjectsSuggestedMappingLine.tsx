@@ -97,7 +97,7 @@ const ContainerStixCoreObjectsSuggestedMappingFragment = graphql`
   `;
 
 export const ContainerStixCoreObjectsSuggestedMappingLine: FunctionComponent<
-ContainerStixCoreObjectsSuggestedMappingLineComponentProps
+  ContainerStixCoreObjectsSuggestedMappingLineComponentProps
 > = ({ dataColumns, contentMappingCount, node, handleRemoveSuggestedMappingLine }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -108,13 +108,13 @@ ContainerStixCoreObjectsSuggestedMappingLineComponentProps
       classes={{ root: classes.item }}
       divider={true}
       disablePadding
-      secondaryAction={
+      secondaryAction={(
         <IconButton
           onClick={() => handleRemoveSuggestedMappingLine(matchedEntity)}
         >
-          <CloseOutlined/>
+          <CloseOutlined />
         </IconButton>
-    }
+      )}
     >
       <ListItemButton
         component={Link}
@@ -125,7 +125,7 @@ ContainerStixCoreObjectsSuggestedMappingLineComponentProps
           <ItemIcon type={matchedEntity.entity_type} />
         </ListItemIcon>
         <ListItemText
-          primary={
+          primary={(
             <>
               <div
                 className={classes.bodyItem}
@@ -152,7 +152,7 @@ ContainerStixCoreObjectsSuggestedMappingLineComponentProps
                 style={{ width: dataColumns.value.width }}
               >
                 {matchedEntity.representative?.main}
-                {matchedEntity.draftVersion && (<DraftChip/>)}
+                {matchedEntity.draftVersion && (<DraftChip />)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -184,7 +184,7 @@ ContainerStixCoreObjectsSuggestedMappingLineComponentProps
                 />
               </div>
             </>
-        }
+          )}
         />
       </ListItemButton>
     </ListItem>
@@ -198,17 +198,17 @@ export const ContainerStixCoreObjectsSuggestedMappingLineDummy = (props: Contain
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={
+      secondaryAction={(
         <IconButton disabled={true} aria-haspopup="true" size="large" classes={classes.itemIconDisabled}>
-          <MoreVert/>
+          <MoreVert />
         </IconButton>
-      }
+      )}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             {Object.values(dataColumns).map((value) => (
               <div
@@ -225,7 +225,7 @@ export const ContainerStixCoreObjectsSuggestedMappingLineDummy = (props: Contain
               </div>
             ))}
           </div>
-        }
+        )}
       />
     </ListItem>
   );

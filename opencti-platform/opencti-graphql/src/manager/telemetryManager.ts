@@ -19,11 +19,14 @@ import { getHttpClient } from '../utils/http-client';
 import type { BasicStoreEntityConnector } from '../types/connector';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { elCount } from '../database/engine';
-import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
+import { READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { FilterMode } from '../generated/graphql';
 import { redisClearTelemetry, redisGetTelemetry, redisSetTelemetryAdd } from '../database/redis';
 import type { AuthUser } from '../types/user';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
+import { ENTITY_TYPE_SECURITY_COVERAGE } from '../modules/securityCoverage/securityCoverage-types';
+import { isStrategyActivated, StrategyType } from '../config/providers-configuration';
+import { findRolesWithCapabilityInDraft } from '../domain/user';
 
 const TELEMETRY_MANAGER_KEY = conf.get('telemetry_manager:lock_key');
 const TELEMETRY_CONSOLE_DEBUG = conf.get('telemetry_manager:console_debug') ?? false;
@@ -48,13 +51,13 @@ export const TELEMETRY_GAUGE_NLQ = 'nlqQueryCount';
 export const TELEMETRY_GAUGE_REQUEST_ACCESS = 'requestAccessCreationCount';
 export const TELEMETRY_GAUGE_DRAFT_CREATION = 'draftCreationCount';
 export const TELEMETRY_GAUGE_DRAFT_VALIDATION = 'draftValidationCount';
+export const TELEMETRY_GAUGE_CAPABILITIES_IN_DRAFT_UPDATED = 'capabilitiesInDraftUpdateCount';
 export const TELEMETRY_GAUGE_WORKBENCH_UPLOAD = 'workbenchUploadCount';
 export const TELEMETRY_GAUGE_WORKBENCH_DRAFT_CONVERTION = 'workbenchDraftConvertionCount';
 export const TELEMETRY_GAUGE_WORKBENCH_VALIDATION = 'workbenchValidationCount';
 export const TELEMETRY_GAUGE_USER_INTO_SERVICE_ACCOUNT = 'userIntoServiceAccountCount';
 export const TELEMETRY_GAUGE_SERVICE_ACCOUNT_INTO_USER = 'serviceAccountIntoUserCount';
 export const TELEMETRY_GAUGE_USER_EMAIL_SEND = 'userEmailSendCount';
-export const TELEMETRY_GAUGE_ONBOARDING_EMAIL_SEND = 'onboardingEmailSendCount';
 export const TELEMETRY_BACKGROUND_TASK_USER = 'userBackgroundTaskCount';
 export const TELEMETRY_EMAIL_TEMPLATE_CREATED = 'emailTemplateCreatedCount';
 export const TELEMETRY_FORGOT_PASSWORD = 'forgotPasswordCount';
@@ -80,6 +83,9 @@ export const addDraftCreationCount = async () => {
 export const addDraftValidationCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_DRAFT_VALIDATION, 1);
 };
+export const addCapabilitiesInDraftUpdatedCount = async () => {
+  await redisSetTelemetryAdd(TELEMETRY_GAUGE_CAPABILITIES_IN_DRAFT_UPDATED, 1);
+};
 export const addWorkbenchUploadCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_WORKBENCH_UPLOAD, 1);
 };
@@ -100,9 +106,6 @@ export const addServiceAccountIntoUserCount = async () => {
 export const addUserEmailSendCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_USER_EMAIL_SEND, 1);
 };
-export const addOnboardingEmailSendCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_GAUGE_ONBOARDING_EMAIL_SEND, 1);
-};
 
 export const addFormIntakeCreatedCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_FORM_INTAKE_CREATED, 1);
@@ -119,12 +122,15 @@ export const addFormIntakeDeletedCount = async () => {
 export const addFormIntakeSubmittedCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_FORM_INTAKE_SUBMITTED, 1);
 };
+
 export const addUserBackgroundTaskCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_BACKGROUND_TASK_USER, 1);
 };
+
 export const addEmailTemplateCreatedCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_EMAIL_TEMPLATE_CREATED, 1);
 };
+
 export const addForgotPasswordCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_FORGOT_PASSWORD, 1);
 };
@@ -151,7 +157,7 @@ const telemetryInitializer = async (): Promise<HandlerInput> => {
     exporter: new MetricFileExporter(AggregationTemporality.DELTA),
     collectIntervalMillis: TELEMETRY_COLLECT_INTERVAL,
     exportIntervalMillis: TELEMETRY_EXPORT_INTERVAL,
-    collectCallback: collectorCallback
+    collectCallback: collectorCallback,
   });
   filigranMetricReaders.push(fileExporterReader);
   logApp.info('[TELEMETRY] File exporter activated');
@@ -164,7 +170,7 @@ const telemetryInitializer = async (): Promise<HandlerInput> => {
       const OtlpExporterReader = new BatchExportingMetricReader({
         exporter: new OTLPMetricExporter({
           url: FILIGRAN_OTLP_TELEMETRY,
-          temporalityPreference: AggregationTemporality.DELTA
+          temporalityPreference: AggregationTemporality.DELTA,
         }),
         collectIntervalMillis: TELEMETRY_COLLECT_INTERVAL,
         exportIntervalMillis: TELEMETRY_EXPORT_INTERVAL,
@@ -201,7 +207,7 @@ const telemetryInitializer = async (): Promise<HandlerInput> => {
     [SEMRESATTRS_SERVICE_NAME]: TELEMETRY_SERVICE_NAME,
     [SEMRESATTRS_SERVICE_VERSION]: PLATFORM_VERSION,
     [SEMRESATTRS_SERVICE_INSTANCE_ID]: platformId,
-    'service.instance.creation': settings.created_at as unknown as string
+    'service.instance.creation': settings.created_at as unknown as string,
   });
   const resource = Resource.default().merge(filigranResource);
   const filigranMeterProvider = new MeterProvider(({ resource, readers: filigranMetricReaders }));
@@ -236,6 +242,11 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setActiveConnectorsCount(activeConnectors.length);
     // endregion
 
+    // region Roles with draft capability information
+    const rolesWithCapabilityInDraft = await findRolesWithCapabilityInDraft(context, TELEMETRY_MANAGER_USER);
+    manager.setRolesWithCapabilityInDraftCount(rolesWithCapabilityInDraft.length);
+    // endregion
+
     // region Draft information
     const draftWorkspaces = await getEntitiesListFromCache(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_DRAFT_WORKSPACE);
     manager.setDraftCount(draftWorkspaces.length);
@@ -245,7 +256,7 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     const pendingFileFilter = {
       mode: FilterMode.And,
       filters: [{ key: ['internal_id'], values: ['import/pending'], operator: 'starts_with' }],
-      filterGroups: []
+      filterGroups: [],
     };
     const workbenchesCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, { filters: pendingFileFilter, types: [ENTITY_TYPE_INTERNAL_FILE] });
     manager.setWorkbenchCount(workbenchesCount);
@@ -254,6 +265,26 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     // region PIR information
     const pirs = await getEntitiesListFromCache(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_PIR);
     manager.setPirCount(pirs.length);
+    // endregion
+
+    // region SSO providers configuration
+    manager.setSsoLocalStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_LOCAL) ? 1 : 0);
+    manager.setSsoOpenidStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_OPENID) ? 1 : 0);
+    manager.setSsoLDAPStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_LDAP) ? 1 : 0);
+    manager.setSsoSAMLStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_SAML) ? 1 : 0);
+    manager.setSsoAuthZeroStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_AUTH0) ? 1 : 0);
+    manager.setSsoCertStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_CERT) ? 1 : 0);
+    manager.setSsoHeaderStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_HEADER) ? 1 : 0);
+    manager.setSsoFacebookStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_FACEBOOK) ? 1 : 0);
+    manager.setSsoGoogleStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_GOOGLE) ? 1 : 0);
+    manager.setSsoGithubStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_GITHUB) ? 1 : 0);
+    // endregion SSO providers
+
+    // region Security Coverages
+    const securityCoveragesCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, {
+      types: [ENTITY_TYPE_SECURITY_COVERAGE],
+    });
+    manager.setSecurityCoveragesCount(securityCoveragesCount);
     // endregion
 
     // region Telemetry user events
@@ -267,6 +298,8 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setDraftCreationCount(draftCreationCountInRedis);
     const draftValidationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DRAFT_VALIDATION);
     manager.setDraftValidationCount(draftValidationCountInRedis);
+    const capabilitiesInDraftUpdatedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CAPABILITIES_IN_DRAFT_UPDATED);
+    manager.setCapabilitiesInDraftUpdatedCount(capabilitiesInDraftUpdatedCountInRedis);
     const workbenchUploadCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_WORKBENCH_UPLOAD);
     manager.setWorkbenchUploadCount(workbenchUploadCountInRedis);
     const workbenchDraftConvertionCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_WORKBENCH_DRAFT_CONVERTION);
@@ -279,8 +312,6 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setServiceAccountIntoUserCount(serviceAccountIntoUserCountInRedis);
     const emailSendCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_USER_EMAIL_SEND);
     manager.setUserEmailSendCount(emailSendCountInRedis);
-    const onboardingEmailSendCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_ONBOARDING_EMAIL_SEND);
-    manager.setOnboardingEmailSendCount(onboardingEmailSendCountInRedis);
     const userBackgroundTaskCountInRedis = await redisGetTelemetry(TELEMETRY_BACKGROUND_TASK_USER);
     manager.setUserBackgroundTaskCount(userBackgroundTaskCountInRedis);
     const emailTemplateCreatedCountInRedis = await redisGetTelemetry(TELEMETRY_EMAIL_TEMPLATE_CREATED);
@@ -291,6 +322,14 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setConnectorDeployedCount(connectorDeployedCountInRedis);
     const userLoginCountInRedis = await redisGetTelemetry(TELEMETRY_USER_LOGIN);
     manager.setUserLoginCount(userLoginCountInRedis);
+    const formIntakeCreatedCountInRedis = await redisGetTelemetry(TELEMETRY_FORM_INTAKE_CREATED);
+    manager.setFormIntakeCreatedCount(formIntakeCreatedCountInRedis);
+    const formIntakeUpdatedCountInRedis = await redisGetTelemetry(TELEMETRY_FORM_INTAKE_UPDATED);
+    manager.setFormIntakeUpdatedCount(formIntakeUpdatedCountInRedis);
+    const formIntakeDeletedCountInRedis = await redisGetTelemetry(TELEMETRY_FORM_INTAKE_DELETED);
+    manager.setFormIntakeDeletedCount(formIntakeDeletedCountInRedis);
+    const formIntakeSubmittedCountInRedis = await redisGetTelemetry(TELEMETRY_FORM_INTAKE_SUBMITTED);
+    manager.setFormIntakeSubmittedCount(formIntakeSubmittedCountInRedis);
     // end region Telemetry user events
 
     logApp.debug('[TELEMETRY] Fetching telemetry data successfully');
@@ -316,7 +355,7 @@ const TELEMETRY_MANAGER_DEFINITION: ManagerDefinition = {
   },
   enabled(): boolean {
     return this.enabledByConfig;
-  }
+  },
 };
 
 registerManager(TELEMETRY_MANAGER_DEFINITION);

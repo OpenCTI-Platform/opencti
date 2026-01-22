@@ -73,7 +73,12 @@ const reportResolvers = {
   },
   Mutation: {
     reportEdit: (_, { id }, context) => ({
-      delete: ({ purgeElements }) => (purgeElements ? reportDeleteWithElements(context, context.user, id) : stixDomainObjectDelete(context, context.user, id)),
+      delete: ({ purgeElements }) => {
+        if (purgeElements) {
+          return reportDeleteWithElements(context, context.user, id);
+        }
+        return stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_CONTAINER_REPORT);
+      },
       fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
       contextClean: () => stixDomainObjectCleanContext(context, context.user, id),

@@ -124,20 +124,20 @@ const JsonMapperPopover: FunctionComponent<JsonMapperPopoverProps> = ({
         <MenuItem onClick={onExport}>{t_i18n('Export')}</MenuItem>
       </Menu>
       {queryRef && (
-      <React.Suspense fallback={<div />}>
-        <JsonMapperEditionContainer
-          queryRef={queryRef}
-          onClose={() => setDisplayUpdate(false)}
-          open={displayUpdate}
-        />
-        <JsonMapperCreationContainer
-          editionQueryRef={queryRef}
-          isDuplicated={true}
-          paginationOptions={paginationOptions}
-          onClose={() => setDisplayDuplicate(false)}
-          open={displayDuplicate}
-        />
-      </React.Suspense>
+        <React.Suspense fallback={<div />}>
+          <JsonMapperEditionContainer
+            queryRef={queryRef}
+            onClose={() => setDisplayUpdate(false)}
+            open={displayUpdate}
+          />
+          <JsonMapperCreationContainer
+            editionQueryRef={queryRef}
+            isDuplicated={true}
+            paginationOptions={paginationOptions}
+            onClose={() => setDisplayDuplicate(false)}
+            open={displayDuplicate}
+          />
+        </React.Suspense>
       )}
       <DeleteDialog
         message={t_i18n('Do you want to delete this JSON mapper?')}

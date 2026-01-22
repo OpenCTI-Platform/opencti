@@ -170,23 +170,23 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
               <List>
                 {tags.map(
                   (label) => label.length > 0 && (
-                  <ListItem
-                    key={label}
-                    disableGutters
-                    dense
-                  >
-                    <ListItemText primary={label} />
-                    <ListItemSecondaryAction>
-                      <IconButton
-                        edge="end"
-                        aria-label="delete"
-                        onClick={deleteTag(label)}
-                        size="large"
-                      >
-                        <Delete />
-                      </IconButton>
-                    </ListItemSecondaryAction>
-                  </ListItem>
+                    <ListItem
+                      key={label}
+                      disableGutters
+                      dense
+                    >
+                      <ListItemText primary={label} />
+                      <ListItemSecondaryAction>
+                        <IconButton
+                          edge="end"
+                          aria-label="delete"
+                          onClick={deleteTag(label)}
+                          size="large"
+                        >
+                          <Delete />
+                        </IconButton>
+                      </ListItemSecondaryAction>
+                    </ListItem>
                   ),
                 )}
               </List>

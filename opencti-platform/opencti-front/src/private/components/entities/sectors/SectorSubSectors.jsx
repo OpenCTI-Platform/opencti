@@ -72,10 +72,11 @@ const SectorSubSectorsComponent = ({ sector }) => {
                   <LinkOff />
                 </IconButton>
               </Security>
-            ) : <AutoFix fontSize="small" style={{ marginRight: 13 }}/>}
+            ) : <AutoFix fontSize="small" style={{ marginRight: 13 }} />}
           >
             <ListItemButton
-              component= {Link} to={`/dashboard/entities/sectors/${subSector.id}`}
+              component={Link}
+              to={`/dashboard/entities/sectors/${subSector.id}`}
             >
               <ListItemIcon>
                 <Domain color="primary" />

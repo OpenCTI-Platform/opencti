@@ -35,12 +35,12 @@ const sendJsonResponse = (res, data) => {
 const errorConverter = (e) => {
   return {
     title: e.message,
-    error_code: e.extensions.code,
-    http_status: e.extensions.data?.http_status || 500,
+    error_code: e?.extensions?.code,
+    http_status: e?.extensions?.data?.http_status || 500,
   };
 };
 
-const extractContextFromRequest = async (req, res) => {
+const checkAuthenticationFromRequest = async (req, res) => {
   // noinspection UnnecessaryLocalVariableJS
   const context = await createAuthenticatedContext(req, res, 'taxii');
   if (!context.user) {
@@ -71,7 +71,7 @@ const extractUserAndCollection = async (req, res, id) => {
   if (findCollection.taxii_public) {
     return { user: SYSTEM_USER, collection: findCollection };
   }
-  const context = await extractContextFromRequest(req, res);
+  const context = await checkAuthenticationFromRequest(req, res);
   const userCollection = await findById(context, context.user, id);
   if (!userCollection) {
     throw TaxiiError('Collection not found', 404);
@@ -79,24 +79,28 @@ const extractUserAndCollection = async (req, res, id) => {
   return { context, user: context.user, collection: userCollection };
 };
 
+const isValidTaxiiPostContentType = (req) => {
+  const contentTypeFromRequest = parseContentType(req);
+  return (TAXII_REQUEST_ALLOWED_CONTENT_TYPE.includes(contentTypeFromRequest.type) && contentTypeFromRequest.parameters.version === TAXII_VERSION);
+};
+
 const JsonTaxiiMiddleware = express.json({
   type: (req) => {
     try {
-      const contentTypeFromRequest = parseContentType(req);
-      return TAXII_REQUEST_ALLOWED_CONTENT_TYPE.includes(contentTypeFromRequest.type) && contentTypeFromRequest.parameters.version === TAXII_VERSION;
-    } catch (e) {
+      return isValidTaxiiPostContentType(req);
+    } catch (_e) {
       logApp.info('[Taxii] Content-Type from incoming request is missing or invalid', { contentType: req?.headers['content-type'] });
       return false;
     }
   },
-  limit: nconf.get('app:max_payload_body_size') || '50mb'
+  limit: nconf.get('app:max_payload_body_size') || '50mb',
 });
 
 const initTaxiiApi = (app) => {
   // Discovery api
   app.get(`${basePath}/taxii2/`, async (req, res) => {
     try {
-      await extractContextFromRequest(req, res);
+      await checkAuthenticationFromRequest(req, res);
       const discovery = {
         title: 'OpenCTI TAXII Server',
         description: 'This TAXII Server exposes OpenCTI data through taxii protocol',
@@ -112,7 +116,7 @@ const initTaxiiApi = (app) => {
   // Root api
   app.get(`${basePath}/taxii2/root/`, async (req, res) => {
     try {
-      await extractContextFromRequest(req, res);
+      await checkAuthenticationFromRequest(req, res);
       const rootContent = {
         title: 'OpenCTI TAXII Server',
         description: 'A global and natively segregate taxii root',
@@ -128,7 +132,7 @@ const initTaxiiApi = (app) => {
   // Collection api
   app.get(`${basePath}/taxii2/root/collections/`, async (req, res) => {
     try {
-      const context = await extractContextFromRequest(req, res);
+      const context = await checkAuthenticationFromRequest(req, res);
       const collections = await restAllCollections(context, context.user);
       sendJsonResponse(res, { collections });
     } catch (e) {
@@ -225,13 +229,19 @@ const initTaxiiApi = (app) => {
     }
   });
   app.post(`${basePath}/taxii2/root/collections/:id/objects/`, JsonTaxiiMiddleware, async (req, res) => {
-    const { id } = req.params;
-    const { objects = [] } = req.body;
     try {
+    // Authentication is checked in this method, keep it first but inside try block.
+      const context = await checkAuthenticationFromRequest(req, res);
+      if (!isValidTaxiiPostContentType(req)) {
+        throw TaxiiError('Content-Type in request is missing or invalid', 400);
+      }
+
+      const { id } = req.params;
+      const { objects = [] } = req.body;
+
       if (objects.length === 0) {
         throw UnsupportedError('Objects required');
       }
-      const context = await extractContextFromRequest(req, res);
       // Find and validate the collection
       const ingestion = await findTaxiiCollection(context, context.user, id);
       if (!ingestion) {
@@ -252,7 +262,7 @@ const initTaxiiApi = (app) => {
         total_count: objects.length,
         success_count: 0,
         failure_count: 0,
-        pending_count: objects.length
+        pending_count: objects.length,
       });
     } catch (e) {
       const errorDetail = errorConverter(e);
@@ -263,11 +273,11 @@ const initTaxiiApi = (app) => {
   app.get(`${basePath}/taxii2/root/status/:status_id/`, async (req, res) => {
     const { status_id } = req.params;
     try {
-      const context = await extractContextFromRequest(req, res);
+      const context = await checkAuthenticationFromRequest(req, res);
       const work = await findWorkById(context, context.user, status_id);
-      if (!work) throw UnsupportedError('Work not found');
+      if (!work) throw UnsupportedError('Work not found', { status_id });
       const stats = await computeWorkStatus(work);
-      if (!stats) throw UnsupportedError('Work not found');
+      if (!stats) throw UnsupportedError('Work not found', { status_id });
       const failure_count = (work.errors ?? []).length;
       const total_count = parseInt(stats.import_expected_number, 10);
       const processed_number = stats.import_processed_number ? parseInt(stats.import_processed_number, 10) : 0;
@@ -280,7 +290,7 @@ const initTaxiiApi = (app) => {
         total_count,
         success_count,
         failure_count,
-        pending_count
+        pending_count,
       });
     } catch (e) {
       const errorDetail = errorConverter(e);

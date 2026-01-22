@@ -7,6 +7,7 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
+import { ENTITY_TYPE_INCIDENT } from '../schema/stixDomainObject';
 import { RELATION_OBJECT_ASSIGNEE } from '../schema/stixRefRelationship';
 import { buildRefRelationKey, INPUT_PARTICIPANT } from '../schema/general';
 import { loadThroughDenormalized } from './stix';
@@ -32,25 +33,25 @@ const incidentResolvers = {
         return [];
       }
       return filterMembersWithUsersOrgs(context, context.user, participants);
-    }
+    },
   },
   IncidentsOrdering: {
     objectAssignee: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),
   },
   Mutation: {
     incidentEdit: (_, { id }, context) => ({
-      delete: () => stixDomainObjectDelete(context, context.user, id),
+      delete: () => stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_INCIDENT),
       fieldPatch: ({
         input,
         commitMessage,
-        references
+        references,
       }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
       contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
       relationAdd: ({ input }) => stixDomainObjectAddRelation(context, context.user, id, input),
       relationDelete: ({
         toId,
-        relationship_type: relationshipType
+        relationship_type: relationshipType,
       }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
     }),
     incidentAdd: (_, { input }, context) => addIncident(context, context.user, input),

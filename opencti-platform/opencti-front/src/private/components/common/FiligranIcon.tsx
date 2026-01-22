@@ -3,10 +3,10 @@ import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../components/Theme';
 
 interface FiligranIconProps {
-  icon: ElementType,
-  color: 'primary' | 'secondary' | 'error' | 'success' | 'ai'
-  size: 'small' | 'medium' | 'large' | number // we also accepts px size
-  style?: React.CSSProperties
+  icon: ElementType;
+  color: 'primary' | 'secondary' | 'error' | 'success' | 'ai';
+  size: 'small' | 'medium' | 'large' | number; // we also accepts px size
+  style?: React.CSSProperties;
 }
 
 // MUI sizes

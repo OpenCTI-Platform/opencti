@@ -102,7 +102,7 @@ const fragmentData = graphql`
 `;
 
 interface RulesListProps {
-  data: RulesList_data$key
+  data: RulesList_data$key;
 }
 
 const RulesList = ({ data }: RulesListProps) => {

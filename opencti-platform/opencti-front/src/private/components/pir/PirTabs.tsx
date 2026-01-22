@@ -27,7 +27,7 @@ const tabsFragment = graphql`
 `;
 
 interface PirTabsProps {
-  data: PirTabsFragment$key
+  data: PirTabsFragment$key;
 }
 
 const PirTabs = ({ data }: PirTabsProps) => {

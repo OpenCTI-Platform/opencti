@@ -48,15 +48,17 @@ class ThreatActorIndividualLocationsComponent extends Component {
     const { t, threatActorIndividual } = this.props;
     return (
       <>
-        <CardLabel style={{ marginTop: 20 }} action={(
-          <Security
-            needs={[KNOWLEDGE_KNUPDATE]}
-          >
-            <AddLocationsThreatActorIndividual
-              threatActorIndividual={threatActorIndividual}
-            />
-          </Security>
-        )}
+        <CardLabel
+          style={{ marginTop: 20 }}
+          action={(
+            <Security
+              needs={[KNOWLEDGE_KNUPDATE]}
+            >
+              <AddLocationsThreatActorIndividual
+                threatActorIndividual={threatActorIndividual}
+              />
+            </Security>
+          )}
         >
           {t('Located at')}
         </CardLabel>
@@ -81,7 +83,7 @@ class ThreatActorIndividualLocationsComponent extends Component {
                   disablePadding
                   secondaryAction={
                     types.includes('manual') && (
-                      <div style={{ right: 0 }} >
+                      <div style={{ right: 0 }}>
                         <Security needs={[KNOWLEDGE_KNUPDATE]}>
                           <IconButton
                             aria-label="Remove"
@@ -111,7 +113,7 @@ class ThreatActorIndividualLocationsComponent extends Component {
                       )}
                     </ListItemIcon>
                     <ListItemText primary={location.name} />
-                    {!types.includes('manual') && <AutoFix fontSize="small" style={{ marginRight: 13 }}/>}
+                    {!types.includes('manual') && <AutoFix fontSize="small" style={{ marginRight: 13 }} />}
                   </ListItemButton>
                 </ListItem>
               );

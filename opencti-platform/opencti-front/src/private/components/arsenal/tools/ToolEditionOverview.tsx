@@ -129,10 +129,10 @@ interface ToolEditionFormValues {
   name?: string;
   description?: string;
   tool_version?: string;
-  createdBy?: FieldOption
+  createdBy?: FieldOption;
   killChainPhases?: FieldOption[];
   objectMarking?: FieldOption[];
-  x_opencti_workflow_id?: FieldOption
+  x_opencti_workflow_id?: FieldOption;
   references: FieldOption[];
   message?: string;
 }
@@ -280,7 +280,6 @@ const ToolEditionOverview: FunctionComponent<ToolEditionOverviewProps> = ({
           <KillChainPhasesField
             name="killChainPhases"
             required={(mandatoryAttributes.includes('killChainPhases'))}
-            setFieldValue={setFieldValue}
             style={{ marginTop: theme.spacing(2) }}
             helpertext={<SubscriptionFocus context={context} fieldName="killChainPhases" />}
             onChange={editor.changeKillChainPhases}

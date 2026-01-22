@@ -73,6 +73,7 @@ const auditsDistributionListDistributionQuery = graphql`
         }
         # objects without representative
         ... on Creator {
+          entity_type
           name
         }
         ... on Group {
@@ -108,8 +109,8 @@ const AuditsDistributionList = ({
           >
             {!isEnterpriseEdition
               ? t_i18n(
-                'This feature is only available in OpenCTI Enterprise Edition.',
-              )
+                  'This feature is only available in OpenCTI Enterprise Edition.',
+                )
               : t_i18n('You are not authorized to see this data.')}
           </span>
         </div>

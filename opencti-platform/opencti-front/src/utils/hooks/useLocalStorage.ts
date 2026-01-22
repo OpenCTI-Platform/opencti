@@ -84,7 +84,7 @@ export type HandleAddFilter = (
   k: string,
   id: string | null,
   op?: string,
-  event?: SyntheticEvent
+  event?: SyntheticEvent,
 ) => void;
 
 const buildParamsFromHistory = (params: LocalStorage) => {
@@ -204,7 +204,7 @@ const useLocalStorage = <T extends LocalStorage = LocalStorage>(
         return initialState;
       }
       return value;
-    } catch (error) {
+    } catch (_error) {
       // If error also return initialValue
       throw Error('Error while initializing values in local storage');
     }
@@ -234,7 +234,7 @@ const useLocalStorage = <T extends LocalStorage = LocalStorage>(
           setStoredValueToHistory(initialValue, valueToStore);
         }
       }
-    } catch (error) {
+    } catch (_error) {
       // A more advanced implementation would handle the error case
       throw Error('Error while setting values in local storage');
     }
@@ -664,16 +664,16 @@ export const usePaginationLocalStorage = <U>(
       const noReset = (oldValue === 'lines' && value === 'cards') || (oldValue === 'cards' && value === 'lines');
       const newValue = noReset
         ? {
-          ...viewStorage,
-          view: value,
-        }
+            ...viewStorage,
+            view: value,
+          }
         : {
-          ...viewStorage,
-          filters: initialValue.filters ?? emptyFilterGroup,
-          searchTerm: initialValue.searchTerm ?? '',
-          savedFilters: undefined,
-          view: value,
-        };
+            ...viewStorage,
+            filters: initialValue.filters ?? emptyFilterGroup,
+            searchTerm: initialValue.searchTerm ?? '',
+            savedFilters: undefined,
+            view: value,
+          };
       setValue(newValue);
       dispatch(`${key}_paginationStorage`, newValue);
     },
@@ -682,7 +682,7 @@ export const usePaginationLocalStorage = <U>(
       setValue(newValue);
       dispatch(`${key}_paginationStorage`, newValue);
     },
-    handleSetNumberOfElements: (nbElements: { number?: number; symbol?: string; original?: number; }) => {
+    handleSetNumberOfElements: (nbElements: { number?: number; symbol?: string; original?: number }) => {
       if (!R.equals(nbElements, viewStorage.numberOfElements)) {
         const { number, symbol, original } = nbElements;
         const newValue = {

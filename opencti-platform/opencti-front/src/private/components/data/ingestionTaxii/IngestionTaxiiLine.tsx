@@ -17,6 +17,7 @@ import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import ItemCopy from '../../../../components/ItemCopy';
 import type { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
+import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -43,12 +44,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 interface IngestionTaxiiLineProps {
   node: IngestionTaxiiLine_node$key;
   dataColumns: DataColumns;
-  onLabelClick: (
-    k: string,
-    id: string,
-    value: Record<string, unknown>,
-    event: React.KeyboardEvent,
-  ) => void;
+  onLabelClick: HandleAddFilter;
   paginationOptions?: IngestionTaxiiLinesPaginationQuery$variables;
 }
 
@@ -67,7 +63,7 @@ const ingestionTaxiiLineFragment = graphql`
     }
 `;
 
-export const IngestionTaxiiLineLineComponent : FunctionComponent<IngestionTaxiiLineProps> = ({
+export const IngestionTaxiiLineLineComponent: FunctionComponent<IngestionTaxiiLineProps> = ({
   dataColumns,
   node,
   paginationOptions,
@@ -80,7 +76,7 @@ export const IngestionTaxiiLineLineComponent : FunctionComponent<IngestionTaxiiL
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={
+      secondaryAction={(
         <Security needs={[INGESTION_SETINGESTIONS]}>
           <IngestionTaxiiPopover
             ingestionTaxiiId={data.id}
@@ -89,13 +85,13 @@ export const IngestionTaxiiLineLineComponent : FunctionComponent<IngestionTaxiiL
             setStateValue={setStateValue}
           />
         </Security>
-    }
+      )}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <AccessPoint />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -138,7 +134,7 @@ export const IngestionTaxiiLineLineComponent : FunctionComponent<IngestionTaxiiL
               <ItemCopy content={stateValue} variant="inLine" />
             </div>
           </div>
-          }
+        )}
       />
     </ListItem>
   );
@@ -161,7 +157,7 @@ export const IngestionTaxiiLineDummy = ({ dataColumns }: { dataColumns: DataColu
         />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -230,7 +226,7 @@ export const IngestionTaxiiLineDummy = ({ dataColumns }: { dataColumns: DataColu
               />
             </div>
           </div>
-          }
+        )}
       />
     </ListItem>
   );

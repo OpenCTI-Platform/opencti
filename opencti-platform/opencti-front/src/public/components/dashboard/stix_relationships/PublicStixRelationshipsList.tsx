@@ -4435,10 +4435,10 @@ const publicStixRelationshipsListQuery = graphql`
 `;
 
 interface PublicStixRelationshipsListComponentProps {
-  queryRef: PreloadedQuery<PublicStixRelationshipsListQuery>
-  widgetId: string
-  rootRef: DataTableProps['rootRef']
-  columns: WidgetColumn[]
+  queryRef: PreloadedQuery<PublicStixRelationshipsListQuery>;
+  widgetId: string;
+  rootRef: DataTableProps['rootRef'];
+  columns: WidgetColumn[];
 }
 
 const PublicStixRelationshipsListComponent = ({
@@ -4497,7 +4497,7 @@ const PublicStixRelationshipsList = ({
     >
       <div ref={rootRef} style={{ height: '100%' }}>
         {queryRef ? (
-          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
+          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
             <PublicStixRelationshipsListComponent
               queryRef={queryRef}
               columns={[...columns]}
@@ -4506,7 +4506,7 @@ const PublicStixRelationshipsList = ({
             />
           </React.Suspense>
         ) : (
-          <Loader variant={LoaderVariant.inElement}/>
+          <Loader variant={LoaderVariant.inElement} />
         )}
       </div>
     </WidgetContainer>

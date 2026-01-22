@@ -76,7 +76,7 @@ const dataComponentQuery = graphql`
 const RootDataComponent = () => {
   const { dataComponentId } = useParams() as { dataComponentId: string };
   const subConfig = useMemo<
-  GraphQLSubscriptionConfig<RootDataComponentSubscription>
+    GraphQLSubscriptionConfig<RootDataComponentSubscription>
   >(
     () => ({
       subscription,
@@ -113,7 +113,7 @@ const RootDataComponent = () => {
                         <DataComponentEdition dataComponentId={dataComponent.id} />
                       </Security>
                     )}
-                    DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+                    DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                       <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                         <DataComponentDeletion id={dataComponent.id} isOpen={isOpen} handleClose={onClose} />
                       </Security>
@@ -161,38 +161,38 @@ const RootDataComponent = () => {
                     <Route
                       path="/"
                       element={
-                        <DataComponent dataComponentData={dataComponent}/>
+                        <DataComponent dataComponentData={dataComponent} />
                       }
                     />
                     <Route
                       path="/knowledge/*"
                       element={
-                        <DataComponentKnowledge data={dataComponent}/>
+                        <DataComponentKnowledge data={dataComponent} />
                       }
                     />
                     <Route
                       path="/content/*"
-                      element={
+                      element={(
                         <StixCoreObjectContentRoot
                           stixCoreObject={dataComponent}
                         />
-                      }
+                      )}
                     />
                     <Route
                       path="/files"
-                      element={
+                      element={(
                         <FileManager
                           id={dataComponentId}
                           connectorsImport={props.connectorsForImport}
                           connectorsExport={props.connectorsForExport}
                           entity={dataComponent}
                         />
-                      }
+                      )}
                     />
                     <Route
                       path="/history"
                       element={
-                        <StixCoreObjectHistory stixCoreObjectId={dataComponentId}/>
+                        <StixCoreObjectHistory stixCoreObjectId={dataComponentId} />
                       }
                     />
                   </Routes>

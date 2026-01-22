@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { extractObjectsPirsFromInputs, extractObjectsRestrictionsFromInputs } from '../../../src/database/utils';
 import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
+import { EditOperation } from '../../../src/generated/graphql';
 
 const inputs = [
   {
     key: 'objects',
-    operation: 'add',
+    operation: EditOperation.Add,
     value: [
       {
         _id: '4c688965-fd97-40ea-9af0-967030eb06a5',
@@ -78,7 +79,7 @@ const inputs = [
 const relInputs = [
   {
     key: 'objects',
-    operation: 'add',
+    operation: EditOperation.Add,
     value: [
       {
         _id: '23c0c086-afee-45e5-b276-872948997816',
@@ -155,12 +156,12 @@ describe('extractObjectsRestrictionsFromInputs testing', () => {
 describe('Function extractObjectsPirsFromInputs()', () => {
   const baseInputs = [{
     key: 'objects',
-    operation: 'add',
+    operation: EditOperation.Add,
     value: [{ confidence: 100 }]
   }];
   const pirInputs = [{
     key: 'objects',
-    operation: 'add',
+    operation: EditOperation.Add,
     value: [{ confidence: 100, 'in-pir': ['pir1', 'pir2', 'pir3'] }]
   }];
 

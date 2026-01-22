@@ -118,7 +118,9 @@ const AssociatedEntityField: FunctionComponent<AssociatedEntityFieldProps> = ({
       onInputChange={searchAssociatedEntities}
       inputValue={inputValue || ''}
       onChange={handleChangeSelectedValue}
-      isOptionEqualToValue={(option, val) => { return option.value === val.value; }}
+      isOptionEqualToValue={(option, val) => {
+        return option.value === val.value;
+      }}
       renderOption={(props, option) => (
         <li {...props} key={props.key || ''}>
           <div style={{ paddingTop: 4, display: 'inline-block' }}>

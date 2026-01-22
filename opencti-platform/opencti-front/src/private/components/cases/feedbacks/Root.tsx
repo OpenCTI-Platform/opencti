@@ -88,7 +88,7 @@ const feedbackQuery = graphql`
 
 const RootFeedbackComponent = ({ queryRef, caseId }) => {
   const subConfig = useMemo<
-  GraphQLSubscriptionConfig<RootFeedbackSubscription>
+    GraphQLSubscriptionConfig<RootFeedbackSubscription>
   >(
     () => ({
       subscription,
@@ -126,7 +126,7 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
             <FeedbackEdition feedbackId={feedbackData.id} />
           </Security>
         )}
-        DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+        DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
           <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
             <FeedbackDeletion id={feedbackData.id} isOpen={isOpen} handleClose={onClose} />
           </Security>
@@ -175,46 +175,47 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
       <Routes>
         <Route
           path="/"
-          element={
+          element={(
             <Feedback
               feedbackData={feedbackData}
               enableReferences={enableReferences}
-            />}
+            />
+          )}
         />
         <Route
           path="/content/*"
-          element={
+          element={(
             <StixCoreObjectContentRoot
               stixCoreObject={feedbackData}
             />
-              }
+          )}
         />
         <Route
           path="/files"
-          element={
+          element={(
             <FileManager
               id={caseId}
               connectorsExport={connectorsForExport}
               connectorsImport={connectorsForImport}
               entity={feedbackData}
             />
-              }
+          )}
         />
         <Route
           path="/history"
-          element={
+          element={(
             <StixCoreObjectHistory
               stixCoreObjectId={caseId}
             />
-              }
+          )}
         />
         <Route
           path="/knowledge/relations/:relationId"
-          element={
+          element={(
             <StixCoreRelationship
               entityId={feedbackData.id}
             />
-              }
+          )}
         />
       </Routes>
     </div>

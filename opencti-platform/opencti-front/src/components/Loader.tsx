@@ -111,9 +111,9 @@ const Loader: FunctionComponent<LoaderProps> = ({
       style={
         variant === 'inElement'
           ? {
-            paddingRight: withRightPadding ? 200 : 0,
-            marginTop: withTopMargin ? 200 : 0,
-          }
+              paddingRight: withRightPadding ? 200 : 0,
+              marginTop: withTopMargin ? 200 : 0,
+            }
           : {}
       }
     >

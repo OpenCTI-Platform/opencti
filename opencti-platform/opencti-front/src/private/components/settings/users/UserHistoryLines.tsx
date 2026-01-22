@@ -88,8 +88,8 @@ const UserHistoryLines: FunctionComponent<UserHistoryLinesProps> = ({
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { data } = usePreloadedPaginationFragment<
-  UserHistoryLinesQuery,
-  UserHistoryLines_data$key
+    UserHistoryLinesQuery,
+    UserHistoryLines_data$key
   >({
     linesQuery: userHistoryLinesQuery,
     linesFragment: userHistoryLinesFragment,
@@ -112,7 +112,7 @@ const UserHistoryLines: FunctionComponent<UserHistoryLinesProps> = ({
       classes={{ root: classes.paper }}
       variant="outlined"
       style={{ marginTop: 0 }}
-      className={'paper-for-grid'}
+      className="paper-for-grid"
     >
       {audits.length > 0 ? (
         audits.map((auditEdge) => {

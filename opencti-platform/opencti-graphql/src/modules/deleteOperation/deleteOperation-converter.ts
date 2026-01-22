@@ -14,8 +14,8 @@ const convertDeleteOperationToStix = (instance: StoreEntityDeleteOperation): Sti
       [STIX_EXT_OCTI]: cleanObject({
         ...stixObject.extensions[STIX_EXT_OCTI],
         extension_type: 'new-sdo',
-      })
-    }
+      }),
+    },
   };
 };
 

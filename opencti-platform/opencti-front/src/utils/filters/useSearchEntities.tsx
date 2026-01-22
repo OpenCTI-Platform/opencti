@@ -325,6 +325,11 @@ const useSearchEntities = ({
     value: 'object',
     type: 'stix-internal-relationship',
   };
+  const labelRelationshipType = {
+    label: t_i18n('relationship_object-label'),
+    value: 'objectLabel',
+    type: 'stix-meta-relationship',
+  };
 
   const unionSetEntities = (key: string, newEntities: EntityValue[]) => setEntities((c) => ({
     ...c,
@@ -336,8 +341,8 @@ const useSearchEntities = ({
 
   const searchEntities = (
     filterKey: string,
-    cacheEntities: Record< string, { label: string; value: string | null; type: string }[] >,
-    setCacheEntities: Dispatch< Record<string, { label: string; value: string | null; type: string }[]> >,
+    cacheEntities: Record<string, { label: string; value: string | null; type: string }[]>,
+    setCacheEntities: Dispatch<Record<string, { label: string; value: string | null; type: string }[]>>,
     event: BaseSyntheticEvent,
     isSubKey?: boolean,
   ) => {
@@ -556,7 +561,8 @@ const useSearchEntities = ({
             group: n?.node.entity_type,
           }));
           unionSetEntities(key, membersEntities);
-          if (entityTypes.includes('User')) { // add @me filter value
+          // add @me value for filters with user id as values, except in stix playbook components
+          if (entityTypes.includes('User') && searchContext.elementType !== 'Playbook-Stix-Component') {
             unionSetEntities(key, [meEntity]);
           }
           const membersSystems = (
@@ -592,8 +598,8 @@ const useSearchEntities = ({
           type,
         });
       }
-      // add @me value for filters with user id as values
-      if (type === 'User') {
+      // add @me value for filters with user id as values, except in stix playbook components
+      if (type === 'User' && searchContext.elementType !== 'Playbook-Stix-Component') {
         newOptions.push(meEntity);
       }
 
@@ -782,6 +788,7 @@ const useSearchEntities = ({
             && !availableEntityTypes.includes('Stix-Cyber-Observable')
             && !availableEntityTypes.includes('Stix-Domain-Object')
             && !availableEntityTypes.includes('Stix-Core-Object')
+            && !availableEntityTypes.includes('stix-core-relationship')
           ) {
             let completedAvailableEntityTypes = availableEntityTypes;
             if (availableEntityTypes.includes('Container')) {
@@ -855,7 +862,7 @@ const useSearchEntities = ({
               if (!availableEntityTypes
                 || (availableEntityTypes && availableEntityTypes.length > 1)) {
                 result = [
-                  abstractTypeFilterValue('Stix-Core-Relationship'),
+                  abstractTypeFilterValue('stix-core-relationship'),
                   ...result,
                 ];
               }
@@ -898,12 +905,12 @@ const useSearchEntities = ({
               ...sdoTypes,
               abstractTypeFilterValue('Stix-Domain-Object'),
               ...scrTypes,
-              abstractTypeFilterValue('Stix-Core-Relationship'),
+              abstractTypeFilterValue('stix-core-relationship'),
             ].sort((a, b) => a.label.localeCompare(b.label)),
           );
           break;
         case 'relationship_type': {
-          let relationshipsTypes: { label: string, value: string, type: string }[] = [];
+          let relationshipsTypes: { label: string; value: string; type: string }[] = [];
           if (availableRelationshipTypes && !isSubKey) { // if available RelationshipTypes is specified, we display only the specified relationship types
             relationshipsTypes = availableRelationshipTypes
               .map((n) => ({
@@ -916,6 +923,7 @@ const useSearchEntities = ({
               ...scrTypes,
               abstractTypeFilterValue('stix-sighting-relationship'),
               objectRelationshipType,
+              labelRelationshipType,
             ];
           } else { // display relationship types according to searchContext.entityTypes
             const { entityTypes } = searchContext;
@@ -932,6 +940,12 @@ const useSearchEntities = ({
               relationshipsTypes = [
                 ...relationshipsTypes,
                 objectRelationshipType,
+              ];
+            }
+            if (entityTypes.includes('object-label')) {
+              relationshipsTypes = [
+                ...relationshipsTypes,
+                labelRelationshipType,
               ];
             }
           }

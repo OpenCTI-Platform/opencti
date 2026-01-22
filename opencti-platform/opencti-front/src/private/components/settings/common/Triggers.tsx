@@ -166,7 +166,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
         />
         {queryRef && (
           <React.Suspense
-            fallback={
+            fallback={(
               <>
                 {Array(20)
                   .fill(0)
@@ -174,7 +174,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
                     <TriggerLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>
-            }
+            )}
           >
             <TriggersLines
               queryRef={queryRef}

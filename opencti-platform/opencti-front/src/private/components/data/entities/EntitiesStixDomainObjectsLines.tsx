@@ -23,7 +23,7 @@ interface EntitiesStixDomainObjectsLinesProps {
   deSelectedElements: Record<string, EntitiesStixDomainObjectLine_node$data>;
   onToggleEntity: (
     entity: EntitiesStixDomainObjectLine_node$data,
-    event: React.SyntheticEvent
+    event: React.SyntheticEvent,
   ) => void;
   selectAll: boolean;
   onLabelClick?: HandleAddFilter;
@@ -118,8 +118,8 @@ const EntitiesStixDomainObjectsLines: FunctionComponent<EntitiesStixDomainObject
   queryRef,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
-  EntitiesStixDomainObjectsLinesPaginationQuery,
-  EntitiesStixDomainObjectsLines_data$key
+    EntitiesStixDomainObjectsLinesPaginationQuery,
+    EntitiesStixDomainObjectsLines_data$key
   >({
     linesQuery: entitiesStixDomainObjectsLinesQuery,
     linesFragment: entitiesStixDomainObjectsLinesFragment,

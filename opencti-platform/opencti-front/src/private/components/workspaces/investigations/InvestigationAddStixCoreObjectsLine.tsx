@@ -15,6 +15,7 @@ import { getMainRepresentative } from '../../../../utils/defaultRepresentatives'
 import type { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
 import ItemEntityType from '../../../../components/ItemEntityType';
+import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -41,21 +42,16 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface InvestigationAddStixCoreObjectsLineComponentProps {
-  dataColumns: DataColumns
-  node: InvestigationAddStixCoreObjectsLine_node$data,
-  onLabelClick: (
-    k: string,
-    id: string,
-    value: Record<string, unknown>,
-    event: React.KeyboardEvent
-  ) => void,
+  dataColumns: DataColumns;
+  node: InvestigationAddStixCoreObjectsLine_node$data;
+  onLabelClick: HandleAddFilter;
   onToggleEntity: (
     entity: InvestigationAddStixCoreObjectsLine_node$data,
-    event: React.SyntheticEvent
-  ) => void,
+    event: React.SyntheticEvent,
+  ) => void;
   addedElements: {
-    [key:string]: InvestigationAddStixCoreObjectsLine_node$data
-  },
+    [key: string]: InvestigationAddStixCoreObjectsLine_node$data;
+  };
 }
 
 const InvestigationAddStixCoreObjectsLineComponent = ({
@@ -86,7 +82,7 @@ const InvestigationAddStixCoreObjectsLineComponent = ({
         <ItemIcon type={node.entity_type} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -127,7 +123,7 @@ const InvestigationAddStixCoreObjectsLineComponent = ({
               />
             </div>
           </div>
-        }
+        )}
       />
     </ListItemButton>
   );
@@ -331,7 +327,7 @@ export const InvestigationAddStixCoreObjectsLine = createFragmentContainer(
 );
 
 interface InvestigationAddStixCoreObjecstLineDummyProps {
-  dataColumns: DataColumns
+  dataColumns: DataColumns;
 }
 
 export const InvestigationAddStixCoreObjecstLineDummy = (
@@ -354,7 +350,7 @@ export const InvestigationAddStixCoreObjecstLineDummy = (
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -412,7 +408,7 @@ export const InvestigationAddStixCoreObjecstLineDummy = (
               />
             </div>
           </div>
-        }
+        )}
       />
     </ListItem>
   );

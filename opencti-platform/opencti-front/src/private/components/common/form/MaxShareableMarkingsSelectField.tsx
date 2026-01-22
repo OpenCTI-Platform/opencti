@@ -5,21 +5,21 @@ import { useFormatter } from '../../../../components/i18n';
 import SelectField from '../../../../components/fields/SelectField';
 
 export type EntityMarkingDefinition = {
-  id: string
-  definition: string
-  definition_type: string
-  x_opencti_order: number
+  id: string;
+  definition: string;
+  definition_type: string;
+  x_opencti_order: number;
 };
 
 type MarkingsSelectFieldValue = EntityMarkingDefinition[];
 
 interface MarkingsSelectFieldInternalValue {
-  [key: string]: string
+  [key: string]: string;
 }
 
 interface MaxShareableMarkingsSelectFieldProps extends FieldProps<MarkingsSelectFieldValue> {
-  markingDefinitions: EntityMarkingDefinition[]
-  onChange?: (type: string, val: string) => void
+  markingDefinitions: EntityMarkingDefinition[];
+  onChange?: (type: string, val: string) => void;
 }
 
 const ALL_ID = 'all';

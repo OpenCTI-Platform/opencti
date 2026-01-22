@@ -2,8 +2,8 @@ import React, { ReactNode } from 'react';
 import { Typography } from '@mui/material';
 
 export interface PaperHeaderProps {
-  title?: ReactNode
-  actions?: ReactNode
+  title?: ReactNode;
+  actions?: ReactNode;
 }
 
 const PaperHeader = ({ actions, title }: PaperHeaderProps) => {

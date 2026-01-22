@@ -69,7 +69,7 @@ const ThreatActorIndividualDemographics = ({
       <Typography variant="h4" gutterBottom={true}>
         {t_i18n('Demographic Information')}
       </Typography>
-      <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+      <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
         <Grid container={true} spacing={3}>
           <Grid item xs={4}>
             <CardLabel action={(
@@ -78,7 +78,7 @@ const ThreatActorIndividualDemographics = ({
               >
                 <AddThreatActorIndividualDemographic
                   threatActorIndividual={threatActorIndividual}
-                  relType='resides-in'
+                  relType="resides-in"
                   title={t_i18n('Add country of residence')}
                 />
               </Security>
@@ -107,8 +107,8 @@ const ThreatActorIndividualDemographics = ({
               >
                 <AddThreatActorIndividualDemographic
                   threatActorIndividual={threatActorIndividual}
-                  relType='citizen-of'
-                  title={'Add citizenship'}
+                  relType="citizen-of"
+                  title="Add citizenship"
                 />
               </Security>
             )}
@@ -130,7 +130,7 @@ const ThreatActorIndividualDemographics = ({
             </div>
           </Grid>
           <Grid item xs={4}>
-            <CardLabel >
+            <CardLabel>
               {t_i18n('Place of Birth')}
             </CardLabel>
             <div id="place_of_birth">
@@ -138,7 +138,7 @@ const ThreatActorIndividualDemographics = ({
             </div>
           </Grid>
           <Grid item xs={4}>
-            <CardLabel >
+            <CardLabel>
               {t_i18n('Date of Birth')}
             </CardLabel>
             <div id="date_of_birth">
@@ -152,7 +152,7 @@ const ThreatActorIndividualDemographics = ({
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <AddThreatActorIndividualDemographic
                   threatActorIndividual={threatActorIndividual}
-                  relType='national-of'
+                  relType="national-of"
                   title={t_i18n('Add nationality')}
                 />
               </Security>
@@ -175,13 +175,13 @@ const ThreatActorIndividualDemographics = ({
             </div>
           </Grid>
           <Grid item xs={4}>
-            <CardLabel >
+            <CardLabel>
               {t_i18n('Ethnicity')}
             </CardLabel>
             <div id="ethnicity">{t_i18n(countryRelationship.ethnicity ?? '-')}</div>
           </Grid>
           <Grid item xs={4}>
-            <CardLabel >
+            <CardLabel>
               {t_i18n('Gender')}
             </CardLabel>
             <FieldOrEmpty source={threatActorIndividual.gender}>
@@ -193,7 +193,7 @@ const ThreatActorIndividualDemographics = ({
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={4}>
-            <CardLabel >
+            <CardLabel>
               {t_i18n('Marital Status')}
             </CardLabel>
             <FieldOrEmpty source={threatActorIndividual.marital_status}>
@@ -205,7 +205,7 @@ const ThreatActorIndividualDemographics = ({
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={4}>
-            <CardLabel >
+            <CardLabel>
               {t_i18n('Job Title')}
             </CardLabel>
             <FieldOrEmpty source={threatActorIndividual.job_title}>

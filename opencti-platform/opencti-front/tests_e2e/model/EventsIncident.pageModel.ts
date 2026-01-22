@@ -22,4 +22,12 @@ export default class EventsIncidentPage {
     await leftBarPage.open();
     await leftBarPage.clickOnMenu('Events', 'Incidents');
   }
+
+  addNewIncident() {
+    return this.page.getByLabel('Create Incident', { exact: true }).click();
+  }
+
+  getCreateIncidentButton() {
+    return this.page.getByRole('button', { name: 'Create', exact: true });
+  }
 }

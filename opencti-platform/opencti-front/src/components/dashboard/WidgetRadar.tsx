@@ -10,11 +10,11 @@ import { simpleNumberFormat } from '../../utils/Number';
 
 interface WidgetRadarProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any[]
-  label: string
-  groupBy: string
-  withExport?: boolean
-  readonly?: boolean
+  data: any[];
+  label: string;
+  groupBy: string;
+  withExport?: boolean;
+  readonly?: boolean;
 }
 
 const WidgetRadar = ({

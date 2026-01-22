@@ -55,8 +55,8 @@ const CaseTemplateCreation: FunctionComponent<CaseTemplateCreationProps> = ({
   const onSubmit = (
     values: typeof initialValues,
     { setSubmitting, resetForm }: {
-      setSubmitting: (flag: boolean) => void,
-      resetForm: () => void,
+      setSubmitting: (flag: boolean) => void;
+      resetForm: () => void;
     },
   ) => {
     const finalValues = {

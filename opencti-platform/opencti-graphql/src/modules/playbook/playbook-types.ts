@@ -17,98 +17,100 @@ import type { JSONSchemaType } from 'ajv';
 import type { StixObject, StixOpenctiExtensionSDO, StixBundle } from '../../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
+import type { StreamDataEvent } from '../../types/event';
 
 export const ENTITY_TYPE_PLAYBOOK = 'Playbook';
 
 export interface BasicStoreEntityPlaybook extends BasicStoreEntity {
-  internal_id: string
-  name: string
-  description: string
-  playbook_start: string
-  playbook_mode: null | 'stream' | 'cron'
-  playbook_running: boolean
-  playbook_definition: string
+  internal_id: string;
+  name: string;
+  description: string;
+  playbook_start: string;
+  playbook_mode: null | 'stream' | 'cron';
+  playbook_running: boolean;
+  playbook_definition: string;
 }
 
 export interface StoreEntityPlaybook extends StoreEntity {
-  name: string
-  description: string
+  name: string;
+  description: string;
 }
 
 export interface StixPlaybook extends StixObject {
-  name: string
-  description: string
+  name: string;
+  description: string;
   extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO
-  }
+    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
+  };
 }
 
 export interface NodeInstance<T extends object> {
-  id: string
-  name: string,
-  component_id: string
-  configuration: T
+  id: string;
+  name: string;
+  component_id: string;
+  configuration: T;
 }
 
-export interface PlaybookExecution { output_port: string | undefined, forceBundleTracking?: boolean, bundle: StixBundle }
+export interface PlaybookExecution { output_port: string | undefined; forceBundleTracking?: boolean; bundle: StixBundle }
 
 export interface PlaybookExecutionStep<T extends object> {
-  component: PlaybookComponent<T>,
-  instance: NodeDefinition,
+  component: PlaybookComponent<T>;
+  instance: NodeDefinition;
 }
 
 export interface ExecutorParameters<T extends object> {
-  eventId: string
-  executionId: string
-  playbookId: string
-  dataInstanceId: string
-  previousPlaybookNodeId: string | undefined
-  playbookNode: NodeInstance<T>
-  previousStepBundle: StixBundle | null
-  bundle: StixBundle
+  eventId: string;
+  executionId: string;
+  playbookId: string;
+  dataInstanceId: string;
+  previousPlaybookNodeId: string | undefined;
+  playbookNode: NodeInstance<T>;
+  previousStepBundle: StixBundle | null;
+  bundle: StixBundle;
+  event?: StreamDataEvent;
 }
 
 export interface PlaybookComponent<T extends object> {
-  id: string
-  name: string
-  description: string
-  icon: string
-  is_entry_point: boolean
-  is_internal: boolean
-  ports: PortDefinition[]
-  configuration_schema: JSONSchemaType<T> | undefined
-  schema: () => Promise<JSONSchemaType<T>> | Promise<undefined>
-  executor: (parameters: ExecutorParameters<T>) => Promise<PlaybookExecution>
-  notify?: (parameters: ExecutorParameters<T>) => Promise<void>
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  is_entry_point: boolean;
+  is_internal: boolean;
+  ports: PortDefinition[];
+  configuration_schema: JSONSchemaType<T> | undefined;
+  schema: () => Promise<JSONSchemaType<T>> | Promise<undefined>;
+  executor: (parameters: ExecutorParameters<T>) => Promise<PlaybookExecution>;
+  notify?: (parameters: ExecutorParameters<T>) => Promise<void>;
 }
 
 export interface PortDefinition {
-  id: string
-  type: 'in' | 'out'
+  id: string;
+  type: 'in' | 'out';
 }
 
 export interface NodeDefinition {
-  id: string,
-  name: string,
-  position: { x: number, y: number },
-  component_id: string,
-  configuration: string // json
+  id: string;
+  name: string;
+  position: { x: number; y: number };
+  component_id: string;
+  configuration: string; // json
 }
 
 export interface LinkDefinition {
-  id: string,
+  id: string;
   from: {
-    port: string,
-    id: string
-  },
+    port: string;
+    id: string;
+  };
   to: {
-    id: string
-  }
+    id: string;
+  };
 }
 
 export interface ComponentDefinition {
-  nodes: NodeDefinition[]
-  links: LinkDefinition[]
+  nodes: NodeDefinition[];
+  links: LinkDefinition[];
 }
 
 export const PlayComponentDefinition: JSONSchemaType<ComponentDefinition> = {
@@ -125,9 +127,9 @@ export const PlayComponentDefinition: JSONSchemaType<ComponentDefinition> = {
             type: 'object',
             properties: {
               x: { type: 'number' },
-              y: { type: 'number' }
+              y: { type: 'number' },
             },
-            required: ['x', 'y']
+            required: ['x', 'y'],
           },
           component_id: { type: 'string' },
           configuration: { type: 'string' },
@@ -147,14 +149,14 @@ export const PlayComponentDefinition: JSONSchemaType<ComponentDefinition> = {
               id: { type: 'string' },
               port: { type: 'string' },
             },
-            required: ['id', 'port']
+            required: ['id', 'port'],
           },
           to: {
             type: 'object',
             properties: {
               id: { type: 'string' },
             },
-            required: ['id']
+            required: ['id'],
           },
         },
         required: ['id', 'from', 'to'],

@@ -20,6 +20,7 @@ import type { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
 import IngestionTaxiiCollectionPopover from './IngestionTaxiiCollectionPopover';
 import { APP_BASE_PATH } from '../../../../relay/environment';
+import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -46,12 +47,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 interface IngestionTaxiiCollectionLineProps {
   node: IngestionTaxiiCollectionLine_node$key;
   dataColumns: DataColumns;
-  onLabelClick: (
-    k: string,
-    id: string,
-    value: Record<string, unknown>,
-    event: React.KeyboardEvent,
-  ) => void;
+  onLabelClick: HandleAddFilter;
   paginationOptions?: IngestionTaxiiCollectionLinesPaginationQuery$variables;
 }
 
@@ -64,7 +60,7 @@ const ingestionTaxiiCollectionLineFragment = graphql`
     }
 `;
 
-export const IngestionTaxiiCollectionLineLineComponent : FunctionComponent<IngestionTaxiiCollectionLineProps> = ({
+export const IngestionTaxiiCollectionLineLineComponent: FunctionComponent<IngestionTaxiiCollectionLineProps> = ({
   dataColumns,
   node,
   paginationOptions,
@@ -77,7 +73,7 @@ export const IngestionTaxiiCollectionLineLineComponent : FunctionComponent<Inges
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={
+      secondaryAction={(
         <Security needs={[INGESTION_SETINGESTIONS]}>
           <IngestionTaxiiCollectionPopover
             ingestionTaxiiId={data.id}
@@ -85,13 +81,13 @@ export const IngestionTaxiiCollectionLineLineComponent : FunctionComponent<Inges
             running={data.ingestion_running}
           />
         </Security>
-      }
+      )}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <AccessPoint />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -103,7 +99,7 @@ export const IngestionTaxiiCollectionLineLineComponent : FunctionComponent<Inges
               className={classes.bodyItem}
               style={{ width: dataColumns.id.width, paddingRight: 10 }}
             >
-              <ItemCopy content={`${window.location.origin}${APP_BASE_PATH}/taxii2/root/collections/${data.id}/objects/`} variant="inLine"/>
+              <ItemCopy content={`${window.location.origin}${APP_BASE_PATH}/taxii2/root/collections/${data.id}/objects/`} variant="inLine" />
             </div>
             <div
               className={classes.bodyItem}
@@ -116,7 +112,7 @@ export const IngestionTaxiiCollectionLineLineComponent : FunctionComponent<Inges
               />
             </div>
           </div>
-        }
+        )}
       />
     </ListItem>
   );
@@ -139,7 +135,7 @@ export const IngestionTaxiiCollectionLineDummy = ({ dataColumns }: { dataColumns
         />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
               <Skeleton
@@ -161,7 +157,7 @@ export const IngestionTaxiiCollectionLineDummy = ({ dataColumns }: { dataColumns
               />
             </div>
           </div>
-          }
+        )}
       />
     </ListItem>
   );

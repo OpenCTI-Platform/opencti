@@ -101,7 +101,7 @@ const ThreatActorsIndividual = () => {
         createButton={(
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <div style={{ display: 'flex' }}>
-              <StixCoreObjectForms entityType='Threat-Actor-Individual' />
+              <StixCoreObjectForms entityType="Threat-Actor-Individual" />
               <ThreatActorIndividualCreation paginationOptions={queryPaginationOptions} />
             </div>
           </Security>
@@ -109,7 +109,7 @@ const ThreatActorsIndividual = () => {
       >
         {queryRef && (
           <React.Suspense
-            fallback={
+            fallback={(
               <Grid container={true} spacing={3} style={{ paddingLeft: 17 }}>
                 {Array(20)
                   .fill(0)
@@ -123,7 +123,7 @@ const ThreatActorsIndividual = () => {
                     </Grid>
                   ))}
               </Grid>
-            }
+            )}
           >
             <ThreatActorsIndividualCards
               queryRef={queryRef}
@@ -169,26 +169,26 @@ const ThreatActorsIndividual = () => {
             resolvePath={(data: ThreatActorsIndividualCards_data$data) => data.threatActorsIndividuals?.edges?.map((n) => n?.node)}
             storageKey={LOCAL_STORAGE_KEY_THREAT_ACTORS_INDIVIDUAL}
             initialValues={initialValues}
-            toolbarFilters={contextFilters}
+            contextFilters={contextFilters}
             preloadedPaginationProps={preloadedPaginationProps}
             lineFragment={ThreatActorIndividualCardFragment}
             exportContext={{ entity_type: 'Threat-Actor-Individual' }}
             additionalHeaderButtons={[
-              (<ToggleButton key="cards" value="cards" aria-label="cards">
+              <ToggleButton key="cards" value="cards" aria-label="cards">
                 <Tooltip title={t_i18n('Cards view')}>
                   <ViewModuleOutlined fontSize="small" color="primary" />
                 </Tooltip>
-              </ToggleButton>),
-              (<ToggleButton key="lines" value="lines" aria-label="lines">
+              </ToggleButton>,
+              <ToggleButton key="lines" value="lines" aria-label="lines">
                 <Tooltip title={t_i18n('Lines view')}>
                   <ViewListOutlined color="secondary" fontSize="small" />
                 </Tooltip>
-              </ToggleButton>),
+              </ToggleButton>,
             ]}
             createButton={(
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <div style={{ display: 'flex' }}>
-                  <StixCoreObjectForms entityType='Threat-Actor-Individual' />
+                  <StixCoreObjectForms entityType="Threat-Actor-Individual" />
                   <ThreatActorIndividualCreation paginationOptions={queryPaginationOptions} />
                 </div>
               </Security>

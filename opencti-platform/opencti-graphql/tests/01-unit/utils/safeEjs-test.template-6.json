@@ -1,0 +1,20 @@
+{
+  "type": "message",
+  "attachments": [
+    {
+      "contentType": "application/vnd.microsoft.card.thumbnail",
+      "content": {
+        "subtitle": "Content in subtitle : <%= data[0].instance.content %>",
+        "text": "Content everywhere !!! <%= data[0].instance.content %>",
+        "title": "Content in title : <%= data[0].instance.content %>",
+        "buttons": [
+          {
+            "type": "openUrl",
+            "title": "See in OpenCTI",
+            "value": "https://testing.octi.staging.filigran.io/dashboard/id/<%=content[0].events[0].instance_id%>"
+          }
+        ]
+      }
+    }
+  ]
+}

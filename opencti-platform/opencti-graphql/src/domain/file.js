@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { Readable } from 'stream';
 import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
-import { defaultValidationMode, deleteFile } from '../database/file-storage';
+import { defaultValidationMode, deleteFile, uploadToStorage } from '../database/file-storage';
 import { internalLoadById, fullEntitiesList } from '../database/middleware-loader';
 import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
 import { stixCoreObjectImportDelete } from './stixCoreObject';
@@ -11,7 +11,6 @@ import { supportedMimeTypes } from '../modules/managerConfiguration/managerConfi
 import { isUserHasCapabilities, SYSTEM_USER } from '../utils/access';
 import { isEmptyField, isNotEmptyField, READ_INDEX_FILES, READ_INDEX_HISTORY } from '../database/utils';
 import { getStats } from '../database/engine';
-import { uploadToStorage } from '../database/file-storage-helper';
 import { extractContentFrom } from '../utils/fileToContent';
 import { stixLoadById } from '../database/middleware';
 import { getEntitiesMapFromCache } from '../database/cache';
@@ -86,7 +85,7 @@ export const uploadImport = async (context, user, args) => {
     event_type: 'file',
     event_access: 'extended',
     event_scope: 'create',
-    context_data: contextData
+    context_data: contextData,
   });
   return up;
 };
@@ -97,7 +96,7 @@ export const uploadPending = async (context, user, args) => {
   }
   const { file, entityId = null, labels = null, errorOnExisting = false, refreshEntity = false, file_markings = [] } = args;
   let finalFile = file;
-  const meta = { labels_text: labels ? labels.join(';') : undefined };
+  const meta = { labels, labels_text: labels ? labels.join(';') : undefined };
   const entity = entityId ? await internalLoadById(context, user, entityId) : undefined;
 
   // In the case of a workbench of an entity, if we want to refresh the entity data contains in
@@ -114,7 +113,7 @@ export const uploadPending = async (context, user, args) => {
             o.id === entity.standard_id
               ? { ...entityAsStix, object_refs: o.object_refs }
               : o
-          ))
+          )),
         };
       }
     }
@@ -124,7 +123,7 @@ export const uploadPending = async (context, user, args) => {
     finalFile = {
       createReadStream: () => Readable.from(Buffer.from(json, 'utf-8')),
       filename: fileData.filename,
-      mimetype: fileData.mimetype
+      mimetype: fileData.mimetype,
     };
   }
 
@@ -136,7 +135,7 @@ export const uploadPending = async (context, user, args) => {
     event_type: 'file',
     event_access: 'extended',
     event_scope: 'create',
-    context_data: contextData
+    context_data: contextData,
   });
   return up;
 };
@@ -160,7 +159,7 @@ export const uploadAndAskJobImport = async (context, user, args = {}) => {
         connectorId,
         configuration,
         validationMode,
-        forceValidation: true
+        forceValidation: true,
       })
     )));
   }
@@ -171,7 +170,7 @@ export const uploadAndAskJobImport = async (context, user, args = {}) => {
 export const deleteImport = async (context, user, fileName) => {
   const draftContext = getDraftContext(context, user);
   if (draftContext && !isDraftFile(fileName, draftContext)) {
-    throw UnsupportedError('Cannot delete non draft imports in draft');
+    throw UnsupportedError('Cannot delete non draft imports in draft', { fileName });
   }
   // Imported file must be handled specifically
   // File deletion must publish a specific event
@@ -190,7 +189,7 @@ export const deleteImport = async (context, user, fileName) => {
     event_type: 'file',
     event_access: 'extended',
     event_scope: 'delete',
-    context_data: contextData
+    context_data: contextData,
   });
   return fileName;
 };
@@ -198,7 +197,7 @@ export const deleteImport = async (context, user, fileName) => {
 export const batchFileMarkingDefinitions = async (context, user, files) => {
   const markingsFromCache = await getEntitiesMapFromCache(context, user, ENTITY_TYPE_MARKING_DEFINITION);
   return files.map((s) => {
-    const markings = (s.metaData.file_markings ?? []).map((id) => markingsFromCache.get(id));
+    const markings = (s.metaData.file_markings ?? []).map((id) => markingsFromCache.get(id)).filter((marking) => marking);
     return R.sortWith([
       R.ascend(R.propOr('TLP', 'definition_type')),
       R.descend(R.propOr(0, 'x_opencti_order')),

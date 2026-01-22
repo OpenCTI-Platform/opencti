@@ -52,10 +52,10 @@ export const stixCoreObjectOpinionsListQuery = graphql`
 `;
 
 interface StixCoreObjectOpinionsListProps {
-  queryRef: PreloadedQuery<StixCoreObjectOpinionsListQuery>
-  open: boolean,
-  handleClose: () => void,
-  onDelete: () => void
+  queryRef: PreloadedQuery<StixCoreObjectOpinionsListQuery>;
+  open: boolean;
+  handleClose: () => void;
+  onDelete: () => void;
 }
 
 const StixCoreObjectOpinionsList: FunctionComponent<StixCoreObjectOpinionsListProps> = ({ queryRef, open, handleClose, onDelete }) => {
@@ -82,14 +82,16 @@ const StixCoreObjectOpinionsList: FunctionComponent<StixCoreObjectOpinionsListPr
                 divider={true}
                 disablePadding
                 secondaryAction={opinion
-                  && <OpinionPopover
-                    opinion={opinion}
-                    variant='inList'
-                    onDelete={() => {
-                      onDelete();
-                      handleClose();
-                    }}
-                     />
+                  && (
+                    <OpinionPopover
+                      opinion={opinion}
+                      variant="inList"
+                      onDelete={() => {
+                        onDelete();
+                        handleClose();
+                      }}
+                    />
+                  )
                 }
               >
                 <ListItemButton
@@ -101,11 +103,11 @@ const StixCoreObjectOpinionsList: FunctionComponent<StixCoreObjectOpinionsListPr
                   </ListItemIcon>
                   <ListItemText
                     primary={opinion?.opinion}
-                    secondary={
+                    secondary={(
                       <Tooltip title={opinion?.explanation}>
                         <span>{truncate(opinion?.explanation, 80)}</span>
                       </Tooltip>
-                  }
+                    )}
                     sx={{
                       flex: 'none',
                       width: '400px',

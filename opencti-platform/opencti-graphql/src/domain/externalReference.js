@@ -7,7 +7,7 @@ import {
   deleteRelationsByFromAndTo,
   topEntitiesOrRelationsList,
   pageEntitiesOrRelationsConnection,
-  updateAttribute
+  updateAttribute,
 } from '../database/middleware';
 import { internalLoadById, pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import conf, { BUS_TOPICS } from '../config/conf';
@@ -68,7 +68,7 @@ export const addExternalReference = async (context, user, externalReference) => 
 export const externalReferenceDelete = async (context, user, externalReferenceId) => {
   const reference = await internalLoadById(context, user, externalReferenceId);
   if (!reference) {
-    throw FunctionalError('Cannot delete, External-Reference cannot be found.');
+    throw FunctionalError('Cannot delete, External-Reference cannot be found.', { externalReferenceId });
   }
   // If case of linked file reference
   // Call the deletion of file that will also handle the external reference deletion
@@ -83,10 +83,10 @@ export const externalReferenceDelete = async (context, user, externalReferenceId
 export const externalReferenceAddRelation = async (context, user, externalReferenceId, input) => {
   const externalReference = await storeLoadById(context, user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
   if (!externalReference) {
-    throw FunctionalError('Cannot add the relation, External Reference cannot be found.');
+    throw FunctionalError('Cannot add the relation, External Reference cannot be found.', { externalReferenceId });
   }
   if (!isStixRefRelationship(input.relationship_type)) {
-    throw FunctionalError(`Only ${ABSTRACT_STIX_REF_RELATIONSHIP} can be added through this method, got ${input.relationship_type}`);
+    throw FunctionalError(`Only ${ABSTRACT_STIX_REF_RELATIONSHIP} can be added through this method, got ${input.relationship_type}.`);
   }
   const finalInput = { ...input, toId: externalReferenceId };
   return createRelation(context, user, finalInput).then((relationData) => {
@@ -97,10 +97,10 @@ export const externalReferenceAddRelation = async (context, user, externalRefere
 export const externalReferenceDeleteRelation = async (context, user, externalReferenceId, fromId, relationshipType) => {
   const externalReference = await storeLoadById(context, user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
   if (!externalReference) {
-    throw FunctionalError('Cannot delete the relation, External-Reference cannot be found.');
+    throw FunctionalError('Cannot delete the relation, External-Reference cannot be found.', { externalReferenceId });
   }
   if (!isStixRefRelationship(relationshipType)) {
-    throw FunctionalError(`Only ${ABSTRACT_STIX_REF_RELATIONSHIP} can be deleted through this method.`);
+    throw FunctionalError(`Only ${ABSTRACT_STIX_REF_RELATIONSHIP} can be deleted through this method, got ${relationshipType}.`);
   }
   await deleteRelationsByFromAndTo(
     context,
@@ -108,7 +108,7 @@ export const externalReferenceDeleteRelation = async (context, user, externalRef
     fromId,
     externalReferenceId,
     relationshipType,
-    ABSTRACT_STIX_REF_RELATIONSHIP
+    ABSTRACT_STIX_REF_RELATIONSHIP,
   );
   return notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].EDIT_TOPIC, externalReference, user);
 };

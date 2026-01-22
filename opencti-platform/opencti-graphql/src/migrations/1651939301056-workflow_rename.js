@@ -18,7 +18,7 @@ export const up = async (next) => {
   await elUpdateByQueryForMigration(
     '[MIGRATION] Migrating workflow status',
     READ_DATA_INDICES,
-    updateQuery
+    updateQuery,
   );
   next();
 };

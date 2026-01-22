@@ -59,9 +59,9 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
         && n.node.killChainPhases.length > 0
         ? n.node.killChainPhases[0]
         : n.node
-            && n.node.to
-            && n.node.to.killChainPhases
-            && n.node.to.killChainPhases.length > 0
+          && n.node.to
+          && n.node.to.killChainPhases
+          && n.node.to.killChainPhases.length > 0
           ? n.node.to.killChainPhases[0]
           : { id: 'unknown', phase_name: t('Unknown'), x_opencti_order: 99 })),
       R.uniq,
@@ -96,9 +96,9 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
         n && n.killChainPhases && n.killChainPhases.length > 0
           ? n.killChainPhases[0]
           : n
-              && n.to
-              && n.to.killChainPhases
-              && n.to.killChainPhases.length > 0
+            && n.to
+            && n.to.killChainPhases
+            && n.to.killChainPhases.length > 0
             ? n.to.killChainPhases[0]
             : { id: 'unknown', phase_name: t('Unknown'), x_opencti_order: 99 },
         n,
@@ -118,7 +118,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                 <ListItem
                   divider={true}
                   disablePadding
-                  secondaryAction={
+                  secondaryAction={(
                     <IconButton
                       onClick={this.handleToggleLine.bind(
                         this,
@@ -128,13 +128,13 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                       size="large"
                     >
                       {this.state.expandedLines[stixRelationship.id]
-                    === false ? (
-                      <ExpandMore />
-                        ) : (
-                          <ExpandLess />
-                        )}
+                        === false ? (
+                            <ExpandMore />
+                          ) : (
+                            <ExpandLess />
+                          )}
                     </IconButton>
-                }
+                  )}
                 >
                   <ListItemButton
                     onClick={this.handleToggleLine.bind(
@@ -163,13 +163,13 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                             divider={true}
                             dense={true}
                             disablePadding
-                            secondaryAction={
+                            secondaryAction={(
                               <StixCoreRelationshipPopover
                                 stixCoreRelationshipId={stixDomainObject.id}
                                 paginationOptions={paginationOptions}
                                 onDelete={this.props.relay.refetch.bind(this)}
                               />
-                          }
+                            )}
                           >
                             <ListItemButton
                               classes={{ root: classes.nested }}
@@ -179,43 +179,43 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                               <ListItemIcon className={classes.itemIcon}>
                                 <ItemIcon
                                   type={
-                                  !restricted
-                                    ? entityToDisplay.entity_type
-                                    : 'restricted'
-                                }
+                                    !restricted
+                                      ? entityToDisplay.entity_type
+                                      : 'restricted'
+                                  }
                                 />
                               </ListItemIcon>
                               <ListItemText
                                 primary={
                                 // eslint-disable-next-line no-nested-ternary
-                                !restricted ? (
-                                  entityToDisplay.entity_type
-                                  === 'Attack-Pattern' ? (
-                                    <span>
-                                      <strong>
-                                        {entityToDisplay.x_mitre_id}
-                                      </strong>{' '}
-                                      - {entityToDisplay.name}
-                                    </span>
-                                    ) : (
-                                      <span>{entityToDisplay.name}</span>
-                                    )
-                                ) : (
-                                  t('Restricted')
-                                )
-                              }
-                                secondary={
-                                stixDomainObject.description
-                                && stixDomainObject.description.length > 0 ? (
-                                  <MarkdownDisplay
-                                    content={stixDomainObject.description}
-                                    remarkGfmPlugin={true}
-                                    commonmark={true}
-                                  />
+                                  !restricted ? (
+                                    entityToDisplay.entity_type
+                                    === 'Attack-Pattern' ? (
+                                          <span>
+                                            <strong>
+                                              {entityToDisplay.x_mitre_id}
+                                            </strong>{' '}
+                                            - {entityToDisplay.name}
+                                          </span>
+                                        ) : (
+                                          <span>{entityToDisplay.name}</span>
+                                        )
                                   ) : (
-                                    t('No description of this usage')
+                                    t('Restricted')
                                   )
-                              }
+                                }
+                                secondary={
+                                  stixDomainObject.description
+                                  && stixDomainObject.description.length > 0 ? (
+                                        <MarkdownDisplay
+                                          content={stixDomainObject.description}
+                                          remarkGfmPlugin={true}
+                                          commonmark={true}
+                                        />
+                                      ) : (
+                                        t('No description of this usage')
+                                      )
+                                }
                               />
                               <ItemMarkings
                                 variant="inList"

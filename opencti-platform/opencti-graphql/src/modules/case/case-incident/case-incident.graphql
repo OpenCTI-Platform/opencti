@@ -2,7 +2,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -11,6 +11,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -124,7 +125,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   ): ContainerConnection
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -242,11 +243,16 @@ input CaseIncidentAddInput {
   modified: DateTime
   response_types: [String!]
   caseTemplates: [String!]
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
   clientMutationId: String
   update: Boolean
   authorized_members: [MemberAccessInput!]
+  upsertOperations: [EditInput!]
 }
 
 type Mutation {

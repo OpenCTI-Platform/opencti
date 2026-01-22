@@ -38,7 +38,7 @@ interface FileImportViewerComponentProps {
 }
 
 const FileImportViewerComponent: FunctionComponent<
-FileImportViewerComponentProps
+  FileImportViewerComponentProps
 > = ({
   entity,
   disableImport,
@@ -76,7 +76,7 @@ FileImportViewerComponentProps
           </div>
         </Security>
         <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+        <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
           {importFiles?.edges?.length ? (
             <List>
               {importFiles?.edges?.map((file) => {

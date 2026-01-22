@@ -60,11 +60,11 @@ class RootInvestigation extends Component {
                   <Routes>
                     <Route
                       path="/"
-                      element={
+                      element={(
                         <Investigation
                           workspace={props.workspace}
                         />
-                    }
+                      )}
                     />
                   </Routes>
                 );

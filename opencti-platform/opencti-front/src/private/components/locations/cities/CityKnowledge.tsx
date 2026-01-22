@@ -36,34 +36,34 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
       <Routes>
         <Route
           path="/relations/:relationId"
-          element={
+          element={(
             <StixCoreRelationship
               entityId={city.id}
               paddingRight={true}
             />
-          }
+          )}
         />
         <Route
           path="/sightings/:sightingId"
-          element={
+          element={(
             <StixSightingRelationship
               entityId={city.id}
               paddingRight={true}
             />
-          }
+          )}
         />
         <Route
           path="/overview"
-          element={
+          element={(
             <StixDomainObjectKnowledge
               stixDomainObjectId={city.id}
               stixDomainObjectType="City"
             />
-          }
+          )}
         />
         <Route
           path="/all"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={city.id}
@@ -73,11 +73,11 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
               defaultStopTime={city.stopTime}
               allDirections
             />
-          }
+          )}
         />
         <Route
           path="/threats"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={city.id}
@@ -94,11 +94,11 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
                 'Tool',
               ]}
             />
-          }
+          )}
         />
         <Route
           path="/related"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={city.id}
@@ -123,11 +123,11 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
               entityLink={link}
               allDirections={true}
             />
-          }
+          )}
         />
         <Route
           path="/organizations"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={city.id}
@@ -136,11 +136,11 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
               entityLink={link}
               isRelationReversed={true}
             />
-          }
+          )}
         />
         <Route
           path="/areas"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={city.id}
@@ -149,11 +149,11 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
               entityLink={link}
               isRelationReversed={false}
             />
-          }
+          )}
         />
         <Route
           path="/countries"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={city.id}
@@ -163,11 +163,11 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
               isRelationReversed={false}
               enableEntitiesView={false}
             />
-          }
+          )}
         />
         <Route
           path="/regions"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={city.id}
@@ -177,11 +177,11 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
               isRelationReversed={false}
               enableEntitiesView={false}
             />
-          }
+          )}
         />
         <Route
           path="/threat_actors"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={city.id}
@@ -190,11 +190,11 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
               entityLink={link}
               isRelationReversed={true}
             />
-          }
+          )}
         />
         <Route
           path="/intrusion_sets"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={city.id}
@@ -203,11 +203,11 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
               entityLink={link}
               isRelationReversed={true}
             />
-          }
+          )}
         />
         <Route
           path="/campaigns"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={city.id}
@@ -216,11 +216,11 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
               entityLink={link}
               isRelationReversed={true}
             />
-          }
+          )}
         />
         <Route
           path="/incidents"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={city.id}
@@ -229,11 +229,11 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
               entityLink={link}
               isRelationReversed={true}
             />
-          }
+          )}
         />
         <Route
           path="/malwares"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={city.id}
@@ -242,11 +242,11 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
               entityLink={link}
               isRelationReversed={true}
             />
-          }
+          )}
         />
         <Route
           path="/attack_patterns"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={city.id}
@@ -255,11 +255,11 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
               entityLink={link}
               isRelationReversed={true}
             />
-          }
+          )}
         />
         <Route
           path="/tools"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={city.id}
@@ -268,11 +268,11 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
               entityLink={link}
               isRelationReversed={true}
             />
-          }
+          )}
         />
         <Route
           path="/observables"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={city.id}
@@ -282,7 +282,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
               allDirections={true}
               isRelationReversed={true}
             />
-          }
+          )}
         />
       </Routes>
     </div>

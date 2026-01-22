@@ -4,8 +4,7 @@ import moment from 'moment';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { createFragmentContainer, graphql } from 'react-relay';
-import { Locale } from 'date-fns/locale/types';
-import { de, enUS, es, fr, it, ja, ko, zhCN, ru } from 'date-fns/locale';
+import { Locale, de, enUS, es, fr, it, ja, ko, zhCN, ru } from 'date-fns/locale';
 import locale, { DEFAULT_LANG } from '../utils/BrowserLanguage';
 import { UserContext } from '../utils/hooks/useAuth';
 import { AppIntlProvider_settings$data } from './__generated__/AppIntlProvider_settings.graphql';
@@ -30,16 +29,16 @@ import messages_ru_back from '../../lang/back/ru.json';
 
 import { useDocumentLangModifier } from '../utils/hooks/useDocumentModifier';
 
-type PlatformLang =
-  | 'de-de'
-  | 'en-us'
-  | 'es-es'
-  | 'fr-fr'
-  | 'it-it'
-  | 'ja-jp'
-  | 'ko-kr'
-  | 'zh-cn'
-  | 'ru-ru';
+type PlatformLang
+  = | 'de-de'
+    | 'en-us'
+    | 'es-es'
+    | 'fr-fr'
+    | 'it-it'
+    | 'ja-jp'
+    | 'ko-kr'
+    | 'zh-cn'
+    | 'ru-ru';
 
 const localeMap: Record<PlatformLang, Locale> = {
   'de-de': de,

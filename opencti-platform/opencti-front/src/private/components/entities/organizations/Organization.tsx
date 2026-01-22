@@ -2,6 +2,7 @@ import { graphql } from 'relay-runtime';
 import React from 'react';
 import { useFragment } from 'react-relay';
 import { Grid } from '@mui/material';
+import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import { Organization_organization$key } from './__generated__/Organization_organization.graphql';
 import OrganizationDetails from './OrganizationDetails';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -69,7 +70,12 @@ interface OrganizationProps {
   viewAs: string;
 }
 
-const Organization: React.FC<OrganizationProps> = ({ organizationData, viewAs }) => {
+const Organization: React.FC<OrganizationProps> = ({
+  organizationData,
+  viewAs,
+}) => {
+  useInitCreateRelationshipContext();
+
   const organization = useFragment<Organization_organization$key>(
     organizationFragment,
     organizationData,
@@ -85,7 +91,7 @@ const Organization: React.FC<OrganizationProps> = ({ organizationData, viewAs })
         style={{ marginBottom: 20 }}
       >
         <Grid item xs={6}>
-          <OrganizationDetails organization={organization} />
+          <OrganizationDetails organizationData={organization} />
         </Grid>
         <Grid item xs={6}>
           <StixDomainObjectOverview

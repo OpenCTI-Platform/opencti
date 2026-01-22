@@ -35,10 +35,10 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface TaxiiCollectionCreationForm {
-  restricted_members: FieldOption[] | null
-  taxii_public?: boolean | null
-  name: string | null
-  description: string | null
+  restricted_members: FieldOption[] | null;
+  taxii_public?: boolean | null;
+  name: string | null;
+  description: string | null;
 }
 
 const taxiiCollectionMutationFieldPatch = graphql`
@@ -172,14 +172,14 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
               {t_i18n('Make this TAXII collection public and available to anyone')}
             </AlertTitle>
             <FormControlLabel
-              control={<Switch defaultChecked={!!initialValues.taxii_public}/>}
+              control={<Switch defaultChecked={!!initialValues.taxii_public} />}
               style={{ marginLeft: 1 }}
               onChange={(_, checked) => handleSubmitField('taxii_public', checked.toString())}
               label={t_i18n('Public collection')}
             />
             {!initialValues.taxii_public && (
               <ObjectMembersField
-                label={'Accessible for'}
+                label="Accessible for"
                 style={fieldSpacingContainerStyle}
                 onChange={handleSubmitFieldOptions}
                 multiple={true}
@@ -190,7 +190,7 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
           </Alert>
           <Box sx={{ display: 'flex', alignItems: 'center', marginTop: '20px' }}>
             <FormControlLabel
-              control={<Switch defaultChecked={!!initialValues.include_inferences}/>}
+              control={<Switch defaultChecked={!!initialValues.include_inferences} />}
               style={{ marginLeft: 1 }}
               onChange={(_, checked) => handleSubmitField('include_inferences', checked.toString())}
               label={t_i18n('Include inferences')}
@@ -198,7 +198,7 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', marginTop: '20px' }}>
             <FormControlLabel
-              control={<Switch defaultChecked={!!initialValues.score_to_confidence}/>}
+              control={<Switch defaultChecked={!!initialValues.score_to_confidence} />}
               style={{ marginLeft: 1 }}
               onChange={(_, checked) => handleSubmitField('score_to_confidence', checked.toString())}
               label={t_i18n('Copy OpenCTI scores to confidence level for indicators')}

@@ -95,14 +95,14 @@ export const getConnectorQueueDetails = async (connectorId) => {
     logApp.debug('Rabbit HTTP API response', { queueDetailResponse });
     return {
       messages_number: queueDetailResponse.messages || 0,
-      messages_size: queueDetailResponse.message_bytes || 0
+      messages_size: queueDetailResponse.message_bytes || 0,
     };
   } catch (e) {
     // For managed connector, the queue is available only after the connector is started.
     logApp.warn('Get connector queue details fail', { cause: e, connectorId });
     return {
       messages_number: 0,
-      messages_size: 0
+      messages_size: 0,
     };
   }
 };
@@ -214,7 +214,6 @@ export const connectorConfig = (id, listen_callback_uri = undefined) => ({
 });
 
 export const listenRouting = (connectorId) => `${RABBIT_QUEUE_PREFIX}listen_routing_${connectorId}`;
-
 export const pushRouting = (connectorId) => `${RABBIT_QUEUE_PREFIX}push_routing_${connectorId}`;
 
 export const registerConnectorQueues = async (id, name, type, scope) => {
@@ -254,7 +253,7 @@ export const getInternalBackgroundTaskQueues = () => {
   const backgroundTaskConnectorQueues = [];
   for (let i = 0; i < BACKGROUND_TASK_QUEUES; i += 1) {
     backgroundTaskConnectorQueues.push(
-      { id: `background-task-${i}`, name: `[TASK] Internal task processing #${i}`, type: 'internal', scope: ENTITY_TYPE_BACKGROUND_TASK }
+      { id: `background-task-${i}`, name: `[TASK] Internal task processing #${i}`, type: 'internal', scope: ENTITY_TYPE_BACKGROUND_TASK },
     );
   }
   return backgroundTaskConnectorQueues;
@@ -355,7 +354,7 @@ export const rabbitMQIsAlive = async () => {
   }).catch(
     /* v8 ignore next */ (e) => {
       throw DatabaseError('RabbitMQ seems down', { cause: e });
-    }
+    },
   );
 };
 
@@ -417,7 +416,7 @@ export const consumeQueue = async (context, connectorId, connectionSetterCallbac
                 if (consumeError) {
                   logApp.error('[QUEUEING] Consumption fail', {
                     connectorId,
-                    cause: consumeError
+                    cause: consumeError,
                   });
                 }
               });

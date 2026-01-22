@@ -15,7 +15,7 @@ export const findById: DomainFindById<BasicStoreEntityAdministrativeArea> = (con
 export const findAdministrativeAreaPaginated: DomainFindPaginated<BasicStoreEntityAdministrativeArea> = (
   context: AuthContext,
   user: AuthUser,
-  opts: QueryAdministrativeAreasArgs
+  opts: QueryAdministrativeAreasArgs,
 ) => {
   return pageEntitiesConnection<BasicStoreEntityAdministrativeArea>(context, user, [ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA], opts);
 };
@@ -25,7 +25,7 @@ export const addAdministrativeArea = async (context: AuthContext, user: AuthUser
     context,
     user,
     { ...administrativeArea, x_opencti_location_type: ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA },
-    ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA
+    ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA,
   );
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

@@ -23,10 +23,10 @@ export const caseRftKnowledgeGraphQuery = graphql`
 `;
 
 interface CaseRftKnowledgeGraphProps {
-  data: NonNullable<CaseRftKnowledgeGraphQuery$data['caseRft']>
-  id: string
-  mode: string
-  enableReferences: boolean
+  data: NonNullable<CaseRftKnowledgeGraphQuery$data['caseRft']>;
+  id: string;
+  mode: string;
+  enableReferences: boolean;
 }
 
 const CaseRftKnowledgeGraph = ({
@@ -92,7 +92,7 @@ const CaseRftKnowledgeGraph = ({
         queryObjectsRef={queryObjectsRef}
         pageSize={PAGE_SIZE}
         containerId={id}
-        containerType='caseRft'
+        containerType="caseRft"
         enableReferences={enableReferences}
         dataContainer={data}
         dataHeader={data}

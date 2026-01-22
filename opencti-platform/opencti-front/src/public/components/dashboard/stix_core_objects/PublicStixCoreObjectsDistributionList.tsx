@@ -61,7 +61,7 @@ const publicStixCoreObjectsDistributionListQuery = graphql`
 `;
 
 interface PublicStixCoreObjectsDistributionListComponentProps {
-  queryRef: PreloadedQuery<PublicStixCoreObjectsDistributionListQuery>
+  queryRef: PreloadedQuery<PublicStixCoreObjectsDistributionListQuery>;
 }
 
 const PublicStixCoreObjectsDistributionListComponent = ({

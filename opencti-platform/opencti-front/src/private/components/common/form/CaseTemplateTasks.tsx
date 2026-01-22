@@ -4,17 +4,17 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogTitle from '@mui/material/DialogTitle';
 import makeStyles from '@mui/styles/makeStyles';
-import { Field, Form, Formik } from 'formik';
+import { Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import * as R from 'ramda';
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, SyntheticEvent, useState } from 'react';
 import { graphql } from 'react-relay';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import AutocompleteField, { AutocompleteFieldProps } from '../../../../components/AutocompleteField';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import TextField from '../../../../components/TextField';
 import { fetchQuery, handleErrorInForm } from '../../../../relay/environment';
-import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
+import Field, { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { CaseTemplateTasksCreationMutation, TaskTemplateAddInput } from './__generated__/CaseTemplateTasksCreationMutation.graphql';
 import { CaseTemplateTasksSearchQuery$data } from './__generated__/CaseTemplateTasksSearchQuery.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -79,20 +79,24 @@ const CaseTemplateTasks: FunctionComponent<TaskTemplateFieldProps> = ({
   const [commitTaskCreation] = useApiMutation<CaseTemplateTasksCreationMutation>(
     CaseTemplateTasksCreation,
   );
-  const searchTasks = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const search = event?.target?.value ?? '';
-    fetchQuery(CaseTemplateTasksQuery, { search })
-      .toPromise()
-      .then((data) => {
-        const newTasks = (
-          data as CaseTemplateTasksSearchQuery$data
-        )?.taskTemplates?.edges?.map(({ node }) => ({
-          value: node.id,
-          label: node.name,
-        })) ?? [];
-        setTasks(R.uniq([...tasks, ...newTasks]));
-      });
+
+  const searchTasks = (event?: SyntheticEvent<Element, Event>) => {
+    if (event?.target instanceof HTMLInputElement) {
+      const search = event.target.value ?? '';
+      fetchQuery(CaseTemplateTasksQuery, { search })
+        .toPromise()
+        .then((data) => {
+          const newTasks = (
+            data as CaseTemplateTasksSearchQuery$data
+          )?.taskTemplates?.edges?.map(({ node }) => ({
+            value: node.id,
+            label: node.name,
+          })) ?? [];
+          setTasks(R.uniq([...tasks, ...newTasks]));
+        });
+    }
   };
+
   const submitTaskCreation: FormikConfig<TaskTemplateAddInput>['onSubmit'] = (
     submitValues,
     { setSubmitting, setErrors, resetForm },
@@ -112,20 +116,21 @@ const CaseTemplateTasks: FunctionComponent<TaskTemplateFieldProps> = ({
           ...(values ?? []),
           ...(data.taskTemplateAdd
             ? [
-              {
-                value: data.taskTemplateAdd.id,
-                label: data.taskTemplateAdd.name,
-              },
-            ]
+                {
+                  value: data.taskTemplateAdd.id,
+                  label: data.taskTemplateAdd.name,
+                },
+              ]
             : []),
         ]);
         resetForm();
       },
     });
   };
+
   return (
     <>
-      <Field
+      <Field<AutocompleteFieldProps>
         component={AutocompleteField}
         style={fieldSpacingContainerStyle}
         name="tasks"
@@ -141,10 +146,7 @@ const CaseTemplateTasks: FunctionComponent<TaskTemplateFieldProps> = ({
         onChange={onChange}
         openCreate={() => setOpenCreation(true)}
         classes={{ clearIndicator: classes.autoCompleteIndicator }}
-        renderOption={(
-          props: React.HTMLAttributes<HTMLLIElement>,
-          option: FieldOption,
-        ) => (
+        renderOption={(props, option) => (
           <li {...props}>
             <div className={classes.icon} style={{ color: option.color }}>
               <ItemIcon type="Task" />

@@ -158,7 +158,7 @@ const CoursesOfAction = () => {
           dataColumns={dataColumns}
           preloadedPaginationProps={preloadedPaginationOptions}
           initialValues={initialValues}
-          toolbarFilters={contextFilters}
+          contextFilters={contextFilters}
           exportContext={{ entity_type: 'Course-Of-Action' }}
           lineFragment={CourseOfActionLineFragment}
           resolvePath={(data: CoursesOfActionLines_data$data) => data.coursesOfAction?.edges?.map((e) => e?.node)}

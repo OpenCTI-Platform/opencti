@@ -4537,7 +4537,7 @@ const StixRelationshipsList = ({
         <QueryRenderer
           query={stixRelationshipsListQuery}
           variables={{
-            first: 50,
+            first: selection.number ?? 50,
             orderBy: dateAttribute,
             orderMode: selection.sort_mode ?? 'desc',
             filters,
@@ -4547,8 +4547,8 @@ const StixRelationshipsList = ({
           render={({ props }) => {
             if (
               props
-            && props.stixRelationships
-            && props.stixRelationships.edges.length > 0
+              && props.stixRelationships
+              && props.stixRelationships.edges.length > 0
             ) {
               const data = props.stixRelationships.edges;
               return (

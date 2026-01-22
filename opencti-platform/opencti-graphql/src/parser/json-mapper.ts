@@ -17,7 +17,6 @@ import * as JSONPath from 'jsonpath-plus';
 
 import '../modules';
 import { v4 as uuidv4 } from 'uuid';
-import ejs from 'ejs';
 import {
   type BasedRepresentationAttribute,
   type ComplexAttributePath,
@@ -25,8 +24,9 @@ import {
   type JsonMapperRepresentation,
   JsonMapperRepresentationType,
   type RepresentationAttribute,
-  type SimpleAttributePath
+  type SimpleAttributePath,
 } from '../modules/internal/jsonMapper/jsonMapper-types';
+import type { StixObject } from '../types/stix-2-1-common';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { generateStandardId } from '../schema/identifier';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
@@ -39,7 +39,6 @@ import { SYSTEM_USER } from '../utils/access';
 import type { BasicStoreObject, StoreCommon } from '../types/store';
 import { INPUT_MARKINGS } from '../schema/general';
 import { isStixRelationshipExceptRef } from '../schema/stixRelationship';
-import { convertStoreToStix } from '../database/stix-2-1-converter';
 import { BundleBuilder } from './bundle-creator';
 import { handleInnerType } from '../domain/stixDomainObject';
 import { createStixPatternSync } from '../python/pythonBridge';
@@ -47,6 +46,9 @@ import { logApp } from '../config/conf';
 import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import type { AuthContext, AuthUser } from '../types/user';
 import { fromRef, toRef } from '../schema/stixRefRelationship';
+import { safeRender } from '../utils/safeEjs';
+
+import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
 
 const format = (value: string | string[], def: AttributeDefinition, attribute: SimpleAttributePath | ComplexAttributePath | undefined) => {
   if (Array.isArray(value)) {
@@ -54,7 +56,7 @@ const format = (value: string | string[], def: AttributeDefinition, attribute: S
       return value.map((val) => formatValue(val, def.type, attribute));
     }
     if (value.length > 1) {
-      throw UnsupportedError('Only one value expected as attribute definition is not multiple');
+      throw UnsupportedError('Only one value expected as attribute definition is not multiple', { value });
     }
     return formatValue(value[0], def.type, attribute);
   }
@@ -66,7 +68,7 @@ const extractComplexPathFromJson = async (
   metaData: Record<string, any>,
   record: JSON,
   attribute: ComplexAttributePath,
-  attrDef?: AttributeDefinition
+  attrDef?: AttributeDefinition,
 ) => {
   const { variables, formula } = attribute;
   const data: any = { ...metaData };
@@ -77,7 +79,7 @@ const extractComplexPathFromJson = async (
       path: variable.path,
       json: onBase ? base : record,
       wrap: attrDef?.multiple ?? false,
-      flatten: true
+      flatten: true,
     });
   }
   data.patternFromValue = (k: string, value: string) => {
@@ -95,7 +97,7 @@ const extractComplexPathFromJson = async (
     }
     return value;
   };
-  data.decisionMatrix = (value: any, defaultValue: any, matrix: { value: any, result: any }[]) => {
+  data.decisionMatrix = (value: any, defaultValue: any, matrix: { value: any; result: any }[]) => {
     for (let i = 0; i < matrix.length; i += 1) {
       const v = matrix[i];
       if (v.value === value) {
@@ -104,7 +106,12 @@ const extractComplexPathFromJson = async (
     }
     return defaultValue;
   };
-  const val = await ejs.render(`<?- ${formula} ?>`, data, { delimiter: '?', async: true });
+  const val = await safeRender(`<?- ${formula} ?>`, data, {
+    delimiter: '?',
+    async: true,
+    maxExecutedStatementCount: 10000,
+    maxExecutionDuration: 5000,
+  });
   return attrDef ? format(val, attrDef, attribute) : val;
 };
 
@@ -120,7 +127,7 @@ const extractSimpleMultiPathFromJson = (
     path,
     json: onBase ? base : record,
     wrap: attrDef.multiple ?? false,
-    flatten: true
+    flatten: true,
   });
   if (Array.isArray(val)) {
     const formattedValues = val.map((value) => {
@@ -201,24 +208,24 @@ const handleDirectAttribute = async (
     }
   }
   if (attribute.mode === 'simple' && attribute.attr_path) {
-    const computedValue = extractSimpleMultiPathFromJson(base, record, attribute.attr_path, definition);
+    const computedValue: InputType | null | undefined = extractSimpleMultiPathFromJson(base, record, attribute.attr_path, definition);
     if (isNotEmptyField(computedValue)) {
       if (isAttributeHash) {
         const values = (input.hashes ?? {}) as Record<string, any>;
         input.hashes = { ...values, [attribute.key]: computedValue };
       } else {
-        input[attribute.key] = computedValue;
+        input[attribute.key] = computedValue as InputType;
       }
     }
   }
   if (attribute.mode === 'complex' && attribute.complex_path) {
-    const computedValue = await extractComplexPathFromJson(base, metaData, record, attribute.complex_path, definition);
+    const computedValue: InputType | null | undefined = await extractComplexPathFromJson(base, metaData, record, attribute.complex_path, definition);
     if (isNotEmptyField(computedValue)) {
       if (isAttributeHash) {
         const values = (input.hashes ?? {}) as Record<string, any>;
         input.hashes = { ...values, [attribute.key]: computedValue };
       } else {
-        input[attribute.key] = computedValue;
+        input[attribute.key] = computedValue as InputType;
       }
     }
   }
@@ -278,13 +285,13 @@ const handleBasedOnAttribute = async (
         if (attribute.key === 'from') {
           input.__froms = entities.map((e) => ({
             from: e,
-            fromType: e[entityType.name]
+            fromType: e[entityType.name],
           }));
         }
         if (attribute.key === 'to') {
           input.__tos = entities.map((e) => ({
             to: e,
-            toType: e[entityType.name]
+            toType: e[entityType.name],
           }));
         }
         // Is relation ref
@@ -327,7 +334,7 @@ const computeOrderedRepresentations = (representations: JsonMapperRepresentation
     });
     return isEntity && entityHasRefToRelations;
   }).sort((r1, r2) => r1.attributes.filter((attr) => attr.mode === 'base' && attr.based_on).length
-      - r2.attributes.filter((attr) => attr.mode === 'base' && attr.based_on).length);
+    - r2.attributes.filter((attr) => attr.mode === 'base' && attr.based_on).length);
   // representations thar are not in representationEntitiesWithoutBasedOnRelationships
   const basedOnEntities = representations
     .filter((r) => r.type === JsonMapperRepresentationType.Entity && !baseEntities.some((r1) => r1.id === r.id));
@@ -437,12 +444,12 @@ const jsonMappingExecution = async (context: AuthContext, user: AuthUser, data: 
   const objects = Array.from(results.values()).flat();
   const stixObjects = objects.map((e) => {
     try {
-      return convertStoreToStix(e as unknown as StoreCommon);
-    } catch (err) {
+      return convertStoreToStix_2_1(e as unknown as StoreCommon);
+    } catch (_err) {
       logApp.error('JSON mapper convert error', { cause: e });
     }
     return null;
-  }).filter((elem) => isNotEmptyField(elem));
+  }).filter((elem) => isNotEmptyField(elem)) as StixObject[];
   const bundleBuilder = new BundleBuilder();
   bundleBuilder.addObjects(stixObjects);
   return bundleBuilder.build();

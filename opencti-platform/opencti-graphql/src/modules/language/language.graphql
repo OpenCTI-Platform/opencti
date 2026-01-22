@@ -2,7 +2,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
     id: ID! # internal_id
     standard_id: String!
     entity_type: String!
-    parent_types: [String]!
+    parent_types: [String!]!
     metrics:[Metric]
     # StixObject
     representative: Representative!
@@ -11,6 +11,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
     spec_version: String!
     created_at: DateTime!
     updated_at: DateTime!
+    x_opencti_modified_at: DateTime
     refreshed_at: DateTime
     draftVersion: DraftVersion
     # inferences
@@ -103,7 +104,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
     aliases: [String]
     # Technical
     creators: [Creator!]
-    toStix: String
+    toStix(version: Version): String
     importFiles(
     first: Int
     prefixMimeType: String
@@ -183,7 +184,13 @@ input LanguageAddInput {
     created: DateTime
     modified: DateTime
     clientMutationId: String
+    x_opencti_workflow_id: String
+    x_opencti_modified_at: DateTime
     update: Boolean
+    file: Upload
+    fileMarkings: [String]
+    files: [Upload]
+    filesMarkings: [[String]]
 }
 
 type Mutation {

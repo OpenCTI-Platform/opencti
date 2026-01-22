@@ -20,13 +20,13 @@ import { computerRelativeDate, dayStartDate, formatDate } from '../../../../util
 import { useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 
 interface DashboardEntitiesVizProps {
-  widget: Widget
-  isReadonly: boolean
+  widget: Widget;
+  isReadonly: boolean;
   config: {
-    relativeDate: string | undefined
-    startDate: string
-    endDate: string
-  }
+    relativeDate: string | undefined;
+    startDate: string;
+    endDate: string;
+  };
 }
 
 const DashboardEntitiesViz = ({

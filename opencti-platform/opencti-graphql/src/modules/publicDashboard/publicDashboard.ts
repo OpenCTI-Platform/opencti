@@ -12,7 +12,7 @@ export const PUBLIC_DASHBOARD_DEFINITION: ModuleDefinition<StoreEntityPublicDash
     id: 'publicDashboards',
     name: ENTITY_TYPE_PUBLIC_DASHBOARD,
     category: ABSTRACT_INTERNAL_OBJECT,
-    aliased: false
+    aliased: false,
   },
   identifier: {
     definition: {
@@ -34,7 +34,7 @@ export const PUBLIC_DASHBOARD_DEFINITION: ModuleDefinition<StoreEntityPublicDash
   representative: (stix: StixPublicDashboard) => {
     return stix.name;
   },
-  converter_2_1: convertPublicDashboardToStix
+  converter_2_1: convertPublicDashboardToStix,
 };
 
 registerDefinition(PUBLIC_DASHBOARD_DEFINITION);

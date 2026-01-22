@@ -3,13 +3,13 @@ import React, { ReactNode } from 'react';
 import { useFormatter } from './i18n';
 
 interface ProgressBarProps {
-  open: boolean
-  value: number
-  title: string
-  label?: string
-  variant?: 'determinate' | 'indeterminate' | 'buffer' | 'query'
-  onClose: () => void
-  children?: ReactNode
+  open: boolean;
+  value: number;
+  title: string;
+  label?: string;
+  variant?: 'determinate' | 'indeterminate' | 'buffer' | 'query';
+  onClose: () => void;
+  children?: ReactNode;
 }
 
 const ProgressBar = ({

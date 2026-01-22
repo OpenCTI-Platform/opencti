@@ -10,6 +10,7 @@ import ItemMarkings from '../../../../components/ItemMarkings';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import ItemEntityType from '../../../../components/ItemEntityType';
 import { DataColumns } from '../../../../components/list_lines';
+import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -37,14 +38,14 @@ interface EntityNode {
   entity_type: string;
   representative?: { main?: string };
   createdBy?: { name?: string };
-  objectLabel?: Array<{ value: string; color: string }>;
+  objectLabel?: Array<{ value: string; color: string; id: string }>;
   objectMarking?: Array<{ id: string; definition_type: string; definition: string }>;
 }
 
 interface SecurityCoverageEntityLineProps {
   dataColumns: DataColumns;
   node: { node?: EntityNode } | EntityNode;
-  onLabelClick: (key: string, value: string) => void;
+  onLabelClick: HandleAddFilter;
   onToggleEntity: (entity: EntityNode) => void;
   selectedEntity: EntityNode | null;
 }
@@ -72,7 +73,7 @@ const SecurityCoverageEntityLine: React.FC<SecurityCoverageEntityLineProps> = ({
         <ItemIcon type={entity.entity_type} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -113,7 +114,7 @@ const SecurityCoverageEntityLine: React.FC<SecurityCoverageEntityLineProps> = ({
               />
             </div>
           </div>
-        }
+        )}
       />
     </ListItemButton>
   );

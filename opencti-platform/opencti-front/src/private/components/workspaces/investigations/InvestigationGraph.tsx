@@ -412,9 +412,9 @@ export const investigationGraphCountRelToQuery = graphql`
 `;
 
 interface InvestigationGraphComponentProps {
-  totalData: number
-  currentData: number
-  dataInvestigation: InvestigationGraph_fragment$key
+  totalData: number;
+  currentData: number;
+  dataInvestigation: InvestigationGraph_fragment$key;
 }
 
 const InvestigationGraphComponent = ({
@@ -587,10 +587,10 @@ const REFETCH_DEBOUNCE_MS = 50;
 
 interface InvestigationGraphLoaderProps
   extends Omit<InvestigationGraphComponentProps, 'currentData' | 'totalData'> {
-  investigationId: string
-  dataPositions: InvestigationGraphData_fragment$key
-  queryObjectsRef: PreloadedQuery<InvestigationGraphObjectsQuery>
-  pageSize: number
+  investigationId: string;
+  dataPositions: InvestigationGraphData_fragment$key;
+  queryObjectsRef: PreloadedQuery<InvestigationGraphObjectsQuery>;
+  pageSize: number;
 }
 
 const InvestigationGraphLoader = ({
@@ -609,8 +609,8 @@ const InvestigationGraphLoader = ({
     loadMore,
     isLoadingMore,
   } = usePreloadedPaginationFragment<
-  InvestigationGraphObjectsQuery,
-  InvestigationGraphObjects_fragment$key
+    InvestigationGraphObjectsQuery,
+    InvestigationGraphObjects_fragment$key
   >({
     linesQuery: investigationGraphObjectsQuery,
     linesFragment: investigationGraphObjectsFragment,
@@ -619,7 +619,9 @@ const InvestigationGraphLoader = ({
 
   // Use a debounce to avoid spamming too quickly the backend.
   const debounceFetchMore = useDebounceCallback(
-    () => { loadMore(pageSize); },
+    () => {
+      loadMore(pageSize);
+    },
     REFETCH_DEBOUNCE_MS,
   );
   // When finishing fetching a page, get the next if any.
@@ -651,7 +653,7 @@ const InvestigationGraphLoader = ({
       localStorageKey={localStorageKey}
       objects={objects}
       positions={positions}
-      context='investigation'
+      context="investigation"
     >
       <InvestigationGraphComponent
         currentData={dataLoaded}
@@ -663,8 +665,8 @@ const InvestigationGraphLoader = ({
 };
 
 interface InvestigationGraphProps {
-  id: string
-  data: NonNullable<InvestigationGraphQuery$data['workspace']>
+  id: string;
+  data: NonNullable<InvestigationGraphQuery$data['workspace']>;
 }
 
 const InvestigationGraph = ({

@@ -5,7 +5,7 @@ export const ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM = 'SecurityPlatform';
 
 // region Database types
 export interface BasicStoreEntitySecurityPlatform extends BasicIdentityEntity {
-  security_platform_type: string
+  security_platform_type: string;
 }
 
 export interface StoreEntitySecurityPlatform extends StoreEntityIdentity, BasicStoreEntitySecurityPlatform {}

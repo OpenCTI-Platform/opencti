@@ -32,8 +32,8 @@ const convertIndicatorToStix = (instance: StoreEntityIndicator): StixIndicator =
         main_observable_type: instance.x_opencti_main_observable_type,
         observable_values: getObservableValuesFromPattern(instance.pattern, true),
       }),
-      [STIX_EXT_MITRE]: buildMITREExtensions(instance)
-    }
+      [STIX_EXT_MITRE]: buildMITREExtensions(instance),
+    },
   } as StixIndicator;
 };
 

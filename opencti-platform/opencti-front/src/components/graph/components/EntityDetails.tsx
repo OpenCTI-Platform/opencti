@@ -293,7 +293,7 @@ interface EntityDetailsComponentProps {
 }
 
 const EntityDetailsComponent: FunctionComponent<
-EntityDetailsComponentProps
+  EntityDetailsComponentProps
 > = ({ queryRef }) => {
   const classes = useStyles();
   const { t_i18n, fldt } = useFormatter();
@@ -319,53 +319,53 @@ EntityDetailsComponentProps
   return (
     <div>
       {stixCoreObject.entity_type !== 'StixFile' && (
-      <>
-        <Typography variant="h3" gutterBottom={true} className={classes.label}>
-          {t_i18n('Value')}
-        </Typography>
-        <Tooltip title={getMainRepresentative(stixCoreObject)}>
-          <span>{truncate(getMainRepresentative(stixCoreObject), 40)}</span>
-        </Tooltip>
-      </>
-      )}
-      {stixCoreObject.entity_type === 'StixFile' && (
-      <>
-        {stixCoreObject.hashes && stixCoreObject.hashes.map((hashObj, index) => (hashObj ? (
-          <div key={`${hashObj.algorithm}-${index}`}>
-            <Typography variant="h3" gutterBottom={true} className={classes.label}>
-              {hashObj.algorithm ? String(hashObj.algorithm) : ''}
-            </Typography>
-            <Tooltip title={hashObj.hash ? String(hashObj.hash) : ''}>
-              <span>{truncate(hashObj.hash, 40)}</span>
-            </Tooltip>
-          </div>
-        ) : null))}
-
-        {stixCoreObject.observableName && (
         <>
           <Typography variant="h3" gutterBottom={true} className={classes.label}>
-            {t_i18n('Name')}
+            {t_i18n('Value')}
           </Typography>
-          <span>{stixCoreObject.observableName}</span>
+          <Tooltip title={getMainRepresentative(stixCoreObject)}>
+            <span>{truncate(getMainRepresentative(stixCoreObject), 40)}</span>
+          </Tooltip>
         </>
-        )}
+      )}
+      {stixCoreObject.entity_type === 'StixFile' && (
+        <>
+          {stixCoreObject.hashes && stixCoreObject.hashes.map((hashObj, index) => (hashObj ? (
+            <div key={`${hashObj.algorithm}-${index}`}>
+              <Typography variant="h3" gutterBottom={true} className={classes.label}>
+                {hashObj.algorithm ? String(hashObj.algorithm) : ''}
+              </Typography>
+              <Tooltip title={hashObj.hash ? String(hashObj.hash) : ''}>
+                <span>{truncate(hashObj.hash, 40)}</span>
+              </Tooltip>
+            </div>
+          ) : null))}
 
-        {stixCoreObject.x_opencti_additional_names && (
-          (() => {
-            const filteredAdditionalNames = stixCoreObject.x_opencti_additional_names.filter(
-              (additionalName) => additionalName !== stixCoreObject.observableName,
-            );
-            return filteredAdditionalNames.length > 0 ? (
-              <>
-                <Typography variant="h3" gutterBottom={true} className={classes.label}>
-                  {t_i18n('Additional Names')}
-                </Typography>
-                <span>{filteredAdditionalNames.join(', ')}</span>
-              </>
-            ) : null;
-          })()
-        )}
-      </>
+          {stixCoreObject.observableName && (
+            <>
+              <Typography variant="h3" gutterBottom={true} className={classes.label}>
+                {t_i18n('Name')}
+              </Typography>
+              <span>{stixCoreObject.observableName}</span>
+            </>
+          )}
+
+          {stixCoreObject.x_opencti_additional_names && (
+            (() => {
+              const filteredAdditionalNames = stixCoreObject.x_opencti_additional_names.filter(
+                (additionalName) => additionalName !== stixCoreObject.observableName,
+              );
+              return filteredAdditionalNames.length > 0 ? (
+                <>
+                  <Typography variant="h3" gutterBottom={true} className={classes.label}>
+                    {t_i18n('Additional Names')}
+                  </Typography>
+                  <span>{filteredAdditionalNames.join(', ')}</span>
+                </>
+              ) : null;
+            })()
+          )}
+        </>
       )}
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t_i18n('Type')}
@@ -406,14 +406,14 @@ EntityDetailsComponentProps
         {t_i18n('Marking')}
       </Typography>
       {stixCoreObject.objectMarking
-      && stixCoreObject.objectMarking.length > 0 ? (
-        <ItemMarkings
-          markingDefinitions={stixCoreObject.objectMarking}
-          limit={2}
-        />
-        ) : (
-          '-'
-        )}
+        && stixCoreObject.objectMarking.length > 0 ? (
+            <ItemMarkings
+              markingDefinitions={stixCoreObject.objectMarking}
+              limit={2}
+            />
+          ) : (
+            '-'
+          )}
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t_i18n('Author')}
       </Typography>
@@ -448,16 +448,16 @@ EntityDetailsComponentProps
                     <ItemIcon type={report.entity_type} />
                   </ListItemIcon>
                   <ListItemText
-                    primary={
+                    primary={(
                       <Tooltip title={report.name}>
                         <div className={classes.bodyItem}>{report.name}</div>
                       </Tooltip>
-                    }
-                    secondary={
+                    )}
+                    secondary={(
                       <div className={classes.bodyItem}>
                         {report.createdBy?.name ?? '-'}
                       </div>
-                    }
+                    )}
                   />
                 </ListItemButton>
               );
@@ -505,16 +505,16 @@ EntityDetailsComponentProps
                       <ItemIcon type="External-Reference" />
                     </ListItemIcon>
                     <ListItemText
-                      primary={
+                      primary={(
                         <div className={classes.bodyItem}>
                           {`${externalReference.node.source_name} ${externalReferenceId}`}
                         </div>
-                      }
-                      secondary={
+                      )}
+                      secondary={(
                         <div className={classes.bodyItem}>
                           {externalReferenceSecondary}
                         </div>
-                      }
+                      )}
                     />
                   </ListItemButton>
                 </React.Fragment>
@@ -548,7 +548,7 @@ interface EntityDetailsProps {
 }
 
 const EntityDetails: FunctionComponent<
-Omit<EntityDetailsProps, 'queryRef'>
+  Omit<EntityDetailsProps, 'queryRef'>
 > = ({ entity }) => {
   const queryRef = useQueryLoading<EntityDetailsQuery>(entityDetailsQuery, {
     id: entity.id,

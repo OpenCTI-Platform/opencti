@@ -19,7 +19,7 @@ import {
   stixDomainObjectsExportAsk,
   stixDomainObjectsNumber,
   stixDomainObjectsTimeSeries,
-  stixDomainObjectsTimeSeriesByAuthor
+  stixDomainObjectsTimeSeriesByAuthor,
 } from '../domain/stixDomainObject';
 import { findById as findStatusById, findByType } from '../domain/status';
 import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
@@ -78,7 +78,7 @@ const stixDomainObjectResolvers = {
   },
   Mutation: {
     stixDomainObjectEdit: (_, { id }, context) => ({
-      delete: () => stixDomainObjectDelete(context, context.user, id),
+      delete: () => stixDomainObjectDelete(context, context.user, id, ABSTRACT_STIX_DOMAIN_OBJECT),
       fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
       contextClean: () => stixDomainObjectCleanContext(context, context.user, id),

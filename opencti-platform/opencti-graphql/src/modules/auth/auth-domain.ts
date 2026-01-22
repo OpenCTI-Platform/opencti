@@ -1,10 +1,8 @@
-import ejs from 'ejs';
-import { authenticator } from 'otplib';
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
 import { findById, getUserByEmail, userEditField } from '../../domain/user';
 import { AuthenticationFailure, UnsupportedError } from '../../config/errors';
-import { sendMail } from '../../database/smtp';
+import { sendMail, smtpComputeFrom } from '../../database/smtp';
 import type { AuthContext } from '../../types/user';
 import type { AskSendOtpInput, ChangePasswordInput, VerifyMfaInput, VerifyOtpInput } from '../../generated/graphql';
 import { getEntityFromCache } from '../../database/cache';
@@ -18,6 +16,9 @@ import { killUserSessions } from '../../database/session';
 import { logApp } from '../../config/conf';
 import type { SendMailArgs } from '../../types/smtp';
 import { addForgotPasswordCount } from '../../manager/telemetryManager';
+import { sanitizeSettings } from '../../utils/templateContextSanitizer';
+import { safeRender } from '../../utils/safeEjs.client';
+import { totp } from '../../utils/totp';
 
 export const getLocalProviderUser = async (email: string) => {
   const user: any = await getUserByEmail(email);
@@ -73,10 +74,10 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
       + '<p>For any assistance or if you have concerns, do not hesitate to contact the system administrator.</p>'
       + '<p>Sincerely,</p>';
     const sendMailArgs: SendMailArgs = {
-      from: `${settings.platform_title} <${settings.platform_email}>`,
+      from: await smtpComputeFrom(),
       to: user_email,
       subject: 'Your OpenCTI account - Password recovery code',
-      html: ejs.render(OCTI_EMAIL_TEMPLATE, { settings, body }),
+      html: await safeRender(OCTI_EMAIL_TEMPLATE, { settings: sanitizeSettings(settings), body }),
     };
     await sendMail(sendMailArgs, { identifier: id, category: 'password-reset' });
     // Audit log for sending the OTP
@@ -147,13 +148,13 @@ export const verifyMfa = async (context: AuthContext, input: VerifyMfaInput) => 
   if (!mfa_activated || !mfa_secret) {
     throw AuthenticationFailure();
   }
-  const isValidated = authenticator.check(input.code, mfa_secret);
-  if (!isValidated) {
+  const { valid } = await totp.verify({ secret: mfa_secret, token: input.code });
+  if (!valid) {
     throw AuthenticationFailure();
   } else {
-    await redisSetForgotPasswordOtp(input.transactionId, { hashedOtp, email, mfa_activated, mfa_validated: isValidated, userId }, ttl);
+    await redisSetForgotPasswordOtp(input.transactionId, { hashedOtp, email, mfa_activated, mfa_validated: valid, userId }, ttl);
   }
-  return isValidated;
+  return valid;
 };
 
 export const changePassword = async (context: AuthContext, input: ChangePasswordInput) => {
@@ -175,7 +176,7 @@ export const changePassword = async (context: AuthContext, input: ChangePassword
   try {
     const authUser = await findById(context, SYSTEM_USER, userId);
     await userEditField(context, SYSTEM_USER, authUser.id, [
-      { key: 'password', value: [input.newPassword] }
+      { key: 'password', value: [input.newPassword] },
     ]);
     await killUserSessions(authUser.id);
     await redisDelForgotPassword(input.transactionId, email);
@@ -184,14 +185,14 @@ export const changePassword = async (context: AuthContext, input: ChangePassword
       + '<p>If you initiated this change, no further action is required. However, if you did not request this change, please reset your password immediately and contact the system administrator.</p>'
       + '<p>Sincerely,</p>';
     const sendMailArgs: SendMailArgs = {
-      from: `${settings.platform_title} <${settings.platform_email}>`,
+      from: await smtpComputeFrom(),
       to: email,
       subject: 'Your OpenCTI account - Password updated',
-      html: ejs.render(OCTI_EMAIL_TEMPLATE, { settings, body }),
+      html: await safeRender(OCTI_EMAIL_TEMPLATE, { settings: sanitizeSettings(settings), body }),
     };
     await sendMail(sendMailArgs, { identifier: userId, category: 'password-change' });
     return true;
-  } catch (error) {
+  } catch (_error) {
     throw UnsupportedError('Password change failed, please try again.');
   }
 };

@@ -51,8 +51,8 @@ const AttackPatternDataComponentsComponent: FunctionComponent<{
         <Typography variant="h3" gutterBottom={true}>
           {t_i18n('Data components')}
         </Typography>
-        <AddDataComponents attackPattern={attackPattern}/>
-        <div className="clearfix"/>
+        <AddDataComponents attackPattern={attackPattern} />
+        <div className="clearfix" />
       </div>
       <List style={{ marginTop: -10, paddingTop: 0 }}>
         <FieldOrEmpty source={attackPattern.dataComponents?.edges}>
@@ -63,14 +63,14 @@ const AttackPatternDataComponentsComponent: FunctionComponent<{
                 return (
                   <ListItemText
                     key={idx}
-                    primary={
+                    primary={(
                       <Skeleton
                         animation="wave"
                         variant="rectangular"
                         width="90%"
                         height="100%"
                       />
-                    }
+                    )}
                   />
                 );
               }
@@ -80,7 +80,7 @@ const AttackPatternDataComponentsComponent: FunctionComponent<{
                   dense={true}
                   divider={true}
                   disablePadding={true}
-                  secondaryAction={
+                  secondaryAction={(
                     <IconButton
                       aria-label="Remove"
                       onClick={() => removeDataComponent(dataComponent.id)}
@@ -88,7 +88,7 @@ const AttackPatternDataComponentsComponent: FunctionComponent<{
                     >
                       <LinkOff />
                     </IconButton>
-                  }
+                  )}
                 >
                   <ListItemButton
                     component={Link}

@@ -44,7 +44,7 @@ interface DraftWorksComponentProps {
   queryRef: PreloadedQuery<DraftWorksQuery>;
 }
 const DraftWorksComponent: FunctionComponent<
-DraftWorksComponentProps
+  DraftWorksComponentProps
 > = ({ queryRef }) => {
   const theme = useTheme<Theme>();
   const { draftWorkspace } = usePreloadedQuery<DraftWorksQuery>(draftWorksQuery, queryRef);
@@ -90,30 +90,30 @@ DraftWorksComponentProps
             borderColor: status === 'progress' || status === 'wait' ? theme.palette.warn.main : theme.palette.success.main,
             backgroundColor: hexToRGB(status === 'progress' || status === 'wait' ? theme.palette.warn.main : theme.palette.success.main),
           }}
-        />)
-      ,
+        />
+      ),
     },
   };
 
   return (
     <div data-testid="draft-works-page">
       {queryRef && (
-      <DataTableWithoutFragment
-        dataColumns={dataColumns}
-        data={works}
-        storageKey={`${LOCAL_STORAGE_KEY}-${id}`}
-        isLocalStorageEnabled={false}
-        globalCount={works ? works.length : 0}
-        variant={DataTableVariant.inline}
-        disableNavigation
-      />
+        <DataTableWithoutFragment
+          dataColumns={dataColumns}
+          data={works}
+          storageKey={`${LOCAL_STORAGE_KEY}-${id}`}
+          isLocalStorageEnabled={false}
+          globalCount={works ? works.length : 0}
+          variant={DataTableVariant.inline}
+          disableNavigation
+        />
       )}
     </div>
   );
 };
 
 type DraftWorksProps = {
-  draftId: string,
+  draftId: string;
 };
 
 const DraftWorks = (props: DraftWorksProps) => {

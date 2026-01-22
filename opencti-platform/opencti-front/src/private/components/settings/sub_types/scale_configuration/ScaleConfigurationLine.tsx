@@ -22,17 +22,17 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface EntitySettingScaleTickLineProps {
-  tick: Tick | UndefinedTick
-  tickLabel: string
-  deleteEnabled?: boolean
-  validation: (t: (v: string) => string, min: number, max: number) => ObjectSchema<{ [p: string]: unknown }>
-  handleUpdate: (validateForm: (values?: Tick | UndefinedTick) => Promise<FormikErrors<Tick | UndefinedTick>>, name: keyof Tick, value: number | string) => void
-  handleDelete?: () => void
-  noMargin?: boolean
+  tick: Tick | UndefinedTick;
+  tickLabel: string;
+  deleteEnabled?: boolean;
+  validation: (t: (v: string) => string, min: number, max: number) => ObjectSchema<{ [p: string]: unknown }>;
+  handleUpdate: (validateForm: (values?: Tick | UndefinedTick) => Promise<FormikErrors<Tick | UndefinedTick>>, name: keyof Tick, value: number | string) => void;
+  handleDelete?: () => void;
+  noMargin?: boolean;
 }
 
 const ScaleConfigurationLine: FunctionComponent<
-EntitySettingScaleTickLineProps
+  EntitySettingScaleTickLineProps
 > = ({
   tick,
   tickLabel,

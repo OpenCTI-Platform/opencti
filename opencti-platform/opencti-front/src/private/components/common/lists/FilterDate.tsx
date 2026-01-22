@@ -7,12 +7,12 @@ interface FilterDateProps {
     k: string,
     id: string,
     operator?: string,
-    event?: React.KeyboardEvent
+    event?: React.KeyboardEvent,
   ) => void;
   filterKey: string;
   operator?: string;
-  inputValues: { key: string, values: string[], operator?: string }[];
-  setInputValues: (value: { key: string, values: string[], operator?: string }[]) => void;
+  inputValues: { key: string; values: string[]; operator?: string }[];
+  setInputValues: (value: { key: string; values: string[]; operator?: string }[]) => void;
   filterLabel: string;
   filterValue?: string;
 }
@@ -29,9 +29,9 @@ const FilterDate: FunctionComponent<FilterDateProps> = ({
   const [dateState, setDateState] = useState<Date | null>(filterValue ? new Date(dateFiltersValueForDisplay(filterValue, operator)) : null);
 
   const findFilterFromKey = (filters: {
-    key: string,
-    values: (string | Date)[],
-    operator?: string
+    key: string;
+    values: (string | Date)[];
+    operator?: string;
   }[], key: string, op = 'eq') => {
     for (const filter of filters) {
       if (filter.key === key) {

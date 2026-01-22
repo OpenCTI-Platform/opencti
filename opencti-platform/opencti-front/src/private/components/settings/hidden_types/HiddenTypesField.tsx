@@ -15,7 +15,7 @@ import HiddenTypesIndicator from './HiddenTypesIndicator';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 export const groups = new Map<string, string[]>([
-  ['Analysis', ['Report', 'Grouping', 'Malware-Analysis', 'Note', 'External-Reference']],
+  ['Analysis', ['Report', 'Grouping', 'Malware-Analysis', 'Security-Coverage', 'Note', 'External-Reference']],
   ['Cases', ['Case-Incident', 'Case-Rfi', 'Case-Rft', 'Task', 'Feedback']],
   ['Events', ['Incident', 'stix-sighting-relationship', 'Observed-Data']],
   ['Observations', ['Stix-Cyber-Observable', 'Artifact', 'Indicator', 'Infrastructure']],
@@ -71,8 +71,8 @@ interface EntitySettingHidden {
 }
 
 interface HiddenTypesFieldProps {
-  initialValues?: string[]
-  handleChange?: (newValues: string[]) => void
+  initialValues?: string[];
+  handleChange?: (newValues: string[]) => void;
 }
 
 const HiddenTypesField: FunctionComponent<HiddenTypesFieldProps> = ({
@@ -180,7 +180,7 @@ const HiddenTypesField: FunctionComponent<HiddenTypesFieldProps> = ({
           >
             <Checkbox
               checked={
-              entitySettingsEntityType.indexOf(platformHiddenType.target_type) > -1}
+                entitySettingsEntityType.indexOf(platformHiddenType.target_type) > -1}
               style={{ marginLeft: 10 }}
             />
             {t_i18n(`entity_${platformHiddenType.target_type}`)}

@@ -143,7 +143,7 @@ const ImportWorkbenchesContent = () => {
 
   const queryRef = useQueryLoading<ImportWorkbenchesContentQuery>(importWorkbenchesContentQuery, queryPaginationOptions);
 
-  const toolbarFilters = {
+  const contextFilters = {
     mode: 'and',
     filters: [
       {
@@ -179,15 +179,16 @@ const ImportWorkbenchesContent = () => {
     createdBy: {
       label: 'Creator',
       percentWidth: 10,
-      render: (({ metaData }: ImportWorkbenchesContentFileLine_file$data) => metaData?.creator?.name ?? '-'),
+      render: ({ metaData }: ImportWorkbenchesContentFileLine_file$data) => metaData?.creator?.name ?? '-',
     },
     objectLabel: {
       percentWidth: 10,
       render: ({ metaData }: ImportWorkbenchesContentFileLine_file$data) => {
+        const labels = metaData?.labels?.filter((l) => !!l)?.map((l) => ({ value: l, id: l as string, color: undefined }));
         return (
           <StixCoreObjectLabels
             variant="inList"
-            labels={metaData?.labels}
+            labels={labels}
           />
         );
       },
@@ -201,7 +202,7 @@ const ImportWorkbenchesContent = () => {
       isSortable: true,
       percentWidth: 20,
       render: ({ lastModified }: ImportWorkbenchesContentFileLine_file$data, { fd }: {
-        fd: (date: Date) => string
+        fd: (date: Date) => string;
       }) => fd(lastModified),
     },
   };
@@ -211,28 +212,28 @@ const ImportWorkbenchesContent = () => {
       <Breadcrumbs
         elements={[{ label: t_i18n('Data') }, { label: t_i18n('Import'), current: true }]}
       />
-      <ImportMenu/>
+      <ImportMenu />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
           resolvePath={(data: ImportWorkbenchesContentLines_data$data) => data.pendingFiles?.edges?.map(({ node }) => node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
-          toolbarFilters={toolbarFilters}
+          contextFilters={contextFilters}
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={workbenchLineFragment}
           entityTypes={['InternalFile']}
           searchContextFinal={{ entityTypes: ['InternalFile'] }}
-          taskScope={'IMPORT'}
+          taskScope="IMPORT"
           getComputeLink={({ id }: ImportWorkbenchesContentFileLine_file$data) => (
             `/dashboard/data/import/workbench/${toB64(id)}`
           )}
-          createButton={<WorkbenchCreation paginationOptions={queryPaginationOptions}/>}
+          createButton={<WorkbenchCreation paginationOptions={queryPaginationOptions} />}
           actions={(file: ImportWorkbenchesContentFileLine_file$data) => (
             <ImportActionsPopover
               file={file}
               paginationOptions={queryPaginationOptions}
-              paginationKey={'Pagination_global_pendingFiles'}
+              paginationKey="Pagination_global_pendingFiles"
             />
           )}
         />

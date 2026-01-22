@@ -46,13 +46,13 @@ import {
   createWorkForBackgroundTask,
   TASK_TYPE_LIST,
   TASK_TYPE_QUERY,
-  TASK_TYPE_RULE
+  TASK_TYPE_RULE,
 } from '../domain/backgroundTask-common';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { getDraftContext } from '../utils/draftContext';
 import { getBestBackgroundConnectorId, pushToWorkerForConnector } from '../database/rabbitmq';
 import { updateExpectationsNumber, updateProcessedTime } from '../domain/work';
-import { convertStoreToStix, convertTypeToStixType } from '../database/stix-2-1-converter';
+import { convertStoreToStix_2_1, convertTypeToStixType } from '../database/stix-2-1-converter';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 import { extractValidObservablesFromIndicatorPattern } from '../utils/syntax';
@@ -84,7 +84,7 @@ const findTasksToExecute = async (context) => {
       filters: [{ key: 'completed', values: [false] }],
       filterGroups: [],
     },
-    noFiltersChecking: true
+    noFiltersChecking: true,
   });
 };
 
@@ -136,15 +136,15 @@ const throwErrorInDraftContext = (context, user, actionType) => {
     return;
   }
   if (actionType === ACTION_TYPE_COMPLETE_DELETE
-      || actionType === ACTION_TYPE_RESTORE
-      || actionType === ACTION_TYPE_RULE_APPLY
-      || actionType === ACTION_TYPE_RULE_CLEAR
-      || actionType === ACTION_TYPE_RULE_ELEMENT_RESCAN
-      || actionType === ACTION_TYPE_SHARE
-      || actionType === ACTION_TYPE_UNSHARE
-      || actionType === ACTION_TYPE_SHARE_MULTIPLE
-      || actionType === ACTION_TYPE_UNSHARE_MULTIPLE
-      || actionType === ACTION_TYPE_SEND_EMAIL) {
+    || actionType === ACTION_TYPE_RESTORE
+    || actionType === ACTION_TYPE_RULE_APPLY
+    || actionType === ACTION_TYPE_RULE_CLEAR
+    || actionType === ACTION_TYPE_RULE_ELEMENT_RESCAN
+    || actionType === ACTION_TYPE_SHARE
+    || actionType === ACTION_TYPE_UNSHARE
+    || actionType === ACTION_TYPE_SHARE_MULTIPLE
+    || actionType === ACTION_TYPE_UNSHARE_MULTIPLE
+    || actionType === ACTION_TYPE_SEND_EMAIL) {
     throw FunctionalError('Cannot execute this task type in draft', { actionType });
   }
 };
@@ -259,7 +259,7 @@ const sendResultToQueue = async (context, user, task, objects, opts = {}) => {
     content,
     work_id: task.work_id,
     draft_id: task.draft_context ?? null,
-    no_split: opts.forceNoSplit ?? false
+    no_split: opts.forceNoSplit ?? false,
   });
 };
 
@@ -272,8 +272,8 @@ const buildBundleElement = (element, actionType, operations) => {
         id: element.internal_id,
         type: element.entity_type,
         ...baseOperationBuilder(actionType, operations, element),
-      }
-    }
+      },
+    },
   };
   // region Handle specific relationship attributes
   if (isStixSightingRelationship(element.entity_type)) {
@@ -331,8 +331,8 @@ export const buildContainersElementsBundle = async (context, user, containers, e
     type: operationType,
     context: {
       field: INPUT_OBJECTS,
-      values: Array.from(elementIds)
-    }
+      values: Array.from(elementIds),
+    },
   }];
   const objects = [];
   for (let i = 0; i < containers.length; i += 1) {
@@ -345,9 +345,9 @@ export const buildContainersElementsBundle = async (context, user, containers, e
         [STIX_EXT_OCTI]: {
           ...baseOperationBuilder('KNOWLEDGE_CHANGE', containerOperations, container),
           id: container.internal_id,
-          type: container.entity_type
-        }
-      }
+          type: container.entity_type,
+        },
+      },
     });
   }
   return objects;
@@ -395,7 +395,7 @@ const promoteOperationCallback = async (context, user, task, container) => {
             externalReferences: indicator.externalReferences,
           };
           observableToCreate.standard_id = generateStandardId(observableToCreate.entity_type, observableToCreate);
-          const stixObservable = convertStoreToStix(observableToCreate);
+          const stixObservable = convertStoreToStix_2_1(observableToCreate);
           objects.push(stixObservable);
           const relationToCreate = {
             from: indicator,
@@ -410,7 +410,7 @@ const promoteOperationCallback = async (context, user, task, container) => {
             objectOrganization: indicator.objectOrganization,
           };
           relationToCreate.standard_id = generateStandardId(RELATION_BASED_ON, relationToCreate);
-          const stixRelation = convertStoreToStix(relationToCreate);
+          const stixRelation = convertStoreToStix_2_1(relationToCreate);
           objects.push(stixRelation);
         }
       }
@@ -419,7 +419,7 @@ const promoteOperationCallback = async (context, user, task, container) => {
         const indicatorToCreate = await generateIndicatorFromObservable(context, user, loadedElement, loadedElement);
         indicatorToCreate.entity_type = ENTITY_TYPE_INDICATOR;
         indicatorToCreate.standard_id = generateStandardId(ENTITY_TYPE_INDICATOR, indicatorToCreate);
-        const stixIndicator = convertStoreToStix(indicatorToCreate);
+        const stixIndicator = convertStoreToStix_2_1(indicatorToCreate);
         objects.push(stixIndicator);
         const relationToCreate = {
           from: indicatorToCreate,
@@ -434,7 +434,7 @@ const promoteOperationCallback = async (context, user, task, container) => {
           objectOrganization: indicatorToCreate.objectOrganization,
         };
         relationToCreate.standard_id = generateStandardId(RELATION_BASED_ON, relationToCreate);
-        const stixRelation = convertStoreToStix(relationToCreate);
+        const stixRelation = convertStoreToStix_2_1(relationToCreate);
         objects.push(stixRelation);
       }
     }
@@ -445,7 +445,7 @@ const promoteOperationCallback = async (context, user, task, container) => {
         context: {
           field: INPUT_OBJECTS,
           values: objects.map((object) => object.id),
-        }
+        },
       }];
       objects.push({
         id: container.standard_id,
@@ -455,9 +455,9 @@ const promoteOperationCallback = async (context, user, task, container) => {
           [STIX_EXT_OCTI]: {
             ...baseOperationBuilder('KNOWLEDGE_CHANGE', containerOperations, container),
             id: container.internal_id,
-            type: container.entity_type
-          }
-        }
+            type: container.entity_type,
+          },
+        },
       });
     }
     // Send actions to queue

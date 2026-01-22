@@ -27,7 +27,7 @@ const useStyles = makeStyles({
 
 export const groupsQuery = graphql`
   query GroupFieldQuery(
-      $orderMode: OrderingMode
+    $orderMode: OrderingMode
     $orderBy: GroupsOrdering
     $filters: FilterGroup
   ) {
@@ -50,20 +50,20 @@ export const groupsQuery = graphql`
 `;
 
 export type GroupFieldOption = {
-  label: string,
-  value: string,
+  label: string;
+  value: string;
 };
 
 interface GroupFieldProps {
-  name: string,
-  label: React.ReactNode,
-  style?: React.CSSProperties,
-  onChange?: unknown,
-  multiple?: boolean,
-  helpertext?: string,
-  disabled?: boolean,
-  predefinedGroups?: GroupFieldOption[],
-  showConfidence?: boolean,
+  name: string;
+  label: React.ReactNode;
+  style?: React.CSSProperties;
+  onChange?: unknown;
+  multiple?: boolean;
+  helpertext?: string;
+  disabled?: boolean;
+  predefinedGroups?: GroupFieldOption[];
+  showConfidence?: boolean;
 }
 
 const GroupField: React.FC<GroupFieldProps> = (props) => {
@@ -127,10 +127,10 @@ const GroupField: React.FC<GroupFieldProps> = (props) => {
       options={groups}
       onInputChange={searchGroups}
       onChange={typeof onChange === 'function' ? onChange : null}
-      renderOption={(renderProps: React.HTMLAttributes<HTMLLIElement>, option: { color: string; label: string, labelInList?: string }) => (
+      renderOption={(renderProps: React.HTMLAttributes<HTMLLIElement>, option: { color: string; label: string; labelInList?: string }) => (
         <li {...renderProps}>
           <div className={classes.icon} style={{ color: option.color }}>
-            <ItemIcon type="Group"/>
+            <ItemIcon type="Group" />
           </div>
           <div className={classes.text}>{option.labelInList ?? option.label}</div>
         </li>

@@ -48,7 +48,10 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
           relationship_type
           confidence
           is_inferred
+          created_at
           created
+          modified
+          updated_at
           x_opencti_inferences {
             rule {
               id
@@ -968,12 +971,12 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
 `;
 
 interface StixRelationshipsTimelineProps {
-  variant: string,
-  height?: number,
-  startDate: string | null,
-  endDate: string | null,
-  dataSelection: WidgetDataSelection[],
-  parameters?: WidgetParameters,
+  variant: string;
+  height?: number;
+  startDate: string | null;
+  endDate: string | null;
+  dataSelection: WidgetDataSelection[];
+  parameters?: WidgetParameters;
 }
 
 const StixRelationshipsTimeline = ({
@@ -1013,8 +1016,8 @@ const StixRelationshipsTimeline = ({
             const data = stixRelationshipsEdges.flatMap((stixRelationshipEdge) => {
               const stixRelationship = stixRelationshipEdge.node;
               const remoteNode = stixRelationship.from
-              && fromId && fromId.includes(stixRelationship.from.id)
-              && selection.isTo !== false
+                && fromId && fromId.includes(stixRelationship.from.id)
+                && selection.isTo !== false
                 ? stixRelationship.to
                 : stixRelationship.from;
               if (!remoteNode) return [];
@@ -1035,7 +1038,7 @@ const StixRelationshipsTimeline = ({
                 link,
               };
             });
-            return <WidgetTimeline data={data} />;
+            return <WidgetTimeline data={data} dateAttribute={dateAttribute} />;
           }
           if (props) {
             return <WidgetNoData />;

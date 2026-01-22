@@ -4,6 +4,8 @@ import { boundaryWrapper } from '../Error';
 
 const DeployCustomDashboards = lazy(() => import('./DeployCustomDashboard'));
 const IngestionCsv = lazy(() => import('../data/IngestionCsv'));
+const IngestionTaxii = lazy(() => import('../data/IngestionTaxiis'));
+const IngestionCatalogConnector = lazy(() => import('../data/IngestionCatalog/IngestionCatalogConnector'));
 
 const Root = () => {
   return (
@@ -16,6 +18,15 @@ const Root = () => {
         <Route
           path="/deploy-csv-feed/:serviceInstanceId/:fileId"
           element={boundaryWrapper(IngestionCsv)}
+        />
+        {/* Query param: ?openConfig=true to auto-open deployment dialog */}
+        <Route
+          path="/deploy-connector/:connectorSlug"
+          element={boundaryWrapper(IngestionCatalogConnector)}
+        />
+        <Route
+          path="/deploy-taxii-feed/:serviceInstanceId/:fileId"
+          element={boundaryWrapper(IngestionTaxii)}
         />
       </Routes>
     </Suspense>

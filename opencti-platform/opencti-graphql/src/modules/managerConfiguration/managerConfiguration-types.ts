@@ -27,6 +27,6 @@ export interface StixManagerConfiguration extends StixObject {
   last_run_end_date: Date;
   manager_setting: any;
   extensions: {
-    [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
-  }
+    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
+  };
 }

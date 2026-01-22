@@ -213,7 +213,7 @@ const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = 
         variant="standard"
       />
       <Paper
-        className={'paper-for-grid'}
+        className="paper-for-grid"
         variant="outlined"
         sx={{
           marginTop: '28px',
@@ -221,34 +221,34 @@ const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = 
         }}
       >
         {queryRef && (
-        <DataTable
-          dataColumns={dataColumns}
-          resolvePath={(data) => data.organization?.members?.edges?.map(({ node }: { node: SettingsOrganizationUsersLine_node$data }) => node)}
-          storageKey={LOCAL_STORAGE_KEY}
-          initialValues={initialValues}
-          toolbarFilters={contextFilters}
-          disableLineSelection={isOnlyAdminOrganization}
-          lineFragment={settingsOrganizationUsersLineFragment}
-          preloadedPaginationProps={preloadedPaginationProps}
-          icon={(user) => {
-            const external = user.external === true;
-            const memberIsOrganizationAdmin = (user.administrated_organizations ?? [])
-              .map((org: { id: string }) => org.id)
-              .includes(organization.id);
-            const userServiceAccount = user.user_service_account;
-            if (userServiceAccount) {
-              return <ManageAccountsOutlined color="primary" />;
-            }
-            if (external) {
-              return <AccountCircleOutlined color="primary" />;
-            }
-            if (memberIsOrganizationAdmin) {
-              return <AdminPanelSettingsOutlined color="success" />;
-            }
-            return <PersonOutlined color="primary" />;
-          }}
-          taskScope={'USER'}
-        />
+          <DataTable
+            dataColumns={dataColumns}
+            resolvePath={(data) => data.organization?.members?.edges?.map(({ node }: { node: SettingsOrganizationUsersLine_node$data }) => node)}
+            storageKey={LOCAL_STORAGE_KEY}
+            initialValues={initialValues}
+            contextFilters={contextFilters}
+            disableLineSelection={isOnlyAdminOrganization}
+            lineFragment={settingsOrganizationUsersLineFragment}
+            preloadedPaginationProps={preloadedPaginationProps}
+            icon={(user) => {
+              const external = user.external === true;
+              const memberIsOrganizationAdmin = (user.administrated_organizations ?? [])
+                .map((org: { id: string }) => org.id)
+                .includes(organization.id);
+              const userServiceAccount = user.user_service_account;
+              if (userServiceAccount) {
+                return <ManageAccountsOutlined color="primary" />;
+              }
+              if (external) {
+                return <AccountCircleOutlined color="primary" />;
+              }
+              if (memberIsOrganizationAdmin) {
+                return <AdminPanelSettingsOutlined color="success" />;
+              }
+              return <PersonOutlined color="primary" />;
+            }}
+            taskScope="USER"
+          />
         )}
       </Paper>
     </Grid>

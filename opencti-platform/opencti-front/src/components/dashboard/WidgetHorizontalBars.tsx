@@ -9,19 +9,19 @@ import type { Theme } from '../Theme';
 import { dateFormat, timestamp } from '../../utils/Time';
 
 interface WidgetHorizontalBarsProps {
-  series: ApexAxisChartSeries
-  distributed?: boolean
-  stacked?: boolean
-  total?: boolean
-  legend?: boolean
-  categories?: string[]
-  withExport?: boolean
-  readonly?: boolean
+  series: ApexAxisChartSeries;
+  distributed?: boolean;
+  stacked?: boolean;
+  total?: boolean;
+  legend?: boolean;
+  categories?: string[];
+  withExport?: boolean;
+  readonly?: boolean;
   redirectionUtils?: {
-    id?: string
-    entity_type?: string
-  }[]
-  stackType?: string
+    id?: string;
+    entity_type?: string;
+  }[];
+  stackType?: string;
 }
 
 const WidgetHorizontalBars = ({

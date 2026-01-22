@@ -1,11 +1,22 @@
-*.iml
+# MacOS Finder files
 .DS_Store
-.idea
+
+# IntelliJ Platform) | JetBrains
+.idea/
+*.iml
+
+# VSCode
+.vscode/
+.history/
+
+# NodeJS
+node_modules/
+
+# Yarn
+.yarn/
+
 .mypy_cache
 .venv
 venv
-.vscode
 /licenses/
-
-# Yarn directories
-.yarn/
+opencti-platform/opencti-front/.yarnrc.yml

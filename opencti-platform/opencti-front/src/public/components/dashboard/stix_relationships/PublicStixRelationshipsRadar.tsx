@@ -73,8 +73,8 @@ const publicStixRelationshipsRadarsQuery = graphql`
 `;
 
 interface PublicStixRelationshipsRadarComponentProps {
-  dataSelection: Widget['dataSelection']
-  queryRef: PreloadedQuery<PublicStixRelationshipsRadarQuery>
+  dataSelection: Widget['dataSelection'];
+  queryRef: PreloadedQuery<PublicStixRelationshipsRadarQuery>;
 }
 
 const PublicStixRelationshipsRadarComponent = ({

@@ -26,16 +26,16 @@ import { PaginationOptions } from '../../../../components/list_lines';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
 interface TaxiiCollectionCreationProps {
-  paginationOptions: PaginationOptions
+  paginationOptions: PaginationOptions;
 }
 
 interface TaxiiCollectionCreationForm {
-  authorized_members: FieldOption[]
-  description: string
-  include_inferences?: boolean
-  name: string
-  taxii_public?: boolean
-  score_to_confidence?: boolean
+  authorized_members: FieldOption[];
+  description: string;
+  include_inferences?: boolean;
+  name: string;
+  taxii_public?: boolean;
+  score_to_confidence?: boolean;
 }
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -89,7 +89,7 @@ const sharedUpdater = (store: RecordSourceSelectorProxy, userId: string, paginat
 
 const CreateTaxiiCollectionControlledDial = (props: DrawerControlledDialProps) => (
   <CreateEntityControlledDial
-    entityType='TaxiiCollection'
+    entityType="TaxiiCollection"
     {...props}
   />
 );
@@ -188,7 +188,7 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
                 />
                 {!values.taxii_public && (
                   <ObjectMembersField
-                    label={'Accessible for'}
+                    label="Accessible for"
                     style={fieldSpacingContainerStyle}
                     helpertext={t_i18n('Leave the field empty to grant all authenticated users')}
                     multiple={true}

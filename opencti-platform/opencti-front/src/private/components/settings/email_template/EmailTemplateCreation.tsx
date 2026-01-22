@@ -10,7 +10,7 @@ const CreateEmailTemplateControlledDial = (
   props: DrawerControlledDialProps,
 ) => (
   <CreateEntityControlledDial
-    entityType='EmailTemplate'
+    entityType="EmailTemplate"
     {...props}
   />
 );

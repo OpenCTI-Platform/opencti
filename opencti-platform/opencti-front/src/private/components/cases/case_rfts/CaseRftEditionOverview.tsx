@@ -146,20 +146,20 @@ const caseRftMutationRelationDelete = graphql`
 `;
 
 interface CaseRftEditionOverviewProps {
-  caseRef: CaseRftEditionOverview_case$key
+  caseRef: CaseRftEditionOverview_case$key;
   context?: readonly (GenericContext | null)[] | null;
-  enableReferences?: boolean
-  handleClose: () => void
+  enableReferences?: boolean;
+  handleClose: () => void;
 }
 
 interface CaseRftEditionFormValues {
-  message?: string
-  createdBy?: FieldOption
-  objectMarking?: FieldOption[]
-  objectAssignee?: FieldOption[]
-  objectParticipant?: FieldOption[]
-  x_opencti_workflow_id: FieldOption
-  references: ExternalReferencesValues | undefined
+  message?: string;
+  createdBy?: FieldOption;
+  objectMarking?: FieldOption[];
+  objectAssignee?: FieldOption[];
+  objectParticipant?: FieldOption[];
+  x_opencti_workflow_id: FieldOption;
+  references: ExternalReferencesValues | undefined;
 }
 
 const CASE_RFT_TYPE = 'Case-Rft';
@@ -306,7 +306,7 @@ const CaseRftEditionOverview: FunctionComponent<CaseRftEditionOverviewProps> = (
               fullWidth: true,
               style: { marginTop: 20 },
               helperText: (
-                <SubscriptionFocus context={context} fieldName="created"/>
+                <SubscriptionFocus context={context} fieldName="created" />
               ),
             }}
           />
@@ -392,12 +392,12 @@ const CaseRftEditionOverview: FunctionComponent<CaseRftEditionOverviewProps> = (
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
               style={fieldSpacingContainerStyle}
-              helpertext={
+              helpertext={(
                 <SubscriptionFocus
                   context={context}
                   fieldName="x_opencti_workflow_id"
                 />
-              }
+              )}
             />
           )}
           <CreatedByField

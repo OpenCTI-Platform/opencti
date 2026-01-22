@@ -10,8 +10,8 @@ import { SubTypeWorkflowEditionQuery } from './__generated__/SubTypeWorkflowEdit
 import { useFormatter } from '../../../../components/i18n';
 
 interface SubTypeStatusPopoverProps {
-  subTypeId: string
-  scope: string
+  subTypeId: string;
+  scope: string;
 }
 
 const SubTypeStatusPopover: FunctionComponent<SubTypeStatusPopoverProps> = ({ subTypeId, scope }) => {

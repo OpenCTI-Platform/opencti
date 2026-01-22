@@ -41,7 +41,7 @@ const AskArianeButton = React.forwardRef((props, ref) => {
   const isCGUStatusPending = filigran_chatbot_ai_cgu_status === CGUStatus.pending;
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
   const [openValidateTermsOfUse, setOpenValidateTermsOfUse] = useState(false);
-  const chatbotRef = useRef<{ onClose:() => void }>(null);
+  const chatbotRef = useRef<{ onClose: () => void }>(null);
 
   const openChatbot = () => {
     setIsChatbotOpen(true);
@@ -150,7 +150,7 @@ const AskArianeButton = React.forwardRef((props, ref) => {
             sx={{ width: '100%', paddingLeft: '8px' }}
             gradientVariant={isCGUStatusPending ? GradientVariant.disabled : GradientVariant.ai}
             onClick={toggleChatbot}
-            startIcon={ <FiligranIcon icon={LogoXtmOneIcon} size='small' color="ai" style={chatIconStyle} />}
+            startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" style={chatIconStyle} />}
           >
             {t_i18n('ASK ARIANE')}
             <EEChip />
@@ -161,25 +161,23 @@ const AskArianeButton = React.forwardRef((props, ref) => {
             sx={{ margin: '-4px', marginLeft: '-6px', marginTop: '-4px', minWidth: 'auto', paddingLeft: 1, paddingY: theme.spacing(0.5) }}
             gradientVariant={isCGUStatusPending ? GradientVariant.disabled : GradientVariant.ai}
             onClick={toggleChatbot}
-            startIcon={ <FiligranIcon icon={LogoXtmOneIcon} size='small' color="ai" style={chatIconStyle} />}
+            startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" style={chatIconStyle} />}
           >
           </GradientButton>
         )}
       </EETooltip>
       {isEnterpriseEdition && isChatbotAiEnabled() ? (
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         <filigran-chatbot
           ref={chatbotRef}
           open={isChatbotOpen}
           left={navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH}
-          agentic-url={chatbotProxyUrl}
-          theme={JSON.stringify(chatBotTheme)}
+          agenticUrl={chatbotProxyUrl}
+          theme={chatBotTheme}
         />
       ) : null}
 
       {openValidateTermsOfUse && (
-        <ValidateTermsOfUseDialog open={openValidateTermsOfUse} onClose={() => setOpenValidateTermsOfUse(false)}/>
+        <ValidateTermsOfUseDialog open={openValidateTermsOfUse} onClose={() => setOpenValidateTermsOfUse(false)} />
       )}
     </>
   );

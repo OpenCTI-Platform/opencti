@@ -12,13 +12,13 @@ import {
   SUPPORT_LOG_FILE_PREFIX,
   SUPPORT_LOG_RELATIVE_LOCAL_DIR,
   TELEMETRY_LOG_FILE_PREFIX,
-  TELEMETRY_LOG_RELATIVE_LOCAL_DIR
+  TELEMETRY_LOG_RELATIVE_LOCAL_DIR,
 } from '../../config/conf';
-import { downloadFile, loadedFilesListing, streamConverter } from '../../database/file-storage';
+import { downloadFile } from '../../database/raw-file-storage';
+import { loadedFilesListing, streamConverter, fileToReadStream, uploadToStorage } from '../../database/file-storage';
 import type { EditInput, QuerySupportPackagesArgs, SupportPackageAddInput, SupportPackageForceZipInput } from '../../generated/graphql';
 import { EditOperation, PackageStatus } from '../../generated/graphql';
 import { updateAttribute } from '../../database/middleware';
-import { fileToReadStream, uploadToStorage } from '../../database/file-storage-helper';
 import { wait } from '../../database/utils';
 import {
   notify,
@@ -27,7 +27,7 @@ import {
   redisStoreSupportPackageNodeStatus,
   SUPPORT_NODE_STATUS_IN_ERROR,
   SUPPORT_NODE_STATUS_IN_PROGRESS,
-  SUPPORT_NODE_STATUS_READY
+  SUPPORT_NODE_STATUS_READY,
 } from '../../database/redis';
 import { FilesystemError } from '../../config/errors';
 import { getSettings } from '../../domain/settings';
@@ -129,7 +129,7 @@ export const sendCurrentNodeSupportLogToS3 = async (context: AuthContext, user: 
   }
 };
 
-const downloadAllLogFiles = async (context:AuthContext, user: AuthUser, s3Directory: string, localDirectory: string) => {
+const downloadAllLogFiles = async (context: AuthContext, user: AuthUser, s3Directory: string, localDirectory: string) => {
   const allSupportFiles = await loadedFilesListing(context, user, s3Directory, {});
   logApp.info('All support files', { allSupportFiles });
   for (let i = 0; i < allSupportFiles.length; i += 1) {
@@ -138,9 +138,13 @@ const downloadAllLogFiles = async (context:AuthContext, user: AuthUser, s3Direct
       const newLocalFile = join(localDirectory, `${supportFile.name}`);
       fs.closeSync(fs.openSync(newLocalFile, 'w'));
       const stream = await downloadFile(supportFile.id);
-      const data = await streamConverter(stream);
-      fs.writeFileSync(newLocalFile, data, {});
-      logApp.info('Writing file to directory', { file: supportFile?.name, dir: localDirectory });
+      if (stream) {
+        const data = await streamConverter(stream);
+        fs.writeFileSync(newLocalFile, data, {});
+        logApp.info('Writing file to directory', { file: supportFile?.name, dir: localDirectory });
+      } else {
+        logApp.warn('Support file not found in S3, skipping', { fileId: supportFile.id, fileName: supportFile.name });
+      }
     }
   }
 };
@@ -194,7 +198,7 @@ export const zipAllSupportFiles = async (context: AuthContext, user: AuthUser, e
   }
   // Update the support package link
   const updateInput = [
-    { key: 'package_url', value: [updatedArchive.package_url], operation: EditOperation.Replace }
+    { key: 'package_url', value: [updatedArchive.package_url], operation: EditOperation.Replace },
   ];
   await updateAttribute(context, user, entity.id, ENTITY_TYPE_SUPPORT_PACKAGE, updateInput);
 };
@@ -221,7 +225,7 @@ export const prepareNewSupportPackage = async (context: AuthContext, user: AuthU
   const updateInput: EditInput[] = [{
     key: 'package_upload_dir',
     value: [getS3UploadFolder(supportDataCreated.id)],
-    operation: EditOperation.Replace
+    operation: EditOperation.Replace,
   }];
   await updateAttribute(context, user, supportDataCreated.id, ENTITY_TYPE_SUPPORT_PACKAGE, updateInput);
   return supportDataCreated;
@@ -293,14 +297,14 @@ export const registerNodeInSupportPackage = async (context: AuthContext, user: A
           const updateInput: EditInput[] = [{
             key: 'package_status',
             value: [PackageStatus.InError],
-            operation: EditOperation.Replace
+            operation: EditOperation.Replace,
           }];
           await updateAttribute(context, user, packageId, ENTITY_TYPE_SUPPORT_PACKAGE, updateInput);
         } else {
           const updateInput: EditInput[] = [{
             key: 'package_status',
             value: [PackageStatus.Ready],
-            operation: EditOperation.Replace
+            operation: EditOperation.Replace,
           }];
           await updateAttribute(context, user, packageId, ENTITY_TYPE_SUPPORT_PACKAGE, updateInput);
         }

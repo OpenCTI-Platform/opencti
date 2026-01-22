@@ -8,11 +8,11 @@ import { lineChartOptions } from '../../utils/Charts';
 import { simpleNumberFormat } from '../../utils/Number';
 
 interface WidgetMultiLinesProps {
-  series: ApexAxisChartSeries
-  interval?: string | null
-  hasLegend?: boolean
-  withExport?: boolean
-  readonly?: boolean
+  series: ApexAxisChartSeries;
+  interval?: string | null;
+  hasLegend?: boolean;
+  withExport?: boolean;
+  readonly?: boolean;
 }
 
 const WidgetMultiLines = ({

@@ -85,13 +85,13 @@ interface SettingsOrganizationFormValues {
   default_dashboard: FieldOption | null;
   message?: string;
   references?: FieldOption[];
-  grantable_groups: { label: string; value: string; }[];
+  grantable_groups: { label: string; value: string }[];
 }
 
 interface SettingsOrganizationEditionProps {
-  organization: SettingsOrganization_organization$data
+  organization: SettingsOrganization_organization$data;
   context?: readonly (GenericContext | null)[] | null;
-  enableReferences?: boolean
+  enableReferences?: boolean;
 }
 
 export const convertGrantableGroups = (organization: SettingsOrganization_organization$data) => (organization?.grantable_groups ?? []).map((n) => ({
@@ -115,7 +115,7 @@ const SettingsOrganizationEdition = ({
   const isEnterpriseEdition = useEnterpriseEdition();
 
   const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+    name: Yup.string().trim().min(1).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     contact_information: Yup.string().nullable(),
     x_opencti_organization_type: Yup.string().nullable(),
@@ -143,9 +143,9 @@ const SettingsOrganizationEdition = ({
     contact_information: organization.contact_information ?? null,
     default_dashboard: organization.default_dashboard
       ? {
-        value: organization.default_dashboard.id,
-        label: organization.default_dashboard.name,
-      }
+          value: organization.default_dashboard.id,
+          label: organization.default_dashboard.name,
+        }
       : null,
     grantable_groups: convertGrantableGroups(organization),
   };
@@ -238,12 +238,12 @@ const SettingsOrganizationEdition = ({
                 style={{ marginTop: 20 }}
                 onFocus={editor.changeFocus}
                 onSubmit={handleSubmitField}
-                helperText={
+                helperText={(
                   <SubscriptionFocus
                     context={context}
                     fieldName="description"
                   />
-                }
+                )}
               />
               <OpenVocabField
                 label={t_i18n('Organization type')}
@@ -268,22 +268,22 @@ const SettingsOrganizationEdition = ({
                 style={{ marginTop: 20 }}
                 onFocus={editor.changeFocus}
                 onSubmit={handleSubmitField}
-                helperText={
+                helperText={(
                   <SubscriptionFocus
                     context={context}
                     fieldName="contact_information"
                   />
-                }
+                )}
               />
               <DashboardField
                 onChange={editor.changeField}
                 context={context}
               />
               <SettingsOrganizationHiddenTypesField organizationData={organization} />
-              <EEField featureLabel={'Organization sharing'}>
+              <EEField featureLabel="Organization sharing">
                 <GroupField
                   name="grantable_groups"
-                  label={'Grantable groups by Organization administrators'}
+                  label="Grantable groups by Organization administrators"
                   multiple={true}
                   onChange={editor.changeGrantableGroups}
                   style={{ marginTop: 20 }}

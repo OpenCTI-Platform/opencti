@@ -220,11 +220,11 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({
                 }
               />
               <ObjectMembersField
-                label={'Recipients'}
+                label="Recipients"
                 style={fieldSpacingContainerStyle}
                 onChange={handleSubmitFieldOptions}
                 multiple={true}
-                name={'recipients'}
+                name="recipients"
               />
               <Box
                 sx={{

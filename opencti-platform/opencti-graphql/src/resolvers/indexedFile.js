@@ -26,7 +26,7 @@ const indexedFileResolvers = {
   },
   Mutation: {
     resetFileIndexing: (_, __, context) => resetFileIndexing(context, context.user),
-  }
+  },
 };
 
 export default indexedFileResolvers;

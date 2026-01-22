@@ -1,6 +1,7 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import IncidentDetails from './IncidentDetails';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -77,7 +78,11 @@ interface IncidentProps {
   incidentData: Incident_incident$key;
 }
 
-const Incident: React.FC<IncidentProps> = ({ incidentData }) => {
+const Incident: React.FC<IncidentProps> = ({
+  incidentData,
+}) => {
+  useInitCreateRelationshipContext();
+
   const incident = useFragment<Incident_incident$key>(
     incidentFragment,
     incidentData,

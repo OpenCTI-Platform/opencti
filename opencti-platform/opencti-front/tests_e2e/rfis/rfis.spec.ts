@@ -6,7 +6,7 @@ import CaseRfiFormPage from '../model/form/caseRfiForm.pageModel';
 import CaseRfiDetailsPage from '../model/caseRfiDetails.pageModel';
 import ParticipantsFormPage from '../model/form/participantsForm.pageModel';
 
-test('Request for information CRUD', async ({ page }) => {
+test('Request for information CRUD', { tag: ['@ce'] }, async ({ page }) => {
   const leftBarPage = new LeftBarPage(page);
   const caseRfiPage = new CaseRfiPage(page);
   const caseRfiDetailsPage = new CaseRfiDetailsPage(page);

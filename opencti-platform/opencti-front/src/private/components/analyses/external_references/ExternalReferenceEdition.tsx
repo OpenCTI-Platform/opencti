@@ -20,7 +20,7 @@ interface ExternalReferenceEditionProps {
 }
 
 const ExternalReferenceEdition: FunctionComponent<
-ExternalReferenceEditionProps
+  ExternalReferenceEditionProps
 > = ({ externalReferenceId }) => {
   const handleClose = () => {
     commitMutation({

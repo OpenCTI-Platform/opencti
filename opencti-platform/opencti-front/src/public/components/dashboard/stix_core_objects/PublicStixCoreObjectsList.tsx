@@ -418,10 +418,10 @@ const publicStixCoreObjectsListQuery = graphql`
 `;
 
 interface PublicStixCoreObjectsListComponentProps {
-  queryRef: PreloadedQuery<PublicStixCoreObjectsListQuery>
-  rootRef: DataTableProps['rootRef']
-  widgetId: string
-  columns: WidgetColumn[]
+  queryRef: PreloadedQuery<PublicStixCoreObjectsListQuery>;
+  rootRef: DataTableProps['rootRef'];
+  widgetId: string;
+  columns: WidgetColumn[];
 }
 
 const PublicStixCoreObjectsListComponent = ({

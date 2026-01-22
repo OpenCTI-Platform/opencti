@@ -16,11 +16,11 @@ export const up = async (next) => {
         script: {
           script: {
             source: "doc['rel_created-by.internal_id.keyword'].length > 1",
-            lang: 'painless'
-          }
-        }
+            lang: 'painless',
+          },
+        },
       },
-      size: 10000
+      size: 10000,
     },
   };
 
@@ -44,7 +44,7 @@ export const up = async (next) => {
         bool: {
           must: [
             {
-              term: { 'entity_type.keyword': { value: 'created-by' } }
+              term: { 'entity_type.keyword': { value: 'created-by' } },
             },
             {
               nested: {
@@ -53,13 +53,13 @@ export const up = async (next) => {
                   bool: {
                     must: [
                       {
-                        term: { 'connections.internal_id.keyword': { value: currentEntityWithMultipleAuthors._source.internal_id } }
-                      }
-                    ]
-                  }
-                }
-              }
-            }
+                        term: { 'connections.internal_id.keyword': { value: currentEntityWithMultipleAuthors._source.internal_id } },
+                      },
+                    ],
+                  },
+                },
+              },
+            },
           ],
           must_not: [
             {
@@ -69,17 +69,17 @@ export const up = async (next) => {
                   bool: {
                     must: [
                       {
-                        term: { 'connections.internal_id.keyword': { value: authorIdToKeep }
-                        }
-                      }
-                    ]
-                  }
-                }
-              }
-            }
-          ]
-        }
-      }
+                        term: { 'connections.internal_id.keyword': { value: authorIdToKeep },
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+          ],
+        },
+      },
     };
 
     await elRawDeleteByQuery({

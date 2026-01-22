@@ -26,8 +26,8 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 export type PirEditionFormInputKeys = keyof PirEditionFormData;
 
 interface PirEditionFormProps {
-  onSubmitField: (field: PirEditionFormInputKeys, value: unknown) => void
-  pir: PirEditionFragment$data
+  onSubmitField: (field: PirEditionFormInputKeys, value: unknown) => void;
+  pir: PirEditionFragment$data;
 }
 
 const PirEditionForm = ({ onSubmitField, pir }: PirEditionFormProps) => {

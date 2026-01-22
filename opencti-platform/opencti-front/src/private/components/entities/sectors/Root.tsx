@@ -10,6 +10,8 @@ import { RootSectorSubscription } from '@components/entities/sectors/__generated
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import AIInsights from '@components/common/ai/AIInsights';
+import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
+import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import Sector from './Sector';
 import SectorKnowledge from './SectorKnowledge';
@@ -57,6 +59,7 @@ const sectorQuery = graphql`
       name
       x_opencti_aliases
       x_opencti_graph_data
+      ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...Sector_sector
       ...SectorKnowledge_sector
@@ -102,13 +105,13 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
   const paddingRight = getPaddingRight(location.pathname, sectorId, '/dashboard/entities/sectors');
   const link = `/dashboard/entities/sectors/${sectorId}/knowledge`;
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {sector ? (
         <>
           <Routes>
             <Route
               path="/knowledge/*"
-              element={
+              element={(
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -125,7 +128,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
                   ]}
                   data={sector}
                 />
-              }
+              )}
             />
           </Routes>
           <div style={{ paddingRight }}>
@@ -146,7 +149,14 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
                   <SectorEdition sectorId={sector.id} />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              RelateComponent={(
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <StixCoreRelationshipCreationFromEntityHeader
+                    data={sector}
+                  />
+                </Security>
+              )}
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <SectorDeletion id={sector.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
@@ -210,26 +220,26 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
                 />
               </Tabs>
               {isOverview && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                <AIInsights id={sector.id}/>
-              </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                  <AIInsights id={sector.id} />
+                </div>
               )}
             </Box>
             <Routes>
               <Route
                 path="/"
                 element={(
-                  <Sector sectorData={sector}/>
-                  )}
+                  <Sector sectorData={sector} />
+                )}
               />
               <Route
                 path="/knowledge"
-                element={
+                element={(
                   <Navigate
                     replace={true}
                     to={`/dashboard/entities/sectors/${sectorId}/knowledge/overview`}
                   />
-                }
+                )}
               />
               <Route
                 path="/knowledge/*"
@@ -241,15 +251,15 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
               />
               <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={sector}
                   />
-                }
+                )}
               />
               <Route
                 path="/analyses"
-                element={ (
+                element={(
                   <StixCoreObjectOrStixCoreRelationshipContainers
                     stixDomainObjectOrStixCoreRelationship={sector}
                   />
@@ -257,7 +267,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
               />
               <Route
                 path="/sightings"
-                element={ (
+                element={(
                   <EntityStixSightingRelationships
                     entityId={sector.id}
                     entityLink={link}
@@ -301,11 +311,11 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 const Root = () => {
-  const { sectorId } = useParams() as { sectorId: string; };
+  const { sectorId } = useParams() as { sectorId: string };
   const queryRef = useQueryLoading<RootSectorQuery>(sectorQuery, {
     id: sectorId,
   });

@@ -45,7 +45,7 @@ class AttackPatternDetailsComponent extends Component {
         <Typography variant="h4" gutterBottom={true}>
           {t('Details')}
         </Typography>
-        <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+        <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
           <Grid container={true} spacing={3}>
             <Grid item xs={6}>
               {attackPattern.isSubAttackPattern && (
@@ -91,9 +91,9 @@ class AttackPatternDetailsComponent extends Component {
                       (platform) => (
                         <ListItem key={platform} dense={true} divider={true}>
                           <ListItemIcon>
-                            <SettingsApplications/>
+                            <SettingsApplications />
                           </ListItemIcon>
-                          <ListItemText primary={platform}/>
+                          <ListItemText primary={platform} />
                         </ListItem>
                       ),
                     )}
@@ -131,9 +131,9 @@ class AttackPatternDetailsComponent extends Component {
                     (permission) => (
                       <ListItem key={permission} dense={true} divider={true}>
                         <ListItemIcon>
-                          <PermIdentity/>
+                          <PermIdentity />
                         </ListItemIcon>
-                        <ListItemText primary={permission}/>
+                        <ListItemText primary={permission} />
                       </ListItem>
                     ),
                   )}

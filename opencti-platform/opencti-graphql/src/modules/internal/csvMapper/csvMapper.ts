@@ -13,11 +13,11 @@ const CSV_MAPPER_DEFINITION: ModuleDefinition<StoreEntityCsvMapper, StixCsvMappe
     id: 'csvmapper',
     name: ENTITY_TYPE_CSV_MAPPER,
     category: ABSTRACT_INTERNAL_OBJECT,
-    aliased: false
+    aliased: false,
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_CSV_MAPPER]: () => uuidv4()
+      [ENTITY_TYPE_CSV_MAPPER]: () => uuidv4(),
     },
     resolvers: {
       name(data: object) {
@@ -36,7 +36,7 @@ const CSV_MAPPER_DEFINITION: ModuleDefinition<StoreEntityCsvMapper, StixCsvMappe
   representative: (instance: StixCsvMapper) => {
     return instance.name;
   },
-  converter_2_1: convertCsvMapperToStix
+  converter_2_1: convertCsvMapperToStix,
 };
 
 registerDefinition(CSV_MAPPER_DEFINITION);

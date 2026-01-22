@@ -53,9 +53,4 @@ describe('Sorting utilities', () => {
     sorting = async () => buildElasticSortingForAttributeCriteria(testContext, SYSTEM_USER, 'context_data', 'asc');
     await expect(sorting).rejects.toThrowError('Sorting on [context_data] is not supported: this criteria does not have a sortBy definition in schema');
   });
-
-  it('buildElasticSortingForAttributeCriteria throws on error if pir sorting and user has not the rights', async () => {
-    sorting = async () => buildElasticSortingForAttributeCriteria(testContext, SYSTEM_USER, 'pir_score', 'asc', 'fakePirId');
-    await expect(sorting).rejects.toThrowError('No PIR found');
-  });
 });

@@ -40,9 +40,11 @@ import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
 import useGranted, {
   AUTOMATION,
+  BYPASS,
   KNOWLEDGE_KNENRICHMENT,
   KNOWLEDGE_KNGETEXPORT_KNASKEXPORT,
   KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE,
   KNOWLEDGE_KNUPDATE_KNDELETE,
   KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS,
   KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
@@ -58,6 +60,7 @@ import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichm
 import PopoverMenu from '../../../../components/PopoverMenu';
 import { resolveLink } from '../../../../utils/Entity';
 import { authorizedMembersToOptions, CAN_USE_ENTITY_TYPES, useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 export const stixDomainObjectMutation = graphql`
   mutation StixDomainObjectHeaderFieldMutation(
@@ -286,6 +289,7 @@ const StixDomainObjectHeader = (props) => {
     isOpenctiAlias,
     EditComponent,
     DeleteComponent,
+    RelateComponent,
     viewAs,
     onViewAs,
     disableSharing,
@@ -300,6 +304,11 @@ const StixDomainObjectHeader = (props) => {
   const currentAccessRight = useGetCurrentUserAccessRight(stixDomainObject.currentUserAccessRight);
   const enableManageAuthorizedMembers = currentAccessRight.canManage && enableAuthorizedMembers;
 
+  // Remove CRUD button in Draft context without the minimal right access "canEdit"
+  const draftContext = useDraftContext();
+  const currentDraftAccessRight = useGetCurrentUserAccessRight(draftContext?.currentUserAccessRight);
+  const canEdit = !draftContext || currentDraftAccessRight.canEdit;
+
   const openAliasesCreate = false;
   const [openAlias, setOpenAlias] = useState(false);
   const [openAliases, setOpenAliases] = useState(false);
@@ -308,9 +317,10 @@ const StixDomainObjectHeader = (props) => {
   const [openAccessRestriction, setOpenAccessRestriction] = useState(false);
   const [newAlias, setNewAlias] = useState('');
   const [aliasToDelete, setAliasToDelete] = useState(null);
-  const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]);
-  const isKnowledgeEnricher = useGranted([KNOWLEDGE_KNENRICHMENT]);
-  const isKnowledgeDeleter = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]);
+  const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]) && canEdit;
+  const isKnowledgeEnricher = useGranted([KNOWLEDGE_KNENRICHMENT]) && canEdit;
+  const isKnowledgeDeleter = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]) && canEdit;
+  const isBypassEnforcedRef = useGranted([BYPASS, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
 
   const [isEnrollPlaybookOpen, setEnrollPlaybookOpen] = useState(false);
   const [isSharingOpen, setIsSharingOpen] = useState(false);
@@ -519,7 +529,7 @@ const StixDomainObjectHeader = (props) => {
                     <Security
                       needs={[KNOWLEDGE_KNUPDATE]}
                       key={label}
-                      placeholder={
+                      placeholder={(
                         <Tooltip title={label}>
                           <Chip
                             sx={{
@@ -531,7 +541,7 @@ const StixDomainObjectHeader = (props) => {
                             label={truncate(label, 40)}
                           />
                         </Tooltip>
-                      }
+                      )}
                     >
                       <Tooltip title={label}>
                         <Chip
@@ -565,7 +575,7 @@ const StixDomainObjectHeader = (props) => {
                   <Formik
                     initialValues={{ new_alias: '' }}
                     onSubmit={onSubmitCreateAlias}
-                    validationSchema={enableReferences ? aliasValidation(t_i18n) : null}
+                    validationSchema={enableReferences && !isBypassEnforcedRef ? aliasValidation(t_i18n) : null}
                   >
                     {({ submitForm, isSubmitting, setFieldValue, values }) => (
                       <Form>
@@ -593,7 +603,6 @@ const StixDomainObjectHeader = (props) => {
                         />
                         {enableReferences && (
                           <CommitMessage
-                            handleClose={openCommitCreate}
                             open={openCommitCreate}
                             submitForm={submitForm}
                             disabled={isSubmitting}
@@ -752,6 +761,7 @@ const StixDomainObjectHeader = (props) => {
                 )}
               </PopoverMenu>
             ) : null}
+            {RelateComponent}
             {EditComponent}
             <DeleteComponent isOpen={openDelete} onClose={handleCloseDelete} />
           </div>
@@ -770,7 +780,7 @@ const StixDomainObjectHeader = (props) => {
             <Formik
               initialValues={{ new_alias: '' }}
               onSubmit={onSubmitCreateAlias}
-              validationSchema={enableReferences ? aliasValidation(t_i18n) : null}
+              validationSchema={enableReferences && !isBypassEnforcedRef ? aliasValidation(t_i18n) : null}
             >
               {({ submitForm, isSubmitting, setFieldValue, values }) => (
                 <Form style={{ float: 'right' }}>
@@ -823,7 +833,7 @@ const StixDomainObjectHeader = (props) => {
                     key={label}
                     disableGutters={true}
                     dense={true}
-                    secondaryAction={
+                    secondaryAction={(
                       <IconButton
                         edge="end"
                         aria-label="delete"
@@ -836,7 +846,7 @@ const StixDomainObjectHeader = (props) => {
                       >
                         <Delete />
                       </IconButton>
-                    }
+                    )}
                   >
                     <ListItemText primary={label} />
                   </ListItem>
@@ -851,7 +861,7 @@ const StixDomainObjectHeader = (props) => {
               <Formik
                 initialValues={{ new_alias: '' }}
                 onSubmit={onSubmitCreateAlias}
-                validationSchema={enableReferences ? aliasValidation(t_i18n) : null}
+                validationSchema={enableReferences && !isBypassEnforcedRef ? aliasValidation(t_i18n) : null}
               >
                 {({ submitForm, isSubmitting, setFieldValue, values }) => (
                   <Form>
@@ -905,7 +915,7 @@ const StixDomainObjectHeader = (props) => {
         <Formik
           initialValues={{}}
           onSubmit={onSubmitDeleteAlias}
-          validationSchema={aliasValidation(t_i18n)}
+          validationSchema={!isBypassEnforcedRef && aliasValidation(t_i18n)}
         >
           {({ submitForm, isSubmitting, setFieldValue, values }) => (
             <Form style={{ float: 'right' }}>

@@ -11,7 +11,7 @@ import {
   stixSightingRelationshipEditContext,
   stixSightingRelationshipEditField,
   stixSightingRelationshipRemoveFromDraft,
-  stixSightingRelationshipsNumber
+  stixSightingRelationshipsNumber,
 } from '../domain/stixSightingRelationship';
 import { fetchEditContext } from '../database/redis';
 import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
@@ -37,7 +37,7 @@ const stixSightingRelationshipResolvers = {
     stixSightingRelationshipsDistribution: (_, args, context) => distributionRelations(
       context,
       context.user,
-      { ...args, relationship_type: [STIX_SIGHTING_RELATIONSHIP] }
+      { ...args, relationship_type: [STIX_SIGHTING_RELATIONSHIP] },
     ),
     stixSightingRelationshipsNumber: (_, args, context) => stixSightingRelationshipsNumber(context, context.user, args),
   },
@@ -75,7 +75,7 @@ const stixSightingRelationshipResolvers = {
     // endregion
     // Utils
     relationship_type: () => 'stix-sighting-relationship',
-    toStix: (rel, _, context) => stixLoadByIdStringify(context, context.user, rel.id),
+    toStix: (rel, args, context) => stixLoadByIdStringify(context, context.user, rel.id, args),
     editContext: (rel) => fetchEditContext(rel.id),
     status: (entity, _, context) => (entity.x_opencti_workflow_id ? findStatusById(context, context.user, entity.x_opencti_workflow_id) : null),
     workflowEnabled: async (entity, _, context) => {

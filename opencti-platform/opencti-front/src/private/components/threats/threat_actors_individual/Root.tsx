@@ -27,6 +27,8 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import ThreatActorIndividualEdition from './ThreatActorIndividualEdition';
 import ThreatActorIndividualDeletion from './ThreatActorIndividualDeletion';
+import StixCoreRelationshipCreationFromEntityHeader from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
+import CreateRelationshipContextProvider from '../../common/stix_core_relationships/CreateRelationshipContextProvider';
 
 const subscription = graphql`
   subscription RootThreatActorIndividualSubscription($id: ID!) {
@@ -57,6 +59,7 @@ const ThreatActorIndividualQuery = graphql`
       name
       aliases
       x_opencti_graph_data
+      ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...StixCoreObjectKnowledgeBar_stixCoreObject @arguments(relatedRelationshipTypes: $relatedRelationshipTypes)
       ...ThreatActorIndividual_ThreatActorIndividual
       ...ThreatActorIndividualKnowledge_ThreatActorIndividual
@@ -81,7 +84,7 @@ const THREAT_ACTOR_INDIVIDUAL_RELATED_RELATIONSHIP_TYPES = ['related-to', 'part-
 
 type RootThreatActorIndividualProps = {
   threatActorIndividualId: string;
-  queryRef: PreloadedQuery<RootThreatActorIndividualQuery>
+  queryRef: PreloadedQuery<RootThreatActorIndividualQuery>;
 };
 
 const RootThreatActorIndividualComponent = ({
@@ -89,7 +92,7 @@ const RootThreatActorIndividualComponent = ({
   threatActorIndividualId,
 }: RootThreatActorIndividualProps) => {
   const subConfig = useMemo<
-  GraphQLSubscriptionConfig<RootThreatActorIndividualSubscription>
+    GraphQLSubscriptionConfig<RootThreatActorIndividualSubscription>
   >(
     () => ({
       subscription,
@@ -113,13 +116,13 @@ const RootThreatActorIndividualComponent = ({
   const paddingRight = getPaddingRight(location.pathname, threatActorIndividualId, '/dashboard/threats/threat_actors_individual');
   const link = `/dashboard/threats/threat_actors_individual/${threatActorIndividualId}/knowledge`;
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {threatActorIndividual ? (
         <>
           <Routes>
             <Route
               path="/knowledge/*"
-              element={
+              element={(
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -143,7 +146,7 @@ const RootThreatActorIndividualComponent = ({
                   ]}
                   data={threatActorIndividual}
                 />
-             }
+              )}
             />
           </Routes>
           <div style={{ paddingRight }}>
@@ -163,7 +166,14 @@ const RootThreatActorIndividualComponent = ({
                   />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              RelateComponent={(
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <StixCoreRelationshipCreationFromEntityHeader
+                    data={threatActorIndividual}
+                  />
+                </Security>
+              )}
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <ThreatActorIndividualDeletion id={threatActorIndividual.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
@@ -223,17 +233,17 @@ const RootThreatActorIndividualComponent = ({
                 />
               </Tabs>
               {isOverview && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                <AIInsights id={threatActorIndividual.id} />
-              </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                  <AIInsights id={threatActorIndividual.id} />
+                </div>
               )}
             </Box>
             <Routes>
               <Route
                 path="/"
                 element={
-                  <ThreatActorIndividual threatActorIndividualData={threatActorIndividual}/>
-                  }
+                  <ThreatActorIndividual threatActorIndividualData={threatActorIndividual} />
+                }
               />
               <Route
                 path="/knowledge"
@@ -243,22 +253,22 @@ const RootThreatActorIndividualComponent = ({
               />
               <Route
                 path="/knowledge/*"
-                element={
+                element={(
                   <div key={forceUpdate}>
                     <ThreatActorIndividualKnowledge
                       threatActorIndividualData={threatActorIndividual}
                       relatedRelationshipTypes={THREAT_ACTOR_INDIVIDUAL_RELATED_RELATIONSHIP_TYPES}
                     />
                   </div>
-                }
+                )}
               />
               <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={threatActorIndividual}
                   />
-                }
+                )}
               />
               <Route
                 path="/analyses"
@@ -268,14 +278,14 @@ const RootThreatActorIndividualComponent = ({
               />
               <Route
                 path="/files"
-                element={
+                element={(
                   <FileManager
                     id={threatActorIndividualId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={threatActorIndividual}
                   />
-                }
+                )}
               />
               <Route
                 path="/history"
@@ -289,7 +299,7 @@ const RootThreatActorIndividualComponent = ({
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 

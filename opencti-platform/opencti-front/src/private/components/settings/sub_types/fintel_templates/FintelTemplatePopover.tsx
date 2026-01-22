@@ -10,11 +10,11 @@ import useDeletion from '../../../../../utils/hooks/useDeletion';
 import DeleteDialog from '../../../../../components/DeleteDialog';
 
 interface FintelTemplatePopoverProps {
-  onUpdate: () => void,
-  onDeleteComplete?: () => void,
-  entitySettingId: string,
-  templateId: string,
-  inline?: boolean
+  onUpdate: () => void;
+  onDeleteComplete?: () => void;
+  entitySettingId: string;
+  templateId: string;
+  inline?: boolean;
 }
 
 const FintelTemplatePopover = ({

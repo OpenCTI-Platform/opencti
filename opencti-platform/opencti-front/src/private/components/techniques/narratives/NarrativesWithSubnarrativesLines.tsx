@@ -19,7 +19,7 @@ export interface NarrativeNode {
   isSubNarrative: boolean | null | undefined;
   name: string;
   // subNarratives?: { edges: { node: SubNarrativeNode }[] }
-  subNarratives?:SubNarrativeNode[];
+  subNarratives?: SubNarrativeNode[];
   subNarrativesText: string;
 }
 
@@ -31,8 +31,8 @@ const NarrativesWithSubnarrativesLines: FunctionComponent<NarrativesWithSubnarra
   queryRef,
 }) => {
   const { data } = usePreloadedPaginationFragment<
-  NarrativesLinesPaginationQuery,
-  NarrativesLines_data$key
+    NarrativesLinesPaginationQuery,
+    NarrativesLines_data$key
   >({
     linesQuery: narrativesLinesQuery,
     linesFragment: narrativesLinesFragment,
@@ -58,13 +58,13 @@ const NarrativesWithSubnarrativesLines: FunctionComponent<NarrativesWithSubnarra
     >
       {data
         ? ([...narratives, ...parentOnlyNarratives] as unknown as SubNarrativeNode[]).map((narrative) => {
-          return (
-            <NarrativeWithSubnarrativeLine
-              key={narrative.id}
-              node={narrative}
-            />
-          );
-        })
+            return (
+              <NarrativeWithSubnarrativeLine
+                key={narrative.id}
+                node={narrative}
+              />
+            );
+          })
         : Array.from(Array(20), (e, i) => <NarrativeWithSubnarrativeLineDummy key={i} />)}
     </List>
   );

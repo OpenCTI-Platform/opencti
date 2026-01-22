@@ -20,7 +20,7 @@ export const up = async (next) => {
   await elUpdateByQueryForMigration(
     message,
     READ_DATA_INDICES,
-    updateQuery
+    updateQuery,
   );
   logApp.info(`${message} > done`);
   next();

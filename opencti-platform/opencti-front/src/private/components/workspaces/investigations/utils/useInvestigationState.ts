@@ -2,19 +2,19 @@ import { addInSessionStorageStack, getSessionStorageItem, setSessionStorageItem 
 import { ObjectToParse } from '../../../../../components/graph/utils/useGraphParser';
 
 interface InvestigationOpExpand {
-  type: 'expand'
+  type: 'expand';
   dateTime: number;
   objectsIds: string[];
 }
 
 interface InvestigationOpAdd {
-  type: 'add'
+  type: 'add';
   dateTime: number;
   objectsIds: string[];
 }
 
 interface InvestigationOpRemove {
-  type: 'remove'
+  type: 'remove';
   dateTime: number;
   objects: ObjectToParse[];
 }

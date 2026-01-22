@@ -72,7 +72,7 @@ const fragmentData = graphql`
 `;
 
 interface RulesHeaderProps {
-  data: RulesHeader_data$key
+  data: RulesHeader_data$key;
 }
 
 const RulesHeader = ({ data }: RulesHeaderProps) => {
@@ -129,7 +129,7 @@ const RulesHeader = ({ data }: RulesHeaderProps) => {
             <Grid size={{ xs: 6 }}>
               <RulesHeaderGridCard
                 title={t_i18n('Total inferred entities')}
-                icon={<Database color="inherit" fontSize="large"/>}
+                icon={<Database color="inherit" fontSize="large" />}
               >
                 <div style={{ display: 'flex', alignItems: 'baseline' }}>
                   <span style={{ fontSize: 30 }}>{n(totalEntities)}</span>
@@ -143,7 +143,7 @@ const RulesHeader = ({ data }: RulesHeaderProps) => {
             <Grid size={{ xs: 6 }}>
               <RulesHeaderGridCard
                 title={t_i18n('Total inferred relations')}
-                icon={<GraphOutline color="inherit" fontSize="large"/>}
+                icon={<GraphOutline color="inherit" fontSize="large" />}
               >
                 <div style={{ display: 'flex', alignItems: 'baseline' }}>
                   <span style={{ fontSize: 30 }}>{n(totalRelations)}</span>
@@ -157,7 +157,7 @@ const RulesHeader = ({ data }: RulesHeaderProps) => {
             <Grid size={{ xs: 6 }}>
               <RulesHeaderGridCard
                 title={t_i18n('Rules engine status')}
-                icon={<AutoFix color="inherit" fontSize="large"/>}
+                icon={<AutoFix color="inherit" fontSize="large" />}
               >
                 <div style={{ marginTop: theme.spacing(3) }}>
                   <ItemBoolean
@@ -170,7 +170,7 @@ const RulesHeader = ({ data }: RulesHeaderProps) => {
             <Grid size={{ xs: 6 }}>
               <RulesHeaderGridCard
                 title={t_i18n('Last event processed')}
-                icon={<SettingsSuggestOutlined color="inherit" fontSize="large"/>}
+                icon={<SettingsSuggestOutlined color="inherit" fontSize="large" />}
               >
                 <div style={{ marginTop: theme.spacing(3) }}>
                   {nsdt(parse(lastEventTimestamp))}

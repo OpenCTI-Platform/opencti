@@ -94,7 +94,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
   const [openToneOptions, setOpenToneOptions] = useState(false);
   const [tone, setTone] = useState<'tactical' | 'operational' | 'strategic'>('tactical');
   const [isAcceptable, setIsAcceptable] = useState(true);
-  const [menuOpen, setMenuOpen] = useState<{ open: boolean; anchorEl: HTMLButtonElement | null; }>({ open: false, anchorEl: null });
+  const [menuOpen, setMenuOpen] = useState<{ open: boolean; anchorEl: HTMLButtonElement | null }>({ open: false, anchorEl: null });
   const [busId, setBusId] = useState<string | null>(null);
   const [displayAskAI, setDisplayAskAI] = useState(false);
   const handleOpenMenu = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -249,7 +249,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
             disabled={disabled || currentValue.length < 10}
             style={{ color: theme.palette.ai.main }}
           >
-            <FiligranIcon icon={LogoXtmOneIcon} size='small'color="ai" />
+            <FiligranIcon icon={LogoXtmOneIcon} size="small"color="ai" />
           </IconButton>
         </EETooltip>
         <Menu
@@ -278,22 +278,22 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
           </MenuItem>
         </Menu>
         {busId && (
-        <ResponseDialog
-          id={busId}
-          isDisabled={disableResponse}
-          isOpen={displayAskAI}
-          handleClose={handleCloseAskAI}
-          content={content}
-          setContent={setContent}
-          handleAccept={(value) => {
-            setFieldValue(value);
-            handleCloseAskAI();
-          }}
-          handleFollowUp={handleCloseAskAI}
-          followUpActions={[{ key: 'retry', label: t_i18n('Retry') }]}
-          format={format}
-          isAcceptable={isAcceptable}
-        />
+          <ResponseDialog
+            id={busId}
+            isDisabled={disableResponse}
+            isOpen={displayAskAI}
+            handleClose={handleCloseAskAI}
+            content={content}
+            setContent={setContent}
+            handleAccept={(value) => {
+              setFieldValue(value);
+              handleCloseAskAI();
+            }}
+            handleFollowUp={handleCloseAskAI}
+            followUpActions={[{ key: 'retry', label: t_i18n('Retry') }]}
+            format={format}
+            isAcceptable={isAcceptable}
+          />
         )}
         <Dialog
           slotProps={{ paper: { elevation: 1 } }}

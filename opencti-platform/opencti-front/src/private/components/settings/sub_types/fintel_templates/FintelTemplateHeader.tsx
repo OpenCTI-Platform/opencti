@@ -25,8 +25,8 @@ const headerFragment = graphql`
 `;
 
 interface FintelTemplateHeaderProps {
-  entitySettingId: string
-  data: FintelTemplateHeader_template$key
+  entitySettingId: string;
+  data: FintelTemplateHeader_template$key;
 }
 
 const FintelTemplateHeader = ({ entitySettingId, data }: FintelTemplateHeaderProps) => {

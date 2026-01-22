@@ -1,5 +1,6 @@
 import type { CsvMapperParsed, CsvMapperRepresentation } from '../../../src/modules/internal/csvMapper/csvMapper-types';
 import type { StixBundle, StixDomainObject } from '../../../src/types/stix-2-1-common';
+import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
 
 export const indicatorsWithKillChainPhasesExpectedBundle: StixBundle = {
   id: 'bundle--a58ed5eb-8881-475f-933a-098221a2052f',
@@ -8,10 +9,11 @@ export const indicatorsWithKillChainPhasesExpectedBundle: StixBundle = {
   objects: [
     {
       extensions: {
-        'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba': {
+        [STIX_EXT_OCTI]: {
           converter_csv: '[ipv4-addr:value = \'198.168.8.3\'],IPv4-Addr,kill_chain_name_1,kill_chain_phase_name_1,1',
           extension_type: 'new-sdo',
           type: 'Kill-Chain-Phase',
+          is_inferred: false,
         },
       },
       id: 'kill-chain-phase--e0cf81cd-fad2-5e07-bed5-06d4556e8ac1',
@@ -26,9 +28,10 @@ export const indicatorsWithKillChainPhasesExpectedBundle: StixBundle = {
         'extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b': {
           extension_type: 'property-extension',
         },
-        'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba': {
+        [STIX_EXT_OCTI]: {
           converter_csv: '[ipv4-addr:value = \'198.168.8.3\'],IPv4-Addr,kill_chain_name_1,kill_chain_phase_name_1,1',
           extension_type: 'property-extension',
+          is_inferred: false,
           main_observable_type: 'IPv4-Addr',
           observable_values: [
             {
@@ -57,9 +60,10 @@ export const indicatorsWithKillChainPhasesExpectedBundle: StixBundle = {
         'extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b': {
           extension_type: 'property-extension',
         },
-        'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba': {
+        [STIX_EXT_OCTI]: {
           converter_csv: '[ipv4-addr:value = \'198.168.8.4\'],IPv4-Addr,kill_chain_name_1,kill_chain_phase_name_1,1',
           extension_type: 'property-extension',
+          is_inferred: false,
           main_observable_type: 'IPv4-Addr',
           observable_values: [
             {

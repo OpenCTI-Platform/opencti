@@ -16,20 +16,20 @@ import { isStixRelationshipExceptRef } from '../../../schema/stixRelationship';
 import { isStixObject } from '../../../schema/stixCoreObject';
 
 export interface CsvMapperSchemaAttribute {
-  name: string
-  type: string
-  mandatory: boolean
-  mandatoryType: MandatoryType
-  editDefault: boolean
-  multiple: boolean
-  defaultValues?: { id: string, name:string }[]
-  label: string
-  mappings?: CsvMapperSchemaAttribute[]
+  name: string;
+  type: string;
+  mandatory: boolean;
+  mandatoryType: MandatoryType;
+  editDefault: boolean;
+  multiple: boolean;
+  defaultValues?: { id: string; name: string }[];
+  label: string;
+  mappings?: CsvMapperSchemaAttribute[];
 }
 
 export interface CsvMapperSchemaAttributes {
-  name: string,
-  attributes: CsvMapperSchemaAttribute[]
+  name: string;
+  attributes: CsvMapperSchemaAttribute[];
 }
 
 // TS typeguard on CsvMapperRepresentation
@@ -109,10 +109,10 @@ export const parseCsvMapperWithDefaultValues = async (context: AuthContext, user
             id: val,
             name: refAttributesIndexes.includes(`${i}-${j}`) && representative
               ? representative
-              : val
+              : val,
           };
-        })
-      }))
+        }),
+      })),
     })),
   };
 };
@@ -139,14 +139,14 @@ export const validateCsvMapper = async (context: AuthContext, user: AuthUser, ma
     ].map((def) => ({
       name: def.name,
       mandatory: def.mandatoryType === 'external',
-      multiple: def.multiple
+      multiple: def.multiple,
     }));
     const refsDefs = [
       ...schemaRelationsRefDefinition.getRelationsRef(representation.target.entity_type),
     ].map((def) => ({
       name: def.name,
       mandatory: def.mandatoryType === 'external',
-      multiple: def.multiple
+      multiple: def.multiple,
     }));
     [...attributesDefs, ...refsDefs].filter((schemaAttribute) => schemaAttribute.mandatory)
       .forEach((schemaAttribute) => {
@@ -212,9 +212,9 @@ export const sanitized = (mapper: CsvMapperParsed): CsvMapperParsed => {
             || isNotEmptyField(attr.column?.column_name)
             || isNotEmptyField(attr.default_values)
           );
-        })
+        }),
       };
-    })
+    }),
   };
 };
 

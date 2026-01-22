@@ -1,8 +1,8 @@
 import * as R from 'ramda';
-import { elCount, elPaginate } from '../database/engine';
+import { elCount, elPaginate, type PaginateOpts } from '../database/engine';
 import conf, { booleanConf } from '../config/conf';
 import { distributionHistory, timeSeriesHistory } from '../database/middleware';
-import { INDEX_HISTORY, READ_INDEX_HISTORY, } from '../database/utils';
+import { INDEX_HISTORY, READ_INDEX_HISTORY } from '../database/utils';
 import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY } from '../schema/internalObject';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { QueryAuditsArgs, QueryLogsArgs } from '../generated/graphql';
@@ -12,7 +12,7 @@ import { ForbiddenAccess } from '../config/errors';
 
 export const findHistory = (context: AuthContext, user: AuthUser, args: QueryLogsArgs) => {
   const finalArgs = { ...args, orderBy: args.orderBy ?? 'timestamp', orderMode: args.orderMode ?? 'desc', types: [ENTITY_TYPE_HISTORY] };
-  return elPaginate(context, user, READ_INDEX_HISTORY, finalArgs);
+  return elPaginate(context, user, READ_INDEX_HISTORY, finalArgs as PaginateOpts);
 };
 
 export const findAudits = (context: AuthContext, user: AuthUser, args: QueryAuditsArgs) => {
@@ -28,7 +28,7 @@ export const findAudits = (context: AuthContext, user: AuthUser, args: QueryAudi
     throw ForbiddenAccess();
   }
   const finalArgs = { ...args, types };
-  return elPaginate(context, user, READ_INDEX_HISTORY, finalArgs);
+  return elPaginate(context, user, READ_INDEX_HISTORY, finalArgs as PaginateOpts);
 };
 
 export const auditsNumber = (context: AuthContext, user: AuthUser, args: any) => ({

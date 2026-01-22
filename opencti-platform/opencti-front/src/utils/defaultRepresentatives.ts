@@ -121,21 +121,21 @@ export const getMainRepresentative = (n: any, fallback = 'Unknown') => {
         || n.hashes['SHA-256']
         || n.hashes['SHA-1']
         || n.hashes.MD5))
-    || (n.source_ref_name
-      && n.target_ref_name
-      && `${truncate(n.source_ref_name, 20)} ➡️ ${truncate(
-        n.target_ref_name,
-        20,
-      )}`)
-    || getMainRepresentative((R.head(n.objects?.edges ?? []) as any)?.node)
-    || (n.from
-      && n.to
-      && `${truncate(getMainRepresentative(n.from), 20)} ➡️ ${truncate(
-        getMainRepresentative(n.to),
-        20,
-      )}`)
-    || n.main_entity_name
-    || fallback;
+      || (n.source_ref_name
+        && n.target_ref_name
+        && `${truncate(n.source_ref_name, 20)} ➡️ ${truncate(
+          n.target_ref_name,
+          20,
+        )}`)
+        || getMainRepresentative((R.head(n.objects?.edges ?? []) as any)?.node)
+        || (n.from
+          && n.to
+          && `${truncate(getMainRepresentative(n.from), 20)} ➡️ ${truncate(
+            getMainRepresentative(n.to),
+            20,
+          )}`)
+          || n.main_entity_name
+          || fallback;
   return n.x_mitre_id ? `[${n.x_mitre_id}] ${mainValue}` : mainValue;
 };
 

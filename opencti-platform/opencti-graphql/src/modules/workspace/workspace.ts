@@ -12,7 +12,7 @@ export const WORKSPACE_DEFINITION: ModuleDefinition<StoreEntityWorkspace, StixWo
     id: 'workspaces',
     name: ENTITY_TYPE_WORKSPACE,
     category: ABSTRACT_INTERNAL_OBJECT,
-    aliased: false
+    aliased: false,
   },
   identifier: {
     definition: {
@@ -34,13 +34,13 @@ export const WORKSPACE_DEFINITION: ModuleDefinition<StoreEntityWorkspace, StixWo
     { name: 'graph_data', label: 'Workspace graph data', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'investigated_entities_ids', label: 'Investigated entities', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
     { ...draftChange, isFilterable: false },
-    authorizedMembers
+    authorizedMembers,
   ],
   relations: [],
   representative: (stix: StixWorkspace) => {
     return stix.name;
   },
-  converter_2_1: convertWorkspaceToStix
+  converter_2_1: convertWorkspaceToStix,
 };
 
 registerDefinition(WORKSPACE_DEFINITION);

@@ -9,11 +9,11 @@ const SUPPORT_PACKAGE_DEFINITION: ModuleDefinition<StoreEntitySupportPackage, St
     id: 'support-package',
     name: ENTITY_TYPE_SUPPORT_PACKAGE,
     category: ABSTRACT_INTERNAL_OBJECT,
-    aliased: false
+    aliased: false,
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_SUPPORT_PACKAGE]: () => uuidv4()
+      [ENTITY_TYPE_SUPPORT_PACKAGE]: () => uuidv4(),
     },
   },
   attributes: [
@@ -63,14 +63,14 @@ const SUPPORT_PACKAGE_DEFINITION: ModuleDefinition<StoreEntitySupportPackage, St
       editDefault: false,
       multiple: false,
       upsert: false,
-      isFilterable: true
-    }
+      isFilterable: true,
+    },
   ],
   relations: [],
   representative: (instance: StixSupportPackage) => {
     return instance.name;
   },
-  converter_2_1: convertSupportPackageToStix
+  converter_2_1: convertSupportPackageToStix,
 };
 
 registerDefinition(SUPPORT_PACKAGE_DEFINITION);

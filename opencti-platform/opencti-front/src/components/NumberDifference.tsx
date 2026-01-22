@@ -20,8 +20,8 @@ const inlineStyles = {
 };
 
 interface ItemNumberDifferenceProps {
-  value: number
-  description: string
+  value: number;
+  description: string;
 }
 
 const NumberDifference = ({ value, description }: ItemNumberDifferenceProps) => {

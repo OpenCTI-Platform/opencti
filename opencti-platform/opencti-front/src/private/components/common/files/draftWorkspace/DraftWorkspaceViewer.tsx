@@ -10,7 +10,7 @@ import { useFormatter } from '../../../../../components/i18n';
 import Paper from '../../../../../components/Paper';
 
 interface DraftWorkspaceViewerProps {
-  entityId: string
+  entityId: string;
 }
 
 const DraftWorkspaceViewer = ({ entityId }: DraftWorkspaceViewerProps) => {
@@ -23,7 +23,7 @@ const DraftWorkspaceViewer = ({ entityId }: DraftWorkspaceViewerProps) => {
       <Paper
         title={t_i18n('Drafts')}
         actions={draftContext ? undefined : (
-          <Security needs={[KNOWLEDGE_KNASKIMPORT]} placeholder={<div style={{ height: 28 }}/>}>
+          <Security needs={[KNOWLEDGE_KNASKIMPORT]} placeholder={<div style={{ height: 28 }} />}>
             <IconButton
               color="primary"
               aria-label="Add"

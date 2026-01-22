@@ -1,0 +1,19 @@
+FROM python:3-alpine
+
+COPY opencti-worker/src /opt/opencti-worker
+COPY client-python /opt/client-python
+
+RUN set -eux; \
+    pip3 install --upgrade setuptools; \
+    cd /opt/client-python; \
+    pip3 install -r requirements.txt; \
+    pip install .[dev,doc]
+
+WORKDIR /opt/opencti-worker
+
+RUN apk --no-cache add git build-base libmagic libffi-dev \
+    && pip3 install --no-cache-dir --requirement requirements.txt \
+    && apk del git build-base
+
+ENTRYPOINT ["python3"]
+CMD ["worker.py"]

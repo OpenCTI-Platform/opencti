@@ -4,8 +4,8 @@ import { workspaceExportHandlerQuery$data } from '@components/workspaces/__gener
 import { fetchQuery } from '../../../relay/environment';
 
 interface workspaceToExport {
-  id: string
-  name: string
+  id: string;
+  name: string;
 }
 
 const WorkspaceExportHandlerQuery = graphql`

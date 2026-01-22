@@ -15,6 +15,7 @@ import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';
 import { DataColumns } from '../../../../components/list_lines';
+import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -44,12 +45,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 interface SystemLineProps {
   node: SystemLine_node$key;
   dataColumns: DataColumns;
-  onLabelClick: (
-    k: string,
-    id: string,
-    value: Record<string, unknown>,
-    event: React.KeyboardEvent
-  ) => void;
+  onLabelClick: HandleAddFilter;
 }
 
 const systemLineFragment = graphql`
@@ -96,14 +92,14 @@ export const SystemLine: FunctionComponent<SystemLineProps> = ({
         <ItemIcon type="System" />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.name.width }}
             >
               {data.name}
-              {data.draftVersion && (<DraftChip/>)}
+              {data.draftVersion && (<DraftChip />)}
             </div>
             <div
               className={classes.bodyItem}
@@ -128,7 +124,7 @@ export const SystemLine: FunctionComponent<SystemLineProps> = ({
               {fd(data.modified)}
             </div>
           </div>
-          }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />
@@ -154,7 +150,7 @@ export const SystemLineDummy = ({
         />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -201,7 +197,7 @@ export const SystemLineDummy = ({
               />
             </div>
           </div>
-          }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />

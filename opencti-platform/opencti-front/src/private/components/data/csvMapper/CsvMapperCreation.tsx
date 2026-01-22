@@ -33,11 +33,11 @@ const csvMapperCreation = graphql`
 `;
 
 interface CsvMapperCreationFormProps {
-  paginationOptions: csvMappers_MappersQuery$variables
-  isDuplicated?: boolean
-  onClose?: () => void
-  mappingCsv?: CsvMapperEditionContainerFragment_csvMapper$key | null,
-  addInputFromImport?: CsvMappersImportQuery$data['csvMapperAddInputFromImport'],
+  paginationOptions: csvMappers_MappersQuery$variables;
+  isDuplicated?: boolean;
+  onClose?: () => void;
+  mappingCsv?: CsvMapperEditionContainerFragment_csvMapper$key | null;
+  addInputFromImport?: CsvMappersImportQuery$data['csvMapperAddInputFromImport'];
 }
 
 const CsvMapperCreation: FunctionComponent<CsvMapperCreationFormProps> = ({
@@ -125,7 +125,7 @@ const CsvMapperCreation: FunctionComponent<CsvMapperCreationFormProps> = ({
     );
   }
 
-  return <CsvMapperForm csvMapper={initialValues} onSubmit={onSubmit} isDuplicated={isDuplicated}/>;
+  return <CsvMapperForm csvMapper={initialValues} onSubmit={onSubmit} isDuplicated={isDuplicated} />;
 };
 
 export default CsvMapperCreation;

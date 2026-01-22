@@ -26,7 +26,7 @@ interface AccordionAttackPatternProps {
   attackPatternIdsToOverlap?: string[];
   isSecurityPlatform: boolean;
   isCoverage?: boolean;
-  coverageMap?: Map<string, ReadonlyArray<{ readonly coverage_name: string; readonly coverage_score: number; }>>;
+  coverageMap?: Map<string, ReadonlyArray<{ readonly coverage_name: string; readonly coverage_score: number }>>;
   entityId?: string;
 }
 
@@ -129,7 +129,7 @@ const AccordionAttackPattern = ({
     >
       <MuiAccordionSummary
         onClick={(e) => handleOpen(attackPattern, e)}
-        expandIcon={
+        expandIcon={(
           <IconButton onClick={(event) => {
             event.stopPropagation();
             setExpanded(!expanded);
@@ -140,7 +140,7 @@ const AccordionAttackPattern = ({
             }}
             />
           </IconButton>
-        }
+        )}
         sx={{
           minHeight: 0,
           paddingLeft: 0,
@@ -170,9 +170,9 @@ const AccordionAttackPattern = ({
         {!isCoverage && attackPatternIdsToOverlap?.length !== undefined
           && (attackPattern.isCovered || isSubAttackPatternCovered(attackPattern as FilteredAttackPattern))
           && (
-          <AttackPatternsMatrixShouldCoverIcon
-            isOverlapping={attackPattern.isOverlapping || false}
-          />
+            <AttackPatternsMatrixShouldCoverIcon
+              isOverlapping={attackPattern.isOverlapping || false}
+            />
           )}
       </MuiAccordionSummary>
       <AccordionDetails

@@ -1,6 +1,7 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
@@ -122,7 +123,7 @@ const hasDemographicsOrBiographics = (
     return true;
   }
   for (const { node } of threatActorIndividual?.stixCoreRelationships?.edges
-  ?? []) {
+    ?? []) {
     const { relationship_type } = node ?? {};
     switch (relationship_type) {
       case 'resides-in':
@@ -140,6 +141,7 @@ interface ThreatActorIndividualProps {
 }
 
 const ThreatActorIndividual: React.FC<ThreatActorIndividualProps> = ({ threatActorIndividualData }) => {
+  useInitCreateRelationshipContext();
   const threatActorIndividual = useFragment<ThreatActorIndividual_ThreatActorIndividual$key>(
     threatActorIndividualFragment,
     threatActorIndividualData,

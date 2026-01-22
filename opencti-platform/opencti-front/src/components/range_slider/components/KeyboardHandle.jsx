@@ -8,11 +8,11 @@ const KeyboardHandle = ({
   getHandleProps,
 }) => (
   <button
-    role='slider'
+    role="slider"
     aria-valuemin={min}
     aria-valuemax={max}
     aria-valuenow={value}
-    className='react_time_range__keyboard_handle'
+    className="react_time_range__keyboard_handle"
     style={{
       left: `${percent}%`,
       backgroundColor: disabled ? '#666' : '#ffc400',

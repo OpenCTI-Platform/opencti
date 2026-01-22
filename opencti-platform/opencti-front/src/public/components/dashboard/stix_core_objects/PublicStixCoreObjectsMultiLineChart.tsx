@@ -33,9 +33,9 @@ const publicStixCoreObjectsMultiLineChartQuery = graphql`
 `;
 
 interface PublicStixCoreObjectsMultiLineChartComponentProps {
-  parameters: Widget['parameters']
-  dataSelection: Widget['dataSelection']
-  queryRef: PreloadedQuery<PublicStixCoreObjectsMultiLineChartQuery>
+  parameters: Widget['parameters'];
+  dataSelection: Widget['dataSelection'];
+  queryRef: PreloadedQuery<PublicStixCoreObjectsMultiLineChartQuery>;
 }
 
 const PublicStixCoreObjectsMultiLineChartComponent = ({

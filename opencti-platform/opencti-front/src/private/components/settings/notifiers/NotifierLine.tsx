@@ -49,7 +49,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 interface NotifierLineProps {
   node: NotifierLine_node$key | NotifierLine_node$data;
   dataColumns: DataColumns;
-  paginationOptions: NotifiersLinesPaginationQuery$variables
+  paginationOptions: NotifiersLinesPaginationQuery$variables;
 }
 
 const NotifierLineFragment = graphql`
@@ -77,10 +77,10 @@ export const NotifierLine: FunctionComponent<NotifierLineProps> = ({
     <>
       <ListItem classes={{ root: classes.item }} divider>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ItemIcon type='Notifier' />
+          <ItemIcon type="Notifier" />
         </ListItemIcon>
         <ListItemText
-          primary={
+          primary={(
             <div>
               <div className={classes.bodyItem} style={{ width: dataColumns.connector.width }}>
                 <Chip
@@ -97,7 +97,7 @@ export const NotifierLine: FunctionComponent<NotifierLineProps> = ({
                 {data.description}
               </div>
             </div>
-          }
+          )}
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
           <NotifierPopover data={data} paginationOptions={paginationOptions} />
@@ -107,7 +107,7 @@ export const NotifierLine: FunctionComponent<NotifierLineProps> = ({
   );
 };
 
-export const NotifierLineDummy = ({ dataColumns }: { dataColumns: DataColumns; }) => {
+export const NotifierLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
   const classes = useStyles();
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
@@ -115,7 +115,7 @@ export const NotifierLineDummy = ({ dataColumns }: { dataColumns: DataColumns; }
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div className={classes.bodyItem} style={{ width: dataColumns.connector.width }}>
               <Skeleton
@@ -142,7 +142,7 @@ export const NotifierLineDummy = ({ dataColumns }: { dataColumns: DataColumns; }
               />
             </div>
           </div>
-        }
+        )}
       />
     </ListItem>
   );

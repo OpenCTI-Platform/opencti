@@ -8,9 +8,9 @@ import {
   stixRelationshipsDistribution,
   stixRelationshipsMultiTimeSeries,
   stixRelationshipsNumber,
-  stixRelationshipsTimeSeries
+  stixRelationshipsTimeSeries,
 } from '../domain/stixRelationship';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP, INPUT_CREATED_BY, } from '../schema/general';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, INPUT_CREATED_BY } from '../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { STIX_REF_RELATIONSHIP_TYPES } from '../schema/stixRefRelationship';
 import { stixLoadByIdStringify } from '../database/middleware';
@@ -47,7 +47,7 @@ const stixRelationshipResolvers = {
       return filterMembersWithUsersOrgs(context, context.user, creators);
     },
     createdBy: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_CREATED_BY),
-    toStix: (rel, _, context) => stixLoadByIdStringify(context, context.user, rel.id),
+    toStix: (rel, args, context) => stixLoadByIdStringify(context, context.user, rel.id, args),
     objectMarking: (rel, _, context) => context.batch.markingsBatchLoader.load(rel, context, context.user),
     // eslint-disable-next-line
     __resolveType(obj) {
@@ -63,7 +63,7 @@ const stixRelationshipResolvers = {
       /* v8 ignore next */
       return 'Unknown';
     },
-    spec_version: getSpecVersionOrDefault
+    spec_version: getSpecVersionOrDefault,
   },
   Mutation: {
     stixRelationshipEdit: (_, { id }, context) => ({

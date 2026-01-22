@@ -3,9 +3,9 @@ import { Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
 interface CardLabelProps {
-  children: ReactNode,
-  action?: ReactNode,
-  style?: CSSProperties,
+  children: ReactNode;
+  action?: ReactNode;
+  style?: CSSProperties;
 }
 
 const CardLabel: FunctionComponent<CardLabelProps> = ({

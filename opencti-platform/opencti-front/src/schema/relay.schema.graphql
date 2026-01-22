@@ -2,6 +2,10 @@ directive @auth(for: [Capabilities] = [], and: Boolean = false) on OBJECT | FIEL
 
 directive @public on OBJECT | FIELD_DEFINITION
 
+directive @allowUnprotectedOTP on OBJECT | FIELD_DEFINITION
+
+directive @allowUnlicensedLTS on OBJECT | FIELD_DEFINITION
+
 directive @constraint(minLength: Int, maxLength: Int, startsWith: String, endsWith: String, notContains: String, pattern: String, format: String, min: Int, max: Int, exclusiveMin: Int, exclusiveMax: Int, multipleOf: Int) on INPUT_FIELD_DEFINITION
 
 """Controls the rate of traffic."""
@@ -523,6 +527,14 @@ type LogEdge {
   node: Log!
 }
 
+type Change {
+  field: String!
+  previous: [String!]
+  new: [String!]
+  added: [String!]
+  removed: [String!]
+}
+
 type ContextData {
   entity_id: String
   entity_name: String
@@ -536,6 +548,7 @@ type ContextData {
   pir_ids: [String!]
   pir_score: Int
   pir_match_from: Boolean
+  changes: [Change]
 }
 
 type Log {
@@ -857,6 +870,7 @@ type Synchronizer {
   ssl_verify: Boolean
   synchronized: Boolean
   queue_messages: Int!
+  toConfigurationExport: String!
 }
 
 type SynchronizerEdge {
@@ -879,13 +893,20 @@ input SynchronizerAddInput {
 
   "*Constraints:*\n* Minimal length: `2`\n"
   stream_id: String!
-  user_id: String
+  user_id: String!
+  automatic_user: Boolean
+  confidence_level: Int
   recover: DateTime
   current_state_date: DateTime
   listen_deletion: Boolean!
   no_dependencies: Boolean!
   ssl_verify: Boolean
   synchronized: Boolean
+}
+
+input SynchronizerAddAutoUserInput {
+  user_name: String!
+  confidence_level: Int!
 }
 
 input SynchronizerFetchInput {
@@ -1348,7 +1369,7 @@ interface BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
 }
 
@@ -1415,6 +1436,8 @@ type PlatformEE {
   license_platform_match: Boolean!
   license_creator: String!
   license_global: Boolean!
+  license_extra_expiration: Boolean!
+  license_extra_expiration_days: Int
 }
 
 enum PlatformCriticalAlertType {
@@ -1460,72 +1483,9 @@ type PublicProvider {
   provider: String!
 }
 
-interface ThemeSettings {
-  platform_title: String
-  platform_favicon: String
-  platform_theme: String
-  platform_theme_dark_background: String
-  platform_theme_dark_paper: String
-  platform_theme_dark_nav: String
-  platform_theme_dark_primary: String
-  platform_theme_dark_secondary: String
-  platform_theme_dark_accent: String
-  platform_theme_dark_logo: String
-  platform_theme_dark_logo_collapsed: String
-  platform_theme_dark_logo_login: String
-  platform_theme_light_background: String
-  platform_theme_light_paper: String
-  platform_theme_light_nav: String
-  platform_theme_light_primary: String
-  platform_theme_light_secondary: String
-  platform_theme_light_accent: String
-  platform_theme_light_logo: String
-  platform_theme_light_logo_collapsed: String
-  platform_theme_light_logo_login: String
-}
-
 interface IntlSettings {
   platform_language: String
   platform_translations: String
-}
-
-type PublicSettings implements ThemeSettings & IntlSettings {
-  id: ID!
-  platform_title: String
-  platform_favicon: String
-  platform_login_message: String
-  platform_consent_message: String
-  platform_consent_confirm_text: String
-  platform_banner_text: String
-  platform_banner_level: String
-  platform_theme: String
-  platform_theme_dark_background: String
-  platform_theme_dark_paper: String
-  platform_theme_dark_nav: String
-  platform_theme_dark_primary: String
-  platform_theme_dark_secondary: String
-  platform_theme_dark_accent: String
-  platform_theme_dark_logo: String
-  platform_theme_dark_logo_collapsed: String
-  platform_theme_dark_logo_login: String
-  platform_theme_light_background: String
-  platform_theme_light_paper: String
-  platform_theme_light_nav: String
-  platform_theme_light_primary: String
-  platform_theme_light_secondary: String
-  platform_theme_light_accent: String
-  platform_theme_light_logo: String
-  platform_theme_light_logo_collapsed: String
-  platform_theme_light_logo_login: String
-  platform_map_tile_server_dark: String
-  platform_map_tile_server_light: String
-  platform_whitemark: Boolean
-  platform_language: String
-  platform_translations: String
-  platform_providers: [PublicProvider!]!
-  platform_enterprise_edition_license_validated: Boolean!
-  playground_enabled: Boolean!
-  metrics_definition: [MetricDefinition!]
 }
 
 type MetricAttributes {
@@ -1539,6 +1499,38 @@ type MetricDefinition {
   metrics: [MetricAttributes!]
 }
 
+interface ThemeSettings {
+  platform_title: String
+  platform_favicon: String
+  platform_theme: Theme
+}
+
+type PublicSettings implements IntlSettings & ThemeSettings {
+  id: ID!
+  platform_title: String
+  platform_favicon: String
+  platform_login_message: String
+  platform_consent_message: String
+  platform_consent_confirm_text: String
+  platform_banner_text: String
+  platform_banner_level: String
+  platform_theme: Theme
+  platform_map_tile_server_dark: String
+  platform_map_tile_server_light: String
+  platform_whitemark: Boolean
+  platform_language: String
+  platform_translations: String
+  platform_providers: [PublicProvider!]!
+  platform_enterprise_edition_license_validated: Boolean!
+  playground_enabled: Boolean!
+  metrics_definition: [MetricDefinition!]
+}
+
+enum PlatformType {
+  LTS
+  STANDARD
+}
+
 type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSettings {
   id: ID!
   standard_id: String!
@@ -1550,31 +1542,15 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_title: String
   platform_favicon: String
   platform_email: String
+  platform_type: PlatformType!
+  platform_email_configurable: Boolean!
   platform_cluster: Cluster!
   platform_modules: [Module!]
   platform_url: String
   platform_providers: [Provider!]!
   platform_user_statuses: [UserStatus!]!
   platform_language: String
-  platform_theme: String
-  platform_theme_dark_background: String
-  platform_theme_dark_paper: String
-  platform_theme_dark_nav: String
-  platform_theme_dark_primary: String
-  platform_theme_dark_secondary: String
-  platform_theme_dark_accent: String
-  platform_theme_dark_logo: String
-  platform_theme_dark_logo_collapsed: String
-  platform_theme_dark_logo_login: String
-  platform_theme_light_background: String
-  platform_theme_light_paper: String
-  platform_theme_light_nav: String
-  platform_theme_light_primary: String
-  platform_theme_light_secondary: String
-  platform_theme_light_accent: String
-  platform_theme_light_logo: String
-  platform_theme_light_logo_collapsed: String
-  platform_theme_light_logo_login: String
+  platform_theme: Theme
   platform_map_tile_server_dark: String
   platform_map_tile_server_light: String
   platform_openaev_url: String
@@ -1608,11 +1584,13 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   password_policy_min_lowercase: Int
   password_policy_min_uppercase: Int
   platform_messages: [SettingsMessage!]
+  platform_session_max_concurrent: Int
   messages_administration: [SettingsMessage!]
   analytics_google_analytics_v4: String
   playground_enabled: Boolean!
   request_access_enabled: Boolean!
   metrics_definition: [MetricDefinition!]
+  view_all_users: Boolean
   editContext: [EditUserContext!]
   xtm_hub_token: String
   xtm_hub_registration_user_id: String
@@ -1620,6 +1598,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   xtm_hub_last_connectivity_check: DateTime
   xtm_hub_registration_date: DateTime
   xtm_hub_registration_status: XTMHubRegistrationStatus
+  xtm_hub_backend_is_reachable: Boolean
   platform_ai_enabled: Boolean!
   platform_ai_type: String
   platform_ai_model: String
@@ -1665,7 +1644,7 @@ type Group implements InternalObject & BasicObject {
   standard_id: String!
   entity_type: String!
   auto_integration_assignation: [String]!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   name: String!
   default_assignation: Boolean
@@ -1859,7 +1838,7 @@ type User implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   user_email: String!
   api_token: String!
@@ -1878,6 +1857,7 @@ type User implements BasicObject & InternalObject {
   external: Boolean
   roles(orderBy: RolesOrdering, orderMode: OrderingMode): [Role!]!
   capabilities: [Capability]!
+  capabilitiesInDraft: [Capability]!
   default_hidden_types: [String!]!
   user_confidence_level: ConfidenceLevel
   effective_confidence_level: EffectiveConfidenceLevel
@@ -1923,6 +1903,7 @@ type MeUser implements BasicObject & InternalObject {
   personal_notifiers: [Notifier!]
   objectOrganization: MeOrganizationConnection
   capabilities: [Capability!]!
+  capabilitiesInDraft: [Capability!]!
   default_hidden_types: [String]!
   user_confidence_level: ConfidenceLevel
   effective_confidence_level: EffectiveConfidenceLevel
@@ -2009,6 +1990,13 @@ input UserOTPLoginInput {
   code: String!
 }
 
+input LicenseActivationInput {
+  settingId: ID!
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  license: String!
+}
+
 input UserOTPActivationInput {
   secret: String!
   code: String!
@@ -2035,7 +2023,7 @@ type Role implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   name: String!
   description: String
@@ -2043,6 +2031,7 @@ type Role implements BasicObject & InternalObject {
   updated_at: DateTime!
   refreshed_at: DateTime
   capabilities: [Capability]
+  capabilitiesInDraft: [Capability]
   editContext: [EditUserContext!]
   can_manage_sensitive_config: Boolean
 }
@@ -2068,7 +2057,7 @@ type Capability implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   name: String!
   description: String
@@ -2312,7 +2301,7 @@ type Connector implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   name: String!
   title: String!
@@ -2359,7 +2348,7 @@ type ManagedConnector implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   name: String!
   connector_user_id: ID
@@ -2387,7 +2376,7 @@ type ConnectorManager implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   name: String!
   public_key: String!
@@ -2462,7 +2451,7 @@ interface StixObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -2471,6 +2460,7 @@ interface StixObject {
   created_at: DateTime!
   updated_at: DateTime!
   refreshed_at: DateTime
+  x_opencti_modified_at: DateTime
   draftVersion: DraftVersion
   creators: [Creator!]
   x_opencti_inferences: [Inference]
@@ -2500,7 +2490,7 @@ interface StixMetaObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
@@ -2539,7 +2529,7 @@ type MarkingDefinition implements BasicObject & StixObject & StixMetaObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -2547,6 +2537,7 @@ type MarkingDefinition implements BasicObject & StixObject & StixMetaObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -2557,7 +2548,7 @@ type MarkingDefinition implements BasicObject & StixObject & StixMetaObject {
   x_opencti_order: Int!
   x_opencti_color: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   editContext: [EditUserContext!]
 }
 
@@ -2570,6 +2561,7 @@ input MarkingDefinitionAddInput {
   x_opencti_color: String
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   clientMutationId: String
   update: Boolean
 }
@@ -2609,7 +2601,7 @@ type Label implements BasicObject & StixObject & StixMetaObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -2617,6 +2609,7 @@ type Label implements BasicObject & StixObject & StixMetaObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -2625,7 +2618,7 @@ type Label implements BasicObject & StixObject & StixMetaObject {
   value: String
   color: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   editContext: [EditUserContext!]
 }
 
@@ -2636,6 +2629,7 @@ input LabelAddInput {
   color: String
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   clientMutationId: String
   update: Boolean
 }
@@ -2667,7 +2661,7 @@ type ExternalReference implements BasicObject & StixObject & StixMetaObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -2675,6 +2669,7 @@ type ExternalReference implements BasicObject & StixObject & StixMetaObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -2706,9 +2701,13 @@ input ExternalReferenceAddInput {
   url: String
   hash: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
   external_id: String
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   clientMutationId: String
   update: Boolean
 }
@@ -2738,7 +2737,7 @@ type KillChainPhase implements BasicObject & StixObject & StixMetaObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -2746,6 +2745,7 @@ type KillChainPhase implements BasicObject & StixObject & StixMetaObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -2766,6 +2766,7 @@ input KillChainPhaseAddInput {
   x_opencti_order: Int!
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   clientMutationId: String
   update: Boolean
 }
@@ -2773,6 +2774,11 @@ input KillChainPhaseAddInput {
 type Representative {
   main: String!
   secondary: String
+}
+
+enum UnknownStixCoreObjectsOrdering {
+  value
+  entity_type
 }
 
 enum StixCoreObjectsOrdering {
@@ -2821,7 +2827,7 @@ interface StixCoreObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -2829,6 +2835,7 @@ interface StixCoreObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   createdBy: Identity
@@ -2849,7 +2856,7 @@ interface StixCoreObject {
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -2921,7 +2928,7 @@ interface StixDomainObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -2929,6 +2936,7 @@ interface StixDomainObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   createdBy: Identity
@@ -2959,7 +2967,7 @@ interface StixDomainObject {
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -2994,6 +3002,7 @@ input StixDomainObjectAddInput {
   clientMutationId: String
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   update: Boolean
 }
 
@@ -3023,7 +3032,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -3031,6 +3040,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -3075,7 +3085,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   isSubAttackPattern: Boolean
   dataComponents: DataComponentConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -3110,10 +3120,15 @@ input AttackPatternAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type AttackPatternForMatrix {
@@ -3173,7 +3188,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -3181,6 +3196,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -3218,7 +3234,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   last_seen: DateTime
   objective: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -3253,10 +3269,15 @@ input CampaignAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 enum ContainersOrdering {
@@ -3288,7 +3309,7 @@ interface Container {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -3296,6 +3317,7 @@ interface Container {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   createdBy: Identity
@@ -3364,7 +3386,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -3372,6 +3394,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -3413,7 +3436,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   note_types: [String]
   likelihood: Int
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
@@ -3448,10 +3471,15 @@ input NoteAddInput {
   objects: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 input NoteUserAddInput {
@@ -3506,7 +3534,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -3514,6 +3542,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -3554,7 +3583,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   number_observed: Int!
   name: String!
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
@@ -3585,10 +3614,15 @@ input ObservedDataAddInput {
   objects: [String]!
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 enum OpinionsOrdering {
@@ -3619,7 +3653,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -3627,6 +3661,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -3666,7 +3701,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   authors: [String]
   opinion: String!
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
@@ -3699,10 +3734,14 @@ input OpinionAddInput {
   objects: [String]
   created: DateTime
   modified: DateTime
-  update: Boolean
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
+  update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
 }
 
 input OpinionUserAddInput {
@@ -3721,6 +3760,7 @@ input OpinionUserAddInput {
   objects: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   update: Boolean
   clientMutationId: String
 }
@@ -3754,7 +3794,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -3762,6 +3802,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -3805,7 +3846,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   published: DateTime
   objectParticipant: [Participant!]
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
@@ -3846,11 +3887,16 @@ input ReportAddInput {
   objects: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
   authorized_members: [MemberAccessInput!]
+  upsertOperations: [EditInput!]
 }
 
 enum CoursesOfActionOrdering {
@@ -3879,7 +3925,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -3887,6 +3933,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -3925,7 +3972,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   x_opencti_log_sources: [String]
   attackPatterns: AttackPatternConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -3956,10 +4003,15 @@ input CourseOfActionAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 enum IdentitiesOrdering {
@@ -3993,7 +4045,7 @@ interface Identity {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -4001,6 +4053,7 @@ interface Identity {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   createdBy: Identity
@@ -4037,7 +4090,7 @@ interface Identity {
   x_opencti_aliases: [String]
   x_opencti_reliability: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -4066,11 +4119,17 @@ input IdentityAddInput {
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   created: DateTime
   modified: DateTime
+  file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
   update: Boolean
+  upsertOperations: [EditInput!]
 }
 
 enum IndividualsOrdering {
@@ -4098,7 +4157,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -4106,6 +4165,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -4147,7 +4207,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   x_opencti_lastname: String
   organizations: OrganizationConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -4183,10 +4243,15 @@ input IndividualAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 enum SectorsOrdering {
@@ -4215,7 +4280,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -4223,6 +4288,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -4265,7 +4331,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   isSubSector: Boolean
   targetedOrganizations: StixCoreRelationshipConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -4296,10 +4362,15 @@ input SectorAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 enum SystemsOrdering {
@@ -4327,7 +4398,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -4335,6 +4406,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -4376,7 +4448,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   x_opencti_lastname: String
   organizations: OrganizationConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -4411,10 +4483,15 @@ input SystemAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 enum InfrastructuresOrdering {
@@ -4448,7 +4525,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -4456,6 +4533,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -4494,7 +4572,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   last_seen: DateTime
   killChainPhases: [KillChainPhase!]
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -4528,10 +4606,15 @@ input InfrastructureAddInput {
   killChainPhases: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 enum IntrusionSetsOrdering {
@@ -4562,7 +4645,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -4570,6 +4653,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -4611,7 +4695,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   secondary_motivations: [String]
   locations: LocationConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -4650,9 +4734,14 @@ input IntrusionSetAddInput {
   x_opencti_workflow_id: String
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 enum LocationsOrdering {
@@ -4682,7 +4771,7 @@ interface Location {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -4690,6 +4779,7 @@ interface Location {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   createdBy: Identity
@@ -4725,7 +4815,7 @@ interface Location {
   precision: Float
   x_opencti_aliases: [String]
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -4758,8 +4848,14 @@ input LocationAddInput {
   clientMutationId: String
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   update: Boolean
+  file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 enum PositionsOrdering {
@@ -4788,7 +4884,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -4796,6 +4892,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -4836,7 +4933,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   postal_code: String
   city: City
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -4870,10 +4967,15 @@ input PositionAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 enum CitiesOrdering {
@@ -4903,7 +5005,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -4911,6 +5013,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -4950,7 +5053,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   country: Country
   administrativeArea: AdministrativeArea
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -4983,10 +5086,15 @@ input CityAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 enum CountriesOrdering {
@@ -5013,7 +5121,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -5021,6 +5129,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -5059,7 +5168,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   x_opencti_aliases: [String]
   region: Region
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -5091,10 +5200,15 @@ input CountryAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 enum RegionsOrdering {
@@ -5121,7 +5235,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -5129,6 +5243,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -5169,7 +5284,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   subRegions: RegionConnection
   countries: CountryConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -5201,10 +5316,15 @@ input RegionAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 enum MalwaresOrdering {
@@ -5234,11 +5354,16 @@ type MalwareEdge {
   node: Malware!
 }
 
+enum Version {
+  stix_2_0
+  stix_2_1
+}
+
 type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -5246,6 +5371,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -5289,7 +5415,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   killChainPhases: [KillChainPhase!]
   samples: [StixCyberObservable!]
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -5329,10 +5455,15 @@ input MalwareAddInput {
   samples: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 enum ThreatActorsOrdering {
@@ -5364,7 +5495,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -5372,6 +5503,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -5418,7 +5550,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   locations: LocationConnection
   countries: CountryConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -5444,7 +5576,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -5452,6 +5584,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -5498,7 +5631,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   locations: LocationConnection
   countries: CountryConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -5539,10 +5672,15 @@ input ThreatActorGroupAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 enum ToolsOrdering {
@@ -5570,7 +5708,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -5578,6 +5716,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -5615,7 +5754,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   tool_version: String
   killChainPhases: [KillChainPhase!]
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -5648,10 +5787,15 @@ input ToolAddInput {
   killChainPhases: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 enum VulnerabilitiesOrdering {
@@ -5683,7 +5827,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -5691,6 +5835,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -5774,7 +5919,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   x_opencti_first_seen_active: DateTime
   softwares(relationshipType: String, first: Int, after: ID, orderBy: StixCyberObservablesOrdering, orderMode: OrderingMode): StixCyberObservableConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -5852,10 +5997,15 @@ input VulnerabilityAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 enum IncidentsOrdering {
@@ -5891,7 +6041,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -5899,6 +6049,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -5939,7 +6090,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   source: String
   objectParticipant: [Participant!]
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -5978,10 +6129,15 @@ input IncidentAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 enum StixCyberObservablesOrdering {
@@ -6009,7 +6165,7 @@ interface StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -6017,6 +6173,7 @@ interface StixCyberObservable {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   createdBy: Identity
@@ -6042,7 +6199,7 @@ interface StixCyberObservable {
   observable_value: String!
   indicators(first: Int): IndicatorConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -6055,7 +6212,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -6063,6 +6220,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -6092,7 +6250,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   name: String
   rir: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -6106,13 +6264,17 @@ input AutonomousSystemAddInput {
   name: String
   rir: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -6120,6 +6282,7 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -6151,7 +6314,7 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   mtime: DateTime
   atime: DateTime
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -6167,13 +6330,17 @@ input DirectoryAddInput {
   mtime: DateTime
   atime: DateTime
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -6181,6 +6348,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -6208,7 +6376,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   indicators(first: Int): IndicatorConnection
   value: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -6220,13 +6388,17 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
 input DomainNameAddInput {
   value: String!
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -6234,6 +6406,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -6262,7 +6435,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   value: String
   display_name: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -6275,13 +6448,17 @@ input EmailAddrAddInput {
   value: String
   display_name: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -6289,6 +6466,7 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -6322,7 +6500,7 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   received_lines: [String]
   body: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -6340,13 +6518,17 @@ input EmailMessageAddInput {
   received_lines: [String]
   body: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -6354,6 +6536,7 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -6383,7 +6566,7 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   content_type: String
   content_disposition: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -6397,6 +6580,10 @@ input EmailMimePartTypeAddInput {
   content_type: String
   content_disposition: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 input HashInput {
@@ -6405,6 +6592,7 @@ input HashInput {
 
   "*Constraints:*\n* Minimal length: `5`\n"
   hash: String!
+  upsertOperations: [EditInput!]
 }
 
 type Hash {
@@ -6426,7 +6614,7 @@ interface HashedObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -6434,6 +6622,7 @@ interface HashedObservable {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   createdBy: Identity
@@ -6460,7 +6649,7 @@ interface HashedObservable {
   indicators(first: Int): IndicatorConnection
   hashes: [Hash]
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -6473,7 +6662,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -6481,6 +6670,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -6514,7 +6704,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   decryption_key: String
   x_opencti_additional_names: [String]
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -6532,13 +6722,17 @@ input ArtifactAddInput {
   decryption_key: String
   x_opencti_additional_names: [String]
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberObservable & HashedObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -6546,6 +6740,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -6584,7 +6779,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   x_opencti_additional_names: [String]
   obsContent: Artifact
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -6606,13 +6801,17 @@ input StixFileAddInput {
   x_opencti_additional_names: [String]
   obsContent: ID
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type X509Certificate implements BasicObject & StixObject & StixCoreObject & StixCyberObservable & HashedObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -6620,6 +6819,7 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -6674,7 +6874,7 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   certificate_policies: String
   policy_mappings: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -6713,13 +6913,17 @@ input X509CertificateAddInput {
   certificate_policies: String
   policy_mappings: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -6727,6 +6931,7 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -6755,7 +6960,7 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   value: String
   countries: CountryConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -6769,13 +6974,17 @@ input IPv4AddrAddInput {
   belongsTo: [String]
   resolvesTo: [String]
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -6783,6 +6992,7 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -6811,7 +7021,7 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   value: String
   countries: CountryConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -6823,13 +7033,17 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
 input IPv6AddrAddInput {
   value: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -6837,6 +7051,7 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -6864,7 +7079,7 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   indicators(first: Int): IndicatorConnection
   value: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -6876,13 +7091,17 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
 input MacAddrAddInput {
   value: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -6890,6 +7109,7 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -6917,7 +7137,7 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   indicators(first: Int): IndicatorConnection
   name: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -6929,13 +7149,17 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
 input MutexAddInput {
   name: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -6943,6 +7167,7 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -6982,7 +7207,7 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   src_packets: Int
   dst_packets: Int
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -7005,13 +7230,17 @@ input NetworkTrafficAddInput {
   src_packets: Int
   dst_packets: Int
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -7019,6 +7248,7 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -7067,7 +7297,7 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   service_type: String
   service_status: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -7100,13 +7330,17 @@ input ProcessAddInput {
   service_type: String
   service_status: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type Software implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -7114,6 +7348,7 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -7148,7 +7383,7 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   x_opencti_product: String
   vulnerabilities: VulnerabilityConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -7176,13 +7411,17 @@ input SoftwareAddInput {
   version: String
   x_opencti_product: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -7190,6 +7429,7 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -7217,7 +7457,7 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   indicators(first: Int): IndicatorConnection
   value: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -7229,13 +7469,17 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
 input UrlAddInput {
   value: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -7243,6 +7487,7 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -7284,7 +7529,7 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   account_first_login: DateTime
   account_last_login: DateTime
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -7309,13 +7554,17 @@ input UserAccountAddInput {
   account_first_login: DateTime
   account_last_login: DateTime
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -7323,6 +7572,7 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -7352,7 +7602,7 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   modified_time: DateTime
   number_of_subkeys: Int
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -7365,14 +7615,18 @@ input WindowsRegistryKeyAddInput {
   attribute_key: String
   modified_time: DateTime
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
   number_of_subkeys: Int
+  upsertOperations: [EditInput!]
 }
 
 type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -7380,6 +7634,7 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -7409,7 +7664,7 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   data: String
   data_type: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -7423,13 +7678,17 @@ input WindowsRegistryValueTypeAddInput {
   data: String
   data_type: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type CryptographicKey implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -7437,6 +7696,7 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -7464,7 +7724,7 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
   indicators(first: Int): IndicatorConnection
   value: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -7476,13 +7736,17 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
 input CryptographicKeyAddInput {
   value: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -7490,6 +7754,7 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -7517,7 +7782,7 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
   indicators(first: Int): IndicatorConnection
   value: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -7529,13 +7794,17 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
 input CryptocurrencyWalletAddInput {
   value: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -7543,6 +7812,7 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -7570,7 +7840,7 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   indicators(first: Int): IndicatorConnection
   value: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -7582,13 +7852,17 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
 input HostnameAddInput {
   value: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -7596,6 +7870,7 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -7623,7 +7898,7 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   indicators(first: Int): IndicatorConnection
   value: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -7635,13 +7910,17 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
 input TextAddInput {
   value: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -7649,6 +7928,7 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -7676,7 +7956,7 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
   indicators(first: Int): IndicatorConnection
   value: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -7688,13 +7968,17 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
 input UserAgentAddInput {
   value: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -7702,6 +7986,7 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -7731,7 +8016,7 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   bic: String
   account_number: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -7745,13 +8030,17 @@ input BankAccountAddInput {
   bic: String
   account_number: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type TrackingNumber implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -7759,6 +8048,7 @@ type TrackingNumber implements BasicObject & StixObject & StixCoreObject & StixC
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -7786,7 +8076,7 @@ type TrackingNumber implements BasicObject & StixObject & StixCoreObject & StixC
   indicators(first: Int): IndicatorConnection
   value: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -7798,13 +8088,17 @@ type TrackingNumber implements BasicObject & StixObject & StixCoreObject & StixC
 input TrackingNumberAddInput {
   value: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type Credential implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -7812,6 +8106,7 @@ type Credential implements BasicObject & StixObject & StixCoreObject & StixCyber
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -7839,7 +8134,7 @@ type Credential implements BasicObject & StixObject & StixCoreObject & StixCyber
   indicators(first: Int): IndicatorConnection
   value: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -7851,13 +8146,17 @@ type Credential implements BasicObject & StixObject & StixCoreObject & StixCyber
 input CredentialAddInput {
   value: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -7865,6 +8164,7 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -7892,7 +8192,7 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
   indicators(first: Int): IndicatorConnection
   value: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -7904,13 +8204,17 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
 input PhoneNumberAddInput {
   value: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -7918,6 +8222,7 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -7948,7 +8253,7 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
   cvv: Int
   holder_name: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -7963,13 +8268,17 @@ input PaymentCardAddInput {
   cvv: Int
   holder_name: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -7977,6 +8286,7 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -8009,7 +8319,7 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
   url: String
   publication_date: DateTime
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -8025,13 +8335,17 @@ input MediaContentAddInput {
   url: String!
   publication_date: DateTime
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type Persona implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -8039,6 +8353,7 @@ type Persona implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -8067,7 +8382,7 @@ type Persona implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   persona_name: String!
   persona_type: String!
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -8080,13 +8395,18 @@ input PersonaAddInput {
   "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   persona_name: String!
   persona_type: String!
+  file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type SSHKey implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -8094,6 +8414,7 @@ type SSHKey implements BasicObject & StixObject & StixCoreObject & StixCyberObse
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -8128,7 +8449,7 @@ type SSHKey implements BasicObject & StixObject & StixCoreObject & StixCyberObse
   comment: String
   created: DateTime
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -8150,13 +8471,18 @@ input SSHKeyAddInput {
   comment: String
   created: DateTime
   expiration_date: DateTime
+  file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 interface BasicRelationship {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   fromRole: String
   toRole: String
@@ -8170,7 +8496,7 @@ type InternalRelationship implements BasicRelationship {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   fromRole: String
   toRole: String
@@ -8226,11 +8552,11 @@ type StixObjectOrStixRelationshipRefEdge {
   node: StixObjectOrStixRelationship!
 }
 
-union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | SecurityCoverage | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | Task | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | EntitySetting | ManagerConfiguration | Creator | Group | Workspace | CsvMapper | Status | PublicDashboard | Pir
+union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | SecurityCoverage | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | Task | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | EntitySetting | ManagerConfiguration | Creator | Group | Workspace | CsvMapper | Status | PublicDashboard | Pir | Theme
 
 union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | CsvMapper | PublicDashboard | Pir | SecurityCoverage
 
-union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | Narrative | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | PublicDashboard
+union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | Narrative | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | PublicDashboard | Theme
 
 enum StixRelationshipsOrdering {
   entity_type
@@ -8270,7 +8596,7 @@ interface StixRelationship {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   fromRole: String
   toRole: String
@@ -8290,7 +8616,7 @@ interface StixRelationship {
   relationship_type: String!
   createdBy: Identity
   objectMarking: [MarkingDefinition!]
-  toStix: String
+  toStix(version: Version): String
   draftVersion: DraftVersion
   creators: [Creator!]
 }
@@ -8348,12 +8674,13 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   fromRole: String
   toRole: String
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -8392,7 +8719,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   killChainPhases: [KillChainPhase!]
   coverage_information: [CoverageResult!]
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   editContext: [EditUserContext!]
   status: Status
   workflowEnabled: Boolean
@@ -8424,9 +8751,11 @@ input StixCoreRelationshipAddInput {
   externalReferences: [String]
   killChainPhases: [String]
   x_opencti_workflow_id: String
+  x_opencti_modified_at: DateTime
   coverage_information: [SecurityCoverageExpectation!]
   clientMutationId: String
   update: Boolean
+  upsertOperations: [EditInput!]
 }
 
 enum StixSightingRelationshipsOrdering {
@@ -8464,12 +8793,13 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   fromRole: String
   toRole: String
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -8505,7 +8835,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   groupings(first: Int): GroupingConnection
   cases(first: Int): CaseConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   editContext: [EditUserContext!]
   status: Status
   workflowEnabled: Boolean
@@ -8532,6 +8862,8 @@ input StixSightingRelationshipAddInput {
   clientMutationId: String
   update: Boolean
   x_opencti_workflow_id: String
+  x_opencti_modified_at: DateTime
+  upsertOperations: [EditInput!]
 }
 
 enum StixRefRelationshipsOrdering {
@@ -8567,7 +8899,7 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   fromRole: String
   toRole: String
@@ -8598,7 +8930,7 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   opinions(first: Int): OpinionConnection
   groupings(first: Int): GroupingConnection
   cases(first: Int): CaseConnection
-  toStix: String
+  toStix(version: Version): String
   creators: [Creator!]
   editContext: [EditUserContext!]
 }
@@ -8626,12 +8958,26 @@ input StixRefRelationshipAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
 }
 
 input StixRefRelationshipsAddInput {
   relationship_type: String!
   fromIds: [StixRef]
   toIds: [StixRef!]!
+}
+
+type SynchronizerAddInputFromImport {
+  name: String!
+  uri: String!
+  stream_id: String!
+  current_state_date: DateTime
+  listen_deletion: Boolean!
+  ssl_verify: Boolean!
+  no_dependencies: Boolean!
+  synchronized: Boolean!
 }
 
 type Query {
@@ -8675,6 +9021,7 @@ type Query {
   sessions: [UserSession]
   role(id: String!): Role
   capabilities(first: Int): CapabilityConnection
+  capabilitiesInDraft(first: Int): CapabilityConnection
   connector(id: String!): Connector
   connectors: [Connector!]!
   connectorManager(managerId: ID!): ConnectorManager!
@@ -8711,6 +9058,7 @@ type Query {
   rules: [Rule]
   ruleManagerInfo: RuleManager
   synchronizer(id: String!): Synchronizer
+  synchronizerAddInputFromImport(file: Upload!): SynchronizerAddInputFromImport!
   synchronizers(first: Int, after: ID, orderBy: SynchronizersOrdering, orderMode: OrderingMode, search: String): SynchronizerConnection
   synchronizerFetch(input: SynchronizerFetchInput): [RemoteStreamCollection]
   stixMetaObject(id: String!): StixMetaObject
@@ -8733,6 +9081,7 @@ type Query {
   stixCoreObjects(first: Int, after: ID, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixCoreObjectConnection
   stixCoreObjectsRestricted(first: Int, after: ID, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixCoreObjectConnection
   globalSearch(first: Int, after: ID, search: String, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup): StixCoreObjectConnection
+  unknownStixCoreObjects(values: [String!]!, orderBy: UnknownStixCoreObjectsOrdering, orderMode: OrderingMode): [String!]!
   stixCoreObjectsExportFiles(first: Int, exportContext: ExportContext!): FileConnection
   stixCoreObjectsTimeSeries(authorId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, types: [String], filters: FilterGroup, search: String): [TimeSeries]
   stixCoreObjectsMultiTimeSeries(startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, timeSeriesParameters: [StixCoreObjectsTimeSeriesParameters]): [MultiTimeSeries]
@@ -8740,7 +9089,7 @@ type Query {
   stixCoreObjectsMultiNumber(dateAttribute: String, startDate: DateTime, endDate: DateTime, onlyInferred: Boolean, numberParameters: [StixCoreObjectsNumberParameters]): [Number]
   stixCoreObjectsDistribution(objectId: [String], relationship_type: [String], toTypes: [String], elementWithTargetTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreObjectsMultiDistribution(field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, distributionParameters: StixCoreObjectsDistributionParameters): [MultiDistribution]
-  filtersRepresentatives(filters: FilterGroup!): [RepresentativeWithId!]!
+  filtersRepresentatives(filters: FilterGroup!, isMeValueForbidden: Boolean): [RepresentativeWithId!]!
   stixDomainObject(id: String!): StixDomainObject
   stixDomainObjects(first: Int, after: ID, types: [String], orderBy: StixDomainObjectsOrdering, pirId: ID, orderMode: OrderingMode, filters: FilterGroup, search: String): StixDomainObjectConnection
   bookmarks(first: Int, after: ID, types: [String], filters: FilterGroup): StixDomainObjectConnection
@@ -8940,6 +9289,7 @@ type Query {
   ingestionRsss(first: Int, after: ID, orderBy: IngestionRssOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionRssConnection
   ingestionTaxii(id: String!): IngestionTaxii
   ingestionTaxiis(first: Int, after: ID, orderBy: IngestionTaxiiOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionTaxiiConnection
+  taxiiFeedAddInputFromImport(file: Upload!): TaxiiFeedAddInputFromImport!
   ingestionTaxiiCollection(id: String!): IngestionTaxiiCollection
   ingestionTaxiiCollections(first: Int, after: ID, orderBy: IngestionTaxiiCollectionOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionTaxiiCollectionConnection
   ingestionCsv(id: String!): IngestionCsv
@@ -8956,6 +9306,8 @@ type Query {
   indicatorsDistribution(objectId: String, field: String!, operation: StatsOperation!, limit: Int, order: String, startDate: DateTime, endDate: DateTime, dateAttribute: String): [Distribution]
   decayRule(id: String!): DecayRule
   decayRules(first: Int, after: ID, orderBy: DecayRuleOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DecayRuleConnection
+  decayExclusionRule(id: String!): DecayExclusionRule
+  decayExclusionRules(first: Int, after: ID, orderBy: DecayExclusionRuleOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DecayExclusionRuleConnection
   organization(id: String!): Organization
   organizations(first: Int, after: ID, orderBy: OrganizationsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): OrganizationConnection
   securityOrganizations(first: Int, after: ID, orderBy: OrganizationsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): OrganizationConnection
@@ -8977,6 +9329,8 @@ type Query {
   publicBookmarks(uriKey: String!, widgetId: String!): StixDomainObjectConnection
   publicStixCoreObjects(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): StixCoreObjectConnection
   publicStixRelationships(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): StixRelationshipConnection
+  theme(id: ID!): Theme
+  themes(first: Int, after: ID, orderBy: ThemeOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): ThemeConnection
   deleteOperation(id: String!): DeleteOperation
   deleteOperations(first: Int, after: ID, orderBy: DeleteOperationOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DeleteOperationConnection
   supportPackage(id: String!): SupportPackage
@@ -8986,6 +9340,7 @@ type Query {
   exclusionListCacheStatus: ExclusionListCacheStatus
   draftWorkspace(id: String!): DraftWorkspace
   draftWorkspaces(first: Int, after: ID, orderBy: DraftWorkspacesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DraftWorkspaceConnection
+  draftWorkspacesRestricted(first: Int, after: ID, orderBy: DraftWorkspacesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DraftWorkspaceConnection
   draftWorkspaceEntities(draftId: String!, types: [String], first: Int, after: ID, orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixCoreObjectConnection
   draftWorkspaceRelationships(draftId: String!, types: [String], first: Int, after: ID, orderBy: StixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixRelationshipConnection
   draftWorkspaceSightingRelationships(draftId: String!, types: [String], first: Int, after: ID, orderBy: StixSightingRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixSightingRelationshipConnection
@@ -9507,8 +9862,10 @@ type Mutation {
   uploadAndAskJobImport(file: Upload!, fileMarkings: [String!], connectors: [ConnectorWithConfig!], validationMode: ValidationMode, draftId: String, noTriggerImport: Boolean): File
   uploadPending(file: Upload!, entityId: String, labels: [String], errorOnExisting: Boolean, file_markings: [String!], refreshEntity: Boolean): File
   askJobImport(fileName: ID!, connectorId: String, configuration: String, bypassEntityId: String, bypassValidation: Boolean, validationMode: ValidationMode, forceValidation: Boolean): File
+  createDraftAndAskJobImport(fileName: ID!, connectorId: String, configuration: String, bypassEntityId: String, bypassValidation: Boolean, validationMode: ValidationMode, forceValidation: Boolean, authorized_members: [MemberAccessInput!]): File
   resetFileIndexing: Boolean
   synchronizerAdd(input: SynchronizerAddInput!): Synchronizer
+  synchronizerAddAutoUser(id: ID!, input: SynchronizerAddAutoUserInput!): Synchronizer
   synchronizerEdit(id: ID!): SynchronizerEditMutations
   synchronizerStart(id: ID!): Synchronizer
   synchronizerStop(id: ID!): Synchronizer
@@ -9534,6 +9891,7 @@ type Mutation {
   otpUserDeactivation(id: ID!): MeUser
   otpLogin(input: UserOTPLoginInput): Boolean
   settingsEdit(id: ID!): SettingsEditMutations
+  setupEnterpriseLicense(input: LicenseActivationInput!): Settings
   subTypeEdit(id: ID!): SubTypeEditMutations
   statusTemplateAdd(input: StatusTemplateAddInput!): StatusTemplate!
   statusTemplateDelete(id: ID!): ID!
@@ -9641,11 +9999,11 @@ type Mutation {
   vulnerabilityEdit(id: ID!): VulnerabilityEditMutations
   incidentAdd(input: IncidentAddInput!): Incident
   incidentEdit(id: ID!): IncidentEditMutations
-  stixCyberObservableAdd(type: String!, stix_id: StixId, x_opencti_score: Int, x_opencti_description: String, createIndicator: Boolean, createdBy: String, objectMarking: [String], objectLabel: [String], objectOrganization: [String], externalReferences: [String], clientMutationId: String, update: Boolean, AutonomousSystem: AutonomousSystemAddInput, Directory: DirectoryAddInput, DomainName: DomainNameAddInput, EmailAddr: EmailAddrAddInput, EmailMessage: EmailMessageAddInput, EmailMimePartType: EmailMimePartTypeAddInput, Artifact: ArtifactAddInput, StixFile: StixFileAddInput, X509Certificate: X509CertificateAddInput, IPv4Addr: IPv4AddrAddInput, IPv6Addr: IPv6AddrAddInput, MacAddr: MacAddrAddInput, Mutex: MutexAddInput, NetworkTraffic: NetworkTrafficAddInput, Process: ProcessAddInput, Software: SoftwareAddInput, Url: UrlAddInput, UserAccount: UserAccountAddInput, WindowsRegistryKey: WindowsRegistryKeyAddInput, WindowsRegistryValueType: WindowsRegistryValueTypeAddInput, CryptographicKey: CryptographicKeyAddInput, CryptocurrencyWallet: CryptocurrencyWalletAddInput, Hostname: HostnameAddInput, Text: TextAddInput, UserAgent: UserAgentAddInput, BankAccount: BankAccountAddInput, Credential: CredentialAddInput, TrackingNumber: TrackingNumberAddInput, PhoneNumber: PhoneNumberAddInput, PaymentCard: PaymentCardAddInput, MediaContent: MediaContentAddInput, Persona: PersonaAddInput, SSHKey: SSHKeyAddInput): StixCyberObservable
+  stixCyberObservableAdd(type: String!, stix_id: StixId, x_opencti_score: Int, x_opencti_description: String, x_opencti_modified_at: DateTime, createIndicator: Boolean, createdBy: String, objectMarking: [String], objectLabel: [String], objectOrganization: [String], externalReferences: [String], clientMutationId: String, update: Boolean, upsertOperations: [EditInput!], AutonomousSystem: AutonomousSystemAddInput, Directory: DirectoryAddInput, DomainName: DomainNameAddInput, EmailAddr: EmailAddrAddInput, EmailMessage: EmailMessageAddInput, EmailMimePartType: EmailMimePartTypeAddInput, Artifact: ArtifactAddInput, StixFile: StixFileAddInput, X509Certificate: X509CertificateAddInput, IPv4Addr: IPv4AddrAddInput, IPv6Addr: IPv6AddrAddInput, MacAddr: MacAddrAddInput, Mutex: MutexAddInput, NetworkTraffic: NetworkTrafficAddInput, Process: ProcessAddInput, Software: SoftwareAddInput, Url: UrlAddInput, UserAccount: UserAccountAddInput, WindowsRegistryKey: WindowsRegistryKeyAddInput, WindowsRegistryValueType: WindowsRegistryValueTypeAddInput, CryptographicKey: CryptographicKeyAddInput, CryptocurrencyWallet: CryptocurrencyWalletAddInput, Hostname: HostnameAddInput, Text: TextAddInput, UserAgent: UserAgentAddInput, BankAccount: BankAccountAddInput, Credential: CredentialAddInput, TrackingNumber: TrackingNumberAddInput, PhoneNumber: PhoneNumberAddInput, PaymentCard: PaymentCardAddInput, MediaContent: MediaContentAddInput, Persona: PersonaAddInput, SSHKey: SSHKeyAddInput): StixCyberObservable
   stixCyberObservableEdit(id: ID!): StixCyberObservableEditMutations
   stixCyberObservablesExportAsk(input: StixCyberObservablesExportAskInput!): [File!]
   stixCyberObservablesExportPush(entity_id: String, entity_type: String!, file: Upload!, file_markings: [String]!, listFilters: String): Boolean
-  artifactImport(file: Upload!, x_opencti_description: String, createdBy: String, objectMarking: [String], objectLabel: [String]): Artifact
+  artifactImport(file: Upload!, fileMarkings: [String], x_opencti_description: String, createdBy: String, objectMarking: [String], objectLabel: [String]): Artifact
   stixRelationshipEdit(id: ID!): StixRelationshipEditMutations
   stixCoreRelationshipAdd(input: StixCoreRelationshipAddInput, reversedReturn: Boolean): StixCoreRelationship
   stixCoreRelationshipEdit(id: ID!): StixCoreRelationshipEditMutations
@@ -9802,6 +10160,7 @@ type Mutation {
   ingestionTaxiiDelete(id: ID!): ID
   ingestionTaxiiResetState(id: ID!): IngestionTaxii
   ingestionTaxiiFieldPatch(id: ID!, input: [EditInput!]!): IngestionTaxii
+  ingestionTaxiiAddAutoUser(id: ID!, input: IngestionTaxiiAddAutoUserInput!): IngestionTaxii
   ingestionTaxiiCollectionAdd(input: IngestionTaxiiCollectionAddInput!): IngestionTaxiiCollection
   ingestionTaxiiCollectionDelete(id: ID!): ID
   ingestionTaxiiCollectionFieldPatch(id: ID!, input: [EditInput!]!): IngestionTaxiiCollection
@@ -9827,6 +10186,9 @@ type Mutation {
   decayRuleAdd(input: DecayRuleAddInput!): DecayRule
   decayRuleDelete(id: ID!): ID
   decayRuleFieldPatch(id: ID!, input: [EditInput!]!): DecayRule
+  decayExclusionRuleAdd(input: DecayExclusionRuleAddInput!): DecayExclusionRule
+  decayExclusionRuleFieldPatch(id: ID!, input: [EditInput!]!): DecayExclusionRule
+  decayExclusionRuleDelete(id: ID!): ID
   organizationAdd(input: OrganizationAddInput!): Organization
   organizationDelete(id: ID!): ID
   organizationFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Organization
@@ -9849,6 +10211,10 @@ type Mutation {
   publicDashboardAdd(input: PublicDashboardAddInput!): PublicDashboard
   publicDashboardDelete(id: ID!): ID
   publicDashboardFieldPatch(id: ID!, input: [EditInput!]!): PublicDashboard
+  themeAdd(input: ThemeAddInput!): Theme
+  themeDelete(id: ID!): ID
+  themeFieldPatch(id: ID!, input: [EditInput!]!): Theme
+  themeImport(file: Upload!): Theme
   aiContainerGenerateReport(id: ID!, containerId: String!, paragraphs: Int, tone: Tone, format: Format, language: String): String
   aiThreatGenerateReport(id: ID!, threatId: String!, paragraphs: Int, tone: Tone, format: Format): String
   aiVictimGenerateReport(id: ID!, victimId: String!, paragraphs: Int, tone: Tone, format: Format): String
@@ -9874,6 +10240,7 @@ type Mutation {
   draftWorkspaceAdd(input: DraftWorkspaceAddInput!): DraftWorkspace
   draftWorkspaceValidate(id: ID!): Work
   draftWorkspaceDelete(id: ID!): ID
+  draftWorkspaceEditAuthorizedMembers(id: ID!, input: [MemberAccessInput!]): DraftWorkspace
   fintelTemplateAdd(input: FintelTemplateAddInput!): FintelTemplate
   fintelTemplateDelete(id: ID!): ID
   fintelTemplateFieldPatch(id: ID!, input: [EditInput!]!): FintelTemplate
@@ -9925,6 +10292,8 @@ type Mutation {
   formSubmit(input: FormSubmissionInput!, isDraft: Boolean! = false): FormSubmissionResponse
   formImport(file: Upload!): Form
   checkXTMHubConnectivity: CheckXTMHubConnectivityResponse!
+  autoRegisterOpenCTI(input: AutoRegisterInput!): Success!
+  contactUsXtmHub: Success!
   metricPatch(id: ID!, input: PatchMetricInput!): BasicObject
 }
 
@@ -9932,7 +10301,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -9940,6 +10309,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -9975,7 +10345,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   channel_types: [String]
   aliases: [String]
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -10030,10 +10400,15 @@ input ChannelAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type Catalog implements InternalObject & BasicObject {
@@ -10071,7 +10446,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -10079,6 +10454,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -10112,7 +10488,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
   name: String!
   aliases: [String]
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -10165,14 +10541,20 @@ input LanguageAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+  x_opencti_workflow_id: String
+  x_opencti_modified_at: DateTime
   update: Boolean
+  file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
 }
 
 type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -10180,6 +10562,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -10217,7 +10600,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
   stop_time: DateTime
   aliases: [String]
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -10276,15 +10659,20 @@ input EventAddInput {
   modified: DateTime
   clientMutationId: String
   x_opencti_workflow_id: String
+  x_opencti_modified_at: DateTime
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -10292,6 +10680,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -10334,7 +10723,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   context: String!
   x_opencti_aliases: [String]
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -10399,16 +10788,21 @@ input GroupingAddInput {
   modified: DateTime
   clientMutationId: String
   x_opencti_workflow_id: String
+  x_opencti_modified_at: DateTime
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
   authorized_members: [MemberAccessInput!]
+  upsertOperations: [EditInput!]
 }
 
 type Narrative implements BasicObject & StixCoreObject & StixDomainObject & StixObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -10416,6 +10810,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -10454,7 +10849,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
   subNarratives: NarrativeConnection
   isSubNarrative: Boolean
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -10511,7 +10906,12 @@ input NarrativeAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
+  upsertOperations: [EditInput!]
 }
 
 type ResolvedInstanceFilter {
@@ -10573,7 +10973,7 @@ type Trigger implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   created: DateTime
   modified: DateTime
@@ -10663,7 +11063,7 @@ type Notification implements InternalObject & BasicObject {
   created: DateTime
   name: String!
   notification_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   notification_content: [NotificationContent!]!
   is_read: Boolean!
@@ -10687,7 +11087,7 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -10695,6 +11095,7 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -10726,7 +11127,7 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -10786,14 +11187,19 @@ input DataComponentAddInput {
   aliases: [String]
   dataSource: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
   x_opencti_workflow_id: String
+  x_opencti_modified_at: DateTime
+  upsertOperations: [EditInput!]
 }
 
 type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -10801,6 +11207,7 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -10832,7 +11239,7 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -10895,7 +11302,12 @@ input DataSourceAddInput {
   collection_layers: [String!]
   dataComponents: [String]
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
   x_opencti_workflow_id: String
+  x_opencti_modified_at: DateTime
+  upsertOperations: [EditInput!]
 }
 
 enum VocabularyCategory {
@@ -10966,7 +11378,7 @@ type Vocabulary implements BasicObject & StixObject & StixMetaObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   creators: [Creator!]
@@ -10975,6 +11387,7 @@ type Vocabulary implements BasicObject & StixObject & StixMetaObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -11027,7 +11440,7 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -11035,6 +11448,7 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -11073,7 +11487,7 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
   cases(first: Int): CaseConnection
   country: Country
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -11129,15 +11543,20 @@ input AdministrativeAreaAddInput {
   modified: DateTime
   clientMutationId: String
   x_opencti_workflow_id: String
+  x_opencti_modified_at: DateTime
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type Task implements Container & StixDomainObject & StixCoreObject & StixObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -11145,6 +11564,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -11181,7 +11601,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
@@ -11240,14 +11660,20 @@ input TaskAddInput {
   createdBy: String
   objects: [String]
   x_opencti_workflow_id: String
+  x_opencti_modified_at: DateTime
   update: Boolean
+  file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type TaskTemplate implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   created: DateTime
   modified: DateTime
@@ -11286,7 +11712,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -11294,6 +11720,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -11330,7 +11757,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -11378,7 +11805,7 @@ type CaseTemplate implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   created: DateTime
   modified: DateTime
@@ -11416,7 +11843,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -11424,6 +11851,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -11460,7 +11888,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
@@ -11538,11 +11966,16 @@ input CaseIncidentAddInput {
   modified: DateTime
   response_types: [String!]
   caseTemplates: [String!]
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
   clientMutationId: String
   update: Boolean
   authorized_members: [MemberAccessInput!]
+  upsertOperations: [EditInput!]
 }
 
 type RfiRequestAccessConfiguration {
@@ -11554,7 +11987,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -11562,6 +11995,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -11599,7 +12033,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
@@ -11674,21 +12108,26 @@ input CaseRfiAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
   clientMutationId: String
   update: Boolean
   information_types: [String!]
   caseTemplates: [String!]
   authorized_members: [MemberAccessInput!]
   x_opencti_request_access: String
+  upsertOperations: [EditInput!]
 }
 
 type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container & Case {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -11696,6 +12135,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -11733,7 +12173,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
@@ -11807,19 +12247,24 @@ input CaseRftAddInput {
   created: DateTime
   modified: DateTime
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
   clientMutationId: String
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   update: Boolean
   takedown_types: [String!]
   caseTemplates: [String!]
   authorized_members: [MemberAccessInput!]
+  upsertOperations: [EditInput!]
 }
 
 type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container & Case {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -11827,6 +12272,7 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -11863,7 +12309,7 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
@@ -11931,10 +12377,15 @@ input FeedbackAddInput {
   created: DateTime
   modified: DateTime
   x_opencti_workflow_id: String
+  x_opencti_modified_at: DateTime
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
   clientMutationId: String
   update: Boolean
   rating: Int
+  upsertOperations: [EditInput!]
 }
 
 type DefaultValue {
@@ -12092,7 +12543,7 @@ type MalwareAnalysis implements BasicObject & StixCoreObject & StixDomainObject 
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -12100,6 +12551,7 @@ type MalwareAnalysis implements BasicObject & StixCoreObject & StixDomainObject 
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   x_opencti_inferences: [Inference]
   draftVersion: DraftVersion
@@ -12131,7 +12583,7 @@ type MalwareAnalysis implements BasicObject & StixCoreObject & StixDomainObject 
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -12215,8 +12667,13 @@ input MalwareAnalysisAddInput {
   objectLabel: [String]
   clientMutationId: String
   x_opencti_workflow_id: String
+  x_opencti_modified_at: DateTime
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type ManagerConfiguration implements InternalObject & BasicObject {
@@ -12257,7 +12714,7 @@ type Notifier implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   created: DateTime
   modified: DateTime
@@ -12309,7 +12766,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -12317,6 +12774,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -12373,7 +12831,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   bornIn: Country
   ethnicity: Country
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -12452,8 +12910,13 @@ input ThreatActorIndividualAddInput {
   modified: DateTime
   clientMutationId: String
   x_opencti_workflow_id: String
+  x_opencti_modified_at: DateTime
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type PlayBookExecutionStep {
@@ -12643,6 +13106,7 @@ type IngestionTaxii implements InternalObject & BasicObject {
   ingestion_running: Boolean
   last_execution_date: DateTime
   confidence_to_score: Boolean
+  toConfigurationExport: String!
 }
 
 enum IngestionTaxiiOrdering {
@@ -12664,6 +13128,17 @@ type IngestionTaxiiEdge {
   node: IngestionTaxii!
 }
 
+type TaxiiFeedAddInputFromImport {
+  name: String!
+  description: String!
+  uri: String!
+  version: String!
+  collection: String!
+  authentication_type: String!
+  authentication_value: String!
+  added_after_start: String
+}
+
 input IngestionTaxiiAddInput {
   "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
@@ -12680,7 +13155,14 @@ input IngestionTaxiiAddInput {
   added_after_start: DateTime
   ingestion_running: Boolean
   confidence_to_score: Boolean
-  user_id: String
+  user_id: String!
+  automatic_user: Boolean
+  confidence_level: Int
+}
+
+input IngestionTaxiiAddAutoUserInput {
+  user_name: String!
+  confidence_level: Int!
 }
 
 type IngestionTaxiiCollection implements InternalObject & BasicObject {
@@ -12731,7 +13213,7 @@ type IngestionCsv implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
   standard_id: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   created_at: DateTime
   updated_at: DateTime
@@ -12837,7 +13319,7 @@ type IngestionJson implements InternalObject & BasicObject {
   entity_type: String!
   connector_id: String!
   standard_id: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   created_at: DateTime
   updated_at: DateTime
@@ -12967,6 +13449,13 @@ type IndicatorDecayRule {
   decay_revoke_score: Int!
 }
 
+type IndicatorDecayExclusionRule {
+  decay_exclusion_id: String!
+  decay_exclusion_name: String!
+  decay_exclusion_created_at: DateTime!
+  decay_exclusion_filters: String!
+}
+
 type DecayLiveDetails {
   live_score: Int!
   live_points: [DecayHistory!]
@@ -12986,7 +13475,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -12994,6 +13483,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -13042,11 +13532,12 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   decay_base_score: Int
   decay_base_score_date: DateTime
   decay_applied_rule: IndicatorDecayRule
+  decay_exclusion_applied_rule: IndicatorDecayExclusionRule
   decay_history: [DecayHistory!]
   decayLiveDetails: DecayLiveDetails
   decayChartData: DecayChartData
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -13091,16 +13582,21 @@ input IndicatorAddInput {
   clientMutationId: String
   update: Boolean
   createObservables: Boolean
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
   basedOn: [String!]
+  upsertOperations: [EditInput!]
 }
 
 type DecayRule implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   created_at: DateTime!
   updated_at: DateTime!
@@ -13152,11 +13648,48 @@ input DecayRuleAddInput {
   decay_observable_types: [String!]
 }
 
+type DecayExclusionRule implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  metrics: [Metric]
+  created_at: DateTime!
+  name: String!
+  description: String
+  decay_exclusion_filters: String!
+  active: Boolean
+}
+
+enum DecayExclusionRuleOrdering {
+  name
+  active
+  _score
+}
+
+type DecayExclusionRuleEdge {
+  cursor: String!
+  node: DecayExclusionRule!
+}
+
+type DecayExclusionRuleConnection {
+  pageInfo: PageInfo!
+  edges: [DecayExclusionRuleEdge!]!
+}
+
+input DecayExclusionRuleAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+  description: String
+  decay_exclusion_filters: String!
+  active: Boolean!
+}
+
 type Organization implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Identity {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -13164,6 +13697,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -13216,7 +13750,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   default_hidden_types: [String!]
   restrict_access: Boolean
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -13255,7 +13789,7 @@ input OrganizationAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
 
-  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  "*Constraints:*\n* Minimal length: `1`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   contact_information: String
@@ -13275,10 +13809,15 @@ input OrganizationAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type MeOrganization {
@@ -13655,6 +14194,59 @@ input PublicDashboardAddInput {
   enabled: Boolean!
 }
 
+type Theme implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  name: String!
+  theme_background: String!
+  theme_paper: String!
+  theme_nav: String!
+  theme_primary: String!
+  theme_secondary: String!
+  theme_accent: String!
+  theme_logo: String
+  theme_logo_collapsed: String
+  theme_logo_login: String
+  theme_text_color: String!
+  toConfigurationExport: String!
+  built_in: Boolean
+  metrics: [Metric]
+}
+
+type ThemeConnection {
+  pageInfo: PageInfo!
+  edges: [ThemeEdge!]!
+}
+
+type ThemeEdge {
+  cursor: String!
+  node: Theme!
+}
+
+enum ThemeOrdering {
+  name
+  created_at
+  _score
+}
+
+input ThemeAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+  theme_background: String!
+  theme_paper: String!
+  theme_nav: String!
+  theme_primary: String!
+  theme_secondary: String!
+  theme_accent: String!
+  theme_logo: String
+  theme_logo_collapsed: String
+  theme_logo_login: String
+  theme_text_color: String!
+  built_in: Boolean
+}
+
 enum Tone {
   tactical
   operational
@@ -13728,7 +14320,7 @@ type SupportPackage implements InternalObject & BasicObject {
   name: String!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   created_at: DateTime!
   package_status: PackageStatus!
@@ -13777,7 +14369,7 @@ type ExclusionList implements InternalObject & BasicObject {
   description: String
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   created_at: DateTime!
   enabled: Boolean!
@@ -13838,6 +14430,8 @@ type DraftWorkspace implements InternalObject & BasicObject {
   processingCount: Int!
   works(first: Int): [Work!]
   validationWork: Work
+  authorizedMembers: [MemberAccess!]!
+  currentUserAccessRight: String
 }
 
 type DraftObjectsCount {
@@ -13870,6 +14464,7 @@ type DraftWorkspaceEdge {
 input DraftWorkspaceAddInput {
   name: String!
   entity_id: String
+  authorized_members: [MemberAccessInput!]
 }
 
 type FintelTemplateWidget {
@@ -13881,7 +14476,7 @@ type FintelTemplate implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   name: String!
   settings_types: [String!]!
@@ -13929,7 +14524,7 @@ type DisseminationList implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   created_at: DateTime!
   updated_at: DateTime!
@@ -13974,7 +14569,7 @@ type SavedFilter implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   name: String!
   filters: String!
@@ -14102,7 +14697,7 @@ type PirRelationship implements BasicRelationship {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   fromRole: String
   toRole: String
@@ -14209,7 +14804,7 @@ type FintelDesign implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   name: String!
   description: String
@@ -14249,7 +14844,7 @@ type SecurityPlatform implements BasicObject & StixObject & StixCoreObject & Sti
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -14257,6 +14852,7 @@ type SecurityPlatform implements BasicObject & StixObject & StixCoreObject & Sti
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -14296,7 +14892,7 @@ type SecurityPlatform implements BasicObject & StixObject & StixCoreObject & Sti
   x_opencti_reliability: String
   security_platform_type: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -14344,8 +14940,14 @@ input SecurityPlatformAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   x_opencti_workflow_id: String
+  x_opencti_modified_at: DateTime
   externalReferences: [String]
   update: Boolean
+  file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type CoverageResult {
@@ -14357,7 +14959,7 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -14365,6 +14967,7 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   draftVersion: DraftVersion
   refreshed_at: DateTime
   x_opencti_inferences: [Inference]
@@ -14404,7 +15007,7 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   x_opencti_reliability: String
   security_platform_type: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -14420,6 +15023,9 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   coverage_information: [CoverageResult!]
   external_uri: String
   periodicity: String
+  duration: String
+  type_affinity: String
+  platforms_affinity: [String!]
   auto_enrichment_disable: Boolean
   objectCovered: StixDomainObject
   toStixBundle: String
@@ -14463,11 +15069,19 @@ input SecurityCoverageAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   x_opencti_workflow_id: String
+  x_opencti_modified_at: DateTime
   external_uri: String
   externalReferences: [String]
+  file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
   update: Boolean
   auto_enrichment_disable: Boolean!
   periodicity: String
+  duration: String
+  type_affinity: String
+  platforms_affinity: [String]
   coverage_last_result: DateTime
   coverage_valid_from: DateTime
   coverage_valid_to: DateTime
@@ -14502,7 +15116,7 @@ type EmailTemplate implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   name: String!
   description: String
@@ -14564,6 +15178,7 @@ type FormConnection {
 }
 
 enum FormsOrdering {
+  _score
   name
   created_at
   updated_at
@@ -14592,6 +15207,14 @@ type FormSubmissionResponse {
 
 type CheckXTMHubConnectivityResponse {
   status: XTMHubRegistrationStatus
+}
+
+input AutoRegisterInput {
+  platform_token: String!
+}
+
+type Success {
+  success: Boolean!
 }
 
 type Metric {

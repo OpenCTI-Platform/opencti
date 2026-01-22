@@ -9,6 +9,8 @@ import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import { RootAttackPatternQuery } from '@components/techniques/attack_patterns/__generated__/RootAttackPatternQuery.graphql';
 import { RootAttackPatternSubscription } from '@components/techniques/attack_patterns/__generated__/RootAttackPatternSubscription.graphql';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
+import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
+import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import AttackPattern from './AttackPattern';
 import AttackPatternKnowledge from './AttackPatternKnowledge';
@@ -55,6 +57,7 @@ const attackPatternQuery = graphql`
       name
       aliases
       x_opencti_graph_data
+      ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...AttackPattern_attackPattern
       ...AttackPatternKnowledge_attackPattern
@@ -100,13 +103,13 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
   const link = `/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge`;
 
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {attackPattern ? (
         <>
           <Routes>
             <Route
               path="/knowledge/*"
-              element={
+              element={(
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -123,7 +126,7 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
                   ]}
                   data={attackPattern}
                 />
-              }
+              )}
             />
           </Routes>
           <div style={{ paddingRight }}>
@@ -141,7 +144,14 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
                   <AttackPatternEdition attackPatternId={attackPattern.id} />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              RelateComponent={(
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <StixCoreRelationshipCreationFromEntityHeader
+                    data={attackPattern}
+                  />
+                </Security>
+              )}
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <AttackPatternDeletion id={attackPattern.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
@@ -211,19 +221,19 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
               />
               <Route
                 path="/knowledge/*"
-                element={
+                element={(
                   <div key={forceUpdate}>
                     <AttackPatternKnowledge attackPatternData={attackPattern} />
                   </div>
-                }
+                )}
               />
               <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={attackPattern}
                   />
-                }
+                )}
               />
               <Route
                 path="/analyses"
@@ -233,14 +243,14 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
               />
               <Route
                 path="/files"
-                element={
+                element={(
                   <FileManager
                     id={attackPatternId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={attackPattern}
                   />
-                }
+                )}
               />
               <Route
                 path="/history"
@@ -254,11 +264,11 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 const Root = () => {
-  const { attackPatternId } = useParams() as { attackPatternId: string; };
+  const { attackPatternId } = useParams() as { attackPatternId: string };
   const queryRef = useQueryLoading<RootAttackPatternQuery>(attackPatternQuery, {
     id: attackPatternId,
   });

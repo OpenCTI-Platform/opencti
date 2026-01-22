@@ -13,14 +13,14 @@ export const up = async (next) => {
       source: 'ctx._source.account_status = params.status;',
     },
     query: {
-      term: { 'entity_type.keyword': { value: 'User' } }
+      term: { 'entity_type.keyword': { value: 'User' } },
     },
   };
   await elRawUpdateByQuery({
     index: [READ_INDEX_INTERNAL_OBJECTS],
     refresh: true,
     wait_for_completion: true,
-    body: updateUserQuery
+    body: updateUserQuery,
   }).catch((err) => {
     throw DatabaseError('Error updating elastic', { cause: err });
   });

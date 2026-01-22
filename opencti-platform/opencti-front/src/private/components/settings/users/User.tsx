@@ -165,6 +165,10 @@ const UserFragment = graphql`
       id
       name
     }
+    capabilitiesInDraft {
+      id
+      name
+    }
     groups(orderBy: $groupsOrderBy, orderMode: $groupsOrderMode) {
       edges {
         node {
@@ -397,15 +401,15 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                       {t_i18n('2FA state')}
                     </Typography>
                     {user.otp_activated && (
-                    <IconButton
-                      classes={{ root: classes.floatingButton }}
-                      color="primary"
-                      onClick={otpUserDeactivation}
-                      aria-label="Delete all"
-                      size="small"
-                    >
-                      <DeleteForeverOutlined fontSize="small" />
-                    </IconButton>
+                      <IconButton
+                        classes={{ root: classes.floatingButton }}
+                        color="primary"
+                        onClick={otpUserDeactivation}
+                        aria-label="Delete all"
+                        size="small"
+                      >
+                        <DeleteForeverOutlined fontSize="small" />
+                      </IconButton>
                     )}
                     <div className="clearfix" />
                     <pre style={{ margin: 0 }}>
@@ -421,13 +425,15 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                       {t_i18n('Account type')}
                     </Typography>
                     {user.user_service_account
-                      ? <Chip
-                          variant="outlined"
-                          label={t_i18n('Service account')}
-                          style={{
-                            borderRadius: 4,
-                            width: 150 }}
-                        />
+                      ? (
+                          <Chip
+                            variant="outlined"
+                            label={t_i18n('Service account')}
+                            style={{
+                              borderRadius: 4,
+                              width: 150 }}
+                          />
+                        )
                       : '-'}
                   </Grid>
                   <Grid item xs={4}>
@@ -455,17 +461,17 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                 <Security needs={[SETTINGS_SETACCESSES]}>
                   <Tooltip title={t_i18n('Revoke token')}>
                     <IconButton
-                      color='primary'
+                      color="primary"
                       aria-label={t_i18n('Revoke token')}
                       onClick={handleOpenRenewToken}
                       classes={{ root: classes.floatingButton }}
-                      size='small'
+                      size="small"
                     >
-                      <RefreshOutlined fontSize='small'/>
+                      <RefreshOutlined fontSize="small" />
                     </IconButton>
                   </Tooltip>
                 </Security>
-                <div className="clearfix"/>
+                <div className="clearfix" />
                 <pre
                   style={{
                     margin: 0,
@@ -492,7 +498,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                     onClick={() => setShowToken((value) => !value)}
                     aria-label={showToken ? t_i18n('Hide') : t_i18n('Show')}
                   >
-                    {showToken ? <VisibilityOff/> : <Visibility/>}
+                    {showToken ? <VisibilityOff /> : <Visibility />}
                   </IconButton>
                 </pre>
               </Grid>
@@ -529,20 +535,20 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                 </>
               )}
               {isServiceAccount && (
-              <>
-                <Grid item xs={6}>
-                  <Typography variant="h3" gutterBottom={true}>
-                    {t_i18n('Created by')}
-                  </Typography>
-                  { creatorName }
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography variant="h3" gutterBottom={true}>
-                    {t_i18n('Creation date')}
-                  </Typography>
-                  {creationDate || '-'}
-                </Grid>
-              </>
+                <>
+                  <Grid item xs={6}>
+                    <Typography variant="h3" gutterBottom={true}>
+                      {t_i18n('Created by')}
+                    </Typography>
+                    { creatorName }
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="h3" gutterBottom={true}>
+                      {t_i18n('Creation date')}
+                    </Typography>
+                    {creationDate || '-'}
+                  </Grid>
+                </>
               )}
             </Grid>
           </Paper>
@@ -551,7 +557,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Permissions')}
           </Typography>
-          <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+          <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
             <Grid container={true} spacing={3}>
               <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
@@ -640,9 +646,9 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                                 ?? []
                               ).includes(user.id)
                                 ? (
-                                  theme.palette
-                                    .warning as SimplePaletteColorOptions
-                                ).main
+                                    theme.palette
+                                      .warning as SimplePaletteColorOptions
+                                  ).main
                                 : theme.palette.primary.main
                             }
                           />
@@ -683,7 +689,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                           key={session.id}
                           dense={true}
                           divider={true}
-                          secondaryAction={
+                          secondaryAction={(
                             <IconButton
                               aria-label="Kill"
                               onClick={() => handleOpenKillSession(session.id)}
@@ -691,13 +697,13 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                             >
                               <DeleteOutlined fontSize="small" />
                             </IconButton>
-                          }
+                          )}
                         >
                           <ListItemIcon>
                             <ItemIcon type="Session" />
                           </ListItemIcon>
                           <ListItemText
-                            primary={
+                            primary={(
                               <>
                                 <div style={{ float: 'left', width: '50%' }}>
                                   {nsdt(session.created)}
@@ -709,7 +715,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                                   {t_i18n('minutes')}
                                 </div>
                               </>
-                            }
+                            )}
                           />
                         </ListItem>
                       ))}
@@ -717,11 +723,11 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                 </FieldOrEmpty>
               </Grid>
               {!isServiceAccount && (
-              <Grid item xs={6}>
-                <HiddenTypesChipList
-                  hiddenTypes={user.default_hidden_types ?? []}
-                />
-              </Grid>
+                <Grid item xs={6}>
+                  <HiddenTypesChipList
+                    hiddenTypes={user.default_hidden_types ?? []}
+                  />
+                </Grid>
               )}
               <Grid item xs={6}>
                 <Typography
@@ -731,14 +737,14 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                 >
                   {t_i18n('Max Confidence Level')}
                 </Typography>
-                <div className="clearfix"/>
+                <div className="clearfix" />
                 <UserConfidenceLevel user={user} />
               </Grid>
             </Grid>
           </Paper>
         </Grid>
         {!isServiceAccount && (
-        <Triggers recipientId={user.id} filterKey="authorized_members.id" />
+          <Triggers recipientId={user.id} filterKey="authorized_members.id" />
         )}
         <Grid item xs={6} style={{ marginTop: 10 }}>
           <Typography variant="h4" gutterBottom={true} style={{ paddingBottom: '21px' }}>
@@ -748,7 +754,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
             classes={{ root: classes.paper }}
             variant="outlined"
             style={{ minHeight: 500 }}
-            className={'paper-for-grid'}
+            className="paper-for-grid"
           >
             {!isEnterpriseEdition ? (
               <div style={{ display: 'table', height: '100%', width: '100%' }}>
@@ -833,7 +839,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                 <Paper
                   classes={{ root: classes.paper }}
                   variant="outlined"
-                  className={'paper-for-grid'}
+                  className="paper-for-grid"
                 >
                   <span
                     style={{

@@ -5,19 +5,6 @@
     "base_url": "http://localhost:4000/",
     "enterprise_edition_license": "",
     "public_dashboard_authorized_domains": "",
-    "notifier_authorized_functions": [
-      "if",
-      "for",
-      "forEach",
-      "while",
-      "stringify",
-      "Date",
-      "toLocaleString",
-      "isArray",
-      "keys",
-      "function",
-      "markdownToHtml"
-    ],
     "enabled": true,
     "enabled_ui": true,
     "enabled_dev_features": [],
@@ -233,7 +220,8 @@
     "opengrc_url": "",
     "opengrc_token": "",
     "xtmhub_url": "https://hub.filigran.io",
-    "xtmhub_to_email": "no-reply@filigran.io"
+    "xtmhub_to_email": "no-reply@filigran.io",
+    "xtmhub_connectivity_email_enabled": true
   },
   "data_sharing": {
     "max_csv_feed_result": 5000
@@ -419,6 +407,7 @@
     "port": 25,
     "username": "",
     "password": "",
+    "forced_sender_email": "",
     "email_max_cc_size": 500
   },
   "providers": {

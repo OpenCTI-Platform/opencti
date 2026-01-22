@@ -179,76 +179,80 @@ const IndicatorAddObservablesLinesContainer = (props) => {
   return (
     <div className={classes.container}>
       {showForm
-        ? <StixCoreRelationshipCreationForm
-            fromEntities={[indicator]}
-            toEntities={[selected]}
-            relationshipTypes={['based-on']}
-            onSubmit={createRelation}
-            handleClose={handleCloseForm}
-          />
-        : <>
-          {stixCyberObservablesTypes.length > 0 ? (
-            stixCyberObservablesTypes.map((type) => {
-              const expanded = isExpanded(
-                type,
-                stixCyberObservables[type].length,
-                stixCyberObservablesTypes.length,
-              );
-              return (
-                <Accordion
-                  key={type}
-                  expanded={expanded}
-                  onChange={() => handleChangePanel(type, expanded)}
-                  elevation={3}
-                >
-                  <AccordionSummary expandIcon={<ExpandMore />}>
-                    <Typography className={classes.heading}>
-                      {t_i18n(`entity_${type}`)}
-                    </Typography>
-                    <Typography className={classes.secondaryHeading}>
-                      {stixCyberObservables[type].length} {t_i18n('entitie(s)')}
-                    </Typography>
-                  </AccordionSummary>
-                  <AccordionDetails
-                    classes={{ root: classes.expansionPanelContent }}
-                  >
-                    <List classes={{ root: classes.list }}>
-                      {stixCyberObservables[type].map((stixCyberObservable) => {
-                        const alreadyAdded = indicatorObservablesIds.includes(
-                          stixCyberObservable.id,
-                        );
-                        return (
-                          <ListItemButton
-                            key={stixCyberObservable.id}
-                            classes={{ root: classes.menuItem }}
-                            divider={true}
-                            onClick={() => toggleStixCyberObservable(stixCyberObservable, alreadyAdded)}
-                          >
-                            <ListItemIcon>
-                              {alreadyAdded ? (
-                                <CheckCircle classes={{ root: classes.icon }} />
-                              ) : (
-                                <ItemIcon type={type} />
-                              )}
-                            </ListItemIcon>
-                            <ListItemText
-                              primary={stixCyberObservable.observable_value}
-                            />
-                          </ListItemButton>
-                        );
-                      })}
-                    </List>
-                  </AccordionDetails>
-                </Accordion>
-              );
-            })
-          ) : (
-            <div style={{ paddingLeft: 20 }}>
-              {t_i18n('No entities were found for this search.')}
-            </div>
-          )}
-        </>
-        }
+        ? (
+            <StixCoreRelationshipCreationForm
+              fromEntities={[indicator]}
+              toEntities={[selected]}
+              relationshipTypes={['based-on']}
+              onSubmit={createRelation}
+              handleClose={handleCloseForm}
+            />
+          )
+        : (
+            <>
+              {stixCyberObservablesTypes.length > 0 ? (
+                stixCyberObservablesTypes.map((type) => {
+                  const expanded = isExpanded(
+                    type,
+                    stixCyberObservables[type].length,
+                    stixCyberObservablesTypes.length,
+                  );
+                  return (
+                    <Accordion
+                      key={type}
+                      expanded={expanded}
+                      onChange={() => handleChangePanel(type, expanded)}
+                      elevation={3}
+                    >
+                      <AccordionSummary expandIcon={<ExpandMore />}>
+                        <Typography className={classes.heading}>
+                          {t_i18n(`entity_${type}`)}
+                        </Typography>
+                        <Typography className={classes.secondaryHeading}>
+                          {stixCyberObservables[type].length} {t_i18n('entitie(s)')}
+                        </Typography>
+                      </AccordionSummary>
+                      <AccordionDetails
+                        classes={{ root: classes.expansionPanelContent }}
+                      >
+                        <List classes={{ root: classes.list }}>
+                          {stixCyberObservables[type].map((stixCyberObservable) => {
+                            const alreadyAdded = indicatorObservablesIds.includes(
+                              stixCyberObservable.id,
+                            );
+                            return (
+                              <ListItemButton
+                                key={stixCyberObservable.id}
+                                classes={{ root: classes.menuItem }}
+                                divider={true}
+                                onClick={() => toggleStixCyberObservable(stixCyberObservable, alreadyAdded)}
+                              >
+                                <ListItemIcon>
+                                  {alreadyAdded ? (
+                                    <CheckCircle classes={{ root: classes.icon }} />
+                                  ) : (
+                                    <ItemIcon type={type} />
+                                  )}
+                                </ListItemIcon>
+                                <ListItemText
+                                  primary={stixCyberObservable.observable_value}
+                                />
+                              </ListItemButton>
+                            );
+                          })}
+                        </List>
+                      </AccordionDetails>
+                    </Accordion>
+                  );
+                })
+              ) : (
+                <div style={{ paddingLeft: 20 }}>
+                  {t_i18n('No entities were found for this search.')}
+                </div>
+              )}
+            </>
+          )
+      }
     </div>
   );
 };

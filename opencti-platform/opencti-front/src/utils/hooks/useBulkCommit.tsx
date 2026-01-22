@@ -7,21 +7,21 @@ import { useFormatter } from '../../components/i18n';
 type ObjectType = 'entities' | 'observables' | 'files';
 
 interface UseBulkCommitArgs<M extends MutationParameters> {
-  commit: (args: UseMutationConfig<M>) => void
-  relayUpdater?: SelectorStoreUpdater<M['response']>
-  type?: ObjectType
+  commit: (args: UseMutationConfig<M>) => void;
+  relayUpdater?: SelectorStoreUpdater<M['response']>;
+  type?: ObjectType;
 }
 
 interface UseBulkCommit_commits<M extends MutationParameters> {
-  variables: VariablesOf<M>[]
-  onStepError?: (err: Error, v: VariablesOf<M>) => void
-  onStepCompleted?: (v: VariablesOf<M>) => void
-  onCompleted?: (total: number) => void
-  commit?: (args: UseMutationConfig<M>) => void
+  variables: VariablesOf<M>[];
+  onStepError?: (err: Error, v: VariablesOf<M>) => void;
+  onStepCompleted?: (v: VariablesOf<M>) => void;
+  onCompleted?: (total: number) => void;
+  commit?: (args: UseMutationConfig<M>) => void;
 }
 
 interface BulkResultProps<M extends MutationParameters> {
-  variablesToString: (variables: VariablesOf<M>) => string
+  variablesToString: (variables: VariablesOf<M>) => string;
 }
 
 function useBulkCommit<M extends MutationParameters>({

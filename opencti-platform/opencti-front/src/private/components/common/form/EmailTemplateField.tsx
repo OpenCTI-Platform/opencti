@@ -34,22 +34,22 @@ const emailTemplateFieldQuery = graphql`
 
 export type EmailTemplate = {
   id: string;
-  name: string
+  name: string;
 };
 
 export type EmailTemplateFieldOption = {
   label: string;
-  value: EmailTemplate
+  value: EmailTemplate;
 };
 
 interface EmailTemplateFieldComponentProps {
-  label?: string
+  label?: string;
   name: string;
-  style?: React.CSSProperties,
+  style?: React.CSSProperties;
   helperText?: string;
   onChange?: (name: string, value: FieldOption[]) => void;
-  required?: boolean
-  queryRef: PreloadedQuery<EmailTemplateFieldQuery>
+  required?: boolean;
+  queryRef: PreloadedQuery<EmailTemplateFieldQuery>;
 }
 
 const EmailTemplateFieldComponent: FunctionComponent<EmailTemplateFieldComponentProps> = ({
@@ -88,7 +88,7 @@ const EmailTemplateFieldComponent: FunctionComponent<EmailTemplateFieldComponent
           option: EmailTemplateFieldOption,
         ) => (
           <li {...props} key={option.value.id} style={{ display: 'flex', alignItems: 'center' }}>
-            <ItemIcon color={'#afb505'} type='EmailTemplate' />
+            <ItemIcon color="#afb505" type="EmailTemplate" />
             <div style={{ flexGrow: 1, marginLeft: 10 }}>{option.label}</div>
           </li>
         )}
@@ -129,7 +129,7 @@ const EmailTemplateField = ({ ...props }: EmailTemplateFieldProps) => {
   }
 
   return queryRef ? (
-    <React.Suspense fallback={
+    <React.Suspense fallback={(
       <Field
         component={AutocompleteField}
         name={name}
@@ -141,12 +141,12 @@ const EmailTemplateField = ({ ...props }: EmailTemplateFieldProps) => {
           label,
         }}
       />
-    }
+    )}
     >
       <EmailTemplateFieldComponent {...props} queryRef={queryRef} />
     </React.Suspense>
   ) : (
-    <Loader variant={LoaderVariant.inElement}/>
+    <Loader variant={LoaderVariant.inElement} />
   );
 };
 

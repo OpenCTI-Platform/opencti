@@ -31,9 +31,9 @@ export const up = async (next) => {
         {
           script: {
             params: { 'rel_targets.internal_id': fromIds },
-            source: 'ctx._source[\'rel_targets.internal_id\'] = []; ctx._source[\'rel_targets.internal_id\'].addAll(params[\'rel_targets.internal_id\']);'
-          }
-        }
+            source: 'ctx._source[\'rel_targets.internal_id\'] = []; ctx._source[\'rel_targets.internal_id\'].addAll(params[\'rel_targets.internal_id\']);',
+          },
+        },
       ];
       bulkOperationsTargets.push(...updateQuery);
       currentProcessingLocations += 1;

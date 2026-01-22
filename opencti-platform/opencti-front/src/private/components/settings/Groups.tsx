@@ -23,8 +23,8 @@ const useStyles = makeStyles<Theme>(() => ({
 }));
 
 export const groupsSearchQuery = graphql`
-  query GroupsSearchQuery($search: String) {
-    groups(search: $search) {
+  query GroupsSearchQuery($search: String, $groupsOrderBy: GroupsOrdering, $groupsOrderMode: OrderingMode) {
+    groups(search: $search, orderBy: $groupsOrderBy, orderMode: $groupsOrderMode) {
       edges {
         node {
           id
@@ -64,7 +64,7 @@ const Groups = () => {
     LOCAL_STORAGE_KEY,
   );
 
-  const [groupState, setGroupState] = useState<{ orderAsc: boolean, searchTerm: string, view: string, sortBy: string }>({
+  const [groupState, setGroupState] = useState<{ orderAsc: boolean; searchTerm: string; view: string; sortBy: string }>({
     sortBy: params.sortBy ?? 'name',
     orderAsc: params.orderAsc !== false,
     searchTerm: params.searchTerm ?? '',

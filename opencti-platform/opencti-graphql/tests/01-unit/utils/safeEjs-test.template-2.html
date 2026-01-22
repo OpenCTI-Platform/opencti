@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en" style="margin:0; padding:0;">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="x-apple-disable-message-reformatting">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CTI Weekly Watchlist</title>
+</head>
+<body style="margin:0; padding:0; background:#ffffff;">
+<!-- Wrapper -->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f1f1f1;">
+    <tr>
+        <td align="center" style="padding:24px;">
+            <!-- Container -->
+            <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:600px; max-width:100%; background:#ffffff; border:1px solid #e5e9f2; border-radius:8px; overflow:hidden;">
+                <!-- Header -->
+                <tr>
+                    <td style="padding:0; background:#004165;">
+                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td style="padding:18px 24px; font-family:Century Gothic;">
+                                    <h1 style="margin:0; font-size:20px; line-height:1.3; color:#ffffff; letter-spacing:0.2px;">
+                                        CTI Weekly Digest 🔎
+                                    </h1>
+                                    <p style="margin:6px 0 0; font-size:14px; color:#FFC000;">
+                                        <b>[TLP: AMBER + STRICT] </b></p>
+                                    <p style="margin:6px 0 0; font-size:11px; color:#c9d1d9;">
+                                        <em><%= (new Date(notification.created)).toLocaleString() %></em>
+                                    </p>
+                                </td>
+                                <td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <!-- Intro stripe -->
+                <tr>
+                    <td style="height:4px; background:#9DBCB0;"></td>
+                </tr>
+
+                <!-- Body -->
+                <tr>
+                    <td style="padding:20px 24px 8px 24px; font-family:Century Gothic;">
+
+                        <!-- Empty-state detection -->
+                        <%
+                        var hasItems = false;
+                        for (var _i=0; _i<content.length; _i++) {
+                            if (content[_i].events && content[_i].events.length > 0) { hasItems = true; break; }
+                        }
+                        %>
+                        <% if (!hasItems) { %>
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 12px; border:0px dashed #cfd8ea; border-radius:6px;">
+                                <tr>
+                                    <td style="padding:16px;">
+                                        <p style="margin:0; font-size:14px; color:#071578;">No Reports matched your filters this week.</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        <% } %>
+
+                        <!-- Build a de-duplicated index of reports by instance_id (no array.push) -->
+                        <%
+                        var byReport = {};
+                        var reportIds = [];
+
+                        for (var i=0; i<content.length; i++) {
+                            var item = content[i];
+                            if (!item || !item.events) { /* skip */ } else {
+                                for (var j=0; j<item.events.length; j++) {
+                                    var ev = item.events[j];
+                                    var rid = ev.instance_id;
+                                    if (!byReport[rid]) {
+                                        byReport[rid] = { title: item.title, inst: null };
+                                        var _len = reportIds.length; /* manual append */
+                                        reportIds[_len] = rid;
+                                    }
+                                }
+                            }
+                        }
+
+                        /* Attach the STIX instance from `data` once per report */
+                        for (var di=0; di<data.length; di++) {
+                            if (data[di].instance) {
+                                var iid = data[di].instance.id;
+                                if (byReport[iid]) {
+                                    byReport[iid].inst = data[di].instance;
+                                }
+                            }
+                        }
+                        %>
+
+                        <!-- Render one card per unique report -->
+                        <% for (var k=0; k<reportIds.length; k++) {
+                            var rid   = reportIds[k];
+                            var entry = byReport[rid];
+                            var inst  = entry.inst;
+                            var title = entry.title || (inst && inst.name) || 'Untitled report';
+                            var desc  = (inst && inst.description) ? inst.description : 'No description available.';
+
+                            /* Markdown -> HTML minimal: bold **, italic *, code `, line breaker \n + character escape &, <, > */
+                            var descSrc  = (inst && inst.description) ? inst.description : 'No description available.';
+                            var descHtml = '';
+
+                            var p = 0;
+                            while (p < descSrc.length) {
+                                /* Extract one line: until \n or the end */
+                                var line = '';
+                                while (p < descSrc.length && descSrc[p] !== '\n') {
+                                    line += descSrc[p];
+                                    p++;
+                                }
+
+                                if (p < descSrc.length && descSrc[p] === '\n') { p++; } /* skip the \n */
+
+                                /* Identify the header level 1..4 */
+                                var hLevel = 0;
+                                var idx = 0;
+                                while (idx < line.length && hLevel < 4 && line[idx] === '#') {
+                                    hLevel++;
+                                    idx++;
+                                }
+                                var isHeading = (hLevel > 0 && idx < line.length && line[idx] === ' ');
+                                var contentStart = isHeading ? (idx + 1) : 0; /* skip the space after the # */
+
+                                /* Parsing inline bold/italic/code + character escape &, <, > */
+                                var inner = '';
+                                var bold = false, italic = false, code = false;
+                                for (var i2 = contentStart; i2 < line.length; i2++) {
+                                    var ch   = line[i2];
+                                    var next = line[i2 + 1];
+
+                                    /* Parse Markdown link: [Text](URL) */
+                                    if (!code && ch === '[') {
+                                        /* Get the text between brackets */
+                                        var t = '';
+                                        var pText = i2 + 1;
+                                        var foundCloseBracket = false;
+                                        while (pText < line.length) {
+                                            var c = line[pText];
+                                            if (c === ']') { foundCloseBracket = true; break; }
+                                            t += c;
+                                            pText++;
+                                        }
+                                        if (foundCloseBracket) {
+                                            /* Must be followed by the URL */
+                                            var openParen = pText + 1 < line.length ? line[pText + 1] : '';
+                                            if (openParen === '(') {
+                                                var u = '';
+                                                var pUrl = pText + 2;
+                                                var foundCloseParen = false;
+                                                while (pUrl < line.length) {
+                                                    var c2 = line[pUrl];
+                                                    if (c2 === ')') { foundCloseParen = true; break; }
+                                                    u += c2;
+                                                    pUrl++;
+                                                }
+                                                if (foundCloseParen) {
+                                                    /* Escape text and URL */
+                                                    var textEsc = '';
+                                                    for (var et = 0; et < t.length; et++) {
+                                                        var tc = t[et];
+                                                        if (tc === '&')      { textEsc += '&amp;'; }
+                                                        else if (tc === '<') { textEsc += '&lt;'; }
+                                                        else if (tc === '>') { textEsc += '&gt;'; }
+                                                        else                 { textEsc += tc; }
+                                                    }
+                                                    var urlEsc = '';
+                                                    for (var eu = 0; eu < u.length; eu++) {
+                                                        var uc = u[eu];
+                                                        if (uc === '&')       { urlEsc += '&amp;'; }
+                                                        else if (uc === '<')  { urlEsc += '&lt;'; }
+                                                        else if (uc === '>')  { urlEsc += '&gt;'; }
+                                                        else if (uc === '"')  { urlEsc += '&quot;'; }
+                                                        else                  { urlEsc += uc; }
+                                                    }
+                                                    inner += '<a href="' + urlEsc + '">' + textEsc + '</a>';
+                                                    i2 = pUrl; /* jump to the closing parenthesis ) */
+                                                    continue;
+                                                }
+                                            }
+                                        }
+                                        /* if we get here, we don't have a well-formed link → treat '[' as a normal escaped character */
+                                        if (ch === '&')      { inner += '&amp;'; }
+                                        else if (ch === '<') { inner += '&lt;'; }
+                                        else if (ch === '>') { inner += '&gt;'; }
+                                        else                 { inner += ch; }
+                                        continue;
+                                    }
+
+                                    if (!code && ch === '*' && next === '*') {
+                                        bold = !bold; inner += (bold ? '<strong>' : '</strong>'); i2++; continue;
+                                    }
+                                    if (!code && ch === '*') {
+                                        italic = !italic; inner += (italic ? '<em>' : '</em>'); continue;
+                                    }
+                                    if (ch === '`') {
+                                        code = !code; inner += (code ? '<code>' : '</code>'); continue;
+                                    }
+
+                                    /* Minimal character escape */
+                                    if (ch === '&')      { inner += '&amp;'; }
+                                    else if (ch === '<') { inner += '&lt;'; }
+                                    else if (ch === '>') { inner += '&gt;'; }
+                                    else                 { inner += ch; }
+                                }
+
+                                /* Close html tags if markdown not closed */
+                                if (code)   { inner += '</code>'; }
+                                if (italic) { inner += '</em>'; }
+                                if (bold)   { inner += '</strong>'; }
+
+                                /* Generate the line : title h1..h4 or normal line + <br> */
+                                if (isHeading) {
+                                    var tag = (hLevel === 1 ? 'h1' : (hLevel === 2 ? 'h2' : (hLevel === 3 ? 'h3' : 'h4')));
+                                    descHtml += '<' + tag + '>' + inner + '</' + tag + '>';
+                                } else {
+                                    if (inner === '') { descHtml += '<br>'; }
+                                    else { descHtml += inner + '<br>'; }
+                                }
+                            }
+
+                            /* Labels CSV string "label1, label2, ..." */
+                            var labelsCsv = '';
+                            if (inst && inst.labels && inst.labels.length) {
+                                for (var li=0; li<inst.labels.length; li++) {
+                                    if (li > 0) { labelsCsv += ', '; }
+                                    labelsCsv += inst.labels[li];
+                                }
+                            }
+                        %>
+
+                        <!-- Card -->
+                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 16px; border:0px solid #ffffff; border-radius:8px;">
+                            <tr>
+                                <td style="padding:16px;">
+                                    <h2 style="margin:0 0 6px; font-size:16px; line-height:1.35; color:#00020C;"><%= title %></h2>
+                                    <p style="margin:0 0 12px; font-size:13px; line-height:1.6; color:#333;"><%= descHtml %></p>
+
+                                    <!-- CTA Button (bulletproof, Outlook-friendly) -->
+                                    <table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:8px;">
+                                        <tr>
+                                            <td align="left">
+                                                <!--[if mso]>
+                              <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="https://testing.octi.staging.filigran.io/dashboard/id/<%= rid %>"
+                                style="height:40px;v-text-anchor:middle;width:200px;" arcsize="10%" strokecolor="#9DBCB0" fillcolor="#9DBCB0">
+                                <w:anchorlock/>
+                                <center style="color:#ffffff; font-family:Century Gothic; font-size:14px; font-weight:bold;">
+                                  View in OpenCTI
+                                </center>
+                              </v:roundrect>
+                              <![endif]-->
+                                                <!--[if !mso]><!-- -->
+                                                <a href="https://testing.octi.staging.filigran.io/dashboard/id/<%= rid %>"
+                                                   style="display:inline-block; background:#9DBCB0; border:0px solid #9DBCB0; border-radius:6px; padding:10px 16px; text-decoration:none;
+                                        font-size:14px; font-weight:bold; color:#ffffff; font-family:Century Gothic">
+                                                    View in OpenCTI
+                                                </a>
+                                                <!--<![endif]-->
+                                            </td>
+                                        </tr>
+                                    </table>
+
+                                </td>
+                            </tr>
+                            <!-- Accent divider -->
+                            <tr>
+                                <td style="height:3px; background:#9DBCB0;"></td>
+                            </tr>
+                        </table>
+
+                        <% } %> <!-- end unique reports -->
+
+                    </td>
+                </tr>
+
+                <!-- Footer -->
+                <tr>
+                    <td style="padding:16px 24px 22px 24px; background:#f8faff; font-family:Century Gothic; border-top:1px solid #e5e9f2;">
+                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td style="font-size:12px; color:#5f6b7a;">
+                                    <b>TLP AMBER+STRICT</b> -- Recipients may only share TLP: AMBER+STRICT information with
+                                    members of their own organization who need to know, and only as widely as necessary to act
+                                    on that information.
+                                    <br>
+                                    <br>
+                                    This weekly digest has been produced with love from your CTI Team
+                                </td>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+
+</table>
+<!-- /Container -->
+</td>
+</tr>
+</table>
+<!-- /Wrapper -->
+</body>
+</html>

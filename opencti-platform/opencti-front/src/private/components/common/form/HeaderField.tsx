@@ -10,7 +10,7 @@ import TextField from '../../../../components/TextField';
 interface HeaderFieldAddProps {
   id: string;
   name: string;
-  values: { name: string, value: string }[];
+  values: { name: string; value: string }[];
   containerStyle: { marginTop: number; width: string };
   setFieldValue?: (name: string, value: unknown) => void;
 }
@@ -29,7 +29,9 @@ export const HeaderFieldAdd: FunctionComponent<HeaderFieldAddProps> = ({
           <>
             <div id="total_headers">
               {values?.map((_, index) => (
-                <Paper className={'paper-for-grid'} variant="outlined"
+                <Paper
+                  className="paper-for-grid"
+                  variant="outlined"
                   key={index}
                   style={{ marginTop: 20, padding: 20, width: '100%', position: 'relative' }}
                 >

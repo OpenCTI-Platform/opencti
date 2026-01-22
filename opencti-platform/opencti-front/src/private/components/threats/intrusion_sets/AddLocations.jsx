@@ -66,14 +66,14 @@ class AddLocations extends Component {
           open={this.state.open}
           onClose={this.handleClose.bind(this)}
           title={t('Add locations')}
-          header={
+          header={(
             <div className={classes.search}>
               <SearchInput
                 variant="inDrawer"
                 onSubmit={this.handleSearch.bind(this)}
               />
             </div>
-          }
+          )}
         >
           <QueryRenderer
             query={addLocationsLinesQuery}

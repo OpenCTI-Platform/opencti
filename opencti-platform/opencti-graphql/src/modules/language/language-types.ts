@@ -20,7 +20,7 @@ export interface StixLanguage extends StixObject {
   aliases: Array<string>;
   created_by_ref: StixId | undefined; // optional
   extensions: {
-    [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
+    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
   };
 }
 // endregion

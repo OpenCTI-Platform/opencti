@@ -63,7 +63,7 @@ interface ThreatActorGroupAddInput {
 }
 
 interface ThreatActorGroupFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  updater: (store: RecordSourceSelectorProxy, key: string, response: ThreatActorGroupCreationMutation['response']['threatActorGroupAdd']) => void;
   onReset?: () => void;
   onCompleted?: () => void;
   defaultCreatedBy?: { value: string; label: string };
@@ -75,7 +75,7 @@ interface ThreatActorGroupFormProps {
 }
 
 export const ThreatActorGroupCreationForm: FunctionComponent<
-ThreatActorGroupFormProps
+  ThreatActorGroupFormProps
 > = ({
   updater,
   onReset,
@@ -117,9 +117,9 @@ ThreatActorGroupFormProps
     resetBulk,
   } = useBulkCommit<ThreatActorGroupCreationMutation>({
     commit,
-    relayUpdater: (store) => {
+    relayUpdater: (store, response) => {
       if (updater) {
-        updater(store, 'threatActorGroupAdd');
+        updater(store, 'threatActorGroupAdd', response?.threatActorGroupAdd);
       }
     },
   });
@@ -333,7 +333,7 @@ const ThreatActorGroupCreation = ({
   );
 
   const CreateThreatActorGroupControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Threat-Actor-Group' {...props} />
+    <CreateEntityControlledDial entityType="Threat-Actor-Group" {...props} />
   );
 
   return (

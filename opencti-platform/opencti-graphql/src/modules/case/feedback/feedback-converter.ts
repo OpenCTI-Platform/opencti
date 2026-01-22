@@ -19,8 +19,8 @@ export const convertFeedbackToStix_2_1 = (instance: StoreEntityFeedback): StixFe
       [STIX_EXT_OCTI]: cleanObject({
         ...feedback.extensions[STIX_EXT_OCTI],
         extension_type: 'new-sdo',
-      })
-    }
+      }),
+    },
   };
 };
 

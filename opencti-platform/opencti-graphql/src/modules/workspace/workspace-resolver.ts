@@ -15,7 +15,7 @@ import {
   workspaceEditContext,
   workspaceEditField,
   workspaceImportConfiguration,
-  workspaceImportWidgetConfiguration
+  workspaceImportWidgetConfiguration,
 } from './workspace-domain';
 import { fetchEditContext } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
@@ -34,12 +34,14 @@ const workspaceResolvers: Resolvers = {
     authorizedMembers: (workspace, _, context) => getAuthorizedMembers(context, context.user, workspace),
     currentUserAccessRight: (workspace, _, context) => getCurrentUserAccessRight(context, context.user, workspace),
     owner: (workspace, _, context) => context.batch.creatorBatchLoader.load(getOwnerId(workspace)),
-    objects: (workspace, args, context) => objects(context, context.user, workspace, args),
+    objects: (workspace, args, context) => {
+      return objects(context, context.user, workspace, args) as any;
+    },
     editContext: (workspace) => fetchEditContext(workspace.id),
     toStixReportBundle: (workspace, _, context) => toStixReportBundle(context, context.user, workspace),
     toConfigurationExport: (workspace, _, context) => generateWorkspaceExportConfiguration(context, context.user, workspace),
     toWidgetExport: (workspace, { widgetId }, context) => generateWidgetExportConfiguration(context, context.user, workspace, widgetId),
-    isShared: (workspace, _, context) => isDashboardShared(context, workspace)
+    isShared: (workspace, _, context) => isDashboardShared(context, workspace),
   },
   Mutation: {
     workspaceAdd: (_, { input }, context) => {

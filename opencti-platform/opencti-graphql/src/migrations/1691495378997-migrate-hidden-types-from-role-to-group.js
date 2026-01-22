@@ -1,7 +1,7 @@
 import { Promise } from 'bluebird';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { elRawUpdateByQuery, elList, elReplace, ES_MAX_CONCURRENCY } from '../database/engine';
-import { isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS, } from '../database/utils';
+import { isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { DatabaseError } from '../config/errors';
 import { logApp } from '../config/conf';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE } from '../schema/internalObject';
@@ -33,14 +33,14 @@ export const up = async (next) => {
       source: 'ctx._source.remove(params.field)',
     },
     query: {
-      term: { 'entity_type.keyword': { value: ENTITY_TYPE_ROLE } }
+      term: { 'entity_type.keyword': { value: ENTITY_TYPE_ROLE } },
     },
   };
   await elRawUpdateByQuery({
     index: [READ_INDEX_INTERNAL_OBJECTS],
     refresh: true,
     wait_for_completion: true,
-    body: updateRoleQuery
+    body: updateRoleQuery,
   })
     .catch((err) => {
       throw DatabaseError('Error updating elastic', { cause: err });

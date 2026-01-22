@@ -13,4 +13,20 @@ export default class EventsIncidentDetailsPage {
   getTitle(name: string) {
     return this.page.getByRole('heading', { name });
   }
+
+  getIncidentDetailsPage() {
+    return this.page.getByTestId('incident-details-page');
+  }
+
+  getKnowledgeTab() {
+    return this.page.getByRole('tab', { name: 'Knowledge' }).click();
+  }
+
+  getVictimologyTab() {
+    return this.page.getByRole('menuitem', { name: 'Victimology' }).click();
+  }
+
+  getCreateRelationshipButton() {
+    return this.page.getByRole('button', { name: 'Create Relationship' });
+  }
 }

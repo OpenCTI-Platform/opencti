@@ -98,15 +98,15 @@ const FeedbackPopover = ({ id }: { id: string }) => {
         message={t_i18n('Do you want to delete this feedback?')}
       />
       {queryRef && (
-      <React.Suspense
-        fallback={<Loader variant={LoaderVariant.inElement} />}
-      >
-        <FeedbackEditionContainer
-          queryRef={queryRef}
-          handleClose={handleClose}
-          open={displayEdit}
-        />
-      </React.Suspense>
+        <React.Suspense
+          fallback={<Loader variant={LoaderVariant.inElement} />}
+        >
+          <FeedbackEditionContainer
+            queryRef={queryRef}
+            handleClose={handleClose}
+            open={displayEdit}
+          />
+        </React.Suspense>
       )}
     </div>
   );

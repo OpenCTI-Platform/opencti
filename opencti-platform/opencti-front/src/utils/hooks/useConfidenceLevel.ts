@@ -25,7 +25,7 @@ const useConfidenceLevel = () => {
     return userEffectiveConfidenceLevel.max_confidence;
   };
 
-  const checkConfidenceForEntity = (entity: { entity_type?: string | null, confidence?: number | null }, notifyError = false) => {
+  const checkConfidenceForEntity = (entity: { entity_type?: string | null; confidence?: number | null }, notifyError = false) => {
     if (!userEffectiveConfidenceLevel) {
       if (notifyError) {
         MESSAGING$.notifyError(t_i18n('You need a confidence level to edit objects in the platform.'));

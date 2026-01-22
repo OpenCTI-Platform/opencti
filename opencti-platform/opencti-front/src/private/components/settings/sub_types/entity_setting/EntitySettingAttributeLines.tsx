@@ -6,10 +6,10 @@ import { useFormatter } from '../../../../../components/i18n';
 import { EntitySettingAttributes_entitySetting$data } from './__generated__/EntitySettingAttributes_entitySetting.graphql';
 
 export interface AttributeNode {
-  label?: string | null,
-  name: string,
-  type: string,
-  scale?: string | null
+  label?: string | null;
+  name: string;
+  type: string;
+  scale?: string | null;
 }
 
 const computeAttributeNodeType = (node: AttributeNode) => {
@@ -22,10 +22,10 @@ const EntitySettingAttributeLines = ({
   keyword,
   entitySetting,
 }: {
-  datas: { node: AttributeNode }[],
-  dataColumns: DataColumns,
-  keyword: string | undefined,
-  entitySetting: EntitySettingAttributes_entitySetting$data,
+  datas: { node: AttributeNode }[];
+  dataColumns: DataColumns;
+  keyword: string | undefined;
+  entitySetting: EntitySettingAttributes_entitySetting$data;
 }) => {
   const { t_i18n } = useFormatter();
 

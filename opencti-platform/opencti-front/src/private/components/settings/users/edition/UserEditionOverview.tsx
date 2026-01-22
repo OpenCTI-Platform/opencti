@@ -85,15 +85,15 @@ const userValidation = (t: (value: string) => string, userIsOnlyOrganizationAdmi
 interface UserEditionOverviewComponentProps {
   user: UserEditionOverview_user$data;
   context:
-  | readonly ({
-    readonly focusOn: string | null | undefined;
-    readonly name: string;
-  } | null)[]
-  | null | undefined;
+    | readonly ({
+      readonly focusOn: string | null | undefined;
+      readonly name: string;
+    } | null)[]
+    | null | undefined;
 }
 
 const UserEditionOverviewComponent: FunctionComponent<
-UserEditionOverviewComponentProps
+  UserEditionOverviewComponentProps
 > = ({ user, context }) => {
   const { t_i18n } = useFormatter();
   const { me, settings } = useAuth();
@@ -194,8 +194,8 @@ UserEditionOverviewComponentProps
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
             helperText={
-              <SubscriptionFocus context={context} fieldName="name"/>
-                }
+              <SubscriptionFocus context={context} fieldName="name" />
+            }
           />
           <Field
             component={TextField}
@@ -208,8 +208,8 @@ UserEditionOverviewComponentProps
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
             helperText={
-              <SubscriptionFocus context={context} fieldName="user_email"/>
-                }
+              <SubscriptionFocus context={context} fieldName="user_email" />
+            }
           />
           <Field
             component={TextField}
@@ -221,8 +221,8 @@ UserEditionOverviewComponentProps
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
             helperText={
-              <SubscriptionFocus context={context} fieldName="firstname"/>
-                }
+              <SubscriptionFocus context={context} fieldName="firstname" />
+            }
           />
           <Field
             component={TextField}
@@ -234,8 +234,8 @@ UserEditionOverviewComponentProps
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
             helperText={
-              <SubscriptionFocus context={context} fieldName="lastname"/>
-                }
+              <SubscriptionFocus context={context} fieldName="lastname" />
+            }
           />
           <Field
             component={MarkdownField}
@@ -248,8 +248,8 @@ UserEditionOverviewComponentProps
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
             helperText={
-              <SubscriptionFocus context={context} fieldName="description"/>
-                }
+              <SubscriptionFocus context={context} fieldName="description" />
+            }
           />
           <Field
             component={SelectField}
@@ -268,7 +268,7 @@ UserEditionOverviewComponentProps
             <MenuItem value="fr">Français</MenuItem>
           </Field>
           <FormHelperText>
-            <SubscriptionFocus context={context} fieldName="language"/>
+            <SubscriptionFocus context={context} fieldName="language" />
           </FormHelperText>
           <ObjectOrganizationField
             name="objectOrganization"
@@ -290,8 +290,8 @@ UserEditionOverviewComponentProps
             onSubmit={handleSubmitField}
             style={{ marginTop: 20 }}
             helperText={
-              <SubscriptionFocus context={context} fieldName="api_token"/>
-              }
+              <SubscriptionFocus context={context} fieldName="api_token" />
+            }
           />
           <Field
             component={SelectField}
@@ -308,7 +308,7 @@ UserEditionOverviewComponentProps
             })}
           </Field>
           <FormHelperText>
-            <SubscriptionFocus context={context} fieldName="account_status"/>
+            <SubscriptionFocus context={context} fieldName="account_status" />
           </FormHelperText>
           <Field
             component={DateTimePickerField}

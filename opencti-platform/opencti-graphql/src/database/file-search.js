@@ -34,6 +34,8 @@ const buildIndexFileBody = (documentId, file, entity = null) => {
   if (entity) {
     documentBody.entity_id = entity.internal_id;
     // index entity markings & organization restrictions
+    documentBody.entity_type = entity.entity_type;
+    documentBody.parent_types = entity.parent_types;
     documentBody[buildRefRelationKey(RELATION_OBJECT_MARKING)] = entity[RELATION_OBJECT_MARKING] ?? [];
     documentBody[buildRefRelationKey(RELATION_GRANTED_TO)] = entity[RELATION_GRANTED_TO] ?? [];
     // index entity authorized_members & authorized_authorities => not yet
@@ -94,8 +96,8 @@ export const elUpdateFilesWithEntityRestrictions = async (entity) => {
       script: { source, params: { changes } },
       query: {
         term: {
-          'entity_id.keyword': entity.internal_id
-        }
+          'entity_id.keyword': entity.internal_id,
+        },
       },
     },
   }).catch((err) => {
@@ -117,8 +119,8 @@ export const elUpdateRemovedFiles = async (entity, removed = true) => {
       script: { source, params },
       query: {
         term: {
-          'entity_id.keyword': entity.internal_id
-        }
+          'entity_id.keyword': entity.internal_id,
+        },
       },
     },
   }).catch((err) => {
@@ -158,7 +160,7 @@ const decodeSearch = (search) => {
   let decodedSearch;
   try {
     decodedSearch = decodeURIComponent(search).trim();
-  } catch (e) {
+  } catch (_e) {
     decodedSearch = search.trim();
   }
   return decodedSearch;
@@ -174,8 +176,8 @@ const elBuildSearchFilesQueryBody = async (context, user, options = {}) => {
     const fullTextSearch = {
       simple_query_string: {
         query: decodedSearch,
-        fields: ['attachment.content', 'attachment.title^2']
-      }
+        fields: ['attachment.content', 'attachment.title^2'],
+      },
     };
     must.push(fullTextSearch);
   }
@@ -191,9 +193,9 @@ const elBuildSearchFilesQueryBody = async (context, user, options = {}) => {
       bool: {
         should: [
           { term: { removed: { value: false } } },
-          { bool: { must_not: [{ exists: { field: 'removed' } }] } }
-        ]
-      }
+          { bool: { must_not: [{ exists: { field: 'removed' } }] } },
+        ],
+      },
     };
     must.push(excludeRemovedQuery);
   }
@@ -231,8 +233,8 @@ export const elSearchFiles = async (context, user, options = {}) => {
   if (highlight) {
     body.highlight = {
       fields: {
-        'attachment.content': { type: 'unified', boundary_scanner: 'word', number_of_fragments: 100 }
-      }
+        'attachment.content': { type: 'unified', boundary_scanner: 'word', number_of_fragments: 100 },
+      },
     };
   }
   const sourceIncludes = (fields?.length > 0) ? fields : [];
@@ -283,7 +285,7 @@ export const elDeleteAllFiles = async () => {
     body: {
       query: {
         match_all: {},
-      }
+      },
     },
   }).catch((err) => {
     throw DatabaseError('Error deleting all files ', { cause: err });

@@ -6,24 +6,24 @@ import stopEvent from '../utils/domEvent';
 import EnrichedTooltip from './EnrichedTooltip';
 
 interface Marking {
-  id: string
-  definition?: string | null
-  x_opencti_color?: string | null
+  id: string;
+  definition?: string | null;
+  x_opencti_color?: string | null;
 }
 
 interface ItemMarkingsProps {
-  markingDefinitions: readonly Marking[]
-  variant?: string
-  limit?: number
-  onClick?: (marking: Marking) => void
+  markingDefinitions: readonly Marking[];
+  variant?: string;
+  limit?: number;
+  onClick?: (marking: Marking) => void;
 }
 
 interface ChipMarkingProps {
-  markingDefinition: Marking
-  isInTooltip?: boolean
-  withTooltip?: boolean
-  variant?: ItemMarkingsProps['variant']
-  onClick?: ItemMarkingsProps['onClick']
+  markingDefinition: Marking;
+  isInTooltip?: boolean;
+  withTooltip?: boolean;
+  variant?: ItemMarkingsProps['variant'];
+  onClick?: ItemMarkingsProps['onClick'];
 }
 
 const ChipMarking = ({
@@ -133,20 +133,22 @@ const ItemMarkings = ({
     return (
       <span>
         {markings.length === 0
-          ? <ChipMarking
-              markingDefinition={{ definition: 'NONE', id: 'NONE' }}
-              withTooltip
-              variant={variant}
-            />
+          ? (
+              <ChipMarking
+                markingDefinition={{ definition: 'NONE', id: 'NONE' }}
+                withTooltip
+                variant={variant}
+              />
+            )
           : markings.map((markingDefinition) => (
-            <ChipMarking
-              key={markingDefinition.id}
-              markingDefinition={markingDefinition}
-              withTooltip
-              variant={variant}
-              onClick={onClick}
-            />
-          ))}
+              <ChipMarking
+                key={markingDefinition.id}
+                markingDefinition={markingDefinition}
+                withTooltip
+                variant={variant}
+                onClick={onClick}
+              />
+            ))}
       </span>
     );
   }

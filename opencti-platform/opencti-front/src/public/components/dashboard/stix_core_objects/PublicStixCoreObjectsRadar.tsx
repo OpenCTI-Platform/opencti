@@ -70,8 +70,8 @@ const publicStixCoreObjectsRadarQuery = graphql`
 `;
 
 interface PublicStixCoreObjectsRadarComponentProps {
-  dataSelection: Widget['dataSelection']
-  queryRef: PreloadedQuery<PublicStixCoreObjectsRadarQuery>
+  dataSelection: Widget['dataSelection'];
+  queryRef: PreloadedQuery<PublicStixCoreObjectsRadarQuery>;
 }
 
 const PublicStixCoreObjectsRadarComponent = ({

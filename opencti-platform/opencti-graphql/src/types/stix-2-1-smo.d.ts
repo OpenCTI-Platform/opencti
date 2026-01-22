@@ -11,7 +11,7 @@ export interface StixMarkingDefinition extends StixMarkingsObject {
   name: string;
   definition_type: string;
   extensions: {
-    [STIX_EXT_OCTI] : MarkingDefinitionExtension
+    [STIX_EXT_OCTI]: MarkingDefinitionExtension;
   };
 }
 
@@ -21,7 +21,7 @@ export interface StixLabel extends StixObject {
   value: string;
   color: string;
   extensions: {
-    [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
+    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
   };
 }
 
@@ -33,7 +33,7 @@ export interface StixInternalKillChainPhase {
 export interface StixKillChainPhase extends StixInternalKillChainPhase, StixObject {
   order: number;
   extensions: {
-    [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
+    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
   };
 }
 
@@ -47,6 +47,6 @@ export interface StixInternalExternalReference {
 }
 export interface StixExternalReference extends StixInternalExternalReference, StixObject {
   extensions: {
-    [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
+    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
   };
 }

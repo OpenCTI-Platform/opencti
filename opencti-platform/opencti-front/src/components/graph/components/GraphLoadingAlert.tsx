@@ -54,7 +54,7 @@ const GraphLoadingAlert = () => {
   return (
     <Alert
       severity="info"
-      variant='outlined'
+      variant="outlined"
       sx={{
         position: 'absolute',
         zIndex: 99,

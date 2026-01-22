@@ -24,7 +24,7 @@ export const up = async (next) => {
   const mergeKnowledgeCapa = await addCapability(
     context,
     SYSTEM_USER,
-    { name: 'KNOWLEDGE_KNUPDATE_KNMERGE', description: 'Merge knowledge', attribute_order: 305 }
+    { name: 'KNOWLEDGE_KNUPDATE_KNMERGE', description: 'Merge knowledge', attribute_order: 305 },
   );
   // Add merge knowledge capability to roles having former delete/merge capability
   const roles = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_ROLE]);

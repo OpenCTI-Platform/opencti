@@ -8,12 +8,12 @@ import { areaChartOptions } from '../../utils/Charts';
 import { simpleNumberFormat } from '../../utils/Number';
 
 interface WidgetMultiAreasProps {
-  series: ApexAxisChartSeries
-  interval?: string | null
-  isStacked?: boolean
-  hasLegend?: boolean
-  withExport?: boolean
-  readonly?: boolean
+  series: ApexAxisChartSeries;
+  interval?: string | null;
+  isStacked?: boolean;
+  hasLegend?: boolean;
+  withExport?: boolean;
+  readonly?: boolean;
 }
 
 const WidgetMultiAreas = ({

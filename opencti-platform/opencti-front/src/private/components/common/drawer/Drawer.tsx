@@ -84,8 +84,8 @@ interface DrawerProps {
   context?: readonly (GenericContext | null)[] | null;
   header?: React.ReactElement;
   controlledDial?: DrawerControlledDialType;
-  containerStyle?: CSSProperties
-  disabled?: boolean
+  containerStyle?: CSSProperties;
+  disabled?: boolean;
 }
 
 // eslint-disable-next-line react/display-name
@@ -138,7 +138,7 @@ const Drawer = forwardRef(({
       {variant && (
         <Fab
           onClick={() => setOpen(true)}
-          color={'primary'}
+          color="primary"
           aria-label={update ? 'Edit' : 'Add'}
           disabled={disabled}
           className={classNames({
@@ -178,7 +178,7 @@ const Drawer = forwardRef(({
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="subtitle2" style={{ textWrap: 'nowrap' }}>{title}</Typography>
+          <Typography variant="subtitle2" style={{ textWrap: 'nowrap', marginRight: 12 }}>{title}</Typography>
           {context && <SubscriptionAvatars context={context} />}
           {header}
         </div>

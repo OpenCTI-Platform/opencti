@@ -1,7 +1,7 @@
 services:
   opencti-dev-redis:
     container_name: opencti-dev-redis
-    image: redis:8.2.2
+    image: redis:8.4.0
     restart: unless-stopped
     ports:
       - 6379:6379
@@ -14,7 +14,7 @@ services:
       - 5540:5540
   opencti-dev-elasticsearch:
     container_name: opencti-dev-elasticsearch
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.19.6
+    image: elasticsearch:8.19.10
     volumes:
       - esdata:/usr/share/elasticsearch/data
       - essnapshots:/usr/share/elasticsearch/snapshots
@@ -36,7 +36,7 @@ services:
       - 9300:9300
   opencti-dev-kibana:
     container_name: opencti-dev-kibana
-    image: docker.elastic.co/kibana/kibana:8.19.6
+    image: kibana:8.19.10
     environment:
       - ELASTICSEARCH_HOSTS=http://opencti-dev-elasticsearch:9200
     restart: unless-stopped
@@ -62,7 +62,7 @@ services:
   opencti-dev-opensearch:
     profiles: [ opensearch ]
     container_name: opencti-dev-opensearch
-    image: opensearchproject/opensearch:3.3.1
+    image: opensearchproject/opensearch:3.4.0
     volumes:
       - osdata:/usr/share/opensearch/data
       - ossnapshots:/usr/share/opensearch/snapshots
@@ -84,7 +84,7 @@ services:
       - 9600:9600
   opencti-dev-opensearch-dashboards:
     profiles: [ opensearch ]
-    image: opensearchproject/opensearch-dashboards:3.3.0
+    image: opensearchproject/opensearch-dashboards:3.4.0
     container_name: opencti-dev-opensearch-dashboards
     ports:
       - 5602:5601 # Map host port 5601 to container port 5601
@@ -113,7 +113,7 @@ services:
     restart: unless-stopped
   opencti-dev-rabbitmq:
     container_name: opencti-dev-rabbitmq
-    image: rabbitmq:4.1.4-management
+    image: rabbitmq:4.2.2-management
     restart: unless-stopped
     volumes:
       - ./rabbitmq.config:/etc/rabbitmq/conf.d/90-userdefined.conf
@@ -143,7 +143,7 @@ services:
       - "telemetry"
   opencti-dev-telemetry-otlp:
     container_name: opencti-telemetry-otlp
-    image: otel/opentelemetry-collector-contrib:0.138.0
+    image: otel/opentelemetry-collector-contrib:0.143.1
     restart: unless-stopped
     volumes:
       - "./otlp-config.yaml:/etc/config/otlp-config.yaml"
@@ -159,14 +159,17 @@ services:
   # docker compose --profile keycloak up -d
   opencti-dev-keycloak:
       profiles: [ keycloak ]
-      image: quay.io/keycloak/keycloak:26.4.2
+      image: quay.io/keycloak/keycloak:26.4.5
       volumes:
         - keycloakdata:/opt/keycloak/data
+        - ./keycloak-configuration:/opt/keycloak/data/import
       container_name: opencti-dev-keycloak
-      command: start-dev
+      command: start-dev --import-realm --verbose
+      # use below command to export a configuration. Remember to remove admin user.
+      #command: export --dir /opt/keycloak/data/import/export --users same_file
       environment:
-        KEYCLOAK_ADMIN: "admin"
-        KEYCLOAK_ADMIN_PASSWORD: "admin"
+        KC_BOOTSTRAP_ADMIN_USERNAME: "admin"
+        KC_BOOTSTRAP_ADMIN_PASSWORD: "admin"
       ports:
         - "9999:8080"
 

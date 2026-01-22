@@ -15,8 +15,8 @@ export const BASE_WEIGHT_TYPE: Mass = 'kg';
 type SupportedUnitType = 'Imperial' | 'Metric';
 
 type UnitType = {
-  length: Length,
-  weight: Mass,
+  length: Length;
+  weight: Mass;
 };
 
 export const Units: { [k in SupportedUnitType]: UnitType } = {
@@ -40,7 +40,7 @@ const computeUserUnit = (selectedSystem?: UnitSystem | null, selectedLanguage = 
 };
 
 const heightsConverterLoad = (userMetricType: SupportedUnitType) => {
-  return (heights: ThreatActorIndividualEditionBiographics_ThreatActorIndividual$data['height']) : ThreatActorIndividualEditionBiographics_ThreatActorIndividual$data['height'] => {
+  return (heights: ThreatActorIndividualEditionBiographics_ThreatActorIndividual$data['height']): ThreatActorIndividualEditionBiographics_ThreatActorIndividual$data['height'] => {
     return (heights ?? []).map((data) => {
       const { measure, date_seen, index } = data;
       const numericMeasure = parseFloat(String(measure));
@@ -59,7 +59,7 @@ const heightToPivotFormat = (userMetricType: SupportedUnitType) => {
 };
 const heightsConverterSave = (userMetricType: SupportedUnitType) => {
   const pivotConverter = heightToPivotFormat(userMetricType);
-  return (heights: MeasureInput[]) : MeasureInput[] => {
+  return (heights: MeasureInput[]): MeasureInput[] => {
     return (heights ?? []).map(({ measure, date_seen }) => {
       return { measure: pivotConverter(measure), date_seen };
     });
@@ -67,7 +67,7 @@ const heightsConverterSave = (userMetricType: SupportedUnitType) => {
 };
 
 const weightsConverterLoad = (userMetricType: SupportedUnitType) => {
-  return (weights: ThreatActorIndividualEditionBiographics_ThreatActorIndividual$data['weight']) : ThreatActorIndividualEditionBiographics_ThreatActorIndividual$data['weight'] => {
+  return (weights: ThreatActorIndividualEditionBiographics_ThreatActorIndividual$data['weight']): ThreatActorIndividualEditionBiographics_ThreatActorIndividual$data['weight'] => {
     return (weights ?? []).map(({ measure, date_seen, index }) => {
       const numericMeasure = parseFloat(String(measure));
       const weightPrimaryUnit = Units[userMetricType].weight;
@@ -85,7 +85,7 @@ const weightToPivotFormat = (userMetricType: SupportedUnitType) => {
 };
 const weightsConverterSave = (userMetricType: SupportedUnitType) => {
   const pivotConverter = weightToPivotFormat(userMetricType);
-  return (weights: MeasureInput[]) : MeasureInput[] => {
+  return (weights: MeasureInput[]): MeasureInput[] => {
     return (weights ?? []).map(({ measure, date_seen }) => {
       return { measure: pivotConverter(measure), date_seen };
     });

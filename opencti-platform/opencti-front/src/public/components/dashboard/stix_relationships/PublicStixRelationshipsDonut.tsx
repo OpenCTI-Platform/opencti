@@ -70,8 +70,8 @@ const publicStixRelationshipsDonutQuery = graphql`
 `;
 
 interface PublicStixRelationshipsDonutComponentProps {
-  dataSelection: Widget['dataSelection']
-  queryRef: PreloadedQuery<PublicStixRelationshipsDonutQuery>
+  dataSelection: Widget['dataSelection'];
+  queryRef: PreloadedQuery<PublicStixRelationshipsDonutQuery>;
 }
 
 const PublicStixRelationshipsDonutComponent = ({

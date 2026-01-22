@@ -22,7 +22,7 @@ import { useFormatter } from '../../../../components/i18n';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
 import type { Theme } from '../../../../components/Theme';
 
-const EnterpriseEdition = ({ message, feature }: { message?: string, feature?: string }) => {
+const EnterpriseEdition = ({ message, feature }: { message?: string; feature?: string }) => {
   const theme = useTheme<Theme>();
 
   const { isSensitive, isAllowed } = useSensitiveModifications('ce_ee_toggle');

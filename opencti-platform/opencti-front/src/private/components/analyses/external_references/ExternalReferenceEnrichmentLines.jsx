@@ -128,10 +128,10 @@ const ExternalReferenceEnrichment = (props) => {
   });
   const connectors = file && file.metaData
     ? R.filter(
-      (n) => R.includes(file.metaData.mimetype, n.connector_scope)
-            || n.connector_scope.length === 0,
-      connectorsForImport,
-    )
+        (n) => R.includes(file.metaData.mimetype, n.connector_scope)
+          || n.connector_scope.length === 0,
+        connectorsForImport,
+      )
     : [];
   const allConnectors = R.sortBy(R.prop('name'), [
     ...externalReference.connectors,
@@ -143,13 +143,13 @@ const ExternalReferenceEnrichment = (props) => {
         allConnectors.map((connector) => {
           const jobs = connector.connector_type === 'INTERNAL_IMPORT_FILE'
             ? R.filter(
-              (n) => n.connector.id === connector.id,
-              R.propOr([], 'works', file),
-            )
+                (n) => n.connector.id === connector.id,
+                R.propOr([], 'works', file),
+              )
             : R.filter(
-              (n) => n.connector && n.connector.id === connector.id,
-              R.propOr([], 'jobs', externalReference),
-            );
+                (n) => n.connector && n.connector.id === connector.id,
+                R.propOr([], 'jobs', externalReference),
+              );
           // eslint-disable-next-line max-len
           const isRefreshing = R.filter((node) => node.status !== 'complete', jobs).length > 0;
           return (
@@ -157,7 +157,7 @@ const ExternalReferenceEnrichment = (props) => {
               <ListItem
                 divider={true}
                 disablePadding
-                secondaryAction={
+                secondaryAction={(
                   <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
                     <div style={{ right: 0 }}>
                       <Tooltip
@@ -168,7 +168,7 @@ const ExternalReferenceEnrichment = (props) => {
                           onClick={() => (connector.connector_type === 'INTERNAL_IMPORT_FILE'
                             ? askJob(connector.id)
                             : askEnrich(connector.id))
-                              }
+                          }
                           size="large"
                         >
                           <Refresh />
@@ -176,17 +176,17 @@ const ExternalReferenceEnrichment = (props) => {
                       </Tooltip>
                     </div>
                   </Security>
-                  }
+                )}
               >
                 <ListItemButton
                   classes={{ root: classes.item }}
                 >
                   <Tooltip
                     title={
-                    connector.active
-                      ? t('This connector is active')
-                      : t('This connector is disconnected')
-                  }
+                      connector.active
+                        ? t('This connector is active')
+                        : t('This connector is disconnected')
+                    }
                   >
                     <ListItemIcon
                       style={{
@@ -210,13 +210,13 @@ const ExternalReferenceEnrichment = (props) => {
                     <div>
                       {messages.length > 0
                         ? R.map(
-                          (message) => (
-                            <div key={message.message}>
-                              [{nsdt(message.timestamp)}] {message.message}
-                            </div>
-                          ),
-                          messages,
-                        )
+                            (message) => (
+                              <div key={message.message}>
+                                [{nsdt(message.timestamp)}] {message.message}
+                              </div>
+                            ),
+                            messages,
+                          )
                         : t(work.status)}
                     </div>
                   );
@@ -229,44 +229,44 @@ const ExternalReferenceEnrichment = (props) => {
                       <ListItem
                         dense={true}
                         divider={true}
-                        secondaryAction={
+                        secondaryAction={(
                           <div style={{ right: 0 }}>
                             <IconButton
                               onClick={() => deleteWork(work.id)}
                               size="large"
                             >
-                              <Delete/>
+                              <Delete />
                             </IconButton>
                           </div>
-                      }
+                        )}
                       >
                         <ListItemButton
                           classes={{ root: classes.nested }}
                         >
                           <ListItemIcon>
                             {isFail && (
-                            <Warning
-                              style={{
-                                fontSize: 15,
-                                color: '#f44336',
-                              }}
-                            />
+                              <Warning
+                                style={{
+                                  fontSize: 15,
+                                  color: '#f44336',
+                                }}
+                              />
                             )}
                             {!isFail && work.status === 'complete' && (
-                            <CheckCircle
-                              style={{
-                                fontSize: 15,
-                                color: '#4caf50',
-                              }}
-                            />
+                              <CheckCircle
+                                style={{
+                                  fontSize: 15,
+                                  color: '#4caf50',
+                                }}
+                              />
                             )}
                             {((!isFail && work.status === 'wait')
-                            || work.status === 'progress') && (
-                            <CircularProgress
-                              size={20}
-                              thickness={2}
-                              style={{ marginRight: 10 }}
-                            />
+                              || work.status === 'progress') && (
+                              <CircularProgress
+                                size={20}
+                                thickness={2}
+                                style={{ marginRight: 10 }}
+                              />
                             )}
                           </ListItemIcon>
                           <ListItemText primary={nsdt(work.timestamp)} />

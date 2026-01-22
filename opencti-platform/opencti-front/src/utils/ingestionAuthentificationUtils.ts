@@ -7,13 +7,13 @@ export const CERT_AUTH = 'certificate';
 export const BEARER_AUTH = 'bearer';
 
 export interface IngestionAuthValue {
-  authentication_type: string,
-  authentication_value?: string | null,
-  username?: string,
-  password?: string,
-  cert?: string,
-  key?: string,
-  ca?: string,
+  authentication_type: string;
+  authentication_value?: string | null;
+  username?: string;
+  password?: string;
+  cert?: string;
+  key?: string;
+  ca?: string;
 }
 
 /**

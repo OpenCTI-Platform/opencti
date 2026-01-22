@@ -24,6 +24,7 @@ import StixSightingRelationshipPopover from './StixSightingRelationshipPopover';
 import { resolveLink } from '../../../../utils/Entity';
 import { DataColumns } from '../../../../components/list_lines';
 import type { Theme } from '../../../../components/Theme';
+import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -237,7 +238,7 @@ const EntityStixSightingRelationshipLineFragment = graphql`
 interface EntityStixSightingRelationshipLineProps {
   dataColumns: DataColumns;
   node: EntityStixSightingRelationshipLine_node$key;
-  onLabelClick: () => void;
+  onLabelClick: HandleAddFilter;
   isTo: boolean;
   paginationOptions?: EntityStixSightingRelationshipsLinesPaginationQuery$variables;
 }
@@ -290,7 +291,7 @@ export const EntityStixSightingRelationshipLine: FunctionComponent<EntityStixSig
           <ItemIcon type={!restricted ? entity?.entity_type : 'restricted'} />
         </ListItemIcon>
         <ListItemText
-          primary={
+          primary={(
             <div>
               <div
                 className={classes.bodyItem}
@@ -350,7 +351,7 @@ export const EntityStixSightingRelationshipLine: FunctionComponent<EntityStixSig
                 <ItemConfidence confidence={data.confidence} entityType={data.entity_type} variant="inList" />
               </div>
             </div>
-          }
+          )}
         />
       </ListItemButton>
     </ListItem>
@@ -367,17 +368,17 @@ export const EntityStixSightingRelationshipLineDummy = ({
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={
+      secondaryAction={(
         <Box sx={{ root: classes.itemIconDisabled }}>
-          <MoreVertOutlined/>
+          <MoreVertOutlined />
         </Box>
-      }
+      )}
     >
       <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
         <HelpOutlined />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -457,7 +458,7 @@ export const EntityStixSightingRelationshipLineDummy = ({
               />
             </div>
           </div>
-          }
+        )}
       />
     </ListItem>
   );

@@ -5,7 +5,7 @@ import conf, { logApp } from '../../config/conf';
 import { executionContext } from '../../utils/access';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { consumeQueue, registerConnectorQueues } from '../../database/rabbitmq';
-import { downloadFile } from '../../database/file-storage';
+import { downloadFile } from '../../database/raw-file-storage';
 import { addDraftContext, reportExpectation, updateExpectationsNumber, updateProcessedTime, updateReceivedTime } from '../../domain/work';
 import { bundleProcess, type CsvBundlerIngestionOpts, generateAndSendBundleProcess } from '../../parser/csv-bundler';
 import { OPENCTI_SYSTEM_UUID } from '../../schema/general';
@@ -13,7 +13,7 @@ import { resolveUserByIdFromCache } from '../../domain/user';
 import { parseCsvMapper, sanitized, validateCsvMapper } from '../../modules/internal/csvMapper/csvMapper-utils';
 import { IMPORT_CSV_CONNECTOR } from './importCsv';
 import { FunctionalError } from '../../config/errors';
-import { uploadToStorage } from '../../database/file-storage-helper';
+import { uploadToStorage } from '../../database/file-storage';
 import { storeLoadByIdWithRefs } from '../../database/middleware';
 import type { ConnectorConfig } from '../internalConnector';
 import { addDraftWorkspace } from '../../modules/draftWorkspace/draftWorkspace-domain';
@@ -27,8 +27,8 @@ const connectorConfig: ConnectorConfig = {
   name: 'Import Csv built in connector',
   config: {
     enable: conf.get('import_csv_built_in_connector:enabled'),
-    validate_before_import: conf.get('import_csv_built_in_connector:validate_before_import')
-  }
+    validate_before_import: conf.get('import_csv_built_in_connector:validate_before_import'),
+  },
 };
 const LOG_PREFIX = `[OPENCTI-MODULE][${connectorConfig.id}]`;
 

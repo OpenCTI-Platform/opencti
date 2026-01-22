@@ -10,7 +10,7 @@ import {
   stixRefRelationshipDelete,
   stixRefRelationshipEditContext,
   stixRefRelationshipEditField,
-  stixRefRelationshipsNumber
+  stixRefRelationshipsNumber,
 } from '../domain/stixRefRelationship';
 import { fetchEditContext } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
@@ -68,8 +68,8 @@ const stixRefRelationshipResolvers = {
         const cleanFn = () => stixRefRelationshipCleanContext(context, context.user, id);
         const bus = BUS_TOPICS[ABSTRACT_STIX_REF_RELATIONSHIP];
         return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { type: ABSTRACT_STIX_REF_RELATIONSHIP, preFn, cleanFn });
-      }
-    }
+      },
+    },
   },
 };
 

@@ -2,7 +2,7 @@ type SecurityPlatform implements BasicObject & StixObject & StixCoreObject & Sti
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -11,6 +11,7 @@ type SecurityPlatform implements BasicObject & StixObject & StixCoreObject & Sti
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -110,7 +111,7 @@ type SecurityPlatform implements BasicObject & StixObject & StixCoreObject & Sti
   security_platform_type: String
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -189,8 +190,14 @@ input SecurityPlatformAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   x_opencti_workflow_id: String
+  x_opencti_modified_at: DateTime
   externalReferences: [String]
   update: Boolean
+  file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type Mutation {

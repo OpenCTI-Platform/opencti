@@ -106,13 +106,13 @@ const RootObservedData = ({ queryRef, observedDataId }: RootObservedDataProps) =
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <ObservedDataEdition observedDataId={observedData.id} />
             </Security>
-                    )}
-          DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+          )}
+          DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
             <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
               <ObservedDataDeletion id={observedData.id} isOpen={isOpen} handleClose={onClose} />
             </Security>
           )}
-          redirectToContent = {false}
+          redirectToContent={false}
           disableAuthorizedMembers={true}
           enableEnricher={false}
         />
@@ -163,44 +163,44 @@ const RootObservedData = ({ queryRef, observedDataId }: RootObservedDataProps) =
             path="/"
             element={
               <ObservedData observedDataData={observedData} />
-                      }
+            }
           />
           <Route
             path="/entities"
             element={
               <ContainerStixDomainObjects container={observedData} />
-                      }
+            }
           />
           <Route
             path="/observables"
             element={
               <ContainerStixCyberObservables container={observedData} />
-                      }
+            }
           />
           <Route
             path="/files"
-            element={
+            element={(
               <FileManager
                 id={observedDataId}
                 connectorsExport={connectorsForExport}
                 connectorsImport={connectorsForImport}
                 entity={observedData}
               />
-                      }
+            )}
           />
           <Route
             path="/history"
             element={
               <StixCoreObjectHistory stixCoreObjectId={observedDataId} />
-                      }
+            }
           />
           <Route
             path="/knowledge/relations/:relationId/"
-            element={
+            element={(
               <StixCoreRelationship
                 entityId={observedData.id}
               />
-                      }
+            )}
           />
         </Routes>
       </div>
@@ -209,7 +209,7 @@ const RootObservedData = ({ queryRef, observedDataId }: RootObservedDataProps) =
 };
 
 const Root = () => {
-  const { observedDataId } = useParams() as { observedDataId: string; };
+  const { observedDataId } = useParams() as { observedDataId: string };
   const queryRef = useQueryLoading<RootObservedDataQuery>(observedDataQuery, {
     id: observedDataId,
   });

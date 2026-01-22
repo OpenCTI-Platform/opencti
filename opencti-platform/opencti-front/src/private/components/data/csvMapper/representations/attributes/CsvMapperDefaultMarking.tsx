@@ -7,7 +7,7 @@ import SelectField from '../../../../../../components/fields/SelectField';
 import { useFormatter } from '../../../../../../components/i18n';
 
 interface CsvMapperDefaultMarkingProps {
-  name: string
+  name: string;
 }
 
 const CsvMapperDefaultMarking = ({ name }: CsvMapperDefaultMarkingProps) => {

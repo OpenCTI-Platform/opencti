@@ -8,7 +8,7 @@ import {
   RELATION_DROPS,
   RELATION_PUBLISHES,
   RELATION_TARGETS,
-  RELATION_USES
+  RELATION_USES,
 } from '../../schema/stixCoreRelationship';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
@@ -23,7 +23,7 @@ import {
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
   ENTITY_TYPE_TOOL,
-  ENTITY_TYPE_VULNERABILITY
+  ENTITY_TYPE_VULNERABILITY,
 } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../threatActorIndividual/threatActorIndividual-types';
 import { ENTITY_TYPE_CHANNEL, type StixChannel, type StoreEntityChannel } from './channel-types';
@@ -37,7 +37,7 @@ import {
   ENTITY_MEDIA_CONTENT,
   ENTITY_TEXT,
   ENTITY_URL,
-  ENTITY_USER_ACCOUNT
+  ENTITY_USER_ACCOUNT,
 } from '../../schema/stixCyberObservable';
 import { REL_BUILT_IN, REL_EXTENDED, REL_NEW } from '../../database/stix';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
@@ -51,11 +51,11 @@ export const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel, StixChanne
     id: 'channels',
     name: ENTITY_TYPE_CHANNEL,
     category: ABSTRACT_STIX_DOMAIN_OBJECT,
-    aliased: true
+    aliased: true,
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_CHANNEL]: [{ src: NAME_FIELD }]
+      [ENTITY_TYPE_CHANNEL]: [{ src: NAME_FIELD }],
     },
     resolvers: {
       name(data: object) {
@@ -89,8 +89,8 @@ export const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel, StixChanne
         { name: ENTITY_TYPE_LOCATION_POSITION, type: REL_EXTENDED },
         { name: ENTITY_TYPE_LOCATION_REGION, type: REL_EXTENDED },
         { name: ENTITY_TYPE_EVENT, type: REL_EXTENDED },
-        { name: ENTITY_TYPE_VULNERABILITY, type: REL_EXTENDED }
-      ]
+        { name: ENTITY_TYPE_VULNERABILITY, type: REL_EXTENDED },
+      ],
     },
     {
       name: RELATION_USES,
@@ -101,7 +101,7 @@ export const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel, StixChanne
         { name: ENTITY_TYPE_ATTACK_PATTERN, type: REL_EXTENDED },
         { name: ENTITY_TYPE_MALWARE, type: REL_EXTENDED },
         { name: ENTITY_TYPE_TOOL, type: REL_EXTENDED },
-      ]
+      ],
     },
     {
       name: RELATION_PUBLISHES,
@@ -112,14 +112,14 @@ export const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel, StixChanne
         { name: ENTITY_DOMAIN_NAME, type: REL_NEW },
         { name: ENTITY_HOSTNAME, type: REL_NEW },
         { name: ENTITY_MEDIA_CONTENT, type: REL_NEW },
-      ]
+      ],
     },
     {
       name: RELATION_AMPLIFIES,
       targets: [
         { name: ENTITY_TYPE_CHANNEL, type: REL_NEW },
         { name: ENTITY_MEDIA_CONTENT, type: REL_NEW },
-      ]
+      ],
     },
     {
       name: RELATION_BELONGS_TO,
@@ -130,34 +130,34 @@ export const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel, StixChanne
         { name: ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL, type: REL_EXTENDED },
         { name: ENTITY_TYPE_THREAT_ACTOR_GROUP, type: REL_EXTENDED },
         { name: ENTITY_TYPE_INTRUSION_SET, type: REL_EXTENDED },
-      ]
+      ],
     },
     {
       name: RELATION_DELIVERS,
       targets: [
         { name: ENTITY_TYPE_MALWARE, type: REL_BUILT_IN },
-      ]
+      ],
     },
     {
       name: RELATION_DROPS,
       targets: [
         { name: ENTITY_TYPE_MALWARE, type: REL_EXTENDED },
-      ]
+      ],
     },
     {
       name: RELATION_DERIVED_FROM,
       targets: [
         { name: ENTITY_TYPE_CHANNEL, type: REL_BUILT_IN },
-      ]
-    }
+      ],
+    },
   ],
   relationsRefs: [
-    objectOrganization
+    objectOrganization,
   ],
   representative: (stix: StixChannel) => {
     return stix.name;
   },
-  converter_2_1: convertChannelToStix
+  converter_2_1: convertChannelToStix,
 };
 
 registerDefinition(CHANNEL_DEFINITION);

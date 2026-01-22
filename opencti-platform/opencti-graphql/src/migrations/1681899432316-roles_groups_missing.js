@@ -3,7 +3,7 @@ import { logApp } from '../config/conf';
 import { userAddRelation } from '../domain/user';
 import { groupAddRelation } from '../domain/group';
 import { fullEntitiesList, fullRelationsList, storeLoadById } from '../database/middleware-loader';
-import { ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_USER, } from '../schema/internalObject';
+import { ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { RELATION_HAS_ROLE, RELATION_MEMBER_OF } from '../schema/internalRelationship';
 import { addGroup } from '../domain/grant';
 import { elDeleteElements } from '../database/engine';

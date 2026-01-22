@@ -5,13 +5,13 @@ const pdfBackground = (linearGradiant: string[] | undefined): DynamicBackground 
     canvas: currentPage > 1
       ? []
       : [{
-        type: 'rect',
-        x: 0,
-        y: 0,
-        w: pageSize.width,
-        h: pageSize.height,
-        linearGradient: linearGradiant,
-      }],
+          type: 'rect',
+          x: 0,
+          y: 0,
+          w: pageSize.width,
+          h: pageSize.height,
+          linearGradient: linearGradiant,
+        }],
   });
 };
 

@@ -32,6 +32,9 @@ const publicStixRelationshipsTimelineQuery = graphql`
           confidence
           is_inferred
           created
+          created_at
+          updated_at
+          modified
           x_opencti_inferences {
             rule {
               id
@@ -951,8 +954,8 @@ const publicStixRelationshipsTimelineQuery = graphql`
 `;
 
 interface PublicStixRelationshipsTimelineComponentProps {
-  dataSelection: Widget['dataSelection']
-  queryRef: PreloadedQuery<PublicStixRelationshipsTimelineQuery>
+  dataSelection: Widget['dataSelection'];
+  queryRef: PreloadedQuery<PublicStixRelationshipsTimelineQuery>;
 }
 
 const PublicStixRelationshipsTimelineComponent = ({
@@ -974,7 +977,7 @@ const PublicStixRelationshipsTimelineComponent = ({
       const stixRelationship = stixRelationshipEdge?.node;
       if (!stixRelationship) return [];
       const remoteNode = stixRelationship.from
-      && dataSelection[0].isTo
+        && dataSelection[0].isTo
         ? stixRelationship.to
         : stixRelationship.from;
       if (!remoteNode) return [];
@@ -986,7 +989,11 @@ const PublicStixRelationshipsTimelineComponent = ({
         },
       };
     });
-    return <WidgetTimeline data={data} />;
+    const selection = dataSelection[0];
+    const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
+      ? selection.date_attribute
+      : 'created_at';
+    return <WidgetTimeline data={data} dateAttribute={dateAttribute} />;
   }
   return <WidgetNoData />;
 };

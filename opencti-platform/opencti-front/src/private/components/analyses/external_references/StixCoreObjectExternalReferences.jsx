@@ -20,6 +20,9 @@ const styles = (theme) => ({
     padding: 0,
     borderRadius: 4,
   },
+  container: {
+    height: 60,
+  },
   avatar: {
     width: 24,
     height: 24,
@@ -61,13 +64,14 @@ class StixCoreObjectExternalReferences extends Component {
                 {t('External references')}
               </Typography>
               <div className="clearfix" />
-              <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+              <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
                 <List>
                   {Array.from(Array(5), (e, i) => (
                     <ListItem
                       key={i}
                       dense={true}
                       divider={true}
+                      classes={classes.container}
                     >
                       <ListItemIcon>
                         <Avatar classes={{ root: classes.avatarDisabled }}>
@@ -75,7 +79,7 @@ class StixCoreObjectExternalReferences extends Component {
                         </Avatar>
                       </ListItemIcon>
                       <ListItemText
-                        primary={
+                        primary={(
                           <Skeleton
                             animation="wave"
                             variant="rectangular"
@@ -83,15 +87,15 @@ class StixCoreObjectExternalReferences extends Component {
                             height={15}
                             style={{ marginBottom: 10 }}
                           />
-                        }
-                        secondary={
+                        )}
+                        secondary={(
                           <Skeleton
                             animation="wave"
                             variant="rectangular"
                             width="90%"
                             height={15}
                           />
-                        }
+                        )}
                       />
                     </ListItem>
                   ))}

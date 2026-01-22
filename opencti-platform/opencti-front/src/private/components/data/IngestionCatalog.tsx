@@ -33,7 +33,7 @@ import { isNotEmptyField } from '../../../utils/utils';
 interface IngestionCatalogComponentProps {
   catalogsData: IngestionConnectorsCatalogsQuery['response'];
   deploymentData: IngestionConnectorsQuery['response'];
-  onClickDeploy: (connector: IngestionConnector, catalogId: string, hasRegisteredManagers: boolean, deploymentCount: number) => void;
+  onClickDeploy: (connector: IngestionConnector, catalogId: string, hasActiveManagers: boolean, deploymentCount: number) => void;
 }
 
 type IngestionTypeMap = {
@@ -52,33 +52,33 @@ export type IngestionTypedProperty<K extends keyof IngestionTypeMap = keyof Inge
 };
 
 export interface IngestionConnector {
-  title: string,
-  slug: string,
-  description: string,
-  short_description: string,
-  logo: string,
-  use_cases: string[],
-  verified: boolean,
-  last_verified_date: string,
-  playbook_supported: boolean,
-  max_confidence_level: number,
-  support_version: string,
-  subscription_link: string,
-  source_code: string,
-  manager_supported: boolean,
-  container_version: string,
-  container_image: string,
-  container_type: IngestionConnectorType,
+  title: string;
+  slug: string;
+  description: string;
+  short_description: string;
+  logo: string;
+  use_cases: string[];
+  verified: boolean;
+  last_verified_date: string;
+  playbook_supported: boolean;
+  max_confidence_level: number;
+  support_version: string;
+  subscription_link: string;
+  source_code: string;
+  manager_supported: boolean;
+  container_version: string;
+  container_image: string;
+  container_type: IngestionConnectorType;
   config_schema: {
-    $schema: string,
-    $id: string,
-    type: string,
+    $schema: string;
+    $id: string;
+    type: string;
     properties: {
-      [key: string]: IngestionTypedProperty
-    },
-    required: string[],
-    additionalProperties: boolean,
-  }
+      [key: string]: IngestionTypedProperty;
+    };
+    required: string[];
+    additionalProperties: boolean;
+  };
 }
 
 const BrowseMoreButton = () => {
@@ -141,7 +141,7 @@ const IngestionCatalogComponent = ({
   const { setTitle } = useConnectedDocumentModifier();
   const [searchParams] = useSearchParams();
 
-  const { hasRegisteredManagers } = useConnectorManagerStatus();
+  const { hasActiveManagers } = useConnectorManagerStatus();
 
   setTitle(t_i18n('Connector catalog | Ingestion | Data'));
 
@@ -160,7 +160,7 @@ const IngestionCatalogComponent = ({
       try {
         const parsedContract = JSON.parse(contract);
         allContracts.push(parsedContract);
-      } catch (e) {
+      } catch (_e) {
         MESSAGING$.notifyError(t_i18n('Failed to parse a contract'));
       }
     }
@@ -173,7 +173,7 @@ const IngestionCatalogComponent = ({
       <IngestionMenu />
       <PageContainer withRightMenu withGap>
         <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('Connector catalog'), current: true }]} />
-        <ConnectorDeploymentBanner hasRegisteredManagers={hasRegisteredManagers} />
+        <ConnectorDeploymentBanner hasActiveManagers={hasActiveManagers} />
         <Stack flexDirection="row">
           <IngestionCatalogFilters
             contracts={allContracts}
@@ -196,7 +196,7 @@ const IngestionCatalogComponent = ({
                     node={contract}
                     dataListId={catalog.id}
                     isEnterpriseEdition={isEnterpriseEdition}
-                    onClickDeploy={() => onClickDeploy(contract, catalog.id, hasRegisteredManagers, deploymentCount)}
+                    onClickDeploy={() => onClickDeploy(contract, catalog.id, hasActiveManagers, deploymentCount)}
                     deploymentCount={deploymentCount}
                   />
                 </Grid>
@@ -257,7 +257,7 @@ const IngestionCatalog = () => {
           connector={catalogState.selectedConnector}
           onClose={handleCloseDeployDialog}
           catalogId={catalogState.selectedCatalogId}
-          hasRegisteredManagers={catalogState.hasRegisteredManagers}
+          hasActiveManagers={catalogState.hasActiveManagers}
           onCreate={handleCreate}
           deploymentCount={catalogState.deploymentCount}
         />

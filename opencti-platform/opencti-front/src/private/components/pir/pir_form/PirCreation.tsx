@@ -36,7 +36,7 @@ const pirCreateMutation = graphql`
 `;
 
 interface PirCreationProps {
-  paginationOptions: PirsListQuery$variables
+  paginationOptions: PirsListQuery$variables;
 }
 
 const PirCreation = ({ paginationOptions }: PirCreationProps) => {
@@ -47,6 +47,9 @@ const PirCreation = ({ paginationOptions }: PirCreationProps) => {
     undefined,
     { successMessage: `${t_i18n('entity_Pir')} ${t_i18n('successfully created')}` },
   );
+
+  const handleOpenDialog = () => setDialogOpen(true);
+  const handleCloseDialog = () => setDialogOpen(false);
 
   const submit = (data: PirCreationFormData) => {
     const input = pirFormDataToMutationInput(data);
@@ -70,8 +73,8 @@ const PirCreation = ({ paginationOptions }: PirCreationProps) => {
   return (
     <>
       <CreateEntityControlledDial
-        entityType='Pir'
-        onOpen={() => setDialogOpen(true)}
+        entityType="Pir"
+        onOpen={handleOpenDialog}
       />
 
       <Dialog
@@ -84,9 +87,10 @@ const PirCreation = ({ paginationOptions }: PirCreationProps) => {
             style: { minWidth: '950px' },
           },
         }}
+        onClose={handleCloseDialog}
       >
         <PirCreationForm
-          onCancel={() => setDialogOpen(false)}
+          onCancel={handleCloseDialog}
           onSubmit={submit}
         />
       </Dialog>

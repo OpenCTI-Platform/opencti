@@ -13,7 +13,6 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import ejs from 'ejs';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { internalLoadById, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { type DisseminationListAddInput, type DisseminationListSendInput, type EditInput, type QueryDisseminationListsArgs } from '../../generated/graphql';
@@ -23,11 +22,12 @@ import conf, { logApp } from '../../config/conf';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { createInternalObject, deleteInternalObject, editInternalObject } from '../../domain/internalObject';
-import { downloadFile, getFileContent, loadFile } from '../../database/file-storage';
+import { downloadFile, getFileContent } from '../../database/raw-file-storage';
+import { loadFile } from '../../database/file-storage';
 import { getEntityFromCache } from '../../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { OCTI_EMAIL_TEMPLATE } from '../../utils/emailTemplates/octiEmailTemplate';
-import { sendMail } from '../../database/smtp';
+import { sendMail, smtpComputeFrom } from '../../database/smtp';
 import type { BasicStoreSettings } from '../../types/settings';
 import { emailChecker } from '../../utils/syntax';
 import type { BasicStoreCommon } from '../../types/store';
@@ -35,6 +35,8 @@ import { extractEntityRepresentativeName } from '../../database/entity-represent
 import { BASIC_EMAIL_TEMPLATE } from '../../utils/emailTemplates/basicEmailTemplate';
 import { addDisseminationCount } from '../../manager/telemetryManager';
 import type { SendMailArgs } from '../../types/smtp';
+import { safeRender } from '../../utils/safeEjs.client';
+import { sanitizeSettings } from '../../utils/templateContextSanitizer';
 
 const MAX_DISSEMINATION_LIST_SIZE = conf.get('app:dissemination_list:max_list_size') || 500;
 
@@ -60,13 +62,13 @@ export const sendDisseminationEmail = async (
   user: AuthUser,
   disseminationListId: string,
   opts: {
-    useOctiTemplate: boolean,
-    object: string,
-    body: string,
-    emails: string[],
-    attachFileIds: string[],
-    htmlToBodyFileId: string | null | undefined,
-  }
+    useOctiTemplate: boolean;
+    object: string;
+    body: string;
+    emails: string[];
+    attachFileIds: string[];
+    htmlToBodyFileId: string | null | undefined;
+  },
 ) => {
   const toEmail = conf.get('app:dissemination_list:to_email');
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
@@ -80,31 +82,38 @@ export const sendDisseminationEmail = async (
   for (let i = 0; i < opts.attachFileIds.length; i += 1) {
     const attachFileId = opts.attachFileIds[i];
     const file = await loadFile(context, user, attachFileId);
-    const canBeDisseminated = file && allowedTypesInAttachment.includes(file.metaData.mimetype);
+    const canBeDisseminated = file && file.metaData.mimetype && allowedTypesInAttachment.includes(file.metaData.mimetype);
     if (!canBeDisseminated) {
       throw UnsupportedError('File cant be disseminate', { id: attachFileId });
     }
     sentFiles.push(file);
-    const stream = await downloadFile(file.id);
-    attachmentListForSendMail.push({ filename: file.name, content: stream });
+    try {
+      const stream = await downloadFile(file.id);
+      if (!stream) {
+        throw UnsupportedError('File not found in storage', { id: file.id });
+      }
+      attachmentListForSendMail.push({ filename: file.name, content: stream });
+    } catch (err) {
+      throw UnsupportedError('Cannot download file for dissemination', { id: file.id, cause: err });
+    }
   }
 
   if (opts.htmlToBodyFileId) {
     const bodyFile = await loadFile(context, user, opts.htmlToBodyFileId);
-    const canBeInBody = bodyFile && allowedTypesInBody.includes(bodyFile.metaData.mimetype);
+    const canBeInBody = bodyFile && bodyFile.metaData.mimetype && allowedTypesInBody.includes(bodyFile.metaData.mimetype);
     if (!canBeInBody) {
       throw UnsupportedError(`File type in the body must be ${allowedTypesInBody}`, { id: opts.htmlToBodyFileId });
     }
     const fileContent = await getFileContent(bodyFile.id);
-    generatedEmailBody = ejs.render(emailTemplate, { settings, body: fileContent });
+    generatedEmailBody = await safeRender(emailTemplate, { settings: sanitizeSettings(settings), body: fileContent });
     sentFiles.push(bodyFile);
   } else {
     const emailBodyFormatted = opts.body.replaceAll('\n', '<br/>');
-    generatedEmailBody = ejs.render(emailTemplate, { settings, body: emailBodyFormatted });
+    generatedEmailBody = await safeRender(emailTemplate, { settings: sanitizeSettings(settings), body: emailBodyFormatted });
   }
 
   const sendMailArgs: SendMailArgs = {
-    from: `${settings.platform_title} <${settings.platform_email}>`,
+    from: await smtpComputeFrom(),
     to: toEmail,
     bcc: [...opts.emails, user.user_email],
     subject: opts.object,
@@ -141,7 +150,7 @@ export const sendToDisseminationList = async (context: AuthContext, user: AuthUs
     body: email_body,
     emails,
     attachFileIds: email_attachment_ids,
-    htmlToBodyFileId: html_to_body_file_id
+    htmlToBodyFileId: html_to_body_file_id,
   };
   const sentFiles = await sendDisseminationEmail(context, user, id, opts);
   // activity logs
@@ -158,7 +167,7 @@ export const sendToDisseminationList = async (context: AuthContext, user: AuthUs
     user,
     event_type: 'file',
     event_scope: 'disseminate',
-    context_data: contextData
+    context_data: contextData,
   });
   return true;
 };

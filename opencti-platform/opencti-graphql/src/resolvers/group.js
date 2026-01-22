@@ -16,7 +16,7 @@ import {
   groupEditField,
   membersPaginated,
   rolesPaginated,
-  groupNotShareableMarkingTypes
+  groupNotShareableMarkingTypes,
 } from '../domain/group';
 import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_GROUP } from '../schema/internalObject';

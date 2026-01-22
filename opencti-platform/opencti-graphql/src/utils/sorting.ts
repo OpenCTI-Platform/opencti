@@ -9,8 +9,8 @@ export const buildElasticSortingForAttributeCriteria = async (
   context: AuthContext,
   user: AuthUser,
   orderCriteria: string,
-  orderMode: 'asc' | 'desc',
-  pirId?: string,
+  orderMode: 'asc' | 'desc' | null,
+  pirId?: string | null,
 ) => {
   let definition;
   if (PIR_ORDERING_CRITERIA.includes(orderCriteria)) {
@@ -30,8 +30,8 @@ export const buildElasticSortingForAttributeCriteria = async (
           term: {
             'pir_information.pir_id.keyword': pirId,
           },
-        }
-      }
+        },
+      },
     } };
   }
   if (orderCriteria.includes('.') && !orderCriteria.endsWith('*')) {

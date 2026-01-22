@@ -17,6 +17,7 @@ import { DataColumns } from '../../../../components/list_lines';
 import type { Theme } from '../../../../components/Theme';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
+import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -45,12 +46,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 interface IngestionJsonLineProps {
   node: IngestionJsonLine_node$key;
   dataColumns: DataColumns;
-  onLabelClick: (
-    k: string,
-    id: string,
-    value: Record<string, unknown>,
-    event: React.KeyboardEvent,
-  ) => void;
+  onLabelClick: HandleAddFilter;
   paginationOptions?: IngestionJsonLinesPaginationQuery$variables;
 }
 
@@ -77,7 +73,7 @@ export const IngestionJsonLineComponent: FunctionComponent<IngestionJsonLineProp
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={
+      secondaryAction={(
         <Security needs={[INGESTION_SETINGESTIONS]}>
           <IngestionJsonPopover
             ingestionJsonId={data.id}
@@ -85,13 +81,13 @@ export const IngestionJsonLineComponent: FunctionComponent<IngestionJsonLineProp
             running={data.ingestion_running}
           />
         </Security>
-      }
+      )}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <TableViewIcon />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -127,7 +123,7 @@ export const IngestionJsonLineComponent: FunctionComponent<IngestionJsonLineProp
               <Link to={`/dashboard/data/ingestion/connectors/${data.connector_id}`}>VIEW</Link>
             </div>
           </div>
-        }
+        )}
       />
     </ListItem>
   );
@@ -139,7 +135,7 @@ export const IngestionJsonLineDummy = ({ dataColumns }: { dataColumns: DataColum
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={<MoreVert classes={classes.itemIconDisabled}/>}
+      secondaryAction={<MoreVert classes={classes.itemIconDisabled} />}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <Skeleton
@@ -150,7 +146,7 @@ export const IngestionJsonLineDummy = ({ dataColumns }: { dataColumns: DataColum
         />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -207,7 +203,7 @@ export const IngestionJsonLineDummy = ({ dataColumns }: { dataColumns: DataColum
               />
             </div>
           </div>
-        }
+        )}
       />
     </ListItem>
   );

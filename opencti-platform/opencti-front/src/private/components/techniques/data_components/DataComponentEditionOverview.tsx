@@ -117,28 +117,28 @@ const DATA_COMPONENT_TYPE = 'Data-Component';
 interface DataComponentEditionOverviewComponentProps {
   data: DataComponentEditionOverview_dataComponent$key;
   context:
-  | readonly ({
-    readonly focusOn: string | null | undefined;
-    readonly name: string;
-  } | null)[]
-  | null | undefined;
+    | readonly ({
+      readonly focusOn: string | null | undefined;
+      readonly name: string;
+    } | null)[]
+    | null | undefined;
   enableReferences?: boolean;
   handleClose: () => void;
 }
 
 interface DataComponentAddInput {
-  name: string
-  description: string | null
-  createdBy: FieldOption | undefined
-  objectMarking: FieldOption[]
-  x_opencti_workflow_id: FieldOption
-  confidence: number | undefined
-  message?: string
-  references?: FieldOption[]
+  name: string;
+  description: string | null;
+  createdBy: FieldOption | undefined;
+  objectMarking: FieldOption[];
+  x_opencti_workflow_id: FieldOption;
+  confidence: number | undefined;
+  message?: string;
+  references?: FieldOption[];
 }
 
 const DataComponentEditionOverview: FunctionComponent<
-DataComponentEditionOverviewComponentProps
+  DataComponentEditionOverviewComponentProps
 > = ({ data, context, enableReferences = false, handleClose }) => {
   const { t_i18n } = useFormatter();
   const dataComponent = useFragment(DataComponentEditionOverviewFragment, data);
@@ -294,12 +294,12 @@ DataComponentEditionOverviewComponentProps
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
               style={{ marginTop: 20 }}
-              helpertext={
+              helpertext={(
                 <SubscriptionFocus
                   context={context}
                   fieldName="x_opencti_workflow_id"
                 />
-              }
+              )}
             />
           )}
           <CreatedByField

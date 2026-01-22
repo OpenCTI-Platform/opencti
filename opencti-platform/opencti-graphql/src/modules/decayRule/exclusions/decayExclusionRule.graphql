@@ -1,0 +1,54 @@
+type DecayExclusionRule implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  metrics:[Metric]
+  created_at: DateTime!
+  # DecayExclusionRule
+  name: String!
+  description: String
+  decay_exclusion_filters: String!
+  active: Boolean
+}
+
+enum DecayExclusionRuleOrdering {
+  name
+  active
+  _score
+}
+
+type DecayExclusionRuleEdge {
+  cursor: String!
+  node: DecayExclusionRule!
+}
+
+type DecayExclusionRuleConnection {
+  pageInfo: PageInfo!
+  edges: [DecayExclusionRuleEdge!]!
+}
+
+type Query {
+  decayExclusionRule(id: String!): DecayExclusionRule @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  decayExclusionRules(
+    first: Int
+    after: ID
+    orderBy: DecayExclusionRuleOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+  ): DecayExclusionRuleConnection @auth(for: [SETTINGS_SETCUSTOMIZATION])
+}
+
+input DecayExclusionRuleAddInput {
+  name: String! @constraint(minLength: 2, format: "not-blank")
+  description: String
+  decay_exclusion_filters: String!
+  active: Boolean!
+}
+
+type Mutation {
+  decayExclusionRuleAdd(input: DecayExclusionRuleAddInput!): DecayExclusionRule @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  decayExclusionRuleFieldPatch(id: ID!, input: [EditInput!]!): DecayExclusionRule @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  decayExclusionRuleDelete(id: ID!): ID @auth(for: [SETTINGS_SETCUSTOMIZATION])
+}

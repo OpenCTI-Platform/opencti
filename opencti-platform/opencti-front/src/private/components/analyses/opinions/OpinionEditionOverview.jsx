@@ -161,7 +161,7 @@ const OpinionEditionOverviewComponent = (props) => {
               onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               helperText={
-                <SubscriptionFocus context={context} fieldName="content"/>
+                <SubscriptionFocus context={context} fieldName="content" />
               }
             />
             <ConfidenceField
@@ -180,12 +180,12 @@ const OpinionEditionOverviewComponent = (props) => {
                 onChange={handleSubmitField}
                 setFieldValue={setFieldValue}
                 style={{ marginTop: 20 }}
-                helpertext={
+                helpertext={(
                   <SubscriptionFocus
                     context={context}
                     fieldName="x_opencti_workflow_id"
                   />
-                }
+                )}
               />
             )}
             {userIsKnowledgeEditor && (
@@ -195,7 +195,7 @@ const OpinionEditionOverviewComponent = (props) => {
                 style={fieldSpacingContainerStyle}
                 setFieldValue={setFieldValue}
                 helpertext={
-                  <SubscriptionFocus context={context} fieldName="createdBy"/>
+                  <SubscriptionFocus context={context} fieldName="createdBy" />
                 }
                 onChange={editor.changeCreated}
               />
@@ -204,12 +204,12 @@ const OpinionEditionOverviewComponent = (props) => {
               name="objectMarking"
               required={(mandatoryAttributes.includes('objectMarking'))}
               style={fieldSpacingContainerStyle}
-              helpertext={
+              helpertext={(
                 <SubscriptionFocus
                   context={context}
                   fieldname="objectMarking"
                 />
-              }
+              )}
               setFieldValue={setFieldValue}
               onChange={editor.changeMarking}
             />

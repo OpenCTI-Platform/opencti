@@ -30,7 +30,7 @@ export const up = async (next) => {
     await elUpdateByQueryForMigration(
       `[MIGRATION] Renaming main observable ${source}`,
       READ_DATA_INDICES,
-      updateQuery
+      updateQuery,
     );
   }
   // Migrate pattern attribute.
@@ -44,15 +44,15 @@ export const up = async (next) => {
       query: {
         wildcard: {
           'pattern.keyword': {
-            value: `[${source.toLowerCase()}:value*`
-          }
-        }
-      }
+            value: `[${source.toLowerCase()}:value*`,
+          },
+        },
+      },
     };
     await elUpdateByQueryForMigration(
       `[MIGRATION] Migrating pattern [${source.toLowerCase()}:value = *****]`,
       READ_DATA_INDICES,
-      updateQuery
+      updateQuery,
     );
   }
   logApp.info('[MIGRATION] 1652175522433-main_observable_rename.js finished');

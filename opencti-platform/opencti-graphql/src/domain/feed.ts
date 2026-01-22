@@ -4,16 +4,15 @@ import { createEntity, deleteElementById } from '../database/middleware';
 import { pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { FeedAddInput, MemberAccessInput, QueryFeedsArgs } from '../generated/graphql';
+import { FilterMode } from '../generated/graphql';
 import type { BasicStoreEntityFeed } from '../types/store';
 import { elReplace } from '../database/engine';
-import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { FunctionalError, UnsupportedError, ValidationError } from '../config/errors';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { isStixDomainObject } from '../schema/stixDomainObject';
 import type { DomainFindById } from './domainTypes';
 import { publishUserAction } from '../listener/UserActionListener';
 import { isUserHasCapability, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../utils/access';
-import { FilterMode } from '../generated/graphql';
 import { TAXIIAPI } from './user';
 
 const checkFeedIntegrity = (input: FeedAddInput) => {
@@ -51,7 +50,7 @@ export const createFeed = async (context: AuthContext, user: AuthUser, input: Fe
       event_scope: 'create',
       event_access: 'administration',
       message: `creates csv feed \`${element.name}\``,
-      context_data: { id: element.id, entity_type: ENTITY_TYPE_FEED, input }
+      context_data: { id: element.id, entity_type: ENTITY_TYPE_FEED, input },
     });
   }
   return element;
@@ -71,14 +70,14 @@ export const editFeed = async (context: AuthContext, user: AuthUser, id: string,
     finalInput = { ...finalInput, restricted_members: finalInput.authorized_members } as FeedAddInput & { restricted_members: MemberAccessInput[] };
     delete finalInput.authorized_members;
   }
-  await elReplace(INDEX_INTERNAL_OBJECTS, id, { doc: finalInput });
+  await elReplace(feed._index, feed.internal_id, { doc: finalInput });
   await publishUserAction({
     user,
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`configuration\` for csv feed \`${feed.name}\``,
-    context_data: { id, entity_type: ENTITY_TYPE_FEED, input }
+    context_data: { id, entity_type: ENTITY_TYPE_FEED, input },
   });
   return findById(context, user, id);
 };
@@ -107,7 +106,7 @@ export const feedDelete = async (context: AuthContext, user: AuthUser, feedId: s
     event_scope: 'delete',
     event_access: 'administration',
     message: `deletes csv feed \`${deleted.name}\``,
-    context_data: { id: feedId, entity_type: ENTITY_TYPE_FEED, input: deleted }
+    context_data: { id: feedId, entity_type: ENTITY_TYPE_FEED, input: deleted },
   });
   return feedId;
 };

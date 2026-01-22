@@ -54,7 +54,7 @@ export const feedbackEditAuthorizedMembers = async (
   context: AuthContext,
   user: AuthUser,
   entityId: string,
-  input: MemberAccessInput[] | undefined | null
+  input: MemberAccessInput[] | undefined | null,
 ) => {
   const args = {
     entityId,

@@ -58,11 +58,11 @@ interface LabelCreationProps {
   inputValueContextual: string;
   required: boolean;
   creationCallback: (
-    data: LabelCreationContextualMutation$data
+    data: LabelCreationContextualMutation$data,
   ) => void;
   handleClose: () => void;
   open: boolean;
-  paginationOptions?: PaginationOptions,
+  paginationOptions?: PaginationOptions;
   dryrun: boolean;
 }
 
@@ -90,8 +90,8 @@ const LabelCreation: FunctionComponent<LabelCreationProps> = ({
   const onSubmit = (
     values: typeof initialValues,
     { setSubmitting, resetForm }: {
-      setSubmitting: (flag: boolean) => void,
-      resetForm: () => void,
+      setSubmitting: (flag: boolean) => void;
+      resetForm: () => void;
     },
   ) => {
     const finalValues = {

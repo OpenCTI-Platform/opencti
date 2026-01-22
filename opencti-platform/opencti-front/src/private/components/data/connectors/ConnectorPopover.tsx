@@ -27,6 +27,7 @@ import DeleteDialog from '../../../../components/DeleteDialog';
 import { useFormatter } from '../../../../components/i18n';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import stopEvent from '../../../../utils/domEvent';
+import canDeleteConnector from './utils/canDeleteConnector';
 
 interface ConnectorPopoverProps {
   connector: Connector_connector$data;
@@ -43,6 +44,7 @@ const ConnectorPopover = ({ connector, onRefreshData }: ConnectorPopoverProps) =
   const [clearing, setClearing] = useState(false);
   const [displayResetState, setDisplayResetState] = useState(false);
   const [resetting, setResetting] = useState(false);
+  const [refreshingQueueDetails, setRefreshingQueueDetails] = useState(false);
 
   const { isSensitive } = useSensitiveModifications('connector_reset');
 
@@ -79,10 +81,20 @@ const ConnectorPopover = ({ connector, onRefreshData }: ConnectorPopoverProps) =
   const handleOpenResetState = () => {
     setAnchorEl(null);
     setDisplayResetState(true);
+    setRefreshingQueueDetails(true);
+    if (onRefreshData) {
+      onRefreshData();
+      setTimeout(() => {
+        setRefreshingQueueDetails(false);
+      }, 500);
+    } else {
+      setRefreshingQueueDetails(false);
+    }
   };
 
   const handleCloseResetState = () => {
     setDisplayResetState(false);
+    setRefreshingQueueDetails(false);
   };
 
   const submitClearWorks = () => {
@@ -109,6 +121,13 @@ const ConnectorPopover = ({ connector, onRefreshData }: ConnectorPopoverProps) =
         MESSAGING$.notifySuccess('The connector state has been reset and messages queue has been purged');
         setResetting(false);
         setDisplayResetState(false);
+        if (onRefreshData) {
+          onRefreshData();
+        }
+      },
+      onError: (_error) => {
+        setResetting(false);
+        MESSAGING$.notifyError('Failed to reset connector state');
       },
     });
   };
@@ -135,7 +154,7 @@ const ConnectorPopover = ({ connector, onRefreshData }: ConnectorPopoverProps) =
         aria-haspopup="true"
         value="popover"
         color="primary"
-        size={'small'}
+        size="small"
       >
         <MoreVert fontSize="small" color="primary" />
       </ToggleButton>
@@ -152,17 +171,22 @@ const ConnectorPopover = ({ connector, onRefreshData }: ConnectorPopoverProps) =
           <DangerZoneBlock
             type="connector_reset"
             sx={{ title: { display: 'none' } }}
-            component={
+            component={(
               <MenuItem onClick={handleOpenResetState} sx={{ color: theme.palette.dangerZone.main }}>
                 {t_i18n('Reset')}<DangerZoneChip style={{ marginLeft: 8 }} />
               </MenuItem>
-            }
+            )}
           />
         ) : (
           <MenuItem onClick={handleOpenResetState}>{t_i18n('Reset the connector state')}</MenuItem>
         )}
         <MenuItem onClick={handleOpenClearWorks}>{t_i18n('Clear all works')}</MenuItem>
-        <MenuItem onClick={handleOpenDelete} disabled={!!connector.active || !!connector.built_in}>{t_i18n('Delete')}</MenuItem>
+        <MenuItem
+          onClick={handleOpenDelete}
+          disabled={!canDeleteConnector(connector)}
+        >
+          {t_i18n('Delete')}
+        </MenuItem>
       </Menu>
 
       {
@@ -230,7 +254,9 @@ const ConnectorPopover = ({ connector, onRefreshData }: ConnectorPopoverProps) =
               <div>
                 {t_i18n('Do you want to reset the state and purge messages queue of this connector?')}
                 <br />
-                {t_i18n('Number of messages: ') + connector.connector_queue_details.messages_number}
+                {refreshingQueueDetails
+                  ? t_i18n('Loading current message count...')
+                  : t_i18n('Number of messages: ') + connector.connector_queue_details.messages_number}
               </div>
             </Alert>
           </DialogContentText>
@@ -245,7 +271,7 @@ const ConnectorPopover = ({ connector, onRefreshData }: ConnectorPopoverProps) =
           <Button
             onClick={submitResetState}
             color={isSensitive ? 'error' : 'secondary'}
-            disabled={resetting}
+            disabled={resetting || refreshingQueueDetails}
           >
             {t_i18n('Confirm')}
           </Button>

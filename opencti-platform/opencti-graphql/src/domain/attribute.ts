@@ -3,12 +3,12 @@ import { elAttributeValues } from '../database/engine';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { buildPagination } from '../database/utils';
 import type { AuthContext, AuthUser } from '../types/user';
-import type { QueryRuntimeAttributesArgs } from '../generated/graphql';
+import type { Attribute, QueryRuntimeAttributesArgs } from '../generated/graphql';
 import { INTERNAL_ATTRIBUTES } from './attribute-utils';
 
 export interface DefaultValue {
-  id: string
-  name: string
+  id: string;
+  name: string;
 }
 
 // -- ATTRIBUTES --
@@ -23,9 +23,9 @@ export const getSchemaAttributeNames = (elementTypes: string[]) => {
   const sortByLabel = R.sortBy(R.toLower);
   const finalResult = R.pipe(
     sortByLabel,
-    R.map((n) => ({ node: { id: n, key: elementTypes[0], value: n } }))
+    R.map((n) => ({ node: { id: n, key: elementTypes[0], value: n } })),
   )(attributes);
-  return buildPagination(0, null, finalResult, finalResult.length);
+  return buildPagination<Attribute>(0, null, finalResult, finalResult.length);
 };
 
 export const getSchemaAttributes = () => {
@@ -50,12 +50,12 @@ export const getSchemaAttributes = () => {
         // For numeric attributes with scalable property
         scale: attr.type === 'numeric' && (attr as any).scalable ? 'default' : undefined,
         // Default values would need to be fetched from entity settings if needed
-        defaultValues: undefined
+        defaultValues: undefined,
       }));
 
     return {
       type: entityType,
-      attributes: typeAttributes
+      attributes: typeAttributes,
     };
   });
 };

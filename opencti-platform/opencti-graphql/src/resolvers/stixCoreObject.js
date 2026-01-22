@@ -44,7 +44,8 @@ import {
   stixCoreObjectsNumber,
   stixCoreObjectsTimeSeries,
   stixCoreObjectsTimeSeriesByAuthor,
-  stixCoreRelationshipsPaginated
+  stixCoreRelationshipsPaginated,
+  findUnknownStixCoreObjects,
 } from '../domain/stixCoreObject';
 import { fetchEditContext } from '../database/redis';
 import { distributionRelations, stixLoadByIdStringify } from '../database/middleware';
@@ -63,6 +64,7 @@ import { loadThroughDenormalized } from './stix';
 const stixCoreObjectResolvers = {
   Query: {
     globalSearch: (_, args, context) => globalSearchPaginated(context, context.user, args),
+    unknownStixCoreObjects: (_, args, context) => findUnknownStixCoreObjects(context, context.user, args),
     stixCoreObject: (_, { id }, context) => findById(context, context.user, id),
     stixCoreObjectRaw: (_, { id }, context) => stixLoadByIdStringify(context, context.user, id),
     stixCoreObjects: (_, args, context) => findStixCoreObjectPaginated(context, context.user, args),
@@ -104,7 +106,7 @@ const stixCoreObjectResolvers = {
       /* v8 ignore next */
       return 'Unknown';
     },
-    toStix: (stixCoreObject, _, context) => stixLoadByIdStringify(context, context.user, stixCoreObject.id),
+    toStix: (stixCoreObject, args, context) => stixLoadByIdStringify(context, context.user, stixCoreObject.id, args),
     editContext: (stixCoreObject) => fetchEditContext(stixCoreObject.id),
     // region batch loaded through rel de-normalization. Cant be ordered of filtered
     createdBy: (stixCoreObject, _, context) => loadThroughDenormalized(context, context.user, stixCoreObject, INPUT_CREATED_BY),
@@ -144,7 +146,7 @@ const stixCoreObjectResolvers = {
     containersNumber: (stixCoreObject, args, context) => numberOfContainersForObject(context, context.user, { ...args, objectId: stixCoreObject.id }),
     numberOfConnectedElement: (stixCoreObject, _, context) => stixCoreObjectsConnectedNumber(context, context.user, stixCoreObject),
     // Retro compatibility
-    spec_version: getSpecVersionOrDefault
+    spec_version: getSpecVersionOrDefault,
   },
   Analysis: {
     __resolveType(obj) {

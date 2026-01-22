@@ -30,7 +30,7 @@ export const testSync = async (context, user, sync) => {
       const eventSource = new EventSource(eventSourceUri, {
         rejectUnauthorized: ssl,
         headers: !isEmptyField(token) ? { authorization: `Bearer ${token}` } : undefined,
-        agent: getPlatformHttpProxyAgent(eventSourceUri)
+        agent: getPlatformHttpProxyAgent(eventSourceUri),
       });
       eventSource.on('connected', (d) => {
         const { connectionId } = JSON.parse(d.data);
@@ -46,7 +46,7 @@ export const testSync = async (context, user, sync) => {
         eventSource.close();
         reject(UnsupportedError(`Cant connect to remote opencti, ${e.message}`));
       });
-    } catch (e) {
+    } catch (_e) {
       reject(UnsupportedError('Cant connect to remote opencti, check your configuration'));
     }
   });

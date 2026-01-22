@@ -165,7 +165,7 @@ const Labels = () => {
           resolvePath={(data) => data.labels?.edges?.map((e) => e?.node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
-          toolbarFilters={contextFilters}
+          contextFilters={contextFilters}
           lineFragment={lineFragment}
           preloadedPaginationProps={preloadedPaginationProps}
           actions={(label) => <LabelPopover label={label} paginationOptions={queryPaginationOptions} />}

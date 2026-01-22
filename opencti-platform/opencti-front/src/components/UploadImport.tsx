@@ -7,6 +7,8 @@ import { UploadFileOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import ImportFilesDialog from '@components/common/files/import_files/ImportFilesDialog';
 import { useFormatter } from './i18n';
+import useDraftContext from '../utils/hooks/useDraftContext';
+import { useGetCurrentUserAccessRight } from '../utils/authorizedMembers';
 
 interface UploadImportProps {
   color?: 'primary' | 'inherit' | 'secondary' | 'success' | 'error' | 'info' | 'warning';
@@ -31,8 +33,12 @@ const UploadImport = ({
   const { t_i18n } = useFormatter();
   const title = t_i18n('Import data');
   const [openImportFilesDialog, setOpenImportFilesDialog] = useState(false);
+  // Remove import button in Draft context without the minimal right access "canEdit"
+  const draftContext = useDraftContext();
+  const currentAccessRight = useGetCurrentUserAccessRight(draftContext?.currentUserAccessRight);
+  const canDisplayButton = !draftContext || currentAccessRight.canEdit;
 
-  return (
+  return canDisplayButton && (
     <>
       {openImportFilesDialog && (
         <ImportFilesDialog
@@ -52,7 +58,7 @@ const UploadImport = ({
             aria-haspopup="true"
             onClick={() => setOpenImportFilesDialog(true)}
           >
-            <UploadFileOutlined fontSize={fontSize}/>
+            <UploadFileOutlined fontSize={fontSize} />
           </IconButton>
         </Tooltip>
       ) : (

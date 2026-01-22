@@ -52,10 +52,10 @@ const messageValidation = () => Yup.object().shape({
 });
 
 type SettingsMessageInput = Partial<
-Pick<
-SettingsMessagesLine_settingsMessage$data,
+  Pick<
+    SettingsMessagesLine_settingsMessage$data,
 'id' | 'activated' | 'message' | 'dismissible'
-> & { recipients: FieldOption[] }
+  > & { recipients: FieldOption[] }
 >;
 
 const SettingsMessageForm = ({
@@ -93,23 +93,23 @@ const SettingsMessageForm = ({
   };
   const initialValues = message
     ? {
-      id: message.id,
-      message: message.message,
-      activated: message.activated,
-      dismissible: message.dismissible,
-      color: message.color,
-      recipients: message.recipients?.map(({ id, name }) => ({
-        label: name,
-        value: id,
-      })),
-    }
+        id: message.id,
+        message: message.message,
+        activated: message.activated,
+        dismissible: message.dismissible,
+        color: message.color,
+        recipients: message.recipients?.map(({ id, name }) => ({
+          label: name,
+          value: id,
+        })),
+      }
     : {
-      message: '',
-      activated: false,
-      dismissible: false,
-      color: '',
-      recipients: [],
-    };
+        message: '',
+        activated: false,
+        dismissible: false,
+        color: '',
+        recipients: [],
+      };
   return (
     <Drawer
       title={creation ? `${t_i18n('Create a message')}` : `${t_i18n('Update a message')}`}

@@ -15,7 +15,7 @@ import { awaitUntilCondition } from '../utils';
  * Test flag entities
  * Delete PIR
  */
-test('Pir CRUD', { tag: ['@pir', '@mutation'] }, async ({ page, request }) => {
+test('Pir CRUD', { tag: ['@pir', '@mutation', '@ee'] }, async ({ page, request }) => {
   const leftNavigation = new LeftBarPage(page);
   const pirPage = new PirPage(page);
   const pirForm = new PirFormPageModel(page);

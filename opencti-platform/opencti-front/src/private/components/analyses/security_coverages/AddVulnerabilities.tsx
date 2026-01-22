@@ -18,9 +18,9 @@ const AddVulnerabilities: FunctionComponent<AddVulnerabilitiesProps> = ({ securi
     <StixCoreRelationshipCreationFromEntity
       entityId={securityCoverage.id}
       objectId={securityCoverage.id}
-      connectionKey={'Pagination_vulnerabilities'}
+      connectionKey="Pagination_vulnerabilities"
       targetEntities={targetEntities}
-      currentView={'relationships'}
+      currentView="relationships"
       allowedRelationshipTypes={['has-covered']}
       targetStixDomainObjectTypes={['Vulnerability']}
       paginationOptions={paginationOptions}

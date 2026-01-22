@@ -1,5 +1,5 @@
 import type { FileHandle } from 'fs/promises';
-import { streamToString } from '../database/file-storage';
+import { streamToString } from '../database/raw-file-storage';
 
 export async function extractContentFrom<T = any>(file: Promise<FileHandle>) {
   const uploadedFile = await file;

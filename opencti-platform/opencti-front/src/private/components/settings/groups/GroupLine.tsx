@@ -44,8 +44,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface GroupLineProps {
-  dataColumns: DataColumns
-  node: GroupLine_node$data
+  dataColumns: DataColumns;
+  node: GroupLine_node$data;
 }
 
 const GroupLineComponent: React.FC<GroupLineProps> = (props) => {
@@ -66,7 +66,7 @@ const GroupLineComponent: React.FC<GroupLineProps> = (props) => {
         <ItemIcon type="Group" />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <>
             <div
               className={classes.bodyItem}
@@ -79,9 +79,9 @@ const GroupLineComponent: React.FC<GroupLineProps> = (props) => {
               style={{ width: dataColumns.default_assignation.width }}
             >
               {node.default_assignation ? (
-                <CheckCircleOutlined fontSize="small" color="success"/>
+                <CheckCircleOutlined fontSize="small" color="success" />
               ) : (
-                <DoNotDisturbOnOutlined fontSize="small" color="primary"/>
+                <DoNotDisturbOnOutlined fontSize="small" color="primary" />
               )}
             </div>
             <div
@@ -89,9 +89,9 @@ const GroupLineComponent: React.FC<GroupLineProps> = (props) => {
               style={{ width: dataColumns.auto_new_marking.width }}
             >
               {node.auto_new_marking ? (
-                <CheckCircleOutlined fontSize="small" color="success"/>
+                <CheckCircleOutlined fontSize="small" color="success" />
               ) : (
-                <DoNotDisturbOnOutlined fontSize="small" color="primary"/>
+                <DoNotDisturbOnOutlined fontSize="small" color="primary" />
               )}
             </div>
             <div
@@ -99,9 +99,9 @@ const GroupLineComponent: React.FC<GroupLineProps> = (props) => {
               style={{ width: dataColumns.no_creators.width }}
             >
               {node.no_creators ? (
-                <CheckCircleOutlined fontSize="small" color="success"/>
+                <CheckCircleOutlined fontSize="small" color="success" />
               ) : (
-                <DoNotDisturbOnOutlined fontSize="small" color="primary"/>
+                <DoNotDisturbOnOutlined fontSize="small" color="primary" />
               )}
             </div>
             <div
@@ -112,7 +112,7 @@ const GroupLineComponent: React.FC<GroupLineProps> = (props) => {
                 <Tooltip
                   title={t_i18n('This group does not have a Max Confidence Level, members might not be able to create data.')}
                 >
-                  <ReportGmailerrorred fontSize={'small'} color={'error'}/>
+                  <ReportGmailerrorred fontSize="small" color="error" />
                 </Tooltip>
               )}
             </div>
@@ -129,10 +129,10 @@ const GroupLineComponent: React.FC<GroupLineProps> = (props) => {
               {fd(node.updated_at)}
             </div>
           </>
-        }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
-        <KeyboardArrowRightOutlined/>
+        <KeyboardArrowRightOutlined />
       </ListItemIcon>
     </ListItemButton>
   );
@@ -163,11 +163,11 @@ export const GroupLineDummy: React.FC<Pick<GroupLineProps, 'dataColumns'>> = ({ 
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={
+      secondaryAction={(
         <Box sx={{ root: classes.itemIconDisabled }}>
-          <KeyboardArrowRightOutlined/>
+          <KeyboardArrowRightOutlined />
         </Box>
-      }
+      )}
     >
       <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
         <Skeleton
@@ -178,7 +178,7 @@ export const GroupLineDummy: React.FC<Pick<GroupLineProps, 'dataColumns'>> = ({ 
         />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -247,7 +247,7 @@ export const GroupLineDummy: React.FC<Pick<GroupLineProps, 'dataColumns'>> = ({ 
               />
             </div>
           </div>
-        }
+        )}
       />
     </ListItem>
   );

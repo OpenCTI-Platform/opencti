@@ -68,7 +68,7 @@ export class BundleBuilder {
       id: this.id,
       spec_version: STIX_SPEC_VERSION,
       type: this.type,
-      objects: R.uniqBy(R.prop('id'), this.objects)
+      objects: R.uniqBy(R.prop('id'), this.objects),
     };
   }
 }

@@ -2,10 +2,11 @@ import React, { memo } from 'react';
 import * as R from 'ramda';
 import { NodeProps, Position } from 'reactflow';
 import Typography from '@mui/material/Typography';
-import getFilterFromEntityTypeAndNodeType, { DiamondNodeType } from '@components/common/stix_domain_objects/diamond/getFilterFromEntityTypeAndNodeType';
+import getFilterFromEntityTypeAndNodeType from '@components/common/stix_domain_objects/diamond/getFilterFromEntityTypeAndNodeType';
 import NodeContainer from '@components/common/stix_domain_objects/diamond/types/nodes/NodeContainer';
 import { useFormatter } from '../../../../../../../components/i18n';
 import { emptyFilled } from '../../../../../../../utils/String';
+import { DiamondNodeEnum } from './diamondEnums';
 
 const NodeInfrastructure = ({ data }: NodeProps) => {
   const { t_i18n } = useFormatter();
@@ -24,7 +25,7 @@ const NodeInfrastructure = ({ data }: NodeProps) => {
     .map((n: { node: { to: { name: string } } }) => n?.node?.to?.name))
     .join(', ');
 
-  const generatedFilters = getFilterFromEntityTypeAndNodeType(stixDomainObject.entity_type, DiamondNodeType.infrastructure);
+  const generatedFilters = getFilterFromEntityTypeAndNodeType(stixDomainObject.entity_type, DiamondNodeEnum.infrastructure);
 
   return (
     <NodeContainer link={`${entityLink}/all?filters=${generatedFilters}&view=entities`} position={Position.Left}>
@@ -33,16 +34,22 @@ const NodeInfrastructure = ({ data }: NodeProps) => {
           {t_i18n('Last used IP addresses')}
         </Typography>
         {emptyFilled(usedIPs)}
-        <Typography variant="h3" gutterBottom sx={{
-          marginTop: '20px',
-        }}
+        <Typography
+          variant="h3"
+          gutterBottom
+          sx={{
+            marginTop: '20px',
+          }}
         >
           {t_i18n('Last used domains')}
         </Typography>
         {emptyFilled(usedDomains)}
-        <Typography variant="h3" gutterBottom sx={{
-          marginTop: '20px',
-        }}
+        <Typography
+          variant="h3"
+          gutterBottom
+          sx={{
+            marginTop: '20px',
+          }}
         >
           {t_i18n('Last used infrastructures')}
         </Typography>

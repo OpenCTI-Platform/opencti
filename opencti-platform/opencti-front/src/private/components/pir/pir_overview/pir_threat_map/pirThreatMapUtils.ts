@@ -14,21 +14,21 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 export interface PirThreatMapMarker {
-  id: string
-  date: string
-  score: number
-  name: string
-  type: string
+  id: string;
+  date: string;
+  score: number;
+  name: string;
+  type: string;
 }
 
 export type ApexPirThreatMapSeries = {
   data: [{
-    x: Date,
-    y: number,
-    fillColor: string,
+    x: Date;
+    y: number;
+    fillColor: string;
     meta: {
-      size: number,
-      group: PirThreatMapMarker[]
-    }
-  }]
+      size: number;
+      group: PirThreatMapMarker[];
+    };
+  }];
 }[];

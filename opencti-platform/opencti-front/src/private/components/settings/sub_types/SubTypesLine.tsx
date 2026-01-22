@@ -74,7 +74,7 @@ interface SubTypeLineProps {
   onToggleShiftEntity: (
     index: number,
     entity: { id: string },
-    event: React.SyntheticEvent
+    event: React.SyntheticEvent,
   ) => void;
   index: number;
 }
@@ -95,7 +95,7 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
 
   const renderOptionIcon = (option: string) => {
     if (!nodeSubType.settings?.availableSettings?.includes(option)) {
-      return <DoNotDisturbOnOutlined fontSize="small" color={'disabled'} />;
+      return <DoNotDisturbOnOutlined fontSize="small" color="disabled" />;
     }
     if ((nodeSubType.settings as never)?.[option] === true) {
       return <CheckCircleOutlined fontSize="small" color="success" />;
@@ -104,7 +104,7 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
   };
   const renderWorkflowStatus = () => {
     if (!nodeSubType.settings?.availableSettings?.includes('workflow_configuration')) {
-      return <DoNotDisturbOnOutlined fontSize="small" color={'disabled'} />;
+      return <DoNotDisturbOnOutlined fontSize="small" color="disabled" />;
     }
     if (nodeSubType.workflowEnabled) {
       return <CheckCircleOutlined fontSize="small" color="success" />;
@@ -140,7 +140,7 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
         <ItemIcon type={nodeSubType.id} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -173,7 +173,7 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
               {renderOptionIcon('platform_hidden_type')}
             </div>
           </div>
-        }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />
@@ -204,7 +204,7 @@ export const SubTypeLineDummy = ({
         />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             {Object.values(dataColumns).map((value) => (
               <div
@@ -221,7 +221,7 @@ export const SubTypeLineDummy = ({
               </div>
             ))}
           </div>
-        }
+        )}
       />
     </ListItem>
   );

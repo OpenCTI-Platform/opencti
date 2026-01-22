@@ -159,7 +159,7 @@ const AttackPatterns = () => {
           resolvePath={(data: AttackPatternsLines_data$data) => data.attackPatterns?.edges?.map((n) => n?.node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
-          toolbarFilters={contextFilters}
+          contextFilters={contextFilters}
           preloadedPaginationProps={preloadedPaginationOptions}
           lineFragment={attackPatternLineFragment}
           exportContext={{ entity_type: 'Attack-Pattern' }}

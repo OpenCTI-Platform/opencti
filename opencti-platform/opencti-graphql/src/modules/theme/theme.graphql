@@ -1,0 +1,77 @@
+type Theme implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String! @auth
+  entity_type: String! @auth
+  parent_types: [String!]! @auth
+  # Theme
+  name: String!
+  theme_background: String!
+  theme_paper: String!
+  theme_nav: String!
+  theme_primary: String!
+  theme_secondary: String!
+  theme_accent: String!
+  theme_logo: String
+  theme_logo_collapsed: String
+  theme_logo_login: String
+  theme_text_color: String!
+  toConfigurationExport: String!
+  built_in: Boolean
+  metrics:[Metric]
+}
+
+# Relay connections
+type ThemeConnection {
+  pageInfo: PageInfo!
+  edges: [ThemeEdge!]!
+}
+
+type ThemeEdge {
+  cursor: String!
+  node: Theme!
+}
+
+# Ordering
+enum ThemeOrdering {
+  name
+  created_at
+  _score
+}
+
+# Queries
+type Query {
+  theme(id: ID!): Theme @public
+  themes(
+    first: Int
+    after: ID
+    orderBy: ThemeOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+    toStix: Boolean
+  ): ThemeConnection @public
+}
+
+# Input
+input ThemeAddInput {
+  name: String! @constraint(minLength: 2, format: "not-blank")
+  theme_background: String!
+  theme_paper: String!
+  theme_nav: String!
+  theme_primary: String!
+  theme_secondary: String!
+  theme_accent: String!
+  theme_logo: String
+  theme_logo_collapsed: String
+  theme_logo_login: String
+  theme_text_color: String!
+  built_in: Boolean
+}
+
+# Mutations
+type Mutation {
+  themeAdd(input: ThemeAddInput!): Theme @auth(for: [KNOWLEDGE_KNUPDATE])
+  themeDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  themeFieldPatch(id: ID!,input: [EditInput!]!): Theme @auth(for: [KNOWLEDGE_KNUPDATE])
+  themeImport(file: Upload!): Theme @auth(for: [KNOWLEDGE_KNUPDATE])
+}

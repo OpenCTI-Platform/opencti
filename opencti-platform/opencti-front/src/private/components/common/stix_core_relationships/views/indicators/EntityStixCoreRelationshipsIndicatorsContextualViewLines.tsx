@@ -73,14 +73,14 @@ export const contextualViewLinesQuery = graphql`
 `;
 
 interface EntityStixCoreRelationshipsIndicatorsContextualViewLinesProps {
-  queryRef: PreloadedQuery<EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery>
-  dataColumns: DataColumns
-  paginationOptions: Partial<EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery$variables>
-  onToggleEntity: UseEntityToggle<EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data>['onToggleEntity']
-  selectedElements: UseEntityToggle<EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data>['selectedElements']
-  deSelectedElements: UseEntityToggle<EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data>['deSelectedElements']
-  selectAll: UseEntityToggle<EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data>['selectAll']
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements']
+  queryRef: PreloadedQuery<EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery>;
+  dataColumns: DataColumns;
+  paginationOptions: Partial<EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery$variables>;
+  onToggleEntity: UseEntityToggle<EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data>['onToggleEntity'];
+  selectedElements: UseEntityToggle<EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data>['selectedElements'];
+  deSelectedElements: UseEntityToggle<EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data>['deSelectedElements'];
+  selectAll: UseEntityToggle<EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data>['selectAll'];
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
 }
 
 const EntityStixCoreRelationshipsIndicatorsContextualViewLinesComponent: FunctionComponent<EntityStixCoreRelationshipsIndicatorsContextualViewLinesProps> = ({
@@ -94,8 +94,8 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewLinesComponent: Functio
   setNumberOfElements,
 }) => {
   const { data, loadMore, hasMore, isLoadingMore } = usePreloadedPaginationFragment<
-  EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery,
-  EntityStixCoreRelationshipsIndicatorsContextualViewLines_data$key
+    EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery,
+    EntityStixCoreRelationshipsIndicatorsContextualViewLines_data$key
   >({
     queryRef,
     linesQuery: contextualViewLinesQuery,
@@ -126,7 +126,7 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewLinesComponent: Functio
 };
 
 const EntityStixCoreRelationshipsIndicatorsContextualViewLines: FunctionComponent<
-Omit<EntityStixCoreRelationshipsIndicatorsContextualViewLinesProps, 'queryRef'>
+  Omit<EntityStixCoreRelationshipsIndicatorsContextualViewLinesProps, 'queryRef'>
 > = (props) => {
   const queryRef = useQueryLoading<EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery>(
     contextualViewLinesQuery,

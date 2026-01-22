@@ -97,26 +97,26 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
       <Typography variant="h4" gutterBottom={true}>
         {t_i18n('Details')}
       </Typography>
-      <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+      <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
         <Grid container={true} spacing={3}>
           <Grid item xs={6}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Infrastructure types')}
             </Typography>
             {data.infrastructure_types
-            && data.infrastructure_types.length > 0 ? (
-              <List>
-                {data.infrastructure_types.map((infrastructureType) => (
-                  <Chip
-                    key={infrastructureType}
-                    classes={{ root: classes.chip }}
-                    label={infrastructureType}
-                  />
-                ))}
-              </List>
-              ) : (
-                '-'
-              )}
+              && data.infrastructure_types.length > 0 ? (
+                  <List>
+                    {data.infrastructure_types.map((infrastructureType) => (
+                      <Chip
+                        key={infrastructureType}
+                        classes={{ root: classes.chip }}
+                        label={infrastructureType}
+                      />
+                    ))}
+                  </List>
+                ) : (
+                  '-'
+                )}
           </Grid>
           <Grid item xs={6}>
             <Typography variant="h3" gutterBottom={true}>
@@ -137,7 +137,7 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
             {data.last_seen ? fldt(data.last_seen) : '-'}
           </Grid>
           <Grid item xs={6}>
-            <StixCoreObjectKillChainPhasesView killChainPhases={killChainPhases}/>
+            <StixCoreObjectKillChainPhasesView killChainPhases={killChainPhases} />
           </Grid>
         </Grid>
         <br />

@@ -1,9 +1,10 @@
 import type { JSONSchemaType } from 'ajv';
 import type { NotifierConnector } from '../../generated/graphql';
-import type { BasicStoreEntityNotifier } from './notifier-types';
+import { type BasicStoreEntityNotifier, ENTITY_TYPE_NOTIFIER } from './notifier-types';
 import { HEADER_TEMPLATE } from '../../utils/emailTemplates/header';
 import { FOOTER_TEMPLATE } from '../../utils/emailTemplates/footer';
 import { LOGO_TEMPLATE } from '../../utils/emailTemplates/logo';
+import { ABSTRACT_BASIC_OBJECT, ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 
 // region Notifier User interface
 export const NOTIFIER_CONNECTOR_UI = 'f39b8ab2c-8f5c-4167-a249-229f34d9442b';
@@ -13,18 +14,18 @@ export const NOTIFIER_CONNECTOR_EMAIL = '6f5e30a8-56d5-4ff1-8b8d-f90243f771dc';
 export const NOTIFIER_CONNECTOR_SIMPLIFIED_EMAIL = '9f73d9f8-cc4c-432b-b5b0-be6b6d6c8d87';
 
 export interface NOTIFIER_CONNECTOR_EMAIL_INTERFACE {
-  title: string
-  template: string
-  url_suffix: string
+  title: string;
+  template: string;
+  url_suffix: string;
 }
 
 export interface NOTIFIER_CONNECTOR_SIMPLIFIED_EMAIL_INTERFACE {
-  title: string
-  header: string
-  logo: string
-  footer: string
-  background_color: string
-  url_suffix: string
+  title: string;
+  header: string;
+  logo: string;
+  footer: string;
+  background_color: string;
+  url_suffix: string;
 }
 
 export const NOTIFIER_CONNECTOR_EMAIL_CONFIG: JSONSchemaType<NOTIFIER_CONNECTOR_EMAIL_INTERFACE> = {
@@ -53,11 +54,11 @@ export const NOTIFIER_CONNECTOR_SIMPLIFIED_EMAIL_CONFIG: JSONSchemaType<NOTIFIER
 export const NOTIFIER_CONNECTOR_WEBHOOK = '08f9f00f-4e52-4466-ae27-be9fa9813a88';
 
 export interface NOTIFIER_CONNECTOR_WEBHOOK_INTERFACE {
-  verb: string
-  url: string
-  template: string
-  params: { attribute: string, value: string }[],
-  headers: { attribute: string, value: string }[],
+  verb: string;
+  url: string;
+  template: string;
+  params: { attribute: string; value: string }[];
+  headers: { attribute: string; value: string }[];
 }
 
 export const NOTIFIER_CONNECTOR_WEBHOOK_CONFIG: JSONSchemaType<NOTIFIER_CONNECTOR_WEBHOOK_INTERFACE> = {
@@ -78,7 +79,7 @@ export const NOTIFIER_CONNECTOR_WEBHOOK_CONFIG: JSONSchemaType<NOTIFIER_CONNECTO
             type: 'string',
           },
         },
-        required: ['attribute', 'value']
+        required: ['attribute', 'value'],
       },
     },
     headers: {
@@ -93,7 +94,7 @@ export const NOTIFIER_CONNECTOR_WEBHOOK_CONFIG: JSONSchemaType<NOTIFIER_CONNECTO
             type: 'string',
           },
         },
-        required: ['attribute', 'value']
+        required: ['attribute', 'value'],
       },
     },
   },
@@ -115,7 +116,7 @@ export const BUILTIN_NOTIFIERS_CONNECTORS: Record<string, NotifierConnector> = {
         'ui:options': {
           rows: 20,
         },
-      }
+      },
     }),
   },
   [NOTIFIER_CONNECTOR_SIMPLIFIED_EMAIL]: {
@@ -127,7 +128,7 @@ export const BUILTIN_NOTIFIERS_CONNECTORS: Record<string, NotifierConnector> = {
     connector_schema_ui: JSON.stringify({
       logo: {
         'ui:widget': 'file',
-        'ui:options': { accept: 'image/*' } // Because of an open bug: this is not working yet https://github.com/rjsf-team/react-jsonschema-form/issues/3577
+        'ui:options': { accept: 'image/*' }, // Because of an open bug: this is not working yet https://github.com/rjsf-team/react-jsonschema-form/issues/3577
       },
       background_color: {
         'ui:widget': 'color', // Same, for now we can't have fully customized components, we will need to investigate in the future
@@ -146,9 +147,9 @@ export const BUILTIN_NOTIFIERS_CONNECTORS: Record<string, NotifierConnector> = {
         'ui:options': {
           rows: 20,
         },
-      }
+      },
     }),
-  }
+  },
 };
 
 export const STATIC_NOTIFIER_UI = 'f4ee7b33-006a-4b0d-b57d-411ad288653d';
@@ -159,16 +160,23 @@ export const STATIC_NOTIFIERS: Array<BasicStoreEntityNotifier> = [
   // @ts-ignore
   {
     id: STATIC_NOTIFIER_UI,
+    standard_id: `notifier--${STATIC_NOTIFIER_UI}`,
+    entity_type: ENTITY_TYPE_NOTIFIER,
+    parent_types: [ABSTRACT_BASIC_OBJECT, ABSTRACT_INTERNAL_OBJECT],
     internal_id: STATIC_NOTIFIER_UI,
     built_in: true,
     name: 'User interface',
     description: 'Publish notification to the user interface',
     notifier_connector_id: NOTIFIER_CONNECTOR_UI,
+    notifier_configuration: '',
   },
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   {
     id: STATIC_NOTIFIER_EMAIL,
+    standard_id: `notifier--${STATIC_NOTIFIER_EMAIL}`,
+    entity_type: ENTITY_TYPE_NOTIFIER,
+    parent_types: [ABSTRACT_BASIC_OBJECT, ABSTRACT_INTERNAL_OBJECT],
     internal_id: STATIC_NOTIFIER_EMAIL,
     built_in: true,
     name: 'Default mailer',
@@ -375,9 +383,9 @@ ${HEADER_TEMPLATE}
       </table>
    </body>
 </html>
-      `
-    })
-  }
+      `,
+    }),
+  },
 ];
 
 export const SIMPLIFIED_EMAIL_TEMPLATE = `
@@ -664,7 +672,7 @@ export const DEFAULT_TEAM_MESSAGE = {
       "url": "https://YOUR_DOMAIN.webhook.office.com/YOUR_ENDPOINT",
       "verb": "POST"
     }
-  `
+  `,
 };
 
 export const DEFAULT_TEAM_DIGEST_MESSAGE = {
@@ -677,5 +685,5 @@ export const DEFAULT_TEAM_DIGEST_MESSAGE = {
       "url": "https://YOUR_DOMAIN.webhook.office.com/YOUR_ENDPOINT",
       "verb": "POST"
     }
-  `
+  `,
 };

@@ -4,17 +4,17 @@ import { checkExclusionLists, convertIpAddr } from '../utils/exclusionLists';
 import type { AuthContext } from '../types/user';
 import { fullEntitiesList } from './middleware-loader';
 import { SYSTEM_USER } from '../utils/access';
-import { getFileContent } from './file-storage';
+import { getFileContent } from './raw-file-storage';
 import { logApp, PLATFORM_INSTANCE_ID } from '../config/conf';
 import { redisGetExclusionListCache, redisSetExclusionListCache, redisUpdateExclusionListStatus } from './redis';
 import { FunctionalError } from '../config/errors';
 import type { HashInput } from '../generated/graphql';
 
 export interface ExclusionListCacheItem {
-  id: string
-  types: string[]
-  values: string[]
-  ranges?: number[] // only used for IPs
+  id: string;
+  types: string[];
+  values: string[];
+  ranges?: number[]; // only used for IPs
 }
 
 let exclusionListCache: ExclusionListCacheItem[] | null = null;
@@ -96,7 +96,7 @@ export const syncExclusionListCache = async (cacheDate: string) => {
   await redisUpdateExclusionListStatus({ [PLATFORM_INSTANCE_ID]: cacheDate });
 };
 
-export const checkObservableValue = async (observableValue: { type: string, value: string, hashes: Array<HashInput> }) => {
+export const checkObservableValue = async (observableValue: { type: string; value: string; hashes: Array<HashInput> }) => {
   const { type, value, hashes } = observableValue;
   if (!type || (!value && !hashes)) {
     return null;

@@ -1,5 +1,5 @@
 import { Page } from '@playwright/test';
-import SDOTabs from "./SDOTabs.pageModel";
+import SDOTabs from './SDOTabs.pageModel';
 
 export default class IntrusionSetDetailsPage {
   tabs = new SDOTabs(this.page);
@@ -23,6 +23,6 @@ export default class IntrusionSetDetailsPage {
   }
 
   getCreateRelationshipButton() {
-    return this.page.getByLabel('Add', { exact: true });
+    return this.page.getByRole('button', { name: 'Create Relationship' });
   }
 }

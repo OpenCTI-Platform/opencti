@@ -22,7 +22,7 @@ export const notifierPopoverDeletionMutation = graphql`
   }
 `;
 
-const NotifierPopover = ({ data, paginationOptions }: { data: NotifierLine_node$data, paginationOptions?: NotifiersLinesPaginationQuery$variables }) => {
+const NotifierPopover = ({ data, paginationOptions }: { data: NotifierLine_node$data; paginationOptions?: NotifiersLinesPaginationQuery$variables }) => {
   const { t_i18n } = useFormatter();
   const [queryRef, loadQuery] = useQueryLoader<NotifierEditionQuery>(notifierEditionQuery);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);

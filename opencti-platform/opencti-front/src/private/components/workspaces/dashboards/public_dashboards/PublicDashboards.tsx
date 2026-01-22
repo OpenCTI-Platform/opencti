@@ -194,7 +194,7 @@ const PublicDashboards = () => {
           }}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
-          toolbarFilters={contextFilters}
+          contextFilters={contextFilters}
           preloadedPaginationProps={{
             linesQuery: publicDashboardsListQuery,
             linesFragment: publicDashboardsFragment,
@@ -216,7 +216,7 @@ const PublicDashboards = () => {
               <PublicDashboardCreation paginationOptions={queryPaginationOptions} />
             </Security>
           )}
-          taskScope='PUBLIC_DASHBOARD'
+          taskScope="PUBLIC_DASHBOARD"
         />
       )}
     </>

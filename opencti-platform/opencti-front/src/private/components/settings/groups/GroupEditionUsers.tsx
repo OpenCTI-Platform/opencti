@@ -44,11 +44,11 @@ const userMutationRelationDelete = graphql`
 `;
 
 interface GroupEditionUsersProps {
-  group: GroupEditionContainer_group$data,
-  queryRef: PreloadedQuery<DataTableToolBarUsersLinesSearchQuery>,
-  paginationOptionsForUpdater: GroupUsersLinesQuery$variables,
-  children: ReactNode,
-  storageKey: string,
+  group: GroupEditionContainer_group$data;
+  queryRef: PreloadedQuery<DataTableToolBarUsersLinesSearchQuery>;
+  paginationOptionsForUpdater: GroupUsersLinesQuery$variables;
+  children: ReactNode;
+  storageKey: string;
 }
 
 const GroupEditionUsers: FunctionComponent<GroupEditionUsersProps> = ({ group, queryRef, paginationOptionsForUpdater, children, storageKey }) => {

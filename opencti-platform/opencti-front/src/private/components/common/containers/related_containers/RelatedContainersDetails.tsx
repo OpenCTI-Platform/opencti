@@ -50,15 +50,17 @@ const RelatedContainersDetailsDistribution: React.FC<{
     data: [objectDistribution?.value],
   })) as ApexAxisChartSeries;
 
-  return (<div style={{ height: 150 }}>
-    <WidgetHorizontalBars
-      series={series}
-      distributed={false}
-      stacked
-      stackType='100%'
-      legend={true}
-    />
-  </div>);
+  return (
+    <div style={{ height: 150 }}>
+      <WidgetHorizontalBars
+        series={series}
+        distributed={false}
+        stacked
+        stackType="100%"
+        legend={true}
+      />
+    </div>
+  );
 };
 
 interface RelatedContainersDetailsProps {
@@ -184,8 +186,8 @@ const RelatedContainersDetails: React.FC<RelatedContainersDetailsProps> = ({ con
       </Grid>
 
       {/* Related Containers Distribution */}
-      <Grid item xs={12} >
-        <Typography variant="h4" >
+      <Grid item xs={12}>
+        <Typography variant="h4">
           {t_i18n('Correlated indicators and observables distribution')}
         </Typography>
         {queryRef && <RelatedContainersDetailsDistribution queryRef={queryRef} />}

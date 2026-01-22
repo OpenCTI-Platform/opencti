@@ -9,8 +9,8 @@ import { CONNECTOR_INTERNAL_ENRICHMENT } from '../schema/general';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
 import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { SYSTEM_USER } from '../utils/access';
-import { convertStoreToStix } from '../database/stix-2-1-converter';
 import { getDraftContext } from '../utils/draftContext';
+import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
 
 const publishEventToConnectors = async (context, user, element, targetConnectors, trigger, stixLoaders) => {
   const draftContext = getDraftContext(context, user);
@@ -23,7 +23,7 @@ const publishEventToConnectors = async (context, user, element, targetConnectors
       return createWork(contextOutOfDraft, user, connector, workMessage, elementStandardId, { draftContext }).then((work) => {
         return { connector, work };
       });
-    }, targetConnectors)
+    }, targetConnectors),
   );
   // Send message to all correct connectors queues
   for (let index = 0; index < workList.length; index += 1) {
@@ -41,14 +41,14 @@ const publishEventToConnectors = async (context, user, element, targetConnectors
         applicant_id: null, // No specific user asking for the import
         draft_id: draftContext ?? null,
         trigger, // create | update
-        mode: 'auto'
+        mode: 'auto',
       },
       event: {
         event_type: CONNECTOR_INTERNAL_ENRICHMENT,
         entity_id: elementStandardId,
         entity_type: element.entity_type,
         stix_entity,
-        stix_objects
+        stix_objects,
       },
     };
     await pushToConnector(connector.internal_id, message);
@@ -114,6 +114,6 @@ const isStixMatchConnectorFilter = async (context, element, stringFilters) => {
   if (!isFilterGroupNotEmpty(jsonFilters)) {
     return true; // filters empty -> match all
   }
-  const stix = convertStoreToStix(element);
+  const stix = convertStoreToStix_2_1(element);
   return isStixMatchFilterGroup(context, SYSTEM_USER, stix, jsonFilters);
 };

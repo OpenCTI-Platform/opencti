@@ -20,33 +20,33 @@ import { ICON_COLUMN_SIZE, SELECT_COLUMN_SIZE } from './DataTableHeader';
 import callbackResizeObserver from '../../../utils/resizeObservers';
 
 type DataTableComponentProps = Pick<DataTableProps,
-| 'dataColumns'
-| 'settingsMessagesBannerHeight'
-| 'filtersComponent'
-| 'hideHeaders'
-| 'dataTableToolBarComponent'
-| 'variant'
-| 'actions'
-| 'icon'
-| 'availableFilterKeys'
-| 'initialValues'
-| 'disableNavigation'
-| 'storageKey'
-| 'dataQueryArgs'
-| 'resolvePath'
-| 'redirectionModeEnabled'
-| 'useLineData'
-| 'rootRef'
-| 'createButton'
-| 'disableToolBar'
-| 'removeSelectAll'
-| 'getComputeLink'
-| 'selectOnLineClick'
-| 'onLineClick'
-| 'data'
-| 'emptyStateMessage'
-| 'disableLineSelection'
-| 'pageSize'
+  | 'dataColumns'
+  | 'settingsMessagesBannerHeight'
+  | 'filtersComponent'
+  | 'hideHeaders'
+  | 'dataTableToolBarComponent'
+  | 'variant'
+  | 'actions'
+  | 'icon'
+  | 'availableFilterKeys'
+  | 'initialValues'
+  | 'disableNavigation'
+  | 'storageKey'
+  | 'dataQueryArgs'
+  | 'resolvePath'
+  | 'redirectionModeEnabled'
+  | 'useLineData'
+  | 'rootRef'
+  | 'createButton'
+  | 'disableToolBar'
+  | 'removeSelectAll'
+  | 'getComputeLink'
+  | 'selectOnLineClick'
+  | 'onLineClick'
+  | 'data'
+  | 'emptyStateMessage'
+  | 'disableLineSelection'
+  | 'pageSize'
 >;
 
 const DataTableComponent = ({
@@ -231,7 +231,9 @@ const DataTableComponent = ({
       resize(tableRef.current);
       observer = callbackResizeObserver(tableRef.current, resize);
     }
-    return () => { observer?.disconnect(); };
+    return () => {
+      observer?.disconnect();
+    };
   }, [tableRef.current, tableWidth, endsWithAction, startsWithAction, startsWithIcon]);
 
   return (

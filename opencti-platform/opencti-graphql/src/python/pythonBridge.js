@@ -48,7 +48,7 @@ export const execChildPython = async (context, user, scriptPath, scriptName, arg
         /* v8 ignore next */
         try {
           jsonResult = JSON.parse(message);
-        } catch (e) {
+        } catch (_e) {
           jsonResult = { status: 'error', message };
         }
       });
@@ -87,7 +87,7 @@ const createChildStixPattern = async (context, user, observableType, observableV
       user,
       './src/python/runtime',
       'stix2_create_pattern.py',
-      [observableType, observableValue]
+      [observableType, observableValue],
     );
     return result.data;
   } catch (err) {
@@ -102,7 +102,7 @@ const checkChildIndicatorSyntax = async (context, user, patternType, indicatorVa
       user,
       './src/python/runtime',
       'check_indicator.py',
-      [patternType, indicatorValue]
+      [patternType, indicatorValue],
     );
     return result.data;
   } catch (err) {

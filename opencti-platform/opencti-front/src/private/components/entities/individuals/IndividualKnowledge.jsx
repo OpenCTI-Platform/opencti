@@ -35,21 +35,21 @@ const IndividualKnowledgeComponent = ({
       <Routes>
         <Route
           path="/relations/:relationId"
-          element={
+          element={(
             <StixCoreRelationship
               entityId={individual.id}
               paddingRight={true}
             />
-        }
+          )}
         />
         <Route
           path="/sightings/:sightingId"
-          element={
+          element={(
             <StixSightingRelationship
               entityId={individual.id}
               paddingRight={true}
             />
-        }
+          )}
         />
         <Route
           path="/overview"
@@ -68,7 +68,7 @@ const IndividualKnowledgeComponent = ({
         />
         <Route
           path="/all"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={individual.id}
@@ -78,11 +78,11 @@ const IndividualKnowledgeComponent = ({
               defaultStopTime={individual.stopTime}
               allDirections
             />
-        }
+          )}
         />
         <Route
           path="/threats"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={individual.id}
@@ -99,11 +99,11 @@ const IndividualKnowledgeComponent = ({
                 'Tool',
               ]}
             />
-        }
+          )}
         />
         <Route
           path="/related"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={individual.id}
@@ -111,11 +111,11 @@ const IndividualKnowledgeComponent = ({
               entityLink={link}
               allDirections={true}
             />
-        }
+          )}
         />
         <Route
           path="/organizations"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={individual.id}
@@ -124,11 +124,11 @@ const IndividualKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={false}
             />
-        }
+          )}
         />
         <Route
           path="/locations"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={individual.id}
@@ -137,11 +137,11 @@ const IndividualKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={false}
             />
-        }
+          )}
         />
         <Route
           path="/threat_actors"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={individual.id}
@@ -150,11 +150,11 @@ const IndividualKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={true}
             />
-        }
+          )}
         />
         <Route
           path="/intrusion_sets"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={individual.id}
@@ -163,11 +163,11 @@ const IndividualKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={true}
             />
-        }
+          )}
         />
         <Route
           path="/campaigns"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={individual.id}
@@ -176,11 +176,11 @@ const IndividualKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={true}
             />
-        }
+          )}
         />
         <Route
           path="/incidents"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={individual.id}
@@ -189,11 +189,11 @@ const IndividualKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={true}
             />
-        }
+          )}
         />
         <Route
           path="/malwares"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={individual.id}
@@ -202,11 +202,11 @@ const IndividualKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={true}
             />
-        }
+          )}
         />
         <Route
           path="/attack_patterns"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={individual.id}
@@ -215,11 +215,11 @@ const IndividualKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={true}
             />
-        }
+          )}
         />
         <Route
           path="/tools"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={individual.id}
@@ -228,11 +228,11 @@ const IndividualKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={true}
             />
-        }
+          )}
         />
         <Route
           path="/observables"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={individual.id}
@@ -242,7 +242,7 @@ const IndividualKnowledgeComponent = ({
               allDirections={true}
               isRelationReversed={true}
             />
-        }
+          )}
         />
       </Routes>
     </div>

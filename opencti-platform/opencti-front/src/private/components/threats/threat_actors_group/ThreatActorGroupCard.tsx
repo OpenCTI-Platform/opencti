@@ -2,6 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { GenericAttack, GenericAttackCard } from '../../common/cards/GenericAttackCard';
 import { ThreatActorGroupCard_node$key } from './__generated__/ThreatActorGroupCard_node.graphql';
+import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 
 export const ThreatActorGroupCardFragment = graphql`
   fragment ThreatActorGroupCard_node on ThreatActorGroup {
@@ -126,7 +127,7 @@ export const ThreatActorGroupCardFragment = graphql`
 
 interface ThreatActorGroupCardProps {
   node: ThreatActorGroupCard_node$key;
-  onLabelClick: () => void;
+  onLabelClick: HandleAddFilter;
   bookmarksIds?: string[];
 }
 const ThreatActorGroupCard: FunctionComponent<ThreatActorGroupCardProps> = ({

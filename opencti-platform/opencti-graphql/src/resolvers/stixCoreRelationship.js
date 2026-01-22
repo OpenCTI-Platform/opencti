@@ -15,7 +15,7 @@ import {
   stixCoreRelationshipsDistribution,
   stixCoreRelationshipsExportAsk,
   stixCoreRelationshipsMultiTimeSeries,
-  stixCoreRelationshipsNumber
+  stixCoreRelationshipsNumber,
 } from '../domain/stixCoreRelationship';
 import { fetchEditContext } from '../database/redis';
 import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
@@ -32,7 +32,7 @@ import {
   notesPaginated,
   opinionsPaginated,
   reportsPaginated,
-  stixCoreObjectsExportPush
+  stixCoreObjectsExportPush,
 } from '../domain/stixCoreObject';
 import { numberOfContainersForObject } from '../domain/container';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
@@ -90,7 +90,7 @@ const stixCoreRelationshipResolvers = {
     opinions: (rel, args, context) => opinionsPaginated(context, context.user, rel.id, args),
     // endregion
     editContext: (rel) => fetchEditContext(rel.id),
-    toStix: (rel, _, context) => stixLoadByIdStringify(context, context.user, rel.id),
+    toStix: (rel, args, context) => stixLoadByIdStringify(context, context.user, rel.id, args),
     status: (entity, _, context) => (entity.x_opencti_workflow_id ? findStatusById(context, context.user, entity.x_opencti_workflow_id) : null),
     workflowEnabled: async (__, _, context) => {
       const statusesEdges = await getTypeStatuses(context, context.user, ABSTRACT_STIX_CORE_RELATIONSHIP);

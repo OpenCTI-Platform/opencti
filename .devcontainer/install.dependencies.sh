@@ -8,4 +8,5 @@ yarn install
 yarn install:python
 
 echo -e "\n\nInstalling OpenCTI Python client ...\n"
-pip install 'git+https://github.com/OpenCTI-Platform/client-python@master'
+cd /opencti/client-python
+pip install -r requirements.txt

@@ -45,14 +45,14 @@ export type RepresentationAttributeForm = CsvMapperRepresentationAttributeFormDa
 
 interface CsvMapperRepresentationAttributeRefFormProps
   extends FieldProps<RepresentationAttributeForm, CsvMapperFormData> {
-  representation: CsvMapperRepresentationFormData
+  representation: CsvMapperRepresentationFormData;
   schemaAttribute: SchemaAttribute;
   label: string;
   handleErrors: (key: string, value: string | null) => void;
 }
 
 const CsvMapperRepresentationAttributeRefForm: FunctionComponent<
-CsvMapperRepresentationAttributeRefFormProps
+  CsvMapperRepresentationAttributeRefFormProps
 > = ({ form, field, representation, schemaAttribute, label, handleErrors }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();

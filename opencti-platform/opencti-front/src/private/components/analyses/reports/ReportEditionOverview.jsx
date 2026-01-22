@@ -159,6 +159,9 @@ const ReportEditionOverviewComponent = (props) => {
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
+      if (finalValue === null) {
+        finalValue = [null];
+      }
       reportValidator
         .validateAt(name, { [name]: value })
         .then(() => {
@@ -241,7 +244,7 @@ const ReportEditionOverviewComponent = (props) => {
               fullWidth: true,
               style: { marginTop: 20 },
               helperText: (
-                <SubscriptionFocus context={context} fieldName="published"/>
+                <SubscriptionFocus context={context} fieldName="published" />
               ),
             }}
           />
@@ -317,12 +320,12 @@ const ReportEditionOverviewComponent = (props) => {
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
               style={{ marginTop: 20 }}
-              helpertext={
+              helpertext={(
                 <SubscriptionFocus
                   context={context}
                   fieldName="x_opencti_workflow_id"
                 />
-              }
+              )}
             />
           )}
           <CreatedByField
@@ -347,14 +350,14 @@ const ReportEditionOverviewComponent = (props) => {
           />
           <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
             {enableReferences && (
-            <CommitMessage
-              submitForm={submitForm}
-              disabled={isSubmitting || !isValid || !dirty}
-              setFieldValue={setFieldValue}
-              open={false}
-              values={values.references}
-              id={report.id}
-            />
+              <CommitMessage
+                submitForm={submitForm}
+                disabled={isSubmitting || !isValid || !dirty}
+                setFieldValue={setFieldValue}
+                open={false}
+                values={values.references}
+                id={report.id}
+              />
             )}
           </Stack>
         </Form>

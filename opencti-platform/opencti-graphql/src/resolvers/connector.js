@@ -25,10 +25,13 @@ import {
   syncDelete,
   syncEditContext,
   syncEditField,
+  synchronizerExport,
+  synchronizerAddAutoUser,
   testSync,
   updateConnectorCurrentStatus,
   updateConnectorManagerStatus,
-  updateConnectorRequestedStatus
+  updateConnectorRequestedStatus,
+  syncAddInputFromImport,
 } from '../domain/connector';
 import {
   addDraftContext,
@@ -43,7 +46,7 @@ import {
   updateExpectationsNumber,
   updateProcessedTime,
   updateReceivedTime,
-  worksForConnector
+  worksForConnector,
 } from '../domain/work';
 import { now, sinceNowInMinutes } from '../utils/format';
 import {
@@ -60,7 +63,7 @@ import {
   connectorsForImport,
   connectorsForManagers,
   connectorsForNotification,
-  connectorsForWorker
+  connectorsForWorker,
 } from '../database/repository';
 import { getConnectorQueueSize } from '../database/rabbitmq';
 import { redisGetConnectorLogs } from '../database/redis';
@@ -83,6 +86,7 @@ const connectorResolvers = {
     work: (_, { id }, context) => findById(context, context.user, id),
     isWorkAlive: (_, { id }, context) => isWorkAlive(context, context.user, id),
     synchronizer: (_, { id }, context) => findSyncById(context, context.user, id, true),
+    synchronizerAddInputFromImport: (_, { file }) => syncAddInputFromImport(file),
     synchronizers: (_, args, context) => findSyncPaginated(context, context.user, args),
     synchronizerFetch: (_, { input }, context) => fetchRemoteStreams(context, context.user, input),
     // region new managed connectors
@@ -93,7 +97,9 @@ const connectorResolvers = {
   Connector: {
     works: (cn, args, context) => worksForConnector(context, context.user, cn.id, args),
     connector_queue_details: (cn) => queueDetails(cn.id),
-    connector_priority_group: (cn) => { return cn.connector_priority_group ?? ConnectorPriorityGroup.Default; },
+    connector_priority_group: (cn) => {
+      return cn.connector_priority_group ?? ConnectorPriorityGroup.Default;
+    },
     connector_user: (cn, _, context) => connectorUser(context, context.user, cn.connector_user_id),
     manager_connector_logs: (cn) => redisGetConnectorLogs(cn.id),
     manager_health_metrics: (cn, _, context) => connectorGetHealth(context, context.user, cn.id),
@@ -114,8 +120,8 @@ const connectorResolvers = {
     connector_user: (cn, _, context) => connectorUser(context, context.user, cn.connector_user_id),
   },
   ConnectorManager: {
-    active: (cm) => sinceNowInMinutes(cm.updated_at) < 5,
-    about_version: () => PLATFORM_VERSION
+    active: (cm) => sinceNowInMinutes(cm.last_sync_execution) < 5,
+    about_version: () => PLATFORM_VERSION,
   },
   Work: {
     connector: (work, _, context) => connectorForWork(context, context.user, work.id),
@@ -124,7 +130,8 @@ const connectorResolvers = {
   },
   Synchronizer: {
     user: (sync, _, context) => context.batch.creatorBatchLoader.load(sync.user_id),
-    queue_messages: async (sync, _, context) => getConnectorQueueSize(context, context.user, sync.id)
+    queue_messages: async (sync, _, context) => getConnectorQueueSize(context, context.user, sync.id),
+    toConfigurationExport: (synchronizer) => synchronizerExport(synchronizer),
   },
   Mutation: {
     deleteConnector: (_, { id }, context) => connectorDelete(context, context.user, id),
@@ -175,6 +182,7 @@ const connectorResolvers = {
     workDelete: (_, { connectorId }, context) => deleteWorkForConnector(context, context.user, connectorId),
     // Sync part
     synchronizerAdd: (_, { input }, context) => registerSync(context, context.user, input),
+    synchronizerAddAutoUser: (_, { id, input }, context) => synchronizerAddAutoUser(context, context.user, id, input),
     synchronizerEdit: (_, { id }, context) => ({
       delete: () => syncDelete(context, context.user, id),
       fieldPatch: ({ input }) => syncEditField(context, context.user, id, input),

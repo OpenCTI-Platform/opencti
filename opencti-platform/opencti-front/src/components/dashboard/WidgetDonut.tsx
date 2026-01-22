@@ -8,10 +8,10 @@ import useDistributionGraphData from '../../utils/hooks/useDistributionGraphData
 
 interface WidgetDonutProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any[]
-  groupBy: string
-  withExport?: boolean
-  readonly?: boolean
+  data: any[];
+  groupBy: string;
+  withExport?: boolean;
+  readonly?: boolean;
 }
 
 const WidgetDonut = ({

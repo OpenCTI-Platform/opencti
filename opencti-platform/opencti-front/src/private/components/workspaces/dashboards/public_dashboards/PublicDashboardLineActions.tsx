@@ -16,8 +16,8 @@ import { deleteNode } from '../../../../../utils/store';
 import { copyPublicLinkUrl } from '../../../../../utils/dashboard';
 
 interface PublicDashboardLineActionsProps {
-  publicDashboard: PublicDashboards_PublicDashboard$data
-  paginationOptions: PublicDashboardsListQuery$variables
+  publicDashboard: PublicDashboards_PublicDashboard$data;
+  paginationOptions: PublicDashboardsListQuery$variables;
 }
 
 const publicDashboardLineActionsDeleteMutation = graphql`
@@ -91,7 +91,7 @@ const PublicDashboardLineActions = ({ publicDashboard, paginationOptions }: Publ
         onClick={(event) => setAnchor(event.currentTarget)}
         color="primary"
       >
-        <MoreVert/>
+        <MoreVert />
       </IconButton>
 
       <Menu

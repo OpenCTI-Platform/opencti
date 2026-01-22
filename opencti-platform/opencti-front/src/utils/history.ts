@@ -4,11 +4,11 @@ import { useFormatter } from '../components/i18n';
 
 // eslint-disable-next-line import/prefer-default-export
 export const useGenerateAuditMessage = <T extends {
-  entity_type?: string | null,
-  event_type: string,
-  event_scope?: string | null,
-  user?: { name: string } | null,
-  context_data?: { entity_name?: string | null, entity_type?: string | null, message: string } | null,
+  entity_type?: string | null;
+  event_type: string;
+  event_scope?: string | null;
+  user?: { name: string } | null;
+  context_data?: { entity_name?: string | null; entity_type?: string | null; message: string } | null;
 }>(data: T) => {
   const { t_i18n } = useFormatter();
   const isHistoryUpdate = data.entity_type === 'History'

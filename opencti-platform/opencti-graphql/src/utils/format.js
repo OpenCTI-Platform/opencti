@@ -19,13 +19,13 @@ import {
   ENTITY_SSH_KEY,
   ENTITY_USER_ACCOUNT,
   ENTITY_WINDOWS_REGISTRY_KEY,
-  ENTITY_WINDOWS_REGISTRY_VALUE_TYPE
+  ENTITY_WINDOWS_REGISTRY_VALUE_TYPE,
 } from '../schema/stixCyberObservable';
 import { ValidationError } from '../config/errors';
 
 const DEFAULT_TRUNCATE_LIMIT = 64;
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 // Scheduling period formatting
 export const schedulingPeriodToMs = (scheduling_period) => {
   let schedulingPeriod;
@@ -58,7 +58,7 @@ export const schedulingPeriodToMs = (scheduling_period) => {
   return schedulingPeriod;
 };
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 // Date formatting
 
 const moment = extendMoment(Moment);
@@ -89,6 +89,9 @@ export const isDateInRange = (startDate, duration, specificDate) => {
   const end = moment(start).add(durationObj);
   const specific = moment(specificDate);
   return specific.isBetween(start, end, null, '[]');
+};
+export const computeDateFromEventId = (eventId) => {
+  return utcDate(parseInt(eventId.split('-')[0], 10)).toISOString();
 };
 export const streamEventId = (date = null, index = 0) => `${utcEpochTime(date)}-${index}`;
 export const now = () => utcDate().toISOString();
@@ -177,7 +180,7 @@ export const sanitizeForMomentParsing = (date) => date
   .replace('CEST', '+0200'); // reported in RSS feeds
   // add more if needed.
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 
 export const truncate = (str, limit = DEFAULT_TRUNCATE_LIMIT, withPoints = true) => {
   if (str === undefined || str === null || str.length <= limit) {
@@ -320,6 +323,6 @@ export const runtimeFieldObservableValueScript = () => {
   `;
 };
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 
 export const mergeDeepRightAll = R.unapply(R.reduce(R.mergeDeepRight, {}));

@@ -33,9 +33,9 @@ const publicStixCoreObjectsMultiHeatMapQuery = graphql`
 `;
 
 interface PublicStixCoreObjectsMultiHeatMapComponentProps {
-  parameters: Widget['parameters']
-  dataSelection: Widget['dataSelection']
-  queryRef: PreloadedQuery<PublicStixCoreObjectsMultiHeatMapQuery>
+  parameters: Widget['parameters'];
+  dataSelection: Widget['dataSelection'];
+  queryRef: PreloadedQuery<PublicStixCoreObjectsMultiHeatMapQuery>;
 }
 
 const PublicStixCoreObjectsMultiHeatMapComponent = ({

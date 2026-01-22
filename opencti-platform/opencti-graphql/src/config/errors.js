@@ -37,6 +37,13 @@ export const OtpRequired = (data) => error(OTP_REQUIRED, 'You must validate your
   ...data,
 });
 
+export const LTS_REQUIRED_ACTIVATION = 'LTS_REQUIRED_ACTIVATION';
+export const LtsRequiredActivation = (data) => error(LTS_REQUIRED_ACTIVATION, 'You must activate your LTS license.', {
+  http_status: 401,
+  genre: CATEGORY_TECHNICAL,
+  ...data,
+});
+
 export const OTP_REQUIRED_ACTIVATION = 'OTP_REQUIRED_ACTIVATION';
 export const OtpRequiredActivation = (data) => error(OTP_REQUIRED_ACTIVATION, 'You must activate your account with 2FA.', {
   http_status: 401,
@@ -52,7 +59,7 @@ export const ForbiddenAccess = (message, data) => error(
     http_status: 403,
     genre: CATEGORY_TECHNICAL,
     ...data,
-  }
+  },
 );
 
 export const AUTH_ERRORS = [
@@ -60,7 +67,7 @@ export const AUTH_ERRORS = [
   AUTH_REQUIRED,
   OTP_REQUIRED,
   OTP_REQUIRED_ACTIVATION,
-  FORBIDDEN_ACCESS
+  FORBIDDEN_ACCESS,
 ];
 // endregion
 
@@ -190,6 +197,6 @@ export const FUNCTIONAL_ERRORS = [
   MISSING_REF_ERROR,
   VALIDATION_ERROR,
   RESOURCE_NOT_FOUND_ERROR,
-  TYPE_LOCK_ERROR
+  TYPE_LOCK_ERROR,
 ];
 // endregion

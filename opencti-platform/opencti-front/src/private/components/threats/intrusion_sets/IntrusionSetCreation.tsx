@@ -61,7 +61,7 @@ interface IntrusionSetAddInput {
 }
 
 interface IntrusionSetFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  updater: (store: RecordSourceSelectorProxy, key: string, response: IntrusionSetCreationMutation['response']['intrusionSetAdd']) => void;
   onReset?: () => void;
   onCompleted?: () => void;
   defaultCreatedBy?: { value: string; label: string };
@@ -73,7 +73,7 @@ interface IntrusionSetFormProps {
 }
 
 export const IntrusionSetCreationForm: FunctionComponent<
-IntrusionSetFormProps
+  IntrusionSetFormProps
 > = ({
   updater,
   onReset,
@@ -113,9 +113,9 @@ IntrusionSetFormProps
     resetBulk,
   } = useBulkCommit<IntrusionSetCreationMutation>({
     commit,
-    relayUpdater: (store) => {
+    relayUpdater: (store, response) => {
       if (updater) {
-        updater(store, 'intrusionSetAdd');
+        updater(store, 'intrusionSetAdd', response?.intrusionSetAdd);
       }
     },
   });
@@ -317,7 +317,7 @@ const IntrusionSetCreation = ({
   );
 
   const CreateIntrusionSetControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Intrusion-Set' {...props} />
+    <CreateEntityControlledDial entityType="Intrusion-Set" {...props} />
   );
 
   return (

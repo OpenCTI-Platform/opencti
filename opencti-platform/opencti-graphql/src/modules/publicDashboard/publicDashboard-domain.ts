@@ -22,7 +22,7 @@ import {
   type QueryPublicStixRelationshipsArgs,
   type QueryPublicStixRelationshipsDistributionArgs,
   type QueryPublicStixRelationshipsMultiTimeSeriesArgs,
-  type QueryPublicStixRelationshipsNumberArgs
+  type QueryPublicStixRelationshipsNumberArgs,
 } from '../../generated/graphql';
 import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../../config/errors';
 import { getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../../utils/access';
@@ -30,14 +30,14 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { findAllWorkspaces } from '../workspace/workspace-domain';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { getEntitiesMapFromCache } from '../../database/cache';
-import type { BasicStoreRelation, NumberResult, StoreEntityConnection, StoreMarkingDefinition, StoreRelationConnection } from '../../types/store';
+import type { BasicStoreRelation, NumberResult, BasicConnection, StoreEntity, StoreMarkingDefinition } from '../../types/store';
 import { checkUserIsAdminOnDashboard, getWidgetArguments } from './publicDashboard-utils';
 import {
   findStixCoreObjectPaginated,
   stixCoreObjectsDistribution,
   stixCoreObjectsDistributionByEntity,
   stixCoreObjectsMultiTimeSeries,
-  stixCoreObjectsNumber
+  stixCoreObjectsNumber,
 } from '../../domain/stixCoreObject';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
 import { findStixRelationPaginated, stixRelationshipsDistribution, stixRelationshipsMultiTimeSeries, stixRelationshipsNumber } from '../../domain/stixRelationship';
@@ -67,7 +67,7 @@ export const findPublicDashboardPaginated = async (
   context: AuthContext,
   user: AuthUser,
   args: QueryPublicDashboardsArgs,
-): Promise<StoreEntityConnection<BasicStoreEntityPublicDashboard>> => {
+): Promise<BasicConnection<BasicStoreEntityPublicDashboard>> => {
   const dashboards = await findAllWorkspaces(
     context,
     user,
@@ -75,9 +75,9 @@ export const findPublicDashboardPaginated = async (
       filters: {
         mode: FilterMode.And,
         filters: [{ key: ['type'], values: ['dashboard'] }],
-        filterGroups: []
-      }
-    }
+        filterGroups: [],
+      },
+    },
   );
 
   const dashboardIds = dashboards.map((n) => n.id);
@@ -89,8 +89,8 @@ export const findPublicDashboardPaginated = async (
         hasNextPage: false,
         hasPreviousPage: false,
         endCursor: '',
-        startCursor: ''
-      }
+        startCursor: '',
+      },
     };
   }
 
@@ -116,11 +116,11 @@ export const getPublicDashboardByUriKey = (
       filters: {
         mode: 'and',
         filters: [
-          { key: ['uri_key'], values: [uri_key], mode: 'or', operator: 'eq' }
+          { key: ['uri_key'], values: [uri_key], mode: 'or', operator: 'eq' },
         ],
         filterGroups: [],
-      } as FilterGroup
-    }
+      } as FilterGroup,
+    },
   ) as Promise<BasicStoreEntityPublicDashboard>;
 };
 
@@ -150,10 +150,10 @@ export const addPublicDashboard = async (
     input.dashboard_id,
   );
   if (!dashboard) {
-    throw FunctionalError('Cannot find dashboard');
+    throw FunctionalError('Cannot find dashboard', { id: input.dashboard_id });
   }
   if (!dashboard.manifest) {
-    throw FunctionalError('Cannot publish an empty dashboard');
+    throw FunctionalError('Cannot publish an empty dashboard', { id: input.dashboard_id });
   }
 
   const access = getUserAccessRight(user, dashboard);
@@ -313,7 +313,7 @@ export const publicStixCoreObjectsMultiTimeSeries = async (context: AuthContext,
     startDate: args.startDate,
     endDate: args.endDate,
     interval: parameters?.interval ?? 'day',
-    timeSeriesParameters
+    timeSeriesParameters,
   };
   // Use standard API
   return stixCoreObjectsMultiTimeSeries(context, user, standardArgs);
@@ -329,11 +329,13 @@ export const publicStixRelationshipsMultiTimeSeries = async (
     const filters = {
       filterGroups: [selection.filters],
       filters: [],
-      mode: 'and'
+      mode: 'and',
     };
     return {
       field: selection.date_attribute,
       filters,
+      dynamicFrom: selection.dynamicFrom,
+      dynamicTo: selection.dynamicTo,
     };
   });
 
@@ -342,7 +344,7 @@ export const publicStixRelationshipsMultiTimeSeries = async (
     startDate: args.startDate,
     endDate: args.endDate,
     interval: parameters?.interval ?? 'day',
-    timeSeriesParameters
+    timeSeriesParameters,
   };
 
   // Use standard API
@@ -352,7 +354,7 @@ export const publicStixRelationshipsMultiTimeSeries = async (
 // number
 export const publicStixCoreObjectsNumber = async (
   context: AuthContext,
-  args: QueryPublicStixCoreObjectsNumberArgs
+  args: QueryPublicStixCoreObjectsNumberArgs,
 ): Promise<NumberResult> => {
   const { user, dataSelection } = await ensurePublicContext(context, args.uriKey, args.widgetId);
 
@@ -366,7 +368,7 @@ export const publicStixCoreObjectsNumber = async (
     filters,
     types: [
       ABSTRACT_STIX_CORE_OBJECT,
-    ]
+    ],
   };
 
   // Use standard API
@@ -375,7 +377,7 @@ export const publicStixCoreObjectsNumber = async (
 
 export const publicStixRelationshipsNumber = async (
   context: AuthContext,
-  args: QueryPublicStixRelationshipsNumberArgs
+  args: QueryPublicStixRelationshipsNumberArgs,
 ): Promise<NumberResult> => {
   const { user, dataSelection } = await ensurePublicContext(context, args.uriKey, args.widgetId);
 
@@ -398,7 +400,7 @@ export const publicStixRelationshipsNumber = async (
 // donut & horizontal-bar & distribution-list & radar & tree
 export const publicStixCoreObjectsDistribution = async (
   context: AuthContext,
-  args: QueryPublicStixCoreObjectsDistributionArgs
+  args: QueryPublicStixCoreObjectsDistributionArgs,
 ) => {
   const { user, dataSelection } = await ensurePublicContext(context, args.uriKey, args.widgetId);
 
@@ -442,7 +444,7 @@ export const publicStixCoreObjectsDistribution = async (
           mode: FilterMode.And,
           operator: FilterOperator.Eq,
         }],
-        mode: FilterMode.And
+        mode: FilterMode.And,
       };
 
       const breakdownParameters = {
@@ -464,13 +466,13 @@ export const publicStixCoreObjectsDistribution = async (
         breakdownDistribution: await stixCoreObjectsDistribution(context, user, breakdownParameters),
       };
     },
-    { concurrency: ES_MAX_CONCURRENCY }
+    { concurrency: ES_MAX_CONCURRENCY },
   );
 };
 
 export const publicStixRelationshipsDistribution = async (
   context: AuthContext,
-  args: QueryPublicStixRelationshipsDistributionArgs
+  args: QueryPublicStixRelationshipsDistributionArgs,
 ) => {
   const { user, dataSelection } = await ensurePublicContext(context, args.uriKey, args.widgetId);
 
@@ -513,7 +515,7 @@ export const publicStixRelationshipsDistribution = async (
           mode: FilterMode.And,
           operator: FilterOperator.Eq,
         }],
-        mode: FilterMode.And
+        mode: FilterMode.And,
       };
 
       const breakdownParameters = {
@@ -536,8 +538,8 @@ export const publicStixRelationshipsDistribution = async (
           {
             ...breakdownParameters,
             types: ['Stix-Core-Object'],
-            objectId: distributionItem.entity.id
-          }
+            objectId: distributionItem.entity.id,
+          },
         );
       } else {
         breakdownDistribution = await stixRelationshipsDistribution(
@@ -547,7 +549,7 @@ export const publicStixRelationshipsDistribution = async (
             ...breakdownParameters,
             isTo: breakdownSelection.isTo,
             fromOrToId: distributionItem.entity.id,
-          }
+          },
         );
       }
 
@@ -556,14 +558,14 @@ export const publicStixRelationshipsDistribution = async (
         breakdownDistribution,
       };
     },
-    { concurrency: ES_MAX_CONCURRENCY }
+    { concurrency: ES_MAX_CONCURRENCY },
   );
 };
 
 // bookmarks
 export const publicBookmarks = async (
   context: AuthContext,
-  args: QueryPublicBookmarksArgs
+  args: QueryPublicBookmarksArgs,
 ) => {
   const { user, dataSelection } = await ensurePublicContext(context, args.uriKey, args.widgetId);
 
@@ -571,17 +573,17 @@ export const publicBookmarks = async (
   const { filters } = selection;
 
   const parameters = {
-    filters
+    filters,
   };
 
   // Use standard API
-  return bookmarks(context, user, parameters);
+  return bookmarks(context, user, parameters) as unknown as BasicConnection<StoreEntity>;
 };
 
 // list & timeline
 export const publicStixCoreObjectsPaginated = async (
   context: AuthContext,
-  args: QueryPublicStixCoreObjectsArgs
+  args: QueryPublicStixCoreObjectsArgs,
 ) => {
   const { user, dataSelection } = await ensurePublicContext(context, args.uriKey, args.widgetId);
 
@@ -606,7 +608,7 @@ export const publicStixCoreObjectsPaginated = async (
 
 export const publicStixRelationships = async (
   context: AuthContext,
-  args: QueryPublicStixRelationshipsArgs
+  args: QueryPublicStixRelationshipsArgs,
 ) => {
   const { user, dataSelection } = await ensurePublicContext(context, args.uriKey, args.widgetId);
 
@@ -625,6 +627,6 @@ export const publicStixRelationships = async (
   };
 
   // Use standard API
-  return (await findStixRelationPaginated(context, user, parameters) as unknown as StoreRelationConnection<BasicStoreRelation>);
+  return (await findStixRelationPaginated(context, user, parameters) as unknown as BasicConnection<BasicStoreRelation>);
 };
 // endregion

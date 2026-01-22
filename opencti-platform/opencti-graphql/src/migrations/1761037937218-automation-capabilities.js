@@ -16,12 +16,12 @@ export const up = async (next) => {
   const useAutomationCapability = await addCapability(context, SYSTEM_USER, {
     name: AUTOMATION,
     attribute_order: 2800,
-    description: 'Use Playbooks'
+    description: 'Use Playbooks',
   });
   const manageAutomationCapability = await addCapability(context, SYSTEM_USER, {
     name: AUTOMATION_AUTMANAGE,
     attribute_order: 2850,
-    description: 'Manage Playbooks'
+    description: 'Manage Playbooks',
   });
 
   // ------ Add capabilities to Roles

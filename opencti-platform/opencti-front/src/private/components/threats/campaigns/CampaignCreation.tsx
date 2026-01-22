@@ -61,7 +61,7 @@ interface CampaignAddInput {
 }
 
 interface CampaignFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  updater: (store: RecordSourceSelectorProxy, key: string, response: CampaignCreationMutation['response']['campaignAdd']) => void;
   onReset?: () => void;
   onCompleted?: () => void;
   defaultCreatedBy?: { value: string; label: string };
@@ -110,9 +110,9 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
     resetBulk,
   } = useBulkCommit<CampaignCreationMutation>({
     commit,
-    relayUpdater: (store) => {
+    relayUpdater: (store, response) => {
       if (updater) {
-        updater(store, 'campaignAdd');
+        updater(store, 'campaignAdd', response?.campaignAdd);
       }
     },
   });
@@ -309,7 +309,7 @@ const CampaignCreation = ({
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_campaigns', paginationOptions, 'campaignAdd');
 
   const CreateCampaignControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Campaign' {...props} />
+    <CreateEntityControlledDial entityType="Campaign" {...props} />
   );
 
   return (

@@ -105,24 +105,24 @@ interface ContainerStixCyberObservablesLinesProps {
   onToggleEntity: (
     entity: ContainerStixCyberObservableLine_node$data,
     event: React.SyntheticEvent,
-    forceRemove: ContainerStixCyberObservableLine_node$data[]
+    forceRemove: ContainerStixCyberObservableLine_node$data[],
   ) => void;
   selectedElements: Record<string, ContainerStixCyberObservableLine_node$data>;
   deSelectedElements: Record<
-  string,
-  ContainerStixCyberObservableLine_node$data
+    string,
+    ContainerStixCyberObservableLine_node$data
   >;
   selectAll: boolean;
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
   queryRef: PreloadedQuery<ContainerStixCyberObservablesLinesQuery>;
   setSelectedElements: (
-    selectedElements: Record<string, ContainerStixCyberObservableLine_node$data>
+    selectedElements: Record<string, ContainerStixCyberObservableLine_node$data>,
   ) => void;
   enableReferences?: boolean;
 }
 
 const ContainerStixCyberObservablesLines: FunctionComponent<
-ContainerStixCyberObservablesLinesProps
+  ContainerStixCyberObservablesLinesProps
 > = ({
   dataColumns,
   paginationOptions,
@@ -136,8 +136,8 @@ ContainerStixCyberObservablesLinesProps
   enableReferences,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
-  ContainerStixCyberObservablesLinesQuery,
-  ContainerStixCyberObservablesLines_container$key
+    ContainerStixCyberObservablesLinesQuery,
+    ContainerStixCyberObservablesLines_container$key
   >({
     linesQuery: containerStixCyberObservablesLinesQuery,
     linesFragment: ContainerStixCyberObservablesLinesFragment,
@@ -158,12 +158,12 @@ ContainerStixCyberObservablesLinesProps
         dataList={data?.container?.objects?.edges ?? []}
         paginationOptions={paginationOptions}
         globalCount={numberOfElements ?? nbOfRowsToLoad}
-        LineComponent={
+        LineComponent={(
           <ContainerStixCyberObservableLine
             containerId={data?.container?.id}
             setSelectedElements={setSelectedElements}
           />
-        }
+        )}
         DummyLineComponent={<ContainerStixCyberObservableLineDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}

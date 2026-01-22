@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<body style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+<h2>📑 Report Notification</h2>
+
+<p><strong>Title:</strong> <%= data[0].instance.name %></p>
+<p><strong>Published:</strong> <%= data[0].instance.published %></p>
+
+<p><strong>Description:</strong><br>
+    <%= data[0].instance.description || "No description available." %>
+</p>
+
+<!-- Labels -->
+<p><strong>Labels:</strong></p>
+<% if (data[0].instance.labels && data[0].instance.labels.length > 0) { %>
+    <ul>
+        <% for (const label of data[0].instance.labels) { %>
+            <li><%= label %></li>
+        <% } %>
+    </ul>
+<% } else { %>
+    <p style="color:#777;">No labels available.</p>
+<% } %>
+
+<!-- External References -->
+<p><strong>External References:</strong></p>
+<% if (data[0].instance.external_references && data[0].instance.external_references.length > 0) { %>
+    <ul>
+        <% for (const ref of data[0].instance.external_references) { %>
+            <li>
+                <% if (ref.url) { %>
+                    <a href="<%= ref.url %>"><%= ref.source_name || 'External reference' %></a>
+                <% } else { %>
+                    <%= ref.source_name || 'External reference' %>
+                <% } %>
+            </li>
+        <% } %>
+    </ul>
+<% } else { %>
+    <p style="color:#777;">No external references available.</p>
+<% } %>
+
+<!-- Link back to OpenCTI -->
+<p>
+    <a href="https://YOUR_OPENCTI_URL/dashboard/id/<%= data[0].instance.id %>">
+        🔗 View Full Report in OpenCTI
+    </a>
+</p>
+</body>
+</html>

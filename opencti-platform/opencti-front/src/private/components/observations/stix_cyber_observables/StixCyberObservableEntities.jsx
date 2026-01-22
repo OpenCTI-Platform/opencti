@@ -257,7 +257,7 @@ class StixCyberObservableEntities extends Component {
                 </span>
               </ListItemIcon>
               <ListItemText
-                primary={
+                primary={(
                   <div>
                     {this.SortHeader('relationship_type', 'Relationship', true)}
                     {this.SortHeader('entity_tyoe', 'Entity type', false)}
@@ -268,7 +268,7 @@ class StixCyberObservableEntities extends Component {
                     {this.SortHeader('stop_time', 'Stop time', true)}
                     {this.SortHeader('confidence', 'Confidence level', true)}
                   </div>
-                }
+                )}
               />
             </ListItem>
             <QueryRenderer

@@ -24,6 +24,7 @@ import {
   EntityStixCoreRelationshipsEntitiesViewLine_node$key,
 } from './__generated__/EntityStixCoreRelationshipsEntitiesViewLine_node.graphql';
 import ItemEntityType from '../../../../../components/ItemEntityType';
+import { HandleAddFilter } from '../../../../../utils/hooks/useLocalStorage';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -207,20 +208,20 @@ const entityStixCoreRelationshipsEntitiesFragment = graphql`
 interface EntityStixCoreRelationshipsEntitiesLineProps {
   node: EntityStixCoreRelationshipsEntitiesViewLine_node$key;
   dataColumns: DataColumns;
-  onLabelClick: () => void;
+  onLabelClick: HandleAddFilter;
   onToggleEntity: UseEntityToggle<{ id: string }>['onToggleEntity'];
   selectedElements: UseEntityToggle<{ id: string }>['selectedElements'];
   deSelectedElements: UseEntityToggle<{ id: string }>['deSelectedElements'];
   selectAll: UseEntityToggle<{ id: string }>['selectAll'];
   onToggleShiftEntity: (
     index: number,
-    entity: EntityStixCoreRelationshipsEntitiesViewLine_node$data
+    entity: EntityStixCoreRelationshipsEntitiesViewLine_node$data,
   ) => void;
   index: number;
 }
 
 export const EntityStixCoreRelationshipsEntitiesViewLine: FunctionComponent<
-EntityStixCoreRelationshipsEntitiesLineProps
+  EntityStixCoreRelationshipsEntitiesLineProps
 > = ({
   node,
   dataColumns,
@@ -266,7 +267,7 @@ EntityStixCoreRelationshipsEntitiesLineProps
         <ItemIcon type={stixCoreObject.entity_type} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -283,7 +284,7 @@ EntityStixCoreRelationshipsEntitiesLineProps
               }}
             >
               {getMainRepresentative(stixCoreObject)}
-              {stixCoreObject.draftVersion && (<DraftChip/>)}
+              {stixCoreObject.draftVersion && (<DraftChip />)}
             </div>
             <div
               className={classes.bodyItem}
@@ -324,7 +325,7 @@ EntityStixCoreRelationshipsEntitiesLineProps
               />
             </div>
           </div>
-        }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRight />
@@ -350,7 +351,7 @@ export const EntityStixCoreRelationshipsEntitiesLineDummy = ({
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -434,7 +435,7 @@ export const EntityStixCoreRelationshipsEntitiesLineDummy = ({
               />
             </div>
           </div>
-        }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRight />

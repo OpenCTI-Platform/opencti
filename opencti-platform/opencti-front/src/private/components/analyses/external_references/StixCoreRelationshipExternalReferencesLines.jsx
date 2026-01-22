@@ -195,7 +195,7 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
           />
         </Security>
         <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+        <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
           {externalReferencesEdges.length > 0 ? (
             <List style={{ marginBottom: 0 }}>
               {R.take(expanded ? 200 : 7, externalReferencesEdges).map(
@@ -227,7 +227,7 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
                         <ListItem
                           dense={true}
                           divider={true}
-                          secondaryAction={
+                          secondaryAction={(
                             <>
                               <Tooltip title={t('Browse the link')}>
                                 <IconButton
@@ -270,7 +270,7 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
                                 />
                               </Security>
                             </>
-                          }
+                          )}
                         >
                           <ListItemButton
                             component={Link}
@@ -306,7 +306,7 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
                       <ListItem
                         dense={true}
                         divider={true}
-                        secondaryAction={
+                        secondaryAction={(
                           <>
                             <Security needs={[KNOWLEDGE_KNUPLOAD]}>
                               <FileUploader
@@ -327,7 +327,7 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
                               />
                             </Security>
                           </>
-                        }
+                        )}
                       >
                         <ListItemButton
                           component={Link}

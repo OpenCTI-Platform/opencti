@@ -198,6 +198,11 @@ describe('Vulnerabilities Utils', () => {
       expect(isValidCvssVector('cvss3', 'CVSS:3.1/AV:A/AC:H/PR:L/UI:R/S:C/C:L/I:L/A:L')).toBe(true);
     });
 
+    it('should validate CVSS3 vectors on 3.0 version', () => {
+      expect(isValidCvssVector('cvss3', 'CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N')).toBe(true);
+      expect(isValidCvssVector('cvss3', 'CVSS:3.0/AV:A/AC:L/PR:L/UI:R/S:C/C:L/I:H/A:L/E:P/RL:T/RC:R')).toBe(true);
+    });
+
     it('should validate CVSS4 vectors', () => {
       expect(isValidCvssVector('cvss4', 'CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:H/VA:H/SC:H/SI:H/SA:H')).toBe(true);
     });

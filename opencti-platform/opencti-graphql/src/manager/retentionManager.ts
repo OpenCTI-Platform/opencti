@@ -17,7 +17,7 @@ import { RetentionRuleScope, RetentionUnit } from '../generated/graphql';
 import { canDeleteElement } from '../database/data-consistency';
 import { deleteFile } from '../database/file-storage';
 import { DELETABLE_FILE_STATUSES, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
-import type { BasicStoreCommonEdge, StoreObject } from '../types/store';
+import type { BasicNodeEdge, StoreObject } from '../types/store';
 import { ALREADY_DELETED_ERROR } from '../config/errors';
 
 const RETENTION_MANAGER_ENABLED = booleanConf('retention_manager:enabled', false);
@@ -35,8 +35,8 @@ export const RETENTION_UNIT_VALUES = Object.values(RetentionUnit);
 let shutdown = false;
 
 interface DeleteOpts {
-  knowledgeType?: string
-  forceRefresh?: boolean
+  knowledgeType?: string;
+  forceRefresh?: boolean;
 }
 
 export const deleteElement = async (context: AuthContext, scope: string, nodeId: string, opts: DeleteOpts = {}) => {
@@ -56,7 +56,7 @@ export const getElementsToDelete = async (context: AuthContext, scope: string, b
   if (scope === 'knowledge') {
     const jsonFilters = filters ? JSON.parse(filters) : null;
     const queryOptions = await convertFiltersToQueryOptions(jsonFilters, { before });
-    result = await elPaginate(context, RETENTION_MANAGER_USER, READ_STIX_INDICES, { ...queryOptions, first: RETENTION_BATCH_SIZE });
+    result = await elPaginate(context, RETENTION_MANAGER_USER, READ_STIX_INDICES, { ...queryOptions, first: RETENTION_BATCH_SIZE }) as any;
   } else if (scope === 'file') {
     result = await paginatedForPathWithEnrichment(context, RETENTION_MANAGER_USER, 'import/global', undefined, { first: RETENTION_BATCH_SIZE, notModifiedSince: before.toISOString() });
   } else if (scope === 'workbench') {
@@ -66,7 +66,7 @@ export const getElementsToDelete = async (context: AuthContext, scope: string, b
   }
   if (scope === 'file' || scope === 'workbench') { // don't delete progress files or files with works in progress
     result.edges = result.edges.filter((e: FileEdge) => DELETABLE_FILE_STATUSES.includes(e.node.uploadStatus)
-        && (e.node.works ?? []).every((work) => !work || DELETABLE_FILE_STATUSES.includes(work?.status)));
+      && (e.node.works ?? []).every((work) => !work || DELETABLE_FILE_STATUSES.includes(work?.status)));
   }
   return result;
 };
@@ -82,7 +82,7 @@ const executeProcessing = async (context: AuthContext, retentionRule: RetentionR
   if (elements.length > 0) {
     logApp.debug(`[OPENCTI] Retention manager clearing ${elements.length} elements`);
     const start = new Date().getTime();
-    const deleteFn = async (element: BasicStoreCommonEdge<StoreObject>) => {
+    const deleteFn = async (element: BasicNodeEdge<StoreObject>) => {
       const { node } = element;
       const { updated_at: up } = node;
       try {
@@ -104,7 +104,7 @@ const executeProcessing = async (context: AuthContext, retentionRule: RetentionR
         }
       }
     };
-    const concurrentElements = R.splitEvery<BasicStoreCommonEdge<StoreObject>>(RETENTION_MAX_CONCURRENCY, elements);
+    const concurrentElements = R.splitEvery<BasicNodeEdge<StoreObject>>(RETENTION_MAX_CONCURRENCY, elements);
     for (let i = 0; i < concurrentElements.length; i += 1) {
       if (shutdown) {
         break;
@@ -127,7 +127,7 @@ const executeProcessing = async (context: AuthContext, retentionRule: RetentionR
   await patchAttribute(context, RETENTION_MANAGER_USER, id, ENTITY_TYPE_RETENTION_RULE, patch);
 };
 
-const retentionHandler = async (lock: { signal: AbortSignal, extend: () => Promise<void>, unlock: () => Promise<void> }) => {
+const retentionHandler = async (lock: { signal: AbortSignal; extend: () => Promise<void>; unlock: () => Promise<void> }) => {
   const context = executionContext('retention_manager');
   const retentionRules = await findRetentionRulesToExecute(context, RETENTION_MANAGER_USER);
   logApp.debug(`[OPENCTI] Retention manager execution for ${retentionRules.length} rules`);
@@ -147,11 +147,13 @@ const RETENTION_MANAGER_DEFINITION: ManagerDefinition = {
   executionContext: 'retention_manager',
   cronSchedulerHandler: {
     handler: retentionHandler,
-    shutdown: () => { shutdown = true; },
+    shutdown: () => {
+      shutdown = true;
+    },
     interval: SCHEDULE_TIME,
     lockKey: RETENTION_MANAGER_KEY,
     lockInHandlerParams: true,
-    dynamicSchedule: true
+    dynamicSchedule: true,
   },
   enabledByConfig: RETENTION_MANAGER_ENABLED,
   enabledToStart(): boolean {
@@ -159,7 +161,7 @@ const RETENTION_MANAGER_DEFINITION: ManagerDefinition = {
   },
   enabled(): boolean {
     return this.enabledByConfig;
-  }
+  },
 };
 
 registerManager(RETENTION_MANAGER_DEFINITION);

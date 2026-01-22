@@ -6,7 +6,7 @@ export const up = async (next) => {
   await addCapability(context, SYSTEM_USER, {
     name: 'TAXIIAPI_SETCSVMAPPERS',
     description: 'Manage data mappers',
-    attribute_order: 2520
+    attribute_order: 2520,
   });
   next();
 };

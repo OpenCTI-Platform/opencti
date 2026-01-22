@@ -74,12 +74,12 @@ const CsvMapperEditionContainer: FunctionComponent<CsvMapperEditionProps> = ({
     data.csvMapper,
   );
   if (!csvMapper) {
-    return <Loader variant={LoaderVariant.inline}/>;
+    return <Loader variant={LoaderVariant.inline} />;
   }
 
   return (
     <Drawer title={t_i18n('CSV Mapper edition')} open={open} onClose={onClose}>
-      <CsvMapperEdition csvMapper={csvMapper} onClose={onClose}/>
+      <CsvMapperEdition csvMapper={csvMapper} onClose={onClose} />
     </Drawer>
   );
 };

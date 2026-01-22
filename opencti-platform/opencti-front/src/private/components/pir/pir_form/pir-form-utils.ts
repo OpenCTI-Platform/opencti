@@ -17,19 +17,19 @@ import type { FieldOption } from '../../../../utils/field';
 import { PirAddInput } from './__generated__/PirCreationMutation.graphql';
 
 export interface PirEditionFormData {
-  name: string | null
-  description: string | null
+  name: string | null;
+  description: string | null;
 }
 
 export interface PirCreationFormData {
-  pir_type: 'THREAT_LANDSCAPE' | 'THREAT_ORIGIN' | 'THREAT_CUSTOM'
-  name: string
-  description: string
-  pir_rescan_days: number
-  confidence: number | null
+  pir_type: 'THREAT_LANDSCAPE' | 'THREAT_ORIGIN' | 'THREAT_CUSTOM';
+  name: string;
+  description: string;
+  pir_rescan_days: number;
+  confidence: number | null;
   // Properties for "THREAT_LANDSCAPE" PIR
-  locations: FieldOption[]
-  sectors: FieldOption[]
+  locations: FieldOption[];
+  sectors: FieldOption[];
 }
 
 /**

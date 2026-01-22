@@ -1,4 +1,7 @@
-﻿# Common
+﻿.dockerignore
+Dockerfile*
+
+# Common
 */.idea
 */.env
 */dist

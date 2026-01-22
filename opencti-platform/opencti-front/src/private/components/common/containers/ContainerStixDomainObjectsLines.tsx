@@ -23,7 +23,7 @@ interface ContainerStixDomainObjectsLinesProps {
   deSelectedElements: Record<string, ContainerStixDomainObjectLine_node$data>;
   onToggleEntity: (
     entity: ContainerStixDomainObjectLine_node$data,
-    event: React.SyntheticEvent
+    event: React.SyntheticEvent,
   ) => void;
   selectAll: boolean;
   onLabelClick?: HandleAddFilter;
@@ -124,8 +124,8 @@ const ContainerStixDomainObjectsLines: FunctionComponent<ContainerStixDomainObje
   enableReferences,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
-  ContainerStixDomainObjectsLinesQuery,
-  ContainerStixDomainObjectsLines_container$key
+    ContainerStixDomainObjectsLinesQuery,
+    ContainerStixDomainObjectsLines_container$key
   >({
     linesQuery: containerStixDomainObjectsLinesQuery,
     linesFragment: containerStixDomainObjectsLinesFragment,
@@ -146,12 +146,12 @@ const ContainerStixDomainObjectsLines: FunctionComponent<ContainerStixDomainObje
         globalCount={
           container?.objects?.pageInfo?.globalCount ?? nbOfRowsToLoad
         }
-        LineComponent={
+        LineComponent={(
           <ContainerStixDomainObjectLine
             containerId={container?.id ?? null}
           />
-        }
-        DummyLineComponent={<ContainerStixDomainObjectLineDummy/>}
+        )}
+        DummyLineComponent={<ContainerStixDomainObjectLineDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
         selectedElements={selectedElements}

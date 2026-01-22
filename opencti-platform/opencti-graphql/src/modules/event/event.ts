@@ -13,11 +13,11 @@ const EVENT_DEFINITION: ModuleDefinition<StoreEntityEvent, StixEvent> = {
     id: 'events',
     name: ENTITY_TYPE_EVENT,
     category: ABSTRACT_STIX_DOMAIN_OBJECT,
-    aliased: true
+    aliased: true,
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_EVENT]: [{ src: NAME_FIELD }]
+      [ENTITY_TYPE_EVENT]: [{ src: NAME_FIELD }],
     },
     resolvers: {
       name(data: object) {
@@ -40,22 +40,22 @@ const EVENT_DEFINITION: ModuleDefinition<StoreEntityEvent, StixEvent> = {
         { name: ENTITY_TYPE_LOCATION_COUNTRY, type: REL_EXTENDED },
         { name: ENTITY_TYPE_LOCATION_CITY, type: REL_EXTENDED },
         { name: ENTITY_TYPE_LOCATION_POSITION, type: REL_EXTENDED },
-      ]
+      ],
     },
     {
       name: RELATION_DERIVED_FROM,
       targets: [
         { name: ENTITY_TYPE_EVENT, type: REL_BUILT_IN },
-      ]
-    }
+      ],
+    },
   ],
   relationsRefs: [
-    objectOrganization
+    objectOrganization,
   ],
   representative: (stix: StixEvent) => {
     return stix.name;
   },
-  converter_2_1: convertEventToStix
+  converter_2_1: convertEventToStix,
 };
 
 registerDefinition(EVENT_DEFINITION);

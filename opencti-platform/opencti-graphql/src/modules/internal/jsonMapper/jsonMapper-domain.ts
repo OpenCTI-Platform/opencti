@@ -26,7 +26,7 @@ import { type BasicStoreEntityIngestionJson, ENTITY_TYPE_INGESTION_JSON } from '
 import { FunctionalError } from '../../../config/errors';
 import { createInternalObject, deleteInternalObject, editInternalObject } from '../../../domain/internalObject';
 import { parseJsonMapper, parseJsonMapperWithDefaultValues, validateJsonMapper } from './jsonMapper-utils';
-import type { FileUploadData } from '../../../database/file-storage-helper';
+import type { FileUploadData } from '../../../database/file-storage';
 import { streamConverter } from '../../../database/file-storage';
 import jsonMappingExecution from '../../../parser/json-mapper';
 import { convertRepresentationsIds } from '../mapper-utils';
@@ -110,7 +110,7 @@ export const jsonMapperExport = async (context: AuthContext, user: AuthUser, jso
       name,
       variables: variables ? JSON.parse(variables) : [],
       representations: parsedRepresentations,
-    }
+    },
   });
 };
 
@@ -119,8 +119,8 @@ export const deleteJsonMapper = async (context: AuthContext, user: AuthUser, jso
     filters: {
       mode: FilterMode.Or,
       filterGroups: [],
-      filters: [{ key: ['json_mapper_id'], values: [jsonMapperId] }]
-    }
+      filters: [{ key: ['json_mapper_id'], values: [jsonMapperId] }],
+    },
   };
   const ingesters = await fullEntitiesList<BasicStoreEntityIngestionJson>(context, user, [ENTITY_TYPE_INGESTION_JSON], opts);
   // prevent deletion if an ingester uses the mapper

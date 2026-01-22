@@ -20,6 +20,9 @@ import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeCon
 import { CoverageInformationFieldEdit } from '../../common/form/CoverageInformationField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import PeriodicityField from '../../../../components/fields/PeriodicityField';
+import SelectField from '../../../../components/fields/SelectField';
+import MenuItem from '@mui/material/MenuItem';
+import OpenVocabField from '@components/common/form/OpenVocabField';
 
 const SECURITY_COVERAGE_TYPE = 'Security-Coverage';
 
@@ -90,6 +93,9 @@ const securityCoverageEditionOverviewFragment = graphql`
     confidence
     external_uri
     periodicity
+    duration
+    type_affinity
+    platforms_affinity
     auto_enrichment_disable
     coverage_information {
       coverage_name
@@ -134,6 +140,9 @@ interface SecurityCoverageEditionFormValues {
   name: string;
   description: string | null;
   periodicity: string | null;
+  duration: string | null;
+  type_affinity: string | null;
+  platforms_affinity: readonly string[];
   external_uri: string | null;
   auto_enrichment_disable: boolean;
   confidence: number | null;
@@ -176,6 +185,9 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
       }),
     ).nullable(),
     periodicity: Yup.string().nullable(),
+    duration: Yup.string().nullable(),
+    type_affinity: Yup.string().nullable(),
+    platforms_affinity: Yup.array(),
     external_uri: Yup.string().url().nullable(),
     createdBy: Yup.object().nullable(),
     objectMarking: Yup.array().nullable(),
@@ -198,6 +210,9 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
       name: values.name,
       description: values.description,
       periodicity: values.periodicity,
+      duration: values.duration,
+      type_affinity: values.type_affinity,
+      platforms_affinity: values.platforms_affinity,
       external_uri: values.external_uri,
       auto_enrichment_disable: values.auto_enrichment_disable,
       confidence: parseInt(String(values.confidence), 10),
@@ -240,6 +255,9 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
     description: securityCoverageData.description ?? null,
     external_uri: securityCoverageData.external_uri ?? null,
     periodicity: securityCoverageData.periodicity ?? null,
+    duration: securityCoverageData.duration ?? null,
+    type_affinity: securityCoverageData.type_affinity ?? null,
+    platforms_affinity: securityCoverageData.platforms_affinity ?? [],
     auto_enrichment_disable: securityCoverageData.auto_enrichment_disable ?? false,
     confidence: securityCoverageData.confidence ?? null,
     coverage_information: (securityCoverageData.coverage_information ?? []).map((item) => ({
@@ -305,6 +323,46 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
             handleOnChange={(duration) => handleSubmitField('periodicity', duration)}
             setFieldValue={setFieldValue}
           />
+          <PeriodicityField
+            name="duration"
+            label={t_i18n('Duration')}
+            style={fieldSpacingContainerStyle}
+            handleOnChange={(duration) => handleSubmitField('duration', duration)}
+            setFieldValue={setFieldValue}
+          />
+          <Field
+            component={SelectField}
+            variant="standard"
+            name="type_affinity"
+            onSubmit={handleSubmitField}
+            onChange={(name: string, value: string) => setFieldValue(name, value)}
+            label={t_i18n('Type affinity')}
+            fullWidth={true}
+            containerstyle={{ width: '100%', marginTop: 20 }}
+          >
+            <MenuItem key="ENDPOINT" value="ENDPOINT">
+              {t_i18n('Endpoint')}
+            </MenuItem>
+            <MenuItem key="CLOUD" value="CLOUD">
+              {t_i18n('Cloud')}
+            </MenuItem>
+            <MenuItem key="WEB" value="WEB">
+              {t_i18n('Web')}
+            </MenuItem>
+            <MenuItem key="TABLE-TOP" value="TABLE-TOP">
+              {t_i18n('Table-top')}
+            </MenuItem>
+          </Field>
+          <OpenVocabField
+            label={t_i18n('Platform(s) affinity')}
+            type="platforms_ov"
+            name="platforms_affinity"
+            onSubmit={handleSubmitField}
+            onChange={(name, value) => setFieldValue(name, value)}
+            containerStyle={fieldSpacingContainerStyle}
+            multiple={true}
+            variant="edit"
+          />
           <Field
             component={SwitchField}
             type="checkbox"
@@ -313,23 +371,25 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
             label={t_i18n('Force manual coverage (prevent enrichment connectors from running)')}
             containerstyle={fieldSpacingContainerStyle}
           />
-          {values.auto_enrichment_disable && <>
-            <CoverageInformationFieldEdit
-              id={securityCoverageData.id}
-              mode={'entity'}
-              name="coverage_information"
-              values={values.coverage_information}
-            />
-            <Field
-              component={TextField}
-              variant="standard"
-              name="external_uri"
-              onSubmit={handleSubmitField}
-              label={t_i18n('Source external link')}
-              fullWidth={true}
-              style={fieldSpacingContainerStyle}
-            />
-          </>}
+          {values.auto_enrichment_disable && (
+            <>
+              <CoverageInformationFieldEdit
+                id={securityCoverageData.id}
+                mode="entity"
+                name="coverage_information"
+                values={values.coverage_information}
+              />
+              <Field
+                component={TextField}
+                variant="standard"
+                name="external_uri"
+                onSubmit={handleSubmitField}
+                label={t_i18n('Source external link')}
+                fullWidth={true}
+                style={fieldSpacingContainerStyle}
+              />
+            </>
+          )}
           <CreatedByField
             name="createdBy"
             style={fieldSpacingContainerStyle}

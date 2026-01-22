@@ -28,6 +28,7 @@ import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import { MESSAGING$ } from '../../../../relay/environment';
+import { JsonFormVerticalLayout, jsonFormVerticalLayoutTester } from '../IngestionCatalog/utils/JsonFormVerticalLayout';
 
 type ManagerContractProperty = [string, IngestionTypedProperty];
 
@@ -46,22 +47,23 @@ const updateManagedConnector = graphql`
 `;
 
 interface ManagedConnectorValues {
-  name: string
+  name: string;
   display_name: string;
-  creator?: FieldOption
+  creator?: FieldOption;
 }
 
 const customRenderers = [
   ...materialRenderers,
+  { tester: jsonFormVerticalLayoutTester, renderer: JsonFormVerticalLayout },
   { tester: jsonFormPasswordTester, renderer: JsonFormPasswordRenderer },
   { tester: jsonFormArrayTester, renderer: JsonFormArrayRenderer },
   { tester: jsonFormUnsupportedTypeTester, renderer: JsonFormUnsupportedType },
 ];
 
 type ManagedConnectorEditionProps = {
-  connector: Connector_connector$data
+  connector: Connector_connector$data;
   open: boolean;
-  onClose: () => void
+  onClose: () => void;
 };
 
 const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorEditionProps) => {
@@ -222,7 +224,7 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
               />
 
               <CreatorField
-                label={'Connector user'}
+                label="Connector user"
                 containerStyle={fieldSpacingContainerStyle}
                 onChange={setFieldValue}
                 name="creator"
@@ -255,7 +257,7 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
                         data={values}
                         schema={requiredProperties}
                         renderers={customRenderers}
-                        validationMode={'NoValidation'}
+                        validationMode="NoValidation"
                         onChange={async ({ data }) => {
                           await setValues(data);
                         }}
@@ -269,12 +271,12 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
                         <AccordionSummary id="accordion-panel">
                           <Typography>{t_i18n('Advanced options')}</Typography>
                         </AccordionSummary>
-                        <AccordionDetails>
+                        <AccordionDetails sx={{ paddingTop: 2 }}>
                           <JsonForms
                             data={values}
                             schema={optionalProperties}
                             renderers={customRenderers}
-                            validationMode={'NoValidation'}
+                            validationMode="NoValidation"
                             onChange={async ({ data }) => {
                               await setValues(data);
                             }}

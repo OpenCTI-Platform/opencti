@@ -147,24 +147,24 @@ const WorkbenchFileLineComponent = ({ classes, file, dense, directDownload, nest
         divider={true}
         dense={dense === true}
         disablePadding
-        secondaryAction={
+        secondaryAction={(
           <>
             {!directDownload && !isFail && (
-            <Tooltip title={t_i18n('Download this file')}>
-              <span>
-                <IconButton
-                  disabled={isProgress}
-                  href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(
-                    file.id,
-                  )}`}
-                  aria-haspopup="true"
-                  color={nested ? 'inherit' : 'primary'}
-                  size="small"
-                >
-                  <GetAppOutlined fontSize="small" />
-                </IconButton>
-              </span>
-            </Tooltip>
+              <Tooltip title={t_i18n('Download this file')}>
+                <span>
+                  <IconButton
+                    disabled={isProgress}
+                    href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(
+                      file.id,
+                    )}`}
+                    aria-haspopup="true"
+                    color={nested ? 'inherit' : 'primary'}
+                    size="small"
+                  >
+                    <GetAppOutlined fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
             )}
             <Tooltip title={t_i18n('Delete this workbench')}>
               <span>
@@ -179,7 +179,7 @@ const WorkbenchFileLineComponent = ({ classes, file, dense, directDownload, nest
               </span>
             </Tooltip>
           </>
-          }
+        )}
       >
         <ListItemButton
           classes={{ root: nested ? classes.itemNested : classes.item }}
@@ -189,23 +189,23 @@ const WorkbenchFileLineComponent = ({ classes, file, dense, directDownload, nest
         >
           <ListItemIcon>
             {isProgress && (
-            <CircularProgress
-              size={20}
-              color={nested ? 'primary' : 'inherit'}
-            />
+              <CircularProgress
+                size={20}
+                color={nested ? 'primary' : 'inherit'}
+              />
             )}
             {!isProgress && (isFail || isOutdated) && (
-            <WarningOutlined
-              color={nested ? 'primary' : 'inherit'}
-              style={{ fontSize: 15, color: '#f44336' }}
-            />
+              <WarningOutlined
+                color={nested ? 'primary' : 'inherit'}
+                style={{ fontSize: 15, color: '#f44336' }}
+              />
             )}
             {!isProgress && !isFail && !isOutdated && (
-            <FileOutline color={nested ? 'primary' : 'inherit'} />
+              <FileOutline color={nested ? 'primary' : 'inherit'} />
             )}
           </ListItemIcon>
           <ListItemText
-            primary={
+            primary={(
               <>
                 <div className={classes.bodyItem} style={inlineStyles.name}>
                   {file.name.replace('.json', '')}
@@ -231,7 +231,7 @@ const WorkbenchFileLineComponent = ({ classes, file, dense, directDownload, nest
                   {nsdt(file.lastModified)}
                 </div>
               </>
-            }
+            )}
           />
         </ListItemButton>
       </ListItem>

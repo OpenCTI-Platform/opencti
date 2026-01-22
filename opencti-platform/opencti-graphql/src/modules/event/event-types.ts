@@ -31,7 +31,7 @@ export interface StixEvent extends StixDomainObject {
   start_time: StixDate;
   stop_time: StixDate;
   extensions: {
-    [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
+    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
   };
 }
 // endregion

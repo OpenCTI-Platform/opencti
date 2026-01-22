@@ -9,10 +9,10 @@ import { CaseRftEditionContainerCaseQuery } from './__generated__/CaseRftEdition
 import CaseRftEditionOverview from './CaseRftEditionOverview';
 
 interface CaseRftEditionContainerProps {
-  queryRef: PreloadedQuery<CaseRftEditionContainerCaseQuery>
-  handleClose: () => void
-  open?: boolean
-  controlledDial?: DrawerControlledDialType
+  queryRef: PreloadedQuery<CaseRftEditionContainerCaseQuery>;
+  handleClose: () => void;
+  open?: boolean;
+  controlledDial?: DrawerControlledDialType;
 }
 
 export const caseRftEditionQuery = graphql`

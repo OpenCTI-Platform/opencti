@@ -8,19 +8,19 @@ export const up = async (next) => {
   logMigration.info(`${message} > started`);
   const updateQuery = {
     script: {
-      source: 'ctx._source.restricted_members = ctx._source.authorized_members;'
+      source: 'ctx._source.restricted_members = ctx._source.authorized_members;',
     },
     query: {
       bool: {
         must: [
           {
             exists: {
-              field: 'authorized_members'
-            }
-          }
-        ]
-      }
-    }
+              field: 'authorized_members',
+            },
+          },
+        ],
+      },
+    },
   };
   await elUpdateByQueryForMigration(message, READ_PLATFORM_INDICES, updateQuery);
   logMigration.info(`${message} > done`);

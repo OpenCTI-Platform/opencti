@@ -1,5 +1,6 @@
 import type { CsvMapperParsed, CsvMapperRepresentation } from '../../../src/modules/internal/csvMapper/csvMapper-types';
 import type { StixBundle, StixDomainObject } from '../../../src/types/stix-2-1-common';
+import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
 
 export const indicatorsWithExternalReferencesExpectedBundle: StixBundle = {
   id: 'bundle--bfb3d6f4-6961-4fd0-8fb6-afbcbf2e0d59',
@@ -11,10 +12,11 @@ export const indicatorsWithExternalReferencesExpectedBundle: StixBundle = {
       spec_version: '2.1',
       type: 'indicator',
       extensions: {
-        'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba': {
+        [STIX_EXT_OCTI]: {
           converter_csv: '[ipv4-addr:value = \'198.168.8.1\'],IPv4-Addr,http://twitter.com/filigraner',
           extension_type: 'property-extension',
           type: 'Indicator',
+          is_inferred: false,
           main_observable_type: 'IPv4-Addr',
           observable_values: [
             {
@@ -42,10 +44,11 @@ export const indicatorsWithExternalReferencesExpectedBundle: StixBundle = {
       spec_version: '2.1',
       type: 'indicator',
       extensions: {
-        'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba': {
+        [STIX_EXT_OCTI]: {
           converter_csv: '[ipv4-addr:value = \'198.168.8.2\'],IPv4-Addr,http://twitter.com/filigraner',
           extension_type: 'property-extension',
           type: 'Indicator',
+          is_inferred: false,
           main_observable_type: 'IPv4-Addr',
           observable_values: [
             {

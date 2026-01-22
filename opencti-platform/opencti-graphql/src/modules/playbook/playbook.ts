@@ -25,11 +25,11 @@ const ENTITY_PLAYBOOK_DEFINITION: ModuleDefinition<StoreEntityPlaybook, StixPlay
     id: 'playbook',
     name: ENTITY_TYPE_PLAYBOOK,
     category: ABSTRACT_INTERNAL_OBJECT,
-    aliased: false
+    aliased: false,
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_PLAYBOOK]: () => uuidv4()
+      [ENTITY_TYPE_PLAYBOOK]: () => uuidv4(),
     },
   },
   attributes: [
@@ -44,7 +44,7 @@ const ENTITY_PLAYBOOK_DEFINITION: ModuleDefinition<StoreEntityPlaybook, StixPlay
   representative: (stix: StixPlaybook) => {
     return stix.name;
   },
-  converter_2_1: convertEntityPlaybookToStix
+  converter_2_1: convertEntityPlaybookToStix,
 };
 
 registerDefinition(ENTITY_PLAYBOOK_DEFINITION);

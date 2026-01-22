@@ -37,7 +37,7 @@ interface StixCoreObjectContentBarProps {
 }
 
 const StixCoreObjectContentBar: FunctionComponent<
-StixCoreObjectContentBarProps
+  StixCoreObjectContentBarProps
 > = ({
   handleZoomIn,
   handleZoomOut,
@@ -78,28 +78,27 @@ StixCoreObjectContentBarProps
           }}
         >
           {handleSave && (
-          <FormGroup>
-            <FormControlLabel
-              control={
-                <IconButton
-                  color="primary"
-                  onClick={handleSave}
-                  size="large"
-                  disabled={!changed}
-                  aria-label={t_i18n('Save')}
-                >
-                  <SaveOutlined />
-                </IconButton>
-                  }
-              label={changed
-                ? (
+            <FormGroup>
+              <FormControlLabel
+                control={(
+                  <IconButton
+                    color="primary"
+                    onClick={handleSave}
+                    size="large"
+                    disabled={!changed}
+                    aria-label={t_i18n('Save')}
+                  >
+                    <SaveOutlined />
+                  </IconButton>
+                )}
+                label={changed ? (
                   <span style={{ color: theme.palette.warn.main }}>
                     {t_i18n('You have unsaved changes')}
                   </span>
                 ) : t_i18n('No changes detected')
-              }
-            />
-          </FormGroup>
+                }
+              />
+            </FormGroup>
           )}
           {enableZoom && (
             <IconButton

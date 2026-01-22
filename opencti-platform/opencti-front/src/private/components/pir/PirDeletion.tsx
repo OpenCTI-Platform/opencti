@@ -29,14 +29,14 @@ const pirDeleteMutation = graphql`
 `;
 
 interface ChildrenProps {
-  handleOpenDelete: (e?: UIEvent) => void
-  deleting: boolean
+  handleOpenDelete: (e?: UIEvent) => void;
+  deleting: boolean;
 }
 
 interface PirDeletionProps {
-  pirId: string
-  onDeleteComplete?: () => void
-  children: (props: ChildrenProps) => ReactNode
+  pirId: string;
+  onDeleteComplete?: () => void;
+  children: (props: ChildrenProps) => ReactNode;
 }
 
 const PirDeletion = ({ pirId, onDeleteComplete, children }: PirDeletionProps) => {

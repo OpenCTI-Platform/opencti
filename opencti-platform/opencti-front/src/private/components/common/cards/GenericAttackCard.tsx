@@ -19,6 +19,7 @@ import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 import { addBookmark, deleteBookMark } from '../stix_domain_objects/StixDomainObjectBookmark';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
+import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -91,15 +92,9 @@ interface fromEdges {
   edges: ReadonlyArray<{ node: { from: { name?: string } | null } }>;
 }
 
-interface labelEdges {
-  edges: ReadonlyArray<{
-    node: { id: string; value: string | null; color: string | null };
-  }>;
-}
-
 export interface DraftVersion {
-  draft_id: string
-  draft_operation: string
+  draft_id: string;
+  draft_operation: string;
 }
 
 export interface GenericAttack {
@@ -109,7 +104,7 @@ export interface GenericAttack {
   description: string | null;
   modified: string;
   aliases: ReadonlyArray<string | null> | null;
-  objectLabel: labelEdges | null;
+  objectLabel: ReadonlyArray<{ id: string; value: string | null; color: string | null | undefined }> | null | undefined;
   avatar?: { id: string; name: string } | null;
   relatedIntrusionSets?: fromEdges | null;
   usedMalware?: toEdges | null;
@@ -122,7 +117,7 @@ interface GenericAttackCardProps {
   cardData: GenericAttack;
   cardLink: string;
   entityType: string;
-  onLabelClick: () => void;
+  onLabelClick: HandleAddFilter;
   bookmarksIds?: string[];
 }
 
@@ -177,7 +172,7 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
           }
           title={renderCardTitle(cardData)}
           subheader={fld(cardData.modified)}
-          action={
+          action={(
             <IconButton
               size="small"
               onClick={handleBookmarksIds}
@@ -187,7 +182,7 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
             >
               <StarBorderOutlined />
             </IconButton>
-          }
+          )}
         />
         <CardContent className={classes.content}>
           <div className={classes.description}>
@@ -260,38 +255,38 @@ export const GenericAttackCardDummy = () => {
       <CardActionArea classes={{ root: classes.area }}>
         <CardHeader
           classes={{ root: classes.header }}
-          avatar={
+          avatar={(
             <Skeleton
               animation="wave"
               variant="circular"
               width={30}
               height={30}
             />
-          }
-          title={
+          )}
+          title={(
             <Skeleton
               animation="wave"
               variant="rectangular"
               width="90%"
               style={{ marginBottom: 10 }}
             />
-          }
-          subheader={
+          )}
+          subheader={(
             <Skeleton
               animation="wave"
               variant="rectangular"
               width="90%"
               style={{ marginBottom: 10 }}
             />
-          }
-          action={
+          )}
+          action={(
             <Skeleton
               animation="wave"
               variant="circular"
               width={30}
               height={30}
             />
-          }
+          )}
           slotProps={{
             title: { color: 'inherit' },
           }}

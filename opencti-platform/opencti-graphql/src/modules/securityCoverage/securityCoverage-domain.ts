@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
-import { type EntityOptions, fullRelationsList, loadEntityThroughRelationsPaginated, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader'; import type { AuthContext, AuthUser } from '../../types/user';
+import { type EntityOptions, fullRelationsList, loadEntityThroughRelationsPaginated, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
+import type { AuthContext, AuthUser } from '../../types/user';
 import { type BasicStoreEntitySecurityCoverage, ENTITY_TYPE_SECURITY_COVERAGE, INPUT_COVERED, RELATION_COVERED } from './securityCoverage-types';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
@@ -7,7 +8,7 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { createEntity, deleteElementById, storeLoadByIdsWithRefs, storeLoadByIdWithRefs } from '../../database/middleware';
 import type { SecurityCoverageAddInput } from '../../generated/graphql';
 import type { BasicStoreEntity, StoreRelation } from '../../types/store';
-import { convertStoreToStix } from '../../database/stix-2-1-converter';
+import { convertStoreToStix_2_1 } from '../../database/stix-2-1-converter';
 import { STIX_SPEC_VERSION } from '../../database/stix';
 import { RELATION_TARGETS, RELATION_USES } from '../../schema/stixCoreRelationship';
 import { stixRefsExtractor } from '../../schema/stixEmbeddedRelationship';
@@ -17,7 +18,7 @@ import {
   ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_INCIDENT,
   ENTITY_TYPE_INTRUSION_SET,
-  ENTITY_TYPE_VULNERABILITY
+  ENTITY_TYPE_VULNERABILITY,
 } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-incident-types';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
@@ -52,17 +53,17 @@ export const addSecurityCoverage = async (context: AuthContext, user: AuthUser, 
 export const securityCoverageStixBundle = async (context: AuthContext, user: AuthUser, SecurityCoverageId: string) => {
   const objects = [];
   const SecurityCoverage = await storeLoadByIdWithRefs(context, user, SecurityCoverageId);
-  const stixSecurityCoverage = convertStoreToStix(SecurityCoverage);
+  const stixSecurityCoverage = convertStoreToStix_2_1(SecurityCoverage);
   objects.push(stixSecurityCoverage);
   const objectCovered = SecurityCoverage[INPUT_COVERED] as unknown as BasicStoreEntity;
   const assessment = await storeLoadByIdWithRefs(context, user, objectCovered.id);
-  const stixAssessment = convertStoreToStix(assessment);
+  const stixAssessment = convertStoreToStix_2_1(assessment);
   objects.push(stixAssessment);
   const stixAssessmentRefs = stixRefsExtractor(stixAssessment);
   const refElements = await storeLoadByIdsWithRefs(context, user, stixAssessmentRefs);
   for (let index = 0; index < refElements.length; index += 1) {
     const refElement = refElements[index];
-    const stixRefElement = convertStoreToStix(refElement);
+    const stixRefElement = convertStoreToStix_2_1(refElement);
     objects.push(stixRefElement);
   }
   const targetIds = new Set();
@@ -70,7 +71,7 @@ export const securityCoverageStixBundle = async (context: AuthContext, user: Aut
     const relations = await storeLoadByIdsWithRefs(context, user, relationships.map((r: StoreRelation) => r.id));
     for (let index = 0; index < relations.length; index += 1) {
       const relation = relations[index];
-      const stixRelation = convertStoreToStix(relation);
+      const stixRelation = convertStoreToStix_2_1(relation);
       objects.push(stixRelation);
       targetIds.add(relation.toId);
     }
@@ -78,13 +79,13 @@ export const securityCoverageStixBundle = async (context: AuthContext, user: Aut
   await fullRelationsList(context, user, [RELATION_TARGETS, RELATION_USES], {
     fromId: objectCovered.id,
     toTypes: [ENTITY_TYPE_VULNERABILITY, ENTITY_TYPE_ATTACK_PATTERN],
-    callback: relationsCallback
+    callback: relationsCallback,
   });
   if (targetIds.size > 0) {
     const targets = await storeLoadByIdsWithRefs(context, user, Array.from(targetIds));
     for (let index = 0; index < targets.length; index += 1) {
       const target = targets[index];
-      const stixTarget = convertStoreToStix(target);
+      const stixTarget = convertStoreToStix_2_1(target);
       objects.push(stixTarget);
     }
   }

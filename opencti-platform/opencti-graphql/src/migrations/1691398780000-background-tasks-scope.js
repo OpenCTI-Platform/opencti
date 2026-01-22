@@ -18,7 +18,7 @@ export const up = async (next) => {
       },
       source: 'ctx._source.scope = params.scope;'
         + ' ctx._source.authorized_authorities = params.authorized_authorities;'
-        + ' ctx._source.restricted_members = [["id":ctx._source.initiator_id, "access_right": "admin"]];'
+        + ' ctx._source.restricted_members = [["id":ctx._source.initiator_id, "access_right": "admin"]];',
     },
     query: {
       bool: {
@@ -34,7 +34,7 @@ export const up = async (next) => {
     index: [READ_INDEX_INTERNAL_OBJECTS],
     refresh: true,
     wait_for_completion: true,
-    body: updateQueryForUserQueryTasks
+    body: updateQueryForUserQueryTasks,
   }).catch((err) => {
     throw DatabaseError('Error updating elastic for user query tasks', { cause: err });
   });
@@ -47,7 +47,7 @@ export const up = async (next) => {
       },
       source: 'ctx._source.scope = params.scope;'
         + ' ctx._source.authorized_authorities = params.authorized_authorities;'
-        + ' ctx._source.restricted_members = [["id":ctx._source.initiator_id, "access_right": "admin"]];'
+        + ' ctx._source.restricted_members = [["id":ctx._source.initiator_id, "access_right": "admin"]];',
     },
     query: {
       bool: {
@@ -57,7 +57,7 @@ export const up = async (next) => {
         ],
         must_not: [
           { match: { task_filters: '*Notification*' } },
-        ]
+        ],
       },
     },
   };
@@ -65,7 +65,7 @@ export const up = async (next) => {
     index: [READ_INDEX_INTERNAL_OBJECTS],
     refresh: true,
     wait_for_completion: true,
-    body: updateQueryForKnowledgeQueryTasks
+    body: updateQueryForKnowledgeQueryTasks,
   }).catch((err) => {
     throw DatabaseError('Error updating elastic for knowledge query tasks', { cause: err });
   });
@@ -81,7 +81,7 @@ export const up = async (next) => {
       },
       source: 'ctx._source.scope = params.scope;'
         + ' ctx._source.authorized_authorities = params.authorized_authorities;'
-        + ' ctx._source.restricted_members = [["id":ctx._source.initiator_id, "access_right": "admin"]];'
+        + ' ctx._source.restricted_members = [["id":ctx._source.initiator_id, "access_right": "admin"]];',
     },
     query: {
       bool: {
@@ -97,7 +97,7 @@ export const up = async (next) => {
     index: [READ_INDEX_INTERNAL_OBJECTS],
     refresh: true,
     wait_for_completion: true,
-    body: updateQueryForUserListTasks
+    body: updateQueryForUserListTasks,
   }).catch((err) => {
     throw DatabaseError('Error updating elastic for user list tasks', { cause: err });
   });
@@ -110,7 +110,7 @@ export const up = async (next) => {
       },
       source: 'ctx._source.scope = params.scope;'
         + ' ctx._source.authorized_authorities = params.authorized_authorities;'
-        + ' ctx._source.restricted_members = ctx._source.restricted_members = [["id":ctx._source.initiator_id, "access_right": "admin"]];'
+        + ' ctx._source.restricted_members = ctx._source.restricted_members = [["id":ctx._source.initiator_id, "access_right": "admin"]];',
     },
     query: {
       bool: {
@@ -120,7 +120,7 @@ export const up = async (next) => {
         ],
         must_not: [
           { term: { 'actions.context.field.keyword': { value: 'is_read' } } },
-        ]
+        ],
       },
     },
   };
@@ -128,7 +128,7 @@ export const up = async (next) => {
     index: [READ_INDEX_INTERNAL_OBJECTS],
     refresh: true,
     wait_for_completion: true,
-    body: updateQueryForKnowledgeListTasks
+    body: updateQueryForKnowledgeListTasks,
   }).catch((err) => {
     throw DatabaseError('Error updating elastic for knowledge list tasks', { cause: err });
   });

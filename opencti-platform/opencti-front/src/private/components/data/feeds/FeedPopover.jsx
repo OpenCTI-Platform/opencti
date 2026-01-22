@@ -171,7 +171,7 @@ class FeedPopover extends Component {
                 </>
               );
             }
-            return <div/>;
+            return <div />;
           }}
         />
         <QueryRenderer

@@ -300,7 +300,7 @@ const RegionCreation = ({
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_regions', paginationOptions, 'regionAdd');
 
   const CreateRegionControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Region' {...props} />
+    <CreateEntityControlledDial entityType="Region" {...props} />
   );
   return (
     <Drawer

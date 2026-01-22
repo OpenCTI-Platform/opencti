@@ -34,6 +34,8 @@ const styles = (theme) => ({
   noResult: {
     color: theme.palette.text.primary,
     fontSize: 15,
+    textAlign: 'center',
+    marginTop: 20,
   },
   itemIcon: {
     color: theme.palette.primary.main,
@@ -75,7 +77,7 @@ const StixCoreObjectEnrollPlaybook = ({
                 <ListItem
                   divider={true}
                   classes={{ root: classes.item }}
-                  secondaryAction={
+                  secondaryAction={(
                     <Security needs={[AUTOMATION]}>
                       <div style={{ right: 0 }}>
                         <Tooltip title={t_i18n('Trigger this playbook now')}>
@@ -89,7 +91,7 @@ const StixCoreObjectEnrollPlaybook = ({
                         </Tooltip>
                       </div>
                     </Security>
-                  }
+                  )}
                 >
                   <ListItemIcon classes={{ root: classes.itemIcon }}>
                     <ItemIcon type="Playbook" />

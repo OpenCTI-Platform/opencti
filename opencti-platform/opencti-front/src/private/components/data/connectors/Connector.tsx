@@ -272,11 +272,14 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Basic information')}
           </Typography>
-          <Paper style={{
-            marginTop: theme.spacing(1),
-            padding: '15px',
-            borderRadius: 4,
-          }} className={'paper-for-grid'} variant="outlined"
+          <Paper
+            style={{
+              marginTop: theme.spacing(1),
+              padding: '15px',
+              borderRadius: 4,
+            }}
+            className="paper-for-grid"
+            variant="outlined"
           >
             <Grid container={true} spacing={3}>
               <Grid item xs={6}>
@@ -340,36 +343,36 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                 ))}
               </Grid>
               {connectorFiltersEnabled && (
-              <Grid item xs={6}>
-                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                  <Typography variant="h3" gutterBottom={true}>
-                    {t_i18n('Trigger filters')}
-                  </Typography>
-                  <Tooltip title={t_i18n('Trigger filters can be used to trigger automatically this connector on entities matching the filters and scope.')}>
-                    <span>
-                      <InformationOutline fontSize="small" color="primary" />
-                    </span>
-                  </Tooltip>
-                </Box>
-                <Box sx={{ display: 'flex', gap: 1, paddingTop: '4px' }}>
-                  <Filters
-                    availableFilterKeys={connectorAvailableFilterKeys}
-                    helpers={helpers}
-                    searchContext={filtersSearchContext}
-                  />
-                </Box>
-                {filters && (
-                  <Box sx={{ overflow: 'hidden' }}>
-                    <FilterIconButton
-                      filters={filters}
+                <Grid item xs={6}>
+                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                    <Typography variant="h3" gutterBottom={true}>
+                      {t_i18n('Trigger filters')}
+                    </Typography>
+                    <Tooltip title={t_i18n('Trigger filters can be used to trigger automatically this connector on entities matching the filters and scope.')}>
+                      <span>
+                        <InformationOutline fontSize="small" color="primary" />
+                      </span>
+                    </Tooltip>
+                  </Box>
+                  <Box sx={{ display: 'flex', gap: 1, paddingTop: '4px' }}>
+                    <Filters
+                      availableFilterKeys={connectorAvailableFilterKeys}
                       helpers={helpers}
-                      styleNumber={2}
                       searchContext={filtersSearchContext}
-                      entityTypes={connectorFiltersScope}
                     />
                   </Box>
-                )}
-              </Grid>
+                  {filters && (
+                    <Box sx={{ overflow: 'hidden' }}>
+                      <FilterIconButton
+                        filters={filters}
+                        helpers={helpers}
+                        styleNumber={2}
+                        searchContext={filtersSearchContext}
+                        entityTypes={connectorFiltersScope}
+                      />
+                    </Box>
+                  )}
+                </Grid>
               )}
               <Security needs={[SETTINGS_SETACCESSES]}>
                 <>
@@ -498,10 +501,10 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                                 <ItemIcon
                                   type="Organization"
                                   color={
-                                  ((organizationEdge.node as OrganizationNodeWithAuthorities).authorized_authorities ?? []).includes(connector.connector_user?.id ?? '')
-                                    ? theme.palette.dangerZone.main
-                                    : theme.palette.primary.main
-                                }
+                                    ((organizationEdge.node as OrganizationNodeWithAuthorities).authorized_authorities ?? []).includes(connector.connector_user?.id ?? '')
+                                      ? theme.palette.dangerZone.main
+                                      : theme.palette.primary.main
+                                  }
                                 />
                               </ListItemIcon>
                               <ListItemText primary={organizationEdge.node.name} />
@@ -522,22 +525,25 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Details')}
           </Typography>
-          <Paper style={{
-            marginTop: theme.spacing(1),
-            padding: '15px',
-            borderRadius: 4,
-          }} className={'paper-for-grid'} variant="outlined"
+          <Paper
+            style={{
+              marginTop: theme.spacing(1),
+              padding: '15px',
+              borderRadius: 4,
+            }}
+            className="paper-for-grid"
+            variant="outlined"
           >
             <Grid container={true} spacing={3}>
               {connector.connector_info?.buffering && (
-              <Grid item xs={12}>
-                <Alert severity="warning" icon={<UpdateIcon color="warning" />} style={{ alignItems: 'center' }}>
-                  <div>
-                    <strong>{t_i18n('Buffering: ')}</strong>
-                    {t_i18n('Server ingestion is not accepting new work, waiting for current messages in ingestion to be processed until message count go back under threshold')}
-                  </div>
-                </Alert>
-              </Grid>
+                <Grid item xs={12}>
+                  <Alert severity="warning" icon={<UpdateIcon color="warning" />} style={{ alignItems: 'center' }}>
+                    <div>
+                      <strong>{t_i18n('Buffering: ')}</strong>
+                      {t_i18n('Server ingestion is not accepting new work, waiting for current messages in ingestion to be processed until message count go back under threshold')}
+                    </div>
+                  </Alert>
+                </Grid>
               )}
 
               <Grid item={true} xs={12}>
@@ -558,25 +564,25 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                 {!connector.connector_info && (
                   connector.connector_state
                   && connectorStateConverted !== null
-                && checkLastRunExistingInState && checkLastRunIsNumber ? (
-                  <>
-                    <Typography variant="h3" gutterBottom={true}>
-                      {t_i18n('Last run (from State)')}
-                    </Typography>
-                    <Typography variant="body1" gutterBottom={true}>
-                      {nsdt(lastRunConverted)}
-                    </Typography>
-                  </>
-                    ) : (
-                      <>
-                        <Typography variant="h3" gutterBottom={true}>
-                          {t_i18n('Last run')}
-                        </Typography>
-                        <Typography variant="body1" gutterBottom={true}>
-                          {t_i18n('Not provided')}
-                        </Typography>
-                      </>
-                    )
+                  && checkLastRunExistingInState && checkLastRunIsNumber ? (
+                        <>
+                          <Typography variant="h3" gutterBottom={true}>
+                            {t_i18n('Last run (from State)')}
+                          </Typography>
+                          <Typography variant="body1" gutterBottom={true}>
+                            {nsdt(lastRunConverted)}
+                          </Typography>
+                        </>
+                      ) : (
+                        <>
+                          <Typography variant="h3" gutterBottom={true}>
+                            {t_i18n('Last run')}
+                          </Typography>
+                          <Typography variant="body1" gutterBottom={true}>
+                            {t_i18n('Not provided')}
+                          </Typography>
+                        </>
+                      )
                 )}
                 {connector.connector_info && (
                 // eslint-disable-next-line no-nested-ternary
@@ -588,24 +594,29 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                       <Typography variant="body1" gutterBottom={true}>
                         {nsdt(connector.connector_info?.last_run_datetime)}
                       </Typography>
-                    </>) : (connector.connector_state
-                  && connectorStateConverted !== null
-                  && checkLastRunExistingInState && checkLastRunIsNumber ? (<>
-                    <Typography variant="h3" gutterBottom={true}>
-                      {t_i18n('Last run (from State)')}
-                    </Typography>
-                    <Typography variant="body1" gutterBottom={true}>
-                      {nsdt(lastRunConverted)}
-                    </Typography>
-                  </>)
-                    : (<>
-                      <Typography variant="h3" gutterBottom={true}>
-                        {t_i18n('Last run')}
-                      </Typography>
-                      <Typography variant="body1" gutterBottom={true}>
-                        {t_i18n('Not provided')}
-                      </Typography>
-                    </>)
+                    </>
+                  ) : (connector.connector_state
+                    && connectorStateConverted !== null
+                    && checkLastRunExistingInState && checkLastRunIsNumber ? (
+                        <>
+                          <Typography variant="h3" gutterBottom={true}>
+                            {t_i18n('Last run (from State)')}
+                          </Typography>
+                          <Typography variant="body1" gutterBottom={true}>
+                            {nsdt(lastRunConverted)}
+                          </Typography>
+                        </>
+                      )
+                    : (
+                        <>
+                          <Typography variant="h3" gutterBottom={true}>
+                            {t_i18n('Last run')}
+                          </Typography>
+                          <Typography variant="body1" gutterBottom={true}>
+                            {t_i18n('Not provided')}
+                          </Typography>
+                        </>
+                      )
                   )
                 )}
               </Grid>
@@ -632,9 +643,9 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                   )
                 )}
                 {!connector.connector_info && (
-                <Typography variant="body1" gutterBottom={true}>
-                  {t_i18n('Not provided')}
-                </Typography>
+                  <Typography variant="body1" gutterBottom={true}>
+                    {t_i18n('Not provided')}
+                  </Typography>
                 )}
               </Grid>
 
@@ -652,17 +663,17 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                   {t_i18n('Server capacity')}
                 </Typography>
                 {connector.connector_info && (connector.connector_info.queue_messages_size !== 0
-                || connector.connector_info.last_run_datetime) ? (
-                  <FieldOrEmpty source={connector.connector_info?.queue_messages_size}>
-                    <span style={isBuffering() ? { color: theme.palette.dangerZone.main } : {}}>{connector.connector_info?.queue_messages_size.toFixed(2)}</span>
-                    <span> / {connector.connector_info?.queue_threshold} Mo</span>
-                  </FieldOrEmpty>
-                  ) : (
-                    <Typography variant="body1" gutterBottom={true}>
-                      {t_i18n('Not provided')}
-                    </Typography>
-                  )
-              }
+                  || connector.connector_info.last_run_datetime) ? (
+                      <FieldOrEmpty source={connector.connector_info?.queue_messages_size}>
+                        <span style={isBuffering() ? { color: theme.palette.dangerZone.main } : {}}>{connector.connector_info?.queue_messages_size.toFixed(2)}</span>
+                        <span> / {connector.connector_info?.queue_threshold} Mo</span>
+                      </FieldOrEmpty>
+                    ) : (
+                      <Typography variant="body1" gutterBottom={true}>
+                        {t_i18n('Not provided')}
+                      </Typography>
+                    )
+                }
               </Grid>
               {connector.is_managed && connector.manager_current_status === 'started' && connector.manager_connector_uptime != null && (
                 <Grid item xs={6}>
@@ -685,22 +696,23 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
   const ConnectorLogs = () => {
     // calculating the full viewport height minus some space for elements above
     const logsContainerHeight = 'calc(100vh - 280px)';
-    return (<Box sx={{ marginBottom: '20px', height: logsContainerHeight }}>
-      <pre
-        style={{
-          height: '100%',
-          overflowX: 'scroll',
-          overflowY: 'auto',
-          paddingBottom: theme.spacing(2),
-          backgroundColor: theme.palette.background.paper,
-          padding: theme.spacing(2),
-          borderRadius: 4,
-          border: `1px solid ${theme.palette.divider}`,
-        }}
-      >
-        {connector.manager_connector_logs?.join('\n') || t_i18n('No logs available')}
-      </pre>
-    </Box>
+    return (
+      <Box sx={{ marginBottom: '20px', height: logsContainerHeight }}>
+        <pre
+          style={{
+            height: '100%',
+            overflowX: 'scroll',
+            overflowY: 'auto',
+            paddingBottom: theme.spacing(2),
+            backgroundColor: theme.palette.background.paper,
+            padding: theme.spacing(2),
+            borderRadius: 4,
+            border: `1px solid ${theme.palette.divider}`,
+          }}
+        >
+          {connector.manager_connector_logs?.join('\n') || t_i18n('No logs available')}
+        </pre>
+      </Box>
     );
   };
 

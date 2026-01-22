@@ -19,8 +19,8 @@ const convertDataSourceToStix = (instance: StoreEntityDataSource): StixDataSourc
       }),
       [STIX_EXT_MITRE]: {
         extension_type: 'new-sdo',
-      }
-    }
+      },
+    },
   };
 };
 

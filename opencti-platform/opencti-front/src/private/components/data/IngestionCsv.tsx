@@ -35,7 +35,7 @@ const IngestionCsv = () => {
   const classes = useStyles();
   const { settings, isXTMHubAccessible } = useContext(UserContext);
   const importFromHubUrl = isNotEmptyField(settings?.platform_xtmhub_url)
-    ? `${settings.platform_xtmhub_url}/redirect/octi_integration_feeds?platform_id=${settings.id}`
+    ? `${settings.platform_xtmhub_url}/redirect/opencti_integrations?platform_id=${settings.id}`
     : '';
 
   const { t_i18n } = useFormatter();
@@ -103,7 +103,7 @@ const IngestionCsv = () => {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         keyword={searchTerm}
-        createButton={
+        createButton={(
           <Security needs={[INGESTION_SETINGESTIONS]}>
             <>
               <IngestionCsvImport
@@ -123,19 +123,19 @@ const IngestionCsv = () => {
               <IngestionCsvCreationContainer
                 paginationOptions={paginationOptions}
                 drawerSettings={
-                {
-                  title: t_i18n('Create a CSV Feed'),
-                  button: t_i18n('Create'),
-                }
+                  {
+                    title: t_i18n('Create a CSV Feed'),
+                    button: t_i18n('Create'),
+                  }
                 }
               />
             </>
           </Security>
-        }
+        )}
       >
         {queryRef && (
           <React.Suspense
-            fallback={
+            fallback={(
               <>
                 {Array(20)
                   .fill(0)
@@ -143,7 +143,7 @@ const IngestionCsv = () => {
                     <IngestionCsvLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>
-            }
+            )}
           >
             <IngestionCsvLines
               queryRef={queryRef}
@@ -162,7 +162,7 @@ const IngestionCsv = () => {
         <Alert severity="info">
           {t_i18n(platformModuleHelpers.generateDisableMessage(INGESTION_MANAGER))}
         </Alert>
-        <IngestionMenu/>
+        <IngestionMenu />
       </div>
     );
   }
@@ -170,7 +170,7 @@ const IngestionCsv = () => {
   return (
     <div className={classes.container} data-testid="csv-feeds-page">
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('CSV feeds'), current: true }]} />
-      <IngestionMenu/>
+      <IngestionMenu />
       {renderLines()}
     </div>
   );

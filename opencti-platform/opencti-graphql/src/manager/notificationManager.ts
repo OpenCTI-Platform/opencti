@@ -2,7 +2,9 @@ import * as R from 'ramda';
 import * as jsonpatch from 'fast-json-patch';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import type { Moment } from 'moment';
-import { createStreamProcessor, fetchRangeNotifications, storeNotificationEvent, type StreamProcessor } from '../database/redis';
+import { type StreamProcessor } from '../database/stream/stream-utils';
+import { fetchRangeNotifications, storeNotificationEvent, createStreamProcessor } from '../database/stream/stream-handler';
+import { redisGetManagerEventState, redisSetManagerEventState } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
@@ -16,7 +18,7 @@ import {
   type BasicStoreEntityDigestTrigger,
   type BasicStoreEntityLiveTrigger,
   type BasicStoreEntityTrigger,
-  ENTITY_TYPE_TRIGGER
+  ENTITY_TYPE_TRIGGER,
 } from '../modules/notification/notification-types';
 import { resolveFiltersMapForUser } from '../utils/filtering/filtering-resolution';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
@@ -37,6 +39,7 @@ import { NOTIFIER_CONNECTOR_WEBHOOK } from '../modules/notifier/notifier-statics
 
 const NOTIFICATION_LIVE_KEY = conf.get('notification_manager:lock_live_key');
 const NOTIFICATION_DIGEST_KEY = conf.get('notification_manager:lock_digest_key');
+const NOTIFICATION_MANAGER_NAME = 'notification_manager';
 export const EVENT_NOTIFICATION_VERSION = '1';
 const CRON_SCHEDULE_TIME = 60000; // 1 minute
 const STREAM_SCHEDULE_TIME = 10000;
@@ -47,54 +50,54 @@ export const TRIGGER_SCOPE_VALUES = ['knowledge', 'activity'];
 export const REQUEST_SHARE_ACCESS_INFO_TYPE = 'Request sharing';
 
 export interface ResolvedTrigger {
-  users: Array<AuthUser>
-  trigger: BasicStoreEntityTrigger
+  users: Array<AuthUser>;
+  trigger: BasicStoreEntityTrigger;
 }
 
 export interface ResolvedLive {
-  users: Array<AuthUser>
-  trigger: BasicStoreEntityLiveTrigger
+  users: Array<AuthUser>;
+  trigger: BasicStoreEntityLiveTrigger;
 }
 
 export interface ResolvedDigest {
-  users: Array<AuthUser>
-  trigger: BasicStoreEntityDigestTrigger
+  users: Array<AuthUser>;
+  trigger: BasicStoreEntityDigestTrigger;
 }
 
 export interface NotificationUser {
-  user_id: string
-  user_email: string
-  notifiers: Array<string>
-  user_service_account: boolean
+  user_id: string;
+  user_email: string;
+  notifiers: Array<string>;
+  user_service_account: boolean;
 }
 
 export interface KnowledgeNotificationEvent extends StreamNotifEvent {
-  type: 'live'
-  targets: Array<{ user: NotificationUser, type: string, message: string }>
-  data: StixObject
-  streamMessage?: string
-  origin: Partial<UserOrigin>
+  type: 'live';
+  targets: Array<{ user: NotificationUser; type: string; message: string }>;
+  data: StixObject;
+  streamMessage?: string;
+  origin: Partial<UserOrigin>;
 }
 
 export interface ActivityNotificationEvent extends StreamNotifEvent {
-  type: 'live'
-  targets: Array<{ user: NotificationUser, type: string, message: string }>
-  data: Partial<{ id: string }>
-  origin: Partial<UserOrigin>
+  type: 'live';
+  targets: Array<{ user: NotificationUser; type: string; message: string }>;
+  data: Partial<{ id: string }>;
+  origin: Partial<UserOrigin>;
 }
 
 export interface ActionNotificationEvent extends StreamNotifEvent {
-  type: 'action'
-  targets: Array<{ user: NotificationUser, type: string, message: string }>
-  data: { id: StixId | null, representative: Representative }
-  origin: Partial<UserOrigin>
+  type: 'action';
+  targets: Array<{ user: NotificationUser; type: string; message: string }>;
+  data: { id: StixId | null; representative: Representative };
+  origin: Partial<UserOrigin>;
 }
 
 export interface DigestEvent extends StreamNotifEvent {
-  type: 'digest'
-  target: NotificationUser
-  playbook_source?: string
-  data: Array<{ notification_id: string, instance: StixObject, type: string, message: string, origin?: Partial<UserOrigin>, streamMessage?: string }>
+  type: 'digest';
+  target: NotificationUser;
+  playbook_source?: string;
+  data: Array<{ notification_id: string; instance: StixObject; type: string; message: string; origin?: Partial<UserOrigin>; streamMessage?: string }>;
 }
 
 export const isLiveKnowledge = (n: ResolvedTrigger): n is ResolvedLive => {
@@ -112,7 +115,7 @@ const generateAssigneeTrigger = (user: AuthUser) => {
       { key: ['objectAssignee'], values: [user.internal_id], operator: 'eq', mode: 'or' },
       { key: ['objectParticipant'], values: [user.internal_id], operator: 'eq', mode: 'or' },
     ],
-    filterGroups: []
+    filterGroups: [],
   };
   return {
     internal_id: `default-trigger-${user.id}`,
@@ -153,7 +156,7 @@ const generateRequestAccessAuthorizeTrigger = (user: AuthUser) => {
       { key: ['entity_type'], values: [ENTITY_TYPE_CONTAINER_CASE_RFI], operator: 'eq', mode: 'or' },
       { key: ['information_types'], values: [REQUEST_SHARE_ACCESS_INFO_TYPE], operator: 'eq', mode: 'or' },
     ],
-    filterGroups: []
+    filterGroups: [],
   };
   return {
     internal_id: `default-rfi-trigger-${user.id}`,
@@ -164,7 +167,7 @@ const generateRequestAccessAuthorizeTrigger = (user: AuthUser) => {
     notifiers: user.personal_notifiers,
     raw_filters: filters,
     instance_trigger: false,
-    restricted_members: []
+    restricted_members: [],
   } as unknown as BasicStoreEntityLiveTrigger;
 };
 
@@ -259,7 +262,7 @@ export const isRelationFromOrToMatchFilters = (
   } else if (instance.type === STIX_TYPE_RELATION) {
     stixIdsToSearch.push((instance as StixRelation).source_ref, (instance as StixRelation).target_ref);
   }
-  // eslint-disable-next-line no-restricted-syntax
+
   for (const value of listenedInstanceIdsMap.values()) {
     if (stixIdsToSearch.includes(value.id)) {
       return true;
@@ -287,17 +290,17 @@ const filterInstancesByRefEventIds = (
 // with the indication, for each instance, if there are in the patch ('added in') or in the reverse_patch ('removed from')
 export const filterUpdateInstanceIdsFromUpdatePatch = (
   listenedInstanceIdsMap: Map<string, StixObject>,
-  updatePatch: { patch: jsonpatch.Operation[], reverse_patch: jsonpatch.Operation[] },
+  updatePatch: { patch: jsonpatch.Operation[]; reverse_patch: jsonpatch.Operation[] },
 ) => {
   const addedIds = updatePatch.patch
-    .map((n) => (n as { path: string, value: string[] }).value)
+    .map((n) => (n as { path: string; value: string[] }).value)
     .flat()
     .filter((n) => n);
   const removedIds = updatePatch.reverse_patch
-    .map((n) => (n as { path: string, value: string[] }).value)
+    .map((n) => (n as { path: string; value: string[] }).value)
     .flat()
     .filter((n) => n);
-  const instances: { instance: StixCoreObject, action: string }[] = [];
+  const instances: { instance: StixCoreObject; action: string }[] = [];
   addedIds.forEach((id) => {
     if (listenedInstanceIdsMap.has(id)) {
       instances.push({
@@ -340,7 +343,7 @@ const eventTypeTranslaterForSideEvents = async (
   previousInstance: StixCoreObject | StixRelationshipObject,
   instance: StixCoreObject | StixRelationshipObject,
   listenedInstanceIdsMap: Map<string, StixObject>,
-  updatePatch?: { patch: jsonpatch.Operation[], reverse_patch: jsonpatch.Operation[] },
+  updatePatch?: { patch: jsonpatch.Operation[]; reverse_patch: jsonpatch.Operation[] },
 ) => {
   // 1. case update, we should check the updatePatch content
   if (currentType === EVENT_TYPE_UPDATE && updatePatch) {
@@ -390,7 +393,7 @@ export const generateNotificationMessageForInstanceWithRefsUpdate = async (
   context: AuthContext,
   user: AuthUser,
   instance: StixCoreObject | StixRelationshipObject,
-  refsInstances: { instance: StixObject, action: string }[],
+  refsInstances: { instance: StixObject; action: string }[],
 ) => {
   const mainInstanceMessage = await generateNotificationMessageForInstance(context, user, instance);
   const groupedRefsInstances = Object.values(R.groupBy((ref) => ref.action, refsInstances)); // refs instances grouped by notification message
@@ -410,7 +413,7 @@ const generateNotificationMessageForFilteredSideEvents = async (
   data: StixCoreObject | StixRelationshipObject,
   frontendFilters: FilterGroup,
   translatedType: string,
-  updatePatch?: { patch: jsonpatch.Operation[], reverse_patch: jsonpatch.Operation[] },
+  updatePatch?: { patch: jsonpatch.Operation[]; reverse_patch: jsonpatch.Operation[] },
   previousData?: StixCoreObject | StixRelationshipObject,
 ) => {
   // Get ids from the user trigger filters that user has access to
@@ -474,7 +477,7 @@ export const buildTargetEvents = async (
       ? [EVENT_TYPE_UPDATE, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE] // extends trigger event types for side events search
       : [...event_types, EVENT_TYPE_CREATE]; // create is always included for instance_triggers with update in their event_types
   }
-  const targets: Array<{ user: NotificationUser, type: string, message: string }> = [];
+  const targets: Array<{ user: NotificationUser; type: string; message: string }> = [];
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   if (eventType === EVENT_TYPE_UPDATE) {
     const { context: updatePatch } = streamEvent.data as UpdateEvent;
@@ -510,7 +513,6 @@ export const buildTargetEvents = async (
               targets.push({ user: notificationUser, type: translatedType, message });
             }
         } else { // useSideEventMatching = true: Case side events for instance triggers
-          // eslint-disable-next-line no-lonely-if
           if (isPreviousMatch || isCurrentlyMatch) { // we keep events if : was visible and/or is visible
             const listenedInstanceIdsMap = await resolveFiltersMapForUser(userContext, user, finalFilters);
             // eslint-disable-next-line max-len
@@ -569,7 +571,7 @@ const notificationLiveStreamHandler = async (streamEvents: Array<SseEvent<DataEv
     if (streamEvents.length === 0) {
       return;
     }
-    const context = executionContext('notification_manager');
+    const context = executionContext(NOTIFICATION_MANAGER_NAME);
     const liveNotifications = await getLiveNotifications(context);
     const version = EVENT_NOTIFICATION_VERSION;
     for (let index = 0; index < streamEvents.length; index += 1) {
@@ -593,6 +595,7 @@ const notificationLiveStreamHandler = async (streamEvents: Array<SseEvent<DataEv
           }
         }
       }
+      await redisSetManagerEventState(NOTIFICATION_MANAGER_NAME, streamEvent.id);
     }
   } catch (e) {
     logApp.error('[OPENCTI-MODULE] Notification manager error', { cause: e, manager: 'NOTIFICATION_MANAGER' });
@@ -628,7 +631,7 @@ const handleDigestNotifications = async (context: AuthContext) => {
               instance: n.data,
               message: await generateNotificationMessageForInstance(context, user, n.data),
               origin: n.origin,
-              streamMessage: n.streamMessage
+              streamMessage: n.streamMessage,
             });
           });
           const data = await Promise.all(dataPromises);
@@ -659,8 +662,9 @@ const initNotificationManager = () => {
       lock = await lockResources([NOTIFICATION_LIVE_KEY], { retryCount: 0 });
       running = true;
       logApp.info('[OPENCTI-MODULE] Running notification manager (live)');
-      streamProcessor = createStreamProcessor(SYSTEM_USER, 'Notification manager', notificationLiveStreamHandler);
-      await streamProcessor.start('live');
+      streamProcessor = createStreamProcessor('Notification manager', notificationLiveStreamHandler);
+      const lastEventState = await redisGetManagerEventState(NOTIFICATION_MANAGER_NAME);
+      await streamProcessor.start(lastEventState ?? 'live');
       while (!shutdown && streamProcessor.running()) {
         lock.signal.throwIfAborted();
         await wait(WAIT_TIME_ACTION);
@@ -679,7 +683,7 @@ const initNotificationManager = () => {
   };
 
   const notificationDigestHandler = async () => {
-    const context = executionContext('notification_manager');
+    const context = executionContext(NOTIFICATION_MANAGER_NAME);
     let lock;
     try {
       // Lock the manager

@@ -1,4 +1,4 @@
-import React, { FunctionComponent, SyntheticEvent } from 'react';
+import React, { FunctionComponent } from 'react';
 import { Link } from 'react-router-dom';
 import { createFragmentContainer, graphql } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
@@ -20,6 +20,7 @@ import type { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
 import { StixCoreObjectOrStixCoreRelationshipContainerLine_node$data } from './__generated__/StixCoreObjectOrStixCoreRelationshipContainerLine_node.graphql';
 import ItemEntityType from '../../../../components/ItemEntityType';
+import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -52,17 +53,12 @@ const useStyles = makeStyles<Theme>((theme) => ({
 interface StixCoreObjectOrStixCoreRelationshipContainerLineComponentProps {
   node: StixCoreObjectOrStixCoreRelationshipContainerLine_node$data;
   dataColumns: DataColumns;
-  onLabelClick: (
-    key: string,
-    id: string,
-    value: string,
-    event: SyntheticEvent
-  ) => void;
+  onLabelClick: HandleAddFilter;
   redirectionMode: string;
 }
 
 export const StixCoreObjectOrStixCoreRelationshipContainerLineComponent: FunctionComponent<
-StixCoreObjectOrStixCoreRelationshipContainerLineComponentProps
+  StixCoreObjectOrStixCoreRelationshipContainerLineComponentProps
 > = ({ node, dataColumns, onLabelClick, redirectionMode }) => {
   const classes = useStyles();
   const { fd } = useFormatter();
@@ -82,7 +78,7 @@ StixCoreObjectOrStixCoreRelationshipContainerLineComponentProps
         <ItemIcon type={node.entity_type} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <>
             <div
               className={classes.bodyItem}
@@ -145,7 +141,7 @@ StixCoreObjectOrStixCoreRelationshipContainerLineComponentProps
               />
             </div>
           </>
-        }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />
@@ -401,7 +397,7 @@ interface StixCoreObjectOrStixCoreRelationshipContainerLineDummyProps {
 }
 
 export const StixCoreObjectOrStixCoreRelationshipContainerLineDummy: FunctionComponent<
-StixCoreObjectOrStixCoreRelationshipContainerLineDummyProps
+  StixCoreObjectOrStixCoreRelationshipContainerLineDummyProps
 > = ({ dataColumns }) => {
   const classes = useStyles();
 
@@ -411,7 +407,7 @@ StixCoreObjectOrStixCoreRelationshipContainerLineDummyProps
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -491,7 +487,7 @@ StixCoreObjectOrStixCoreRelationshipContainerLineDummyProps
               />
             </div>
           </div>
-        }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />

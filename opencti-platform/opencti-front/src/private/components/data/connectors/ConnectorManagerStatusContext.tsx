@@ -17,6 +17,7 @@ export const connectorManagerStatusQuery = graphql`
 interface ConnectorManagerStatusContextValue {
   connectorManagers: readonly { id: string; active: boolean }[] | null;
   hasRegisteredManagers: boolean;
+  hasActiveManagers: boolean;
 }
 
 const ConnectorManagerStatusContext = createContext<ConnectorManagerStatusContextValue | null>(null);
@@ -49,10 +50,12 @@ export const ConnectorManagerStatusProvider: React.FC<ConnectorManagerStatusProv
 
   const connectorManagers = data?.connectorManagers || null;
   const hasRegisteredManagers = connectorManagers ? connectorManagers.length > 0 : false;
+  const hasActiveManagers = connectorManagers ? connectorManagers.some((cm) => cm.active) : false;
 
   const contextValue: ConnectorManagerStatusContextValue = {
     connectorManagers,
     hasRegisteredManagers,
+    hasActiveManagers,
   };
 
   return (

@@ -17,7 +17,7 @@ import {
   MissingReferenceError,
   TYPE_LOCK_ERROR,
   UnsupportedError,
-  ValidationError
+  ValidationError,
 } from '../config/errors';
 import { extractEntityRepresentativeName } from './entity-representative';
 import {
@@ -40,17 +40,17 @@ import {
   READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
   UPDATE_OPERATION_ADD,
   UPDATE_OPERATION_REMOVE,
-  UPDATE_OPERATION_REPLACE
+  UPDATE_OPERATION_REPLACE,
 } from './utils';
 import {
   elAggregationCount,
   elAggregationRelationsCount,
+  elConnection,
   elDeleteElements,
   elFindByIds,
   elHistogramCount,
   elIndexElements,
   elList,
-  elConnection,
   elMarkElementsAsDraftDelete,
   elPaginate,
   elUpdateElement,
@@ -61,7 +61,7 @@ import {
   isImpactedTypeAndSide,
   MAX_BULK_OPERATIONS,
   ROLE_FROM,
-  ROLE_TO
+  ROLE_TO,
 } from './engine';
 import {
   FIRST_OBSERVED,
@@ -88,9 +88,10 @@ import {
   VALID_UNTIL,
   VALUE_FIELD,
   X_DETECTION,
-  X_WORKFLOW_ID
+  X_WORKFLOW_ID,
 } from '../schema/identifier';
-import { notify, redisAddDeletions, storeCreateEntityEvent, storeCreateRelationEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './redis';
+import { notify, redisAddDeletions } from './redis';
+import { storeCreateEntityEvent, storeCreateRelationEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './stream/stream-handler';
 import { cleanStixIds } from './stix';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
@@ -109,7 +110,7 @@ import {
   INTERNAL_IDS_ALIASES,
   INTERNAL_PREFIX,
   REL_INDEX_PREFIX,
-  RULE_PREFIX
+  RULE_PREFIX,
 } from '../schema/general';
 import { isAnId, isValidDate } from '../schema/schemaUtils';
 import {
@@ -119,7 +120,7 @@ import {
   RELATION_GRANTED_TO,
   RELATION_OBJECT,
   RELATION_OBJECT_MARKING,
-  STIX_REF_RELATIONSHIP_TYPES
+  STIX_REF_RELATIONSHIP_TYPES,
 } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { isStixCoreObject } from '../schema/stixCoreObject';
@@ -131,7 +132,7 @@ import {
   extractNotFuzzyHashValues,
   isModifiedObject,
   isUpdatedAtObject,
-  noReferenceAttributes
+  noReferenceAttributes,
 } from '../schema/fieldDataAdapter';
 import { isStixCoreRelationship, RELATION_REVOKED_BY, RELATION_TARGETS, RELATION_USES } from '../schema/stixCoreRelationship';
 import {
@@ -139,27 +140,26 @@ import {
   ATTRIBUTE_ALIASES,
   ATTRIBUTE_ALIASES_OPENCTI,
   ENTITY_TYPE_ATTACK_PATTERN,
-  ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   ENTITY_TYPE_VULNERABILITY,
   isStixDomainObjectIdentity,
   isStixDomainObjectShareableContainer,
   isStixObjectAliased,
   resolveAliasesField,
-  STIX_ORGANIZATIONS_UNRESTRICTED
+  STIX_ORGANIZATIONS_UNRESTRICTED,
 } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable, isStixCyberObservableHashedObservable } from '../schema/stixCyberObservable';
 import conf, { BUS_TOPICS, extendedErrors, logApp } from '../config/conf';
-import { FROM_START_STR, mergeDeepRightAll, now, prepareDate, UNTIL_END_STR, utcDate } from '../utils/format';
+import { computeDateFromEventId, FROM_START_STR, mergeDeepRightAll, now, prepareDate, UNTIL_END_STR, utcDate } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
 import { elUpdateRemovedFiles } from './file-search';
 import {
+  AccessOperation,
   CONTAINER_SHARING_USER,
   controlUserRestrictDeleteAgainstElement,
   executionContext,
-  INTERNAL_USERS,
   isBypassUser,
   isMarkingAllowed,
   isOrganizationAllowed,
@@ -170,23 +170,24 @@ import {
   RULE_MANAGER_USER,
   SYSTEM_USER,
   userFilterStoreElements,
-  validateUserAccessOperation
+  validateUserAccessOperation,
 } from '../utils/access';
 import { isRuleUser, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules-utils';
-import { instanceMetaRefsExtractor, isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
+import { instanceMetaRefsExtractor, isSingleRelationsRef } from '../schema/stixEmbeddedRelationship';
 import { createEntityAutoEnrichment, updateEntityAutoEnrichment } from '../domain/enrichment';
-import { convertExternalReferenceToStix, convertStoreToStix } from './stix-2-1-converter';
+import { convertExternalReferenceToStix, convertStoreToStix_2_1 } from './stix-2-1-converter';
+import { convertStoreToStix } from './stix-common-converter';
 import {
   buildAggregationRelationFilter,
   buildEntityFilters,
   buildThingsFilters,
+  fullEntitiesThroughRelationsToList,
+  fullRelationsList,
   internalFindByIds,
   internalLoadById,
-  fullRelationsList,
-  fullEntitiesThroughRelationsToList,
+  storeLoadById,
   topEntitiesList,
   topRelationsList,
-  storeLoadById
 } from './middleware-loader';
 import { checkRelationConsistency, isRelationConsistent } from '../utils/modelConsistency';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from './cache';
@@ -199,7 +200,8 @@ import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
 import { telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
-import { generateCreateMessage, generateRestoreMessage, generateUpdatePatchMessage, MAX_OPERATIONS_FOR_MESSAGE, MAX_PATCH_ELEMENTS_FOR_MESSAGE } from './generate-message';
+import { buildUpdatePatchForUpsert, generateInputsForUpsert } from '../utils/upsert-utils';
+import { generateCreateMessage, generateRestoreMessage, generateUpdatePatchMessage, getKeyName, getKeyValuesFromPatchElements } from './generate-message';
 import {
   authorizedMembers,
   authorizedMembersActivationDate,
@@ -209,10 +211,9 @@ import {
   iAttributes,
   modified,
   updatedAt,
-  xOpenctiStixIds
 } from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
-import { FilterMode, FilterOperator } from '../generated/graphql';
+import { FilterMode, FilterOperator, Version } from '../generated/graphql';
 import { getMandatoryAttributesForSetting } from '../modules/entitySetting/entitySetting-attributeUtils';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import {
@@ -220,12 +221,12 @@ import {
   controlCreateInputWithUserConfidence,
   controlUpsertInputWithUserConfidence,
   controlUserConfidenceAgainstElement,
-  shouldCheckConfidenceOnRefRelationship
+  shouldCheckConfidenceOnRefRelationship,
 } from '../utils/confidence-level';
 import { buildEntityData, buildInnerRelation, buildRelationData } from './data-builder';
 import { isIndividualAssociatedToUser, verifyCanDeleteIndividual, verifyCanDeleteOrganization } from './data-consistency';
-import { deleteAllObjectFiles, moveAllFilesFromEntityToAnother, uploadToStorage } from './file-storage-helper';
-import { getFileContent, storeFileConverter } from './file-storage';
+import { deleteAllObjectFiles, moveAllFilesFromEntityToAnother, storeFileConverter, uploadToStorage } from './file-storage';
+import { getFileContent } from './raw-file-storage';
 import { getDraftContext } from '../utils/draftContext';
 import { getDraftChanges, isDraftSupportedEntity } from './draft-utils';
 import { lockResources } from '../lock/master-lock';
@@ -239,8 +240,8 @@ import { idLabel } from '../schema/schema-labels';
 import { pirExplanation } from '../modules/attributes/internalRelationship-registrationAttributes';
 import { modules } from '../schema/module';
 import { doYield } from '../utils/eventloop-utils';
-import { hasSameSourceAlreadyUpdateThisScore, INDICATOR_DEFAULT_SCORE } from '../modules/indicator/indicator-utils';
-import { RELATION_COVERED } from '../modules/securityCoverage/securityCoverage-types';
+import { ENTITY_TYPE_SECURITY_COVERAGE, RELATION_COVERED } from '../modules/securityCoverage/securityCoverage-types';
+import { findById as findDraftById } from '../modules/draftWorkspace/draftWorkspace-domain';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -261,7 +262,7 @@ export const canRequestAccess = async (context, user, elements) => {
           mode: 'and',
           filters: [{ key: 'target_type', values: [ENTITY_TYPE_CONTAINER_CASE_RFI] }],
           filterGroups: [],
-        }
+        },
       });
       if (requestAccessSettings.request_access_workflow && requestAccessSettings.request_access_workflow?.approval_admin.length > 0) {
         const adminGroupId = requestAccessSettings.request_access_workflow?.approval_admin[0];
@@ -285,7 +286,7 @@ export const batchLoader = (loader, context, user) => {
       const elementsToLoad = elements.map((e) => e.elementToLoad);
       return loader(context, user, elementsToLoad);
     },
-    { maxBatchSize: MAX_BATCH_SIZE, cache: false }
+    { maxBatchSize: MAX_BATCH_SIZE, cache: false },
   );
   return {
     load: (element) => {
@@ -510,10 +511,11 @@ export const storeLoadByIdWithRefs = async (context, user, id, opts = {}) => {
 };
 export const stixLoadById = async (context, user, id, opts = {}) => {
   const instance = await storeLoadByIdWithRefs(context, user, id, opts);
-  return instance ? convertStoreToStix(instance) : undefined;
+  const { version = Version.Stix_2_1 } = opts;
+  return instance ? convertStoreToStix(instance, version) : undefined;
 };
-const convertStoreToStixWithResolvedFiles = async (instance) => {
-  const instanceInStix = convertStoreToStix(instance);
+const convertStoreToStixWithResolvedFiles = async (instance, version = Version.Stix_2_1) => {
+  const instanceInStix = convertStoreToStix(instance, version);
   const nonResolvedFiles = instanceInStix.extensions[STIX_EXT_OCTI].files;
   if (nonResolvedFiles) {
     for (let i = 0; i < nonResolvedFiles.length; i += 1) {
@@ -527,7 +529,7 @@ const convertStoreToStixWithResolvedFiles = async (instance) => {
   return instanceInStix;
 };
 export const stixLoadByIds = async (context, user, ids, opts = {}) => {
-  const { resolveStixFiles = false } = opts;
+  const { resolveStixFiles = false, version = Version.Stix_2_1 } = opts;
   const elements = await storeLoadByIdsWithRefs(context, user, ids, opts);
   // As stix load by ids doesn't respect the ordering we need to remap the result
   const loadedInstancesMap = new Map(elements.map((i) => ({ instance: i, ids: extractIdsFromStoreObject(i) }))
@@ -535,12 +537,12 @@ export const stixLoadByIds = async (context, user, ids, opts = {}) => {
   if (resolveStixFiles) {
     const fileResolvedInstancesPromise = ids.map((id) => loadedInstancesMap.get(id))
       .filter((i) => isNotEmptyField(i))
-      .map((e) => (convertStoreToStixWithResolvedFiles(e)));
+      .map((e) => (convertStoreToStixWithResolvedFiles(e, version)));
     return Promise.all(fileResolvedInstancesPromise);
   }
   return ids.map((id) => loadedInstancesMap.get(id))
     .filter((i) => isNotEmptyField(i))
-    .map((e) => (convertStoreToStix(e)));
+    .map((e) => (convertStoreToStix(e, version)));
 };
 export const stixBundleByIdStringify = async (context, user, type, id) => {
   const resolver = modules.get(type)?.bundleResolver;
@@ -550,13 +552,14 @@ export const stixBundleByIdStringify = async (context, user, type, id) => {
   return await resolver(context, user, id);
 };
 
-export const stixLoadByIdStringify = async (context, user, id) => {
-  const data = await stixLoadById(context, user, id);
+export const stixLoadByIdStringify = async (context, user, id, opts = {}) => {
+  const { version = Version.Stix_2_1 } = opts;
+  const data = await stixLoadById(context, user, id, { version });
   return data ? JSON.stringify(data) : '';
 };
 export const stixLoadByFilters = async (context, user, types, args) => {
   const elements = await loadByFiltersWithDependencies(context, user, types, args);
-  return elements ? elements.map((element) => convertStoreToStix(element)) : [];
+  return elements ? elements.map((element) => convertStoreToStix_2_1(element)) : [];
 };
 // endregion
 
@@ -589,7 +592,7 @@ export const buildRestrictedEntity = (resolvedEntity) => {
     name: 'Restricted',
     entity_type: resolvedEntity.entity_type,
     parent_types: resolvedEntity.parent_types,
-    representative: { main: 'Restricted', secondary: 'Restricted' }
+    representative: { main: 'Restricted', secondary: 'Restricted' },
   };
 };
 
@@ -615,12 +618,12 @@ const convertAggregateDistributions = async (context, user, limit, orderingFunct
       if (grantedIds.includes(n.label.toLowerCase())) {
         return {
           ...n,
-          entity: element
+          entity: element,
         };
       }
       return {
         ...n,
-        entity: buildRestrictedEntity(element)
+        entity: buildRestrictedEntity(element),
       };
     });
 };
@@ -645,10 +648,10 @@ export const timeSeriesRelations = async (context, user, args) => {
 export const distributionHistory = async (context, user, types, args) => {
   const { limit = 10, order = 'desc', field } = args;
   if (field.includes('.') && (!field.endsWith('internal_id') && !field.includes('context_data') && !field.includes('opinions_metrics'))) {
-    throw FunctionalError('Distribution entities does not support relation aggregation field');
+    throw FunctionalError('Distribution entities does not support relation aggregation field', { field });
   }
   let finalField = field;
-  if (field.includes('.' && !field.includes('context_data') && !field.includes('opinions_metrics'))) {
+  if (field.includes('.') && !field.includes('context_data') && !field.includes('opinions_metrics')) {
     finalField = REL_INDEX_PREFIX + field;
   }
   if (field === 'name') {
@@ -684,7 +687,7 @@ export const distributionEntities = async (context, user, types, args) => {
     && !field.endsWith('internal_id')
     && !field.includes('opinions_metrics');
   if (aggregationNotSupported) {
-    throw FunctionalError('Distribution entities does not support relation aggregation field');
+    throw FunctionalError('Distribution entities does not support relation aggregation field', { field });
   }
   let finalField = field;
   if (field.includes('.') && !field.includes('opinions_metrics')) {
@@ -695,7 +698,7 @@ export const distributionEntities = async (context, user, types, args) => {
   }
   const distributionData = await elAggregationCount(context, user, args.onlyInferred ? READ_DATA_INDICES_INFERRED : READ_DATA_INDICES, {
     ...distributionArgs,
-    field: finalField
+    field: finalField,
   });
   // Take a maximum amount of distribution depending on the ordering.
   const orderingFunction = order === 'asc' ? R.ascend : R.descend;
@@ -769,14 +772,14 @@ export const validateCreatedBy = async (context, user, createdById) => {
     if (createdByEntity && createdByEntity.entity_type) {
       if (!isStixDomainObjectIdentity(createdByEntity.entity_type)) {
         throw FunctionalError('CreatedBy relation must be an Identity entity.', {
-          createdBy: createdById
+          createdBy: createdById,
         });
       }
     }
   }
 };
 
-const inputResolveRefs = async (context, user, input, type, entitySetting) => {
+export const inputResolveRefs = async (context, user, input, type, entitySetting) => {
   const inputResolveRefsFn = async () => {
     const fetchingIdsMap = new Map();
     const expectedIds = [];
@@ -973,7 +976,7 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
     const inputCreatedBy = inputResolved[INPUT_CREATED_BY];
     if (inputCreatedBy) {
       if (!isStixDomainObjectIdentity(inputCreatedBy.entity_type)) {
-        throw FunctionalError('CreatedBy relation must be an Identity entity');
+        throw FunctionalError('CreatedBy relation must be an Identity entity', { entityType: inputCreatedBy.entity_type });
       }
     }
     return inputResolved;
@@ -1280,7 +1283,7 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
   const elementsInferences = elements.filter((s) => isInferredIndex(s._index));
   if (elementsInferences.length > 0) {
     throw FunctionalError('Cannot merge inferred entities', {
-      inferences: elementsInferences.map((e) => e.internal_id)
+      inferences: elementsInferences.map((e) => e.internal_id),
     });
   }
   // - No different types
@@ -1308,7 +1311,9 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
   // Prepare S3 file move
   // Merge files on S3 and update x_opencti_files path in source => it will be added to target by the merge operation.
   logApp.info('[OPENCTI] Copying files on S3 before merging x_opencti_files');
-  const sourceEntitiesWithFiles = sourceEntities.filter((entity) => { return entity.x_opencti_files ? entity.x_opencti_files.length > 0 : true; });
+  const sourceEntitiesWithFiles = sourceEntities.filter((entity) => {
+    return entity.x_opencti_files ? entity.x_opencti_files.length > 0 : true;
+  });
   for (let i = 0; i < sourceEntitiesWithFiles.length; i += 1) {
     const sourceEntity = sourceEntitiesWithFiles[i];
     if (sourceEntity.x_opencti_files && sourceEntity.x_opencti_files.length > 0) {
@@ -1446,7 +1451,6 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
       const groupedAddOperations = R.groupBy((s) => s.relationType, addOperations);
       const operations = Object.entries(groupedAddOperations)
         .map(([key, vals]) => {
-          // eslint-disable-next-line camelcase
           const { _index, entity_type } = R.head(vals);
           const ids = vals.map((v) => v.data.internal_id);
           return { id, _index, toReplace: null, relationType: key, entity_type, data: { internal_id: ids } };
@@ -1459,7 +1463,7 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
         await elUpdateEntityConnections([operation]);
       }
     },
-    { concurrency: ES_MAX_CONCURRENCY }
+    { concurrency: ES_MAX_CONCURRENCY },
   );
 
   // Take care of relations deletions to prevent duplicate marking definitions.
@@ -1518,7 +1522,6 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
     }
   }
 
-  // eslint-disable-next-line no-use-before-define
   const data = await updateAttributeRaw(context, user, targetEntity, updateAttributes);
   const { impactedInputs } = data;
   // region Update elasticsearch
@@ -1546,7 +1549,7 @@ const loadMergeEntitiesDependencies = async (context, user, entityIds) => {
             internal_id: rel.toId,
             entity_type: rel.toType,
             name: rel.toName,
-            i_relation: rel
+            i_relation: rel,
           });
         }
       }
@@ -1565,7 +1568,7 @@ const loadMergeEntitiesDependencies = async (context, user, entityIds) => {
             internal_id: rel.fromId,
             entity_type: rel.fromType,
             name: rel.fromName,
-            i_relation: rel
+            i_relation: rel,
           });
         }
       }
@@ -1640,7 +1643,7 @@ export const transformPatchToInput = (patch, operations = {}) => {
         return { key, value: Array.isArray(val) ? val : [val], operation };
       }
       return { key, value: null, operation };
-    })
+    }),
   )(patch);
 };
 const checkAttributeConsistency = (entityType, key) => {
@@ -1684,7 +1687,7 @@ const prepareAttributesForUpdate = async (context, user, instance, elements) => 
     if (input.key === VALUE_FIELD && instanceType === ENTITY_TYPE_LABEL) {
       return {
         key: input.key,
-        value: input.value.map((v) => v.toLowerCase())
+        value: input.value.map((v) => v.toLowerCase()),
       };
     }
     // Aliases can't have the same name as entity name and an already existing normalized alias
@@ -2018,16 +2021,6 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
   };
 };
 
-const computeDateFromEventId = (context) => {
-  return utcDate(parseInt(context.eventId.split('-')[0], 10)).toISOString();
-};
-const getKeyValuesFromPatchElements = (patchElements, keyName) => {
-  return patchElements.slice(0, MAX_PATCH_ELEMENTS_FOR_MESSAGE).flatMap(([,operations]) => {
-    return operations.slice(0, MAX_OPERATIONS_FOR_MESSAGE).flatMap(({ key, value }) => {
-      return key === keyName ? (value ?? []) : [];
-    });
-  });
-};
 export const generateUpdateMessage = async (context, user, entityType, inputs) => {
   const isWorkflowChange = inputs.filter((i) => i.key === X_WORKFLOW_ID).length > 0;
   const platformStatuses = isWorkflowChange ? await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS) : [];
@@ -2055,7 +2048,7 @@ export const generateUpdateMessage = async (context, user, entityType, inputs) =
   if (authorizedMembersIds.length > 0) {
     members = await internalFindByIds(context, SYSTEM_USER, authorizedMembersIds, {
       baseData: true,
-      baseFields: ['internal_id', 'name']
+      baseFields: ['internal_id', 'name'],
     });
   }
 
@@ -2067,6 +2060,117 @@ export const generateUpdateMessage = async (context, user, entityType, inputs) =
     creators = creatorsIds.map((id) => platformUsers.get(id));
   }
   return generateUpdatePatchMessage(patchElements, entityType, { members, creators });
+};
+
+const buildAttribute = async (context, user, key, array) => {
+  const results = await Promise.all(array.map(async (item) => {
+    if (!item) {
+      return item;
+    }
+    if (typeof item === 'object') {
+      if (item?.entity_type !== undefined) {
+        return extractEntityRepresentativeName(item, 250);
+      } else {
+        return item?.toString();
+      }
+    } else if (typeof item === 'string' && key === creatorsAttribute.name) {
+      const users = await getEntitiesMapFromCache(context, user, ENTITY_TYPE_USER);
+      const creator = users.get(item);
+      if (creator) {
+        return extractEntityRepresentativeName(creator, 250);
+      }
+    }
+    return item;
+  }));
+  return results.filter((item) => item !== null && item !== undefined);
+};
+
+export const buildChanges = async (context, user, entityType, inputs) => {
+  const changes = [];
+  for (const input of inputs) {
+    const { key, previous, value, operation } = input;
+    if (!key) continue;
+    const field = getKeyName(entityType, key);
+    const attributeDefinition = schemaAttributesDefinition.getAttribute(entityType, key);
+    const relationsRefDefinition = schemaRelationsRefDefinition.getRelationRef(entityType, key);
+    let isMultiple = false;
+    if (attributeDefinition) {
+      isMultiple = schemaAttributesDefinition.isMultipleAttribute(entityType, (attributeDefinition?.name ?? ''));
+    } else if (relationsRefDefinition) {
+      isMultiple = relationsRefDefinition.multiple;
+    }
+
+    const previousArrayFull = Array.isArray(previous) ? previous : [previous];
+    const valueArrayFull = Array.isArray(value) ? value : [value];
+    const previousArray = await buildAttribute(context, user, key, previousArrayFull);
+    const valueArray = await buildAttribute(context, user, key, valueArrayFull);
+
+    if (isMultiple) {
+      let added = [];
+      let removed = [];
+      let newValues = [];
+      if (operation === UPDATE_OPERATION_ADD) {
+        added = valueArray.filter((valueItem) => !previousArray.find((previousItem) => JSON.stringify(previousItem) === JSON.stringify(valueItem)));
+        newValues = previousArray.concat(valueArray);
+      } else if (operation === UPDATE_OPERATION_REMOVE) {
+        removed = valueArray;
+        newValues = previousArray.filter((valueItem) => !valueArray.find((previousItem) => JSON.stringify(previousItem) === JSON.stringify(valueItem)));
+      } else {
+        // UPDATE_OPERATION_REPLACE or no operation is the same
+        removed = previousArray.filter((previousItem) => !valueArray.find((valueItem) => JSON.stringify(previousItem) === JSON.stringify(valueItem)));
+        added = valueArray.filter((valueItem) => !previousArray.find((previousItem) => JSON.stringify(previousItem) === JSON.stringify(valueItem)));
+        newValues = valueArray;
+      }
+
+      if (added.length > 0 || removed.length > 0) {
+        changes.push({
+          field,
+          previous: previousArray,
+          new: newValues,
+          added,
+          removed,
+        });
+      }
+    } else if (isMultiple === false) {
+      const isStatusChange = inputs.filter((i) => i.key === X_WORKFLOW_ID).length > 0;
+      const platformStatuses = isStatusChange ? await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS) : [];
+      const resolvedValue = (array) => {
+        if (field === 'Workflow status') {
+          // we want the status name and not its internal id
+          const statusId = array[0];
+          const status = statusId ? platformStatuses.find((p) => p.id === statusId) : statusId;
+          return status ? [status.name] : null;
+        }
+        return array;
+      };
+
+      changes.push({
+        field,
+        previous: resolvedValue(previousArray),
+        new: resolvedValue(valueArray),
+      });
+    } else {
+      // This should not happen so better at least log at info level to be able to debug.
+      logApp.info('Changes cannot be computed', { inputs, entityType });
+    }
+  }
+  return changes;
+};
+
+const resolveRefsForInputs = async (context, user, type, updateInputs) => {
+  // endregion
+  const metaKeys = [...schemaRelationsRefDefinition.getStixNames(type), ...schemaRelationsRefDefinition.getInputNames(type)];
+  const meta = updateInputs.filter((e) => metaKeys.includes(e.key));
+  const metaIds = R.uniq(meta.map((i) => i.value ?? []).flat());
+  const metaDependencies = await elFindByIds(context, user, metaIds, { toMap: true, mapWithAllIds: true });
+  const revolvedInputs = updateInputs.map((input) => {
+    if (metaKeys.includes(input.key)) {
+      const resolvedValues = (input.value ?? []).map((refId) => metaDependencies[refId]).filter((o) => isNotEmptyField(o));
+      return { ...input, value: resolvedValues };
+    }
+    return input;
+  });
+  return revolvedInputs;
 };
 
 export const updateAttributeMetaResolved = async (context, user, initial, inputs, opts = {}) => {
@@ -2084,22 +2188,22 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
   if (initial.entity_type === ENTITY_TYPE_IDENTITY_INDIVIDUAL && !isEmptyField(initial.contact_information) && !bypassIndividualUpdate) {
     const isIndividualUser = await isIndividualAssociatedToUser(context, initial);
     if (isIndividualUser) {
-      throw FunctionalError('Cannot update an individual corresponding to a user');
+      throw FunctionalError('Cannot update an individual corresponding to a user', { id: initial.internal_id });
     }
   }
   if (updates.length === 0) {
     return { element: initial };
   }
   // Check user access update
-  let accessOperation = 'edit';
+  let accessOperation = AccessOperation.EDIT;
   if (updates.some((e) => e.key === authorizedMembers.name)) {
-    accessOperation = 'manage-access';
+    accessOperation = AccessOperation.MANAGE_ACCESS;
     if (schemaAttributesDefinition.getAttribute(initial.entity_type, authorizedMembersActivationDate.name)
       && (!initial.restricted_members || initial.restricted_members.length === 0)
       && updates.some((e) => e.key === authorizedMembers.name && e.value?.length > 0)) {
       updates.push({
         key: authorizedMembersActivationDate.name,
-        value: [now()]
+        value: [now()],
       });
     }
   }
@@ -2113,16 +2217,18 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
   }
 
   if (updates.some((e) => e.key === 'authorized_authorities')) {
-    accessOperation = 'manage-authorities-access';
+    accessOperation = AccessOperation.MANAGE_AUTHORITIES_ACCESS;
   }
-  if (!validateUserAccessOperation(user, initial, accessOperation)) {
+  const draftId = getDraftContext(context, user);
+  const draft = draftId ? await findDraftById(context, user, draftId) : null;
+  if (!validateUserAccessOperation(user, initial, accessOperation, draft)) {
     throw ForbiddenAccess();
   }
   // Split attributes and meta
   // Supports inputs meta or stix meta
   const metaKeys = [
     ...schemaRelationsRefDefinition.getStixNames(initial.entity_type),
-    ...schemaRelationsRefDefinition.getInputNames(initial.entity_type)
+    ...schemaRelationsRefDefinition.getInputNames(initial.entity_type),
   ];
   const meta = updates.filter((e) => metaKeys.includes(e.key));
   const attributes = updates.filter((e) => !metaKeys.includes(e.key));
@@ -2349,7 +2455,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
         const uniqImpactKey = uniqImpactKeys[i];
         attributesMap.set(uniqImpactKey, {
           name: uniqImpactKey,
-          updated_at: context?.eventId ? computeDateFromEventId(context) : now(),
+          updated_at: context?.eventId ? computeDateFromEventId(context.eventId) : now(),
           confidence: confidenceLevelToApply,
           user_id: user.internal_id,
         });
@@ -2401,7 +2507,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
           contact_information: updatedInstance.user_email,
           name: updatedInstance.name,
           x_opencti_firstname: updatedInstance.firstname,
-          x_opencti_lastname: updatedInstance.lastname
+          x_opencti_lastname: updatedInstance.lastname,
         };
         await patchAttribute(context, user, individualId, ENTITY_TYPE_IDENTITY_INDIVIDUAL, patch, { bypassIndividualUpdate: true });
       }
@@ -2409,10 +2515,11 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     // Only push event in stream if modifications really happens
     if (updatedInputs.length > 0) {
       const message = await generateUpdateMessage(context, user, updatedInstance.entity_type, updatedInputs);
+      const changes = await buildChanges(context, user, updatedInstance.entity_type, updatedInputs);
       const isContainCommitReferences = opts.references && opts.references.length > 0;
       const commit = isContainCommitReferences ? {
         message: opts.commitMessage,
-        external_references: references.map((ref) => convertExternalReferenceToStix(ref))
+        external_references: references.map((ref) => convertExternalReferenceToStix(ref)),
       } : undefined;
       const relatedRestrictions = extractObjectsRestrictionsFromInputs(updatedInputs, initial.entity_type);
       const { pir_ids } = extractObjectsPirsFromInputs(updatedInputs, initial.entity_type);
@@ -2422,19 +2529,27 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
         initial,
         updatedInstance,
         message,
+        changes,
         {
           ...opts,
           commit,
           related_restrictions: relatedRestrictions,
-          pir_ids
-        }
+          pir_ids,
+        },
       );
       // region Security coverage hook
       // TODO Implements a more generic approach to notify enrichment
       // If entity is currently covered
       const isRefUpdate = relationsToCreate.length > 0 || relationsToDelete.length > 0;
       if (isRefUpdate && data.updatedInstance[RELATION_COVERED]) {
-        const securityCoverage = await internalLoadById(context, user, data.updatedInstance[RELATION_COVERED]);
+        const { element: securityCoverage } = await updateAttribute(
+          context,
+          user,
+          data.updatedInstance[RELATION_COVERED],
+          ENTITY_TYPE_SECURITY_COVERAGE,
+          [{ key: 'modified', value: [now()] }],
+          { noEnrich: true },
+        );
         await triggerEntityUpdateAutoEnrichment(context, user, securityCoverage);
       }
       // endregion
@@ -2466,17 +2581,8 @@ export const updateAttributeFromLoadedWithRefs = async (context, user, initial, 
   }
   const newInputs = adaptUpdateInputsConfidence(user, inputs, initial);
   // endregion
-  const metaKeys = [...schemaRelationsRefDefinition.getStixNames(initial.entity_type), ...schemaRelationsRefDefinition.getInputNames(initial.entity_type)];
-  const meta = newInputs.filter((e) => metaKeys.includes(e.key));
-  const metaIds = R.uniq(meta.map((i) => i.value ?? []).flat());
-  const metaDependencies = await elFindByIds(context, user, metaIds, { toMap: true, mapWithAllIds: true });
-  const revolvedInputs = newInputs.map((input) => {
-    if (metaKeys.includes(input.key)) {
-      const resolvedValues = (input.value ?? []).map((refId) => metaDependencies[refId]).filter((o) => isNotEmptyField(o));
-      return { ...input, value: resolvedValues };
-    }
-    return input;
-  });
+  const revolvedInputs = await resolveRefsForInputs(context, user, initial.entity_type, newInputs);
+
   return updateAttributeMetaResolved(context, user, initial, revolvedInputs, opts);
 };
 
@@ -2506,7 +2612,7 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
   await validateInputUpdate(context, user, initial.entity_type, initial, inputs, entitySetting);
   // Continue update
   const data = await updateAttributeFromLoadedWithRefs(context, user, initial, inputs, opts);
-  if (data.event) {
+  if (!opts.noEnrich && data.event) {
     // If element really updated, try to enrich if needed
     await triggerEntityUpdateAutoEnrichment(context, user, data.element);
   }
@@ -2657,48 +2763,6 @@ const validateEntityAndRelationCreation = async (context, user, input, type, ent
   }
 };
 
-const ALIGN_OLDEST = 'oldest';
-const ALIGN_NEWEST = 'newest';
-const computeExtendedDateValues = (newValue, currentValue, mode) => {
-  const newValueDate = moment(newValue);
-  if (isNotEmptyField(currentValue)) {
-    const currentValueDate = moment(currentValue);
-    if (mode === ALIGN_OLDEST) {
-      if (newValueDate.isBefore(currentValueDate)) {
-        return { updated: true, date: newValueDate.utc().toISOString() };
-      }
-      return { updated: false, date: currentValueDate.utc().toISOString() };
-    }
-    if (mode === ALIGN_NEWEST) {
-      if (newValueDate.isAfter(currentValueDate)) {
-        return { updated: true, date: newValueDate.utc().toISOString() };
-      }
-      return { updated: false, date: currentValueDate.utc().toISOString() };
-    }
-  }
-  return { updated: true, date: newValueDate.utc().toISOString() };
-};
-const buildAttributeUpdate = (isFullSync, attribute, currentData, inputData) => {
-  const inputs = [];
-  const fieldKey = attribute.name;
-  if (attribute.multiple) {
-    const operation = isFullSync ? UPDATE_OPERATION_REPLACE : UPDATE_OPERATION_ADD;
-    // Only add input in case of replace or when we really need to add something
-    if (operation === UPDATE_OPERATION_REPLACE || (operation === UPDATE_OPERATION_ADD && isNotEmptyField(inputData))) {
-      inputs.push({ key: fieldKey, value: inputData ?? [], operation });
-    }
-  } else if (isObjectAttribute(fieldKey)) {
-    if (isNotEmptyField(inputData)) {
-      const mergedDict = R.mergeAll([currentData, inputData]);
-      inputs.push({ key: fieldKey, value: [mergedDict] });
-    } else if (isFullSync) { // We only allowed removal for full synchronization
-      inputs.push({ key: fieldKey, value: [inputData] });
-    }
-  } else {
-    inputs.push({ key: fieldKey, value: [inputData] });
-  }
-  return inputs;
-};
 const buildRelationDeduplicationFilters = (input) => {
   const filters = [];
   const { from, relationship_type: relationshipType, createdBy } = input;
@@ -2706,7 +2770,7 @@ const buildRelationDeduplicationFilters = (input) => {
     past_days: 30,
     next_days: 30,
     created_by_based: false,
-    types_overrides: {}
+    types_overrides: {},
   };
   const config = deduplicationConfig.types_overrides?.[relationshipType] ?? deduplicationConfig;
   if (config.created_by_based && createdBy) {
@@ -2763,22 +2827,6 @@ const buildRelationDeduplicationFilters = (input) => {
   return filters;
 };
 
-const isOutdatedUpdate = (context, element, attributeKey) => {
-  if (context.eventId) {
-    const attributesMap = new Map((element[iAttributes.name] ?? []).map((obj) => [obj.name, obj]));
-    const { updated_at: lastAttributeUpdateDate } = attributesMap.get(attributeKey) ?? {};
-    if (lastAttributeUpdateDate) {
-      try {
-        const eventDate = computeDateFromEventId(context);
-        return utcDate(lastAttributeUpdateDate).isAfter(eventDate);
-      } catch (e) {
-        logApp.error('Error evaluating event id', { key: attributeKey, event_id: context.eventId });
-      }
-    }
-  }
-  return false;
-};
-
 const upsertElement = async (context, user, element, type, basePatch, opts = {}) => {
   // -- Independent update
   let resolvedElement = element;
@@ -2788,190 +2836,35 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
       throw FunctionalError('Cant find element to resolve', { id: element?.internal_id });
     }
   }
-  const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  const updatePatch = { ...basePatch };
-  const { confidenceLevelToApply, isConfidenceMatch, isConfidenceUpper } = controlUpsertInputWithUserConfidence(user, updatePatch, resolvedElement);
-  // Handle attributes updates
-  if (isNotEmptyField(basePatch.stix_id) || isNotEmptyField(basePatch.x_opencti_stix_ids)) {
-    const possibleNewStandardId = generateStandardId(type, basePatch);
-    const isStandardWillChange = resolvedElement.standard_id !== possibleNewStandardId;
-    const rejectedIds = isStandardWillChange && isConfidenceMatch ? [resolvedElement.standard_id, possibleNewStandardId] : [resolvedElement.standard_id];
-    const ids = [...(basePatch.x_opencti_stix_ids || [])];
-    if (isNotEmptyField(basePatch.stix_id) && !rejectedIds.includes(basePatch.stix_id) && !ids.includes(basePatch.stix_id)) {
-      ids.push(basePatch.stix_id);
-    }
-    if (ids.length > 0) {
-      updatePatch.x_opencti_stix_ids = ids;
-    }
-  }
-  // Cumulate creator id
-  if (!INTERNAL_USERS[user.id] && !user.no_creators) {
-    updatePatch.creator_id = [user.id];
-  }
-  // Upsert observed data count and times extensions
-  if (type === ENTITY_TYPE_CONTAINER_OBSERVED_DATA) {
-    const { date: cFo, updated: isCFoUpdated } = computeExtendedDateValues(updatePatch.first_observed, resolvedElement.first_observed, ALIGN_OLDEST);
-    const { date: cLo, updated: isCLoUpdated } = computeExtendedDateValues(updatePatch.last_observed, resolvedElement.last_observed, ALIGN_NEWEST);
-    updatePatch.first_observed = cFo;
-    updatePatch.last_observed = cLo;
-    // Only update number_observed if part of the relation dates change
-    if (isCFoUpdated || isCLoUpdated) {
-      updatePatch.number_observed = resolvedElement.number_observed + updatePatch.number_observed;
-    }
-  }
-  if (type === ENTITY_TYPE_INDICATOR) {
-    if (resolvedElement.decay_applied_rule) {
-      // Do not compute decay again when:
-      // - base score does not change
-      // - same userIs has already updated to the same score previously
-      const isScoreInUpsertSameAsBaseScore = updatePatch.decay_base_score === resolvedElement.decay_base_score && updatePatch.decay_base_score === resolvedElement.x_opencti_score;
-      const hasSameScoreChangedBySameSource = hasSameSourceAlreadyUpdateThisScore(user.id, updatePatch.x_opencti_score, resolvedElement.decay_history);
-      if (isScoreInUpsertSameAsBaseScore || hasSameScoreChangedBySameSource) {
-        logApp.debug(`[OPENCTI][DECAY] on upsert indicator skip decay, do not change score, keep:${resolvedElement.x_opencti_score}`, { elementScore: resolvedElement.x_opencti_score, patchScore: updatePatch.x_opencti_score, isScoreInUpsertSameAsBaseScore, hasSameScoreChangedBySameSource });
-        // don't reset score, valid_from & valid_until
-        updatePatch.x_opencti_score = resolvedElement.x_opencti_score; // don't change the score
-        updatePatch.valid_from = resolvedElement.valid_from;
-        updatePatch.valid_until = resolvedElement.valid_until;
-        // don't reset decay attributes
-        updatePatch.revoked = resolvedElement.revoked;
-        updatePatch.decay_base_score_date = resolvedElement.decay_base_score_date;
-        updatePatch.decay_applied_rule = resolvedElement.decay_applied_rule;
-        updatePatch.decay_history = []; // History is multiple, forcing to empty array will prevent any modification
-        updatePatch.decay_next_reaction_date = resolvedElement.decay_next_reaction_date;
-      } else {
-        // As base_score as change, decay will be reset by upsert
-        logApp.debug('[OPENCTI][DECAY] Decay is restarted', { elementScore: resolvedElement.x_opencti_score, initialPatchScore: basePatch.x_opencti_score, updatePatchScore: updatePatch.x_opencti_score });
-      }
-    }
 
-    // When revoke is updated to true => false, we need to reset score to a valid score if no score in input
-    if (resolvedElement.revoked === true && basePatch.revoked === false) {
-      if (!updatePatch.x_opencti_score) {
-        if (resolvedElement.decay_applied_rule) {
-          updatePatch.x_opencti_score = resolvedElement.decay_base_score > INDICATOR_DEFAULT_SCORE ? resolvedElement.decay_base_score : INDICATOR_DEFAULT_SCORE;
-        } else {
-          updatePatch.x_opencti_score = INDICATOR_DEFAULT_SCORE;
-        }
-      }
+  // If a decay exclusion rule is already applied, we must not apply a new decay rule or a new decay exclusion rule
+  if (resolvedElement.decay_exclusion_applied_rule) {
+    if (basePatch.decay_applied_rule) {
+      delete basePatch.decay_next_reaction_date;
+      delete basePatch.decay_base_score;
+      delete basePatch.decay_base_score_date;
+      delete basePatch.decay_applied_rule;
+      delete basePatch.decay_history;
+    }
+    if (basePatch.decay_exclusion_applied_rule) {
+      delete basePatch.decay_exclusion_applied_rule;
     }
   }
-  // Upsert relations with times extensions
-  if (isStixCoreRelationship(type)) {
-    const { date: cStartTime } = computeExtendedDateValues(updatePatch.start_time, resolvedElement.start_time, ALIGN_OLDEST);
-    const { date: cStopTime } = computeExtendedDateValues(updatePatch.stop_time, resolvedElement.stop_time, ALIGN_NEWEST);
-    updatePatch.start_time = cStartTime;
-    updatePatch.stop_time = cStopTime;
+
+  const confidenceForUpsert = controlUpsertInputWithUserConfidence(user, basePatch, resolvedElement);
+
+  const updatePatch = buildUpdatePatchForUpsert(user, resolvedElement, type, basePatch, confidenceForUpsert);
+
+  // upsertOperations : resolve refs
+  if (updatePatch.upsertOperations?.length > 0) {
+    updatePatch.upsertOperations = await resolveRefsForInputs(context, user, type, updatePatch.upsertOperations);
   }
-  if (isStixSightingRelationship(type)) {
-    const { date: cFs, updated: isCFsUpdated } = computeExtendedDateValues(updatePatch.first_seen, resolvedElement.first_seen, ALIGN_OLDEST);
-    const { date: cLs, updated: isCLsUpdated } = computeExtendedDateValues(updatePatch.last_seen, resolvedElement.last_seen, ALIGN_NEWEST);
-    updatePatch.first_seen = cFs;
-    updatePatch.last_seen = cLs;
-    if (isCFsUpdated || isCLsUpdated) {
-      updatePatch.attribute_count = resolvedElement.attribute_count + updatePatch.attribute_count;
-    }
-  }
-  const inputs = []; // All inputs impacted by modifications (+inner)
-  // If file directly attached
-  if (!isEmptyField(updatePatch.file)) {
-    const path = `import/${resolvedElement.entity_type}/${resolvedElement.internal_id}`;
-    const { upload: file } = await uploadToStorage(context, user, path, updatePatch.file, { entity: resolvedElement });
-    const convertedFile = storeFileConverter(user, file);
-    // The impact in the database is the completion of the files
-    const fileImpact = { key: 'x_opencti_files', value: [...(resolvedElement.x_opencti_files ?? []), convertedFile] };
-    inputs.push(fileImpact);
-  }
-  // region confidence control / upsert
-  updatePatch.confidence = confidenceLevelToApply;
-  // note that if the existing data has no confidence (null) it will still be updated below, even if isConfidenceMatch = false
-  // endregion
-  // -- Upsert attributes
-  const attributes = Array.from(schemaAttributesDefinition.getAttributes(type).values());
-  for (let attrIndex = 0; attrIndex < attributes.length; attrIndex += 1) {
-    const attribute = attributes[attrIndex];
-    const attributeKey = attribute.name;
-    const isInputAvailable = attributeKey in updatePatch;
-    if (isInputAvailable) { // The attribute is explicitly available in the patch
-      const inputData = updatePatch[attributeKey];
-      const isOutDatedModification = isOutdatedUpdate(context, resolvedElement, attributeKey);
-      const isStructuralUpsert = attributeKey === xOpenctiStixIds.name || attributeKey === creatorsAttribute.name; // Ids and creators consolidation is always granted
-      const isFullSync = context.synchronizedUpsert || attribute.upsert_force_replace; // In case of full synchronization or force full upsert, just update the data
-      const isInputWithData = typeof inputData === 'string' ? isNotEmptyField(inputData.trim()) : isNotEmptyField(inputData);
-      const isCurrentlyEmpty = isEmptyField(resolvedElement[attributeKey]) && isInputWithData; // If the element current data is empty, we always expect to put the value
-      // Field can be upsert if:
-      // 1. Confidence is correct
-      // 2. Attribute is declared upsert=true in the schema
-      // 3. Data from the inputs is not empty to prevent any data cleaning
-      const canBeUpsert = isConfidenceMatch && attribute.upsert && isInputWithData;
-      // Upsert will be done if upsert is well-defined but also in full synchro mode or if the current value is empty
-      if (!isOutDatedModification) {
-        if (isStructuralUpsert || canBeUpsert || isFullSync || isCurrentlyEmpty) {
-          inputs.push(...buildAttributeUpdate(isFullSync, attribute, resolvedElement[attributeKey], inputData));
-        }
-      } else {
-        logApp.info('Discarding outdated attribute update mutation', { key: attributeKey });
-      }
-    }
-  }
-  // -- Upsert refs
-  const metaInputFields = schemaRelationsRefDefinition.getRelationsRef(resolvedElement.entity_type).map((ref) => ref.name);
-  for (let fieldIndex = 0; fieldIndex < metaInputFields.length; fieldIndex += 1) {
-    const inputField = metaInputFields[fieldIndex];
-    const relDef = schemaRelationsRefDefinition.getRelationRef(resolvedElement.entity_type, inputField);
-    const isInputAvailable = inputField in updatePatch;
-    if (isInputAvailable) {
-      const patchInputData = updatePatch[inputField];
-      const isInputWithData = isNotEmptyField(patchInputData);
-      const isUpsertSynchro = context.synchronizedUpsert;
-      const isOutDatedModification = isOutdatedUpdate(context, resolvedElement, inputField);
-      if (!isOutDatedModification) {
-        if (relDef.multiple) {
-          const currentData = resolvedElement[relDef.databaseName] ?? [];
-          const currentDataSet = new Set(currentData);
-          const isCurrentWithData = isNotEmptyField(currentData);
-          const fullPatchInputData = patchInputData ?? [];
-          const fullPatchInputDataSet = new Set(fullPatchInputData.map((i) => i.internal_id));
-          // Specific case for organization restriction, has EE must be activated.
-          // If not supported, upsert of organization is not applied
-          const isUserCanManipulateGrantedRefs = isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && settings.valid_enterprise_edition === true;
-          const allowedOperation = relDef.databaseName !== RELATION_GRANTED_TO || (relDef.databaseName === RELATION_GRANTED_TO && isUserCanManipulateGrantedRefs);
-          const inputToCurrentDiff = fullPatchInputData.filter((target) => !currentDataSet.has(target.internal_id));
-          const currentToInputDiff = currentData.filter((current) => !fullPatchInputDataSet.has(current));
-          // If expected data is different from current data
-          if (allowedOperation && (inputToCurrentDiff.length + currentToInputDiff.length) > 0) {
-            // In full synchro, just replace everything
-            if (isUpsertSynchro) {
-              inputs.push({ key: inputField, value: fullPatchInputData, operation: UPDATE_OPERATION_REPLACE });
-            } else if ((isCurrentWithData && isInputWithData && inputToCurrentDiff.length > 0 && isConfidenceMatch)
-                || (isInputWithData && !isCurrentWithData)
-            ) {
-              // If data is provided, different from existing data, and of higher confidence
-              // OR if existing data is empty and data is provided (even if lower confidence, it's better than nothing),
-              // --> apply an add operation
-              inputs.push({ key: inputField, value: inputToCurrentDiff, operation: UPDATE_OPERATION_ADD });
-            }
-          }
-        } else { // not multiple
-          // If expected data is different from current data...
-          const currentData = resolvedElement[relDef.databaseName];
-          const isCurrentEmptyData = isEmptyField(currentData);
-          const isInputDifferentFromCurrent = !R.equals(currentData, patchInputData);
-          // ... and data can be updated:
-          // forced synchro
-          // OR the field is currently null (auto consolidation)
-          // OR the confidence matches
-          // To prevent too much flickering on multi sources the created-by will be replaced only for strict upper confidence
-          const isProtectedCreatedBy = relDef.databaseName === RELATION_CREATED_BY && !isCurrentEmptyData && !isConfidenceUpper;
-          const updatable = ((isInputWithData && isCurrentEmptyData) || isConfidenceMatch) && !isProtectedCreatedBy;
-          if (isInputDifferentFromCurrent && (isUpsertSynchro || updatable)) {
-            inputs.push({ key: inputField, value: [patchInputData] });
-          }
-        }
-      } else {
-        logApp.info('Discarding outdated attribute update mutation', { key: inputField });
-      }
-    }
-  }
+
+  const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const validEnterpriseEdition = settings.valid_enterprise_edition;
+  // All inputs impacted by modifications (+inner)
+  const inputs = await generateInputsForUpsert(context, user, resolvedElement, type, updatePatch, confidenceForUpsert, validEnterpriseEdition);
+
   // -- If modifications need to be done, add updated_at and modified
   if (inputs.length > 0) {
     // Update the attribute and return the result
@@ -2992,7 +2885,7 @@ export const getExistingRelations = async (context, user, input, opts = {}) => {
     const fromRuleArgs = {
       fromId: from.internal_id,
       toId: to.internal_id,
-      indices: [READ_INDEX_INFERRED_RELATIONSHIPS]
+      indices: [READ_INDEX_INFERRED_RELATIONSHIPS],
     };
     const inferredRelationships = await topRelationsList(context, SYSTEM_USER, relationshipType, fromRuleArgs);
     existingRelationships.push(...inferredRelationships);
@@ -3010,22 +2903,22 @@ export const getExistingRelations = async (context, user, input, opts = {}) => {
             key: ['connections'],
             nested: [
               { key: 'internal_id', values: [from.internal_id] },
-              { key: 'role', values: ['*_from'], operator: FilterOperator.Wildcard }
+              { key: 'role', values: ['*_from'], operator: FilterOperator.Wildcard },
             ],
-            values: []
+            values: [],
           },
           {
             key: ['connections'],
             nested: [
               { key: 'internal_id', values: [to.internal_id] },
-              { key: 'role', values: ['*_to'], operator: FilterOperator.Wildcard }
+              { key: 'role', values: ['*_to'], operator: FilterOperator.Wildcard },
             ],
-            values: []
+            values: [],
           },
-          ...deduplicationFilters
+          ...deduplicationFilters,
         ],
         filterGroups: [],
-      }]
+      }],
     };
     // inputIds
     const manualArgs = { indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, filters: searchFilters };
@@ -3064,7 +2957,11 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
   }
 
   // check if user has "edit" access on from and to
-  if (!validateUserAccessOperation(user, from, 'edit') || !validateUserAccessOperation(user, to, 'edit')) {
+  const draftId = getDraftContext(context, user);
+  const draft = draftId ? await findDraftById(context, user, draftId) : null;
+  const canEditFrom = validateUserAccessOperation(user, from, AccessOperation.EDIT, draft);
+  const canEditTo = validateUserAccessOperation(user, to, AccessOperation.EDIT, draft);
+  if (!canEditFrom || !canEditTo) {
     throw ForbiddenAccess();
   }
 
@@ -3161,7 +3058,7 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
       if ((opts.references ?? []).length > 0 && references.length !== (opts.references ?? []).length) {
         throw FunctionalError('Cant find element references for commit', {
           id: input.fromId,
-          references: opts.references
+          references: opts.references,
         });
       }
       const previous = resolvedInput.from; // Complete resolution done by the input resolver
@@ -3179,12 +3076,13 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
         instance[key] = [...(instance[key] ?? []), targetElement];
       }
       const message = await generateUpdateMessage(context, user, instance.entity_type, inputs);
+      const changes = await buildChanges(context, user, instance.entity_type, inputs);
       const isContainCommitReferences = opts.references && opts.references.length > 0;
       const commit = isContainCommitReferences ? {
         message: opts.commitMessage,
-        external_references: references.map((ref) => convertExternalReferenceToStix(ref))
+        external_references: references.map((ref) => convertExternalReferenceToStix(ref)),
       } : undefined;
-      event = await storeUpdateEvent(context, user, previous, instance, message, { ...opts, commit });
+      event = await storeUpdateEvent(context, user, previous, instance, message, changes, { ...opts, commit });
       dataRel.element.from = instance; // dynamically update the from to have an up to date relation
     } else {
       const createdRelation = { ...resolvedInput, ...dataRel.element };
@@ -3200,7 +3098,14 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
       const isVuln = relationshipType === RELATION_TARGETS && dataRel.element.to.entity_type === ENTITY_TYPE_VULNERABILITY;
       const isAttackPattern = relationshipType === RELATION_USES && dataRel.element.to.entity_type === ENTITY_TYPE_ATTACK_PATTERN;
       if (isVuln || isAttackPattern) {
-        const securityCoverage = await internalLoadById(context, user, dataRel.element.from[RELATION_COVERED]);
+        const { element: securityCoverage } = await updateAttribute(
+          context,
+          user,
+          dataRel.element.from[RELATION_COVERED],
+          ENTITY_TYPE_SECURITY_COVERAGE,
+          [{ key: 'modified', value: [now()] }],
+          { noEnrich: true },
+        );
         await triggerEntityUpdateAutoEnrichment(context, user, securityCoverage);
       }
     }
@@ -3225,7 +3130,7 @@ export const createInferredRelation = async (context, input, ruleContent, opts =
     fromRule: ruleContent.field,
     bypassValidation: true, // We need to bypass validation here has we maybe not setup all require fields
   };
-  // eslint-disable-next-line camelcase
+
   const { fromId, toId, relationship_type } = input;
   // In some cases, we can try to create with the same from and to, ignore
   if (fromId === toId) {
@@ -3237,7 +3142,7 @@ export const createInferredRelation = async (context, input, ruleContent, opts =
     toId,
     entity_type: relationship_type,
     relationship_type,
-    [ruleContent.field]: [ruleContent.content]
+    [ruleContent.field]: [ruleContent.content],
   };
   const patch = createRuleDataPatch(instance);
   const inputRelation = { ...instance, ...patch };
@@ -3283,9 +3188,16 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
   }
   delete input.authorized_members; // always remove authorized_members input, even if empty
   // endregion
+
+  // validate user access to create the entity in draft
+  const draftId = getDraftContext(context, user);
+  const draft = draftId ? await findDraftById(context, user, draftId) : null;
+  if (!validateUserAccessOperation(user, input, AccessOperation.EDIT, draft)) {
+    throw ForbiddenAccess();
+  }
   // validate authorized members access (when creating a new entity with authorized members)
   if (input.restricted_members?.length > 0) {
-    if (!validateUserAccessOperation(user, input, 'manage-access')) {
+    if (!validateUserAccessOperation(user, input, AccessOperation.MANAGE_ACCESS, draft)) {
       throw ForbiddenAccess();
     }
     if (schemaAttributesDefinition.getAttribute(type, authorizedMembersActivationDate.name)) {
@@ -3322,11 +3234,11 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
       if (resolvedInput.hashes) {
         const otherStandardIds = generateHashedObservableStandardIds({
           entity_type: type,
-          ...resolvedInput
+          ...resolvedInput,
         }).filter((id) => id !== standardId);
         resolvedInput.x_opencti_stix_ids = R.uniq([
           ...(resolvedInput.x_opencti_stix_ids ?? []),
-          ...otherStandardIds
+          ...otherStandardIds,
         ]);
       }
     }
@@ -3413,7 +3325,7 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
         const normedStixIds = R.uniq(concurrentStixIds);
         const filteredStixIds = R.filter(
           (i) => isNotEmptyField(i) && !normedStixIds.includes(i) && i !== existingByStandard.standard_id,
-          [...(resolvedInput.x_opencti_stix_ids ?? []), resolvedInput.stix_id]
+          [...(resolvedInput.x_opencti_stix_ids ?? []), resolvedInput.stix_id],
         );
         const finalEntity = { ...resolvedInput, [key]: filteredAliases, x_opencti_stix_ids: filteredStixIds };
         return upsertElement(context, user, existingByStandard, type, finalEntity, { ...opts, locks: participantIds });
@@ -3438,24 +3350,43 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
     }
     // Create the object
     const dataEntity = await buildEntityData(context, user, resolvedInput, type, opts);
-    // If file directly attached
+    // Handle multiple files upload (new plural form)
+    const filesToUpload = [];
+    if (!isEmptyField(resolvedInput.files) && Array.isArray(resolvedInput.files)) {
+      const filesMarkings = resolvedInput.filesMarkings || [];
+      for (let i = 0; i < resolvedInput.files.length; i += 1) {
+        const fileInput = resolvedInput.files[i];
+        const fileMarking = filesMarkings[i] || resolvedInput.objectMarking?.map(({ id }) => id);
+        filesToUpload.push({ file: fileInput, markings: fileMarking });
+      }
+    }
+    // Handle single file upload (backward compatibility)
     if (!isEmptyField(resolvedInput.file)) {
-      const { filename } = await resolvedInput.file;
+      const file_markings = isNotEmptyField(resolvedInput.fileMarkings) ? resolvedInput.fileMarkings : resolvedInput.objectMarking?.map(({ id }) => id);
+      filesToUpload.push({ file: resolvedInput.file, markings: file_markings });
+    }
+    // Process all files to upload
+    if (filesToUpload.length > 0) {
       const isAutoExternal = entitySetting?.platform_entity_files_ref;
       const path = `import/${type}/${dataEntity.element[ID_INTERNAL]}`;
-      const key = `${path}/${filename}`;
-      const meta = isAutoExternal ? { external_reference_id: generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, { url: `/storage/get/${key}` }) } : {};
-      const file_markings = resolvedInput.objectMarking?.map(({ id }) => id);
-      const { upload: file } = await uploadToStorage(context, user, path, input.file, { entity: dataEntity.element, file_markings, meta });
-      dataEntity.element = { ...dataEntity.element, x_opencti_files: [storeFileConverter(user, file)] };
-      // Add external references from files if necessary
-      if (isAutoExternal) {
-        // Create external ref + link to current entity
-        const createExternal = { source_name: file.name, url: `/storage/get/${file.id}`, fileId: file.id };
-        const externalRef = await createEntity(context, user, createExternal, ENTITY_TYPE_EXTERNAL_REFERENCE);
-        const newRefRel = buildInnerRelation(dataEntity.element, externalRef, RELATION_EXTERNAL_REFERENCE);
-        dataEntity.relations.push(...newRefRel);
+      const uploadedFiles = [];
+      for (let i = 0; i < filesToUpload.length; i += 1) {
+        const { file: fileInput, markings: file_markings } = filesToUpload[i];
+        const { filename } = await fileInput;
+        const key = `${path}/${filename}`;
+        const meta = isAutoExternal ? { external_reference_id: generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, { url: `/storage/get/${key}` }) } : {};
+        const { upload: uploadedFile } = await uploadToStorage(context, user, path, fileInput, { entity: dataEntity.element, file_markings, meta });
+        uploadedFiles.push(storeFileConverter(user, uploadedFile));
+        // Add external references from files if necessary
+        if (isAutoExternal) {
+          // Create external ref + link to current entity
+          const createExternal = { source_name: uploadedFile.name, url: `/storage/get/${uploadedFile.id}`, fileId: uploadedFile.id };
+          const externalRef = await createEntity(context, user, createExternal, ENTITY_TYPE_EXTERNAL_REFERENCE);
+          const newRefRel = buildInnerRelation(dataEntity.element, externalRef, RELATION_EXTERNAL_REFERENCE);
+          dataEntity.relations.push(...newRefRel);
+        }
       }
+      dataEntity.element = { ...dataEntity.element, x_opencti_files: uploadedFiles };
     }
     if (opts.restore === true) {
       dataMessage = generateRestoreMessage(dataEntity.element);
@@ -3547,7 +3478,13 @@ export const internalDeleteElementById = async (context, user, id, type, opts = 
     throw AlreadyDeletedError({ id });
   }
 
-  if (getDraftContext(context, user)) {
+  const draftId = getDraftContext(context, user);
+  const draft = draftId ? await findDraftById(context, user, draftId) : null;
+  if (!validateUserAccessOperation(user, element, AccessOperation.DELETE, draft)) {
+    throw ForbiddenAccess();
+  }
+
+  if (draftId) {
     return draftInternalDeleteElement(context, user, element);
   }
   // region confidence control
@@ -3567,9 +3504,6 @@ export const internalDeleteElementById = async (context, user, id, type, opts = 
   if (element.entity_type === ENTITY_TYPE_IDENTITY_ORGANIZATION) {
     await verifyCanDeleteOrganization(context, user, element);
   }
-  if (!validateUserAccessOperation(user, element, 'delete')) {
-    throw ForbiddenAccess();
-  }
   // Check inference operation
   checkIfInferenceOperationIsValid(user, element);
   // Apply deletion
@@ -3583,7 +3517,7 @@ export const internalDeleteElementById = async (context, user, id, type, opts = 
       if ((opts.references ?? []).length > 0 && references.length !== (opts.references ?? []).length) {
         throw FunctionalError('Cant find element references for commit', {
           id: element.fromId,
-          references: opts.references
+          references: opts.references,
         });
       }
       const targetElement = { ...element.to, i_relation: element };
@@ -3606,11 +3540,11 @@ export const internalDeleteElementById = async (context, user, id, type, opts = 
       const isContainCommitReferences = opts.references && opts.references.length > 0;
       const commit = isContainCommitReferences ? {
         message: opts.commitMessage,
-        external_references: references.map((ref) => convertExternalReferenceToStix(ref))
+        external_references: references.map((ref) => convertExternalReferenceToStix(ref)),
       } : undefined;
       await elDeleteElements(context, user, [element]);
       // Publish event in the stream
-      const eventPromise = storeUpdateEvent(context, user, previous, instance, message, { ...opts, commit });
+      const eventPromise = storeUpdateEvent(context, user, previous, instance, message, [], { ...opts, commit });
       const taskPromise = createContainerSharingTask(context, ACTION_TYPE_UNSHARE, element);
       const [, updateEvent] = await Promise.all([taskPromise, eventPromise]);
       event = updateEvent;
@@ -3713,7 +3647,11 @@ export const deleteInferredRuleElement = async (rule, instance, deletedDependenc
 export const deleteRelationsByFromAndTo = async (context, user, fromId, toId, relationshipType, scopeType, opts = {}) => {
   //* v8 ignore if */
   if (R.isNil(scopeType) || R.isNil(fromId) || R.isNil(toId)) {
-    throw FunctionalError('You need to specify a scope type when deleting a relation with from and to');
+    throw FunctionalError('You need to specify a scope type and both IDs when deleting a relation with from and to', {
+      type: scopeType,
+      from: fromId,
+      to: toId,
+    });
   }
   const fromThing = await internalLoadById(context, user, fromId, opts);
   // Check mandatory attribute
@@ -3726,7 +3664,12 @@ export const deleteRelationsByFromAndTo = async (context, user, fromId, toId, re
     }
   }
   const toThing = await internalLoadById(context, user, toId, opts);// check if user has "edit" access on from and to
-  if (!validateUserAccessOperation(user, fromThing, 'edit') || !validateUserAccessOperation(user, toThing, 'edit')) {
+  const draftId = getDraftContext(context, user);
+  const draft = draftId ? await findDraftById(context, user, draftId) : null;
+  const canEditFrom = validateUserAccessOperation(user, fromThing, AccessOperation.EDIT, draft);
+  const canEditTo = validateUserAccessOperation(user, toThing, AccessOperation.EDIT, draft);
+
+  if (!canEditFrom || !canEditTo) {
     throw ForbiddenAccess();
   }
   // Looks like the caller doesn't give the correct from, to currently
@@ -3743,11 +3686,11 @@ export const deleteRelationsByFromAndTo = async (context, user, fromId, toId, re
       mode: 'and',
       filters: [
         { key: ['fromId'], values: [fromThing.internal_id] },
-        { key: ['toId'], values: [toThing.internal_id] }
+        { key: ['toId'], values: [toThing.internal_id] },
       ],
-      filterGroups: []
+      filterGroups: [],
     },
-    callback: relationsCallback
+    callback: relationsCallback,
   });
   return { from: fromThing, to: toThing, deletions: relationsToDelete };
 };
