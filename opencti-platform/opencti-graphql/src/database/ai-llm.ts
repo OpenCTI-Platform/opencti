@@ -140,30 +140,58 @@ const initClients = () => {
 };
 
 const ensureClientsInitialized = async () => {
-  clientsUpdate = clientsUpdate.then(() => {
-    if (!AI_ENABLED) {
-      return;
-    }
-    initClients();
+  // Chain the initialization operation onto the current clientsUpdate promise,
+  // but keep a separate operation promise for the caller so that we can both:
+  // - propagate errors to the caller, and
+  // - prevent `clientsUpdate` from remaining in a permanently rejected state.
+  const operation = clientsUpdate
+    .then(() => {
+      if (!AI_ENABLED) {
+        return;
+      }
+      initClients();
+    })
+    .catch((err) => {
+      logApp.error('[AI] Failed to initialize AI clients', { cause: err });
+      // On failure, reset the local clients so that a future successful call can
+      // re-establish a consistent state.
+      resetClients();
+      throw UnknownError('Failed to initialize AI clients', { cause: err });
+    });
+
+  // Ensure that the shared `clientsUpdate` chain never remains rejected: any error
+  // is handled above for the caller and swallowed here so the chain can be reused.
+  clientsUpdate = operation.catch(() => {
+    // Intentionally ignore to keep the chain resolved.
   });
-  try {
-    await clientsUpdate;
-  } catch (err) {
-    logApp.error('[AI] Failed to initialize AI clients', { cause: err });
-    throw UnknownError('Failed to initialize AI clients', { cause: err });
-  }
+
+  await operation;
 };
 
 export const setAiEnabled = (enabled: boolean) => {
   AI_ENABLED = enabled;
-  clientsUpdate = clientsUpdate.then(() => {
-    if (!AI_ENABLED) {
+
+  // Similar pattern to `ensureClientsInitialized`: the `operation` promise reflects
+  // the real outcome for the caller, while `clientsUpdate` is kept reusable.
+  const operation = clientsUpdate
+    .then(() => {
+      if (!AI_ENABLED) {
+        resetClients();
+        return;
+      }
+      initClients();
+    })
+    .catch((err) => {
+      logApp.error('[AI] Failed to apply AI enabled state change', { enabled: AI_ENABLED, cause: err });
       resetClients();
-      return;
-    }
-    initClients();
+      throw UnknownError('Failed to apply AI enabled state change', { cause: err });
+    });
+
+  clientsUpdate = operation.catch(() => {
+    // Intentionally ignore to keep the chain resolved and allow future operations.
   });
-  return clientsUpdate;
+
+  return operation;
 };
 
 if (AI_ENABLED && AI_TOKEN) {
