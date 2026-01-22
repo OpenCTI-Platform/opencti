@@ -2067,7 +2067,12 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         """
         s3_client = self._get_s3_client()
 
-        key = f"{self.bundle_send_to_s3_folder}/{bundle_file}"
+        # If folder is empty or "/" or ".", upload to root of bucket
+        folder = self.bundle_send_to_s3_folder
+        if folder and folder not in ("/", "."):
+            key = f"{folder}/{bundle_file}"
+        else:
+            key = bundle_file
         s3_client.put_object(
             Bucket=self.bundle_send_to_s3_bucket,
             Key=key,
@@ -2090,16 +2095,22 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :param s3_client: Configured boto3 S3 client
         :type s3_client: boto3.client
         """
-        prefix = f"{self.bundle_send_to_s3_folder}/"
+        # If folder is empty or "/" or ".", list from root (empty prefix)
+        folder = self.bundle_send_to_s3_folder
+        if folder and folder not in ("/", "."):
+            prefix = f"{folder}/"
+        else:
+            prefix = ""
         cutoff_time = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(
             days=self.bundle_send_to_s3_retention
         )
 
         try:
             paginator = s3_client.get_paginator("list_objects_v2")
-            for page in paginator.paginate(
-                Bucket=self.bundle_send_to_s3_bucket, Prefix=prefix
-            ):
+            paginate_args = {"Bucket": self.bundle_send_to_s3_bucket}
+            if prefix:
+                paginate_args["Prefix"] = prefix
+            for page in paginator.paginate(**paginate_args):
                 for obj in page.get("Contents", []):
                     if obj["LastModified"] < cutoff_time:
                         s3_client.delete_object(

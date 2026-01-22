@@ -4151,6 +4151,7 @@ export type ConnectorConfig = {
   push: Scalars['String']['output'];
   push_exchange: Scalars['String']['output'];
   push_routing: Scalars['String']['output'];
+  s3: S3Connection;
 };
 
 export type ConnectorConfiguration = {
@@ -26463,6 +26464,17 @@ export type RuleTask = BackgroundTask & {
   work?: Maybe<Work>;
 };
 
+export type S3Connection = {
+  __typename?: 'S3Connection';
+  access_key: Scalars['String']['output'];
+  bucket_name: Scalars['String']['output'];
+  bucket_region: Scalars['String']['output'];
+  endpoint: Scalars['String']['output'];
+  port: Scalars['Int']['output'];
+  secret_key: Scalars['String']['output'];
+  use_ssl: Scalars['Boolean']['output'];
+};
+
 export type SshKey = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
   __typename?: 'SSHKey';
   cases?: Maybe<CaseConnection>;
@@ -37042,6 +37054,7 @@ export type ResolversTypes = ResolversObject<{
   RuleExecutionError: ResolverTypeWrapper<RuleExecutionError>;
   RuleManager: ResolverTypeWrapper<RuleManager>;
   RuleTask: ResolverTypeWrapper<Omit<RuleTask, 'work'> & { work?: Maybe<ResolversTypes['Work']> }>;
+  S3Connection: ResolverTypeWrapper<S3Connection>;
   SSHKey: ResolverTypeWrapper<Omit<SshKey, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   SSHKeyAddInput: SshKeyAddInput;
   SavedFilter: ResolverTypeWrapper<BasicStoreEntitySavedFilter>;
@@ -37973,6 +37986,7 @@ export type ResolversParentTypes = ResolversObject<{
   RuleExecutionError: RuleExecutionError;
   RuleManager: RuleManager;
   RuleTask: Omit<RuleTask, 'work'> & { work?: Maybe<ResolversParentTypes['Work']> };
+  S3Connection: S3Connection;
   SSHKey: Omit<SshKey, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   SSHKeyAddInput: SshKeyAddInput;
   SavedFilter: BasicStoreEntitySavedFilter;
@@ -39558,6 +39572,7 @@ export type ConnectorConfigResolvers<ContextType = any, ParentType extends Resol
   push?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   push_exchange?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   push_routing?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  s3?: Resolver<ResolversTypes['S3Connection'], ParentType, ContextType>;
 }>;
 
 export type ConnectorConfigurationResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConnectorConfiguration'] = ResolversParentTypes['ConnectorConfiguration']> = ResolversObject<{
@@ -45888,6 +45903,16 @@ export type RuleTaskResolvers<ContextType = any, ParentType extends ResolversPar
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type S3ConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['S3Connection'] = ResolversParentTypes['S3Connection']> = ResolversObject<{
+  access_key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  bucket_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  bucket_region?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  endpoint?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  port?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  secret_key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  use_ssl?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+}>;
+
 export type SshKeyResolvers<ContextType = any, ParentType extends ResolversParentTypes['SSHKey'] = ResolversParentTypes['SSHKey']> = ResolversObject<{
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<SshKeyCasesArgs>>;
   comment?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -49266,6 +49291,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   RuleExecutionError?: RuleExecutionErrorResolvers<ContextType>;
   RuleManager?: RuleManagerResolvers<ContextType>;
   RuleTask?: RuleTaskResolvers<ContextType>;
+  S3Connection?: S3ConnectionResolvers<ContextType>;
   SSHKey?: SshKeyResolvers<ContextType>;
   SavedFilter?: SavedFilterResolvers<ContextType>;
   SavedFilterConnection?: SavedFilterConnectionResolvers<ContextType>;
