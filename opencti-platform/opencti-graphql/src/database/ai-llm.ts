@@ -169,7 +169,11 @@ const ensureClientsInitialized = async () => {
 };
 
 export const setAiEnabled = (enabled: boolean) => {
+  const previousEnabled = AI_ENABLED;
   AI_ENABLED = enabled;
+  if (previousEnabled !== enabled) {
+    logApp.info('[AI] AI enabled state changed', { enabled });
+  }
 
   // Similar pattern to `ensureClientsInitialized`: the `operation` promise reflects
   // the real outcome for the caller, while `clientsUpdate` is kept reusable.
