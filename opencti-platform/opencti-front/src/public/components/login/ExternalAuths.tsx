@@ -38,7 +38,13 @@ const ExternalAuths = ({
   if (hasConsentMessage && !consentValue) return null;
 
   return (
-    <Stack direction="row" gap={1}>
+    <Stack
+      mt={3}
+      direction="row"
+      justifyContent="center"
+      flexWrap="wrap"
+      gap={1}
+    >
       {authSSOs?.map((value, index) => (
         <ExternalAuthButton
           key={index}

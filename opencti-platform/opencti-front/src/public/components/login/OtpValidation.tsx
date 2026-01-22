@@ -1,12 +1,8 @@
-import React, { FunctionComponent, useState } from 'react';
+import { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
-import Alert from '@mui/material/Alert';
-import { useTheme } from '@mui/styles';
-import { useFormatter } from '../../../components/i18n';
-import type { Theme } from '../../../components/Theme';
 import OtpInputField, { OTP_CODE_SIZE } from './OtpInputField';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
-import { APP_BASE_PATH } from '../../../relay/environment';
+import { useLoginContext } from './loginContext';
 
 interface OtpValidationProps {
   variant?: 'login' | 'resetPassword';
@@ -20,20 +16,25 @@ const otpMutation = graphql`
   }
 `;
 
-const ResetPasswordMfaMutation = graphql`
+const resetPasswordMfaMutation = graphql`
   mutation OtpValidationResetPasswordOtpLoginMutation($input: VerifyMfaInput!) {
     verifyMfa(input: $input)
   }
 `;
 
-const OtpValidation: FunctionComponent<OtpValidationProps> = ({ variant = 'login', transactionId, onCompleted }) => {
-  const theme = useTheme<Theme>();
-  const { t_i18n } = useFormatter();
+const OtpValidation: FunctionComponent<OtpValidationProps> = ({
+  variant = 'login',
+  transactionId,
+  onCompleted,
+}) => {
+  const { setValue } = useLoginContext();
   const [code, setCode] = useState('');
-  const [error, setError] = useState('');
   const [inputDisable, setInputDisable] = useState(false);
-  const handleChange = (data: string) => setCode(data);
-  const [commitOtpMutation] = useApiMutation(variant === 'login' ? otpMutation : ResetPasswordMfaMutation);
+
+  const [commitOtpMutation] = useApiMutation(
+    variant === 'login' ? otpMutation : resetPasswordMfaMutation,
+  );
+
   if (code.length === OTP_CODE_SIZE && !inputDisable) {
     setInputDisable(true);
     commitOtpMutation({
@@ -43,9 +44,10 @@ const OtpValidation: FunctionComponent<OtpValidationProps> = ({ variant = 'login
       onError: () => {
         setInputDisable(false);
         setCode('');
-        setError(t_i18n('The code is not correct.'));
+        setValue('mfaInError', true);
       },
       onCompleted: () => {
+        setValue('mfaInError', undefined);
         if (onCompleted) {
           onCompleted();
         } else {
@@ -54,37 +56,13 @@ const OtpValidation: FunctionComponent<OtpValidationProps> = ({ variant = 'login
       },
     });
   }
+
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      gap: theme.spacing(3),
-    }}
-    >
-      {error ? (
-        <Alert severity="error" variant="outlined" style={{ alignSelf: 'stretch', textAlign: 'justify' }}>
-          {error}
-        </Alert>
-      ) : (
-        <Alert severity="info" variant="outlined" style={{ alignSelf: 'stretch', textAlign: 'justify' }}>
-          {t_i18n('You need to validate your two-factor authentication. Please type the code generated in your application')}
-        </Alert>
-      )}
-      <OtpInputField
-        value={code}
-        onChange={handleChange}
-        isDisabled={inputDisable}
-      />
-      {variant === 'login' && (
-        <a
-          href={`${APP_BASE_PATH}/logout`}
-          rel="noreferrer"
-        >
-          {t_i18n('Back to login')}
-        </a>
-      )}
-    </div>
+    <OtpInputField
+      value={code}
+      onChange={setCode}
+      isDisabled={inputDisable}
+    />
   );
 };
 

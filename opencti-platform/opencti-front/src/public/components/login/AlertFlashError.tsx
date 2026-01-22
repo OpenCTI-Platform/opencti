@@ -1,5 +1,5 @@
-import { Alert, AlertTitle } from '@mui/material';
 import { useCookies } from 'react-cookie';
+import LoginAlert from './LoginAlert';
 
 const FLASH_COOKIE = 'opencti_flash';
 
@@ -11,9 +11,9 @@ const AlertFlashError = () => {
   if (!flashError) return null;
 
   return (
-    <Alert variant="outlined" severity="error">
-      <AlertTitle>{flashError}</AlertTitle>
-    </Alert>
+    <LoginAlert severity="error">
+      {flashError}
+    </LoginAlert>
   );
 };
 

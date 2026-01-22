@@ -1,5 +1,5 @@
-import { Alert, AlertTitle } from '@mui/material';
 import { useState } from 'react';
+import LoginAlert from './LoginAlert';
 
 const AlertLogout = () => {
   // Session expiration automatic logout functions
@@ -19,9 +19,9 @@ const AlertLogout = () => {
   if (expired !== true) return null;
 
   return (
-    <Alert variant="outlined" severity="warning">
-      <AlertTitle>You were automatically logged out due to session expiration.</AlertTitle>
-    </Alert>
+    <LoginAlert severity="warning">
+      You were automatically logged out due to session expiration.
+    </LoginAlert>
   );
 };
 

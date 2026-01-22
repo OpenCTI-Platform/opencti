@@ -1,5 +1,5 @@
 import { makeStyles } from '@mui/styles';
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import { FunctionComponent, useEffect, useState } from 'react';
 import Alert from '@mui/material/Alert';
 import { graphql } from 'react-relay';
 import qrcode from 'qrcode';
@@ -20,7 +20,7 @@ const useStyles = makeStyles<Theme>(() => ({
   },
 }));
 
-const generateOTP = graphql`
+const generateOtp = graphql`
   query OtpActivationQuery {
     otpGeneration {
       secret
@@ -110,23 +110,21 @@ const Otp: FunctionComponent<OtpProps> = ({ secret, uri }) => {
   );
 };
 
-const OtpActivationComponent = () => (
+const OtpActivation = () => (
   <QueryRenderer
-    query={generateOTP}
+    query={generateOtp}
     render={({ props }: { props: OtpActivationQuery$data }) => {
-      if (props) {
-        if (props.otpGeneration) {
-          return (
-            <Otp
-              secret={props.otpGeneration.secret}
-              uri={props.otpGeneration.uri}
-            />
-          );
-        }
+      if (props && props.otpGeneration) {
+        return (
+          <Otp
+            secret={props.otpGeneration.secret}
+            uri={props.otpGeneration.uri}
+          />
+        );
       }
       return <Loader />;
     }}
   />
 );
 
-export default OtpActivationComponent;
+export default OtpActivation;

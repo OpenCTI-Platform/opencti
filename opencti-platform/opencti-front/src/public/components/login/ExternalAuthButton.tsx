@@ -18,23 +18,13 @@ const ExternalAuthButton = ({
   const { provider, name } = auth;
   const theme = useTheme<Theme>();
 
-  let style: SxProps = {
-    color: theme.palette.ee.main,
-    borderColor: theme.palette.ee.main,
-    '&:hover': {
-      backgroundColor: 'rgba(0, 121, 107, .1)',
-      borderColor: theme.palette.ee.main,
-      color: theme.palette.ee.main,
-    },
-  };
+  let style: SxProps = {};
   switch (provider) {
     case 'facebook':
       style = {
         color: '#4267b2',
-        borderColor: '#4267b2',
         '&:hover': {
           backgroundColor: 'rgba(55, 74, 136, .1)',
-          borderColor: '#374a88',
           color: '#374a88',
         },
       };
@@ -42,10 +32,8 @@ const ExternalAuthButton = ({
     case 'google':
       style = {
         color: theme.palette.error.main,
-        borderColor: theme.palette.error.main,
         '&:hover': {
           backgroundColor: 'rgba(189, 51, 46, .1)',
-          borderColor: theme.palette.error.main,
           color: theme.palette.error.main,
         },
       };
@@ -53,10 +41,8 @@ const ExternalAuthButton = ({
     case 'github':
       style = {
         color: '#5b5b5b',
-        borderColor: '#5b5b5b',
         '&:hover': {
           backgroundColor: 'rgba(54, 54, 54, .1)',
-          borderColor: '#363636',
           color: '#363636',
         },
       };
@@ -82,7 +68,11 @@ const ExternalAuthButton = ({
       variant="secondary"
       component="a"
       href={`${APP_BASE_PATH}/auth/${provider}`}
-      sx={style}
+      sx={{
+        display: 'flex',
+        gap: theme.spacing(1),
+        ...style,
+      }}
     >
       {icon}
       {name}
