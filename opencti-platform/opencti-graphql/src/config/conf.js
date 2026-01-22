@@ -567,6 +567,10 @@ export const ENABLED_FEATURE_FLAGS = nconf.get('app:enabled_dev_features') ?? []
 export const FEATURE_FLAG_ALL = '*';
 export const isFeatureEnabled = (feature) => ENABLED_FEATURE_FLAGS.includes(FEATURE_FLAG_ALL) || ENABLED_FEATURE_FLAGS.includes(feature);
 
+// Protected sensitive config var env to lock
+const protectedSensitiveConfigLockEnv = process.env.PROTECTED_SENSITIVE_CONFIG_LOCK ?? 'true';
+export const PROTECTED_SENSITIVE_CONFIG_LOCKED = protectedSensitiveConfigLockEnv.toLowerCase() === 'true';
+
 export const REDIS_PREFIX = nconf.get('redis:namespace') ? `${nconf.get('redis:namespace')}:` : '';
 export const TOPIC_PREFIX = `${REDIS_PREFIX}_OPENCTI_DATA_`;
 export const TOPIC_CONTEXT_PREFIX = `${REDIS_PREFIX}_OPENCTI_CONTEXT_`;

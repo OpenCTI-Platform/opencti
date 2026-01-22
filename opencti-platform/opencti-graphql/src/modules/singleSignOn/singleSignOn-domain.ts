@@ -7,7 +7,7 @@ import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
-import { BUS_TOPICS, logApp } from '../../config/conf';
+import { BUS_TOPICS, logApp, PROTECTED_SENSITIVE_CONFIG_LOCKED } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import nconf from 'nconf';
 import { parseSingleSignOnRunConfiguration } from './singleSignOn-migration';
@@ -89,12 +89,14 @@ export const internalAddSingleSignOn = async (context: AuthContext, user: AuthUs
 
 export const addSingleSignOn = async (context: AuthContext, user: AuthUser, input: SingleSignOnAddInput) => {
   await checkSSOAllowed(context);
+  if (PROTECTED_SENSITIVE_CONFIG_LOCKED) throw UnsupportedError('Protected sensitive configuration is locked by environment variable');
   // Call here the function to check that all mandatory field are in the input
   return await internalAddSingleSignOn(context, user, input, false);
 };
 
 export const fieldPatchSingleSignOn = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {
   await checkSSOAllowed(context);
+  if (PROTECTED_SENSITIVE_CONFIG_LOCKED) throw UnsupportedError('Protected sensitive configuration is locked by environment variable');
   const singleSignOnEntityBeforeUpdate = await findSingleSignOnById(context, user, id);
 
   if (!singleSignOnEntityBeforeUpdate) {
@@ -118,6 +120,7 @@ export const fieldPatchSingleSignOn = async (context: AuthContext, user: AuthUse
 
 export const deleteSingleSignOn = async (context: AuthContext, user: AuthUser, id: string) => {
   await checkSSOAllowed(context);
+  if (PROTECTED_SENSITIVE_CONFIG_LOCKED) throw UnsupportedError('Protected sensitive configuration is locked by environment variable');
   const singleSignOn = await findSingleSignOnById(context, user, id);
 
   if (!singleSignOn) {
