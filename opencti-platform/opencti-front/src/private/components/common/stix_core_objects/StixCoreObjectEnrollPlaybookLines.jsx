@@ -66,7 +66,7 @@ const StixCoreObjectEnrollPlaybook = ({
   };
   return (
     <>
-      <Alert severity="info">
+      <Alert severity="info" variant="outlined">
         {t_i18n('Listing playbooks with entry points manual or live trigger (events) and matching filters.')}
       </Alert>
       <List>

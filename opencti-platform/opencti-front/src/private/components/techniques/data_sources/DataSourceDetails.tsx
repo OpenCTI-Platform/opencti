@@ -5,10 +5,10 @@ import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import { DataSourceDetails_dataSource$data, DataSourceDetails_dataSource$key } from './__generated__/DataSourceDetails_dataSource.graphql';
 import DataSourceDataComponents from './DataSourceDataComponents';
-import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
+import { capitalizeFirstLetter } from 'src/utils/String';
 
 const DataSourceDetailsFragment = graphql`
   fragment DataSourceDetails_dataSource on DataSource {
@@ -57,14 +57,9 @@ const DataSourceDetailsComponent: FunctionComponent<DataSourceDetailsProps> = ({
               {t_i18n('Platforms')}
             </Label>
             <FieldOrEmpty source={data.x_mitre_platforms}>
-              {data.x_mitre_platforms?.map((platform) => (
-                <ItemOpenVocab
-                  key={platform}
-                  small={false}
-                  type="platforms_ov"
-                  value={platform}
-                />
-              ))}
+              <span>
+                {data.x_mitre_platforms?.map((platform) => capitalizeFirstLetter(platform)).join(', ')}
+              </span>
             </FieldOrEmpty>
             <Label
               sx={{ marginTop: 2 }}
@@ -72,14 +67,9 @@ const DataSourceDetailsComponent: FunctionComponent<DataSourceDetailsProps> = ({
               {t_i18n('Layers')}
             </Label>
             <FieldOrEmpty source={data.collection_layers}>
-              {data.collection_layers?.map((layer) => (
-                <ItemOpenVocab
-                  key={layer}
-                  small={false}
-                  type="collection_layers_ov"
-                  value={layer}
-                />
-              ))}
+              <span>
+                {data.collection_layers?.map((platform) => capitalizeFirstLetter(platform)).join(', ')}
+              </span>
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={12}>

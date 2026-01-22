@@ -509,7 +509,7 @@ const FileManager = ({
                   }}
                 />
                 <DialogActions>
-                  <Button onClick={handleReset} disabled={isSubmitting}>
+                  <Button onClick={handleReset} disabled={isSubmitting} variant="secondary">
                     {t('Cancel')}
                   </Button>
                   <Button
