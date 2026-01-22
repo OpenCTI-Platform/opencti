@@ -297,13 +297,7 @@ class OpenCTIStix2Utils:
 # Types that use x_opencti_aliases instead of aliases
 # Based on opencti-graphql/src/schema/stixDomainObject.ts resolveAliasesField()
 _X_OPENCTI_ALIASES_TYPES = frozenset(
-    [
-        "course-of-action",
-        "vulnerability",
-        "grouping",
-        "identity",
-        "location"
-    ]
+    ["course-of-action", "vulnerability", "grouping", "identity", "location"]
 )
 
 # Types that support aliases (from STIX_DOMAIN_OBJECT_ALIASED in stixDomainObject.ts)
