@@ -85,7 +85,7 @@ const BrowseMoreButton = () => {
   const { t_i18n } = useFormatter();
   const { settings } = useContext(UserContext);
   const browseHubCatalog = isNotEmptyField(settings?.platform_xtmhub_url)
-    ? `${settings.platform_xtmhub_url}/cybersecurity-solutions/open-cti-integration-feeds`
+    ? `${settings.platform_xtmhub_url}/cybersecurity-solutions/open-cti-integrations`
     : '';
   return (
     <GradientButton
