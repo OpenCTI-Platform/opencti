@@ -64,7 +64,7 @@ const getConnectionOptions = () => {
 // Single persistent connection for sequential message publishing
 // This avoids creating a new connection for every message while maintaining order
 // Connection will automatically reconnect and block sends until recovery
-let persistentConnection = null;
+let _persistentConnection = null; // Prefixed with _ as it's assigned but read access is via the connection object
 let persistentChannel = null;
 let connectionPromise = null;
 let isReconnecting = false;
@@ -91,7 +91,7 @@ const createConnection = () => {
         return;
       }
 
-      persistentConnection = conn;
+      _persistentConnection = conn;
       logApp.info('[RABBITMQ] Persistent publisher connection established');
 
       conn.on('error', (connError) => {
@@ -100,12 +100,12 @@ const createConnection = () => {
 
       conn.on('close', () => {
         logApp.warn('[RABBITMQ] Persistent connection closed');
-        persistentConnection = null;
+        _persistentConnection = null;
         persistentChannel = null;
         connectionPromise = null;
         // Trigger reconnection in background
         if (!isReconnecting) {
-          reconnectWithBackoff();
+          void reconnectWithBackoff();
         }
       });
 
@@ -207,14 +207,14 @@ const getPersistentChannel = async () => {
     connectionPromise = null;
     // Start reconnection in background and wait for it
     logApp.error('[RABBITMQ] Initial connection failed, starting reconnection', { cause: err.message });
-    reconnectWithBackoff();
+    void reconnectWithBackoff();
     // Wait for reconnection to succeed
     while (!persistentChannel) {
       await delay(100);
       if (connectionPromise) {
         try {
           await connectionPromise;
-        } catch (e) {
+        } catch (_e) {
           // Reconnection attempt failed, continue waiting
         }
       }
@@ -244,7 +244,7 @@ const sendPersistent = async (exchangeName, routingKey, message) => {
           } else {
             resolve(true);
           }
-        }
+        },
       );
     } catch (err) {
       // Channel might have been closed between getting it and publishing
