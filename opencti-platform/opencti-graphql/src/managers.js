@@ -33,8 +33,9 @@ import { shutdownAllManagers, startAllManagers } from './manager/managerModule';
 import clusterManager from './manager/clusterManager';
 import activityListener from './manager/activityListener';
 import activityManager from './manager/activityManager';
-import supportPackageListener from './listener/supportPackageListener';
 import draftValidationConnector from './modules/draftWorkspace/draftWorkspace-connector';
+import singleSignOnListener from './modules/singleSignOn/singleSignOn-listener';
+import supportPackageListener from './modules/support/supportPackage-listener';
 
 export const startModules = async () => {
   // region API initialization
@@ -143,6 +144,7 @@ export const startModules = async () => {
   // endregion
 
   await supportPackageListener.start();
+  await singleSignOnListener.start();
 };
 
 export const shutdownModules = async () => {
@@ -225,6 +227,7 @@ export const shutdownModules = async () => {
   stoppingPromises.push(activityManager.shutdown());
   // endregion
   stoppingPromises.push(supportPackageListener.shutdown());
+  stoppingPromises.push(singleSignOnListener.shutdown());
   await Promise.all(stoppingPromises);
 };
 // endregion

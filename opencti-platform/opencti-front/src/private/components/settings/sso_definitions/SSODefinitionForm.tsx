@@ -1,12 +1,10 @@
 import { useFormatter } from '../../../../components/i18n';
 import * as Yup from 'yup';
-import { Field, FieldArray, Form, Formik } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import SwitchField from '../../../../components/fields/SwitchField';
-import Typography from '@mui/material/Typography';
-import { Add, Delete } from '@mui/icons-material';
 import React, { useState } from 'react';
 import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../../components/Theme';
@@ -14,9 +12,11 @@ import { SSODefinitionEditionFragment$data } from '@components/settings/sso_defi
 import TextField from '../../../../components/TextField';
 import { getAdvancedConfigFromData } from '@components/settings/sso_definitions/utils/getConfigAndAdvancedConfigFromData';
 import SAMLConfig from '@components/settings/sso_definitions/SAMLConfig';
+import OpenIDConfig from '@components/settings/sso_definitions/OpenIDConfig';
 import { ConfigurationTypeInput } from '@components/settings/sso_definitions/__generated__/SSODefinitionCreationMutation.graphql';
 import Button from '@common/button/Button';
-import IconButton from '@common/button/IconButton';
+import SSODefinitionGroupForm from '@components/settings/sso_definitions/SSODefinitionGroupForm';
+import SSODefinitionOrganizationForm from '@components/settings/sso_definitions/SSODefinitionOrganizationForm';
 
 interface SSODefinitionFormProps {
   onCancel: () => void;
@@ -53,13 +53,46 @@ export interface SSODefinitionFormValues {
     value: string;
     type: string;
   }[];
+  groups_path: string[];
   group_attributes: string[];
+  groups_attributes: string[];
   groups_mapping: string[];
   organizations_path: string[];
   organizations_mapping: string[];
   read_userinfo: boolean;
+  client_id: string;
+  client_secret: string;
+  redirect_uris: string[];
 }
 export type SSOEditionFormInputKeys = keyof SSODefinitionFormValues;
+
+const validationSchemaConfiguration = (selectedStrategy: string, t_i18n: (s: string) => string) => {
+  const base = {
+    name: Yup.string().required(t_i18n('This field is required')),
+    identifier: Yup.string().required(t_i18n('This field is required')),
+  };
+
+  switch (selectedStrategy) {
+    case 'SAML': {
+      return Yup.object().shape({
+        ...base,
+        idpCert: Yup.string().required(t_i18n('This field is required')),
+        callbackUrl: Yup.string().required(t_i18n('This field is required')),
+        entryPoint: Yup.string().required(t_i18n('This field is required')),
+      });
+    }
+    case 'OpenID': {
+      return Yup.object().shape({
+        ...base,
+        issuer: Yup.string().required(t_i18n('This field is required')),
+        client_id: Yup.string().required(t_i18n('This field is required')),
+        client_secret: Yup.string().required(t_i18n('This field is required')),
+        redirect_uris: Yup.array().of(Yup.string().required(t_i18n('This field is required'))),
+      });
+    }
+    default: return undefined;
+  }
+};
 
 const SSODefinitionForm = ({
   data,
@@ -75,14 +108,8 @@ const SSODefinitionForm = ({
   const handleChangeTab = (value: number) => {
     setCurrentTab(value);
   };
-  const validationSchema = Yup.object().shape({
-    name: Yup.string().required(t_i18n('This field is required')),
-    identifier: Yup.string().required(t_i18n('This field is required')),
-    issuer: Yup.string().required(t_i18n('This field is required')),
-    idpCert: Yup.string().required(t_i18n('This field is required')),
-    callbackUrl: Yup.string().required(t_i18n('This field is required')),
-    entryPoint: Yup.string().required(t_i18n('This field is required')),
-  });
+
+  const validationSchema = validationSchemaConfiguration(selectedStrategy ?? '', t_i18n);
 
   const initialValues: SSODefinitionFormValues = {
     name: '',
@@ -105,11 +132,17 @@ const SSODefinitionForm = ({
     enableDebugMode: false,
     entryPoint: '',
     advancedConfigurations: [],
+    groups_path: [],
     group_attributes: [],
+    groups_attributes: [],
     groups_mapping: [],
     read_userinfo: false,
     organizations_path: [],
     organizations_mapping: [],
+    // OpenID
+    client_id: '',
+    client_secret: '',
+    redirect_uris: [''],
   };
 
   const privateField = data?.configuration?.find((e) => e.key === 'privateKey');
@@ -126,11 +159,19 @@ const SSODefinitionForm = ({
   const forceReauthenticationField = data?.configuration?.find((e) => e.key === 'forceReauthentication');
   // const enableDebugModeField = data?.configuration?.find((e) => e.key === 'enableDebugMode');
   const entryPointField = data?.configuration?.find((e) => e.key === 'entryPoint');
-  const advancedConfigurations = getAdvancedConfigFromData((data?.configuration ?? []) as ConfigurationTypeInput[]);
-  const groupsAttributes = Array.from(data?.groups_management?.group_attributes ?? []);
+  const advancedConfigurations = getAdvancedConfigFromData((data?.configuration ?? []) as ConfigurationTypeInput[], selectedStrategy ?? '');
+
+  const groupAttributes = Array.from(data?.groups_management?.group_attributes ?? []);
+  const groupsAttributes = Array.from(data?.groups_management?.groups_attributes ?? []);
+  const groupsPath = Array.from(data?.groups_management?.groups_path ?? []);
   const groupsMapping = Array.from(data?.groups_management?.groups_mapping ?? []);
+
   const organizationsPath = Array.from(data?.organizations_management?.organizations_path ?? []);
   const organizationsMapping = Array.from(data?.organizations_management?.organizations_mapping ?? []);
+
+  const clientId = data?.configuration?.find((e) => e.key === 'client_id');
+  const clientSecret = data?.configuration?.find((e) => e.key === 'client_secret');
+  const redirectUris = data?.configuration?.find((e) => e.key === 'redirect_uris');
 
   if (data) {
     initialValues.name = data.name;
@@ -152,19 +193,19 @@ const SSODefinitionForm = ({
     initialValues.forceReauthentication = forceReauthenticationField ? forceReauthenticationField?.value === 'true' : false;
     // initialValues.enableDebugMode = enableDebugModeField ? enableDebugModeField?.value === 'true' : false;
     initialValues.advancedConfigurations = advancedConfigurations ?? [];
-    initialValues.group_attributes = groupsAttributes;
+    initialValues.groups_attributes = groupsAttributes;
+    initialValues.group_attributes = groupAttributes;
+    initialValues.groups_path = groupsPath;
     initialValues.groups_mapping = groupsMapping;
     initialValues.organizations_path = organizationsPath;
     initialValues.organizations_mapping = organizationsMapping;
-  }
 
+    initialValues.client_id = clientId?.value ?? '';
+    initialValues.client_secret = clientSecret?.value ?? '';
+    initialValues.redirect_uris = redirectUris?.value ? JSON.parse(redirectUris.value) : [''];
+  }
   const updateField = async (field: SSOEditionFormInputKeys, value: unknown) => {
-    if (onSubmitField) {
-      // validationSchema.validateAt(field, { [field]: value })
-      //   .then(() => onSubmitField(field, value))
-      //   .catch(() => false);
-      onSubmitField(field, value);
-    }
+    if (onSubmitField) onSubmitField(field, value);
   };
 
   return (
@@ -216,7 +257,7 @@ const SSODefinitionForm = ({
                 name="enabled"
                 type="checkbox"
                 onChange={updateField}
-                label={t_i18n('Enable SAML authentication')}
+                label={t_i18n(`Enable ${selectedStrategy} authentication`)}
                 containerstyle={{ marginLeft: 2, marginTop: 20 }}
               />
               <Field
@@ -229,201 +270,11 @@ const SSODefinitionForm = ({
                 style={{ marginTop: 10 }}
               />
               {selectedStrategy === 'SAML' && <SAMLConfig updateField={updateField} />}
+              {selectedStrategy === 'OpenID' && <OpenIDConfig updateField={updateField} />}
             </>
           )}
-          {currentTab === 1 && (
-            <>
-              <div style={{ marginTop: 20 }}>
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="group_attributes"
-                  onSubmit={updateField}
-                  label={t_i18n('Attribute/path in token')}
-                  containerstyle={{ marginTop: 12 }}
-                  fullWidth
-                />
-              </div>
-              <FieldArray name="groups_mapping">
-                {({ push, remove, form }) => (
-                  <>
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        marginTop: 20,
-                      }}
-                    >
-                      <Typography variant="h2">{t_i18n('Add a new value')}</Typography>
-                      <IconButton
-                        size="default"
-                        color="secondary"
-                        aria-label={t_i18n('Add a new value')}
-                        style={{ marginBottom: 12 }}
-                        onClick={() => push('')}
-                      >
-                        <Add fontSize="small" color="primary" />
-                      </IconButton>
-                    </div>
-                    {form.values.groups_mapping
-                      && form.values.groups_mapping.map(
-                        (value: string, index: number) => (
-                          <div
-                            key={index}
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'space-between',
-                              marginBottom: 8,
-                            }}
-                          >
-                            <Field
-                              component={TextField}
-                              variant="standard"
-                              onSubmit={() => updateField('groups_mapping', form.values.groups_mapping)}
-                              name={`groups_mapping[${index}]`}
-                              label={t_i18n('Group mapping value')}
-                              fullWidth
-                              style={{ marginTop: 20 }}
-                            />
-                            {/* <div */}
-                            {/*  style={{ */}
-                            {/*    flexBasis: '70%', */}
-                            {/*    maxWidth: '70%', */}
-                            {/*    marginBottom: 20, */}
-                            {/*  }} */}
-                            {/* > */}
-                            {/*  <GroupField */}
-                            {/*    name="groups" */}
-                            {/*    label="Groups" */}
-                            {/*    style={fieldSpacingContainerStyle} */}
-                            {/*    showConfidence={true} */}
-                            {/*  /> */}
-                            {/* </div> */}
-                            <IconButton
-                              size="default"
-                              color="primary"
-                              aria-label={t_i18n('Delete')}
-                              style={{ marginTop: 10 }}
-                              onClick={() => {
-                                remove(index);
-                                const groupsMapping = [...form.values.groups_mapping];
-                                groupsMapping.splice(index, 1);
-                                updateField('groups_mapping', groupsMapping);
-                              }} // Delete
-                            >
-                              <Delete fontSize="small" />
-                            </IconButton>
-                            {/* <Field */}
-                            {/*  component={SwitchField} */}
-                            {/*  variant="standard" */}
-                            {/*  type="checkbox" */}
-                            {/*  name="auto_create_group" */}
-                            {/*  label={t_i18n('auto-create group')} */}
-                            {/*  containerstyle={{ marginTop: 10 }} */}
-                            {/* /> */}
-                          </div>
-                        ),
-                      )}
-                  </>
-                )}
-              </FieldArray>
-              {/* <Field */}
-              {/*  component={SwitchField} */}
-              {/*  variant="standard" */}
-              {/*  type="checkbox" */}
-              {/*  name="read_userinfo" */}
-              {/*  label={t_i18n('Automatically add users to default groups')} */}
-              {/*  containerstyle={{ marginLeft: 2, marginTop: 30 }} */}
-              {/* /> */}
-            </>
-          )}
-          {currentTab === 2 && (
-            <>
-              <div style={{ marginTop: 20 }}>
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="organizations_path"
-                  onSubmit={updateField}
-                  label={t_i18n('Attribute/path in token')}
-                  fullWidth
-                />
-              </div>
-              <FieldArray name="organizations_mapping">
-                {({ push, remove, form }) => (
-                  <>
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        marginTop: 20,
-                      }}
-                    >
-                      <Typography variant="h2">{t_i18n('Add a new value')}</Typography>
-                      <IconButton
-                        size="default"
-                        color="secondary"
-                        aria-label={t_i18n('Add a new value')}
-                        style={{ marginBottom: 12 }}
-                        onClick={() => push('')}
-                      >
-                        <Add fontSize="small" color="primary" />
-                      </IconButton>
-                    </div>
-                    {form.values.organizations_mapping
-                      && form.values.organizations_mapping.map(
-                        (value: string, index: number) => (
-                          <div
-                            key={index}
-                            style={{
-                              display: 'flex',
-                              alignItems: 'flex-start',
-                              marginBottom: 8,
-                            }}
-                          >
-                            <Field
-                              component={TextField}
-                              variant="standard"
-                              name={`organizations_mapping[${index}]`}
-                              label={t_i18n('Value organizations mappings')}
-                              onSubmit={() => updateField('organizations_mapping', form.values.organizations_mapping)}
-                              fullWidth
-                              style={{ marginTop: 20 }}
-                            />
-                            {/* <div */}
-                            {/*  style={{ flexBasis: '70%', maxWidth: '70%' }} */}
-                            {/* > */}
-                            {/*  <ObjectOrganizationField */}
-                            {/*    outlined={false} */}
-                            {/*    name="objectOrganization" */}
-                            {/*    label="Organizations" */}
-                            {/*    containerstyle={{ width: '100%' }} */}
-                            {/*    style={fieldSpacingContainerStyle} */}
-                            {/*    fullWidth */}
-                            {/*  /> */}
-                            {/* </div> */}
-                            <IconButton
-                              color="primary"
-                              aria-label={t_i18n('Delete')}
-                              style={{ marginTop: 30, marginLeft: 50 }}
-                              onClick={() => {
-                                remove(index);
-                                const organizationsMapping = [...form.values.organizations_mapping];
-                                organizationsMapping.splice(index, 1);
-                                updateField('organizations_mapping', organizationsMapping);
-                              }}
-                            >
-                              <Delete fontSize="small" />
-                            </IconButton>
-                          </div>
-                        ),
-                      )}
-                  </>
-                )}
-              </FieldArray>
-            </>
-          )}
+          {currentTab === 1 && <SSODefinitionGroupForm updateField={updateField} selectedStrategy={selectedStrategy} />}
+          {currentTab === 2 && <SSODefinitionOrganizationForm updateField={updateField} />}
           {!onSubmitField && (
             <div
               style={{

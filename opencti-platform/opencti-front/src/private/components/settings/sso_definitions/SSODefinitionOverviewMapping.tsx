@@ -232,11 +232,11 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
               borderColor: 'divider',
             }}
           >
-            <Grid size={{ xs: 12, md: 3 }}>
+            <Grid size={{ xs: 12, md: 3 }} sx={{ display: 'flex', alignItems: 'center' }}>
               <Typography variant="body1">{row.key}</Typography>
             </Grid>
 
-            <Grid size={{ xs: 12, md: 6 }}>
+            <Grid size={{ xs: 12, md: 6 }} sx={{ display: 'flex', alignItems: 'center' }}>
               {valueIsTrue
                 ? <CheckCircleOutlined fontSize="small" color="success" />
                 : valueIsFalse
@@ -244,7 +244,7 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
                   : row.value ? renderValue(row.value) : '-'}
             </Grid>
 
-            <Grid size={{ xs: 12, md: 3 }}>
+            <Grid size={{ xs: 12, md: 3 }} sx={{ display: 'flex', alignItems: 'center' }}>
               {renderMandatory(row.mandatory)}
             </Grid>
           </Grid>

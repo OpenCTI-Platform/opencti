@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { onSupportPackageMessage } from '../../../src/listener/supportPackageListener';
 import { findById as findPackageById, prepareNewSupportPackage } from '../../../src/modules/support/support-domain';
 import { ADMIN_USER } from '../../utils/testQuery';
 import type { AuthContext } from '../../../src/types/user';
 import type { BasicStoreEntity } from '../../../src/types/store';
 import type { BasicStoreEntityDecayRule } from '../../../src/modules/decayRule/decayRule-types';
 import { PackageStatus } from '../../../src/generated/graphql';
+import { onSupportPackageMessage } from '../../../src/modules/support/supportPackage-listener';
 
 const adminContext: AuthContext = {
   user: ADMIN_USER,
@@ -28,7 +28,7 @@ describe('SupportPackage listener standard behavior', () => {
 describe('SupportPackage listener error management', () => {
   it('should entity does it not support package be ignored', async () => {
     const wrongEntity: Partial<BasicStoreEntityDecayRule> = {
-      id: 'testing-errors'
+      id: 'testing-errors',
     };
     await onSupportPackageMessage({ instance: wrongEntity as BasicStoreEntity });
     // expecting no error throw.
