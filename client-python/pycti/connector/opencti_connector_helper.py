@@ -1743,9 +1743,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         self.s3_secret_key = get_config_variable(
             "S3_SECRET_KEY", ["s3", "secret_key"], config
         )
-        self.s3_use_ssl = get_config_variable(
-            "S3_USE_SSL", ["s3", "use_ssl"], config
-        )
+        self.s3_use_ssl = get_config_variable("S3_USE_SSL", ["s3", "use_ssl"], config)
         self.s3_bucket_region = get_config_variable(
             "S3_BUCKET_REGION", ["s3", "bucket_region"], config
         )
