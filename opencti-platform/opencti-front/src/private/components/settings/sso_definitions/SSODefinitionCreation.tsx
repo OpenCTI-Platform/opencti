@@ -122,7 +122,7 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
       groups_management,
       organizations_management,
     };
-
+    console.log('finalValues', finalValues);
     commitMutation({
       ...defaultCommitMutation,
       mutation: ssoDefinitionMutation,
