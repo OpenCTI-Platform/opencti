@@ -204,13 +204,20 @@ describe('Settings resolver standard behavior', () => {
       expect(aiResult.errors.length).toEqual(1);
       expect(aiResult.errors.at(0).message).toEqual('AI is disabled in platform settings');
     } finally {
-      await queryAsAdmin({
-        query: UPDATE_SETTINGS_QUERY,
-        variables: { id: settingsInternalId, input: [{ key: 'platform_ai_enabled', value: [initialAiEnabled] }] },
-      });
-      resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+      try {
+        await queryAsAdmin({
+          query: UPDATE_SETTINGS_QUERY,
+          variables: { id: settingsInternalId, input: [{ key: 'platform_ai_enabled', value: [initialAiEnabled] }] },
+        });
+        resetCacheForEntity(ENTITY_TYPE_SETTINGS);
 
-      await waitForPlatformAiEnabled(initialAiEnabled);
+        await waitForPlatformAiEnabled(initialAiEnabled);
+      } catch (cleanupError) {
+        // Best-effort cleanup: do not mask the original test failure
+        // but log the cleanup error to aid debugging.
+        // eslint-disable-next-line no-console
+        console.error('Failed to restore initial platform_ai_enabled setting after test:', cleanupError);
+      }
     }
   });
 });
