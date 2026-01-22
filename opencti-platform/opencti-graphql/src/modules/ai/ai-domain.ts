@@ -63,10 +63,16 @@ const checkPlatformAiEnabled = async (context: AuthContext) => {
   platformAiEnabledUpdate = platformAiEnabledUpdate.then(async () => {
     const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
     const aiEnabled = settings.platform_ai_enabled !== false;
-    if (lastPlatformAiEnabled === null || lastPlatformAiEnabled !== aiEnabled) {
+    if (lastPlatformAiEnabled === null) {
+      // First check: only (re)initialize AI clients if the platform starts with AI enabled.
+      if (aiEnabled) {
+        await setAiEnabled(true);
+      }
+    } else if (lastPlatformAiEnabled !== aiEnabled) {
+      // Subsequent checks: propagate actual state changes.
       await setAiEnabled(aiEnabled);
-      lastPlatformAiEnabled = aiEnabled;
     }
+    lastPlatformAiEnabled = aiEnabled;
     return aiEnabled;
   });
   const aiEnabled = await platformAiEnabledUpdate;
