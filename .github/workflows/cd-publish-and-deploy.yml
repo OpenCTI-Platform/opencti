@@ -57,19 +57,19 @@ jobs:
             --inventory eu-west-staging \
             --extra_vars '{"customer":"testing","solution": "opencti" }'
 
-      - name: Deploy on dev
-        if: ${{ github.ref_name == 'master' }}
-        run: |
-          awx job_templates launch 'Rollout restart an instance resources' --wait -f human \
-            --inventory eu-west-staging \
-            --extra_vars '{"customer":"dev","solution": "opencti" }'
-
       - name: Deploy on prerelease CE
         if: ${{ github.ref_name == 'master' }}
         run: |
           awx job_templates launch 'Rollout restart an instance resources' --wait -f human \
             --inventory gcp-staging \
             --extra_vars '{"customer":"prerelease-ce","solution": "opencti" }'
+
+      - name: Deploy on dev
+        if: ${{ github.ref_name == 'release/current' }}
+        run: |
+          awx job_templates launch 'Rollout restart an instance resources' --wait -f human \
+            --inventory eu-west-staging \
+            --extra_vars '{"customer":"dev","solution": "opencti" }'
 
       - name: Deploy on prerelease
         if: ${{ github.ref_name == 'release/current' }}
