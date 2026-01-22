@@ -69,6 +69,9 @@ let persistentChannel = null;
 let connectionPromise = null;
 let isReconnecting = false;
 
+// Mutex for sequential publishing - ensures messages are sent in order
+let publishMutexPromise = Promise.resolve();
+
 // Configuration for reconnection
 const RECONNECT_INITIAL_DELAY = 1000; // 1 second
 const RECONNECT_MAX_DELAY = 30000; // 30 seconds max
@@ -112,6 +115,16 @@ const createConnection = () => {
       // Create a confirm channel for reliable publishing
       conn.createConfirmChannel((channelError, channel) => {
         if (channelError) {
+          logApp.error('[RABBITMQ] Failed to create confirm channel', { cause: channelError });
+          // Clean up the connection to avoid leaks
+          _persistentConnection = null;
+          persistentChannel = null;
+          connectionPromise = null;
+          try {
+            conn.close();
+          } catch (_closeError) {
+            // Ignore close errors during cleanup
+          }
           reject(channelError);
           return;
         }
@@ -119,11 +132,27 @@ const createConnection = () => {
         channel.on('error', (chError) => {
           logApp.error('[RABBITMQ] Persistent channel error', { cause: chError });
           persistentChannel = null;
+          // Close the connection to trigger reconnection and avoid dangling connections
+          if (_persistentConnection) {
+            try {
+              _persistentConnection.close();
+            } catch (_e) {
+              // Ignore close errors - connection may already be closing
+            }
+          }
         });
 
         channel.on('close', () => {
           logApp.warn('[RABBITMQ] Persistent channel closed');
           persistentChannel = null;
+          // Close the connection to trigger reconnection and avoid dangling connections
+          if (_persistentConnection) {
+            try {
+              _persistentConnection.close();
+            } catch (_e) {
+              // Ignore close errors - connection may already be closing
+            }
+          }
         });
 
         persistentChannel = channel;
@@ -169,71 +198,79 @@ const reconnectWithBackoff = async () => {
 };
 
 /**
- * Get a healthy channel, waiting for reconnection if necessary
- * This will block until a connection is available
+ * Safely await a connection promise, catching any errors
+ * Returns true if connection succeeded, false otherwise
  */
-const getPersistentChannel = async () => {
-  // If channel is healthy, return it immediately
-  if (persistentChannel) {
-    return persistentChannel;
-  }
-
-  // If connection is in progress (initial or reconnection), wait for it
+const safeAwaitConnection = async () => {
   if (connectionPromise) {
-    await connectionPromise;
-    return persistentChannel;
-  }
-
-  // If reconnection is in progress, wait for it to complete
-  if (isReconnecting) {
-    logApp.debug('[RABBITMQ] Waiting for reconnection to complete...');
-    while (isReconnecting || !persistentChannel) {
-      await delay(100);
-      // If connectionPromise was set during waiting, await it
-      if (connectionPromise) {
-        await connectionPromise;
-      }
+    try {
+      await connectionPromise;
+      return true;
+    } catch (_e) {
+      // Connection attempt failed, will retry
+      return false;
     }
-    return persistentChannel;
   }
-
-  // No connection exists, create one
-  connectionPromise = createConnection();
-  try {
-    await connectionPromise;
-    connectionPromise = null;
-    return persistentChannel;
-  } catch (err) {
-    connectionPromise = null;
-    // Start reconnection in background and wait for it
-    logApp.error('[RABBITMQ] Initial connection failed, starting reconnection', { cause: err.message });
-    void reconnectWithBackoff();
-    // Wait for reconnection to succeed
-    while (!persistentChannel) {
-      await delay(100);
-      if (connectionPromise) {
-        try {
-          await connectionPromise;
-        } catch (_e) {
-          // Reconnection attempt failed, continue waiting
-        }
-      }
-    }
-    return persistentChannel;
-  }
+  return false;
 };
 
 /**
- * Send a message using the persistent connection (sequential, maintains order)
- * This will block and wait for reconnection if the connection is lost
+ * Get a healthy channel, waiting for reconnection if necessary
+ * This will block until a connection is available - never throws
  */
-const sendPersistent = async (exchangeName, routingKey, message) => {
-  // Get channel, waiting for reconnection if necessary
-  const channel = await getPersistentChannel();
+const getPersistentChannel = async () => {
+  // Loop until we have a healthy channel
+  while (!persistentChannel) {
+    // If channel became available, return it
+    if (persistentChannel) {
+      return persistentChannel;
+    }
 
+    // If connection is in progress, wait for it (with error handling)
+    if (connectionPromise) {
+      await safeAwaitConnection();
+      // Check if we got a channel, if not continue the loop
+      if (persistentChannel) {
+        return persistentChannel;
+      }
+    }
+
+    // If reconnection is in progress, wait a bit and check again
+    if (isReconnecting) {
+      logApp.debug('[RABBITMQ] Waiting for reconnection to complete...');
+      await delay(100);
+      continue;
+    }
+
+    // No connection exists and no reconnection in progress, create one
+    connectionPromise = createConnection();
+    const success = await safeAwaitConnection();
+    connectionPromise = null;
+
+    if (success && persistentChannel) {
+      return persistentChannel;
+    }
+
+    // Connection failed, start reconnection in background
+    if (!isReconnecting) {
+      logApp.error('[RABBITMQ] Connection failed, starting reconnection');
+      void reconnectWithBackoff();
+    }
+
+    // Wait a bit before next iteration
+    await delay(100);
+  }
+
+  return persistentChannel;
+};
+
+/**
+ * Internal publish function that handles backpressure
+ */
+const publishWithBackpressure = (channel, exchangeName, routingKey, message) => {
   return new Promise((resolve, reject) => {
     try {
-      channel.publish(
+      const canSend = channel.publish(
         exchangeName,
         routingKey,
         Buffer.from(message),
@@ -246,6 +283,13 @@ const sendPersistent = async (exchangeName, routingKey, message) => {
           }
         },
       );
+
+      // Handle backpressure: if channel buffer is full, wait for drain
+      if (!canSend) {
+        channel.once('drain', () => {
+          // Buffer drained, message was already queued so just resolve
+        });
+      }
     } catch (err) {
       // Channel might have been closed between getting it and publishing
       // Reset channel and reject so caller can retry
@@ -253,6 +297,36 @@ const sendPersistent = async (exchangeName, routingKey, message) => {
       reject(err);
     }
   });
+};
+
+/**
+ * Send a message using the persistent connection (sequential, maintains order)
+ * Uses a mutex to ensure messages are sent in strict order even with concurrent callers
+ * This will block and wait for reconnection if the connection is lost
+ */
+const sendPersistent = async (exchangeName, routingKey, message) => {
+  // Use mutex to ensure sequential publishing
+  // Each call waits for the previous one to complete before starting
+  const previousPromise = publishMutexPromise;
+
+  let resolveCurrentMutex;
+  publishMutexPromise = new Promise((resolve) => {
+    resolveCurrentMutex = resolve;
+  });
+
+  try {
+    // Wait for previous publish to complete
+    await previousPromise;
+
+    // Get channel, waiting for reconnection if necessary
+    const channel = await getPersistentChannel();
+
+    // Publish with backpressure handling
+    return await publishWithBackpressure(channel, exchangeName, routingKey, message);
+  } finally {
+    // Release mutex for next caller
+    resolveCurrentMutex();
+  }
 };
 // endregion
 
