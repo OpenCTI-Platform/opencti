@@ -70,12 +70,12 @@ const AuditDrawerContent: FunctionComponent<{ logId: string }> = ({ logId }) => 
 
   return (
     <>
-      <div>
+      <Paper variant="outlined" style={{ padding: 15, backgroundColor: theme.palette.background.paper, borderColor: theme.palette.primary.main }}>
         <Typography variant="h4" gutterBottom={true}>
           {t_i18n('Message')}
         </Typography>
         <b>{data?.audit?.user?.name}</b> {message}
-      </div>
+      </Paper>
       {log.context_uri && (
         <div style={{ marginTop: 16 }}>
           <Typography variant="h4" gutterBottom={true}>
@@ -108,9 +108,7 @@ const AuditDrawerContent: FunctionComponent<{ logId: string }> = ({ logId }) => 
                             ? row.changes_removed.map((s, i: number) => {
                                 return (
                                   <div key={i}>
-                                    <pre style={{ marginBottom: 4, color: theme.palette.text?.secondary }}>
-                                      <TruncatedRawValue value={s} />
-                                    </pre>
+                                    <TruncatedRawValue value={s} />
                                   </div>
                                 );
                               })
@@ -121,9 +119,7 @@ const AuditDrawerContent: FunctionComponent<{ logId: string }> = ({ logId }) => 
                             ? row.changes_added.map((s, i: number) => {
                                 return (
                                   <div key={i}>
-                                    <pre style={{ marginBottom: 4, color: theme.palette.text?.secondary }}>
-                                      <TruncatedRawValue value={s} />
-                                    </pre>
+                                    <TruncatedRawValue value={s} />
                                   </div>
                                 );
                               })
