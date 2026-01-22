@@ -301,62 +301,33 @@ _X_OPENCTI_ALIASES_TYPES = frozenset(
         "course-of-action",
         "vulnerability",
         "grouping",
-        # Identity types
         "identity",
-        "individual",
-        "sector",
-        "system",
-        "organization",
-        # Location types
-        "location",
-        "region",
-        "country",
-        "administrative-area",
-        "city",
-        "position",
+        "location"
     ]
 )
 
 # Types that support aliases (from STIX_DOMAIN_OBJECT_ALIASED in stixDomainObject.ts)
 _STIX_ALIASED_TYPES = frozenset(
     [
-        "course-of-action",
         "attack-pattern",
         "campaign",
-        "infrastructure",
-        "intrusion-set",
-        "malware",
-        "threat-actor-group",
-        "threat-actor-individual",
-        "tool",
-        "incident",
-        "vulnerability",
-        # Identity types (except security-platform)
-        "identity",
-        "individual",
-        "sector",
-        "system",
-        "organization",
-        # Location types
-        "location",
-        "region",
-        "country",
-        "administrative-area",
-        "city",
-        "position",
-        # Grouping
-        "grouping",
-        # Other aliased types
         "channel",
         "x-opencti-channel",
+        "course-of-action",
         "event",
         "x-opencti-event",
+        "grouping",
+        "identity",
+        "incident",
+        "infrastructure",
+        "intrusion-set",
+        "location",
+        "malware",
         "narrative",
         "x-opencti-narrative",
-        "data-source",
-        "x-opencti-data-source",
-        "data-component",
-        "x-opencti-data-component",
+        "threat-actor",
+        "tool",
+        "vulnerability",
     ]
 )
 
@@ -373,6 +344,8 @@ def resolve_aliases_field(stix_type: str) -> str:
 
     This mirrors the logic in opencti-graphql/src/schema/stixDomainObject.ts resolveAliasesField()
 
+    Note: This function is case-insensitive.
+
     :param stix_type: The STIX object type (e.g., "malware", "vulnerability", "identity")
     :type stix_type: str
     :return: The aliases field name to use ("aliases" or "x_opencti_aliases")
@@ -381,9 +354,9 @@ def resolve_aliases_field(stix_type: str) -> str:
     Example:
         >>> resolve_aliases_field("malware")
         'aliases'
-        >>> resolve_aliases_field("vulnerability")
+        >>> resolve_aliases_field("Vulnerability")
         'x_opencti_aliases'
-        >>> resolve_aliases_field("identity")
+        >>> resolve_aliases_field("IDENTITY")
         'x_opencti_aliases'
     """
     if stix_type.lower() in _X_OPENCTI_ALIASES_TYPES:
@@ -396,6 +369,8 @@ def is_stix_object_aliased(stix_type: str) -> bool:
 
     Returns True for entity types that have an aliases field in OpenCTI.
 
+    Note: This function is case-insensitive.
+
     :param stix_type: The STIX object type (e.g., "malware", "indicator", "identity")
     :type stix_type: str
     :return: True if the type supports aliases, False otherwise
@@ -403,6 +378,8 @@ def is_stix_object_aliased(stix_type: str) -> bool:
 
     Example:
         >>> is_stix_object_aliased("malware")
+        True
+        >>> is_stix_object_aliased("Malware")
         True
         >>> is_stix_object_aliased("indicator")
         False
