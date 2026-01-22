@@ -165,6 +165,15 @@ class OpenCTIApiConnector:
                             user
                             pass
                         }
+                        s3 {
+                            endpoint
+                            port
+                            use_ssl
+                            bucket_name
+                            bucket_region
+                            access_key
+                            secret_key
+                        }
                         listen
                         listen_routing
                         listen_exchange
