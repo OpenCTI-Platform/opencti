@@ -3180,17 +3180,17 @@ export const getExistingEntities = async (context, user, input, type) => {
 
 const cleanEntityForIdsCollision = (input, type, target, foundEntities) => {
   // We can upsert element except the aliases that are part of other entities
-  const key = resolveAliasesField(type).name;
-  const concurrentAliases = foundEntities.flatMap((c) => [c[key], c.name]);
+  const aliasField = resolveAliasesField(type).name;
+  const concurrentAliases = foundEntities.flatMap((c) => [...(c[aliasField] ?? []), c.name]);
   const normedAliases = new Set(concurrentAliases.map((c) => normalizeName(c)));
-  const filteredAliases = (input[key] ?? []).filter((i) => !normedAliases.has(normalizeName(i)));
+  const filteredAliases = (input[aliasField] ?? []).filter((i) => !normedAliases.has(normalizeName(i)));
   // We need also to filter eventual STIX IDs present in other entities
-  const concurrentStixIds = foundEntities.flatMap((c) => [c.x_opencti_stix_ids, c.standard_id]);
+  const concurrentStixIds = foundEntities.flatMap((c) => [...(c.x_opencti_stix_ids ?? []), c.standard_id]);
   const normedStixIds = new Set(concurrentStixIds);
   const filteredStixIds = [...(input.x_opencti_stix_ids ?? []), input.stix_id].filter(
     (i) => isNotEmptyField(i) && !normedStixIds.has(i) && i !== target.standard_id,
   );
-  return { ...input, [key]: filteredAliases, x_opencti_stix_ids: filteredStixIds };
+  return { ...input, [aliasField]: filteredAliases, x_opencti_stix_ids: filteredStixIds };
 };
 
 const internalCreateEntityRaw = async (context, user, rawInput, type, opts = {}) => {
@@ -3344,11 +3344,15 @@ const internalCreateEntityRaw = async (context, user, rawInput, type, opts = {})
         return upsertElement(context, user, target, type, resolvedInput, { ...opts, locks: participantIds });
       }
       // We can't merge, so we need at least to upsert one element.
-      // First, looking for an instance that directly has the provided stix id
-      // If we found an entity by the official stix_id, no need to cumulate the id, only upsert information.
-      const targetByStixId = filteredEntities.filter((n) => getInstanceIds(n).includes(resolvedInput.stix_id))[0];
-      // If not found by stix id, we select the first one, cumulate the stix id for upsert
-      const selectedTarget = targetByStixId ?? R.head(filteredEntities.filter((n) => !getInstanceIds(n).includes(resolvedInput.stix_id)));
+      let selectedTarget = filteredEntities[0]; // Select first by default
+      if (isNotEmptyField(resolvedInput.stix_id)) {
+        // Looking for an instance that directly has the provided stix id
+        const targetByStixId = filteredEntities.find((n) => getInstanceIds(n).includes(resolvedInput.stix_id));
+        if (targetByStixId) {
+          // If we found an entity by the provided stix_id, take it.
+          selectedTarget = targetByStixId;
+        }
+      }
       const cleanInputPatch = cleanEntityForIdsCollision(resolvedInput, type, selectedTarget, filteredEntities);
       return upsertElement(context, user, selectedTarget, type, cleanInputPatch, { ...opts, locks: participantIds });
     }
