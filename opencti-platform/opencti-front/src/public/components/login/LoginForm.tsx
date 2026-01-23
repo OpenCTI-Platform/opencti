@@ -98,10 +98,9 @@ const LoginForm = () => {
               justifyContent="space-between"
             >
               <Button
-                size="small"
                 variant="tertiary"
                 onClick={goToResetPwd}
-                sx={{ ml: -1.5 }}
+                sx={{ ml: -2 }}
               >
                 {t_i18n('I forgot my password')}
               </Button>

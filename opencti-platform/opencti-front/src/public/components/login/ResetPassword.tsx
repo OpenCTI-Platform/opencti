@@ -266,17 +266,15 @@ const ResetPassword = () => {
         >
           <div>
             <Button
-              size="small"
               variant="tertiary"
               onClick={backToLogin}
-              sx={{ ml: -1.5 }}
+              sx={{ ml: -2 }}
             >
               {t_i18n('Back to login')}
             </Button>
             {validateOtpInError && (
               <Button
                 disabled={resendCodeDisabled}
-                size="small"
                 variant="tertiary"
                 onClick={handleResendOtp}
               >

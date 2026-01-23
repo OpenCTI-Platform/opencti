@@ -2,18 +2,23 @@ import { Box, Stack, SxProps } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import { PropsWithChildren } from 'react';
 import { Theme } from '../../../components/Theme';
-import logoFiligranBaseline from '../../../static/images/logo_filigran_baseline.svg';
-import logoFiligranGradient from '../../../static/images/logo_filigran_gradient.svg';
+import logoFiligranBaselineDark from '../../../static/images/logo_filigran_baseline_dark.svg';
+import logoFiligranGradientDark from '../../../static/images/logo_filigran_gradient_dark.svg';
+import logoFiligranBaselineLight from '../../../static/images/logo_filigran_baseline_light.svg';
+import logoFiligranGradientLight from '../../../static/images/logo_filigran_gradient_light.svg';
 import SystemBanners from '../SystemBanners';
 import { LoginRootPublicQuery$data } from '../../__generated__/LoginRootPublicQuery.graphql';
 import LoginLogo from './LoginLogo';
 
 const LogoBaseline = () => {
   const theme = useTheme<Theme>();
+  const logoBaseline = theme.palette.mode === 'dark'
+    ? logoFiligranBaselineDark
+    : logoFiligranBaselineLight;
 
   return (
     <img
-      src={logoFiligranBaseline}
+      src={logoBaseline}
       alt="Made by Filigran logo"
       width={130}
       style={{
@@ -29,10 +34,13 @@ const LogoBaseline = () => {
 
 const LogoFiligran = () => {
   const theme = useTheme<Theme>();
+  const logoGradient = theme.palette.mode === 'dark'
+    ? logoFiligranGradientDark
+    : logoFiligranGradientLight;
 
   return (
     <img
-      src={logoFiligranGradient}
+      src={logoGradient}
       alt="Filigran Logo"
       style={{
         userSelect: 'none',
@@ -62,11 +70,15 @@ const LoginLayout = ({ settings, children }: LoginLayoutProps) => {
     background: theme.palette.designSystem.background.main,
   };
 
+  const background = theme.palette.mode === 'dark'
+    ? theme.palette.designSystem.gradient.background
+    : 'linear-gradient(100.35deg, #EAEAED 0%, #FEFEFF 100%)';
+
   const asideSx: SxProps = {
-    background: theme.palette.designSystem.gradient.background,
+    background,
     position: 'relative',
     overflow: 'hidden',
-    boxShadow: `8px 0px 9px 0px ${theme.palette.designSystem.background.main} inset`,
+    boxShadow: '8px 0px 9px 0px #0000000F inset',
   };
 
   return (
@@ -84,8 +96,12 @@ const LoginLayout = ({ settings, children }: LoginLayoutProps) => {
           {children}
         </Stack>
         <Box flex={2} sx={asideSx}>
-          {!isWhitemarkEnable && <LogoBaseline />}
-          <LogoFiligran />
+          {!isWhitemarkEnable && (
+            <>
+              <LogoBaseline />
+              <LogoFiligran />
+            </>
+          )}
         </Box>
       </Stack>
     </>

@@ -64,9 +64,11 @@ const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
               flexDirection: 'column',
             }}
           >
-            <LoginMarkdown sx={{ mb: 2 }}>
-              {loginMessage}
-            </LoginMarkdown>
+            {!!loginMessage && (
+              <LoginMarkdown sx={{ mb: 2 }}>
+                {loginMessage}
+              </LoginMarkdown>
+            )}
             <div style={{ minHeight: 170 }}>
               {!!resetPwdStep && <ResetPassword />}
               {showLoginForm && <LoginForm />}
