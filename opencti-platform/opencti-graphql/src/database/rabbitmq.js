@@ -205,7 +205,11 @@ export const getBestBackgroundConnectorId = async (context, user) => {
 export const listenRouting = (connectorId) => `${RABBIT_QUEUE_PREFIX}listen_routing_${connectorId}`;
 export const pushRouting = (connectorId) => `${RABBIT_QUEUE_PREFIX}push_routing_${connectorId}`;
 
-// Dead letter queue ID for bundles that are too large
+// Dead letter queue routing ID for bundles that are too large.
+// NOTE:
+// - This constant is used here to build the dead_letter_routing value in connectorConfig.
+// - The full CONNECTOR_QUEUE_BUNDLES_TOO_LARGE queue configuration object is defined later
+//   in this file near the rest of the queue declarations.
 const CONNECTOR_QUEUE_BUNDLES_TOO_LARGE_ID = 'too-large-bundle';
 
 /**
