@@ -4570,6 +4570,7 @@
   "You see only marking definitions that can be shared (defined by the admin)": "You see only marking definitions that can be shared (defined by the admin)",
   "You should activate EE to use this feature": "You should activate EE to use this feature",
   "You should provide a variable name": "You should provide a variable name",
+  "You were automatically logged out due to session expiration.": "You were automatically logged out due to session expiration.",
   "You will be able to revert this change if needed. ": "You will be able to revert this change if needed. ",
   "You will be automatically logged out at end of the timer.": "You will be automatically logged out at end of the timer.",
   "You will find here the computed state.": "You will find here the computed state.",

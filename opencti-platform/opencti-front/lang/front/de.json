@@ -4570,6 +4570,7 @@
   "You see only marking definitions that can be shared (defined by the admin)": "Sie sehen nur Markierungsdefinitionen, die freigegeben werden können (vom Administrator definiert)",
   "You should activate EE to use this feature": "Sie sollten EE aktivieren, um diese Funktion zu nutzen",
   "You should provide a variable name": "Sie sollten einen Variablennamen angeben",
+  "You were automatically logged out due to session expiration.": "Sie wurden automatisch abgemeldet, weil Ihre Sitzung abgelaufen ist.",
   "You will be able to revert this change if needed. ": "Sie können diese Änderung bei Bedarf rückgängig machen.",
   "You will be automatically logged out at end of the timer.": "Sie werden nach Ablauf der Zeit automatisch abgemeldet.",
   "You will find here the computed state.": "Hier finden Sie den berechneten Status.",

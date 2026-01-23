@@ -4570,6 +4570,7 @@
   "You see only marking definitions that can be shared (defined by the admin)": "Вы видите только те определения маркировки, которые могут быть доступны (определены администратором).",
   "You should activate EE to use this feature": "Чтобы использовать эту функцию, необходимо активировать EE",
   "You should provide a variable name": "Вы должны указать имя переменной",
+  "You were automatically logged out due to session expiration.": "Вы автоматически вышли из системы из-за истечения срока действия сессии.",
   "You will be able to revert this change if needed. ": "При необходимости вы сможете отменить это изменение.",
   "You will be automatically logged out at end of the timer.": "По окончании таймера вы автоматически выйдете из системы.",
   "You will find here the computed state.": "Здесь вы найдете вычисленное состояние.",

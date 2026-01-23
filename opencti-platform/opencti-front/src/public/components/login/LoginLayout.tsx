@@ -53,6 +53,9 @@ interface LoginLayoutProps extends PropsWithChildren {
 const LoginLayout = ({ settings, children }: LoginLayoutProps) => {
   const theme = useTheme<Theme>();
 
+  const isEnterpriseEdition = settings.platform_enterprise_edition_license_validated;
+  const isWhitemarkEnable = settings.platform_whitemark && isEnterpriseEdition;
+
   const contentSx: SxProps = {
     minWidth: 500,
     overflow: 'hidden',
@@ -81,7 +84,7 @@ const LoginLayout = ({ settings, children }: LoginLayoutProps) => {
           {children}
         </Stack>
         <Box flex={2} sx={asideSx}>
-          <LogoBaseline />
+          {!isWhitemarkEnable && <LogoBaseline />}
           <LogoFiligran />
         </Box>
       </Stack>

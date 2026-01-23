@@ -4570,6 +4570,7 @@
   "You see only marking definitions that can be shared (defined by the admin)": "您只能看到可以共享的标记定义（由管理员定义）",
   "You should activate EE to use this feature": "您应激活 EE 才能使用此功能",
   "You should provide a variable name": "您应该提供一个变量名",
+  "You were automatically logged out due to session expiration.": "由于会话过期，您已自动注销。",
   "You will be able to revert this change if needed. ": "如果需要，您可以恢复这一更改。",
   "You will be automatically logged out at end of the timer.": "计时器结束时您将自动注销",
   "You will find here the computed state.": "您将在此处找到计算后的状态。",

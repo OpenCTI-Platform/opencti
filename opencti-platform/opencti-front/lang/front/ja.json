@@ -4570,6 +4570,7 @@
   "You see only marking definitions that can be shared (defined by the admin)": "共有可能な（管理者によって定義された）マーキング定義のみが表示されます。",
   "You should activate EE to use this feature": "この機能を使用するにはEEを有効にする必要がある",
   "You should provide a variable name": "変数名を指定してください",
+  "You were automatically logged out due to session expiration.": "セッションの有効期限が切れたため、自動的にログアウトされました。",
   "You will be able to revert this change if needed. ": "必要に応じて、この変更を元に戻すことができます。",
   "You will be automatically logged out at end of the timer.": "タイマーが終了すると自動的にログアウトされます",
   "You will find here the computed state.": "ここで計算された状態が表示されます。",

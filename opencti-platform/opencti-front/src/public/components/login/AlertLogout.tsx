@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import LoginAlert from './LoginAlert';
+import { useFormatter } from '../../../components/i18n';
 
 const AlertLogout = () => {
+  const { t_i18n } = useFormatter();
+
   // Session expiration automatic logout functions
   const [expired, setExpired] = useState(false);
   const handleExpiredChange = () => {
@@ -20,7 +23,7 @@ const AlertLogout = () => {
 
   return (
     <LoginAlert severity="warning">
-      You were automatically logged out due to session expiration.
+      {t_i18n('You were automatically logged out due to session expiration.')}
     </LoginAlert>
   );
 };

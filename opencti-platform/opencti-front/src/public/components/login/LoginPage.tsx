@@ -39,9 +39,6 @@ const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
     }, 1);
   };
 
-  // const isEnterpriseEdition = settings.platform_enterprise_edition_license_validated;
-  // const isWhitemarkEnable = settings.platform_whitemark && isEnterpriseEdition;
-
   const consentOk = !hasConsentMessage || (hasConsentMessage && checked);
   const showLoginForm = consentOk && hasAuthForm && !resetPwdStep;
 

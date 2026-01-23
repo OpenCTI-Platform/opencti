@@ -30,18 +30,15 @@ const OtpValidationPage = ({ settings }: OtpValidationPageProps) => {
         >
           <OtpValidation />
 
-          <a
+          <Button
+            size="small"
+            variant="tertiary"
+            sx={{ ml: -1.5 }}
+            component="a"
             href={`${APP_BASE_PATH}/logout`}
-            rel="noreferrer"
           >
-            <Button
-              size="small"
-              variant="tertiary"
-              sx={{ ml: -1.5 }}
-            >
-              {t_i18n('Back to login')}
-            </Button>
-          </a>
+            {t_i18n('Back to login')}
+          </Button>
         </Card>
       </Stack>
     </LoginLayout>
