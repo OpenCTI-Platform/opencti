@@ -12,7 +12,7 @@ jobs:
       name: Build and push alpine image
       uses: ./.github/workflows/ci-docker-build.yml
       with:
-        image_tag: ${{ github.ref_name == 'master'  && 'rolling' || github.ref_name == 'release/current' && 'prerelease' }}
+        image_tag: ${{ github.ref_name == 'master'  && 'rolling' || github.ref_name == 'release/current' && 'prerelease' || github.ref_name }}
         is_client_python_local: true
         is_publish_to_registry: true
       secrets: inherit
@@ -21,7 +21,7 @@ jobs:
       name: Build and push FIPS image
       uses: ./.github/workflows/ci-docker-build.yml
       with:
-        image_tag: ${{ github.ref_name == 'master'  && 'rolling' || github.ref_name == 'release/current' && 'prerelease' }}
+        image_tag: ${{ github.ref_name == 'master'  && 'rolling' || github.ref_name == 'release/current' && 'prerelease' || github.ref_name }}
         is_client_python_local: true
         is_publish_to_registry: true
         is_fips: true
