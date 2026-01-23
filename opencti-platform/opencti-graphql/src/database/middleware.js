@@ -3346,7 +3346,7 @@ const internalCreateEntityRaw = async (context, user, rawInput, type, opts = {})
       // We can't merge, so we need at least to upsert one element.
       // First, looking for an instance that directly has the provided stix id
       // If we found an entity by the official stix_id, no need to cumulate the id, only upsert information.
-      const targetByStixId = R.head(filteredEntities.filter((n) => getInstanceIds(n).includes(resolvedInput.stix_id)));
+      const targetByStixId = filteredEntities.filter((n) => getInstanceIds(n).includes(resolvedInput.stix_id))[0];
       // If not found by stix id, we select the first one, cumulate the stix id for upsert
       const selectedTarget = targetByStixId ?? R.head(filteredEntities.filter((n) => !getInstanceIds(n).includes(resolvedInput.stix_id)));
       const cleanInputPatch = cleanEntityForIdsCollision(resolvedInput, type, selectedTarget, filteredEntities);
