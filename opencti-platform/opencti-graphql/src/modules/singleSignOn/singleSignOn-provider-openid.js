@@ -7,9 +7,9 @@ import { addUserLoginCount } from '../../manager/telemetryManager';
 import { isNotEmptyField } from '../../database/utils';
 import { jwtDecode } from 'jwt-decode';
 import { convertKeyValueToJsConfiguration, genConfigMapper, providerLoginHandler } from './singleSignOn-providers';
-import { AuthType, EnvStrategyType } from '../../config/providers-configuration';
+import { AuthType, EnvStrategyType } from './providers-configuration';
 import { logAuthInfo } from './singleSignOn-domain';
-import { registerAuthenticationProvider } from '../../config/providers-initialization';
+import { registerAuthenticationProvider } from './providers-initialization';
 
 // (ssoEntity: BasicStoreEntitySingleSignOn)
 export const registerOpenIdStrategy = async (ssoEntity) => {

@@ -20,11 +20,20 @@ import { isNotEmptyField } from '../../database/utils';
 import * as R from 'ramda';
 import { registerAuthenticationProvider, unregisterAuthenticationProvider } from './providers-initialization';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
-import { isSingleSignOnInGuiEnabled } from './singleSignOn';
 import { registerSAMLStrategy } from './singleSignOn-provider-saml';
 import { registerLDAPStrategy } from './singleSignOn-provider-ldap';
+import { GraphQLError } from 'graphql/index';
+import { registerOpenIdStrategy } from './singleSignOn-provider-openid';
 
-export const providerLoginHandler = (userInfo: any, done: any, opts = {}) => {
+export interface ProviderUserInfo {
+  email: string;
+  name: string;
+  firstname?: string;
+  lastname?: string;
+  provider_metadata?: any;
+}
+
+export const providerLoginHandler = (userInfo: ProviderUserInfo, done: any, opts = {}) => {
   loginFromProvider(userInfo, opts)
     .then((user: any) => {
       logApp.info('[SSO] providerLoginHandler user:', user);
@@ -156,41 +165,58 @@ export const unregisterStrategy = async (authenticationStrategy: BasicStoreEntit
 };
 
 export const registerStrategy = async (authenticationStrategy: BasicStoreEntitySingleSignOn) => {
-  if (authenticationStrategy.strategy && authenticationStrategy.identifier) {
-    switch (authenticationStrategy.strategy) {
-      case StrategyType.LocalStrategy:
-        logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_LOCAL);
-        if (authenticationStrategy.enabled) {
-          await registerLocalStrategy();
-        } else {
-          await registerAdminLocalStrategy();
-        }
-        break;
-      case StrategyType.SamlStrategy:
-        logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_SAML);
-        await registerSAMLStrategy(authenticationStrategy);
-        break;
-      case StrategyType.OpenIdConnectStrategy:
-        logApp.warn(`[SSO] ${authenticationStrategy.strategy} not implemented in UI yet`);
-        break;
-      case StrategyType.LdapStrategy:
-        logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_SAML);
-        await registerLDAPStrategy(authenticationStrategy);
-        break;
-      case StrategyType.HeaderStrategy:
-      case StrategyType.ClientCertStrategy:
-        logApp.warn(`[SSO] ${authenticationStrategy.strategy} not implemented in UI yet`);
-        break;
+  try {
+    if (authenticationStrategy.strategy && authenticationStrategy.identifier) {
+      switch (authenticationStrategy.strategy) {
+        case StrategyType.LocalStrategy:
+          logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_LOCAL);
+          if (authenticationStrategy.enabled) {
+            await registerLocalStrategy();
+          } else {
+            await registerAdminLocalStrategy();
+          }
+          break;
+        case StrategyType.SamlStrategy:
+          logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_SAML);
+          await registerSAMLStrategy(authenticationStrategy);
+          break;
+        case StrategyType.OpenIdConnectStrategy:
+          logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_OPENID);
+          await registerOpenIdStrategy(authenticationStrategy);
+          break;
+        case StrategyType.LdapStrategy:
+          logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_SAML);
+          await registerLDAPStrategy(authenticationStrategy);
+          break;
+        case StrategyType.HeaderStrategy:
+        case StrategyType.ClientCertStrategy:
+          logApp.warn(`[SSO] ${authenticationStrategy.strategy} not implemented in UI yet`);
+          break;
 
-      default:
-        logAuthError('Unknown strategy should not be possible, skipping', undefined, {
-          name: authenticationStrategy?.name,
-          strategy: authenticationStrategy.strategy,
-        });
-        break;
+        default:
+          logAuthError('Unknown strategy should not be possible, skipping', undefined, {
+            name: authenticationStrategy?.name,
+            strategy: authenticationStrategy.strategy,
+          });
+          break;
+      }
+    } else {
+      logAuthError('[SSO INIT] configuration without strategy or identifier should not be possible, skipping', undefined, { id: authenticationStrategy?.id, strategy: authenticationStrategy.strategy, identifier: authenticationStrategy.identifier });
     }
-  } else {
-    logAuthError('[SSO INIT] configuration without strategy or identifier should not be possible, skipping', undefined, { id: authenticationStrategy?.id, strategy: authenticationStrategy.strategy, identifier: authenticationStrategy.identifier });
+  } catch (e) {
+    if (e instanceof GraphQLError) {
+      logAuthError(
+        `Error when initializing an authentication provider (id: ${authenticationStrategy?.id ?? 'no id'}, identifier: ${authenticationStrategy?.identifier ?? 'no identifier'}), cause: ${e.message}`,
+        undefined,
+        { message: e.message, data: e.extensions.data },
+      );
+    } else {
+      logAuthError(
+        `Unknown error when initializing an authentication provider (id: ${authenticationStrategy?.id ?? 'no id'}, identifier: ${authenticationStrategy?.identifier ?? 'no identifier'})`,
+        undefined,
+        e,
+      );
+    }
   }
 };
 
@@ -205,24 +231,22 @@ export const initAuthenticationProviders = async (context: AuthContext, user: Au
     logAuthInfo('configuring default local strategy', EnvStrategyType.STRATEGY_LOCAL);
     await registerLocalStrategy();
   } else {
-    if (isSingleSignOnInGuiEnabled) {
-      const providersFromDatabase = await findAllSingleSignOn(context, user);
+    const providersFromDatabase = await findAllSingleSignOn(context, user);
 
-      if (providersFromDatabase.length === 0) {
-        // No configuration in database, fallback to default local strategy
-        logAuthInfo('configuring default local strategy', EnvStrategyType.STRATEGY_LOCAL);
-        await registerLocalStrategy();
-      } else {
-        for (let i = 0; i < providersFromDatabase.length; i++) {
-          await registerStrategy(providersFromDatabase[i]);
-        }
+    if (providersFromDatabase.length === 0) {
+      // No configuration in database, fallback to default local strategy
+      logAuthInfo('configuring default local strategy', EnvStrategyType.STRATEGY_LOCAL);
+      await registerLocalStrategy();
+    } else {
+      for (let i = 0; i < providersFromDatabase.length; i++) {
+        await registerStrategy(providersFromDatabase[i]);
       }
+    }
 
-      // At the end if there is no local, need to add the internal local
-      if (!isStrategyActivated(EnvStrategyType.STRATEGY_LOCAL)) {
-        logAuthWarn('No local strategy configured, adding it', EnvStrategyType.STRATEGY_LOCAL);
-        await registerLocalStrategy();
-      }
+    // At the end if there is no local, need to add the internal local
+    if (!isStrategyActivated(EnvStrategyType.STRATEGY_LOCAL)) {
+      logAuthWarn('No local strategy configured, adding it', EnvStrategyType.STRATEGY_LOCAL);
+      await registerLocalStrategy();
     }
   }
 };

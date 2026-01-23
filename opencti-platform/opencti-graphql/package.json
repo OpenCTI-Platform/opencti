@@ -27,7 +27,7 @@
     "test:dev:resume": "SKIP_CLEANUP_PLATFORM=true vitest run --config vitest.config.dev.ts",
     "test:dev": "vitest run --config vitest.config.dev.ts",
     "test:ci-unit": "vitest --bail 1 run --config vitest.config.ci-unit.ts",
-    "test:ci-integration": "vitest run --config vitest.config.ci-integration.ts",
+    "test:ci-integration": "vitest --bail 1 run --config vitest.config.ci-integration.ts",
     "test:ci-integration-sync": "vitest --bail 1 run --config vitest.config.ci-integration-sync.ts",
     "test:ci-rules-and-others": "vitest --bail 1 run --config vitest.config.ci-rules-and-others.ts",
     "test:watch:resume": "SKIP_CLEANUP_PLATFORM=true vitest watch --config vitest.config.dev.ts",

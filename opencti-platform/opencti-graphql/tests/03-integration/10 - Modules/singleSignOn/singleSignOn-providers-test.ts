@@ -3,7 +3,7 @@ import { convertKeyValueToJsConfiguration, initAuthenticationProviders, register
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import type { BasicStoreEntitySingleSignOn } from '../../../../src/modules/singleSignOn/singleSignOn-types';
 import { type GroupsManagement, type OrganizationsManagement, StrategyType } from '../../../../src/generated/graphql';
-import { buildSAMLOptions, computeSamlGroupAndOrg } from '../../../../src/modules/singleSignOn/singleSignOn-provider-saml';
+import { buildSAMLOptions, computeSamlGroupAndOrg, computeSamlUserInfo } from '../../../../src/modules/singleSignOn/singleSignOn-provider-saml';
 import { type ProviderConfiguration, PROVIDERS } from '../../../../src/modules/singleSignOn/providers-configuration';
 
 describe('Single sign on Provider coverage tests', () => {
@@ -37,7 +37,6 @@ describe('Single sign on Provider coverage tests', () => {
 
       // WHEN initialization is done
       await initAuthenticationProviders(testContext, ADMIN_USER);
-      console.log('PROVIDERS:', PROVIDERS);
 
       // THEN local strategy is configured and enabled
       expect(PROVIDERS).toStrictEqual([
@@ -57,7 +56,6 @@ describe('Single sign on Provider coverage tests', () => {
 
       // WHEN calling addLocalStrategy twice
       await registerLocalStrategy();
-      console.log('PROVIDERS:', PROVIDERS);
       await registerLocalStrategy();
 
       // THEN only last local strategy is configured and enabled
@@ -123,8 +121,47 @@ describe('Single sign on Provider coverage tests', () => {
   });
 
   describe('SAML userInfo mapping coverage', () => {
-    it.todo('should SAML user info work', async () => {
-      // need to cover computeSamlUserInfo
+    it('should SAML user info with default config', async () => {
+      const samlProfile = { nameID: 'samltestuser1@opencti.io' };
+      const ssoEntity: Partial<BasicStoreEntitySingleSignOn> = {
+        identifier: 'saml',
+        configuration: [
+          { key: 'issuer', type: 'string', value: 'openctisaml_default' },
+          { key: 'entryPoint', type: 'string', value: 'http://localhost:8888/realms/master/protocol/saml' },
+          { key: 'callbackUrl', type: 'string', value: 'http://localhost:3000/auth/saml/callback' },
+          { key: 'idpCert', type: 'string', value: 'totallyFakeCertGroups' },
+        ],
+      };
+      const ssoConfiguration: any = convertKeyValueToJsConfiguration(ssoEntity as BasicStoreEntitySingleSignOn);
+
+      const result = computeSamlUserInfo(ssoConfiguration, samlProfile);
+      expect(result.email).toBe('samltestuser1@opencti.io');
+      expect(result.name).toBe('');
+      expect(result.firstname).toBe('');
+      expect(result.lastname).toBe('');
+    });
+
+    it('should SAML user info with advanced config works', async () => {
+      const samlProfile = { nameID: 'ada', theMail: 'samltestuser1@opencti.io', theFirsname: 'Ada', theLastName: 'Lovelace', theAccount: 'Duchess Ada' };
+      const ssoEntity: Partial<BasicStoreEntitySingleSignOn> = {
+        identifier: 'saml',
+        configuration: [
+          { key: 'issuer', type: 'string', value: 'openctisaml_default' },
+          { key: 'entryPoint', type: 'string', value: 'http://localhost:8888/realms/master/protocol/saml' },
+          { key: 'callbackUrl', type: 'string', value: 'http://localhost:3000/auth/saml/callback' },
+          { key: 'account_attribute', type: 'string', value: 'theAccount' },
+          { key: 'firstname_attribute', type: 'string', value: 'theFirsname' },
+          { key: 'lastname_attribute', type: 'string', value: 'theLastName' },
+          { key: 'mail_attribute', type: 'string', value: 'theMail' },
+        ],
+      };
+      const ssoConfiguration: any = convertKeyValueToJsConfiguration(ssoEntity as BasicStoreEntitySingleSignOn);
+
+      const result = computeSamlUserInfo(ssoConfiguration, samlProfile);
+      expect(result.email).toBe('samltestuser1@opencti.io');
+      expect(result.name).toBe('Duchess Ada');
+      expect(result.firstname).toBe('Ada');
+      expect(result.lastname).toBe('Lovelace');
     });
   });
 

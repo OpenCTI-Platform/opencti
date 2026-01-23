@@ -7,7 +7,7 @@ import { ConfigurationError } from '../../config/errors';
 import type { PassportSamlConfig, VerifyWithoutRequest } from '@node-saml/passport-saml/lib/types';
 import { isNotEmptyField } from '../../database/utils';
 import type { GroupsManagement, OrganizationsManagement } from '../../generated/graphql';
-import { convertKeyValueToJsConfiguration, genConfigMapper, parseValueAsType, providerLoginHandler } from './singleSignOn-providers';
+import { convertKeyValueToJsConfiguration, genConfigMapper, parseValueAsType, providerLoginHandler, type ProviderUserInfo } from './singleSignOn-providers';
 import { Strategy as SamlStrategy } from '@node-saml/passport-saml/lib/strategy';
 import * as R from 'ramda';
 
@@ -97,7 +97,8 @@ export const computeSamlUserInfo = (ssoConfiguration: any, samlProfile: any) => 
   if (!userEmail) {
     throw ConfigurationError('No userEmail found in SAML response, please verify SAML server and OpenCTI configuration', { profile: userEmail, openctiMailAttribute: ssoConfiguration.mail_attribute });
   }
-  return { email: userEmail, name: userName, firstname, lastname, provider_metadata: { nameID, nameIDFormat } };
+  const userInfo: ProviderUserInfo = { email: userEmail, name: userName, firstname, lastname, provider_metadata: { nameID, nameIDFormat } };
+  return userInfo;
 };
 
 export const registerSAMLStrategy = async (ssoEntity: BasicStoreEntitySingleSignOn) => {
@@ -122,7 +123,7 @@ export const registerSAMLStrategy = async (ssoEntity: BasicStoreEntitySingleSign
 
     if (!isGroupBaseAccess || groupsToAssociate.length > 0) {
       const opts = computeSamlGroupAndOrg(ssoConfiguration, profile, groupsManagement, orgsManagement);
-      const userInfo = computeSamlUserInfo(ssoConfiguration, profile);
+      const userInfo: ProviderUserInfo = computeSamlUserInfo(ssoConfiguration, profile);
       addUserLoginCount();
       logAuthInfo('All configuration is fine, login user with', EnvStrategyType.STRATEGY_SAML, { opts, userInfo });
       providerLoginHandler(userInfo, done, opts);
