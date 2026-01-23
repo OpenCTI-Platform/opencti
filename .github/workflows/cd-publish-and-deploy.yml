@@ -1,7 +1,9 @@
 name: Publish and deploy to staging
 
 on:
-  push:
+  workflow_run:
+    workflows: [OpenCTI CI]
+    types: [completed]
     ## TODO Switch branches when ready to activate
     # branches: [master,release/current]
     branches: [issue/13571-build-images]
@@ -9,6 +11,7 @@ on:
 jobs:
 
   wf-build-image:
+      if: ${{ github.event.workflow_run.conclusion == 'success' }}
       name: Build and push alpine image
       uses: ./.github/workflows/ci-docker-build.yml
       with:
@@ -18,6 +21,7 @@ jobs:
       secrets: inherit
 
   wf-build-fips-image:
+      if: ${{ github.event.workflow_run.conclusion == 'success' }}
       name: Build and push FIPS image
       uses: ./.github/workflows/ci-docker-build.yml
       with:
@@ -28,6 +32,7 @@ jobs:
       secrets: inherit
 
   wf-publish-package:
+      if: ${{ github.event.workflow_run.conclusion == 'success' }}
       name: Publish OpenCTI platform packages
       uses: ./.github/workflows/cd-publish-package.yml
       with:
