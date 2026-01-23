@@ -60,7 +60,7 @@ export interface SSODefinitionFormValues {
   organizations_path: string[];
   organizations_mapping: string[];
   organizations_mapping_source: string[];
-  organizations_mapping_target: { label: string, value: string }[];
+  organizations_mapping_target: { label: string; value: string }[];
   read_userinfo: boolean;
   client_id: string;
   client_secret: string;
