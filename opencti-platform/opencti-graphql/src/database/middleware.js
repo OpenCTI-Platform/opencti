@@ -2953,7 +2953,7 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
 
   // when creating stix ref, we must check confidence on from side (this count has modifying this element itself)
   // Through UI we use direct relationship creation ref to add label, external ref ...
-  // That's also true for some connectors that directly used the API. It's a bad practice but still a reality
+  // This is also true for some connectors that directly use the API. It's a bad practice but still a reality
   if (isStixRefRelationship(relationshipType) && shouldCheckConfidenceOnRefRelationship(relationshipType)) {
     controlUserConfidenceAgainstElement(user, from);
   }
@@ -3344,7 +3344,7 @@ const internalCreateEntityRaw = async (context, user, rawInput, type, opts = {})
         await mergeEntities(context, user, target.internal_id, sources.map((s) => s.internal_id), { locks: participantIds });
         return upsertElement(context, user, target, type, resolvedInput, { ...opts, locks: participantIds });
       }
-      // We can't merge, so we need a least to upsert one element.
+      // We can't merge, so we need at least to upsert one element.
       // First, looking for an instance that directly has the provided stix id
       // If we found an entity by the official stix_id, no need to cumulate the id, only upsert information.
       const targetByStixId = R.head(filteredEntities.filter((n) => getInstanceIds(n).includes(resolvedInput.stix_id)));
@@ -3428,7 +3428,7 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
     // Await is mandatory here to correctly catch the promise exception.
     return await internalCreateEntityRaw(context, user, rawInput, type, opts);
   } catch (e) {
-    // In case of insufficient confidence level, don't reject continue to upsert
+    // In case of insufficient confidence level, don't reject and continue to upsert
     // as upsert have a complex strategy about confidence that doesn't reject everything
     if (e?.extensions?.data?.doc_code === INSUFFICIENT_CONFIDENCE_LEVEL) {
       logApp.warn('Merging stopped because of user confidence level, applying upsert', { cause: e });
