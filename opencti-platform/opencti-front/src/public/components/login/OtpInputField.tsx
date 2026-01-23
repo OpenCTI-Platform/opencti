@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import OtpInput from 'react-otp-input';
 import makeStyles from '@mui/styles/makeStyles';
-import type { Theme } from '../../components/Theme';
+import type { Theme } from '../../../components/Theme';
 
 export const OTP_CODE_SIZE = 6;
 
@@ -14,12 +14,11 @@ const useStyles = makeStyles<Theme>((theme) => ({
       theme.palette.mode === 'dark' ? '255,255,255' : '0,0,0'
     },.15)`,
     borderRadius: 4,
-    minWidth: '54px',
+    minWidth: '42px',
     height: '54px',
     fontSize: theme.typography.h2.fontSize,
     fontWeight: theme.typography.h2.fontWeight,
     backgroundColor: 'transparent',
-    margin: '0 5px 0 5px',
     color: theme.palette.text?.primary,
     '&:focus': {
       border: `2px solid ${theme.palette.primary.main}`,
@@ -47,6 +46,12 @@ const OtpInputField: FunctionComponent<OtpInputFieldProps> = ({
       inputType="tel"
       shouldAutoFocus={true}
       inputStyle={classes.inputStyle}
+      containerStyle={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        width: '100%',
+      }}
       renderInput={(props) => <input disabled={isDisabled} {...props} />}
     />
   );

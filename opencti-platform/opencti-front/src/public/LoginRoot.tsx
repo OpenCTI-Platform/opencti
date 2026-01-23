@@ -4,9 +4,12 @@ import { StyledEngineProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ConnectedThemeProvider } from '../components/AppThemeProvider';
 import { ConnectedIntlProvider } from '../components/AppIntlProvider';
-import Login from './components/Login';
+import LoginPage from './components/login/LoginPage';
 import { environment } from '../relay/environment';
 import { LoginRootPublicQuery } from './__generated__/LoginRootPublicQuery.graphql';
+import { LoginContextProvider } from './components/login/loginContext';
+import OtpValidationPage from './components/login/OtpValidationPage';
+import OtpActivationPage from './components/login/OtpActivationPage';
 
 export const rootPublicQuery = graphql`
   query LoginRootPublicQuery {
@@ -38,9 +41,12 @@ export const rootPublicQuery = graphql`
         provider
       }
       playground_enabled
+      ...ExternalAuthsFragment
+      ...LoginLogoFragment
       ...AppIntlProvider_settings
       ...AppThemeProvider_settings
       ...PublicSettingsProvider_settings
+      ...ConsentMessageFragment
       metrics_definition {
         entity_type
         metrics {
@@ -69,7 +75,17 @@ const LoginRoot = ({ type }: { type: string }) => {
       <ConnectedThemeProvider settings={data.publicSettings}>
         <CssBaseline />
         <ConnectedIntlProvider settings={data.publicSettings}>
-          <Login settings={data.publicSettings} type={type} />
+          <LoginContextProvider>
+            {type === '2FA_VALIDATION' && (
+              <OtpValidationPage settings={data.publicSettings} />
+            )}
+            {type === '2FA_ACTIVATION' && (
+              <OtpActivationPage settings={data.publicSettings} />
+            )}
+            {type === 'LOGIN' && (
+              <LoginPage settings={data.publicSettings} />
+            )}
+          </LoginContextProvider>
         </ConnectedIntlProvider>
       </ConnectedThemeProvider>
     </StyledEngineProvider>

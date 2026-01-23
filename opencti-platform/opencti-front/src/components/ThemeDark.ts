@@ -137,6 +137,24 @@ const ThemeDark = (
         light: '#D6C2FA',
         dark: '#5E1AD5',
       },
+      background: {
+        main: '#070D19',
+        bg1: '#0C1524',
+        bg2: '#0D182A',
+        bg3: '#253348',
+        bg4: '#1C2F49',
+        disabled: '#363B46',
+      },
+      border: {
+        main: '#2B3447',
+        border1: '#424751',
+        border2: '#1C253A',
+      },
+      gradient: {
+        background: 'linear-gradient(100.35deg, #070D19 0%, #0C1524 100%)',
+        ia: 'linear-gradient(90deg, #D6C2FA 0.67%, #B286FF 100.67%)',
+        focus: 'linear-gradient(90deg, #0FBCFF -3.68%, #00F1BD 106.62%)',
+      },
       alert: {
         info: {
           primary: '#4DCCFF',

@@ -197,6 +197,30 @@ type MainPalette = {
   dark: string;
 };
 
+// Backgrounds
+type BackgroundPalette = {
+  main: string;
+  bg1: string;
+  bg2: string;
+  bg3: string;
+  bg4: string;
+  disabled: string;
+};
+
+// Borders
+type BorderPalette = {
+  main: string;
+  border1: string;
+  border2: string;
+};
+
+// Gradients
+type GradientPalette = {
+  background: string;
+  ia: string;
+  focus: string;
+};
+
 // Alert levels
 type AlertType = {
   primary: string;
@@ -220,6 +244,9 @@ type DesignSystemPalette = {
   secondary: MainPalette;
   destructive: MainPalette;
   ia: MainPalette;
+  background: BackgroundPalette;
+  border: BorderPalette;
+  gradient: GradientPalette;
   alert: AlertPalette;
   tertiary: TertiaryPalette;
 };

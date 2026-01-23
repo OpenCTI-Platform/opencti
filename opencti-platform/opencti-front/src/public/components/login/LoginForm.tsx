@@ -1,4 +1,3 @@
-import React, { FunctionComponent } from 'react';
 import { Field, Form, Formik } from 'formik';
 import { TextField } from 'formik-mui';
 import { graphql } from 'react-relay';
@@ -8,19 +7,17 @@ import { RelayResponsePayload } from 'relay-runtime/lib/store/RelayStoreTypes';
 import { useTheme } from '@mui/styles';
 import Button from '@common/button/Button';
 import { Theme } from '@mui/material/styles/createTheme';
-import { useFormatter } from '../../components/i18n';
-import useApiMutation from '../../utils/hooks/useApiMutation';
+import { useFormatter } from '../../../components/i18n';
+import useApiMutation from '../../../utils/hooks/useApiMutation';
+import { Stack } from '@mui/material';
+import { useLoginContext } from './loginContext';
+import { ResetPwdStep } from './ResetPassword';
 
 const loginMutation = graphql`
   mutation LoginFormMutation($input: UserLoginInput!) {
     token(input: $input)
   }
 `;
-
-const loginValidation = (t: (v: string) => string) => Yup.object().shape({
-  email: Yup.string().required(t('This field is required')),
-  password: Yup.string().required(t('This field is required')),
-});
 
 interface LoginFormValues {
   email: string;
@@ -31,35 +28,31 @@ interface RelayResponseError extends Error {
   res?: RelayResponsePayload;
 }
 
-interface LoginFormProps {
-  onClickForgotPassword: () => void;
-  email: string;
-  setEmail: (value: string) => void;
-}
-
-const LoginForm: FunctionComponent<LoginFormProps> = ({ onClickForgotPassword, email, setEmail }) => {
+const LoginForm = () => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
+  const { setValue, email } = useLoginContext();
+
   const [commitLoginMutation] = useApiMutation(loginMutation);
+
   const onSubmit: FormikConfig<LoginFormValues>['onSubmit'] = (
-    values,
+    input,
     { setSubmitting, setErrors },
   ) => {
     commitLoginMutation({
-      variables: {
-        input: values,
-      },
+      variables: { input },
+      onCompleted: () => window.location.reload(),
       onError: (error: RelayResponseError) => {
-        const errorMessage = t_i18n(
-          error.res?.errors?.at?.(0)?.message ?? 'Unknown',
-        );
+        const errorMsg = error.res?.errors?.at?.(0)?.message;
+        const errorMessage = t_i18n(errorMsg ?? 'Unknown');
         setErrors({ email: errorMessage });
         setSubmitting(false);
       },
-      onCompleted: () => {
-        window.location.reload();
-      },
     });
+  };
+
+  const goToResetPwd = () => {
+    setValue('resetPwdStep', ResetPwdStep.ASK_RESET);
   };
 
   const initialValues = {
@@ -67,11 +60,16 @@ const LoginForm: FunctionComponent<LoginFormProps> = ({ onClickForgotPassword, e
     password: '',
   };
 
+  const loginValidation = Yup.object().shape({
+    email: Yup.string().required(t_i18n('This field is required')),
+    password: Yup.string().required(t_i18n('This field is required')),
+  });
+
   return (
     <>
       <Formik
         initialValues={initialValues}
-        validationSchema={loginValidation(t_i18n)}
+        validationSchema={loginValidation}
         onSubmit={onSubmit}
       >
         {({ isSubmitting, isValid }) => (
@@ -82,7 +80,7 @@ const LoginForm: FunctionComponent<LoginFormProps> = ({ onClickForgotPassword, e
               label={t_i18n('Login')}
               fullWidth={true}
               onBlur={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                setEmail(e.currentTarget.value);
+                setValue('email', e.currentTarget.value);
               }}
             />
             <Field
@@ -93,19 +91,29 @@ const LoginForm: FunctionComponent<LoginFormProps> = ({ onClickForgotPassword, e
               fullWidth={true}
               style={{ marginTop: theme.spacing(2) }}
             />
-            <Button
-              type="submit"
-              disabled={isSubmitting || !isValid}
-              style={{ marginTop: theme.spacing(3) }}
+            <Stack
+              mt={3}
+              direction="row"
+              alignItems="center"
+              justifyContent="space-between"
             >
-              {t_i18n('Sign in')}
-            </Button>
+              <Button
+                variant="tertiary"
+                onClick={goToResetPwd}
+                sx={{ ml: -2 }}
+              >
+                {t_i18n('I forgot my password')}
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting || !isValid}
+              >
+                {t_i18n('Sign in')}
+              </Button>
+            </Stack>
           </Form>
         )}
       </Formik>
-      <div style={{ marginTop: theme.spacing(2), cursor: 'pointer' }}>
-        <a onClick={onClickForgotPassword}>{t_i18n('I forgot my password')}</a>
-      </div>
     </>
   );
 };

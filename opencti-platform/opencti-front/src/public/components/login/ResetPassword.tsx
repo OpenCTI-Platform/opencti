@@ -1,7 +1,7 @@
-import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
-import { Alert, AlertProps } from '@mui/material';
+import React, { PropsWithChildren, ReactNode, useEffect, useRef, useState } from 'react';
+import { Box, Stack } from '@mui/material';
 import Button from '@common/button/Button';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form as FormikForm, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import { TextField } from 'formik-mui';
@@ -9,18 +9,17 @@ import { useCookies } from 'react-cookie';
 import { graphql } from 'react-relay';
 import { useTheme } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';
-import { useFormatter } from '../../components/i18n';
-import useApiMutation from '../../utils/hooks/useApiMutation';
-import { handleErrorInForm } from '../../relay/environment';
-import OTPForm from './OTPForm';
+import { useFormatter } from '../../../components/i18n';
+import useApiMutation from '../../../utils/hooks/useApiMutation';
+import { handleErrorInForm } from '../../../relay/environment';
+import OtpValidation from './OtpValidation';
 import { ResetPasswordVerifyOtpMutation, ResetPasswordVerifyOtpMutation$data } from './__generated__/ResetPasswordVerifyOtpMutation.graphql';
 import { ResetPasswordAskSendOtpMutation } from './__generated__/ResetPasswordAskSendOtpMutation.graphql';
 import { ResetPasswordChangePasswordMutation } from './__generated__/ResetPasswordChangePasswordMutation.graphql';
+import { useLoginContext } from './loginContext';
 
-interface ResetProps {
-  onCancel: () => void;
-  email: string;
-  setEmail: (value: string) => void;
+interface InternalFormProps extends PropsWithChildren {
+  action?: ReactNode;
 }
 
 export const AskSendOtpMutation = graphql`
@@ -73,7 +72,7 @@ interface ResetPasswordFormValues {
   password_validation: string;
 }
 
-enum Step {
+export enum ResetPwdStep {
   ASK_RESET = 'ask',
   VALIDATE_OTP = 'validate',
   MFA = 'mfa',
@@ -83,39 +82,22 @@ const FLASH_COOKIE = 'opencti_flash';
 
 const RESEND_COOLDOWN_MS = 30000;
 
-type AlertMessageProps = {
-  text: string;
-} & AlertProps;
-
-const AlertMessage = ({ text, ...alertProps }: AlertMessageProps) => {
-  const theme = useTheme<Theme>();
-  return (
-    <Alert
-      variant="outlined"
-      style={{
-        marginBottom: theme.spacing(2),
-        textAlign: 'justify',
-      }}
-      {...alertProps}
-    >
-      {text}
-    </Alert>
-  );
-};
-
-const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmail }) => {
+const ResetPassword = () => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const [step, setStep] = useState(Step.ASK_RESET);
   const [cookies, , removeCookie] = useCookies([FLASH_COOKIE]);
   const [transactionId, setTransactionId] = useState('');
   const [otp, setOtp] = useState('');
 
-  const [validateOtpError, setValidateOtpError] = useState(false);
-  const [changePasswordError, setChangePasswordError] = useState(false);
-  const [resendCodeDisabled, setResendCodeDisabled] = useState(false);
-
   const resendTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const {
+    setValue,
+    email,
+    resetPwdStep,
+    validateOtpInError,
+    resendCodeDisabled,
+  } = useLoginContext();
 
   const flashError = cookies[FLASH_COOKIE] || '';
   removeCookie(FLASH_COOKIE);
@@ -127,6 +109,15 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmai
       }
     };
   }, []);
+
+  const changeStep = (step?: ResetPwdStep) => {
+    // Reset any error state
+    setValue('changePasswordInError', undefined);
+    setValue('validateOtpInError', undefined);
+    setValue('mfaInError', undefined);
+    // Change step
+    setValue('resetPwdStep', step);
+  };
 
   const [askSentOtpCommitMutation] = useApiMutation<ResetPasswordAskSendOtpMutation>(
     AskSendOtpMutation,
@@ -146,16 +137,20 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmai
   );
 
   const startResendCooldown = (onComplete?: () => void) => {
-    setResendCodeDisabled(true);
+    setValue('resendCodeDisabled', true);
 
     if (resendTimeoutRef.current) {
       clearTimeout(resendTimeoutRef.current);
     }
 
     resendTimeoutRef.current = setTimeout(() => {
-      setResendCodeDisabled(false);
+      setValue('resendCodeDisabled', false);
       onComplete?.();
     }, RESEND_COOLDOWN_MS);
+  };
+
+  const backToLogin = () => {
+    changeStep(undefined);
   };
 
   const handleResendOtp = () => {
@@ -183,9 +178,9 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmai
       },
       onCompleted: (response) => {
         setTransactionId(response.askSendOtp ?? '');
-        setEmail(values.email);
+        setValue('email', values.email);
         resetForm();
-        setStep(Step.VALIDATE_OTP);
+        changeStep(ResetPwdStep.VALIDATE_OTP);
         startResendCooldown();
       },
       onError: (error) => {
@@ -209,14 +204,14 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmai
       },
       onCompleted: (response: ResetPasswordVerifyOtpMutation$data) => {
         const mfaActivated = response.verifyOtp?.mfa_activated;
-        setValidateOtpError(false);
+        setValue('validateOtpInError', false);
         setOtp(values.otp);
         resetForm();
-        setStep(mfaActivated ? Step.MFA : Step.RESET_PASSWORD);
+        changeStep(mfaActivated ? ResetPwdStep.MFA : ResetPwdStep.RESET_PASSWORD);
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
-        setValidateOtpError(true);
+        setValue('validateOtpInError', true);
         setSubmitting(false);
       },
     });
@@ -236,22 +231,66 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmai
       },
       onCompleted: () => {
         resetForm();
-        onCancel();
+        setValue('pwdChanged', true);
+        backToLogin();
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
-        setChangePasswordError(true);
+        setValue('changePasswordInError', true);
       },
     });
   };
 
   const onCompletedVerifyMfa = () => {
-    setStep(Step.RESET_PASSWORD);
+    changeStep(ResetPwdStep.RESET_PASSWORD);
+  };
+
+  const Form = ({ children, action }: InternalFormProps) => {
+    return (
+      <FormikForm style={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        width: '100%',
+        height: '100%',
+      }}
+      >
+        <Box flex={1}>
+          {children}
+        </Box>
+        <Stack
+          mt={3}
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+        >
+          <div>
+            <Button
+              variant="tertiary"
+              onClick={backToLogin}
+              sx={{ ml: -2 }}
+            >
+              {t_i18n('Back to login')}
+            </Button>
+            {validateOtpInError && (
+              <Button
+                disabled={resendCodeDisabled}
+                variant="tertiary"
+                onClick={handleResendOtp}
+              >
+                {t_i18n('Resend code')}
+              </Button>
+            )}
+          </div>
+          {action}
+        </Stack>
+      </FormikForm>
+    );
   };
 
   return (
     <>
-      {step === Step.ASK_RESET && (
+      {resetPwdStep === ResetPwdStep.ASK_RESET && (
         <Formik
           initialValues={{ email }}
           validateOnMount={true}
@@ -260,30 +299,31 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmai
         >
           {({ isSubmitting, isValid }) => {
             return (
-              <Form>
+              <Form action={(
+                <Button
+                  type="submit"
+                  disabled={isSubmitting || !isValid || resendCodeDisabled}
+                >
+                  {t_i18n('Send reset code')}
+                </Button>
+              )}
+              >
                 <Field
                   component={TextField}
                   name="email"
                   label={t_i18n('Email address')}
                   fullWidth={true}
                   onBlur={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                    setEmail(e.currentTarget.value);
+                    setValue('email', e.currentTarget.value);
                   }}
                 />
-                <Button
-                  type="submit"
-                  disabled={isSubmitting || !isValid || resendCodeDisabled}
-                  style={{ marginTop: theme.spacing(3) }}
-                >
-                  {t_i18n('Send reset code')}
-                </Button>
               </Form>
             );
           }}
         </Formik>
       )}
 
-      {step === Step.VALIDATE_OTP && (
+      {resetPwdStep === ResetPwdStep.VALIDATE_OTP && (
         <Formik
           onSubmit={onSubmitValidateOtp}
           initialTouched={{ otp: !!flashError }}
@@ -292,44 +332,49 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmai
           initialValues={{ otp: '' }}
         >
           {({ isSubmitting, isValid }) => (
-            <Form>
-              {validateOtpError ? (
-                <AlertMessage
-                  severity="error"
-                  text={resendCodeDisabled
-                    ? t_i18n('The reset code you entered is invalid or has expired. You can request a new code after a delay of 30 seconds.')
-                    : t_i18n('The reset code you entered is invalid or has expired. You can request a new code.')
-                  }
-                />
-              ) : (
-                <AlertMessage
-                  severity="info"
-                  text={t_i18n('If the email address you entered is associated with an account, you will receive a confirmation email with a reset code shortly.')}
-                />
-              )}
+            <Form action={(
+              <Button
+                type="submit"
+                disabled={isSubmitting || !isValid}
+              >
+                {t_i18n('Continue')}
+              </Button>
+            )}
+            >
               <Field
                 component={TextField}
                 name="otp"
                 label={t_i18n('Enter code')}
                 fullWidth={true}
               />
-              <Button
-                type="submit"
-                disabled={isSubmitting || !isValid}
-                style={{ marginTop: theme.spacing(3) }}
-              >
-                {t_i18n('Continue')}
-              </Button>
             </Form>
           )}
         </Formik>
       )}
 
-      {step === Step.MFA && (
-        <OTPForm variant="resetPassword" transactionId={transactionId} onCompleted={onCompletedVerifyMfa} />
+      {resetPwdStep === ResetPwdStep.MFA && (
+        <Stack
+          height="100%"
+          justifyContent="space-between"
+          alignItems="start"
+        >
+          <OtpValidation
+            variant="resetPassword"
+            transactionId={transactionId}
+            onCompleted={onCompletedVerifyMfa}
+          />
+          <Button
+            size="small"
+            variant="tertiary"
+            onClick={backToLogin}
+            sx={{ ml: -1.5 }}
+          >
+            {t_i18n('Back to login')}
+          </Button>
+        </Stack>
       )}
 
-      {step === Step.RESET_PASSWORD && (
+      {resetPwdStep === ResetPwdStep.RESET_PASSWORD && (
         <Formik
           onSubmit={onSubmitValidatePassword}
           initialTouched={{ otp: !!flashError }}
@@ -338,18 +383,15 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmai
           initialValues={{ password: '', password_validation: '' }}
         >
           {({ isSubmitting, isValid }) => (
-            <Form>
-              {changePasswordError ? (
-                <AlertMessage
-                  severity="error"
-                  text={t_i18n('This new password does not comply with the platform policies.')}
-                />
-              ) : (
-                <AlertMessage
-                  severity="success"
-                  text={t_i18n('You can now set a new password for your account.')}
-                />
-              )}
+            <Form action={(
+              <Button
+                type="submit"
+                disabled={isSubmitting || !isValid}
+              >
+                {t_i18n('Change your password')}
+              </Button>
+            )}
+            >
               <Field
                 component={TextField}
                 name="password"
@@ -365,44 +407,10 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmai
                 fullWidth={true}
                 style={{ marginTop: theme.spacing(2) }}
               />
-              <Button
-                type="submit"
-                disabled={isSubmitting || !isValid}
-                style={{ marginTop: theme.spacing(3) }}
-              >
-                {t_i18n('Change your password')}
-              </Button>
             </Form>
           )}
         </Formik>
       )}
-
-      <div
-        style={{
-          marginTop: theme.spacing(2),
-          display: 'flex',
-          justifyContent: validateOtpError ? 'space-between' : 'center',
-        }}
-      >
-        <a
-          style={{ cursor: 'pointer' }}
-          onClick={() => onCancel()}
-        >
-          {t_i18n('Back to login')}
-        </a>
-        {validateOtpError && (
-          <a
-            style={{
-              cursor: resendCodeDisabled ? 'not-allowed' : 'pointer',
-              opacity: resendCodeDisabled ? 0.5 : 1,
-              pointerEvents: resendCodeDisabled ? 'none' : 'auto',
-            }}
-            onClick={handleResendOtp}
-          >
-            {t_i18n('Resend code')}
-          </a>
-        )}
-      </div>
     </>
   );
 };
