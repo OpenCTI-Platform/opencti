@@ -45,6 +45,20 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import Card from '../../../components/common/card/Card';
 
+const AI_TYPE_MAP: Record<string, string> = {
+  mistralai: 'MistralAI',
+  openai: 'OpenAI',
+  azureopenai: 'AzureOpenAI',
+};
+
+const formatAIType = (type: string | null | undefined): string => {
+  if (!type) return '';
+  const parts = type.split(' ');
+  const lastPart = parts[parts.length - 1].toLowerCase();
+  parts[parts.length - 1] = AI_TYPE_MAP[lastPart] ?? parts[parts.length - 1];
+  return parts.join(' ');
+};
+
 const settingsQuery = graphql`
   query SettingsQuery {
     settings {
@@ -213,6 +227,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
   // generate AI Powered label and tooltip
   let aiPoweredLabel;
   let aiPoweredTooltip;
+  const formattedAIType = formatAIType(settings.platform_ai_type);
   if (!isEnterpriseEditionValid) {
     aiPoweredLabel = t_i18n('Disabled');
     aiPoweredTooltip = t_i18n('You should activate EE to use this feature');
@@ -220,10 +235,10 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
     aiPoweredLabel = t_i18n('Disabled');
     aiPoweredTooltip = t_i18n('AI is not enabled');
   } else if (settings.platform_ai_has_token) {
-    aiPoweredLabel = settings.platform_ai_type;
-    aiPoweredTooltip = `${settings.platform_ai_type} - ${settings.platform_ai_model}`;
+    aiPoweredLabel = formattedAIType;
+    aiPoweredTooltip = `${formattedAIType} - ${settings.platform_ai_model}`;
   } else {
-    aiPoweredLabel = `${settings.platform_ai_type} - ${t_i18n('Missing token')}`;
+    aiPoweredLabel = `${formattedAIType} - ${t_i18n('Missing token')}`;
     aiPoweredTooltip = t_i18n('The token is missing in your platform configuration, please ask your Filigran representative to provide you with it or with on-premise deployment instructions. Your can open a support ticket to do so.');
   };
 
@@ -667,6 +682,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                         label={aiPoweredLabel}
                         status={isEnterpriseEditionValid && settings.platform_ai_enabled && settings.platform_ai_has_token}
                         tooltip={aiPoweredTooltip}
+                        labelTextTransform="none"
                       />
                     </ListItem>
                     <ListItem divider={true}>

@@ -13,13 +13,20 @@ const renderTag = (props) => {
 
   if (status === true) {
     return (
-      <Tag label={label} color={reverse ? theme.palette.error.main : theme.palette.success.main} labelTextTransform={labelTextTransform} />
+      <Tag
+        label={label}
+        color={reverse ? theme.palette.error.main : theme.palette.success.main}
+        labelTextTransform={labelTextTransform}
+      />
     );
   }
 
   if (status === null) {
     return (
-      <Tag label={neutralLabel || t('Not applicable')} labelTextTransform={labelTextTransform} />
+      <Tag
+        label={neutralLabel || t('Not applicable')}
+        labelTextTransform={labelTextTransform}
+      />
     );
   }
 
@@ -36,7 +43,12 @@ const renderTag = (props) => {
   if (status === undefined) {
     return (
       <Tag
-        label={<CircularProgress size={10} color="primary" />}
+        label={(
+          <CircularProgress
+            size={10}
+            color="primary"
+          />
+        )}
       />
     );
   }
@@ -49,10 +61,26 @@ const renderTag = (props) => {
   );
 };
 const ItemBoolean = (props) => {
-  const { tooltip } = props;
+  const { tooltip, labelTextTransform } = props;
   if (tooltip) {
     return (
-      <Tooltip title={tooltip}>
+      <Tooltip
+        title={tooltip}
+        slotProps={
+          labelTextTransform
+            ? {
+                tooltip: {
+                  sx: {
+                    textTransform: labelTextTransform,
+                    '&::first-letter': {
+                      textTransform: labelTextTransform,
+                    },
+                  },
+                },
+              }
+            : undefined
+        }
+      >
         {renderTag(props)}
       </Tooltip>
     );
