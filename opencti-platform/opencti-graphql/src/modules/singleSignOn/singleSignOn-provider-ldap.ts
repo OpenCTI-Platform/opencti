@@ -1,13 +1,53 @@
 import type { BasicStoreEntitySingleSignOn } from './singleSignOn-types';
-import { logAuthInfo } from './singleSignOn-domain';
+import { logAuthInfo, logAuthWarn } from './singleSignOn-domain';
 import { AuthType, EnvStrategyType, type ProviderConfiguration } from './providers-configuration';
-import { convertKeyValueToJsConfiguration, genConfigMapper, providerLoginHandler } from './singleSignOn-providers';
+import { convertKeyValueToJsConfiguration, genConfigMapper, providerLoginHandler, type ProviderUserInfo } from './singleSignOn-providers';
 import * as R from 'ramda';
 import LdapStrategy, { type VerifyCallback, type VerifyDoneCallback } from 'passport-ldapauth';
-import { logApp } from '../../config/conf';
 import { addUserLoginCount } from '../../manager/telemetryManager';
 import { isNotEmptyField } from '../../database/utils';
 import { registerAuthenticationProvider } from './providers-initialization';
+
+export const computeLdapUserInfo = (ssoConfiguration: any, ldapProfile: any) => {
+  const userMail = ssoConfiguration.mail_attribute ? ldapProfile[ssoConfiguration.mail_attribute] : ldapProfile.mail;
+  const userName = ssoConfiguration.account_attribute ? ldapProfile[ssoConfiguration.account_attribute] : ldapProfile.givenName;
+  const firstname = ldapProfile[ssoConfiguration.firstname_attribute] || '';
+  const lastname = ldapProfile[ssoConfiguration.lastname_attribute] || '';
+
+  const userInfo: ProviderUserInfo = {
+    email: userMail,
+    name: userName,
+    firstname: firstname,
+    lastname: lastname,
+  };
+  return userInfo;
+};
+
+export const computeLdapGroups = (ssoConfiguration: any, ldapProfile: any) => {
+  const groupsMapping = ssoConfiguration.groups_management?.groups_mapping || [];
+  const userGroups = (ldapProfile._groups || [])
+    .map((g: any) => g[ssoConfiguration.groups_management?.group_attribute || 'cn'])
+    .filter((g: any) => isNotEmptyField(g));
+  const groupsMapper = genConfigMapper(groupsMapping);
+  const groups: string[] = userGroups.map((a: any) => groupsMapper[a]).filter((r: any) => isNotEmptyField(r));
+
+  return R.uniq(groups);
+};
+
+export const computeLdapOrganizations = (ssoConfiguration: any, ldapProfile: any) => {
+  const orgaDefault = ssoConfiguration.organizations_default ?? [];
+  const orgasMapping = ssoConfiguration.organizations_management?.organizations_mapping || [];
+  const orgaPath = ssoConfiguration.organizations_management?.organizations_path || ['organizations'];
+
+  const availableOrgas = R.flatten(
+    orgaPath.map((path: any) => {
+      const value = R.path(path.split('.'), ldapProfile) || [];
+      return Array.isArray(value) ? value : [value];
+    }),
+  );
+  const orgasMapper = genConfigMapper(orgasMapping);
+  return [...orgaDefault, ...availableOrgas.map((a) => orgasMapper[a]).filter((r) => isNotEmptyField(r))];
+};
 
 export const registerLDAPStrategy = async (ssoEntity: BasicStoreEntitySingleSignOn) => {
   const providerRef = ssoEntity.identifier || 'ldapauth';
@@ -24,58 +64,28 @@ export const registerLDAPStrategy = async (ssoEntity: BasicStoreEntitySingleSign
 
   const ldapLoginCallback: VerifyCallback = (user: any, done: VerifyDoneCallback) => {
     logAuthInfo('Successfully logged', EnvStrategyType.STRATEGY_LDAP, { user });
-    addUserLoginCount();
-    const userMail = ssoConfiguration.mail_attribute ? user[ssoConfiguration.mail_attribute] : user.mail;
-    const userName = ssoConfiguration.account_attribute ? user[ssoConfiguration.account_attribute] : user.givenName;
-    const firstname = user[ssoConfiguration.firstname_attribute] || '';
-    const lastname = user[ssoConfiguration.lastname_attribute] || '';
-    const isGroupBaseAccess = (isNotEmptyField(ssoConfiguration.groups_management) && isNotEmptyField(ssoConfiguration.groups_management?.groups_mapping));
-    // region groups mapping
-    const computeGroupsMapping = () => {
-      const groupsMapping = ssoConfiguration.groups_management?.groups_mapping || [];
-      const userGroups = (user._groups || [])
-        .map((g: any) => g[ssoConfiguration.groups_management?.group_attribute || 'cn'])
-        .filter((g: any) => isNotEmptyField(g));
-      const groupsMapper = genConfigMapper(groupsMapping);
-      return userGroups.map((a: any) => groupsMapper[a]).filter((r: any) => isNotEmptyField(r));
-    };
-    const groupsToAssociate = R.uniq(computeGroupsMapping());
-    // endregion
-    // region organizations mapping
-    const isOrgaMapping = isNotEmptyField(ssoConfiguration.organizations_default) || isNotEmptyField(ssoConfiguration.organizations_management);
-    const computeOrganizationsMapping = () => {
-      const orgaDefault = ssoConfiguration.organizations_default ?? [];
-      const orgasMapping = ssoConfiguration.organizations_management?.organizations_mapping || [];
-      const orgaPath = ssoConfiguration.organizations_management?.organizations_path || ['organizations'];
 
-      const availableOrgas = R.flatten(
-        orgaPath.map((path: any) => {
-          const value = R.path(path.split('.'), user) || [];
-          return Array.isArray(value) ? value : [value];
-        }),
-      );
-      const orgasMapper = genConfigMapper(orgasMapping);
-      return [...orgaDefault, ...availableOrgas.map((a) => orgasMapper[a]).filter((r) => isNotEmptyField(r))];
-    };
-    const organizationsToAssociate = isOrgaMapping ? computeOrganizationsMapping() : [];
-    // endregion
-    if (!userMail) {
-      logApp.warn('[ENV-PROVIDER]LDAP Configuration error, cant map mail and username', {
-        user,
-        userMail,
-        userName,
-      });
+    const userInfo = computeLdapUserInfo(ssoConfiguration, user);
+    const isGroupBaseAccess = (isNotEmptyField(ssoConfiguration.groups_management) && isNotEmptyField(ssoConfiguration.groups_management?.groups_mapping));
+    const groupsToAssociate = computeLdapGroups(ssoConfiguration, user);
+
+    const isOrgaMapping = isNotEmptyField(ssoConfiguration.organizations_default) || isNotEmptyField(ssoConfiguration.organizations_management);
+    const organizationsToAssociate = isOrgaMapping ? computeLdapOrganizations(ssoConfiguration, user) : [];
+
+    if (!userInfo.email) {
+      logAuthWarn('[ENV-PROVIDER]LDAP Configuration error, cant map mail and username', EnvStrategyType.STRATEGY_LDAP, { userInfo });
       done({ message: 'Configuration error, ask your administrator' });
     } else if (!isGroupBaseAccess || groupsToAssociate.length > 0) {
-      logApp.info(`[ENV-PROVIDER][LDAP] Connecting/creating account with ${userMail} [name=${userName}]`);
-      const userInfo = { email: userMail, name: userName, firstname, lastname };
+      logAuthInfo(`[ENV-PROVIDER][LDAP] Connecting/creating account with ${userInfo.email} [name=${userInfo.name}]`, EnvStrategyType.STRATEGY_LDAP);
       const opts = {
         providerGroups: groupsToAssociate,
         providerOrganizations: organizationsToAssociate,
         autoCreateGroup: ssoConfiguration.auto_create_group ?? false,
       };
+      addUserLoginCount();
       providerLoginHandler(userInfo, done, opts);
     } else {
+      logAuthWarn('[ENV-PROVIDER]LDAP Group or Org configuration error', EnvStrategyType.STRATEGY_LDAP, { userInfo, groupsToAssociate, organizationsToAssociate });
       done({ message: 'Restricted access, ask your administrator' });
     }
   };
