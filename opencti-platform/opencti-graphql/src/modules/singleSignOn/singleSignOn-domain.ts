@@ -69,6 +69,12 @@ export const findSingleSignOnPaginated = async (context: AuthContext, user: Auth
 export const internalAddSingleSignOn = async (context: AuthContext, user: AuthUser, input: SingleSignOnAddInput, skipRegister: boolean) => {
   const defaultOps = { created_at: now(), updated_at: now() };
   const singleSignOnInput = { ...input, ...defaultOps };
+  // if input est local et que local deja dans en db on ajoute pas
+  const strategies = await findAllSingleSignOn(context, user);
+  const hasLocalStrategy = strategies.some((s) => s.strategy === StrategyType.LocalStrategy);
+  if (hasLocalStrategy) {
+    throw FunctionalError('Local Strategy already exists in database');
+  }
   const created: BasicStoreEntitySingleSignOn = await createEntity(
     context,
     user,
@@ -134,6 +140,10 @@ export const deleteSingleSignOn = async (context: AuthContext, user: AuthUser, i
 
   if (!singleSignOn) {
     throw FunctionalError(`Single sign on ${id} cannot be found`);
+  }
+
+  if (singleSignOn.strategy === StrategyType.LocalStrategy) {
+    throw FunctionalError('Cannot delete Local Strategy');
   }
 
   if (singleSignOn.enabled && !isAuthenticationForcedFromEnv()) {
