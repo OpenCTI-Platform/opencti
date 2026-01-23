@@ -151,6 +151,8 @@ jobs:
     - name: Build and push ${{ inputs.is_fips == true && 'FIPS' || '' }}
       uses: docker/build-push-action@v6
       if: inputs.is_publish_to_registry == true
+      env:
+        DOCKER_BUILD_RECORD_UPLOAD: false
       with:
         context: opencti-worker
         file: opencti-worker/Dockerfile
@@ -163,6 +165,8 @@ jobs:
     - name: Build and export as tar ${{ inputs.is_fips == true && ' FIPS' || '' }}
       uses: docker/build-push-action@v6
       if: inputs.is_publish_to_registry == false
+      env:
+        DOCKER_BUILD_RECORD_UPLOAD: false
       with:
         context: opencti-worker
         file: opencti-worker/Dockerfile
