@@ -31,6 +31,20 @@ const useAwsLogs = booleanConf('minio:use_aws_logs', false);
 const disableChecksumValidation = booleanConf('minio:disable_checksum_validation', false);
 export const defaultValidationMode = conf.get('app:validation_mode');
 
+/**
+ * Export S3 connection configuration for connectors.
+ * This allows connectors to upload bundles directly to S3 storage.
+ */
+export const s3ConnectionConfig = () => ({
+  endpoint: clientEndpoint,
+  port: clientPort,
+  use_ssl: useSslConnection,
+  bucket_name: bucketName,
+  bucket_region: bucketRegion,
+  access_key: clientAccessKey,
+  secret_key: clientSecretKey,
+});
+
 let s3Client: S3Client; // Client reference
 
 const buildCredentialProvider = async () => {

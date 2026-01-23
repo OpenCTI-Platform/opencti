@@ -11,6 +11,7 @@ import { getHttpClient } from '../utils/http-client';
 import { fullEntitiesList } from './middleware-loader';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC } from '../schema/internalObject';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
+import { s3ConnectionConfig } from './raw-file-storage';
 
 export const CONNECTOR_EXCHANGE = `${RABBIT_QUEUE_PREFIX}amqp.connector.exchange`;
 export const WORKER_EXCHANGE = `${RABBIT_QUEUE_PREFIX}amqp.worker.exchange`;
@@ -47,7 +48,7 @@ const amqpCred = () => {
   return { credentials: amqp.credentials.plain(USERNAME, PASSWORD) };
 };
 
-export const config = () => {
+export const rabbitmqConnectionConfig = () => {
   return {
     host: HOSTNAME,
     vhost: VHOST,
@@ -201,8 +202,25 @@ export const getBestBackgroundConnectorId = async (context, user) => {
   return bestQueue.name.substring(`${RABBIT_QUEUE_PREFIX}push_`.length);
 };
 
+export const listenRouting = (connectorId) => `${RABBIT_QUEUE_PREFIX}listen_routing_${connectorId}`;
+export const pushRouting = (connectorId) => `${RABBIT_QUEUE_PREFIX}push_routing_${connectorId}`;
+
+// Dead letter queue routing ID for bundles that are too large.
+// NOTE:
+// - This constant is used here to build the dead_letter_routing value in connectorConfig.
+// - The full CONNECTOR_QUEUE_BUNDLES_TOO_LARGE queue configuration object is defined later
+//   in this file near the rest of the queue declarations.
+const CONNECTOR_QUEUE_BUNDLES_TOO_LARGE_ID = 'too-large-bundle';
+
+/**
+ * Build the complete connector configuration that includes:
+ * - RabbitMQ connection info
+ * - S3 connection info
+ * - Queue routing configuration
+ */
 export const connectorConfig = (id, listen_callback_uri = undefined) => ({
-  connection: config(),
+  connection: rabbitmqConnectionConfig(),
+  s3: s3ConnectionConfig(),
   push: `${RABBIT_QUEUE_PREFIX}push_${id}`,
   push_routing: pushRouting(id),
   push_exchange: WORKER_EXCHANGE,
@@ -210,11 +228,8 @@ export const connectorConfig = (id, listen_callback_uri = undefined) => ({
   listen_routing: listenRouting(id),
   listen_exchange: CONNECTOR_EXCHANGE,
   listen_callback_uri,
-  dead_letter_routing: listenRouting(CONNECTOR_QUEUE_BUNDLES_TOO_LARGE.id),
+  dead_letter_routing: listenRouting(CONNECTOR_QUEUE_BUNDLES_TOO_LARGE_ID),
 });
-
-export const listenRouting = (connectorId) => `${RABBIT_QUEUE_PREFIX}listen_routing_${connectorId}`;
-export const pushRouting = (connectorId) => `${RABBIT_QUEUE_PREFIX}push_routing_${connectorId}`;
 
 export const registerConnectorQueues = async (id, name, type, scope) => {
   const listenQueue = `${RABBIT_QUEUE_PREFIX}listen_${id}`;

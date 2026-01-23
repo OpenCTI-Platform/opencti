@@ -2221,6 +2221,16 @@ type RabbitMQConnection {
   pass: String!
 }
 
+type S3Connection {
+  endpoint: String!
+  port: Int!
+  use_ssl: Boolean!
+  bucket_name: String!
+  bucket_region: String!
+  access_key: String!
+  secret_key: String!
+}
+
 input ConnectorInfoInput {
   run_and_terminate: Boolean!
   buffering: Boolean!
@@ -2241,6 +2251,7 @@ type ConnectorInfo {
 
 type ConnectorConfig {
   connection: RabbitMQConnection!
+  s3: S3Connection!
   listen: String!
   listen_routing: String!
   listen_exchange: String!
