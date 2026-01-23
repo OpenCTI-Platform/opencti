@@ -75,12 +75,14 @@ const Root = () => {
   const urlWithCapabilities = () => {
     const isGrantedToParameters = useGranted([SETTINGS_SETPARAMETERS]);
     const isGrantedToSecurity = useGranted([SETTINGS_SETMARKINGS, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]);
+    const isGrantedToSsoOnly = useGranted([SETTINGS_SETAUTH]);
     const isGrantedToCustomization = useGranted([SETTINGS_SETCUSTOMIZATION]);
     const isGrantedToActivity = useGranted([SETTINGS_SECURITYACTIVITY]);
     const isGrantedToFileIndexing = useGranted([SETTINGS_FILEINDEXING]);
     const isGrantedToExperience = useGranted([SETTINGS_SUPPORT, SETTINGS_SETMANAGEXTMHUB]);
     if (isGrantedToParameters) return '/dashboard/settings';
     if (isGrantedToSecurity) return '/dashboard/settings/accesses';
+    if (isGrantedToSsoOnly) return '/dashboard/settings/accesses/single_sign_ons';
     if (isGrantedToCustomization) return '/dashboard/settings/customization';
     if (isGrantedToTaxonomies) return '/dashboard/settings/vocabularies';
     if (isGrantedToActivity) return '/dashboard/settings/activity';
