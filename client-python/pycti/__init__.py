@@ -91,9 +91,16 @@ from .utils.opencti_stix2 import (
 )
 from .utils.opencti_stix2_splitter import OpenCTIStix2Splitter
 from .utils.opencti_stix2_update import OpenCTIStix2Update
-from .utils.opencti_stix2_utils import OpenCTIStix2Utils
+from .utils.opencti_stix2_utils import (
+    ALIASES_FIELD,
+    X_OPENCTI_ALIASES_FIELD,
+    OpenCTIStix2Utils,
+    is_stix_object_aliased,
+    resolve_aliases_field,
+)
 
 __all__ = [
+    "ALIASES_FIELD",
     "AttackPattern",
     "Campaign",
     "CaseIncident",
@@ -154,7 +161,10 @@ __all__ = [
     "Tool",
     "Vocabulary",
     "Vulnerability",
+    "X_OPENCTI_ALIASES_FIELD",
     "get_config_variable",
+    "is_stix_object_aliased",
+    "resolve_aliases_field",
     "CustomObjectCaseIncident",
     "CustomObjectTask",
     "CustomObjectChannel",
