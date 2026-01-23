@@ -1,17 +1,7 @@
 import { getHeapStatistics } from 'node:v8';
 import nconf from 'nconf';
 import { createEntity, fullEntitiesOrRelationsList, loadEntity, patchAttribute, updateAttribute } from '../database/middleware';
-import conf, {
-  ACCOUNT_STATUSES,
-  booleanConf,
-  BUS_TOPICS,
-  ENABLED_DEMO_MODE,
-  ENABLED_FEATURE_FLAGS,
-  getBaseUrl,
-  PLATFORM_VERSION,
-  PLAYGROUND_ENABLED,
-  PROTECTED_SENSITIVE_CONFIG_LOCKED,
-} from '../config/conf';
+import conf, { ACCOUNT_STATUSES, booleanConf, BUS_TOPICS, ENABLED_DEMO_MODE, ENABLED_FEATURE_FLAGS, getBaseUrl, PLATFORM_VERSION, PLAYGROUND_ENABLED } from '../config/conf';
 import { delEditContext, getRedisVersion, notify, setEditContext } from '../database/redis';
 import { isRuntimeSortEnable, searchEngineVersion } from '../database/engine';
 import { getRabbitMQVersion } from '../database/rabbitmq';
@@ -73,48 +63,43 @@ const getStandardIdsByNames = (entityType, names) => {
   return names.map((name) => generateStandardId(entityType, { name }));
 };
 
-export const getProtectedSensitiveConfig = async (context, user) => {
-  const enabledFromConf = booleanConf('protected_sensitive_config:enabled', false);
-  const lockDisabled = enabledFromConf && !PROTECTED_SENSITIVE_CONFIG_LOCKED;
+export const isAuthenticationLocked = () => {
+  return nconf.get('app:sso_authentication_locked', false);
+};
 
+export const getProtectedSensitiveConfig = async (context, user) => {
   return {
-    enabled: lockDisabled && booleanConf('protected_sensitive_config:enabled', false),
+    enabled: booleanConf('protected_sensitive_config:enabled', false),
     markings: {
-      enabled: lockDisabled && booleanConf('protected_sensitive_config:markings:enabled', false),
-      protected_ids: lockDisabled
-        ? await getProtectedMarkingsIdsByNames(context, user, nconf.get('protected_sensitive_config:markings:protected_definitions') ?? [])
-        : [],
+      enabled: booleanConf('protected_sensitive_config:markings:enabled', false),
+      protected_ids: await getProtectedMarkingsIdsByNames(context, user, nconf.get('protected_sensitive_config:markings:protected_definitions') ?? []),
     },
     groups: {
-      enabled: lockDisabled && booleanConf('protected_sensitive_config:groups:enabled', false),
-      protected_ids: lockDisabled
-        ? (getStandardIdsByNames(ENTITY_TYPE_GROUP, nconf.get('protected_sensitive_config:groups:protected_names') ?? []) ?? [])
-        : [],
+      enabled: booleanConf('protected_sensitive_config:groups:enabled', false),
+      protected_ids: getStandardIdsByNames(ENTITY_TYPE_GROUP, nconf.get('protected_sensitive_config:groups:protected_names') ?? []),
     },
     roles: {
-      enabled: lockDisabled && booleanConf('protected_sensitive_config:roles:enabled', false),
-      protected_ids: lockDisabled
-        ? (getStandardIdsByNames(ENTITY_TYPE_ROLE, nconf.get('protected_sensitive_config:roles:protected_names') ?? []) ?? [])
-        : [],
+      enabled: booleanConf('protected_sensitive_config:roles:enabled', false),
+      protected_ids: getStandardIdsByNames(ENTITY_TYPE_ROLE, nconf.get('protected_sensitive_config:roles:protected_names') ?? []),
     },
     rules: {
-      enabled: lockDisabled && booleanConf('protected_sensitive_config:rules:enabled', false),
+      enabled: booleanConf('protected_sensitive_config:rules:enabled', false),
       protected_ids: [],
     },
     ce_ee_toggle: {
-      enabled: lockDisabled && booleanConf('protected_sensitive_config:ce_ee_toggle:enabled', false),
+      enabled: booleanConf('protected_sensitive_config:ce_ee_toggle:enabled', false),
       protected_ids: [],
     },
     connector_reset: {
-      enabled: lockDisabled && booleanConf('protected_sensitive_config:connector_reset:enabled', false),
+      enabled: booleanConf('protected_sensitive_config:connector_reset:enabled', false),
       protected_ids: [],
     },
     file_indexing: {
-      enabled: lockDisabled && booleanConf('protected_sensitive_config:file_indexing:enabled', false),
+      enabled: booleanConf('protected_sensitive_config:file_indexing:enabled', false),
       protected_ids: [],
     },
     platform_organization: {
-      enabled: lockDisabled && booleanConf('protected_sensitive_config:platform_organization:enabled', false),
+      enabled: booleanConf('protected_sensitive_config:platform_organization:enabled', false),
       protected_ids: [],
     },
   };

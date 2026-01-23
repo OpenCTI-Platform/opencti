@@ -65,8 +65,7 @@ const Experience = lazy(() => import('./Experience'));
 
 const Root = () => {
   const { settings } = useAuth();
-  const sensitiveConfig = settings.platform_protected_sensitive_config;
-  const isProtectedSensitiveConfigEnabled = sensitiveConfig?.enabled ?? false;
+  const isSsoAuthenticationLocked = settings.is_authentication_locked;
 
   const adminOrga = isOnlyOrganizationAdmin();
 
@@ -296,7 +295,7 @@ const Root = () => {
                 needs={[SETTINGS_SETAUTH]}
                 placeholder={<Navigate to={urlWithCapabilities()} />}
               >
-                {isProtectedSensitiveConfigEnabled ? (
+                {!isSsoAuthenticationLocked ? (
                   <SSODefinitions />
                 ) : (
                   <Navigate to={urlWithCapabilities()} />
@@ -311,7 +310,7 @@ const Root = () => {
                 needs={[SETTINGS_SETAUTH]}
                 placeholder={<Navigate to={urlWithCapabilities()} />}
               >
-                {isProtectedSensitiveConfigEnabled ? (
+                {!isSsoAuthenticationLocked ? (
                   <SSODefinition />
                 ) : (
                   <Navigate to={urlWithCapabilities()} />

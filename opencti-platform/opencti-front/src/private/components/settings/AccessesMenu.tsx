@@ -18,7 +18,7 @@ import useAuth from '../../../utils/hooks/useAuth';
 
 const AccessesMenu: FunctionComponent = () => {
   const { settings } = useAuth();
-  const sensitiveConfig = settings.platform_protected_sensitive_config;
+  const isSsoAuthenticationLocked = settings.is_authentication_locked;
 
   const entries: MenuEntry[] = [
     {
@@ -103,7 +103,7 @@ const AccessesMenu: FunctionComponent = () => {
   if (setAccess) {
     menuEntries.push(...emailTemplateEntries);
   }
-  if (setAuthentication && sensitiveConfig?.enabled && featureFlagSingleSignOn) {
+  if (setAuthentication && !isSsoAuthenticationLocked && featureFlagSingleSignOn) {
     menuEntries.push(...singleSignOnEntries);
   }
   if (!setAccess && isOrgaAdmin) {

@@ -15,6 +15,7 @@ import {
   settingsCleanContext,
   settingsEditContext,
   settingsEditField,
+  isAuthenticationLocked,
 } from '../domain/settings';
 import { fetchEditContext } from '../database/redis';
 import { subscribeToInstanceEvents, subscribeToPlatformSettingsEvents } from '../graphql/subscriptionWrapper';
@@ -65,6 +66,7 @@ const settingsResolvers = {
     platform_ai_enabled: (settings) => settings.platform_ai_enabled ?? true,
     filigran_chatbot_ai_cgu_status: (settings) => settings.filigran_chatbot_ai_cgu_status ?? CguStatus.Pending,
     metrics_definition: () => getEntityMetricsConfiguration(),
+    is_authentication_locked: () => isAuthenticationLocked(),
   },
   AppInfo: {
     memory: getMemoryStatistics(),

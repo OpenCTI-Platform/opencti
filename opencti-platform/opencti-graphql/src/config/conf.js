@@ -568,17 +568,7 @@ export const FEATURE_FLAG_ALL = '*';
 export const isFeatureEnabled = (feature) => ENABLED_FEATURE_FLAGS.includes(FEATURE_FLAG_ALL) || ENABLED_FEATURE_FLAGS.includes(feature);
 
 // Protected sensitive config var env to lock
-const protectedSensitiveConfigLockEnv = process.env.PROTECTED_SENSITIVE_CONFIG_LOCK ?? 'true';
-// Detect environement for vitest
-const isTestEnv = process.env.VITEST === 'true' || process.env.NODE_ENV === 'test';
-export const PROTECTED_SENSITIVE_CONFIG_LOCKED = isTestEnv
-  ? false
-  : protectedSensitiveConfigLockEnv.toLowerCase() === 'true';
-
-// Logs de debug (tu pourras les enlever ensuite)
-console.log('[CONF] VITEST =', process.env.VITEST, 'NODE_ENV =', process.env.NODE_ENV);
-console.log('[CONF] PROTECTED_SENSITIVE_CONFIG_LOCK =', process.env.PROTECTED_SENSITIVE_CONFIG_LOCK);
-console.log('[CONF] PROTECTED_SENSITIVE_CONFIG_LOCKED =', PROTECTED_SENSITIVE_CONFIG_LOCKED);
+export const PROTECTED_SENSITIVE_CONFIG_LOCKED = nconf.get('app:sso_authentication_locked') ?? 'false';
 
 export const REDIS_PREFIX = nconf.get('redis:namespace') ? `${nconf.get('redis:namespace')}:` : '';
 export const TOPIC_PREFIX = `${REDIS_PREFIX}_OPENCTI_DATA_`;
