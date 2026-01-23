@@ -1,6 +1,6 @@
 import Button from '@common/button/Button';
 import { Add } from '@mui/icons-material';
-import { IconButton, Tooltip } from '@mui/material';
+import { IconButton, Stack, Tooltip } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import { FunctionComponent, Suspense, useState } from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
@@ -217,30 +217,12 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
   });
   const queryRef = useQueryLoading<ContainerAddStixCoreObjectsLinesQuery>(containerAddStixCoreObjectsLinesQuery, { count: 100, ...searchPaginationOptions });
 
+  const [openCreateEntity, setOpenCreateEntity] = useState<boolean>(false);
+  const [openCreateObservable, setOpenCreateObservable] = useState<boolean>(false);
+
   const Header = () => {
-    const [openCreateEntity, setOpenCreateEntity] = useState<boolean>(false);
-    const [openCreateObservable, setOpenCreateObservable] = useState<boolean>(false);
     return (
       <>
-        {showSDOCreation && (
-          <Button
-            disableElevation
-            aria-label={t_i18n('Create an entity')}
-            onClick={() => setOpenCreateEntity(true)}
-          >
-            {t_i18n('Create an entity')}
-          </Button>
-        )}
-        {showSCOCreation && (
-          <Button
-            disableElevation
-            aria-label={t_i18n('Create an observable')}
-            onClick={() => setOpenCreateObservable(true)}
-          >
-            {t_i18n('Create an observable')}
-          </Button>
-        )}
-
         <StixDomainObjectCreation
           display={true}
           inputValue=""
@@ -277,6 +259,29 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
     ? ({ onOpen }: { onOpen: () => void }) => <ControlledDial title={t_i18n('Add entity')} onOpen={onOpen} />
     : ({ onOpen }: { onOpen: () => void }) => <ControlledDial title={t_i18n('Add observable')} onOpen={onOpen} />;
 
+  const buttons = (
+    <Stack direction="row" gap={1}>
+      {showSDOCreation && (
+        <Button
+          disableElevation
+          aria-label={t_i18n('Create an entity')}
+          onClick={() => setOpenCreateEntity(true)}
+        >
+          {t_i18n('Create an entity')}
+        </Button>
+      )}
+      {showSCOCreation && (
+        <Button
+          disableElevation
+          aria-label={t_i18n('Create an observable')}
+          onClick={() => setOpenCreateObservable(true)}
+        >
+          {t_i18n('Create an observable')}
+        </Button>
+      )}
+    </Stack>
+  );
+
   return (
     <Drawer
       controlledDial={knowledgeGraph ? GraphControlledDial : Dial}
@@ -305,6 +310,7 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
         disableExport={true}
         availableEntityTypes={targetStixCoreObjectTypes}
         entityTypes={targetStixCoreObjectTypes}
+        createButton={buttons}
       >
         {(containerRef && queryRef) && (
           <Suspense>

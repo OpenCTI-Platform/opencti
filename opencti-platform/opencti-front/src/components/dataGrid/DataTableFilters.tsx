@@ -7,7 +7,7 @@ import StixDomainObjectsExports from '@components/common/stix_domain_objects/Sti
 import StixCoreRelationshipsExports from '@components/common/stix_core_relationships/StixCoreRelationshipsExports';
 import StixCoreObjectsExports from '@components/common/stix_core_objects/StixCoreObjectsExports';
 import StixCyberObservablesExports from '@components/observations/stix_cyber_observables/StixCyberObservablesExports';
-import { ToggleButtonGroup } from '@mui/material';
+import { ToggleButtonGroup, Box } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';
 import FilterIconButton from '../FilterIconButton';
@@ -21,6 +21,8 @@ import { ExportContext } from '../../utils/ExportContextProvider';
 import DataTablePagination from './DataTablePagination';
 import { isFilterGroupNotEmpty } from '../../utils/filters/filtersUtils';
 import { useDataTableContext } from './components/DataTableContext';
+import PopoverMenu from '../../components/PopoverMenu';
+import MenuItem from '@mui/material/MenuItem';
 
 export const DataTableDisplayFilters = ({
   availableFilterKeys,
@@ -164,7 +166,36 @@ const DataTableFilters = ({
               }
             }}
           >
-            {additionalHeaderButtons && [...additionalHeaderButtons]}
+            {additionalHeaderButtons && additionalHeaderButtons.length <= 2 ? [...additionalHeaderButtons]
+              : (
+                  <PopoverMenu>
+                    {({ closeMenu }) => (
+                      <>
+                        {additionalHeaderButtons?.map((button, index) => (
+                          <MenuItem
+                            key={index}
+                            onClick={(event) => {
+                              event.preventDefault();
+                              event.stopPropagation();
+                              closeMenu();
+                            }}
+                          >
+                            <Box
+                              onClick={(event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                              }}
+                            >
+                              {button}
+                            </Box>
+                          </MenuItem>
+                        ))}
+                      </>
+                    )}
+                  </PopoverMenu>
+                )
+            }
+
             {!exportDisabled && (
               <ToggleButton value="export" aria-label="export">
                 <Tooltip title={t_i18n('Open export panel')}>

@@ -741,7 +741,53 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
   } as UsePreloadedPaginationFragment<StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQueryType>;
 
   const [tableRootRef, setTableRootRef] = useState<HTMLDivElement | null>(null);
+
   const renderSelectEntity = (entity_type: string, name = '') => {
+    const buttons = [(
+      <BulkRelationDialogContainer
+        targetObjectTypes={[...targetStixDomainObjectTypes, ...targetStixCyberObservableTypes]}
+        paginationOptions={searchPaginationOptions}
+        paginationKey="Pagination_stixCoreObjects"
+        key="BulkRelationDialogContainer"
+        stixDomainObjectId={entityId}
+        stixDomainObjectName={name}
+        stixDomainObjectType={entity_type}
+        defaultRelationshipType={allowedRelationshipTypes?.[0]}
+        selectedEntities={targetEntities}
+        onBulkCreate={handleClose}
+      />
+    )];
+    if (!isOnlySCOs) {
+      buttons.push((
+        <StixDomainObjectCreation
+          display={open}
+          inputValue={searchTerm}
+          paginationKey="Pagination_stixCoreObjects"
+          paginationOptions={searchPaginationOptions}
+          speeddial={false}
+          open={undefined}
+          handleClose={undefined}
+          onCompleted={undefined}
+          creationCallback={undefined}
+          confidence={undefined}
+          defaultCreatedBy={undefined}
+          isFromBulkRelation={undefined}
+          defaultMarkingDefinitions={undefined}
+          stixDomainObjectTypes={actualTypeFilterValues}
+          controlledDialStyles={{ marginLeft: '8px' }}
+        />
+      ));
+    }
+    if (!isOnlySDOs) {
+      buttons.push((
+        <Button
+          onClick={handleOpenCreateObservable}
+          style={{ marginLeft: '8px' }}
+        >
+          {t_i18n('Create an observable')}
+        </Button>
+      ));
+    }
     return (
       <div
         style={{
@@ -772,20 +818,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
                       preloadedPaginationProps={preloadedPaginationProps}
                       entityTypes={virtualEntityTypes}
                       availableEntityTypes={virtualEntityTypes}
-                      additionalHeaderButtons={[(
-                        <BulkRelationDialogContainer
-                          targetObjectTypes={[...targetStixDomainObjectTypes, ...targetStixCyberObservableTypes]}
-                          paginationOptions={searchPaginationOptions}
-                          paginationKey="Pagination_stixCoreObjects"
-                          key="BulkRelationDialogContainer"
-                          stixDomainObjectId={entityId}
-                          stixDomainObjectName={name}
-                          stixDomainObjectType={entity_type}
-                          defaultRelationshipType={allowedRelationshipTypes?.[0]}
-                          selectedEntities={targetEntities}
-                          onBulkCreate={handleClose}
-                        />
-                      )]}
+                      additionalHeaderButtons={buttons}
                     />
                   </div>
                 )}
@@ -875,33 +908,6 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
         justifyContent: 'end',
       }}
     >
-      {!isOnlySCOs && (
-        <StixDomainObjectCreation
-          display={open}
-          inputValue={searchTerm}
-          paginationKey="Pagination_stixCoreObjects"
-          paginationOptions={searchPaginationOptions}
-          speeddial={false}
-          open={undefined}
-          handleClose={undefined}
-          onCompleted={undefined}
-          creationCallback={undefined}
-          confidence={undefined}
-          defaultCreatedBy={undefined}
-          isFromBulkRelation={undefined}
-          defaultMarkingDefinitions={undefined}
-          stixDomainObjectTypes={actualTypeFilterValues}
-          controlledDialStyles={{ marginRight: '10px' }}
-        />
-      )}
-      {!isOnlySDOs && (
-        <Button
-          onClick={handleOpenCreateObservable}
-          style={{ marginRight: '10px' }}
-        >
-          {t_i18n('Create an observable')}
-        </Button>
-      )}
       <StixCyberObservableCreation
         display={open}
         contextual={true}

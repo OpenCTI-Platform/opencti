@@ -345,6 +345,7 @@ const ContainerAddStixCoreObjects = (props) => {
         additionalFilterKeys={{
           filterKeys: ['entity_type'],
         }}
+        createButton={renderEntityCreation(searchPaginationOptions)}
       >
         <QueryRenderer
           query={containerAddStixCoreObjectsLinesQuery}
@@ -433,7 +434,6 @@ const ContainerAddStixCoreObjects = (props) => {
       >
         <>
           {renderSearchResults(searchPaginationOptions)}
-          {renderEntityCreation(searchPaginationOptions)}
         </>
       </Drawer>
     </>

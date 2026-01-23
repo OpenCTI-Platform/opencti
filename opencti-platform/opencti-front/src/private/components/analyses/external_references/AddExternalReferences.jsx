@@ -12,6 +12,7 @@ import Drawer from '../../common/drawer/Drawer';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
 import AddExternalReferencesLines, { addExternalReferencesLinesQuery } from './AddExternalReferencesLines';
+import { Stack } from '@mui/material';
 
 const AddExternalReferences = ({
   stixCoreObjectOrStixCoreRelationshipId,
@@ -55,19 +56,22 @@ const AddExternalReferences = ({
         title={t_i18n('Add external references')}
         open={open}
         onClose={handleClose}
-        header={(
-          <>
+      >
+        <Stack gap={2}>
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+          >
             <SearchInput
               variant="inDrawer"
               onSubmit={handleSearch}
             />
-            <Button onClick={() => setDialogOpen(true)}>
+            <Button
+              onClick={() => setDialogOpen(true)}
+            >
               {t_i18n('Create')} {t_i18n('entity_External-Reference')}
             </Button>
-          </>
-        )}
-      >
-        <div style={{ padding: 0 }}>
+          </Stack>
           <QueryRenderer
             query={addExternalReferencesLinesQuery}
             variables={paginationOptions}
@@ -127,7 +131,7 @@ const AddExternalReferences = ({
               );
             }}
           />
-        </div>
+        </Stack>
       </Drawer>
     </>
   );
