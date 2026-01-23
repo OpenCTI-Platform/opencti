@@ -72,7 +72,7 @@ const ChipMarking = ({
   return (
     <Tag
       label={markingDefinition.definition || 'no definition'}
-      applyLabelTextTransform={false}
+      labelTextTransform="none"
       disableTooltip={disableTooltip}
       {...itemMarkingColor && { color: itemMarkingColor }}
       {...hasClickCallback && {

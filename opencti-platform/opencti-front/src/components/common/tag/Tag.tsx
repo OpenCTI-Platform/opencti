@@ -11,7 +11,6 @@ interface TagProps extends Omit<ChipProps, 'color'> {
   icon?: React.ReactElement;
   tooltipTitle?: string;
   disableTooltip?: boolean;
-  applyLabelTextTransform?: boolean;
   labelTextTransform?: 'capitalize' | 'uppercase' | 'lowercase' | 'none';
 }
 
@@ -24,8 +23,7 @@ const Tag = ({
   icon,
   tooltipTitle,
   disableTooltip = false,
-  applyLabelTextTransform = true,
-  labelTextTransform,
+  labelTextTransform = 'capitalize',
   sx,
   ...chipProps
 }: TagProps) => {
@@ -44,10 +42,6 @@ const Tag = ({
     }
   };
 
-  const resolvedTextTransform
-    = labelTextTransform
-      ?? (applyLabelTextTransform ? 'capitalize' : 'none');
-
   const bgColor = getBackgroundColor();
 
   const chipStyle: CSSProperties = {
@@ -56,7 +50,7 @@ const Tag = ({
     fontWeight: 400,
     paddingLeft: '8px',
     cursor: onClick ? 'pointer' : 'default',
-    textTransform: resolvedTextTransform,
+    textTransform: labelTextTransform,
   };
 
   const sxStyles: SxProps<Theme> = {
@@ -73,9 +67,9 @@ const Tag = ({
       display: 'block',
       paddingLeft: icon ? '8px' : '4px',
       paddingRight: onDelete ? '4px' : '12px',
-      textTransform: resolvedTextTransform,
+      textTransform: labelTextTransform,
       '&::first-letter': {
-        textTransform: resolvedTextTransform,
+        textTransform: labelTextTransform,
       },
     },
     ...(icon && {
@@ -120,9 +114,9 @@ const Tag = ({
       slotProps={{
         tooltip: {
           sx: {
-            textTransform: resolvedTextTransform,
+            textTransform: labelTextTransform,
             '&::first-letter': {
-              textTransform: resolvedTextTransform,
+              textTransform: labelTextTransform,
             },
           },
         },
