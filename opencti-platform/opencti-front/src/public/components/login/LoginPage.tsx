@@ -22,7 +22,7 @@ interface LoginPageProps {
 
 const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
   const { resetPwdStep } = useLoginContext();
-  const [checked, setChecked] = useState(true);
+  const [checked, setChecked] = useState(false);
 
   const consentMessage = settings.platform_consent_message;
   const loginMessage = settings.platform_login_message;
