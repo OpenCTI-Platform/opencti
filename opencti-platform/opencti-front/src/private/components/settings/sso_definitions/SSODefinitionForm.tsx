@@ -278,8 +278,8 @@ const SSODefinitionForm = ({
               onChange={(event, value) => handleChangeTab(value)}
             >
               <Tab label={t_i18n('SSO Configuration')} />
-              <Tab label={t_i18n('Groups configuration')} />
-              <Tab label={t_i18n('Organizations configuration')} />
+              {selectedStrategy !== 'LocalAuth' && <Tab label={t_i18n('Groups configuration')} />}
+              {selectedStrategy !== 'LocalAuth' && <Tab label={t_i18n('Organizations configuration')} />}
             </Tabs>
           </Box>
           {currentTab === 0 && (
@@ -314,13 +314,24 @@ const SSODefinitionForm = ({
                 label={t_i18n(`Enable ${selectedStrategy} authentication`)}
                 containerstyle={{ marginLeft: 2, marginTop: 20 }}
               />
+              {selectedStrategy !== 'LocalAuth' && (
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="label"
+                  onSubmit={updateField}
+                  label={t_i18n('Login Button Name')}
+                  fullWidth
+                  style={{ marginTop: 10 }}
+                />
+              )}
               {selectedStrategy === 'SAML' && <SAMLConfig updateField={updateField} />}
               {selectedStrategy === 'OpenID' && <OpenIDConfig updateField={updateField} />}
               {selectedStrategy === 'LDAP' && <LDAPConfig updateField={updateField} />}
             </>
           )}
-          {currentTab === 1 && <SSODefinitionGroupForm updateField={updateField} selectedStrategy={selectedStrategy} />}
-          {currentTab === 2 && <SSODefinitionOrganizationForm updateField={updateField} />}
+          {currentTab === 1 && selectedStrategy !== 'LocalAuth' && <SSODefinitionGroupForm updateField={updateField} selectedStrategy={selectedStrategy} />}
+          {currentTab === 2 && selectedStrategy !== 'LocalAuth' && <SSODefinitionOrganizationForm updateField={updateField} />}
           {!onSubmitField && (
             <div
               style={{

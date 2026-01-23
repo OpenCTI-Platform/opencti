@@ -286,3 +286,43 @@ describe('Single Sign On', () => {
     });
   });
 });
+
+describe('SSO: Local strategy dedicated behaviour', () => {
+  let createdLocalStrategyId: string;
+  it('should create Local Strategy', async () => {
+    const createInput: SingleSignOnAddInput = {
+      name: 'local',
+      strategy: StrategyType.LocalStrategy,
+      enabled: true,
+      identifier: 'local',
+      configuration: [
+        { key: 'label', value: 'local label', type: 'string' },
+      ],
+    };
+    const createdLocalStrategy = await queryAsAdminWithSuccess({
+      query: SINGLE_SIGN_ON_CREATE,
+      variables: { input: createInput },
+    });
+    expect(createdLocalStrategy).toBeDefined();
+    expect(createdLocalStrategy?.data?.singleSignOnAdd.name).toBe('local');
+    createdLocalStrategyId = createdLocalStrategy?.data?.singleSignOnAdd.id;
+  });
+  it('should not delete Local Strategy', async () => {
+    await queryAsUserIsExpectedError(USER_SECURITY.client, {
+      query: SINGLE_SIGN_ON_DELETE,
+      variables: { id: createdLocalStrategyId },
+    }, 'Cannot delete Local Strategy', 'FUNCTIONAL_ERROR');
+  });
+  it('should delete Local Strategy', async () => {
+    await deleteElementById(testContext, ADMIN_USER, createdLocalStrategyId, ENTITY_TYPE_SINGLE_SIGN_ON);
+    const singleSignOnList = await queryAsAdminWithSuccess({
+      query: SINGLE_SIGN_ON_LIST_QUERY,
+      variables: { first: 10 },
+    });
+
+    expect(singleSignOnList).toBeDefined();
+    const ssoList = singleSignOnList?.data?.singleSignOns.edges;
+    expect(ssoList.find((item: any) => item?.node?.id === createdLocalStrategyId)).toBeUndefined();
+    expect(ssoList.find((item: any) => item?.node?.id === createdLocalStrategyId)).toBeUndefined();
+  });
+});

@@ -1,10 +1,10 @@
 import type { AuthContext, AuthUser } from '../../types/user';
-import { StrategyType } from '../../generated/graphql';
+import { type GroupsManagement, type OrganizationsManagement, type SingleSignOnAddInput, StrategyType } from '../../generated/graphql';
 import conf, { logApp } from '../../config/conf';
 import LocalStrategy from 'passport-local';
 import { login, loginFromProvider } from '../../domain/user';
 import { addUserLoginCount } from '../../manager/telemetryManager';
-import { findAllSingleSignOn, logAuthError, logAuthInfo, logAuthWarn } from './singleSignOn-domain';
+import { findAllSingleSignOn, internalAddSingleSignOn, logAuthError, logAuthInfo, logAuthWarn } from './singleSignOn-domain';
 import {
   AuthType,
   EnvStrategyType,
@@ -232,21 +232,21 @@ export const initAuthenticationProviders = async (context: AuthContext, user: Au
     await registerLocalStrategy();
   } else {
     const providersFromDatabase = await findAllSingleSignOn(context, user);
-
-    if (providersFromDatabase.length === 0) {
-      // No configuration in database, fallback to default local strategy
+    const hasLocalStrategy = providersFromDatabase.some((s) => s.strategy === StrategyType.LocalStrategy);
+    if (!hasLocalStrategy) {
       logAuthInfo('configuring default local strategy', EnvStrategyType.STRATEGY_LOCAL);
-      await registerLocalStrategy();
-    } else {
-      for (let i = 0; i < providersFromDatabase.length; i++) {
-        await registerStrategy(providersFromDatabase[i]);
-      }
+      const localProvider: SingleSignOnAddInput = {
+        name: 'Local Strategy',
+        strategy: StrategyType.LocalStrategy,
+        identifier: LOCAL_STRATEGY_IDENTIFIER,
+        enabled: true,
+        label: LOCAL_STRATEGY_IDENTIFIER,
+      };
+      await internalAddSingleSignOn(context, user, localProvider, true);
     }
-
-    // At the end if there is no local, need to add the internal local
-    if (!isStrategyActivated(EnvStrategyType.STRATEGY_LOCAL)) {
-      logAuthWarn('No local strategy configured, adding it', EnvStrategyType.STRATEGY_LOCAL);
-      await registerLocalStrategy();
+    const providersFromDatabaseWithLocal = await findAllSingleSignOn(context, user);
+    for (let i = 0; i < providersFromDatabaseWithLocal.length; i++) {
+      await registerStrategy(providersFromDatabaseWithLocal[i]);
     }
   }
 };
