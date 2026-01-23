@@ -3181,15 +3181,14 @@ export const getExistingEntities = async (context, user, input, type) => {
 const cleanEntityForIdsCollision = (input, type, target, foundEntities) => {
   // We can upsert element except the aliases that are part of other entities
   const key = resolveAliasesField(type).name;
-  const concurrentAliases = R.flatten(R.map((c) => [c[key], c.name], foundEntities));
-  const normedAliases = R.uniq(concurrentAliases.map((c) => normalizeName(c)));
-  const filteredAliases = R.filter((i) => !normedAliases.includes(normalizeName(i)), input[key] || []);
+  const concurrentAliases = foundEntities.flatMap((c) => [c[key], c.name]);
+  const normedAliases = new Set(concurrentAliases.map((c) => normalizeName(c)));
+  const filteredAliases = (input[key] ?? []).filter((i) => !normedAliases.has(normalizeName(i)));
   // We need also to filter eventual STIX IDs present in other entities
-  const concurrentStixIds = R.flatten(R.map((c) => [c.x_opencti_stix_ids, c.standard_id], foundEntities));
-  const normedStixIds = R.uniq(concurrentStixIds);
-  const filteredStixIds = R.filter(
-    (i) => isNotEmptyField(i) && !normedStixIds.includes(i) && i !== target.standard_id,
-    [...(input.x_opencti_stix_ids ?? []), input.stix_id],
+  const concurrentStixIds = foundEntities.flatMap((c) => [c.x_opencti_stix_ids, c.standard_id]);
+  const normedStixIds = new Set(concurrentStixIds);
+  const filteredStixIds = [...(input.x_opencti_stix_ids ?? []), input.stix_id].filter(
+    (i) => isNotEmptyField(i) && !normedStixIds.has(i) && i !== target.standard_id,
   );
   return { ...input, [key]: filteredAliases, x_opencti_stix_ids: filteredStixIds };
 };
