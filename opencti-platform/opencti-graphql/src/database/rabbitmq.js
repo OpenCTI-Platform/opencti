@@ -6,7 +6,7 @@ import conf, { booleanConf, configureCA, loadCert, logApp } from '../config/conf
 import { DatabaseError } from '../config/errors';
 import { SYSTEM_USER } from '../utils/access';
 import { telemetry } from '../config/tracing';
-import { isEmptyField, RABBIT_QUEUE_PREFIX } from './utils';
+import { isEmptyField, RABBIT_QUEUE_PREFIX, wait } from './utils';
 import { getHttpClient } from '../utils/http-client';
 import { fullEntitiesList } from './middleware-loader';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC } from '../schema/internalObject';
@@ -77,11 +77,6 @@ let publishMutexPromise = Promise.resolve();
 const RECONNECT_INITIAL_DELAY = 1000; // 1 second
 const RECONNECT_MAX_DELAY = 30000; // 30 seconds max
 const RECONNECT_MULTIPLIER = 2; // Exponential backoff
-
-/**
- * Wait for a specified duration
- */
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
  * Create a new connection to RabbitMQ with automatic reconnection
@@ -191,7 +186,7 @@ const reconnectWithBackoff = async () => {
     } catch (err) {
       connectionPromise = null;
       logApp.warn(`[RABBITMQ] Reconnection attempt ${attempt} failed, retrying in ${currentDelay}ms`, { cause: err });
-      await delay(currentDelay);
+      await wait(currentDelay);
       // Exponential backoff with max limit
       currentDelay = Math.min(currentDelay * RECONNECT_MULTIPLIER, RECONNECT_MAX_DELAY);
       attempt += 1;
@@ -242,7 +237,7 @@ const getPersistentChannel = async () => {
     // If reconnection is in progress, wait a bit and check again
     if (isReconnecting) {
       logApp.debug('[RABBITMQ] Waiting for reconnection to complete...');
-      await delay(100);
+      await wait(100);
       continue;
     }
 
@@ -262,7 +257,7 @@ const getPersistentChannel = async () => {
     }
 
     // Wait a bit before next iteration
-    await delay(100);
+    await wait(100);
   }
 
   return persistentChannel;
