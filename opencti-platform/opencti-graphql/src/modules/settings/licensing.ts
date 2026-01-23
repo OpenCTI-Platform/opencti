@@ -98,7 +98,7 @@ export const decodeLicensePem = (settings: BasicStoreSettings, overridePem?: str
       let license_extra_expiration = false;
       let license_extra_expiration_days = 0;
       if (license_validated && license_expired) {
-        // If trial license, deactivation for expiration is direct
+        // If trial or CI license, deactivation for expiration is direct
         if (license_type !== LICENSE_TYPE_TRIAL && license_type !== LICENSE_TYPE_CI) {
           // If standard or lts license, a 3 months safe period is granted
           const license_extra_expiration_date = utcDate(license_expiration_date).add(3, 'months');
