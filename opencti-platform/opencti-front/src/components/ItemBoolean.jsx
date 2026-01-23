@@ -1,72 +1,25 @@
 import React from 'react';
 import * as PropTypes from 'prop-types';
-import withStyles from '@mui/styles/withStyles';
 import Tooltip from '@mui/material/Tooltip';
 import { compose } from 'ramda';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useTheme } from '@mui/styles';
 import inject18n from './i18n';
-import { chipInListBasicStyle } from '../utils/chipStyle';
 import Tag from '@common/tag/Tag';
 
-const styles = () => ({
-  chip: {
-    fontSize: 12,
-    lineHeight: '12px',
-    height: 25,
-    marginRight: 7,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-    width: 120,
-  },
-  chipLarge: {
-    fontSize: 12,
-    lineHeight: '12px',
-    height: 25,
-    marginRight: 7,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-    width: 150,
-  },
-  chipxLarge: {
-    fontSize: 12,
-    lineHeight: '12px',
-    height: 25,
-    marginRight: 7,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-    width: 250,
-  },
-  chipHigh: {
-    fontSize: 12,
-    lineHeight: '12px',
-    height: 38,
-    marginRight: 7,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-    width: 150,
-  },
-  chipInList: {
-    ...chipInListBasicStyle,
-    lineHeight: '12px',
-    textTransform: 'uppercase',
-    width: 100,
-  },
-});
-
-const renderChip = (props) => {
-  const { label, neutralLabel, status, t, reverse } = props;
+const renderTag = (props) => {
+  const { label, neutralLabel, status, t, reverse, labelTextTransform } = props;
   const theme = useTheme();
 
   if (status === true) {
     return (
-      <Tag label={label} color={reverse ? theme.palette.error.main : theme.palette.success.main} />
+      <Tag label={label} color={reverse ? theme.palette.error.main : theme.palette.success.main} labelTextTransform={labelTextTransform} />
     );
   }
 
   if (status === null) {
     return (
-      <Tag label={neutralLabel || t('Not applicable')} />
+      <Tag label={neutralLabel || t('Not applicable')} labelTextTransform={labelTextTransform} />
     );
   }
 
@@ -75,6 +28,7 @@ const renderChip = (props) => {
       <Tag
         label={neutralLabel || t('EE')}
         color={theme.palette.ee.lightBackground}
+        labelTextTransform={labelTextTransform}
       />
     );
   }
@@ -99,11 +53,11 @@ const ItemBoolean = (props) => {
   if (tooltip) {
     return (
       <Tooltip title={tooltip}>
-        {renderChip(props)}
+        {renderTag(props)}
       </Tooltip>
     );
   }
-  return renderChip(props);
+  return renderTag(props);
 };
 
 ItemBoolean.propTypes = {
@@ -113,6 +67,7 @@ ItemBoolean.propTypes = {
   neutralLabel: PropTypes.string,
   variant: PropTypes.string,
   reverse: PropTypes.bool,
+  labelTextTransform: PropTypes.string,
 };
 
-export default compose(inject18n, withStyles(styles))(ItemBoolean);
+export default compose(inject18n)(ItemBoolean);

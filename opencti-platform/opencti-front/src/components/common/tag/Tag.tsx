@@ -12,6 +12,7 @@ interface TagProps extends Omit<ChipProps, 'color'> {
   tooltipTitle?: string;
   disableTooltip?: boolean;
   applyLabelTextTransform?: boolean;
+  labelTextTransform?: 'capitalize' | 'uppercase' | 'lowercase' | 'none';
 }
 
 const Tag = ({
@@ -24,6 +25,7 @@ const Tag = ({
   tooltipTitle,
   disableTooltip = false,
   applyLabelTextTransform = true,
+  labelTextTransform,
   sx,
   ...chipProps
 }: TagProps) => {
@@ -42,6 +44,10 @@ const Tag = ({
     }
   };
 
+  const resolvedTextTransform
+    = labelTextTransform
+      ?? (applyLabelTextTransform ? 'capitalize' : 'none');
+
   const bgColor = getBackgroundColor();
 
   const chipStyle: CSSProperties = {
@@ -50,7 +56,7 @@ const Tag = ({
     fontWeight: 400,
     paddingLeft: '8px',
     cursor: onClick ? 'pointer' : 'default',
-    textTransform: 'capitalize',
+    textTransform: resolvedTextTransform,
   };
 
   const sxStyles: SxProps<Theme> = {
@@ -67,7 +73,10 @@ const Tag = ({
       display: 'block',
       paddingLeft: icon ? '8px' : '4px',
       paddingRight: onDelete ? '4px' : '12px',
-      textTransform: applyLabelTextTransform ? 'inherit' : 'none',
+      textTransform: resolvedTextTransform,
+      '&::first-letter': {
+        textTransform: resolvedTextTransform,
+      },
     },
     ...(icon && {
       '& .MuiChip-icon': {
@@ -111,7 +120,10 @@ const Tag = ({
       slotProps={{
         tooltip: {
           sx: {
-            textTransform: applyLabelTextTransform ? 'inherit' : 'none',
+            textTransform: resolvedTextTransform,
+            '&::first-letter': {
+              textTransform: resolvedTextTransform,
+            },
           },
         },
       }}

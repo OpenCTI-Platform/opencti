@@ -403,6 +403,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     variant="large"
                     neutralLabel={settings.platform_enterprise_edition.license_creator}
                     status={null}
+                    labelTextTransform="none"
                   />
                 </ListItem>
                 <ListItem divider={true}>
@@ -461,6 +462,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     variant="large"
                     neutralLabel={settings.platform_enterprise_edition.license_type}
                     status={null}
+                    labelTextTransform="uppercase"
                   />
                 </ListItem>
               </List>
