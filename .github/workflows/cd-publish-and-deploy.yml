@@ -12,8 +12,6 @@ jobs:
       name: Build and push alpine image
       uses: ./.github/workflows/ci-docker-build.yml
       with:
-        ## TODO: Publish to docker.io public registry instead of filigran private
-        # registry: "docker.io/opencti"
         image_tag: ${{ github.ref_name == 'master'  && 'rolling' || github.ref_name == 'release/current' && 'prerelease' }}
         is_client_python_local: true
         is_publish_to_registry: true
@@ -23,8 +21,6 @@ jobs:
       name: Build and push FIPS image
       uses: ./.github/workflows/ci-docker-build.yml
       with:
-        ## TODO: Publish to docker.io public registry instead of filigran private
-        # registry: "docker.io/opencti"
         image_tag: ${{ github.ref_name == 'master'  && 'rolling' || github.ref_name == 'release/current' && 'prerelease' }}
         is_client_python_local: true
         is_publish_to_registry: true
@@ -35,7 +31,6 @@ jobs:
       name: Publish OpenCTI platform packages
       uses: ./.github/workflows/cd-publish-package.yml
       with:
-        is_publish_jfrog: ${{ github.ref_name == 'master' }}
         is_client_python_local: true
 
   deploy-staging:
