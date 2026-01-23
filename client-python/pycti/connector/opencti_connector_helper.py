@@ -1730,8 +1730,6 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             isNumber=True,
             default=7,
         )
-        # Track last S3 cleanup time to avoid running cleanup after every upload
-        self._last_s3_cleanup_time = 0.0
         # Cached S3 client for reuse across uploads (lazily initialized)
         self._s3_client = None
         # Override S3 connection (optional - defaults to OpenCTI's S3)
@@ -2188,13 +2186,9 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 {"bucket": self.bundle_send_to_s3_bucket, "key": key},
             )
 
-            # Handle retention - delete old files (throttled to once per hour)
+            # Handle retention - delete old files
             if self.bundle_send_to_s3_retention > 0:
-                current_time = time.time()
-                # Only run cleanup once per hour to avoid performance issues
-                if current_time - self._last_s3_cleanup_time >= 3600:
-                    self._cleanup_old_s3_bundles(s3_client)
-                    self._last_s3_cleanup_time = current_time
+                self._cleanup_old_s3_bundles(s3_client)
         except Exception as e:
             self.connector_logger.error(
                 "Failed to upload bundle to S3",
