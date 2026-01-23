@@ -1137,7 +1137,7 @@ describe('Upsert and merge entities', () => {
     await deleteElementById(testContext, ADMIN_USER, malware03.id, ENTITY_TYPE_MALWARE);
     await deleteElementById(testContext, ADMIN_USER, loadedThreat.id, ENTITY_TYPE_THREAT_ACTOR_GROUP);
   });
-  it('should multiple threat actors that need merge still upserted with using lower confidence', async () => {
+  it('should upsert multiple threat actors that need merging when using lower confidence', async () => {
     // 01. Create Threat by admin
     const updateUpsert01 = {
       stix_id: 'threat-actor--d1e2ff9a-60e2-43a2-9896-986b6fcd9f01',
