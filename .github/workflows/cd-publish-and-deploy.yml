@@ -2,7 +2,7 @@ name: Publish and deploy to staging
 
 on:
   workflow_run:
-    workflows: [API test]
+    workflows: [API test, Frontend test, Client Python, License check]
     types: [completed]
     ## TODO Switch branches when ready to activate
     # branches: [master,release/current]
