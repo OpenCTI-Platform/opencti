@@ -71,13 +71,17 @@ const Root = () => {
 
   const urlWithCapabilities = () => {
     const isGrantedToParameters = useGranted([SETTINGS_SETPARAMETERS]);
-    const isGrantedToSecurity = useGranted([SETTINGS_SETMARKINGS, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]);
+    const isGrantedToSecurityAccess = useGranted([SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]);
+    const isGrantedToMarkingOnly = useGranted([SETTINGS_SETMARKINGS]);
+    const isGrantedToDisseminationListOnly = useGranted([SETTINGS_SETDISSEMINATION]);
     const isGrantedToCustomization = useGranted([SETTINGS_SETCUSTOMIZATION]);
     const isGrantedToActivity = useGranted([SETTINGS_SECURITYACTIVITY]);
     const isGrantedToFileIndexing = useGranted([SETTINGS_FILEINDEXING]);
     const isGrantedToExperience = useGranted([SETTINGS_SUPPORT, SETTINGS_SETMANAGEXTMHUB]);
     if (isGrantedToParameters) return '/dashboard/settings';
-    if (isGrantedToSecurity) return '/dashboard/settings/accesses';
+    if (isGrantedToSecurityAccess) return '/dashboard/settings/accesses';
+    if (isGrantedToMarkingOnly) return '/dashboard/settings/accesses/marking';
+    if (isGrantedToDisseminationListOnly) return '/dashboard/settings/accesses/dissemination_list';
     if (isGrantedToCustomization) return '/dashboard/settings/customization';
     if (isGrantedToTaxonomies) return '/dashboard/settings/vocabularies';
     if (isGrantedToActivity) return '/dashboard/settings/activity';
@@ -117,14 +121,7 @@ const Root = () => {
             element={(
               <Security
                 needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
-                placeholder={(
-                  <Security
-                    needs={[SETTINGS_SETMARKINGS]}
-                    placeholder={<Navigate to={urlWithCapabilities()} />}
-                  >
-                    <Navigate to="/dashboard/settings/accesses/marking" />
-                  </Security>
-                )}
+                placeholder={<Navigate to={urlWithCapabilities()} />}
               >
                 <Navigate to={adminOrga ? '/dashboard/settings/accesses/organizations' : '/dashboard/settings/accesses/roles'} />
               </Security>
