@@ -99,7 +99,7 @@ const AuditDrawerContent: FunctionComponent<{ logId: string }> = ({ logId }) => 
                 <TableBody>
                   {changes && changes.length > 0 ? (changes.map((row) => {
                     return (
-                      <TableRow key={row?.field} hover={true}>
+                      <TableRow key={row?.field} hover={false}>
                         <TableCell component="th" scope="row" style={{ fontWeight: 'bold', verticalAlign: 'top' }}>
                           {row?.field}
                         </TableCell>

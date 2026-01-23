@@ -4,5 +4,5 @@ import type { BasicStoreIdentifier, BasicWorkflowStatus, BasicWorkflowTemplateEn
 export const isEntityStatus
   = (entity: BasicStoreIdentifier): entity is BasicWorkflowStatus => entity.entity_type === ENTITY_TYPE_STATUS;
 
-export const isEntityTemplate
+export const isEntityStatusTemplate
   = (entity: BasicStoreIdentifier): entity is BasicWorkflowTemplateEntity => entity.entity_type === ENTITY_TYPE_STATUS_TEMPLATE;

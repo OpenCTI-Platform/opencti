@@ -249,13 +249,13 @@ const convertAttribute = async (context: AuthContext, user: AuthUser,
     return { raw: item };
   }
   if (attribute.type === 'date') {
-    return { raw: item };
+    return { raw: String(item) };
   }
   if (attribute.type === 'boolean') {
-    return { raw: item };
+    return { raw: String(item) };
   }
   if (attribute.type === 'numeric') {
-    return { raw: item };
+    return { raw: String(item) };
   }
   throw UnsupportedError('Change build error, unknown attribute', { attribute });
 };
@@ -374,7 +374,6 @@ const legacyHistoryChanges = (log: any) => {
 
 export const changeIdsExtractor = async (context: AuthContext, user: AuthUser, changes: Change[]) => {
   const ids = [];
-  // const { context_data } = log;
   const getEntitiesMapFromCache = buildMapFromCacheContext(context, user);
   for (let index = 0; index < changes.length; index++) {
     const change = changes[index];
@@ -424,7 +423,6 @@ export const attributesChangesResolver = async (context: AuthContext, user: Auth
   const lookingIds = [];
   for (let index = 0; index < attributesChanges.length; index++) {
     const attributeChanges = attributesChanges[index];
-    // const changes: Change[] = log.context_data.history_changes ?? [];
     const idsFromData = await changeIdsExtractor(context, user, attributeChanges);
     for (let i = 0; i < idsFromData.length; i++) {
       const idFromData = idsFromData[i];
