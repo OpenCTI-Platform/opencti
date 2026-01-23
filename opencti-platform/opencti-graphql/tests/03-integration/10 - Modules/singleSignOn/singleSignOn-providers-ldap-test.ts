@@ -53,8 +53,8 @@ describe('LDAP Single sign on Provider coverage tests', () => {
   });
 
   describe('LDAP groups and org mapping coverage', () => {
-    it.todo('should LDAP group mapping be computed correctly with default group attributes', async () => {
-      const ldapProfile = { mail: 'ldap1@opencti.io', givenName: 'ldap1', _group: ['cn=ldapGroupA'] };
+    it('should LDAP group mapping be computed correctly with default group attributes', async () => {
+      const ldapProfile = { mail: 'ldap1@opencti.io', givenName: 'ldap1', _groups: ['cn=ldapGroupA'] };
       const ssoEntity: Partial<BasicStoreEntitySingleSignOn> = {
         identifier: 'ldap',
         configuration: [
