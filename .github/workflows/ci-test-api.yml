@@ -62,6 +62,8 @@ jobs:
           ./scripts/ci/wait-for-url-200.sh http://localhost:4300/health?health_access_key=cihealthkey 180 10
           ./scripts/ci/wait-for-url-200.sh http://localhost:4400/health?health_access_key=cihealthkey 180 10
 
+    - name: Create coverage directory
+      run: mkdir -p ${{ github.workspace }}/opencti-platform/opencti-graphql/coverage
 
     - name: Start api test (aka yarn test:ci-integration-sync)
       run: |
@@ -69,6 +71,7 @@ jobs:
           --name api-tests \
           -p 4010:4100 \
           -v ${{ github.workspace }}/test-results:/opt/opencti/test-results \
+          -v ${{ github.workspace }}/opencti-platform/opencti-graphql/coverage:/opt/opencti/coverage \
           --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
           -e APP__BASE_URL=http://api-tests:4010/ \
           -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
@@ -85,6 +88,14 @@ jobs:
             wget -O ../../opencti-connectors/external-import/restore-files/src/restore-files.py https://raw.githubusercontent.com/OpenCTI-Platform/connectors/master/external-import/restore-files/src/restore-files.py
             NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-integration-sync --coverage
         '
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ${{ github.workspace }}/opencti-platform/opencti-graphql/coverage/coverage-final.json
+        flags: opencti,opencti-graphql
+        fail_ci_if_error: false
 
     - name: Upload backend test result
       uses: actions/upload-artifact@v6

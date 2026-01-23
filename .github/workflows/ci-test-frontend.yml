@@ -42,6 +42,14 @@ jobs:
             NODE_OPTIONS=--max_old_space_size=8192 yarn test:coverage
             '
 
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ${{ github.workspace }}/opencti-platform/opencti-front/coverage/unit/coverage-final.json
+        flags: opencti,opencti-front
+        fail_ci_if_error: false
+
     - name: Print resources stats
       if: always()
       continue-on-error: true
