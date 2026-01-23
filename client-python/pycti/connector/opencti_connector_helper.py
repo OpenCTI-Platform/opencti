@@ -1730,6 +1730,10 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             isNumber=True,
             default=7,
         )
+        # Track last S3 cleanup time to avoid running cleanup after every upload
+        self._last_s3_cleanup_time = 0.0
+        # Cached S3 client for reuse across uploads (lazily initialized)
+        self._s3_client = None
         # Override S3 connection (optional - defaults to OpenCTI's S3)
         self.s3_endpoint = get_config_variable(
             "S3_ENDPOINT", ["s3", "endpoint"], config
@@ -2022,17 +2026,34 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :type backend_s3_config: Dict
         """
         # Use local override if set, otherwise use backend value
-        self.s3_endpoint = self.s3_endpoint or backend_s3_config.get("endpoint")
-        self.s3_port = self.s3_port or backend_s3_config.get("port")
-        self.s3_access_key = self.s3_access_key or backend_s3_config.get("access_key")
-        self.s3_secret_key = self.s3_secret_key or backend_s3_config.get("secret_key")
+        # Use explicit None checks to support falsy values (0, False, empty string) as valid overrides
+        self.s3_endpoint = (
+            self.s3_endpoint
+            if self.s3_endpoint is not None
+            else backend_s3_config.get("endpoint")
+        )
+        self.s3_port = (
+            self.s3_port if self.s3_port is not None else backend_s3_config.get("port")
+        )
+        self.s3_access_key = (
+            self.s3_access_key
+            if self.s3_access_key is not None
+            else backend_s3_config.get("access_key")
+        )
+        self.s3_secret_key = (
+            self.s3_secret_key
+            if self.s3_secret_key is not None
+            else backend_s3_config.get("secret_key")
+        )
         self.s3_use_ssl = (
             self.s3_use_ssl
             if self.s3_use_ssl is not None
             else backend_s3_config.get("use_ssl")
         )
-        self.s3_bucket_region = self.s3_bucket_region or backend_s3_config.get(
-            "bucket_region"
+        self.s3_bucket_region = (
+            self.s3_bucket_region
+            if self.s3_bucket_region is not None
+            else backend_s3_config.get("bucket_region")
         )
         # Use OpenCTI bucket by default, unless overridden
         if self.bundle_send_to_s3_bucket is None:
@@ -2130,11 +2151,26 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :type bundle_file: str
         :raises Exception: If S3 upload fails
         """
-        s3_client = self._get_s3_client()
+        # Validate bucket is configured
+        if not self.bundle_send_to_s3_bucket:
+            raise ValueError(
+                "S3 bucket not configured. Set CONNECTOR_SEND_TO_S3_BUCKET or "
+                "ensure OpenCTI backend provides bucket configuration."
+            )
 
-        # If folder is empty or "/" or ".", upload to root of bucket
-        folder = self.bundle_send_to_s3_folder
-        if folder and folder not in ("/", "."):
+        # Lazily create and cache the S3 client for reuse across uploads
+        if self._s3_client is None:
+            self._s3_client = self._get_s3_client()
+        s3_client = self._s3_client
+
+        # If folder is empty or "." (or "/" after stripping), upload to root of bucket
+        # Strip trailing slashes to avoid double slashes in S3 keys
+        folder = (
+            self.bundle_send_to_s3_folder.rstrip("/")
+            if self.bundle_send_to_s3_folder
+            else None
+        )
+        if folder and folder != ".":
             key = f"{folder}/{bundle_file}"
         else:
             key = bundle_file
@@ -2152,9 +2188,13 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 {"bucket": self.bundle_send_to_s3_bucket, "key": key},
             )
 
-            # Handle retention - delete old files
+            # Handle retention - delete old files (throttled to once per hour)
             if self.bundle_send_to_s3_retention > 0:
-                self._cleanup_old_s3_bundles(s3_client)
+                current_time = time.time()
+                # Only run cleanup once per hour to avoid performance issues
+                if current_time - self._last_s3_cleanup_time >= 3600:
+                    self._cleanup_old_s3_bundles(s3_client)
+                    self._last_s3_cleanup_time = current_time
         except Exception as e:
             self.connector_logger.error(
                 "Failed to upload bundle to S3",
@@ -2172,9 +2212,14 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :type s3_client: boto3.client
         """
         # Build prefix: folder + connector name prefix
-        folder = self.bundle_send_to_s3_folder
+        # Strip trailing slashes to avoid double slashes in S3 keys
+        folder = (
+            self.bundle_send_to_s3_folder.rstrip("/")
+            if self.bundle_send_to_s3_folder
+            else None
+        )
         connector_prefix = self.connect_name.lower().replace(" ", "_") + "-"
-        if folder and folder not in ("/", "."):
+        if folder and folder != ".":
             prefix = f"{folder}/{connector_prefix}"
         else:
             prefix = connector_prefix
