@@ -3264,6 +3264,7 @@
   "Reliability is an open vocabulary based on Admiralty code used to assess the reliability of a source.": "La fiabilité est un vocabulaire ouvert basé sur le code Admiralty utilisé pour évaluer la fiabilité d'une source.",
   "Remaining": "Restant",
   "remaining": "restant",
+  "Remediated by": "Remédié par",
   "Remediation Level (RL)": "Niveau de remédiation (RL)",
   "Remote OCTI Streams | Ingestion | Data": "Flux OCTI à distance | Ingestion | Données",
   "Remote OpenCTI configuration": "Configuration de la plateforme OpenCTI distante",
