@@ -351,7 +351,7 @@ export const searchEngineVersion = async () => {
       platform: platform,
       version: number,
     } as const;
-  } catch(e) {
+  } catch (e) {
     throw ConfigurationError('Search engine seems down', { cause: e });
   }
 };
