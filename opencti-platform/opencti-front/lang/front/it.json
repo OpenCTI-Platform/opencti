@@ -2981,6 +2981,7 @@
   "Only lowercase letters, numbers and hyphens are allowed": "Sono consentiti solo lettere minuscole, numeri e trattini",
   "Only successful tests allow the ingestion creation.": "Solo i test riusciti consentono la creazione dell'ingestione.",
   "Only successful tests allow the ingestion edition.": "Solo i test riusciti consentono la modifica dell'ingestione.",
+  "only_eq_to": "Solo uguale a",
   "Open chatbot": "Chatbot aperto",
   "Open correlation details": "Apri i dettagli della correlazione",
   "Open export panel": "Apri il pannello di esportazione",

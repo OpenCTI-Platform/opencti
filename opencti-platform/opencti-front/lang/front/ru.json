@@ -2981,6 +2981,7 @@
   "Only lowercase letters, numbers and hyphens are allowed": "Допускаются только строчные буквы, цифры и дефисы",
   "Only successful tests allow the ingestion creation.": "Только успешные тесты позволяют создать впуск.",
   "Only successful tests allow the ingestion edition.": "Только успешно пройденные тесты дают право на включение издания.",
+  "only_eq_to": "Равняется только",
   "Open chatbot": "Открытый чатбот",
   "Open correlation details": "Детали открытой корреляции",
   "Open export panel": "Откройте панель экспорта",

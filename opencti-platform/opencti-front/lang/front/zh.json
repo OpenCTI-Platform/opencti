@@ -2981,6 +2981,7 @@
   "Only lowercase letters, numbers and hyphens are allowed": "只允许使用小写字母、数字和连字符",
   "Only successful tests allow the ingestion creation.": "只有成功的测试才允许创建摄取。",
   "Only successful tests allow the ingestion edition.": "只有成功的测试才允许摄取版本。",
+  "only_eq_to": "只相当于",
   "Open chatbot": "开放式聊天机器人",
   "Open correlation details": "开放式关联详细信息",
   "Open export panel": "打开导出面板",

@@ -2981,6 +2981,7 @@
   "Only lowercase letters, numbers and hyphens are allowed": "소문자, 숫자 및 하이픈만 허용됩니다",
   "Only successful tests allow the ingestion creation.": "성공적인 테스트만 인게스트 생성을 허용합니다.",
   "Only successful tests allow the ingestion edition.": "성공적인 테스트만 인게스트 에디션을 허용합니다.",
+  "only_eq_to": "다음과 같습니다",
   "Open chatbot": "오픈 챗봇",
   "Open correlation details": "상관관계 세부 정보 열기",
   "Open export panel": "내보내기 패널 열기",

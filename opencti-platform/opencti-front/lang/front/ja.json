@@ -2981,6 +2981,7 @@
   "Only lowercase letters, numbers and hyphens are allowed": "小文字、数字、ハイフンのみ使用可",
   "Only successful tests allow the ingestion creation.": "成功したテストのみが取り込みの作成を許可します。",
   "Only successful tests allow the ingestion edition.": "成功したテストのみがインジェスト版を許可します。",
+  "only_eq_to": "に等しい。",
   "Open chatbot": "オープンチャットボット",
   "Open correlation details": "相関関係の詳細を開く",
   "Open export panel": "出力画面を開く",
