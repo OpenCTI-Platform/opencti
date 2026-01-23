@@ -70,9 +70,6 @@ let connectionPromise = null;
 let isReconnecting = false;
 let isIntentionalClose = false; // Flag to prevent reconnection during intentional cleanup
 
-// Mutex for sequential publishing - ensures messages are sent in order
-let publishMutexPromise = Promise.resolve();
-
 // Configuration for reconnection
 const RECONNECT_INITIAL_DELAY = 1000; // 1 second
 const RECONNECT_MAX_DELAY = 30000; // 30 seconds max
@@ -268,7 +265,6 @@ const getPersistentChannel = async () => {
  *
  * Guarantees:
  * - At-least-once delivery: Messages are retried on failure
- * - Ordering: Mutex ensures sequential publishing
  * - Backpressure: Waits for drain when channel buffer is full
  *
  * Note: Around connection failures, there's a small window where a message
@@ -313,33 +309,19 @@ const publishWithConfirm = (channel, exchangeName, routingKey, message) => {
 };
 
 /**
- * Send a message using the persistent connection (sequential, maintains order)
- * Uses a mutex to ensure messages are sent in strict order even with concurrent callers
+ * Send a message using the persistent connection
  * This will block and wait for reconnection if the connection is lost
+ *
+ * Note: Callers are responsible for ensuring ordering by using sequential awaits.
+ * All current usage patterns either send to different queues (ordering irrelevant)
+ * or use await in loops (natural ordering via JavaScript's event loop).
  */
 const sendPersistent = async (exchangeName, routingKey, message) => {
-  // Use mutex to ensure sequential publishing
-  // Each call waits for the previous one to complete before starting
-  const previousPromise = publishMutexPromise;
+  // Get channel, waiting for reconnection if necessary
+  const channel = await getPersistentChannel();
 
-  let resolveCurrentMutex;
-  publishMutexPromise = new Promise((resolve) => {
-    resolveCurrentMutex = resolve;
-  });
-
-  try {
-    // Wait for previous publish to complete
-    await previousPromise;
-
-    // Get channel, waiting for reconnection if necessary
-    const channel = await getPersistentChannel();
-
-    // Publish with confirm callback for reliable delivery
-    return await publishWithConfirm(channel, exchangeName, routingKey, message);
-  } finally {
-    // Release mutex for next caller
-    resolveCurrentMutex();
-  }
+  // Publish with confirm callback for reliable delivery
+  return await publishWithConfirm(channel, exchangeName, routingKey, message);
 };
 // endregion
 
@@ -447,12 +429,12 @@ const amqpExecute = async (execute) => {
  * Send a message using the persistent connection for high performance
  *
  * Guarantees:
- * - Sequential ordering via mutex (messages sent in call order)
  * - At-least-once delivery with retries on failure
  * - Blocking reconnection: waits for RabbitMQ recovery if connection lost
  * - Backpressure: respects channel buffer limits
  *
- * Note: In rare edge cases around connection failures, duplicate delivery
+ * Note: Ordering is maintained when callers use sequential awaits.
+ * In rare edge cases around connection failures, duplicate delivery
  * is possible (at-least-once semantics). Consumers should be idempotent.
  */
 export const send = async (exchangeName, routingKey, message) => {
