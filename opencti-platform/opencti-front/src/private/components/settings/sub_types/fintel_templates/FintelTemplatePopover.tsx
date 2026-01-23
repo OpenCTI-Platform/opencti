@@ -85,6 +85,7 @@ const FintelTemplatePopover = ({
           aria-haspopup="true"
           className="icon-outlined"
           variant="secondary"
+          size="default"
         >
           <MoreVert fontSize="small" />
         </IconButton>
