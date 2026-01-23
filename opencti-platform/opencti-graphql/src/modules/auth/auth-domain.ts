@@ -1,4 +1,3 @@
-import { authenticator } from 'otplib';
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
 import { findById, getUserByEmail, userEditField } from '../../domain/user';
@@ -19,6 +18,7 @@ import type { SendMailArgs } from '../../types/smtp';
 import { addForgotPasswordCount } from '../../manager/telemetryManager';
 import { sanitizeSettings } from '../../utils/templateContextSanitizer';
 import { safeRender } from '../../utils/safeEjs.client';
+import { totp } from '../../utils/totp';
 
 export const getLocalProviderUser = async (email: string) => {
   const user: any = await getUserByEmail(email);
@@ -148,13 +148,13 @@ export const verifyMfa = async (context: AuthContext, input: VerifyMfaInput) => 
   if (!mfa_activated || !mfa_secret) {
     throw AuthenticationFailure();
   }
-  const isValidated = authenticator.check(input.code, mfa_secret);
-  if (!isValidated) {
+  const { valid } = await totp.verify({ secret: mfa_secret, token: input.code });
+  if (!valid) {
     throw AuthenticationFailure();
   } else {
-    await redisSetForgotPasswordOtp(input.transactionId, { hashedOtp, email, mfa_activated, mfa_validated: isValidated, userId }, ttl);
+    await redisSetForgotPasswordOtp(input.transactionId, { hashedOtp, email, mfa_activated, mfa_validated: valid, userId }, ttl);
   }
-  return isValidated;
+  return valid;
 };
 
 export const changePassword = async (context: AuthContext, input: ChangePasswordInput) => {
