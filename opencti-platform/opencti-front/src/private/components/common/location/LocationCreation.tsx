@@ -7,8 +7,6 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@common/button/Button';
 import MenuItem from '@mui/material/MenuItem';
-import Fab from '@mui/material/Fab';
-import { Add } from '@mui/icons-material';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
@@ -30,17 +28,6 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
-  createButtonContextual: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    zIndex: 2000,
-  },
   buttons: {
     marginTop: 20,
     textAlign: 'right',
@@ -219,7 +206,6 @@ const LocationCreation: FunctionComponent<LocationCreationFormProps> = ({
   updater,
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
 
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
@@ -246,14 +232,13 @@ const LocationCreation: FunctionComponent<LocationCreationFormProps> = ({
   const renderContextual = () => {
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
-        <Fab
+        <Button
           onClick={handleOpen}
           color="secondary"
           aria-label="Add"
-          className={classes.createButtonContextual}
         >
-          <Add />
-        </Fab>
+          Create Location
+        </Button>
         <Dialog open={open} onClose={handleClose} slotProps={{ paper: { elevation: 1 } }}>
           <DialogTitle>{t_i18n('Add a location')}</DialogTitle>
           <DialogContent>

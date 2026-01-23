@@ -37,6 +37,7 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: 4,
     width: '100%',
     minWidth: 100,
+    maxWidth: '255px',
   },
   searchRootThin: {
     borderRadius: 4,
