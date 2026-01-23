@@ -81,7 +81,6 @@ jobs:
           --name opencti-e2e-start \
           -p 4500:4100 \
           -v ${{ github.workspace }}/frontend-e2e-start:/home/workspace \
-          -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
           -e APP__PORT=4100 \
           -e APP__ENABLED_DEV_FEATURES='["*"]' \
           -e APP__ADMIN__PASSWORD=admin \
@@ -102,7 +101,8 @@ jobs:
           -e PUBLISHER_MANAGER__ENABLED=false \
           -e SMTP__ENABLED=false \
           nikolaik/python-nodejs:python3.11-nodejs22-alpine \
-          sh -c 'set -ex
+          sh -c 'set -eux
+            wget -O  /tmp/myfile https://filigran.jfrog.io/artifactory/ci-utils/opencti-license/temporary_ee_license.crt  && export APP__ENTERPRISE_EDITION_LICENSE="$(cat /tmp/myfile)" || exit 1
             echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
             apk add build-base git libffi-dev cargo
             cd /home/workspace/client-python

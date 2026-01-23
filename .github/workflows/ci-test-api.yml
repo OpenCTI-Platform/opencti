@@ -71,7 +71,6 @@ jobs:
           -v ${{ github.workspace }}/test-results:/opt/opencti/test-results \
           --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
           -e APP__BASE_URL=http://api-tests:4010/ \
-          -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
           -e APP__SYNC_RAW_START_REMOTE_URI=http://opencti-raw-start:4100/graphql \
           -e APP__SYNC_LIVE_START_REMOTE_URI=http://opencti-live-start:4100/graphql \
           -e APP__SYNC_DIRECT_START_REMOTE_URI=http://opencti-direct-start:4100/graphql \
@@ -79,6 +78,7 @@ jobs:
           -e PYTHONUNBUFFERED=1  \
           filigran/platform:${{ github.sha }} \
           sh -c 'set -eux
+            wget -O  /tmp/myfile https://filigran.jfrog.io/artifactory/ci-utils/opencti-license/temporary_ee_license.crt  && export APP__ENTERPRISE_EDITION_LICENSE="$(cat /tmp/myfile)" || exit 1
             mkdir -p ../../opencti-connectors/stream/backup-files/src
             wget -O ../../opencti-connectors/stream/backup-files/src/backup-files.py https://raw.githubusercontent.com/OpenCTI-Platform/connectors/master/stream/backup-files/src/backup-files.py
             mkdir -p ../../opencti-connectors/external-import/restore-files/src
@@ -184,10 +184,10 @@ jobs:
           -p 4010:4100 \
           --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
           -e APP__BASE_URL=http://api-tests:4010/ \
-          -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
           -e PYTHONUNBUFFERED=1  \
           filigran/platform:${{ github.sha }} \
           sh -c 'set -eux
+            wget -O  /tmp/myfile https://filigran.jfrog.io/artifactory/ci-utils/opencti-license/temporary_ee_license.crt  && export APP__ENTERPRISE_EDITION_LICENSE="$(cat /tmp/myfile)" || exit 1
             NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-rules-and-others --coverage
         '
 
