@@ -8,11 +8,6 @@ on:
         type: boolean
         required: false
         default: false
-      is_publish_jfrog:
-        description: "Publish package artifact to jfrog"
-        type: boolean
-        required: false
-        default: false
 
 jobs:
   generate_package_name:
@@ -65,14 +60,6 @@ jobs:
         cd release
         tar -zcvf "${{ needs.generate_package_name.outputs.package_name }}.tar.gz" opencti
 
-    - name: Publish to JFrog
-      if: ${{ inputs.is_publish_jfrog == true }}
-      run: |
-        echo "Publish to jfrog openctiopencti-$(date '+%Y%m%d').tar.gz"
-      # TODO : enable jfrog upload with a dedicated account
-      #  curl -usamuel.hassine@filigran.io:${{ secrets.JFROG_TOKEN }} -T opencti-$(date '+%Y%m%d').tar.gz "https://filigran.jfrog.io/artifactory/opencti/opencti-$(date '+%Y%m%d').tar.gz"
-
-
     - name: Upload  OpenCTI debian package
       uses: actions/upload-artifact@v5
       with:
@@ -121,13 +108,6 @@ jobs:
         git clone https://github.com/OpenCTI-Platform/connectors release/opencti/connectors
         cd release
         tar -zcvf "${{ needs.generate_package_name.outputs.package_name }}.tar.gz" opencti
-
-    - name: Publish to JFrog
-      if: ${{ inputs.is_publish_jfrog == true }}
-      run: |
-        echo "Publish to jfrog openctiopencti-$(date '+%Y%m%d')_musl.tar.gz"
-      # TODO : enable jfrog upload with a dedicated account
-      #  curl -usamuel.hassine@filigran.io:${{ secrets.JFROG_TOKEN }} -T opencti-$(date '+%Y%m%d')_musl.tar.gz "https://filigran.jfrog.io/artifactory/opencti/opencti-$(date '+%Y%m%d').tar.gz"
 
     - name: Upload OpenCTI musl package
       uses: actions/upload-artifact@v5
