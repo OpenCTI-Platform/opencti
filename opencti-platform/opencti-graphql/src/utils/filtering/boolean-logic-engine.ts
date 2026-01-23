@@ -60,6 +60,7 @@ export const testGenericFilter = <T extends string | number | boolean>(
       || (op === 'not_starts_with' && adaptedFilterValues.every((v) => !stixCandidates.some((c) => typeof c === 'string' && typeof v === 'string' && c.startsWith(v))))
       || (op === 'ends_with' && adaptedFilterValues.every((v) => stixCandidates.some((c) => typeof c === 'string' && typeof v === 'string' && c.endsWith(v))))
       || (op === 'not_ends_with' && adaptedFilterValues.every((v) => !stixCandidates.some((c) => typeof c === 'string' && typeof v === 'string' && c.endsWith(v))))
+      || (op === 'only_eq_to' && adaptedFilterValues.every((v) => stixCandidates.every((c) => c === v)))
       || (op === 'search' && adaptedFilterValues.every((v) => stixCandidates.some((c) => typeof c === 'string' && typeof v === 'string'
         && (v.split(' ').some((word) => c.includes(word)))))) // a stix candidate should contains at least one of the filter values words
 
@@ -80,6 +81,7 @@ export const testGenericFilter = <T extends string | number | boolean>(
       || (op === 'not_starts_with' && adaptedFilterValues.some((v) => !stixCandidates.some((c) => typeof c === 'string' && typeof v === 'string' && c.startsWith(v))))
       || (op === 'ends_with' && adaptedFilterValues.some((v) => stixCandidates.some((c) => typeof c === 'string' && typeof v === 'string' && c.endsWith(v))))
       || (op === 'not_ends_with' && adaptedFilterValues.some((v) => !stixCandidates.some((c) => typeof c === 'string' && typeof v === 'string' && c.endsWith(v))))
+      || (op === 'only_eq_to' && adaptedFilterValues.some((v) => stixCandidates.every((c) => c === v)))
       || (op === 'search' && adaptedFilterValues.some((v) => stixCandidates.some((c) => typeof c === 'string' && typeof v === 'string'
         && (v.split(' ').some((word) => c.includes(word)))))) // a stix candidate should contains at least one of the filter values words
 
