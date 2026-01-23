@@ -3330,7 +3330,7 @@ const internalCreateEntityRaw = async (context, user, rawInput, type, opts = {})
           }
         }
         // In this mode we can safely consider this entity like the existing one.
-        const otherEntities = R.filter((e) => e.standard_id !== standardId, filteredEntities);
+        const otherEntities = filteredEntities.filter((e) => e.standard_id !== standardId);
         const cleanInputPatch = cleanEntityForIdsCollision(resolvedInput, type, existingByStandard, otherEntities);
         return upsertElement(context, user, existingByStandard, type, cleanInputPatch, { ...opts, locks: participantIds });
       }
