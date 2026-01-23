@@ -2,51 +2,21 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
 import Grid from '@mui/material/Grid';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import { BullseyeArrow, ArmFlexOutline, DramaMasks } from 'mdi-material-ui';
-import ListItemText from '@mui/material/ListItemText';
-import Tooltip from '@mui/material/Tooltip';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import inject18n from '../../../../components/i18n';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import ImageCarousel from '../../../../components/ImageCarousel';
 import ThreatActorGroupLocation from './ThreatActorGroupLocation';
-import { truncate } from '../../../../utils/String';
+import { capitalizeFirstLetter } from '../../../../utils/String';
 import Card from '@common/card/Card';
 import Label from '../../../../components/common/label/Label';
 import Tag from '../../../../components/common/tag/Tag';
 
-const styles = (theme) => ({
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: '15px',
-    borderRadius: 4,
-  },
-  chip: {
-    fontSize: 12,
-    lineHeight: '12px',
-    backgroundColor: theme.palette.background.accent,
-    borderRadius: 4,
-    color: theme.palette.text.primary,
-    textTransform: 'uppercase',
-    margin: '0 5px 5px 0',
-  },
-  smallPre: {
-    display: 'inline-block',
-    margin: 0,
-    paddingTop: '7px',
-    paddingBottom: '4px',
-  },
-});
-
 class ThreatActorGroupDetailsComponent extends Component {
   render() {
-    const { t, classes, threatActorGroup, fldt } = this.props;
+    const { t, threatActorGroup, fldt } = this.props;
     const hasImages = (threatActorGroup.images?.edges ?? []).filter(
       (n) => n?.node?.metaData?.inCarousel,
     ).length > 0;
@@ -149,25 +119,7 @@ class ThreatActorGroupDetailsComponent extends Component {
               {t('Roles')}
             </Label>
             <FieldOrEmpty source={threatActorGroup.roles}>
-              {threatActorGroup.roles && (
-                <List>
-                  {threatActorGroup.roles.map((role) => (
-                    <ListItem key={role} dense={true} divider={true}>
-                      <ListItemIcon>
-                        <DramaMasks />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={(
-                          <ItemOpenVocab
-                            type="threat-actor-group-role-ov"
-                            value={role}
-                          />
-                        )}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              )}
+              {threatActorGroup.roles && threatActorGroup.roles?.length > 0 && (threatActorGroup.roles.map((role) => role && capitalizeFirstLetter(role)).join(', '))}
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={4}>
@@ -175,26 +127,7 @@ class ThreatActorGroupDetailsComponent extends Component {
               {t('Goals')}
             </Label>
             <FieldOrEmpty source={threatActorGroup.goals}>
-              {threatActorGroup.goals && (
-                <List>
-                  {threatActorGroup.goals.map((goal, index) => (
-                    <ListItem key={`${index}:${goal}`} dense={true} divider={true}>
-                      <ListItemIcon>
-                        <BullseyeArrow />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={(
-                          <pre className={classes.smallPre}>
-                            <Tooltip title={goal}>
-                              {truncate(goal, 12)}
-                            </Tooltip>
-                          </pre>
-                        )}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              )}
+              {threatActorGroup.goals && threatActorGroup.goals?.length > 0 && (threatActorGroup.goals.map((goal) => goal && capitalizeFirstLetter(goal)).join(', '))}
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={4}>
@@ -202,31 +135,7 @@ class ThreatActorGroupDetailsComponent extends Component {
               {t('Secondary motivations')}
             </Label>
             <FieldOrEmpty source={threatActorGroup.secondary_motivations}>
-              {threatActorGroup.secondary_motivations && (
-                <List>
-                  {threatActorGroup.secondary_motivations.map(
-                    (secondaryMotivation) => (
-                      <ListItem
-                        key={secondaryMotivation}
-                        dense={true}
-                        divider={true}
-                      >
-                        <ListItemIcon>
-                          <ArmFlexOutline />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={(
-                            <ItemOpenVocab
-                              type="attack-motivation-ov"
-                              value={secondaryMotivation}
-                            />
-                          )}
-                        />
-                      </ListItem>
-                    ),
-                  )}
-                </List>
-              )}
+              {threatActorGroup.secondary_motivations && threatActorGroup.secondary_motivations?.length > 0 && (threatActorGroup.secondary_motivations.map((sm) => sm && capitalizeFirstLetter(sm)).join(', '))}
             </FieldOrEmpty>
           </Grid>
         </Grid>
@@ -237,7 +146,6 @@ class ThreatActorGroupDetailsComponent extends Component {
 
 ThreatActorGroupDetailsComponent.propTypes = {
   threatActorGroup: PropTypes.object,
-  classes: PropTypes.object,
   t: PropTypes.func,
   fd: PropTypes.func,
 };
@@ -278,4 +186,4 @@ const ThreatActorGroupDetails = createFragmentContainer(
   },
 );
 
-export default compose(inject18n, withStyles(styles))(ThreatActorGroupDetails);
+export default compose(inject18n)(ThreatActorGroupDetails);
