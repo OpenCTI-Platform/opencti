@@ -59,6 +59,8 @@ export interface SSODefinitionFormValues {
   groups_mapping: string[];
   organizations_path: string[];
   organizations_mapping: string[];
+  organizations_mapping_source: string[];
+  organizations_mapping_target: { label: string; value: string }[];
   read_userinfo: boolean;
   client_id: string;
   client_secret: string;
@@ -112,15 +114,15 @@ const SSODefinitionForm = ({
   const validationSchema = validationSchemaConfiguration(selectedStrategy ?? '', t_i18n);
 
   const initialValues: SSODefinitionFormValues = {
-    name: '',
-    identifier: '',
-    label: '',
+    name: 'aze',
+    identifier: 'aze',
+    label: 'aze',
     enabled: true,
     // SAML
     privateKey: '',
-    issuer: '',
-    idpCert: '',
-    callbackUrl: '',
+    issuer: 'aze',
+    idpCert: 'aze',
+    callbackUrl: 'aze',
     wantAssertionsSigned: false,
     wantAuthnResponseSigned: false,
     loginIdpDirectly: false,
@@ -130,7 +132,7 @@ const SSODefinitionForm = ({
     ssoBindingType: '',
     forceReauthentication: false,
     enableDebugMode: false,
-    entryPoint: '',
+    entryPoint: 'aze',
     advancedConfigurations: [],
     groups_path: [],
     group_attributes: [],
@@ -139,10 +141,12 @@ const SSODefinitionForm = ({
     read_userinfo: false,
     organizations_path: [],
     organizations_mapping: [],
+    organizations_mapping_source: [],
+    organizations_mapping_target: [],
     // OpenID
-    client_id: '',
-    client_secret: '',
-    redirect_uris: [''],
+    client_id: 'aze',
+    client_secret: 'aze',
+    redirect_uris: ['aze'],
   };
 
   const privateField = data?.configuration?.find((e) => e.key === 'privateKey');
@@ -199,6 +203,8 @@ const SSODefinitionForm = ({
     initialValues.groups_mapping = groupsMapping;
     initialValues.organizations_path = organizationsPath;
     initialValues.organizations_mapping = organizationsMapping;
+    // initialValues.organizations_mapping_source = ??;
+    // initialValues.organizations_mapping_target = ??;
 
     initialValues.client_id = clientId?.value ?? '';
     initialValues.client_secret = clientSecret?.value ?? '';
