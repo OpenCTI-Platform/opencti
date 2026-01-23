@@ -2560,6 +2560,25 @@ export const buildLocalMustFilter = (validFilter: any) => {
                 query: values[i].toString(),
               },
             });
+          } else if (operator === 'only_eq_to') {
+            const matchObject = {
+              multi_match: {
+                fields: arrayKeys.map((k) => buildFieldForQuery(k)),
+                query: values[i].toString(),
+              },
+            };
+            valuesFiltering.push({
+              bool: {
+                must: [matchObject],
+                must_not: [
+                  {
+                    bool: {
+                      must_not: matchObject,
+                    },
+                  },
+                ],
+              },
+            });
           } else if (operator === 'match') {
             valuesFiltering.push({
               multi_match: {
