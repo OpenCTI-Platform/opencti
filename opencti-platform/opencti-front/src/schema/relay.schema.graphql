@@ -2706,7 +2706,7 @@ input ExternalReferenceAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
 
-  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  "*Constraints:*\n* Minimal length: `1`\n* Must match format: `not-blank`\n"
   source_name: String!
   description: String
   url: String

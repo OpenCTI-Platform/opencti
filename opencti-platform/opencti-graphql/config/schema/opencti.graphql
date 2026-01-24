@@ -2642,7 +2642,7 @@ type ExternalReference implements BasicObject & StixObject & StixMetaObject {
 input ExternalReferenceAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
-  source_name: String! @constraint(minLength: 2, format: "not-blank")
+  source_name: String! @constraint(minLength: 1, format: "not-blank")
   description: String
   url: String
   hash: String
