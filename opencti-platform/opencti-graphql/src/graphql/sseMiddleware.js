@@ -385,7 +385,9 @@ const createSseMiddleware = () => {
     const refs = stixRefsExtractor(stixData);
     const missingInstances = await resolveMissingReferences(context, req.user, refs, cache);
     if (stixData.type === STIX_TYPE_RELATION || stixData.type === STIX_TYPE_SIGHTING) {
-      const missingAllPerIds = missingInstances.map((m) => [m.store.internal_id, m.store.standard_id, ...(m.store.x_opencti_stix_ids ?? [])].map((id) => ({ id, value: m }))).flat();
+      const missingAllPerIds = missingInstances
+        .map((m) => [m.store.internal_id, m.store.standard_id, ...(m.store.x_opencti_stix_ids ?? [])].map((id) => ({ id, value: m })))
+        .flat();
       const missingMap = new Map(missingAllPerIds.map((m) => [m.id, m.value]));
       // Check for a relation that the from and the to is correctly accessible.
       const fromId = stixData.source_ref ?? stixData.sighting_of_ref;
