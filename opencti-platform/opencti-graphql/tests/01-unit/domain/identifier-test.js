@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 import { describe, expect, it } from 'vitest';
 import { generateAliasesId, generateStandardId, normalizeName } from '../../../src/schema/identifier';
 import { cleanStixIds } from '../../../src/database/stix';
@@ -27,7 +26,7 @@ import {
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
   ENTITY_TYPE_TOOL,
-  ENTITY_TYPE_VULNERABILITY
+  ENTITY_TYPE_VULNERABILITY,
 } from '../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../../../src/modules/threatActorIndividual/threatActorIndividual-types';
 import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../../../src/modules/administrativeArea/administrativeArea-types';
@@ -157,6 +156,21 @@ describe('identifier', () => {
     expect(classicId).toEqual(aliasId);
   });
 
+  it('should aliases generated with normalization', () => {
+    const classicId = generateStandardId(ENTITY_TYPE_MALWARE, { name: 'SnowFlake' });
+    const aliasId = generateAliasesId(['SnowFlake'], { name: 'APT28', entity_type: ENTITY_TYPE_MALWARE }).at(0);
+    expect(classicId).toEqual('malware--1bc77052-c136-5258-b95d-fc8117fba3fd');
+    expect(classicId).toEqual(aliasId);
+  });
+
+  it('should aliases filtered by rules', () => {
+    const instance = { name: 'CVE-13', entity_type: ENTITY_TYPE_VULNERABILITY };
+    const noAliasId = generateAliasesId(['951c8756-ee36-11ea-adc1-0242ac120002'], instance).at(0);
+    expect(noAliasId).toBeUndefined();
+    const aliasId = generateAliasesId(['CVE-2019-12345'], instance).at(0);
+    expect(aliasId).toEqual('vulnerability--f140924c-f52e-5b3a-b8bb-37a97cee7063');
+  });
+
   it('should stix id v5 always added', () => {
     const _2020_09_03T22_41_18 = 'v1--951c8756-ee36-11ea-adc1-0242ac120002';
     const _2020_09_03T22_41_32 = 'v1--9db69b68-ee36-11ea-adc1-0242ac120002';
@@ -175,7 +189,7 @@ describe('identifier', () => {
         'indicator--51640662-9c78-4402-932f-1d4531624723',
         _2020_09_04T11_58_50,
       ],
-      5
+      5,
     );
     expect(ids.length).toEqual(9);
     expect(ids.includes(_2020_09_03T22_41_18)).toBeTruthy();
@@ -210,7 +224,7 @@ describe('identifier', () => {
         _2020_09_04T08_00_43,
         _2020_09_04T11_58_50,
       ],
-      2
+      2,
     );
     expect(ids.length).toEqual(5);
     expect(ids.includes('threat-actor--077b66a5-e64f-53df-bb22-03787ea16815')).toBeTruthy();
@@ -230,7 +244,7 @@ describe('identifier', () => {
         'indicator--51640662-9c78-4402-932f-1d4531624723',
         _2020_09_04T11_58_50,
       ],
-      5
+      5,
     );
     expect(ids.length).toEqual(8);
     expect(ids.includes('threat-actor--077b66a5-e64f-53df-bb22-03787ea16815')).toBeTruthy();
@@ -268,7 +282,7 @@ describe('identifier', () => {
         _2020_09_04T08_00_43,
         _2020_09_04T11_58_50,
       ],
-      5
+      5,
     );
     expect(ids.length).toEqual(8);
     expect(ids.includes(_2020_09_04T14_18_43)).toBeTruthy();
@@ -280,7 +294,7 @@ describe('identifier', () => {
   it('should relation to input name', () => {
     let name = schemaRelationsRefDefinition.convertDatabaseNameToInputName(ENTITY_TYPE_CONTAINER_REPORT, 'object-marking');
     expect(name).toEqual('objectMarking');
-    // eslint-disable-next-line dot-notation
+
     name = schemaRelationsRefDefinition.convertDatabaseNameToInputName(ENTITY_TYPE_CONTAINER_REPORT, 'object');
     expect(name).toEqual('objects');
   });
