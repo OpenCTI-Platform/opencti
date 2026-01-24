@@ -408,8 +408,8 @@ describe('buildChanges standard behavior', async () => {
     const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
     expect(changes).toEqual([{
       field: 'Report--confidence',
-      changes_removed: [{ raw: 58 }],
-      changes_added: [{ raw: 52 }],
+      changes_removed: [{ raw: '58' }],
+      changes_added: [{ raw: '52' }],
     }]);
   });
   it('should build changes for labels removed', async () => {
