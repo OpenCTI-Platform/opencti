@@ -49,6 +49,9 @@
   "no_proxy": "127.0.0.1,127.0.0.0/8,internal.opencti.io,rabbitmq",
   "https_proxy_ca": [],
   "https_proxy_reject_unauthorized": false,
+  "aliases_identifier_rules": {
+    "vulnerability": ["CVE-\\d{4}-\\d{4,7}"]
+  },
   "redis": {
     "namespace": "test",
     "hostname": "127.0.0.1",
