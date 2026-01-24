@@ -61,9 +61,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@apollo/server@npm:5.2.0":
-  version: 5.2.0
-  resolution: "@apollo/server@npm:5.2.0"
+"@apollo/server@npm:5.3.0":
+  version: 5.3.0
+  resolution: "@apollo/server@npm:5.3.0"
   dependencies:
     "@apollo/cache-control-types": "npm:^1.0.3"
     "@apollo/server-gateway-interface": "npm:^2.0.0"
@@ -77,7 +77,7 @@ __metadata:
     "@apollo/utils.withrequired": "npm:^3.0.0"
     "@graphql-tools/schema": "npm:^10.0.0"
     async-retry: "npm:^1.2.1"
-    body-parser: "npm:^2.2.0"
+    body-parser: "npm:^2.2.2"
     cors: "npm:^2.8.5"
     finalhandler: "npm:^2.1.0"
     loglevel: "npm:^1.6.8"
@@ -87,7 +87,7 @@ __metadata:
     whatwg-mimetype: "npm:^4.0.0"
   peerDependencies:
     graphql: ^16.11.0
-  checksum: 10c0/2500a8244bda60b65b11ba37711039e869c14d7cacae84ddc940b150e824ab684792be39424336c6aba0e8ca5332b945012cf9b05282fdad70ec2416333c484b
+  checksum: 10c0/39b90f09c598bef23010490e976b1a8935398fe9d4c388becb4693f0069d342e0d7cbec19cff27fce3136e058009dcc3d54b18e1c2c2939214360674825f2e92
   languageName: node
   linkType: hard
 
@@ -6014,7 +6014,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"body-parser@npm:2.2.2, body-parser@npm:^2.2.0, body-parser@npm:^2.2.1":
+"body-parser@npm:2.2.2, body-parser@npm:^2.2.1, body-parser@npm:^2.2.2":
   version: 2.2.2
   resolution: "body-parser@npm:2.2.2"
   dependencies:
@@ -10676,7 +10676,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "opencti-graphql@workspace:."
   dependencies:
-    "@apollo/server": "npm:5.2.0"
+    "@apollo/server": "npm:5.3.0"
     "@as-integrations/express5": "npm:1.1.2"
     "@aws-sdk/client-s3": "npm:3.970.0"
     "@aws-sdk/client-sts": "npm:3.970.0"
