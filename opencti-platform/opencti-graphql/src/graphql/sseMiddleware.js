@@ -194,6 +194,7 @@ const createSseMiddleware = () => {
     }
     return paramData;
   };
+  // Returns array of { store, stix } to avoid duplicate STIX conversions
   const resolveMissingReferences = async (context, user, missingRefs, cache) => {
     const refsToResolve = missingRefs.filter((m) => !cache.has(m));
     if (refsToResolve.length === 0) {
@@ -205,23 +206,26 @@ const createSseMiddleware = () => {
       return [];
     }
 
-    const allRefs = await uniqAsyncMap(missingElements, (r) => stixRefsExtractor(convertStoreToStix_2_1(r)), undefined, { flat: true });
+    // Convert to STIX once and keep both representations
+    const elementsWithStix = missingElements.map((store) => ({ store, stix: convertStoreToStix_2_1(store) }));
+
+    const allRefs = await uniqAsyncMap(elementsWithStix, (r) => stixRefsExtractor(r.stix), undefined, { flat: true });
     if (allRefs.length === 0) {
-      return missingElements;
+      return elementsWithStix;
     }
 
-    const resolvedMissingIds = new Set(await asyncMap(missingElements, (elem) => extractIdsFromStoreObject(elem), undefined, { flat: true }));
+    const resolvedMissingIds = new Set(await asyncMap(elementsWithStix, (elem) => extractIdsFromStoreObject(elem.store), undefined, { flat: true }));
     const parentRefs = allRefs.filter((parentId) => !resolvedMissingIds.has(parentId));
     if (parentRefs.length === 0) {
-      return missingElements;
+      return elementsWithStix;
     }
 
     const newMissing = await resolveMissingReferences(context, user, parentRefs, cache);
     if (newMissing.length === 0) {
-      return missingElements;
+      return elementsWithStix;
     }
 
-    return newMissing.concat(missingElements);
+    return newMissing.concat(elementsWithStix);
   };
   const initBroadcasting = async (req, res, client, processor) => {
     const broadcasterInfo = processor ? await processor.info() : {};
@@ -380,9 +384,8 @@ const createSseMiddleware = () => {
   const resolveAndPublishMissingRefs = async (context, cache, channel, req, eventId, stixData) => {
     const refs = stixRefsExtractor(stixData);
     const missingInstances = await resolveMissingReferences(context, req.user, refs, cache);
-    // const missingInstances = await storeLoadByIdsWithRefs(context, req.user, missingElements);
     if (stixData.type === STIX_TYPE_RELATION || stixData.type === STIX_TYPE_SIGHTING) {
-      const missingAllPerIds = missingInstances.map((m) => [m.internal_id, m.standard_id, ...(m.x_opencti_stix_ids ?? [])].map((id) => ({ id, value: m }))).flat();
+      const missingAllPerIds = missingInstances.map((m) => [m.store.internal_id, m.store.standard_id, ...(m.store.x_opencti_stix_ids ?? [])].map((id) => ({ id, value: m }))).flat();
       const missingMap = new Map(missingAllPerIds.map((m) => [m.id, m.value]));
       // Check for a relation that the from and the to is correctly accessible.
       const fromId = stixData.source_ref ?? stixData.sighting_of_ref;
@@ -394,9 +397,9 @@ const createSseMiddleware = () => {
       }
     }
     for (let missingIndex = 0; missingIndex < missingInstances.length; missingIndex += 1) {
-      const missingInstance = missingInstances[missingIndex];
+      const { store: missingInstance, stix: missingData } = missingInstances[missingIndex];
       if (!cache.has(missingInstance.standard_id) && channel.connected()) {
-        const missingData = convertStoreToStix_2_1(missingInstance);
+        // missingData is already converted to STIX, no duplicate conversion needed
         const message = generateCreateMessage(missingInstance);
         const origin = { referer: EVENT_TYPE_DEPENDENCIES };
         const content = { data: missingData, message, origin, version: EVENT_CURRENT_VERSION };
