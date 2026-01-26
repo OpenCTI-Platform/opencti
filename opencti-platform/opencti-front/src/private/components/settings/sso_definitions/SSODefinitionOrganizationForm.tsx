@@ -6,6 +6,8 @@ import { Add, Delete } from '@mui/icons-material';
 import React from 'react';
 import { SSODefinitionFormValues } from '@components/settings/sso_definitions/SSODefinitionForm';
 import { useFormatter } from 'src/components/i18n';
+import ObjectOrganizationField from '@components/common/form/ObjectOrganizationField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 type SSODefinitionOrganizationFormProps = {
   updateField: (field: keyof SSODefinitionFormValues, value: unknown) => void;
@@ -67,18 +69,18 @@ const SSODefinitionOrganizationForm = ({ updateField }: SSODefinitionOrganizatio
                       fullWidth
                       style={{ marginTop: 20 }}
                     />
-                    {/* <div */}
-                    {/*  style={{ flexBasis: '70%', maxWidth: '70%' }} */}
-                    {/* > */}
-                    {/*  <ObjectOrganizationField */}
-                    {/*    outlined={false} */}
-                    {/*    name="objectOrganization" */}
-                    {/*    label="Organizations" */}
-                    {/*    containerstyle={{ width: '100%' }} */}
-                    {/*    style={fieldSpacingContainerStyle} */}
-                    {/*    fullWidth */}
-                    {/*  /> */}
-                    {/* </div> */}
+                    <div
+                      style={{ flexBasis: '70%', maxWidth: '70%' }}
+                    >
+                      <ObjectOrganizationField
+                        outlined={false}
+                        name="objectOrganization"
+                        label="Organizations"
+                        containerstyle={{ width: '100%' }}
+                        style={fieldSpacingContainerStyle}
+                        fullWidth
+                      />
+                    </div>
                     <IconButton
                       color="primary"
                       aria-label={t_i18n('Delete')}

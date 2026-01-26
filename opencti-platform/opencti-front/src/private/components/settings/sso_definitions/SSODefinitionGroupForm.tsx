@@ -6,6 +6,8 @@ import IconButton from '@common/button/IconButton';
 import { Add, Delete } from '@mui/icons-material';
 import { SSODefinitionFormValues } from '@components/settings/sso_definitions/SSODefinitionForm';
 import { useFormatter } from 'src/components/i18n';
+import GroupField from '@components/common/form/GroupField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 type SSODefinitionGroupFormProps = {
   updateField: (field: keyof SSODefinitionFormValues, value: unknown) => void;
@@ -88,20 +90,20 @@ const SSODefinitionGroupForm = ({ updateField, selectedStrategy }: SSODefinition
                       fullWidth
                       style={{ marginTop: 20 }}
                     />
-                    {/* <div */}
-                    {/*  style={{ */}
-                    {/*    flexBasis: '70%', */}
-                    {/*    maxWidth: '70%', */}
-                    {/*    marginBottom: 20, */}
-                    {/*  }} */}
-                    {/* > */}
-                    {/*  <GroupField */}
-                    {/*    name="groups" */}
-                    {/*    label="Groups" */}
-                    {/*    style={fieldSpacingContainerStyle} */}
-                    {/*    showConfidence={true} */}
-                    {/*  /> */}
-                    {/* </div> */}
+                    <div
+                      style={{
+                        flexBasis: '70%',
+                        maxWidth: '70%',
+                        marginBottom: 20,
+                      }}
+                    >
+                      <GroupField
+                        name="groups"
+                        label="Groups"
+                        style={fieldSpacingContainerStyle}
+                        showConfidence={true}
+                      />
+                    </div>
                     <IconButton
                       size="default"
                       color="primary"
