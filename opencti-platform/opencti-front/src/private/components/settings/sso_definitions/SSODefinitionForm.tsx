@@ -57,6 +57,8 @@ export interface SSODefinitionFormValues {
   group_attributes: string[];
   groups_attributes: string[];
   groups_mapping: string[];
+  groups_mapping_source: string[];
+  groups_mapping_target: { label: string; value: string }[];
   organizations_path: string[];
   organizations_mapping: string[];
   organizations_mapping_source: string[];
@@ -143,6 +145,8 @@ const SSODefinitionForm = ({
     organizations_mapping: [],
     organizations_mapping_source: [],
     organizations_mapping_target: [],
+    groups_mapping_source: [],
+    groups_mapping_target: [],
     // OpenID
     client_id: '',
     client_secret: '',

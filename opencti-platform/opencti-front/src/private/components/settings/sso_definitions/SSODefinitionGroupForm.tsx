@@ -84,8 +84,8 @@ const SSODefinitionGroupForm = ({ updateField, selectedStrategy }: SSODefinition
                     <Field
                       component={TextField}
                       variant="standard"
-                      onSubmit={() => updateField('groups_mapping', form.values.groups_mapping)}
-                      name={`groups_mapping[${index}]`}
+                      onSubmit={() => updateField('groups_mapping_source', form.values.groups_mapping_source)}
+                      name={`groups_mapping_source[${index}]`}
                       label={t_i18n('Group mapping value')}
                       fullWidth
                       style={{ marginTop: 20 }}
@@ -98,7 +98,7 @@ const SSODefinitionGroupForm = ({ updateField, selectedStrategy }: SSODefinition
                       }}
                     >
                       <GroupField
-                        name="groups"
+                        name={`groups_mapping_target[${index}]`}
                         label="Groups"
                         style={fieldSpacingContainerStyle}
                         showConfidence={true}

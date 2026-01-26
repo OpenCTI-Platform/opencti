@@ -63,7 +63,7 @@ const SSODefinitionOrganizationForm = ({ updateField }: SSODefinitionOrganizatio
                     <Field
                       component={TextField}
                       variant="standard"
-                      name={`organizations_mapping[${index}]`}
+                      name={`organizations_mapping_source[${index}]`}
                       label={t_i18n('Value organizations mappings')}
                       onSubmit={() => updateField('organizations_mapping', form.values.organizations_mapping)}
                       fullWidth
@@ -74,7 +74,7 @@ const SSODefinitionOrganizationForm = ({ updateField }: SSODefinitionOrganizatio
                     >
                       <ObjectOrganizationField
                         outlined={false}
-                        name="objectOrganization"
+                        name={`organizations_mapping_target[${index}]`}
                         label="Organizations"
                         containerstyle={{ width: '100%' }}
                         style={fieldSpacingContainerStyle}
