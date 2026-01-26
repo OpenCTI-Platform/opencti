@@ -79,22 +79,6 @@ const alertDigestEditionFieldPatch = graphql`
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
-  title: {
-    float: 'left',
-  },
 }));
 
 const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryRef, paginationOptions, handleClose }) => {
@@ -182,131 +166,113 @@ const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryR
   };
 
   return (
-    <div>
-      <div className={classes.header}>
-        <IconButton
-          aria-label="Close"
-          className={classes.closeButton}
-          onClick={handleClose}
-          color="primary"
-        >
-          <Close fontSize="small" color="primary" />
-        </IconButton>
-        <Typography variant="h6" classes={{ root: classes.title }}>
-          {t_i18n('Update an activity digest trigger')}
-        </Typography>
-        <div className="clearfix" />
-      </div>
-      <div className={classes.container}>
-        <Formik enableReinitialize={true} initialValues={initialValues as never} onSubmit={onSubmit}>
-          {({ values, setFieldValue }) => (
-            <Form>
-              <Field
-                component={TextField}
-                variant="standard"
-                name="name"
-                label={t_i18n('Name')}
-                fullWidth={true}
-                onSubmit={handleSubmitField}
-              />
-              <Field
-                component={MarkdownField}
-                name="description"
-                label={t_i18n('Description')}
-                fullWidth={true}
-                multiline={true}
-                rows="4"
-                onSubmit={handleSubmitField}
-                style={{ marginTop: 20 }}
-              />
-              <AlertsField
-                name="trigger_ids"
-                setFieldValue={setFieldValue}
-                values={values.trigger_ids}
-                style={fieldSpacingContainerStyle}
-                onChange={handleSubmitFieldOptions}
-                paginationOptions={paginationOptions}
-              />
-              <Field
-                component={SelectField}
-                variant="standard"
-                name="period"
-                label={t_i18n('Period')}
-                fullWidth={true}
-                containerstyle={fieldSpacingContainerStyle}
-                onChange={handleSubmitField}
-              >
-                <MenuItem value="hour">{t_i18n('hour')}</MenuItem>
-                <MenuItem value="day">{t_i18n('day')}</MenuItem>
-                <MenuItem value="week">{t_i18n('week')}</MenuItem>
-                <MenuItem value="month">{t_i18n('month')}</MenuItem>
-              </Field>
-              {values.period === 'week' && (
-                <Field
-                  component={SelectField}
-                  variant="standard"
-                  name="day"
-                  label={t_i18n('Week day')}
-                  fullWidth={true}
-                  containerstyle={fieldSpacingContainerStyle}
-                  onChange={handleSubmitDay}
-                >
-                  <MenuItem value="1">{t_i18n('Monday')}</MenuItem>
-                  <MenuItem value="2">{t_i18n('Tuesday')}</MenuItem>
-                  <MenuItem value="3">{t_i18n('Wednesday')}</MenuItem>
-                  <MenuItem value="4">{t_i18n('Thursday')}</MenuItem>
-                  <MenuItem value="5">{t_i18n('Friday')}</MenuItem>
-                  <MenuItem value="6">{t_i18n('Saturday')}</MenuItem>
-                  <MenuItem value="7">{t_i18n('Sunday')}</MenuItem>
-                </Field>
-              )}
-              {values.period === 'month' && (
-                <Field
-                  component={SelectField}
-                  variant="standard"
-                  name="day"
-                  label={t_i18n('Month day')}
-                  fullWidth={true}
-                  containerstyle={fieldSpacingContainerStyle}
-                  onChange={handleSubmitDay}
-                >
-                  {Array.from(Array(31).keys()).map((idx) => (
-                    <MenuItem key={idx} value={(idx + 1).toString()}>
-                      {(idx + 1).toString()}
-                    </MenuItem>
-                  ))}
-                </Field>
-              )}
-              {values.period !== 'hour' && (
-                <Field
-                  component={TimePickerField}
-                  name="time"
-                  withMinutes={true}
-                  onSubmit={handleSubmitTime}
-                  textFieldProps={{
-                    label: t_i18n('Time'),
-                    variant: 'standard',
-                    fullWidth: true,
-                    style: { marginTop: 20 },
-                  }}
-                />
-              )}
-              <NotifierField
-                name="notifiers"
-                onChange={(name, v) => handleSubmitField(name, v.map(({ value }) => value))}
-              />
-              <ObjectMembersField
-                label="Recipients"
-                style={fieldSpacingContainerStyle}
-                onChange={handleSubmitFieldOptions}
-                multiple={true}
-                name="recipients"
-              />
-            </Form>
+    <Formik enableReinitialize={true} initialValues={initialValues as never} onSubmit={onSubmit}>
+      {({ values, setFieldValue }) => (
+        <Form>
+          <Field
+            component={TextField}
+            variant="standard"
+            name="name"
+            label={t_i18n('Name')}
+            fullWidth={true}
+            onSubmit={handleSubmitField}
+          />
+          <Field
+            component={MarkdownField}
+            name="description"
+            label={t_i18n('Description')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            onSubmit={handleSubmitField}
+            style={{ marginTop: 20 }}
+          />
+          <AlertsField
+            name="trigger_ids"
+            setFieldValue={setFieldValue}
+            values={values.trigger_ids}
+            style={fieldSpacingContainerStyle}
+            onChange={handleSubmitFieldOptions}
+            paginationOptions={paginationOptions}
+          />
+          <Field
+            component={SelectField}
+            variant="standard"
+            name="period"
+            label={t_i18n('Period')}
+            fullWidth={true}
+            containerstyle={fieldSpacingContainerStyle}
+            onChange={handleSubmitField}
+          >
+            <MenuItem value="hour">{t_i18n('hour')}</MenuItem>
+            <MenuItem value="day">{t_i18n('day')}</MenuItem>
+            <MenuItem value="week">{t_i18n('week')}</MenuItem>
+            <MenuItem value="month">{t_i18n('month')}</MenuItem>
+          </Field>
+          {values.period === 'week' && (
+            <Field
+              component={SelectField}
+              variant="standard"
+              name="day"
+              label={t_i18n('Week day')}
+              fullWidth={true}
+              containerstyle={fieldSpacingContainerStyle}
+              onChange={handleSubmitDay}
+            >
+              <MenuItem value="1">{t_i18n('Monday')}</MenuItem>
+              <MenuItem value="2">{t_i18n('Tuesday')}</MenuItem>
+              <MenuItem value="3">{t_i18n('Wednesday')}</MenuItem>
+              <MenuItem value="4">{t_i18n('Thursday')}</MenuItem>
+              <MenuItem value="5">{t_i18n('Friday')}</MenuItem>
+              <MenuItem value="6">{t_i18n('Saturday')}</MenuItem>
+              <MenuItem value="7">{t_i18n('Sunday')}</MenuItem>
+            </Field>
           )}
-        </Formik>
-      </div>
-    </div>
+          {values.period === 'month' && (
+            <Field
+              component={SelectField}
+              variant="standard"
+              name="day"
+              label={t_i18n('Month day')}
+              fullWidth={true}
+              containerstyle={fieldSpacingContainerStyle}
+              onChange={handleSubmitDay}
+            >
+              {Array.from(Array(31).keys()).map((idx) => (
+                <MenuItem key={idx} value={(idx + 1).toString()}>
+                  {(idx + 1).toString()}
+                </MenuItem>
+              ))}
+            </Field>
+          )}
+          {values.period !== 'hour' && (
+            <Field
+              component={TimePickerField}
+              name="time"
+              withMinutes={true}
+              onSubmit={handleSubmitTime}
+              textFieldProps={{
+                label: t_i18n('Time'),
+                variant: 'standard',
+                fullWidth: true,
+                style: { marginTop: 20 },
+              }}
+            />
+          )}
+          <NotifierField
+            name="notifiers"
+            onChange={(name, v) => handleSubmitField(name, v.map(({ value }) => value))}
+          />
+          <ObjectMembersField
+            label="Recipients"
+            style={fieldSpacingContainerStyle}
+            onChange={handleSubmitFieldOptions}
+            multiple={true}
+            name="recipients"
+          />
+        </Form>
+      )}
+    </Formik>
 
   );
 };

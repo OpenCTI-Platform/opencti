@@ -3,7 +3,6 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import Drawer from '@mui/material/Drawer';
 import MenuItem from '@mui/material/MenuItem';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
@@ -11,7 +10,7 @@ import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import * as Yup from 'yup';
-import DrawerHeader from '@common/drawer/DrawerHeader';
+import FormButtonContainer from '../../../../../components/common/form/FormButtonContainer';
 import MarkdownField from '../../../../../components/fields/MarkdownField';
 import SelectField from '../../../../../components/fields/SelectField';
 import { useFormatter } from '../../../../../components/i18n';
@@ -27,26 +26,13 @@ import NotifierField from '../../../common/form/NotifierField';
 import ObjectMembersField from '../../../common/form/ObjectMembersField';
 import { AlertingPaginationQuery$variables } from './__generated__/AlertingPaginationQuery.graphql';
 import AlertsField from './AlertsField';
-import FormButtonContainer from '../../../../../components/common/form/FormButtonContainer';
+import Drawer from '../../../common/drawer/Drawer';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
+const useStyles = makeStyles<Theme>(() => ({
   dialogActions: {
     padding: '0 17px 20px 0',
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
   },
 }));
 
@@ -257,56 +243,47 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
   );
   const renderClassic = () => (
     <Drawer
-      disableRestoreFocus={true}
+      title={t_i18n('Create a regular activity digest')}
       open={open}
-      anchor="right"
-      elevation={1}
-      sx={{ zIndex: 1202 }}
-      classes={{ paper: classes.drawerPaper }}
       onClose={handleClose}
     >
-      <DrawerHeader
-        title={t_i18n('Create a regular activity digest')}
-        onClose={handleClose}
-      />
-      <div className={classes.container}>
-        <Formik<TriggerDigestActivityAddInput>
-          initialValues={digestInitialValues}
-          validationSchema={digestTriggerValidation(t_i18n)}
-          onSubmit={onDigestSubmit}
-          onReset={onReset}
-        >
-          {({
-            submitForm,
-            handleReset,
-            isSubmitting,
-            setFieldValue,
-            values,
-          }) => (
-            <Form>
-              {digestFields(setFieldValue, values)}
-              <FormButtonContainer>
-                <Button
-                  variant="secondary"
-                  onClick={handleReset}
-                  disabled={isSubmitting}
-                >
-                  {t_i18n('Cancel')}
-                </Button>
-                <Button
-                  onClick={submitForm}
-                  disabled={isSubmitting}
-                >
-                  {t_i18n('Create')}
-                </Button>
-              </FormButtonContainer>
-            </Form>
-          )}
-        </Formik>
-      </div>
+      <Formik<TriggerDigestActivityAddInput>
+        initialValues={digestInitialValues}
+        validationSchema={digestTriggerValidation(t_i18n)}
+        onSubmit={onDigestSubmit}
+        onReset={onReset}
+      >
+        {({
+          submitForm,
+          handleReset,
+          isSubmitting,
+          setFieldValue,
+          values,
+        }) => (
+          <Form>
+            {digestFields(setFieldValue, values)}
+            <FormButtonContainer>
+              <Button
+                variant="secondary"
+                onClick={handleReset}
+                disabled={isSubmitting}
+              >
+                {t_i18n('Cancel')}
+              </Button>
+              <Button
+                onClick={submitForm}
+                disabled={isSubmitting}
+              >
+                {t_i18n('Create')}
+              </Button>
+            </FormButtonContainer>
+          </Form>
+        )}
+      </Formik>
     </Drawer>
   );
   const renderContextual = () => (
+
     <Dialog
       disableRestoreFocus={true}
       open={open ?? false}

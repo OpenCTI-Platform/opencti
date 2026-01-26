@@ -1,40 +1,22 @@
-import React, { useState } from 'react';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import Drawer from '@mui/material/Drawer';
 import IconButton from '@common/button/IconButton';
 import MoreVert from '@mui/icons-material/MoreVert';
-import makeStyles from '@mui/styles/makeStyles';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import React, { useState } from 'react';
 import { graphql, useQueryLoader } from 'react-relay';
-import { useFormatter } from '../../../../../components/i18n';
-import type { Theme } from '../../../../../components/Theme';
-import { deleteNode } from '../../../../../utils/store';
-import { AlertingPaginationQuery$variables } from './__generated__/AlertingPaginationQuery.graphql';
-import { AlertingLine_node$data } from './__generated__/AlertingLine_node.graphql';
-import AlertLiveEdition from './AlertLiveEdition';
-import Loader, { LoaderVariant } from '../../../../../components/Loader';
-import { AlertEditionQuery } from './__generated__/AlertEditionQuery.graphql';
-import { alertEditionQuery } from './AlertEditionQuery';
-import AlertDigestEdition from './AlertDigestEdition';
-import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import DeleteDialog from '../../../../../components/DeleteDialog';
+import { useFormatter } from '../../../../../components/i18n';
+import Loader, { LoaderVariant } from '../../../../../components/Loader';
+import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import useDeletion from '../../../../../utils/hooks/useDeletion';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
-}));
+import { deleteNode } from '../../../../../utils/store';
+import Drawer from '../../../common/drawer/Drawer';
+import { AlertEditionQuery } from './__generated__/AlertEditionQuery.graphql';
+import { AlertingLine_node$data } from './__generated__/AlertingLine_node.graphql';
+import { AlertingPaginationQuery$variables } from './__generated__/AlertingPaginationQuery.graphql';
+import AlertDigestEdition from './AlertDigestEdition';
+import { alertEditionQuery } from './AlertEditionQuery';
+import AlertLiveEdition from './AlertLiveEdition';
 
 export const alertingPopoverDeletionMutation = graphql`
   mutation AlertingPopoverDeletionMutation($id: ID!) {
@@ -44,7 +26,6 @@ export const alertingPopoverDeletionMutation = graphql`
 
 const AlertingPopover = ({ data, paginationOptions }: { data: AlertingLine_node$data; paginationOptions?: AlertingPaginationQuery$variables }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const [queryRef, loadQuery] = useQueryLoader<AlertEditionQuery>(alertEditionQuery);
   const isLiveEdition = data.trigger_type === 'live';
   const isDigestEdition = data.trigger_type === 'digest';
@@ -79,6 +60,14 @@ const AlertingPopover = ({ data, paginationOptions }: { data: AlertingLine_node$
     setDisplayEdit(true);
     handleClose();
   };
+
+  let title = '';
+  if (isLiveEdition) {
+    title = t_i18n('Update an activity live trigger');
+  }
+  if (isDigestEdition) {
+    title = t_i18n('Update an activity digest trigger');
+  }
   // Loader
   return (
     <div style={{ marginRight: 25 }}>
@@ -102,10 +91,7 @@ const AlertingPopover = ({ data, paginationOptions }: { data: AlertingLine_node$
       {displayEdit && (
         <Drawer
           open={true}
-          anchor="right"
-          elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: classes.drawerPaper }}
+          title={title}
           onClose={() => setDisplayEdit(false)}
         >
           {queryRef && (
