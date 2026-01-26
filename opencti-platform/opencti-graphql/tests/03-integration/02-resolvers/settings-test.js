@@ -40,7 +40,7 @@ const UPDATE_SETTINGS_QUERY = gql`
 `;
 
 const AI_FIX_SPELLING_MUTATION = gql`
-  mutation AiFixSpelling($id: String!, $content: String!) {
+  mutation AiFixSpelling($id: ID!, $content: String!) {
     aiFixSpelling(id: $id, content: $content)
   }
 `;
