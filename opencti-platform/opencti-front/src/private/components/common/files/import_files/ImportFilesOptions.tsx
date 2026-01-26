@@ -27,7 +27,12 @@ const ImportFilesOptions = ({
   const { t_i18n } = useFormatter();
   const { me: owner, settings } = useAuth();
   const showAllMembersLine = !settings.platform_organization?.id;
-  const { importMode, entityId, files, isForcedImportToDraft } = useImportFilesContext();
+  const {
+    importMode,
+    entityId,
+    files,
+    isForcedImportToDraft,
+  } = useImportFilesContext();
   const isWorkbenchEnabled = files.length === 1;
 
   return (
