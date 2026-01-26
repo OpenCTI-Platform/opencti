@@ -1,7 +1,7 @@
 import { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
 import FilterDate from '@components/common/lists/FilterDate';
 import SearchScopeElement from '@components/common/lists/SearchScopeElement';
-import { Autocomplete, MenuItem, Select } from '@mui/material';
+import { Autocomplete, AutocompleteChangeReason, AutocompleteInputChangeReason, MenuItem, Select } from '@mui/material';
 import Checkbox from '@mui/material/Checkbox';
 import Chip from '@mui/material/Chip';
 import Popover from '@mui/material/Popover';
@@ -11,7 +11,7 @@ import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import { addDays, subDays } from 'date-fns';
 import { Dispatch, FunctionComponent, ReactNode, SyntheticEvent, useState } from 'react';
-import { Filter, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
+import { Filter, FilterValue, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
 import {
   DEFAULT_WITHIN_FILTER_VALUES,
   emptyFilterGroup,
@@ -59,6 +59,14 @@ export interface FilterChipsParameter {
   anchorPosition?: { top: number; left: number };
 }
 
+const AUTOCOMPLETE_KEY_ACTIONS: { [k: string]: AutocompleteChangeReason | AutocompleteInputChangeReason } = {
+  SELECT_OPTION: 'selectOption',
+  REMOVE_OPTION: 'removeOption',
+  CLEAR: 'clear',
+  INPUT: 'input',
+  RESET: 'reset',
+};
+
 const OperatorKeyValues: {
   [key: string]: string;
 } = {
@@ -103,12 +111,14 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   const filterDefinition = useFilterDefinition(filterKey, entityTypes);
   const filterLabel = filterKey ? t_i18n(filterDefinition?.label ?? filterKey) : '';
   const { typesWithFintelTemplates } = useAttributes();
+  const [autocompleteInputValues, setAutocompleteInputValues] = useState<Record<string, string>>({});
 
   const [inputValues, setInputValues] = useState<{
     key: string;
     values: string[];
     operator?: string;
   }[]>(filter ? [filter] : []);
+
   const [cacheEntities, setCacheEntities] = useState<Record<string, FilterOptionValue[]>>({});
   const [searchScope, setSearchScope] = useState<Record<string, string[]>>(
     availableRelationFilterTypes || {
@@ -127,6 +137,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       ],
     },
   );
+
   const [entities, searchEntities] = useSearchEntities({
     availableEntityTypes,
     availableRelationshipTypes,
@@ -141,6 +152,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     isSubKey?: boolean,
   ) => Record<string, FilterOptionValue[]>,
   ];
+
   const handleChange = (checked: boolean, value: string | null, childKey?: string) => {
     if (childKey) {
       const childFilters = filter?.values.filter((val) => val.key === childKey) as Filter[];
@@ -185,6 +197,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     // modify the operator
     helpers?.handleChangeOperatorFilters(filter?.id ?? '', newOperator);
   };
+
   const handleDateChange = (_: string, value: string) => {
     // convert the date to handle comparison with a timestamp
     const date = new Date(value);
@@ -258,15 +271,73 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     const groupByEntities = (option: FilterOptionValue, label?: string) => {
       return t_i18n(option?.group ? option?.group : label);
     };
+
+    const handleAutocompleteChange = (_event: SyntheticEvent, newValue: FilterOptionValue[], reason: AutocompleteChangeReason) => {
+      const newValues = newValue.map((v) => v.value);
+
+      if (reason === AUTOCOMPLETE_KEY_ACTIONS.CLEAR) {
+        if (subKey) {
+          const childFilters = (filter?.values ?? []).filter((val) => val.key === subKey) as Filter[];
+          const childFilter = childFilters.length > 0 ? childFilters[0] : undefined;
+          helpers?.handleChangeRepresentationFilter(filter?.id ?? '', childFilter, undefined);
+        } else {
+          helpers?.handleReplaceFilterValues(filter?.id ?? '', []);
+        }
+        return;
+      }
+
+      if (reason !== AUTOCOMPLETE_KEY_ACTIONS.SELECT_OPTION && reason !== AUTOCOMPLETE_KEY_ACTIONS.REMOVE_OPTION) {
+        return;
+      }
+
+      if (reason === AUTOCOMPLETE_KEY_ACTIONS.SELECT_OPTION) {
+        setAutocompleteInputValues((prev) => ({ ...prev, [fKey]: '' }));
+      }
+
+      const actualFilterValues: FilterValue[] = subKey
+        ? filterValues.filter((filterValue) => filterValue && filterValue.key === subKey).at(0)?.values ?? []
+        : filterValues;
+
+      const added = newValues.filter((v) => !actualFilterValues.includes(v));
+      const removed = actualFilterValues.filter((v: FilterValue) => !newValues.includes(v));
+
+      if (added.length === 1) {
+        const value = added[0];
+        const disabledOption = disabled && actualFilterValues.length === 1 && actualFilterValues.includes(value);
+        if (!disabledOption) {
+          handleChange(true, value, subKey);
+        }
+      } else if (removed.length === 1) {
+        const value = removed[0];
+        const disabledOption = disabled && actualFilterValues.length === 1;
+        if (!disabledOption) {
+          handleChange(false, value, subKey);
+        }
+      }
+    };
+
     return (
       <Autocomplete
         multiple
         key={fKey}
+        value={selectedOptions}
+        inputValue={autocompleteInputValues[fKey] || ''}
         getOptionLabel={(option) => option.label ?? ''}
         noOptionsText={t_i18n('No available options')}
         options={options}
         groupBy={(option) => groupByEntities(option, fLabel)}
-        onInputChange={(event) => searchEntities(fKey, cacheEntities, setCacheEntities, event, !!subKey)}
+        onInputChange={(event, newInputValue, reason: AutocompleteInputChangeReason) => {
+          if (reason === AUTOCOMPLETE_KEY_ACTIONS.INPUT || reason === AUTOCOMPLETE_KEY_ACTIONS.CLEAR) {
+            setAutocompleteInputValues((prev) => ({ ...prev, [fKey]: newInputValue }));
+          }
+          if (event && reason === AUTOCOMPLETE_KEY_ACTIONS.INPUT) {
+            const syntheticEvent = { target: { value: newInputValue } } as unknown as SyntheticEvent;
+            searchEntities(fKey, cacheEntities, setCacheEntities, syntheticEvent, !!subKey);
+          }
+        }}
+        onChange={handleAutocompleteChange}
+        disableCloseOnSelect
+        isOptionEqualToValue={(option, val) => option.value === val.value}
         renderInput={(paramsInput) => (
           <TextField
             {...paramsInput}
@@ -283,14 +354,15 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
             size="small"
             fullWidth={true}
             autoFocus={true}
-            onFocus={(event) => searchEntities(
-              fKey,
-              cacheEntities,
-              setCacheEntities,
-              event,
-              !!subKey,
-            )
-            }
+            onFocus={(event) => {
+              searchEntities(
+                fKey,
+                cacheEntities,
+                setCacheEntities,
+                event,
+                !!subKey,
+              );
+            }}
           />
         )}
         renderOption={(props, option) => {
@@ -305,18 +377,14 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
             <Tooltip title={option.label} key={key || option.value} followCursor>
               <li
                 {...otherProps}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.stopPropagation();
-                  }
-                }}
-                onClick={() => (disabledOptions ? {} : handleChange(!checked, option.value, subKey))}
+                aria-disabled={disabledOptions}
                 style={{
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   padding: 0,
                   margin: 0,
+                  pointerEvents: disabledOptions ? 'none' : undefined,
                 }}
               >
                 <Checkbox checked={checked} disabled={disabledOptions} />
