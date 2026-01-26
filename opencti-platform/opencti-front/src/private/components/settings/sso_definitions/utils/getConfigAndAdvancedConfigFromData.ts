@@ -27,6 +27,7 @@ const openIDConfigKeys = [
 const ldapConfigKeys = [
   'url',
   'bindDN',
+  'bindCredentials',
   'searchBase',
   'searchFilter',
   'groupSearchBase',

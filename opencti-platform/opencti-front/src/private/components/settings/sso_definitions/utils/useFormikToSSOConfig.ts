@@ -114,6 +114,11 @@ const useFormikToSSOConfig = (selectedStrategy: string) => {
         type: 'String',
       },
       {
+        key: 'bindCredentials',
+        value: values.bindCredentials,
+        type: 'String',
+      },
+      {
         key: 'searchBase',
         value: values.searchBase,
         type: 'String',

@@ -68,6 +68,7 @@ export interface SSODefinitionFormValues {
   // LDAP
   url: string;
   bindDN: string;
+  bindCredentials: string;
   searchBase: string;
   searchFilter: string;
   groupSearchBase: string;
@@ -105,6 +106,7 @@ const validationSchemaConfiguration = (selectedStrategy: string, t_i18n: (s: str
         ...base,
         url: Yup.string().required(t_i18n('This field is required')),
         bindDN: Yup.string().required(t_i18n('This field is required')),
+        bindCredentials: Yup.string().required(t_i18n('This field is required')),
         searchBase: Yup.string().required(t_i18n('This field is required')),
         searchFilter: Yup.string().required(t_i18n('This field is required')),
         groupSearchBase: Yup.string().required(t_i18n('This field is required')),
@@ -123,8 +125,6 @@ const SSODefinitionForm = ({
   selectedStrategy,
   onSubmitField,
 }: SSODefinitionFormProps) => {
-  console.log('selectedStrategy ; ', selectedStrategy);
-  console.log('data ; ', data);
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const [currentTab, setCurrentTab] = useState(0);
@@ -171,6 +171,7 @@ const SSODefinitionForm = ({
     // LDAP
     url: '',
     bindDN: '',
+    bindCredentials: '',
     searchBase: '',
     searchFilter: '',
     groupSearchBase: '',
@@ -209,6 +210,7 @@ const SSODefinitionForm = ({
 
   const url = data?.configuration?.find((e) => e.key === 'url');
   const bindDN = data?.configuration?.find((e) => e.key === 'bindDN');
+  const bindCredentials = data?.configuration?.find((e) => e.key === 'bindCredentials');
   const searchBase = data?.configuration?.find((e) => e.key === 'searchBase');
   const searchFilter = data?.configuration?.find((e) => e.key === 'searchFilter');
   const groupSearchBase = data?.configuration?.find((e) => e.key === 'groupSearchBase');
@@ -249,6 +251,7 @@ const SSODefinitionForm = ({
 
     initialValues.url = url?.value ?? '';
     initialValues.bindDN = bindDN?.value ?? '';
+    initialValues.bindCredentials = bindCredentials?.value ?? '';
     initialValues.searchBase = searchBase?.value ?? '';
     initialValues.searchFilter = searchFilter?.value ?? '';
     initialValues.groupSearchBase = groupSearchBase?.value ?? '';

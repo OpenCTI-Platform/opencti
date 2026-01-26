@@ -37,6 +37,16 @@ const LDAPConfig = ({ updateField }: LDAPConfigProps) => {
       <Field
         component={TextField}
         variant="standard"
+        name="bindCredentials"
+        label={t_i18n('Bind credentials')}
+        onSubmit={updateField}
+        required
+        fullWidth
+        style={{ marginTop: 20 }}
+      />
+      <Field
+        component={TextField}
+        variant="standard"
         name="searchBase"
         label={t_i18n('Search base')}
         onSubmit={updateField}
@@ -58,7 +68,7 @@ const LDAPConfig = ({ updateField }: LDAPConfigProps) => {
         component={TextField}
         variant="standard"
         name="groupSearchBase"
-        label={t_i18n('Group search filter')}
+        label={t_i18n('Group search base')}
         onSubmit={updateField}
         required
         fullWidth
