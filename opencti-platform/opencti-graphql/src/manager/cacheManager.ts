@@ -48,7 +48,7 @@ import { isNotEmptyField } from '../database/utils';
 import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached } from '../modules/publicDashboard/publicDashboard-types';
 import { getAllowedMarkings } from '../modules/publicDashboard/publicDashboard-domain';
 import type { BasicStoreEntityConnector } from '../types/connector';
-import { getEnterpriseEditionInfoFromPem } from '../modules/settings/licensing';
+import { getEnterpriseEditionInfo } from '../modules/settings/licensing';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { emptyFilterGroup } from '../utils/filtering/filtering-utils';
 import { FunctionalError } from '../config/errors';
@@ -258,7 +258,7 @@ const platformSettings = (context: AuthContext) => {
     return fullEntitiesList<BasicStoreSettings>(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS]).then((settings) => {
       return settings.map((s) => {
         const auditListenerIds = s.activity_listeners_ids ?? [];
-        const ee_info = getEnterpriseEditionInfoFromPem(s.internal_id, s.enterprise_license);
+        const ee_info = getEnterpriseEditionInfo(s);
         const activity_listeners_users = auditListenerIds.map((id: string) => membersGroupMap.get(id) ?? membersOrganizationMap.get(id) ?? [id]).flat();
         const platform_url = getBaseUrl(context.req);
         return { ...s, valid_enterprise_edition: ee_info.license_validated, activity_listeners_users, platform_url };
