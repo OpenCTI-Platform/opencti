@@ -2507,19 +2507,23 @@ export const buildLocalMustFilter = (validFilter: any) => {
 };
 
 const POST_FILTER_TAG_SEPARATOR = ';';
+const NAMED_QUERIES_UNIQUENESS_SEPARATOR = ':';
 const buildSubQueryForFilterGroup = (
   context: AuthContext,
   user: AuthUser,
   inputFilters: FilterGroup,
-): { subQuery: any; postFiltersTags: Set<string> } => {
+  currentSaltCount = 0,
+): { subQuery: any; postFiltersTags: Set<string>; resultSaltCount: number } => {
   const { mode = 'and', filters = [], filterGroups = [] } = inputFilters;
   const localSubQueries: { subQuery: any; associatedTags: Set<string> }[] = [];
   const localPostFilterTags = new Set<string>();
+  let localSaltCount = currentSaltCount;
   // Handle filterGroups
   for (let index = 0; index < filterGroups.length; index += 1) {
     const group = filterGroups[index];
     if (isFilterGroupNotEmpty(group)) {
-      const { subQuery, postFiltersTags } = buildSubQueryForFilterGroup(context, user, group);
+      const { subQuery, postFiltersTags, resultSaltCount } = buildSubQueryForFilterGroup(context, user, group, localSaltCount);
+      localSaltCount = resultSaltCount;
       if (subQuery) { // can be null
         localSubQueries.push({ subQuery, associatedTags: postFiltersTags });
       }
@@ -2547,10 +2551,12 @@ const buildSubQueryForFilterGroup = (
   const localMustFilters = localSubQueries.map(({ subQuery, associatedTags }) => {
     const tagsToApply = mode === 'or' ? [...localPostFilterTags].filter((t: string) => !associatedTags.has(t)) : [];
     if (tagsToApply.length > 0) {
+      const nameToApply = tagsToApply.join(POST_FILTER_TAG_SEPARATOR) + NAMED_QUERIES_UNIQUENESS_SEPARATOR + localSaltCount;
+      localSaltCount += 1;
       return {
         bool: {
           must: [subQuery],
-          ['_name']: tagsToApply.join(POST_FILTER_TAG_SEPARATOR),
+          ['_name']: nameToApply,
         },
       };
     }
@@ -2564,7 +2570,7 @@ const buildSubQueryForFilterGroup = (
           minimum_should_match: mode === 'or' ? 1 : localMustFilters.length,
         } }
     : null;
-  return { subQuery: currentSubQuery, postFiltersTags: localPostFilterTags };
+  return { subQuery: currentSubQuery, postFiltersTags: localPostFilterTags, resultSaltCount: localSaltCount };
 };
 
 const getRuntimeEntities = async (context: AuthContext, user: AuthUser, entityType: string) => {
@@ -3020,7 +3026,8 @@ export const elPaginate = async <T extends BasicStoreBase>(
       const postFilter = await createPostFilter<T>(context, user, elements.map(({ id }) => id));
       finalElements = elements.filter((element, i) => {
         const dataHit = hits[i];
-        const tagsToIgnoreSet = new Set<string>((dataHit.matched_queries ?? []).flatMap((matchedQuery: string) => matchedQuery.split(POST_FILTER_TAG_SEPARATOR)));
+        const tagsToIgnoreSet = new Set<string>((dataHit.matched_queries ?? [])
+          .flatMap((matchedQuery: string) => matchedQuery.split(NAMED_QUERIES_UNIQUENESS_SEPARATOR)[0].split(POST_FILTER_TAG_SEPARATOR)));
         return postFilter(element, tagsToIgnoreSet);
       });
     }
