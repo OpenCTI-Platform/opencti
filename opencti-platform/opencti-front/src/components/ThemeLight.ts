@@ -412,13 +412,12 @@ const ThemeLight = (
       styleOverrides: {
         root: {
           color: text_color,
-          backgroundColor: '#FFFFFF',
           '& fieldset': {
             border: 'none',
           },
-          '.opencti-drawer-container &': {
-            backgroundColor: 'transparent',
-          },
+        },
+        outlined: {
+          backgroundColor: '#FFFFFF',
         },
       },
     },

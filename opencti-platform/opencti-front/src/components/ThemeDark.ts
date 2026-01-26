@@ -410,13 +410,12 @@ const ThemeDark = (
       styleOverrides: {
         root: {
           color: text_color,
-          backgroundColor: '#0C1524',
           '& fieldset': {
             border: 'none',
           },
-          '.opencti-drawer-container &': {
-            backgroundColor: 'transparent',
-          },
+        },
+        outlined: {
+          backgroundColor: '#0C1524',
         },
       },
     },
