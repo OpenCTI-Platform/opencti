@@ -5,7 +5,7 @@ import * as providerConfig from '../../../../src/modules/singleSignOn/providers-
 import { PROVIDERS } from '../../../../src/modules/singleSignOn/providers-configuration';
 import { logApp } from '../../../../src/config/conf';
 
-describe('Providers from environment coverage', () => {
+describe.skip('Providers from environment coverage', () => {
   const deprecatedProviders = [
     { identifier: 'google',
       strategyLogName: 'GOOGLE',

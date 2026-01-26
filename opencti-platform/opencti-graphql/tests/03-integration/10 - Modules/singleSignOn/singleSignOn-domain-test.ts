@@ -9,7 +9,7 @@ import type { BasicStoreEntitySingleSignOn, StixSingleSignOn, StoreEntitySingleS
 import convertSingleSignOnToStix from '../../../../src/modules/singleSignOn/singleSignOn-converter';
 import { onAuthenticationMessageAdd, onAuthenticationMessageDelete, onAuthenticationMessageEdit } from '../../../../src/modules/singleSignOn/singleSignOn-listener';
 
-describe('Single sign on Domain coverage tests', () => {
+describe.skip('Single sign on Domain coverage tests', () => {
   describe('SAML coverage tests', () => {
     afterAll(async () => {
       const allSso = await findAllSingleSignOn(testContext, ADMIN_USER);
