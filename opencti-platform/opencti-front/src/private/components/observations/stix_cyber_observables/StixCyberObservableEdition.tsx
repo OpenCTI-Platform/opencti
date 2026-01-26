@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Drawer, useTheme } from '@mui/material';
+import { useTheme } from '@mui/material';
 import { graphql } from 'react-relay';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { stixCyberObservableEditionOverviewFocus } from './StixCyberObservableEditionOverview';
@@ -10,12 +10,18 @@ import StixCyberObservableEditionContainer from './StixCyberObservableEditionCon
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 import { StixCyberObservableEditionContainerQuery$data } from './__generated__/StixCyberObservableEditionContainerQuery.graphql';
+import Drawer from '../../common/drawer/Drawer';
+import { useFormatter } from '../../../../components/i18n';
 
 export const stixCyberObservableEditionQuery = graphql`
   query StixCyberObservableEditionContainerQuery($id: String!) {
     stixCyberObservable(id: $id) {
       ...StixCyberObservableEditionContainer_stixCyberObservable
       ...StixCyberObservable_stixCyberObservable
+      editContext {
+        name
+        focusOn
+      }
     }
   }
 `;
@@ -26,6 +32,39 @@ interface StixCyberObservableEditionProps {
   handleClose?: () => void;
 }
 
+// New inner component that receives the data
+interface StixCyberObservableEditionContentProps {
+  stixCyberObservable: StixCyberObservableEditionContainerQuery$data['stixCyberObservable'];
+  open: boolean;
+  handleClose: () => void;
+}
+
+const StixCyberObservableEditionContent: FunctionComponent<StixCyberObservableEditionContentProps> = ({
+  stixCyberObservable,
+  open,
+  handleClose,
+}) => {
+  const { t_i18n } = useFormatter();
+
+  return (
+    <Drawer
+      title={t_i18n('Update an observable')}
+      open={open}
+      context={stixCyberObservable?.editContext}
+      onClose={handleClose}
+    >
+      {stixCyberObservable ? (
+        <StixCyberObservableEditionContainer
+          stixCyberObservable={stixCyberObservable}
+          handleClose={handleClose}
+        />
+      ) : (
+        <Loader variant={LoaderVariant.inline} />
+      )}
+    </Drawer>
+  );
+};
+
 const StixCyberObservableEdition: FunctionComponent<StixCyberObservableEditionProps> = ({
   stixCyberObservableId,
   open: graphOpen,
@@ -33,10 +72,6 @@ const StixCyberObservableEdition: FunctionComponent<StixCyberObservableEditionPr
 }) => {
   const [open, setOpen] = useState<boolean>(false);
   const [commit] = useApiMutation(stixCyberObservableEditionOverviewFocus);
-  const { palette: { mode } } = useTheme();
-  const theme = mode === 'dark'
-    ? ThemeDark()
-    : ThemeLight();
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
@@ -48,93 +83,42 @@ const StixCyberObservableEdition: FunctionComponent<StixCyberObservableEditionPr
     });
     setOpen(false);
   };
-  const transition = theme.transitions?.create
-    ? theme.transitions.create('width', {
-        easing: theme.transitions.easing?.sharp,
-        duration: theme.transitions.duration?.enteringScreen,
-      })
-    : undefined;
 
   const renderClassic = () => (
     <>
       <EditEntityControlledDial onOpen={handleOpen} onClose={() => {}} />
-      <Drawer
-        open={open}
-        anchor="right"
-        sx={{
-          zIndex: 1202,
-        }}
-        PaperProps={{
-          sx: {
-            minHeight: '100vh',
-            width: '50%',
-            position: 'fixed',
-            overflow: 'auto',
-            transition,
-            padding: 0,
-          },
-        }}
-        elevation={1}
-        onClose={handleClose}
-      >
-        <QueryRenderer
-          query={stixCyberObservableEditionQuery}
-          variables={{ id: stixCyberObservableId }}
-          render={({ props }: { props: StixCyberObservableEditionContainerQuery$data }) => {
-            if (props) {
-              return (
-                <StixCyberObservableEditionContainer
-                  stixCyberObservable={props.stixCyberObservable}
-                  handleClose={handleClose}
-                />
-              );
-            }
-            return <Loader variant={LoaderVariant.inline} />;
-          }}
-        />
-      </Drawer>
+      <QueryRenderer
+        query={stixCyberObservableEditionQuery}
+        variables={{ id: stixCyberObservableId }}
+        render={({ props }: { props: StixCyberObservableEditionContainerQuery$data }) => (
+          <StixCyberObservableEditionContent
+            stixCyberObservable={props?.stixCyberObservable}
+            open={open}
+            handleClose={handleClose}
+          />
+        )}
+      />
     </>
   );
+
   const renderInGraph = () => (
-    <Drawer
-      open={graphOpen}
-      anchor="right"
-      elevation={1}
-      sx={{
-        zIndex: 1202,
-      }}
-      PaperProps={{
-        sx: {
-          minHeight: '100vh',
-          width: '30%',
-          position: 'fixed',
-          overflow: 'auto',
-          transition,
-          padding: 0,
-        },
-      }}
-      onClose={handleGraphClose}
-    >
+    <>
       {stixCyberObservableId ? (
         <QueryRenderer
           query={stixCyberObservableEditionQuery}
           variables={{ id: stixCyberObservableId }}
-          render={({ props }: { props: StixCyberObservableEditionContainerQuery$data }) => {
-            if (props) {
-              return (
-                <StixCyberObservableEditionContainer
-                  stixCyberObservable={props.stixCyberObservable}
-                  handleClose={handleGraphClose}
-                />
-              );
-            }
-            return <Loader variant={LoaderVariant.inline} />;
-          }}
+          render={({ props }: { props: StixCyberObservableEditionContainerQuery$data }) => (
+            <StixCyberObservableEditionContent
+              stixCyberObservable={props?.stixCyberObservable}
+              open={graphOpen ?? false}
+              handleClose={handleGraphClose ?? (() => {})}
+            />
+          )}
         />
       ) : (
         <div> &nbsp; </div>
       )}
-    </Drawer>
+    </>
   );
 
   if (handleGraphClose) return renderInGraph();
