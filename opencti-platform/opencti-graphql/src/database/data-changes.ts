@@ -97,7 +97,7 @@ const humanizeRawValue = async (resolvedMap: Record<string, string>,
     if (attribute.format === 'id' || attribute.format === 'json') {
       return attribute.representative?.(v.raw, resolvedMap, format) ?? UNTRANSLATED_VALUE;
     }
-    return isEmptyField(v.raw) ? EMPTY_VALUE : v.raw; // vocab / enum
+    return v.raw; // vocab / enum
   }
   if (attribute.type === 'boolean') {
     return v.raw === 'true' ? 'Yes' : 'No';
@@ -166,12 +166,13 @@ export const generateMessageFromChanges = async (resolvedMap: Record<string, str
     const attributeDefinition = schemaAttributesDefinition.getAttribute(entityType, key);
     const relationsRefDefinition = schemaRelationsRefDefinition.getRelationRef(entityType, key);
     const attribute = attributeDefinition || relationsRefDefinition;
-    const convertChange = (vals?: string[]): string => {
+    const convertChange = (vals?: string[], noValueToEmpty = false): string => {
       const isTooMuch = vals && vals.length > 3;
       const values = isTooMuch ? vals.slice(0, 3) : (vals ?? []);
+      if (noValueToEmpty && values.length === 0) return `\`${EMPTY_VALUE}\``;
       return values.map((v) => {
         const val = v.length > MAX_TRANSLATE_LENGTH ? v.slice(0, MAX_TRANSLATE_LENGTH) + '...' : v;
-        return `\`${val}\``;
+        return `\`${isEmptyField(val) ? EMPTY_VALUE : val}\``;
       }).join(', ') + (isTooMuch ? ', ...' : '');
     };
     const human = await humanizeHistoryChange(resolvedMap, attribute, historyChange, format);
@@ -193,7 +194,7 @@ export const generateMessageFromChanges = async (resolvedMap: Record<string, str
         }
       }
     } else {
-      const message = convertChange(human.changes_added);
+      const message = convertChange(human.changes_added, true);
       if (actions['replaces']) {
         actions['replaces'].push({ message, field: attribute?.label });
       } else {

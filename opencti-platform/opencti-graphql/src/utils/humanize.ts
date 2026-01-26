@@ -1,5 +1,6 @@
 import { DateTime } from 'luxon';
 import convert, { type Unit } from 'convert';
+import { FROM_START_STR, UNTIL_END_STR } from './format';
 
 export type Formating = {
   locale: string;
@@ -26,6 +27,9 @@ export const humanizeHeight = (value: number, format: Formating = DefaultFormati
 };
 
 export const humanizeDate = (value: string, format: Formating = DefaultFormating) => {
+  if (value === FROM_START_STR || value === UNTIL_END_STR) {
+    return ''; // These values are considered empty for human
+  }
   return DateTime.fromISO(value)
     .setZone(format.tz)
     .setLocale(format.locale)
