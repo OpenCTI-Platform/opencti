@@ -1,14 +1,13 @@
 import { afterAll, describe, expect, it, vi } from 'vitest';
 
-import { v4 as uuid } from 'uuid';
-import { registerStrategy } from '../../../../src/modules/singleSignOn/singleSignOn-providers';
 import { logApp } from '../../../../src/config/conf';
-import { addSingleSignOn, deleteSingleSignOn, findAllSingleSignOn } from '../../../../src/modules/singleSignOn/singleSignOn-domain';
+import { addSingleSignOn, deleteSingleSignOn, fieldPatchSingleSignOn, findAllSingleSignOn, findSingleSignOnById } from '../../../../src/modules/singleSignOn/singleSignOn-domain';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
-import { StrategyType, type SingleSignOnAddInput } from '../../../../src/generated/graphql';
+import { StrategyType, type SingleSignOnAddInput, type EditInput } from '../../../../src/generated/graphql';
 import { PROVIDERS } from '../../../../src/modules/singleSignOn/providers-configuration';
-import type { StixSingleSignOn, StoreEntitySingleSignOn } from '../../../../src/modules/singleSignOn/singleSignOn-types';
-import { convertStoreToStix_2_1 } from '../../../../src/database/stix-2-1-converter';
+import type { BasicStoreEntitySingleSignOn, StixSingleSignOn, StoreEntitySingleSignOn } from '../../../../src/modules/singleSignOn/singleSignOn-types';
+import convertSingleSignOnToStix from '../../../../src/modules/singleSignOn/singleSignOn-converter';
+import { onAuthenticationMessageAdd, onAuthenticationMessageDelete, onAuthenticationMessageEdit } from '../../../../src/modules/singleSignOn/singleSignOn-listener';
 
 describe('Single sign on Domain coverage tests', () => {
   describe('SAML coverage tests', () => {
@@ -21,6 +20,7 @@ describe('Single sign on Domain coverage tests', () => {
       }
     });
 
+    let minimalSsoEntity: BasicStoreEntitySingleSignOn;
     it('should add new minimal SAML provider', async () => {
       const input: SingleSignOnAddInput = {
         name: 'Saml for test domain',
@@ -35,14 +35,42 @@ describe('Single sign on Domain coverage tests', () => {
         ],
       };
       const samlEntity = await addSingleSignOn(testContext, ADMIN_USER, input);
-
+      minimalSsoEntity = samlEntity;
       expect(samlEntity.identifier).toBe('samlTestDomain');
       expect(samlEntity.enabled).toBe(true);
       expect(samlEntity.label).toBe('Nice SAML button');
 
       // Here there is a pub/sub on redis, let's just call the same method than listener
-      await registerStrategy(samlEntity);
+      await onAuthenticationMessageAdd({ instance: samlEntity });
       expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'samlTestDomain')).toBeTruthy();
+    });
+
+    it('should convert to stix', async () => {
+      const stixSso: StixSingleSignOn = convertSingleSignOnToStix(minimalSsoEntity as StoreEntitySingleSignOn);
+      expect(stixSso.identifier).toBe('samlTestDomain');
+      expect(stixSso.id).toMatch(/singlesignon-+/);
+      expect(stixSso.label).toBe('Nice SAML button');
+    });
+
+    it('should disable minimal Saml works', async () => {
+      const input: EditInput[] = [{ key: 'label', value: ['Nice SAML button V2'] }];
+      await fieldPatchSingleSignOn(testContext, ADMIN_USER, minimalSsoEntity.id, input);
+      const entity = await findSingleSignOnById(testContext, ADMIN_USER, minimalSsoEntity.id);
+
+      // Here there is a pub/sub on redis, let's just call the same method than listener
+      await onAuthenticationMessageEdit({ instance: entity });
+
+      expect(entity.label).toBe('Nice SAML button V2');
+      expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'samlTestDomain')).toBeTruthy();
+    });
+
+    it('should delete minimal Saml works', async () => {
+      await deleteSingleSignOn(testContext, ADMIN_USER, minimalSsoEntity.id);
+
+      // Here there is a pub/sub on redis, let's just call the same method than listener
+      await onAuthenticationMessageDelete({ instance: minimalSsoEntity });
+
+      expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'samlTestDomain')).toBeFalsy();
     });
 
     it('should not add new SAML provider if no config is given', async () => {
@@ -58,8 +86,8 @@ describe('Single sign on Domain coverage tests', () => {
       };
       const samlEntity = await addSingleSignOn(testContext, ADMIN_USER, input);
 
-      // Here there is a pub/sub on redis, let's just call the same method than listener
-      await registerStrategy(samlEntity);
+      // Here there is a pub/sub on redis, let's just call the same method as listener
+      await onAuthenticationMessageAdd({ instance: samlEntity });
 
       expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'samlTestNotOk')).toBeFalsy();
       expect(logAppErrorSpy, 'No exception should be throw, but an error message should be present')
@@ -82,8 +110,8 @@ describe('Single sign on Domain coverage tests', () => {
       };
       const samlEntity = await addSingleSignOn(testContext, ADMIN_USER, input);
 
-      // Here there is a pub/sub on redis, let's just call the same method than listener
-      await registerStrategy(samlEntity);
+      // Here there is a pub/sub on redis, let's just call the same method as listener
+      await onAuthenticationMessageAdd({ instance: samlEntity });
 
       expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'samlTestNotOk2')).toBeFalsy();
       expect(logAppErrorSpy, 'No exception should be throw, but an error message should be present')
@@ -105,8 +133,8 @@ describe('Single sign on Domain coverage tests', () => {
       };
       const samlEntity = await addSingleSignOn(testContext, ADMIN_USER, input);
 
-      // Here there is a pub/sub on redis, let's just call the same method than listener
-      await registerStrategy(samlEntity);
+      // Here there is a pub/sub on redis, let's just call the same method as listener
+      await onAuthenticationMessageAdd({ instance: samlEntity });
 
       expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'samlTestNotOk4')).toBeFalsy();
       expect(logAppErrorSpy, 'No exception should be throw, but an error message should be present')
@@ -130,8 +158,8 @@ describe('Single sign on Domain coverage tests', () => {
       };
       const samlEntity = await addSingleSignOn(testContext, ADMIN_USER, input);
 
-      // Here there is a pub/sub on redis, let's just call the same method than listener
-      await registerStrategy(samlEntity);
+      // Here there is a pub/sub on redis, let's just call the same method as listener
+      await onAuthenticationMessageAdd({ instance: samlEntity });
 
       expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'samlTestNotOk5')).toBeFalsy();
       expect(logAppErrorSpy, 'No exception should be throw, but an error message should be present')
@@ -191,8 +219,8 @@ describe('Single sign on Domain coverage tests', () => {
       expect(oicEntity.enabled).toBe(true);
       expect(oicEntity.label).toBe('Nice OIC button');
 
-      // Here there is a pub/sub on redis, let's just call the same method than listener
-      await registerStrategy(oicEntity);
+      // Here there is a pub/sub on redis, let's just call the same method as listener
+      await onAuthenticationMessageAdd({ instance: oicEntity });
       expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'openidTestKo1')).toBeFalsy();
 
       expect(logAppErrorSpy, 'No exception should be throw, but an error message should be present')
@@ -221,8 +249,8 @@ describe('Single sign on Domain coverage tests', () => {
       expect(oicEntity.enabled).toBe(true);
       expect(oicEntity.label).toBe('Nice OIC button');
 
-      // Here there is a pub/sub on redis, let's just call the same method than listener
-      await registerStrategy(oicEntity);
+      // Here there is a pub/sub on redis, let's just call the same method as listener
+      await onAuthenticationMessageAdd({ instance: oicEntity });
       expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'openidTestKo2')).toBeFalsy();
 
       expect(logAppErrorSpy, 'No exception should be throw, but an error message should be present')
@@ -251,8 +279,8 @@ describe('Single sign on Domain coverage tests', () => {
       expect(oicEntity.enabled).toBe(true);
       expect(oicEntity.label).toBe('Nice OIC button');
 
-      // Here there is a pub/sub on redis, let's just call the same method than listener
-      await registerStrategy(oicEntity);
+      // Here there is a pub/sub on redis, let's just call the same method as listener
+      await onAuthenticationMessageAdd({ instance: oicEntity });
       expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'openidTestKo1')).toBeFalsy();
 
       expect(logAppErrorSpy, 'No exception should be throw, but an error message should be present')
@@ -281,8 +309,8 @@ describe('Single sign on Domain coverage tests', () => {
       expect(oicEntity.enabled).toBe(true);
       expect(oicEntity.label).toBe('Nice OIC button');
 
-      // Here there is a pub/sub on redis, let's just call the same method than listener
-      await registerStrategy(oicEntity);
+      // Here there is a pub/sub on redis, let's just call the same method as listener
+      await onAuthenticationMessageAdd({ instance: oicEntity });
       expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'openidTestKo4')).toBeFalsy();
 
       expect(logAppErrorSpy, 'No exception should be throw, but an error message should be present')
@@ -293,20 +321,38 @@ describe('Single sign on Domain coverage tests', () => {
     });
   });
 
-  describe('stix coverage tests', () => {
-    it.todo('should convert to 2.1 stix', async () => {
-      const id = uuid();
+  describe('LDAP coverage tests', () => {
+    afterAll(async () => {
+      const allSso = await findAllSingleSignOn(testContext, ADMIN_USER);
+      for (let i = 0; i < allSso.length; i++) {
+        if (allSso[i].identifier?.startsWith('ldapTest')) {
+          await deleteSingleSignOn(testContext, ADMIN_USER, allSso[i].id);
+        }
+      }
+    });
 
-      const ssoEntity: Partial<StoreEntitySingleSignOn> = {
-        identifier: 'stixIdentifier',
-        id,
-        label: 'stix sso button',
+    it('should add new minimal OpenID provider', async () => {
+      const input: SingleSignOnAddInput = {
+        name: 'LDAP for test domain',
+        strategy: StrategyType.LdapStrategy,
+        identifier: 'ldapTest1',
+        enabled: true,
+        configuration: [
+          { key: 'url', type: 'string', value: 'ldap://localhost:389' },
+          { key: 'bindDN', type: 'string', value: 'cn=admin,dc=example,dc=org' },
+          { key: 'bindCredentials', type: 'string', value: 'youShallNotPass' },
+          { key: 'searchBase', type: 'string', value: 'dc=example,dc=org' },
+          { key: 'searchFilter', type: 'string', value: 'mail={{username}}' },
+        ],
       };
+      const ldapEntity = await addSingleSignOn(testContext, ADMIN_USER, input);
 
-      const stixSso: StixSingleSignOn = convertStoreToStix_2_1(ssoEntity as StoreEntitySingleSignOn) as StixSingleSignOn;
-      expect(stixSso.identifier).toBe('stixIdentifier');
-      expect(stixSso.id).toBe(id);
-      expect(stixSso.label).toBe('stix sso button');
+      expect(ldapEntity.identifier).toBe('ldapTest1');
+      expect(ldapEntity.enabled).toBe(true);
+
+      // Here there is a pub/sub on redis, let's just call the same method as listener
+      await onAuthenticationMessageAdd({ instance: ldapEntity });
+      expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'ldapTest1')).toBeTruthy();
     });
   });
 });

@@ -40,6 +40,7 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
       options={[
         'Create SAML',
         'Create OpenID',
+        'Create Ldap',
         // 'Create Header',
         // 'Create ClientCert',
         // 'Create Ldap',
@@ -63,10 +64,10 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
           //   setSelectedStrategy('ClientCert');
           //   break;
           // }
-          // case 'Create Ldap': {
-          //   setSelectedStrategy('Ldap');
-          //   break;
-          // }
+          case 'Create Ldap': {
+            setSelectedStrategy('Ldap');
+            break;
+          }
           // case 'Create LocalAuth': {
           //   setSelectedStrategy('LocalAuth');
           //   break;

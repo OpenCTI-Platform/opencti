@@ -7,7 +7,7 @@ import { ConfigurationError } from '../../config/errors';
 import type { PassportSamlConfig, VerifyWithoutRequest } from '@node-saml/passport-saml/lib/types';
 import { isNotEmptyField } from '../../database/utils';
 import type { GroupsManagement, OrganizationsManagement } from '../../generated/graphql';
-import { convertKeyValueToJsConfiguration, genConfigMapper, parseValueAsType, providerLoginHandler, type ProviderUserInfo } from './singleSignOn-providers';
+import { convertKeyValueToJsConfiguration, genPairConfigMapper, parseValueAsType, providerLoginHandler, type ProviderUserInfo } from './singleSignOn-providers';
 import { Strategy as SamlStrategy } from '@node-saml/passport-saml/lib/strategy';
 import * as R from 'ramda';
 
@@ -61,7 +61,7 @@ export const computeSamlGroupAndOrg = (ssoConfiguration: any, samlProfile: any, 
     const orgaPath = orgsManagement?.organizations_path || ['organizations'];
     const samlOrgas = R.path(orgaPath, samlProfile) || [];
     const availableOrgas = Array.isArray(samlOrgas) ? samlOrgas : [samlOrgas];
-    const orgasMapper = genConfigMapper(orgasMapping);
+    const orgasMapper = genPairConfigMapper(orgasMapping);
     return [...orgaDefault, ...availableOrgas.map((a) => orgasMapper[a]).filter((r) => isNotEmptyField(r))];
   };
   const organizationsToAssociate = isOrgaMapping ? computeOrganizationsMapping() : [];
@@ -70,7 +70,7 @@ export const computeSamlGroupAndOrg = (ssoConfiguration: any, samlProfile: any, 
     const attrGroups: any[][] = groupAttributes.map((a) => (Array.isArray(samlAttributes[a]) ? samlAttributes[a] : [samlAttributes[a]]));
     const samlGroups = R.flatten(attrGroups).filter((v) => isNotEmptyField(v));
     const groupsMapping = groupsManagement?.groups_mapping || [];
-    const groupsMapper = genConfigMapper(groupsMapping);
+    const groupsMapper = genPairConfigMapper(groupsMapping);
     return samlGroups.map((a) => groupsMapper[a]).filter((r) => isNotEmptyField(r));
   };
   const groupsToAssociate = R.uniq(computeGroupsMapping());

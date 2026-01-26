@@ -45,7 +45,7 @@ export const providerLoginHandler = (userInfo: ProviderUserInfo, done: any, opts
     });
 };
 
-export const genConfigMapper = (elements: string[]) => {
+export const genPairConfigMapper = (elements: string[]) => {
   return R.mergeAll(
     elements.map((r) => {
       const data = r.split(':');
