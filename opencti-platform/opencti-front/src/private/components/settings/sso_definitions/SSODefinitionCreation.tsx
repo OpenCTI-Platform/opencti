@@ -106,7 +106,6 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
     const groups_management = {
       group_attributes: values.group_attributes ?? null,
       groups_path: values.groups_path || null,
-      group_attributes: values.group_attributes || null,
       groups_attributes: values.groups_attributes || null,
       groups_mapping: values.groups_mapping.filter((v) => v && v.trim() !== ''),
       read_userinfo: values.read_userinfo,
