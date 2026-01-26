@@ -1144,7 +1144,6 @@ const fetchMembersWithOrgaRestriction = async (
     // construct the filter on users
     // the users that are visible:
     // users in no organizations
-    // OR internal_users
     // OR users with user_service_account=true
     // OR users that directly participate in an organization the user also participates directly to
     const usersFilterGroup = {
