@@ -198,19 +198,8 @@ export const setAiEnabled = (enabled: boolean) => {
   return operation;
 };
 
-if (AI_ENABLED && AI_TOKEN) {
-  try {
-    initClients();
-  } catch (err) {
-    // If initialization fails at startup, clearly disable AI and log why.
-    AI_ENABLED = false;
-    resetClients();
-    logApp.error(
-      '[AI] Failed to initialize AI clients at startup, AI functionality will be disabled. Check ai:type/endpoint/model configuration.',
-      { type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL, cause: err }
-    );
-  }
-}
+// Client initialization is now fully lazy and driven by `ensureClientsInitialized`
+// and `setAiEnabled`, which already respect `AI_ENABLED` and handle failures.
 
 // Query MistralAI (Streaming)
 export const queryMistralAi = async (busId: string | null, systemMessage: string, userMessage: string, user: AuthUser) => {
