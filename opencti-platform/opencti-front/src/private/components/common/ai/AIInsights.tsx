@@ -150,8 +150,8 @@ const AiInsightButton = ({ onlyIcon = false, floating = false, onClick }: AiInsi
           variant="tertiary"
           size="small"
           onClick={onClick}
-          color="ai"
-          startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" />}
+          intent="ai"
+          startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" />}
         >
           {t_i18n('AI Insights')}
         </Button>
