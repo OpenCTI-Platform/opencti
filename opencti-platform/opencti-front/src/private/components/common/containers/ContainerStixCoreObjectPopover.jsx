@@ -112,8 +112,7 @@ class ContainerStixCoreObjectPopover extends Component {
     this.setState({ anchorEl: event.currentTarget });
   }
 
-  handleClose(event) {
-    stopEvent(event);
+  handleClose() {
     this.setState({ anchorEl: null });
   }
 
