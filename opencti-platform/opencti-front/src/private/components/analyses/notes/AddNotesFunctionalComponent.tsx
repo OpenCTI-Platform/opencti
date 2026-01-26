@@ -72,26 +72,17 @@ const AddNotesFunctionalComponent: FunctionComponent<AddNotesFunctionalComponent
         onClose={handleClose}
         title={t_i18n('Add notes')}
         header={(
-          <div style={{
-            marginLeft: 'auto',
-            marginRight: '20px',
-          }}
-          >
+          <>
             <SearchInput
               variant="noAnimation"
               onSubmit={handleSearch}
             />
             <Button
               onClick={handleDialogOpen}
-              size="small"
-              sx={{
-                marginLeft: '10px',
-                padding: '7px 10px',
-              }}
             >
               {t_i18n('Create')} {t_i18n('entity_Note')}
             </Button>
-          </div>
+          </>
         )}
       >
         <QueryRenderer

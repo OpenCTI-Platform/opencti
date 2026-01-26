@@ -56,26 +56,15 @@ const AddExternalReferences = ({
         open={open}
         onClose={handleClose}
         header={(
-          <div style={{
-            marginLeft: 'auto',
-            marginRight: '20px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'flex-end',
-            gap: '12px',
-          }}
-          >
+          <>
             <SearchInput
               variant="inDrawer"
               onSubmit={handleSearch}
             />
-            <Button
-              onClick={() => setDialogOpen(true)}
-              size="small"
-            >
+            <Button onClick={() => setDialogOpen(true)}>
               {t_i18n('Create')} {t_i18n('entity_External-Reference')}
             </Button>
-          </div>
+          </>
         )}
       >
         <div style={{ padding: 0 }}>
