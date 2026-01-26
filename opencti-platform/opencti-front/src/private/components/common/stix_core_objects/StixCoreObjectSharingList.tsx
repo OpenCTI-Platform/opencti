@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
+import { Stack } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -73,7 +74,7 @@ const StixCoreObjectSharingList = ({ data, disabled, inContainer }: StixCoreObje
   };
 
   return (
-    <div>
+    <Stack direction="row" gap={1}>
       {objectOrganization?.map((organization) => (
         <Tag
           key={organization.id}
@@ -87,7 +88,7 @@ const StixCoreObjectSharingList = ({ data, disabled, inContainer }: StixCoreObje
           icon={<AccountBalanceOutlined fontSize="small" />}
         />
       ))}
-    </div>
+    </Stack>
   );
 };
 
