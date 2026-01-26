@@ -7,13 +7,16 @@ import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
-import { BUS_TOPICS, logApp, PROTECTED_SENSITIVE_CONFIG_LOCKED } from '../../config/conf';
+import { BUS_TOPICS, logApp } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import nconf from 'nconf';
 import { parseSingleSignOnRunConfiguration } from './singleSignOn-migration';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import { unregisterStrategy } from './singleSignOn-providers';
 import { EnvStrategyType } from '../../config/providers-configuration';
+
+// Protected sensitive config var env to lock
+export const AUTHENTICATION_CONFIG_LOCKED = nconf.get('app:sso_authentication_locked') ?? 'false';
 
 const toEnv = (newStrategyType: StrategyType) => {
   switch (newStrategyType) {
@@ -33,7 +36,7 @@ const toEnv = (newStrategyType: StrategyType) => {
 };
 
 export const isAuthenticationEditionLocked = () => {
-  if (PROTECTED_SENSITIVE_CONFIG_LOCKED) {
+  if (AUTHENTICATION_CONFIG_LOCKED) {
     throw UnsupportedError('Protected sensitive configuration is locked by environment variable');
   }
 };
