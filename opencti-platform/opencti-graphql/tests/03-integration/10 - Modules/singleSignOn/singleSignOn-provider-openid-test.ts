@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { convertKeyValueToJsConfiguration } from '../../../../src/modules/singleSignOn/singleSignOn-providers';
 import type { BasicStoreEntitySingleSignOn } from '../../../../src/modules/singleSignOn/singleSignOn-types';
-import { computeOpenIdUserInfo, computeOpenIGroupsMapping, computeOpenIOrganizationsMapping } from '../../../../src/modules/singleSignOn/singleSignOn-provider-openid';
+import { computeOpenIdUserInfo, computeOpenIdGroupsMapping, computeOpenIdOrganizationsMapping } from '../../../../src/modules/singleSignOn/singleSignOn-provider-openid';
 import type { GroupsManagement, OrganizationsManagement } from '../../../../src/generated/graphql';
 
 describe.skip('OpenID Single sign on Provider coverage tests', () => {
@@ -43,7 +43,7 @@ describe.skip('OpenID Single sign on Provider coverage tests', () => {
         groups_mapping: ['oicGroupA:openCTIGroupA', 'oicGroupB:openCTIGroupB', 'oicGroupC:openCTIGroupC'],
       };
       // no config on read user info => userInfo can be undefined
-      const result = computeOpenIGroupsMapping(groupManagementConfig, decodedUser, undefined);
+      const result = computeOpenIdGroupsMapping(groupManagementConfig, decodedUser, undefined);
       expect(result).toStrictEqual(['openCTIGroupA']);
     });
 
@@ -54,7 +54,7 @@ describe.skip('OpenID Single sign on Provider coverage tests', () => {
         read_userinfo: true,
       };
       // read user info enabled => decodedUser can be undefined
-      const result = computeOpenIGroupsMapping(groupManagementConfig, undefined, userInfo);
+      const result = computeOpenIdGroupsMapping(groupManagementConfig, undefined, userInfo);
       expect(result).toStrictEqual(['openCTIGroupA']);
     });
 
@@ -65,7 +65,7 @@ describe.skip('OpenID Single sign on Provider coverage tests', () => {
         groups_path: ['theG1', 'theG2'],
       };
       // no config on read user info => userInfo can be undefined
-      const result = computeOpenIGroupsMapping(groupManagementConfig, decodedUser, undefined);
+      const result = computeOpenIdGroupsMapping(groupManagementConfig, decodedUser, undefined);
       expect(result).toStrictEqual(['openCTIGroupA', 'openCTIGroupB']);
     });
 
@@ -75,7 +75,7 @@ describe.skip('OpenID Single sign on Provider coverage tests', () => {
         organizations_mapping: ['oicOrgA:openCTIOrgA', 'oicOrgB:openCTIOrgB', 'oicOrgC:openCTIOrgC'],
       };
       // no config on read user info => userInfo can be undefined
-      const result = computeOpenIOrganizationsMapping(orgManagementConfig, decodedUser, undefined, ['openCTIOrgB']);
+      const result = computeOpenIdOrganizationsMapping(orgManagementConfig, decodedUser, undefined, ['openCTIOrgB']);
       expect(result).toStrictEqual(['openCTIOrgB', 'openCTIOrgA']);// A from profile + B from default
     });
 
@@ -88,7 +88,7 @@ describe.skip('OpenID Single sign on Provider coverage tests', () => {
         organizations_path: ['theOrg'],
       };
       // no config on read user info => userInfo can be undefined
-      const result = computeOpenIOrganizationsMapping(orgManagementConfig, decodedUser, userInfo, ['openCTIOrgDefault']);
+      const result = computeOpenIdOrganizationsMapping(orgManagementConfig, decodedUser, userInfo, ['openCTIOrgDefault']);
       expect(result).toStrictEqual(['openCTIOrgDefault', 'openCTIOrgA']);// A from profile + B from default
     });
   });

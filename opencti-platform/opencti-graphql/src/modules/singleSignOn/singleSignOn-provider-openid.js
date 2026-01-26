@@ -25,7 +25,7 @@ export const computeOpenIdUserInfo = (ssoConfig, user_attribute_obj) => {
   return { email, name, firstname, lastname };
 };
 
-export const computeOpenIOrganizationsMapping = (orgsManagement, decodedUser, userinfo, orgaDefault) => {
+export const computeOpenIdOrganizationsMapping = (orgsManagement, decodedUser, userinfo, orgaDefault) => {
   const readUserinfo = orgsManagement?.read_userinfo || false;
   const orgasMapping = orgsManagement?.organizations_mapping || [];
   const orgaPath = orgsManagement?.organizations_path || ['organizations'];
@@ -38,7 +38,7 @@ export const computeOpenIOrganizationsMapping = (orgsManagement, decodedUser, us
   return [...orgaDefault, ...availableOrgas.map((a) => orgasMapper[a]).filter((r) => isNotEmptyField(r))];
 };
 
-export const computeOpenIGroupsMapping = (groupManagement, decodedUser, userinfo) => {
+export const computeOpenIdGroupsMapping = (groupManagement, decodedUser, userinfo) => {
   const readUserinfo = groupManagement?.read_userinfo || false;
   const groupsPath = groupManagement?.groups_path || ['groups'];
   const groupsMapping = groupManagement?.groups_mapping || [];
@@ -123,14 +123,14 @@ export const registerOpenIdStrategy = async (ssoEntity) => {
           // region groups mapping
           const token = groupManagement?.token_reference || 'access_token';
           const decodedUser = jwtDecode(tokenset[token]);
-          const mappedGroups = isGroupMapping ? computeOpenIGroupsMapping(groupManagement, decodedUser, userinfo) : [];
+          const mappedGroups = isGroupMapping ? computeOpenIdGroupsMapping(groupManagement, decodedUser, userinfo) : [];
           const groupsToAssociate = R.uniq(mappedGroups);
           // endregion
           // region organizations mapping
           const isOrgaMapping = isNotEmptyField(ssoConfig.organizations_default) || isNotEmptyField(ssoEntity.organizations_management);
           const orgsManagement = ssoEntity.organizations_management;
           const orgaDefault = ssoConfig.organizations_default ?? [];
-          const organizationsToAssociate = isOrgaMapping ? computeOpenIOrganizationsMapping(orgsManagement, decodedUser, userinfo, orgaDefault) : [];
+          const organizationsToAssociate = isOrgaMapping ? computeOpenIdOrganizationsMapping(orgsManagement, decodedUser, userinfo, orgaDefault) : [];
           // endregion
           if (!isGroupMapping || groupsToAssociate.length > 0) {
             const get_user_attributes_from_id_token = ssoConfig.get_user_attributes_from_id_token ?? false;
