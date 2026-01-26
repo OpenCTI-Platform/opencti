@@ -387,7 +387,7 @@ const StixCyberObservableDetails = ({ data }: StixCyberObservableDetailsProps) =
   const { t_i18n } = useFormatter();
   const { isVocabularyField, fieldToCategory } = useVocabularyCategory();
   const { ignoredAttributes } = useAttributes();
-  const { attributeToReadableValue } = useAttributeValueToReadableValue();
+  const attributeToReadableValue = useAttributeValueToReadableValue();
 
   const observableAttributes = Object.entries(stixCyberObservable)
     // remove unwanted keys

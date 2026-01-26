@@ -16,7 +16,7 @@ const useAttributeValueToReadableValue = () => {
     return result;
   };
 
-  return { attributeToReadableValue };
+  return attributeToReadableValue;
 };
 
 export default useAttributeValueToReadableValue;
