@@ -15,6 +15,9 @@ import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import { unregisterStrategy } from './singleSignOn-providers';
 import { EnvStrategyType } from '../../config/providers-configuration';
 
+// Protected sensitive config var env to lock
+export const AUTHENTICATION_CONFIG_LOCKED = nconf.get('app:sso_authentication_locked') ?? 'false';
+
 const toEnv = (newStrategyType: StrategyType) => {
   switch (newStrategyType) {
     case StrategyType.LocalStrategy:
@@ -29,6 +32,12 @@ const toEnv = (newStrategyType: StrategyType) => {
       return EnvStrategyType.STRATEGY_CERT;
     case StrategyType.HeaderStrategy:
       return EnvStrategyType.STRATEGY_HEADER;
+  }
+};
+
+export const isAuthenticationEditionLocked = () => {
+  if (AUTHENTICATION_CONFIG_LOCKED) {
+    throw UnsupportedError('Protected sensitive configuration is locked by environment variable');
   }
 };
 
@@ -89,12 +98,14 @@ export const internalAddSingleSignOn = async (context: AuthContext, user: AuthUs
 
 export const addSingleSignOn = async (context: AuthContext, user: AuthUser, input: SingleSignOnAddInput) => {
   await checkSSOAllowed(context);
+  isAuthenticationEditionLocked();
   // Call here the function to check that all mandatory field are in the input
   return await internalAddSingleSignOn(context, user, input, false);
 };
 
 export const fieldPatchSingleSignOn = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {
   await checkSSOAllowed(context);
+  isAuthenticationEditionLocked();
   const singleSignOnEntityBeforeUpdate = await findSingleSignOnById(context, user, id);
 
   if (!singleSignOnEntityBeforeUpdate) {
@@ -118,6 +129,7 @@ export const fieldPatchSingleSignOn = async (context: AuthContext, user: AuthUse
 
 export const deleteSingleSignOn = async (context: AuthContext, user: AuthUser, id: string) => {
   await checkSSOAllowed(context);
+  isAuthenticationEditionLocked();
   const singleSignOn = await findSingleSignOnById(context, user, id);
 
   if (!singleSignOn) {

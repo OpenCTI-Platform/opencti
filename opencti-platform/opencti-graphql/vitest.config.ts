@@ -1,4 +1,4 @@
- import { defineConfig } from 'vitest/config';
+import { defineConfig } from 'vitest/config';
 import graphql from '@rollup/plugin-graphql';
 import type { PluginOption } from 'vite';
 
@@ -14,7 +14,7 @@ export const buildTestConfig = (include: string[]) => defineConfig({
       include: ['src/**'],
       exclude: ['src/generated/**', 'src/migrations/**', 'src/stixpattern/**', 'src/python/**', '*.md'],
       reporter: ['text', 'json', 'html'],
-    }
+    },
   },
 });
 

@@ -27808,6 +27808,7 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   filigran_chatbot_ai_cgu_status: CguStatus;
   filigran_chatbot_ai_url?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
+  is_authentication_locked?: Maybe<Scalars['Boolean']['output']>;
   messages_administration?: Maybe<Array<SettingsMessage>>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   metrics_definition?: Maybe<Array<MetricDefinition>>;
@@ -46655,6 +46656,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   filigran_chatbot_ai_cgu_status?: Resolver<ResolversTypes['CGUStatus'], ParentType, ContextType>;
   filigran_chatbot_ai_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  is_authentication_locked?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   messages_administration?: Resolver<Maybe<Array<ResolversTypes['SettingsMessage']>>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   metrics_definition?: Resolver<Maybe<Array<ResolversTypes['MetricDefinition']>>, ParentType, ContextType>;
