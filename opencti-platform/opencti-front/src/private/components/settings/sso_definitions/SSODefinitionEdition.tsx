@@ -119,7 +119,12 @@ const SSODefinitionEdition = ({
       open={isOpen}
       onClose={onClose}
     >
-      <SSODefinitionForm onCancel={onClose} onSubmitField={onEdit} data={sso} selectedStrategy={strategyConfigSelected} />
+      <SSODefinitionForm
+        onCancel={onClose}
+        onSubmitField={onEdit}
+        data={sso}
+        selectedStrategy={strategyConfigSelected}
+      />
     </Drawer>
   );
 };
