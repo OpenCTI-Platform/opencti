@@ -14,6 +14,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import * as JSONPath from 'jsonpath-plus';
+import { v4 as uuidv4 } from 'uuid';
+import type { StixBundle } from '../../types/stix-2-1-common';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityIngestionJson, type DataParam, ENTITY_TYPE_INGESTION_JSON } from './ingestion-types';
@@ -143,7 +145,13 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
   };
   const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
   const ingestionUser = ingestion.user_id ? platformUsers.get(ingestion.user_id) : null;
-  const bundle = await jsonMappingExecution(context, ingestionUser || SYSTEM_USER, requestData, jsonMapperParsed);
+  const objects = await jsonMappingExecution(context, ingestionUser || SYSTEM_USER, requestData, jsonMapperParsed);
+  const bundle: StixBundle = {
+    id: `bundle--${uuidv4()}`,
+    spec_version: '2.1',
+    type: 'bundle',
+    objects,
+  };
   let nextExecutionState = buildQueryObject(ingestion.query_attributes, { ...requestData, ...responseHeaders }, false);
   // region Try to paginate with next page style
   if (ingestion.pagination_with_sub_page && isNotEmptyField(ingestion.pagination_with_sub_page_attribute_path)) {
@@ -158,9 +166,9 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
       });
       const paginationVariables = buildQueryObject(ingestion.query_attributes, { ...paginationData, ...responseHeaders }, false);
       nextExecutionState = { ...nextExecutionState, ...paginationVariables };
-      const paginationBundle = await jsonMappingExecution(context, ingestionUser || SYSTEM_USER, paginationData, jsonMapperParsed);
-      if (paginationBundle.objects.length > 0) {
-        bundle.objects = bundle.objects.concat(paginationBundle.objects);
+      const paginationObjects = await jsonMappingExecution(context, ingestionUser || SYSTEM_USER, paginationData, jsonMapperParsed);
+      if (paginationObjects.length > 0) {
+        bundle.objects = bundle.objects.concat(paginationObjects);
       }
       url = getValueFromPath(ingestion.pagination_with_sub_page_attribute_path, paginationData);
     }

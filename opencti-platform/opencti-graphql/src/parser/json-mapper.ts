@@ -16,6 +16,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import * as JSONPath from 'jsonpath-plus';
 
 import { v4 as uuidv4 } from 'uuid';
+import type { StixObject } from '../types/stix-2-1-common';
 import { logApp } from '../config/conf';
 import { UnsupportedError } from '../config/errors';
 import { isNotEmptyField } from '../database/utils';
@@ -40,14 +41,11 @@ import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { fromRef, toRef } from '../schema/stixRefRelationship';
 import { isStixRelationshipExceptRef } from '../schema/stixRelationship';
-import type { StixBundle, StixObject } from '../types/stix-2-1-common';
 import type { BasicStoreObject, StoreCommon } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
 import { SYSTEM_USER } from '../utils/access';
 import { safeRender } from '../utils/safeEjs';
 import { computeDefaultValue, formatValue, handleDefaultMarkings, handleRefEntities, type InputType } from './csv-mapper';
-
-import { STIX_SPEC_VERSION } from '../database/stix';
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
 
 const format = (value: string | string[], def: AttributeDefinition, attribute: SimpleAttributePath | ComplexAttributePath | undefined) => {
@@ -273,7 +271,10 @@ const handleBasedOnAttribute = async (
         .flatMap((id) => {
           const representationsMap = otherEntities.get(id);
           if (!representationsMap) return [];
-          return mappedIdentifiers.map((ident) => representationsMap.get(ident)).filter((e) => e !== undefined);
+          return mappedIdentifiers.flatMap((ident) => {
+            const e = representationsMap.get(ident);
+            return e ? [e] : [];
+          });
         });
     } else {
       entities = attribute.based_on.representations
@@ -333,31 +334,37 @@ const computeOrderedRepresentations = (representations: JsonMapperRepresentation
   return [baseEntities, basedOnEntities, relationships];
 };
 
-const processAndStoreInput = (
-  representation: JsonMapperRepresentation,
-  input: any,
-  results: Map<string, Map<string, Record<string, InputType>>>,
-  seenIds: Set<string>,
-  finalObjects: StixObject[],
-) => {
-  let stixObject: StixObject | null = null;
-  try {
-    stixObject = convertStoreToStix_2_1(input as unknown as StoreCommon);
-  } catch (e) {
-    logApp.error('JSON mapper convert error', { cause: e });
-  }
+const jsonMappingExecution = async (context: AuthContext, user: AuthUser, data: string | object, mapper: JsonMapperParsed, variables: Record<string, unknown> = {}) => {
+  const refEntities = await handleRefEntities(context, SYSTEM_USER, mapper);
+  const chosenMarkings = mapper.user_chosen_markings ?? [];
+  const results = new Map<string, Map<string, Record<string, InputType>>>();
 
-  if (stixObject && !seenIds.has(stixObject.id)) {
-    seenIds.add(stixObject.id);
-    finalObjects.push(stixObject);
-  }
+  const finalObjects: StixObject[] = [];
+  const seenIds = new Set<string>();
 
-  if (representation.type === JsonMapperRepresentationType.Relationship) {
-    delete input.from;
-    delete input.to;
-    delete input.__froms;
-    delete input.__tos;
-  } else {
+  const processInput = (representation: JsonMapperRepresentation, input: any) => {
+    let stixObject: StixObject | undefined;
+    try {
+      stixObject = convertStoreToStix_2_1(input as unknown as StoreCommon);
+    } catch (e) {
+      logApp.error('JSON mapper convert error', { cause: e });
+    }
+
+    if (stixObject && !seenIds.has(stixObject.id)) {
+      seenIds.add(stixObject.id);
+      finalObjects.push(stixObject);
+    }
+
+    if (representation.type === JsonMapperRepresentationType.Relationship) {
+      // We can discard relationships from/to references to free some memory.
+      // We need to store the relationship in results (below) so other objects can reference it (for example, sighting-of),
+      // but those references only need the ID, not the heavy source/target objects
+      delete input.from;
+      delete input.to;
+      delete input.__froms;
+      delete input.__tos;
+    }
+
     const current = results.get(representation.id);
     if (current) {
       if (!current.has(input.__identifier)) {
@@ -366,16 +373,7 @@ const processAndStoreInput = (
     } else {
       results.set(representation.id, new Map([[input.__identifier, input]]));
     }
-  }
-};
-
-const jsonMappingExecution = async (context: AuthContext, user: AuthUser, data: string | object, mapper: JsonMapperParsed, variables: Record<string, unknown> = {}) => {
-  const refEntities = await handleRefEntities(context, SYSTEM_USER, mapper);
-  const chosenMarkings = mapper.user_chosen_markings ?? [];
-  const results = new Map<string, Map<string, Record<string, InputType>>>();
-
-  const finalObjects: StixObject[] = [];
-  const seenIds = new Set<string>();
+  };
 
   const baseJson = typeof data === 'string' ? JSON.parse(data) : data;
   const baseArray = Array.isArray(baseJson) ? baseJson : [baseJson];
@@ -454,7 +452,7 @@ const jsonMappingExecution = async (context: AuthContext, user: AuthUser, data: 
                 inputNew.to = to;
                 inputNew.toType = toType;
                 inputNew.standard_id = generateStandardId(inputNew.entity_type, inputNew);
-                processAndStoreInput(representation, inputNew, results, seenIds, finalObjects);
+                processInput(representation, inputNew);
               }
             }
           } else {
@@ -465,22 +463,14 @@ const jsonMappingExecution = async (context: AuthContext, user: AuthUser, data: 
             } else {
               input.__identifier = uuidv4();
             }
-            processAndStoreInput(representation, input, results, seenIds, finalObjects);
+            processInput(representation, input);
           }
         }
       }
     }
     // endregion
   }
-  // Generate the final bundle
-
-  const bundle: StixBundle = {
-    id: `bundle--${uuidv4()}`,
-    spec_version: STIX_SPEC_VERSION,
-    type: 'bundle',
-    objects: finalObjects,
-  };
-  return bundle;
+  return finalObjects;
 };
 
 export default jsonMappingExecution;
