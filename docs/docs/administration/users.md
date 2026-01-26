@@ -76,8 +76,8 @@ The below capabilities are applicable to the whole application.
     
     [Please read the dedicated page to have all information](enterprise.md)
 
-Override of capabilities in draft allow you to differentiate capabilities that your users have in Draft from the ones they have in Main context. This is useful when you want your analysts to only work in a draft environnement, without impacting your main Database. 
-It is not possible to have less capabilities in draft that you have in main context. 
+The override of capabilities in drafts allows you to differentiate capabilities that your users have in a draft from the ones they have in the main context. This is useful when you want your analysts to work only in a draft environment, without impacting your main database. 
+It is not possible to have less capabilities in draft that you have in main context.
 
 The below capabilities are applicable to the draft mode only: 
 
@@ -85,30 +85,30 @@ The below capabilities are applicable to the draft mode only:
 |:--------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `Access knowledge`                                      | Access in read-only to all the knowledge in the platform.                                                                                                                                      |
 | &nbsp;&nbsp;`Access to collaborative creation`          | Create notes and opinions (and modify their own) on entities and relations.                                                                                                                    |
-| &nbsp;&nbsp;`Create / Update knowledge`                 | **Needed capability to create a draft manually**: a user with this capability will be able to create a draft manually (not from file import), and manually create or edit data in draft.       |
+| &nbsp;&nbsp;`Create / Update knowledge`                 | **Required capability to create a draft manually**: a user with this capability will be able to create a draft manually (not from file import), and manually create or edit data in draft.       |
 | &nbsp;&nbsp;&nbsp;&nbsp;`Delete knowledge`              | Delete entities and relationships (and merge data): a user with this capability will be able to delete data within a draft.                                                                    |
 | &nbsp;&nbsp;&nbsp;&nbsp;`Bypass enforced reference`     | If external references are enforced in a type of entity, be able to bypass the enforcement within a draft.                                                                                     |
 | &nbsp;&nbsp;&nbsp;&nbsp;`Bypass mandatory fields`       | Bypass any custom fields marked as mandatory in entity customization in draft.                                                                                                                 |
-| &nbsp;&nbsp;`Upload knowledge files`                    | Upload files in the `Data` and `Content` section of entities in a draft.                                                                                                                       |
-| &nbsp;&nbsp;`Import knowledge`                          | Trigger the ingestion of an uploaded file. **Needed capability to be able to create a draft from a file upload**                                                                               |
+| &nbsp;&nbsp;`Upload knowledge files`                    | Upload files in the `Data` and `Content` sections of entities in a draft.                                                                                                                       |
+| &nbsp;&nbsp;`Import knowledge`                          | Trigger the ingestion of an uploaded file. **Required capability to be able to create a draft from a file upload**                                                                               |
 | &nbsp;&nbsp;`Ask for knowledge enrichment`              | Trigger an enrichment for a given entity in a draft.                                                                                                                                           |
-| &nbsp;&nbsp;`Manage labels`                             | Ability for users to create labels. Created labels will exist in main database.                                                                                                                |
+| &nbsp;&nbsp;`Manage labels`                             | Ability for users to create labels. Created labels will exist in the main database.                                                                                                                |
 
 ![ONew tab to manage draft capabilities](assets/draft_override.png)
 
 #### Examples 
 
-To ensure that this two level of capbilities is clear, the below table provide examples of a set of actions that you can Perform based on your capability.
+To clarify these two layers of capabilities, the table below provides an example of a set of actions that you can perform based on your capabilities.
 
 
 | Action                             | Context                                                       | Capability in Main                          | Capability in Draft                                           | Result                                                                |
 |:-----------------------------------|:--------------------------------------------------------------|:--------------------------------------------|:--------------------------------------------------------------|:----------------------------------------------------------------------|
 | Create a draft manually            | From main context                                             | Access knowledge                            | Access knowledge ; create/update knowledge                    | User is able to create a draft manually & create/edit data in it.     |
 | Create a draft via file upload     | From main context                                             | Access knowledge                            | Access knowledge ; create/update knowledge                    | Cannot create a draft with file upload.                               |
-| Create a draft via file upload     | From main context                                             | Access knowledge                            | Access knowledge ; create/update knowledge ; import knowledge | Allowed, but only stepbystep or form intake allowed, forced to draft. |
+| Create a draft via file upload     | From main context                                             | Access knowledge                            | Access knowledge ; create/update knowledge ; import knowledge | Allowed, but only step-by-step or form intake are allowed, and forced to draft. |
 | Validate a draft                   | In draft mode                                                 | Access knowledge                            | Access knowledge ; create/update knowledge ; delete knowledge | User is not able to validate the draft.                               |
 | Validate a draft                   | In draft mode                                                 | Access knowledge, Delete knowledge          | Access knowledge ; create/update knowledge                    | User is able to validate the draft.                                   |
-| Manage authorized members on draft | Access knowledge, Delete knowledge, Manage authorized members | Access knowledge ; create/update knowledge  | Access knowledge ; create/update knowledge                    | User is able to mange authorized members.                             |
+| Manage authorized members on draft | Access knowledge, Delete knowledge, Manage authorized members | Access knowledge ; create/update knowledge  | Access knowledge ; create/update knowledge                    | User is able to manage authorized members.                             |
 
 ### Manage roles
 

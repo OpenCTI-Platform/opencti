@@ -66,7 +66,7 @@ When in a draft, the top bar is modified as a reminder that everything done in t
 
 ![Draft context banner](assets/draftWorkspace-context-banner.png)
 
-Clicking on the draft name can be used as a quick way to navigate back to the draft overview, and see the recap of all the modifcations.
+Clicking on the draft name can be used as a quick way to navigate back to the draft overview, and see the recap of all the modifications.
 
 Exiting a draft and going back to the main knowledge base of the platform can be done with the Exit draft button.
 
@@ -113,7 +113,7 @@ Even though drafts try to provide as many actions as possible in the platform, s
 
 - playbooks
 - inference rules
-- sharing to organization
+- sharing to an organization
 - apply authorized members
 - downloading knowledge
 - disseminate a file
