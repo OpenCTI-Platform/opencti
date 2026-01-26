@@ -387,6 +387,7 @@ const StixCyberObservableDetails = ({ data }: StixCyberObservableDetailsProps) =
   const { t_i18n } = useFormatter();
   const { isVocabularyField, fieldToCategory } = useVocabularyCategory();
   const { ignoredAttributes } = useAttributes();
+  const attributeToReadableValue = useAttributeValueToReadableValue();
 
   const observableAttributes = Object.entries(stixCyberObservable)
     // remove unwanted keys
@@ -508,7 +509,7 @@ const StixCyberObservableDetails = ({ data }: StixCyberObservableDetailsProps) =
               );
             }
 
-            const finalValue = useAttributeValueToReadableValue(value, key);
+            const finalValue = attributeToReadableValue(value, key);
 
             return (
               <Grid key={key} size={6}>
