@@ -48,7 +48,6 @@ import {
 } from '@mui/icons-material';
 import { BankMinus, BankPlus, CloudRefreshOutline, LabelOutline } from 'mdi-material-ui';
 import Autocomplete from '@mui/material/Autocomplete';
-import Drawer from '@mui/material/Drawer';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
@@ -99,6 +98,8 @@ import { getEntityTypeTwoFirstLevelsFilterValues, removeIdAndIncorrectKeysFromFi
 import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import EETooltip from '../common/entreprise_edition/EETooltip';
 import { killChainPhasesSearchQuery } from '../settings/KillChainPhases';
+import Drawer from '../common/drawer/Drawer';
+import FormButtonContainer from '../../../components/common/form/FormButtonContainer';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -2773,24 +2774,11 @@ class DataTableToolBar extends Component {
                 </DialogActions>
               </Dialog>
               <Drawer
+                title={t('Update entities')}
                 open={this.state.displayUpdate}
-                anchor="right"
-                elevation={1}
-                sx={{ zIndex: 1202 }}
-                classes={{ paper: classes.drawerPaper }}
                 onClose={this.handleCloseUpdate.bind(this)}
               >
-                <div className={classes.header}>
-                  <IconButton
-                    aria-label="Close"
-                    className={classes.closeButton}
-                    onClick={this.handleCloseUpdate.bind(this)}
-                  >
-                    <CloseOutlined fontSize="small" color="primary" />
-                  </IconButton>
-                  <Typography variant="h6">{t('Update entities')}</Typography>
-                </div>
-                <div className={classes.container} style={{ marginTop: 20 }}>
+                <div>
                   {Array(actionsInputs.length)
                     .fill(0)
                     .map((item, i) => (
@@ -2848,7 +2836,7 @@ class DataTableToolBar extends Component {
                       <AddOutlined fontSize="small" />
                     </IconButton>
                   </div>
-                  <div className={classes.buttons}>
+                  <FormButtonContainer>
                     <Button
                       disabled={!this.areStepValid()}
                       onClick={this.handleLaunchUpdate.bind(this)}
@@ -2856,28 +2844,15 @@ class DataTableToolBar extends Component {
                     >
                       {t('Update')}
                     </Button>
-                  </div>
+                  </FormButtonContainer>
                 </div>
               </Drawer>
               <Drawer
+                title={t('Merge entities')}
                 open={this.state.displayMerge}
-                anchor="right"
-                elevation={1}
-                sx={{ zIndex: 1202 }}
-                classes={{ paper: classes.drawerPaper }}
                 onClose={this.handleCloseMerge.bind(this)}
               >
-                <div className={classes.header}>
-                  <IconButton
-                    aria-label="Close"
-                    className={classes.closeButton}
-                    onClick={this.handleCloseMerge.bind(this)}
-                  >
-                    <CloseOutlined fontSize="small" color="primary" />
-                  </IconButton>
-                  <Typography variant="h6">{t('Merge entities')}</Typography>
-                </div>
-                <div className={classes.container}>
+                <div>
                   <Typography
                     variant="h4"
                     gutterBottom={true}
@@ -3006,37 +2981,21 @@ class DataTableToolBar extends Component {
                       </Alert>
                     </>
                   )}
-                  <div className={classes.buttons}>
+                  <FormButtonContainer>
                     <Button
-                      variant="contained"
-                      color="secondary"
                       onClick={this.handleLaunchMerge.bind(this)}
-                      classes={{ root: classes.button }}
                     >
                       {t('Merge')}
                     </Button>
-                  </div>
+                  </FormButtonContainer>
                 </div>
               </Drawer>
               <Drawer
+                title={t('Entity enrichment')}
                 open={this.state.displayEnrichment}
-                anchor="right"
-                elevation={1}
-                sx={{ zIndex: 1202 }}
-                classes={{ paper: classes.drawerPaper }}
                 onClose={this.handleCloseEnrichment.bind(this)}
               >
-                <div className={classes.header}>
-                  <IconButton
-                    aria-label="Close"
-                    className={classes.closeButton}
-                    onClick={this.handleCloseEnrichment.bind(this)}
-                  >
-                    <CloseOutlined fontSize="small" color="primary" />
-                  </IconButton>
-                  <Typography variant="h6">{t('Entity enrichment')}</Typography>
-                </div>
-                <div className={classes.container}>
+                <div>
                   <Typography
                     variant="h4"
                     gutterBottom={true}
@@ -3075,20 +3034,17 @@ class DataTableToolBar extends Component {
                       </ListItem>
                     ))}
                   </List>
-                  <div className={classes.buttons}>
+                  <FormButtonContainer>
                     <Button
-                      variant="contained"
                       disabled={
                         this.state.enrichConnectors.length === 0
                         || this.state.enrichSelected.length === 0
                       }
-                      color="secondary"
                       onClick={this.handleLaunchEnrichment.bind(this)}
-                      classes={{ root: classes.button }}
                     >
                       {t('Enrich')}
                     </Button>
-                  </div>
+                  </FormButtonContainer>
                 </div>
               </Drawer>
               <PromoteDrawer
@@ -3101,24 +3057,11 @@ class DataTableToolBar extends Component {
                 togglePromoteToContainer={this.togglePromoteToContainer.bind(this)}
               />
               <Drawer
+                title={t('Rule entity rescan')}
                 open={this.state.displayRescan}
-                anchor="right"
-                elevation={1}
-                sx={{ zIndex: 1202 }}
-                classes={{ paper: classes.drawerPaper }}
                 onClose={this.handleCloseRescan.bind(this)}
               >
-                <div className={classes.header}>
-                  <IconButton
-                    aria-label="Close"
-                    className={classes.closeButton}
-                    onClick={this.handleCloseRescan.bind(this)}
-                  >
-                    <CloseOutlined fontSize="small" color="primary" />
-                  </IconButton>
-                  <Typography variant="h6">{t('Rule entity rescan')}</Typography>
-                </div>
-                <div className={classes.container}>
+                <div>
                   <Typography
                     variant="h4"
                     gutterBottom={true}
@@ -3131,16 +3074,13 @@ class DataTableToolBar extends Component {
                       'Element will be rescan with all compatible activated rules',
                     )}
                   </Alert>
-                  <div className={classes.buttons}>
+                  <FormButtonContainer>
                     <Button
-                      variant="contained"
-                      color="secondary"
                       onClick={this.handleLaunchRescan.bind(this)}
-                      classes={{ root: classes.button }}
                     >
                       {t('Rescan')}
                     </Button>
-                  </div>
+                  </FormButtonContainer>
                 </div>
               </Drawer>
               <Dialog
