@@ -1,0 +1,297 @@
+> python worker.py
+
+{"timestamp": "2026-02-06T16:48:50.049108Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T16:48:50.176103Z", "level": "ERROR", "name": "worker", "message": "ConnectionError", "exc_info": "Traceback (most recent call last):\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/urllib3/connection.py\", line 204, in _new_conn\n    sock = connection.create_connection(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/urllib3/util/connection.py\", line 85, in create_connection\n    raise err\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/urllib3/util/connection.py\", line 73, in create_connection\n    sock.connect(sa)\nConnectionRefusedError: [Errno 61] Connection refused\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/urllib3/connectionpool.py\", line 787, in urlopen\n    response = self._make_request(\n               ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/urllib3/connectionpool.py\", line 493, in _make_request\n    conn.request(\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/urllib3/connection.py\", line 500, in request\n    self.endheaders()\n  File \"/Users/florian.delemarre/.pyenv/versions/3.12.7/lib/python3.12/http/client.py\", line 1331, in endheaders\n    self._send_output(message_body, encode_chunked=encode_chunked)\n  File \"/Users/florian.delemarre/.pyenv/versions/3.12.7/lib/python3.12/http/client.py\", line 1091, in _send_output\n    self.send(msg)\n  File \"/Users/florian.delemarre/.pyenv/versions/3.12.7/lib/python3.12/http/client.py\", line 1035, in send\n    self.connect()\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/urllib3/connection.py\", line 331, in connect\n    self.sock = self._new_conn()\n                ^^^^^^^^^^^^^^^^\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/urllib3/connection.py\", line 219, in _new_conn\n    raise NewConnectionError(\nurllib3.exceptions.NewConnectionError: HTTPConnection(host='localhost', port=4000): Failed to establish a new connection: [Errno 61] Connection refused\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/requests/adapters.py\", line 644, in send\n    resp = conn.urlopen(\n           ^^^^^^^^^^^^^\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/urllib3/connectionpool.py\", line 841, in urlopen\n    retries = retries.increment(\n              ^^^^^^^^^^^^^^^^^^\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/urllib3/util/retry.py\", line 535, in increment\n    raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nurllib3.exceptions.MaxRetryError: HTTPConnectionPool(host='localhost', port=4000): Max retries exceeded with url: /graphql (Caused by NewConnectionError(\"HTTPConnection(host='localhost', port=4000): Failed to establish a new connection: [Errno 61] Connection refused\"))\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/Users/florian.delemarre/filigran/octi/opencti/opencti-worker/src/worker.py\", line 257, in start\n    connectors: List[Any] = self.api.connector.list()\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/florian.delemarre/filigran/octi/opencti/client-python/pycti/api/opencti_api_connector.py\", line 101, in list\n    result = self.api.query(query)\n             ^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/florian.delemarre/filigran/octi/opencti/client-python/pycti/api/opencti_api_client.py\", line 711, in query\n    r = self.session.post(\n        ^^^^^^^^^^^^^^^^^^\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/requests/sessions.py\", line 637, in post\n    return self.request(\"POST\", url, data=data, json=json, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/requests/sessions.py\", line 589, in request\n    resp = self.send(prep, **send_kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/requests/sessions.py\", line 703, in send\n    r = adapter.send(request, **kwargs)\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/requests/adapters.py\", line 677, in send\n    raise ConnectionError(e, request=request)\nrequests.exceptions.ConnectionError: HTTPConnectionPool(host='localhost', port=4000): Max retries exceeded with url: /graphql (Caused by NewConnectionError(\"HTTPConnection(host='localhost', port=4000): Failed to establish a new connection: [Errno 61] Connection refused\"))", "attributes": {"reason": "HTTPConnectionPool(host='localhost', port=4000): Max retries exceeded with url: /graphql (Caused by NewConnectionError(\"HTTPConnection(host='localhost', port=4000): Failed to establish a new connection: [Errno 61] Connection refused\"))"}}
+{"timestamp": "2026-02-06T16:49:50.182131Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T16:49:50.297962Z", "level": "INFO", "name": "api", "message": "Health check (platform version)..."}
+{"timestamp": "2026-02-06T16:49:50.313350Z", "level": "INFO", "name": "worker", "message": "Thread for queue started", "attributes": {"consumer_type": "push", "queue": "push_d336676c-4ee5-4257-96ff-b2a86688d4af"}}
+{"timestamp": "2026-02-06T16:49:50.313754Z", "level": "INFO", "name": "api", "message": "Health check (platform version)..."}
+{"timestamp": "2026-02-06T16:49:50.326484Z", "level": "INFO", "name": "worker", "message": "Thread for queue started", "attributes": {"consumer_type": "push", "queue": "push_c194e700-afb6-4c4e-ad1b-d4a00590e735"}}
+{"timestamp": "2026-02-06T16:49:50.326887Z", "level": "INFO", "name": "api", "message": "Health check (platform version)..."}
+{"timestamp": "2026-02-06T16:49:50.339202Z", "level": "INFO", "name": "worker", "message": "Thread for queue started", "attributes": {"consumer_type": "push", "queue": "push_background-task-0"}}
+{"timestamp": "2026-02-06T16:49:50.339885Z", "level": "INFO", "name": "api", "message": "Health check (platform version)..."}
+{"timestamp": "2026-02-06T16:49:50.351899Z", "level": "INFO", "name": "worker", "message": "Thread for queue started", "attributes": {"consumer_type": "push", "queue": "push_background-task-1"}}
+{"timestamp": "2026-02-06T16:49:50.352253Z", "level": "INFO", "name": "api", "message": "Health check (platform version)..."}
+{"timestamp": "2026-02-06T16:49:50.367241Z", "level": "INFO", "name": "worker", "message": "Thread for queue started", "attributes": {"consumer_type": "push", "queue": "push_background-task-2"}}
+{"timestamp": "2026-02-06T16:49:50.367796Z", "level": "INFO", "name": "api", "message": "Health check (platform version)..."}
+{"timestamp": "2026-02-06T16:49:50.381717Z", "level": "INFO", "name": "worker", "message": "Thread for queue started", "attributes": {"consumer_type": "push", "queue": "push_background-task-3"}}
+{"timestamp": "2026-02-06T16:49:50.382067Z", "level": "INFO", "name": "api", "message": "Health check (platform version)..."}
+{"timestamp": "2026-02-06T16:49:50.393061Z", "level": "INFO", "name": "worker", "message": "Thread for queue started", "attributes": {"consumer_type": "push", "queue": "push_sync"}}
+{"timestamp": "2026-02-06T16:49:50.393528Z", "level": "INFO", "name": "api", "message": "Health check (platform version)..."}
+{"timestamp": "2026-02-06T16:49:50.404967Z", "level": "INFO", "name": "worker", "message": "Thread for queue started", "attributes": {"consumer_type": "push", "queue": "push_playbook"}}
+{"timestamp": "2026-02-06T16:50:50.406156Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T16:51:50.463254Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T16:52:50.528614Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T16:53:50.595442Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T16:54:50.660480Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T16:55:50.755861Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T16:56:50.820730Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T16:57:50.874682Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T16:58:50.957826Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T16:59:51.022622Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:00:51.095039Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:01:51.162790Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:02:51.225816Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:03:51.280209Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:04:51.337159Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:05:51.397733Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:06:51.465102Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:07:51.523172Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:08:51.587746Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:09:51.635165Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:10:51.697173Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:11:51.754457Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:12:51.815025Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:13:51.876992Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:14:51.914391Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:15:51.973494Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:16:52.014669Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:17:52.079613Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:18:52.143839Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:19:52.185593Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:20:52.252674Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:21:52.307943Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:22:52.340381Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:23:52.379744Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:24:52.430187Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:25:52.487489Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:26:52.549643Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:27:52.611669Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:28:52.669119Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:29:52.719771Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:30:52.776651Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:31:52.814247Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:32:52.877423Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:33:52.938409Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:34:52.994736Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:35:53.051540Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:36:53.107534Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:37:53.168398Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:38:53.229947Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:39:53.291850Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:40:53.350299Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:41:53.410836Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:42:53.473712Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:43:53.535563Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:44:53.593550Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:45:53.647723Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:46:53.714385Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:47:53.779011Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:48:53.806617Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:49:53.868550Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:50:53.932944Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:51:53.962625Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:52:54.023714Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:53:54.095317Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:54:54.147107Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:55:54.189260Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:56:54.234006Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:57:54.282036Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:58:54.323903Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T17:59:54.380239Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:00:54.428221Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:01:54.483313Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:02:54.550077Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:03:54.617698Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:04:54.676686Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:05:54.736767Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:06:54.805498Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:07:54.885599Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:08:54.949401Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:09:54.996374Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:10:55.054203Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:11:55.128797Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:12:55.190089Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:13:55.245795Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:14:55.311742Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:15:55.383896Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:16:55.455873Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:17:55.526051Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:18:55.600682Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:19:55.666022Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:20:55.728016Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:21:55.783681Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:22:55.843360Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:23:55.913118Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:24:55.976348Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:25:56.045565Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:26:56.111961Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:27:56.176012Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:28:56.226562Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:29:56.298012Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:30:56.361310Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:31:56.401917Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:32:56.471741Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:33:56.534048Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:34:56.597167Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:35:56.659370Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:36:56.707549Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:37:56.770508Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:38:56.825452Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:39:56.895625Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:40:56.960783Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:41:57.018137Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:42:57.087790Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:43:57.150096Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:44:57.214407Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:45:57.273688Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:46:57.341180Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:47:57.401593Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:48:57.470569Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:49:57.530584Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:50:57.591499Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:51:57.657124Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:52:57.722289Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:53:57.789612Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:54:57.854449Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:55:57.923365Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:56:57.986248Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:57:58.047163Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:58:58.110535Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T18:59:58.173348Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:00:58.243628Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:01:58.305460Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:02:58.375747Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:03:58.445664Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:04:58.514772Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:05:58.585382Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:06:58.638392Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:07:58.706078Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:08:58.768564Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:09:58.834136Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:10:58.899056Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:11:58.946103Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:12:58.999163Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:13:59.058282Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:14:59.120932Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:15:59.190396Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:16:59.258725Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:17:59.326859Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:18:59.397093Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:19:59.466359Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:20:59.518056Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:21:59.587521Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:22:59.654618Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:23:59.712722Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:24:59.756983Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:25:59.797178Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:26:59.856438Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:27:59.907717Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:28:59.952871Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:30:00.022823Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:31:00.083577Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:32:00.140120Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:33:00.188626Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:34:00.222538Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:35:00.269566Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:36:00.323139Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:37:00.374877Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:38:00.425575Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:39:00.485561Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:40:00.553932Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:41:00.614412Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:42:00.682466Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:43:00.744702Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:44:00.809301Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:45:00.872209Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:46:00.940428Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:47:01.012619Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:48:01.084177Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:49:01.157543Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:50:01.228232Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:51:01.292539Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:52:01.359518Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:53:01.427631Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:54:01.498182Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:55:01.563157Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:56:01.635924Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:57:01.697964Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:58:01.764612Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T19:59:01.827969Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T20:00:01.892708Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T20:01:01.962664Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T20:02:02.014904Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T20:03:02.076239Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T20:04:02.149394Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T20:05:02.207412Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T20:06:02.275747Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T20:07:02.332049Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T21:14:39.046227Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-06T23:02:58.920757Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-07T00:27:55.040141Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-07T03:10:25.427520Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-07T06:01:36.817652Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-07T07:58:00.125733Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-07T10:05:23.924036Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-07T12:29:35.495602Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-07T15:18:13.239344Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-07T17:44:36.969915Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-07T19:54:12.599998Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-07T22:40:44.270245Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-08T01:10:41.018816Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-08T04:08:48.582692Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-08T06:30:11.376948Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-08T08:03:53.595938Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-08T10:46:32.642110Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-08T13:38:16.982372Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-08T15:57:21.372362Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-08T17:38:20.619203Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-08T18:11:21.033564Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-08T20:48:01.630587Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-08T22:15:18.258119Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-09T00:20:43.463855Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-09T03:10:06.136386Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-09T05:11:07.307644Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-09T06:51:04.670106Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-09T07:31:25.426910Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-09T07:32:25.486829Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-09T07:33:25.567052Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-09T07:34:25.636564Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-09T07:35:25.697210Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-09T07:36:25.752283Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-09T07:37:25.809320Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-09T07:38:25.837786Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-09T07:39:25.901250Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-09T07:40:25.949578Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-09T07:41:26.021467Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-09T07:42:26.083566Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-09T07:43:26.141373Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-09T07:44:26.195721Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-09T07:45:26.258572Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-09T07:46:26.320091Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-09T07:47:26.384129Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-09T07:48:26.433580Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-09T07:49:26.494524Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-09T07:50:26.563329Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-09T07:51:26.613673Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-09T07:52:26.651777Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-09T07:53:26.696689Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-09T07:54:26.743534Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-09T07:55:26.812391Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-09T07:56:08.099025Z", "level": "ERROR", "name": "pika.adapters.blocking_connection", "message": "Unexpected connection close detected: ConnectionClosedByBroker: (320) \"CONNECTION_FORCED - broker forced connection closure with reason 'shutdown'\""}
+{"timestamp": "2026-02-09T07:56:08.100710Z", "level": "ERROR", "name": "pika.adapters.blocking_connection", "message": "Unexpected connection close detected: ConnectionClosedByBroker: (320) \"CONNECTION_FORCED - broker forced connection closure with reason 'shutdown'\""}
+{"timestamp": "2026-02-09T07:56:08.101346Z", "level": "ERROR", "name": "pika.adapters.blocking_connection", "message": "Unexpected connection close detected: ConnectionClosedByBroker: (320) \"CONNECTION_FORCED - broker forced connection closure with reason 'shutdown'\""}
+{"timestamp": "2026-02-09T07:56:08.101581Z", "level": "ERROR", "name": "pika.adapters.blocking_connection", "message": "Unexpected connection close detected: ConnectionClosedByBroker: (320) \"CONNECTION_FORCED - broker forced connection closure with reason 'shutdown'\""}
+{"timestamp": "2026-02-09T07:56:08.101718Z", "level": "ERROR", "name": "pika.adapters.blocking_connection", "message": "Unexpected connection close detected: ConnectionClosedByBroker: (320) \"CONNECTION_FORCED - broker forced connection closure with reason 'shutdown'\""}
+{"timestamp": "2026-02-09T07:56:08.101919Z", "level": "ERROR", "name": "pika.adapters.blocking_connection", "message": "Unexpected connection close detected: ConnectionClosedByBroker: (320) \"CONNECTION_FORCED - broker forced connection closure with reason 'shutdown'\""}
+{"timestamp": "2026-02-09T07:56:08.102117Z", "level": "ERROR", "name": "pika.adapters.blocking_connection", "message": "Unexpected connection close detected: ConnectionClosedByBroker: (320) \"CONNECTION_FORCED - broker forced connection closure with reason 'shutdown'\""}
+{"timestamp": "2026-02-09T07:56:08.296872Z", "level": "ERROR", "name": "worker", "message": "Unhandled exception", "exc_info": "Traceback (most recent call last):\n  File \"/Users/florian.delemarre/filigran/octi/opencti/opencti-worker/src/message_queue_consumer.py\", line 67, in consume_queue\n    for message in self.channel.consume(self.queue_name, inactivity_timeout=1):\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/pika/adapters/blocking_connection.py\", line 2009, in consume\n    self._process_data_events(time_limit=delta)\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/pika/adapters/blocking_connection.py\", line 2044, in _process_data_events\n    self.connection.process_data_events(time_limit=time_limit)\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/pika/adapters/blocking_connection.py\", line 845, in process_data_events\n    self._flush_output(timer.is_ready, common_terminator)\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/pika/adapters/blocking_connection.py\", line 523, in _flush_output\n    raise self._closed_result.value.error\npika.exceptions.ConnectionClosedByBroker: (320, \"CONNECTION_FORCED - broker forced connection closure with reason 'shutdown'\")", "attributes": {"exception": "ConnectionClosedByBroker: (320, \"CONNECTION_FORCED - broker forced connection closure with reason 'shutdown'\")"}}
+{"timestamp": "2026-02-09T07:56:08.297197Z", "level": "ERROR", "name": "pika.adapters.blocking_connection", "message": "Unexpected connection close detected: ConnectionClosedByBroker: (320) \"CONNECTION_FORCED - broker forced connection closure with reason 'shutdown'\""}
+{"timestamp": "2026-02-09T07:56:08.298253Z", "level": "ERROR", "name": "worker", "message": "Unhandled exception", "exc_info": "Traceback (most recent call last):\n  File \"/Users/florian.delemarre/filigran/octi/opencti/opencti-worker/src/message_queue_consumer.py\", line 67, in consume_queue\n    for message in self.channel.consume(self.queue_name, inactivity_timeout=1):\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/pika/adapters/blocking_connection.py\", line 2009, in consume\n    self._process_data_events(time_limit=delta)\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/pika/adapters/blocking_connection.py\", line 2044, in _process_data_events\n    self.connection.process_data_events(time_limit=time_limit)\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/pika/adapters/blocking_connection.py\", line 845, in process_data_events\n    self._flush_output(timer.is_ready, common_terminator)\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/pika/adapters/blocking_connection.py\", line 523, in _flush_output\n    raise self._closed_result.value.error\npika.exceptions.ConnectionClosedByBroker: (320, \"CONNECTION_FORCED - broker forced connection closure with reason 'shutdown'\")", "attributes": {"exception": "ConnectionClosedByBroker: (320, \"CONNECTION_FORCED - broker forced connection closure with reason 'shutdown'\")"}}
+{"timestamp": "2026-02-09T07:56:08.299342Z", "level": "ERROR", "name": "worker", "message": "Unhandled exception", "exc_info": "Traceback (most recent call last):\n  File \"/Users/florian.delemarre/filigran/octi/opencti/opencti-worker/src/message_queue_consumer.py\", line 67, in consume_queue\n    for message in self.channel.consume(self.queue_name, inactivity_timeout=1):\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/pika/adapters/blocking_connection.py\", line 2009, in consume\n    self._process_data_events(time_limit=delta)\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/pika/adapters/blocking_connection.py\", line 2044, in _process_data_events\n    self.connection.process_data_events(time_limit=time_limit)\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/pika/adapters/blocking_connection.py\", line 845, in process_data_events\n    self._flush_output(timer.is_ready, common_terminator)\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/pika/adapters/blocking_connection.py\", line 523, in _flush_output\n    raise self._closed_result.value.error\npika.exceptions.ConnectionClosedByBroker: (320, \"CONNECTION_FORCED - broker forced connection closure with reason 'shutdown'\")", "attributes": {"exception": "ConnectionClosedByBroker: (320, \"CONNECTION_FORCED - broker forced connection closure with reason 'shutdown'\")"}}
+{"timestamp": "2026-02-09T07:56:08.300373Z", "level": "ERROR", "name": "worker", "message": "Unhandled exception", "exc_info": "Traceback (most recent call last):\n  File \"/Users/florian.delemarre/filigran/octi/opencti/opencti-worker/src/message_queue_consumer.py\", line 67, in consume_queue\n    for message in self.channel.consume(self.queue_name, inactivity_timeout=1):\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/pika/adapters/blocking_connection.py\", line 2009, in consume\n    self._process_data_events(time_limit=delta)\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/pika/adapters/blocking_connection.py\", line 2044, in _process_data_events\n    self.connection.process_data_events(time_limit=time_limit)\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/pika/adapters/blocking_connection.py\", line 845, in process_data_events\n    self._flush_output(timer.is_ready, common_terminator)\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/pika/adapters/blocking_connection.py\", line 523, in _flush_output\n    raise self._closed_result.value.error\npika.exceptions.ConnectionClosedByBroker: (320, \"CONNECTION_FORCED - broker forced connection closure with reason 'shutdown'\")", "attributes": {"exception": "ConnectionClosedByBroker: (320, \"CONNECTION_FORCED - broker forced connection closure with reason 'shutdown'\")"}}
+{"timestamp": "2026-02-09T07:56:08.301209Z", "level": "ERROR", "name": "worker", "message": "Unhandled exception", "exc_info": "Traceback (most recent call last):\n  File \"/Users/florian.delemarre/filigran/octi/opencti/opencti-worker/src/message_queue_consumer.py\", line 67, in consume_queue\n    for message in self.channel.consume(self.queue_name, inactivity_timeout=1):\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/pika/adapters/blocking_connection.py\", line 2009, in consume\n    self._process_data_events(time_limit=delta)\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/pika/adapters/blocking_connection.py\", line 2044, in _process_data_events\n    self.connection.process_data_events(time_limit=time_limit)\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/pika/adapters/blocking_connection.py\", line 845, in process_data_events\n    self._flush_output(timer.is_ready, common_terminator)\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/pika/adapters/blocking_connection.py\", line 523, in _flush_output\n    raise self._closed_result.value.error\npika.exceptions.ConnectionClosedByBroker: (320, \"CONNECTION_FORCED - broker forced connection closure with reason 'shutdown'\")", "attributes": {"exception": "ConnectionClosedByBroker: (320, \"CONNECTION_FORCED - broker forced connection closure with reason 'shutdown'\")"}}
+{"timestamp": "2026-02-09T07:56:08.302001Z", "level": "ERROR", "name": "worker", "message": "Unhandled exception", "exc_info": "Traceback (most recent call last):\n  File \"/Users/florian.delemarre/filigran/octi/opencti/opencti-worker/src/message_queue_consumer.py\", line 67, in consume_queue\n    for message in self.channel.consume(self.queue_name, inactivity_timeout=1):\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/pika/adapters/blocking_connection.py\", line 2009, in consume\n    self._process_data_events(time_limit=delta)\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/pika/adapters/blocking_connection.py\", line 2044, in _process_data_events\n    self.connection.process_data_events(time_limit=time_limit)\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/pika/adapters/blocking_connection.py\", line 845, in process_data_events\n    self._flush_output(timer.is_ready, common_terminator)\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/pika/adapters/blocking_connection.py\", line 523, in _flush_output\n    raise self._closed_result.value.error\npika.exceptions.ConnectionClosedByBroker: (320, \"CONNECTION_FORCED - broker forced connection closure with reason 'shutdown'\")", "attributes": {"exception": "ConnectionClosedByBroker: (320, \"CONNECTION_FORCED - broker forced connection closure with reason 'shutdown'\")"}}
+{"timestamp": "2026-02-09T07:56:08.302882Z", "level": "ERROR", "name": "worker", "message": "Unhandled exception", "exc_info": "Traceback (most recent call last):\n  File \"/Users/florian.delemarre/filigran/octi/opencti/opencti-worker/src/message_queue_consumer.py\", line 67, in consume_queue\n    for message in self.channel.consume(self.queue_name, inactivity_timeout=1):\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/pika/adapters/blocking_connection.py\", line 2009, in consume\n    self._process_data_events(time_limit=delta)\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/pika/adapters/blocking_connection.py\", line 2044, in _process_data_events\n    self.connection.process_data_events(time_limit=time_limit)\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/pika/adapters/blocking_connection.py\", line 845, in process_data_events\n    self._flush_output(timer.is_ready, common_terminator)\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/pika/adapters/blocking_connection.py\", line 523, in _flush_output\n    raise self._closed_result.value.error\npika.exceptions.ConnectionClosedByBroker: (320, \"CONNECTION_FORCED - broker forced connection closure with reason 'shutdown'\")", "attributes": {"exception": "ConnectionClosedByBroker: (320, \"CONNECTION_FORCED - broker forced connection closure with reason 'shutdown'\")"}}
+{"timestamp": "2026-02-09T07:56:08.303040Z", "level": "INFO", "name": "worker", "message": "Thread for queue terminated", "attributes": {"consumer_type": "push", "queue": "push_playbook"}}
+{"timestamp": "2026-02-09T07:56:08.303806Z", "level": "ERROR", "name": "worker", "message": "Unhandled exception", "exc_info": "Traceback (most recent call last):\n  File \"/Users/florian.delemarre/filigran/octi/opencti/opencti-worker/src/message_queue_consumer.py\", line 67, in consume_queue\n    for message in self.channel.consume(self.queue_name, inactivity_timeout=1):\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/pika/adapters/blocking_connection.py\", line 2009, in consume\n    self._process_data_events(time_limit=delta)\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/pika/adapters/blocking_connection.py\", line 2044, in _process_data_events\n    self.connection.process_data_events(time_limit=time_limit)\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/pika/adapters/blocking_connection.py\", line 845, in process_data_events\n    self._flush_output(timer.is_ready, common_terminator)\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages/pika/adapters/blocking_connection.py\", line 523, in _flush_output\n    raise self._closed_result.value.error\npika.exceptions.ConnectionClosedByBroker: (320, \"CONNECTION_FORCED - broker forced connection closure with reason 'shutdown'\")", "attributes": {"exception": "ConnectionClosedByBroker: (320, \"CONNECTION_FORCED - broker forced connection closure with reason 'shutdown'\")"}}
+{"timestamp": "2026-02-09T07:56:08.303964Z", "level": "INFO", "name": "worker", "message": "Thread for queue terminated", "attributes": {"consumer_type": "push", "queue": "push_background-task-0"}}
+{"timestamp": "2026-02-09T07:56:08.304061Z", "level": "INFO", "name": "worker", "message": "Thread for queue terminated", "attributes": {"consumer_type": "push", "queue": "push_background-task-1"}}
+{"timestamp": "2026-02-09T07:56:08.304158Z", "level": "INFO", "name": "worker", "message": "Thread for queue terminated", "attributes": {"consumer_type": "push", "queue": "push_background-task-3"}}
+{"timestamp": "2026-02-09T07:56:08.304244Z", "level": "INFO", "name": "worker", "message": "Thread for queue terminated", "attributes": {"consumer_type": "push", "queue": "push_c194e700-afb6-4c4e-ad1b-d4a00590e735"}}
+{"timestamp": "2026-02-09T07:56:08.304333Z", "level": "INFO", "name": "worker", "message": "Thread for queue terminated", "attributes": {"consumer_type": "push", "queue": "push_sync"}}
+{"timestamp": "2026-02-09T07:56:08.304414Z", "level": "INFO", "name": "worker", "message": "Thread for queue terminated", "attributes": {"consumer_type": "push", "queue": "push_d336676c-4ee5-4257-96ff-b2a86688d4af"}}
+{"timestamp": "2026-02-09T07:56:08.304483Z", "level": "INFO", "name": "worker", "message": "Thread for queue terminated", "attributes": {"consumer_type": "push", "queue": "push_background-task-2"}}
+{"timestamp": "2026-02-09T07:56:26.866799Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-02-09T07:56:33.971132Z", "level": "ERROR", "name": "worker", "message": "ValueError", "exc_info": "Traceback (most recent call last):\n  File \"/Users/florian.delemarre/filigran/octi/opencti/opencti-worker/src/worker.py\", line 257, in start\n    connectors: List[Any] = self.api.connector.list()\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/florian.delemarre/filigran/octi/opencti/client-python/pycti/api/opencti_api_connector.py\", line 101, in list\n    result = self.api.query(query)\n             ^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/florian.delemarre/filigran/octi/opencti/client-python/pycti/api/opencti_api_client.py\", line 739, in query\n    raise ValueError(value_error)\nValueError: {'name': 'DATABASE_ERROR', 'error_message': 'Fail to execute engine pagination'}", "attributes": {"reason": "{'name': 'DATABASE_ERROR', 'error_message': 'Fail to execute engine pagination'}"}}
+{"timestamp": "2026-02-09T07:56:41.361638Z", "level": "INFO", "name": "worker", "message": "Thread for worker terminated"}

@@ -1,0 +1,251 @@
+> yarn start
+
+📝 Getting connectors manifest
+➡️ Fetching manifest from: https://raw.githubusercontent.com/OpenCTI-Platform/connectors/refs/heads/master/manifest.json
+(node:38481) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/florian.delemarre/filigran/octi/opencti/opencti-platform/opencti-graphql/script/get-connectors-manifest.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/florian.delemarre/filigran/octi/opencti/opencti-platform/opencti-graphql/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+➡️ Parsing manifest...
+➡️ Writing manifest file...
+✅ Manifest saved to: /Users/florian.delemarre/filigran/octi/opencti/opencti-platform/opencti-graphql/src/__generated__/opencti-manifest.json
+[?25l[2m◼[22m Parse Configuration
+[2K[1A[2K[G[2m◼[22m Parse Configuration
+[2m◼[22m Generate outputs
+[2K[1A[2K[1A[2K[G[33m⠋[39m Parse Configuration
+[2m◼[22m Generate outputs
+[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[2m◼[22m Generate outputs
+[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m⠋[39m Generate outputs
+[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [2m◼[22m Generate to src/generated/graphql.ts
+[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [2m◼[22m Generate to src/generated/graphql.ts
+  [2m◼[22m Generate to ./graphql.schema.json
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m⠋[39m Generate to src/generated/graphql.ts
+  [2m◼[22m Generate to ./graphql.schema.json
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m⠋[39m Generate to src/generated/graphql.ts
+  [33m⠋[39m Generate to ./graphql.schema.json
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [2m◼[22m Load GraphQL schemas
+  [33m❯[39m Generate to ./graphql.schema.json
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [2m◼[22m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+  [33m❯[39m Generate to ./graphql.schema.json
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [2m◼[22m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [2m◼[22m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [2m◼[22m Load GraphQL schemas
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [2m◼[22m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [2m◼[22m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [2m◼[22m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [2m◼[22m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [33m⠋[39m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [2m◼[22m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [33m⠋[39m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [33m⠋[39m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [33m⠙[39m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [33m⠙[39m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [32m✔[39m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [33m⠙[39m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [32m✔[39m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [32m✔[39m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [32m✔[39m Load GraphQL schemas
+    [33m⠙[39m Load GraphQL documents
+    [2m◼[22m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [32m✔[39m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [32m✔[39m Load GraphQL schemas
+    [33m⠙[39m Load GraphQL documents
+    [2m◼[22m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [32m✔[39m Load GraphQL schemas
+    [33m⠙[39m Load GraphQL documents
+    [2m◼[22m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [32m✔[39m Load GraphQL schemas
+    [32m✔[39m Load GraphQL documents
+    [2m◼[22m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [32m✔[39m Load GraphQL schemas
+    [33m⠙[39m Load GraphQL documents
+    [2m◼[22m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [32m✔[39m Load GraphQL schemas
+    [32m✔[39m Load GraphQL documents
+    [2m◼[22m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [32m✔[39m Load GraphQL schemas
+    [32m✔[39m Load GraphQL documents
+    [2m◼[22m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [32m✔[39m Load GraphQL schemas
+    [32m✔[39m Load GraphQL documents
+    [33m⠙[39m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [32m✔[39m Load GraphQL schemas
+    [32m✔[39m Load GraphQL documents
+    [2m◼[22m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [32m✔[39m Load GraphQL schemas
+    [32m✔[39m Load GraphQL documents
+    [33m⠙[39m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [32m✔[39m Load GraphQL schemas
+    [32m✔[39m Load GraphQL documents
+    [33m⠙[39m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [32m✔[39m Load GraphQL schemas
+    [32m✔[39m Load GraphQL documents
+    [32m✔[39m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [32m✔[39m Load GraphQL schemas
+    [32m✔[39m Load GraphQL documents
+    [33m⠙[39m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [32m✔[39m Load GraphQL schemas
+    [32m✔[39m Load GraphQL documents
+    [32m✔[39m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [32m✔[39m Load GraphQL schemas
+    [32m✔[39m Load GraphQL documents
+    [32m✔[39m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [32m✔[39m Generate to src/generated/graphql.ts
+  [33m❯[39m Generate to ./graphql.schema.json
+    [32m✔[39m Load GraphQL schemas
+    [32m✔[39m Load GraphQL documents
+    [32m✔[39m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [32m✔[39m Generate to src/generated/graphql.ts
+  [32m✔[39m Generate to ./graphql.schema.json
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[32m✔[39m Generate outputs
+[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[32m✔[39m Generate outputs
+[?25h[?25h
+  [37mbuild/[0m[1mscript-generate-schema.js[0m       [33m25.8mb ⚠️[0m
+  [37mbuild/[0m[1mnodecallspython-ETKR37A6.node[0m  [36m165.6kb[0m
+
+⚡ [32mDone in 1071ms[0m
+/Users/florian.delemarre/filigran/octi/opencti/opencti-platform/opencti-graphql/build/script-generate-schema.js:962
+`);if(i.length>0)return i[0].trim()}}getPythonExecutable(){return process.platform==="win32"?this.getPythonExecutableImpl("where python"):this.getPythonExecutableImpl("which python3")}constructor(){if(this.py=new rWu.PyInterpreter,process.platform==="linux"){let e=ujn("python3-config --configdir"),n=!1;if(e){let i=e.toString().trim();this.loadPython(i)&&(n=!0)}if(!n){let i=ujn("python3-config --ldflags");i&&i.toString().trim().split(" ").forEach(a=>{a.startsWith("-L")&&this.loadPython(a.substring(2))})}}try{this.setPythonExecutable(this.getPythonExecutable())}catch{}}import(e,n=!1){return new Promise(function(i,r){try{this.py.import(e,n,function(a,o){a?i(a):r(o)})}catch(a){r(a)}}.bind(this))}importSync(e,n=!1){return this.py.importSync(e,n)}call(e,n,...i){return new Promise(function(r,a){try{this.py.call(e,n,...i,function(o,s){s?a(s):r(o)})}catch(o){a(o)}}.bind(this))}callSync(e,n,...i){return this.py.callSync(e,n,...i)}create(e,n,...i){return new Promise(function(r,a){try{this.py.create(e,n,...i,function(o,s){s?a(s):r(o)})}catch(o){a(o)}}.bind(this))}createSync(e,n,...i){return this.py.createSync(e,n,...i)}fixlink(e){return this.py.fixlink(e)}reimport(e){return this.py.reimport(e)}exec(e,n){return new Promise(function(i,r){try{this.py.exec(e,n,function(a,o){o?r(o):i(a)})}catch(a){r(a)}}.bind(this))}execSync(e,n){return this.py.execSync(e,n)}eval(e,n){return new Promise(function(i,r){try{this.py.eval(e,n,function(a,o){o?r(o):i(a)})}catch(a){r(a)}}.bind(this))}evalSync(e,n){return this.py.evalSync(e,n)}addImportPath(e){return this.py.addImportPath(e)}setSyncJsAndPyInCallback(e){return this.py.setSyncJsAndPyInCallback(e)}setPythonExecutable(e){let n=e.trim().replace(/\\/g,"\\\\\\\\");this.py.execSync({},"import multiprocessing; multiprocessing.set_executable('"+n+"');")}developmentMode(e){aWu.watch(e,{persistent:!0,ignoreInitial:!0}).on("change",i=>{let r=cma.extname(i);(r==".py"||r=="py")&&this.reimport(i)})}},oWu=new ljn;pma.exports={interpreter:oWu}});var qRt=v((lrm,MAa)=>{MAa.exports=class extends Error{constructor(e,n,i){super(n),this.name=this.constructor.name,Error.captureStackTrace(this,this.constructor),this.code="ERR_GRAPHQL_CONSTRAINT_VALIDATION",this.fieldName=e,this.context=i,this.originalError=void 0}}});var OAa=v((crm,DAa)=>{var{GraphQLError:vKu}=I8(),{isBase64:gKu}=TL();DAa.exports=t=>{if(gKu(t))return!0;throw new vKu("Must be in byte format")}});var wAa=v((prm,PAa)=>{var{GraphQLError:hKu}=I8(),{isISO8601:bKu}=TL();PAa.exports=t=>{if(bKu(t))return!0;throw new hKu("Must be a date in ISO 8601 format")}});var BAa=v((frm,FAa)=>{var{GraphQLError:TKu}=I8(),{isRFC3339:kKu}=TL();FAa.exports=t=>{if(kKu(t))return!0;throw new TKu("Must be a date-time in RFC 3339 format")}});var LAa=v((mrm,VAa)=>{var{GraphQLError:NKu}=I8(),{isEmail:SKu}=TL();VAa.exports=t=>{if(SKu(t))return!0;throw new NKu("Must be in email format")}});var qAa=v((yrm,jAa)=>{var{GraphQLError:IKu}=I8(),{isIP:EKu}=TL();jAa.exports=t=>{if(EKu(t,4))return!0;throw new IKu("Must be in IP v4 format")}});var zAa=v((Arm,UAa)=>{var{GraphQLError:CKu}=I8(),{isIP:RKu}=TL();UAa.exports=t=>{if(RKu(t,6))return!0;throw new CKu("Must be in IP v6 format")}});var GAa=v((vrm,QAa)=>{var{GraphQLError:xKu}=I8(),{isURL:MKu}=TL();QAa.exports=t=>{if(MKu(t))return!0;throw new xKu("Must be in URI format")}});var HAa=v((grm,YAa)=>{var{GraphQLError:DKu}=I8(),{isUUID:OKu}=TL();YAa.exports=t=>{if(OKu(t))return!0;throw new DKu("Must be in UUID format")}});var XAa=v((hrm,WAa)=>{var PKu=OAa(),wKu=wAa(),FKu=BAa(),BKu=LAa(),VKu=qAa(),LKu=zAa(),jKu=GAa(),qKu=HAa();WAa.exports={byte:PKu,"date-time":FKu,date:wKu,email:BKu,ipv4:VKu,ipv6:LKu,uri:jKu,uuid:qKu}});var _Aa=v((brm,ZAa)=>{var{GraphQLScalarType:UKu}=wi(),{contains:KAa,isLength:JAa}=TL(),zKu=XAa(),XX=qRt(),Qjn=class extends UKu{constructor(e,n,i,r,a={}){super({name:n,serialize(o){return o=i.serialize(o),URt(e,r,o,a),o},parseValue(o){return o=i.serialize(o),URt(e,r,o,a),i.parseValue(o)},parseLiteral(o){let s=i.parseLiteral(o);return URt(e,r,s,a),s}})}};function URt(t,e,n,i={}){if(e.minLength&&!JAa(n,{min:e.minLength}))throw new XX(t,`Must be at least ${e.minLength} characters in length`,[{arg:"minLength",value:e.minLength}]);if(e.maxLength&&!JAa(n,{max:e.maxLength}))throw new XX(t,`Must be no more than ${e.maxLength} characters in length`,[{arg:"maxLength",value:e.maxLength}]);if(e.startsWith&&!n.startsWith(e.startsWith))throw new XX(t,`Must start with ${e.startsWith}`,[{arg:"startsWith",value:e.startsWith}]);if(e.endsWith&&!n.endsWith(e.endsWith))throw new XX(t,`Must end with ${e.endsWith}`,[{arg:"endsWith",value:e.endsWith}]);if(e.contains&&!KAa(n,e.contains))throw new XX(t,`Must contain ${e.contains}`,[{arg:"contains",value:e.contains}]);if(e.notContains&&KAa(n,e.notContains))throw new XX(t,`Must not contain ${e.notContains}`,[{arg:"notContains",value:e.notContains}]);if(e.pattern&&!new RegExp(e.pattern).test(n))throw new XX(t,`Must match ${e.pattern}`,[{arg:"pattern",value:e.pattern}]);if(e.format){let r=i.pluginOptions||{},o={...zKu,...r.formats||{}}[e.format];if(!o)throw new XX(t,`Invalid format type ${e.format}`,[{arg:"format",value:e.format}]);try{o(n,e)}catch(s){throw new XX(t,s.message,[{arg:"format",value:e.format}])}}}ZAa.exports={ConstraintStringType:Qjn,validate:URt}});var eva=v((Trm,$Aa)=>{var{GraphQLScalarType:QKu}=wi(),sQe=qRt(),Gjn=class extends QKu{constructor(e,n,i,r){super({name:n,serialize(a){return a=i.serialize(a),zRt(e,r,a),a},parseValue(a){return a=i.serialize(a),zRt(e,r,a),i.parseValue(a)},parseLiteral(a){let o=i.parseLiteral(a);return zRt(e,r,o),o}})}};function GKu(t,e){let n=Number.EPSILON*3;return t%e<n||t%e>e-n}function zRt(t,e,n){if(e.min!==void 0&&n<e.min)throw new sQe(t,`Must be at least ${e.min}`,[{arg:"min",value:e.min}]);if(e.max!==void 0&&n>e.max)throw new sQe(t,`Must be no greater than ${e.max}`,[{arg:"max",value:e.max}]);if(e.exclusiveMin!==void 0&&n<=e.exclusiveMin)throw new sQe(t,`Must be greater than ${e.exclusiveMin}`,[{arg:"exclusiveMin",value:e.exclusiveMin}]);if(e.exclusiveMax!==void 0&&n>=e.exclusiveMax)throw new sQe(t,`Must be less than ${e.exclusiveMax}`,[{arg:"exclusiveMax",value:e.exclusiveMax}]);if(e.multipleOf!==void 0&&GKu(n,e.multipleOf)===!1)throw new sQe(t,`Must be a multiple of ${e.multipleOf}`,[{arg:"multipleOf",value:e.multipleOf}])}$Aa.exports={ConstraintNumberType:Gjn,validate:zRt}});var Hjn=v((krm,sva)=>{var{GraphQLFloat:iva,GraphQLInt:rva,GraphQLString:ava,isNonNullType:tva,isScalarType:nva,isListType:YKu,GraphQLID:ova}=wi(),{ConstraintStringType:HKu,validate:WKu}=_Aa(),{ConstraintNumberType:XKu,validate:KKu}=eva();function JKu(t,e,n,i){if(e===ava||e===ova)return new HKu(t,n,e,i);if(e===iva||e===rva)return new XKu(t,n,e,i);throw new Error(`Not a valid scalar type: ${e.toString()}`)}function ZKu(t){if(t===ava||t===ova)return WKu;if(t===iva||t===rva)return KKu;throw new Error(`Not a valid scalar type: ${t.toString()}`)}function Yjn(t){if(nva(t))return{scalarType:t};if(YKu(t))return{...Yjn(t.ofType),list:!0};if(tva(t)&&nva(t.ofType))return{scalarType:t.ofType,scalarNotNull:!0};if(tva(t))return{...Yjn(t.ofType),list:!0,listNotNull:!0};throw new Error(`Not a valid scalar type: ${t.toString()}`)}sva.exports={getConstraintTypeObject:JKu,getConstraintValidateFn:ZKu,getScalarType:Yjn}});var Xjn=v((Nrm,dva)=>{var{GraphQLString:nAe,GraphQLDirective:_Ku,DirectiveLocation:Wjn,GraphQLInt:QRt,GraphQLFloat:dQe}=wi(),$Ku=`
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               ^
+
+Error: Traceback (most recent call last):
+  File "/Users/florian.delemarre/filigran/octi/opencti/opencti-platform/opencti-graphql/src/python/runtime/check_indicator.py", line 3, in <module>
+    import eql
+ModuleNotFoundError: No module named 'eql'
+
+    at ljn.importSync [90m(/Users/florian.delemarre/filigran/octi/opencti/opencti-platform/opencti-graphql/[39mbuild/script-generate-schema.js:962:736[90m)[39m
+    at Object.<anonymous> [90m(/Users/florian.delemarre/filigran/octi/opencti/opencti-platform/opencti-graphql/[39mbuild/script-generate-schema.js:2585:267441[90m)[39m
+[90m    at Module._compile (node:internal/modules/cjs/loader:1521:14)[39m
+[90m    at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)[39m
+[90m    at Module.load (node:internal/modules/cjs/loader:1266:32)[39m
+[90m    at Module._load (node:internal/modules/cjs/loader:1091:12)[39m
+[90m    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:164:12)[39m
+[90m    at node:internal/main/run_main_module:28:49[39m {
+  code: [32m'py'[39m
+}
+
+Node.js v20.19.6

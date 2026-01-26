@@ -1,0 +1,16 @@
+> yarn dev
+
+[0m[34m[INFO] [0m[default] compiling...
+[0m[31m[ERROR] [0mError: [31m✖︎ The type `StixCoreObject` has no field `currentUserAccessRight`.
+See https://relay.dev/docs/error-reference/unknown-field/[0m
+
+  [4mprivate/components/common/files/FileImportViewer.tsx[0m[2m:124:9[0m
+[1m  123 │ [0m        entity_type
+[1m  124 │ [0m        [31mc[0m[31mu[0m[31mr[0m[31mr[0m[31me[0m[31mn[0m[31mt[0m[31mU[0m[31ms[0m[31me[0m[31mr[0m[31mA[0m[31mc[0m[31mc[0m[31me[0m[31ms[0m[31ms[0m[31mR[0m[31mi[0m[31mg[0m[31mh[0m[31mt[0m
+      │ [31m        ^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m  125 │ [0m        importFiles(first: 500) @connection(key: "Pagination_importFiles") {
+
+[0m[31m[ERROR] [0mCompilation failed.
+[0m[31m[ERROR] [0mUnable to run relay compiler. Error details: 
+Failed to build:
+ - Validation errors: 1 error(s) encountered above.

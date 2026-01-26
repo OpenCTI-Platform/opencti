@@ -1,0 +1,276 @@
+> yarn start
+
+📝 Getting connectors manifest
+➡️ Fetching manifest from: https://raw.githubusercontent.com/OpenCTI-Platform/connectors/refs/heads/master/manifest.json
+(node:91339) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/florian.delemarre/filigran/octi/opencti/opencti-platform/opencti-graphql/script/get-connectors-manifest.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/florian.delemarre/filigran/octi/opencti/opencti-platform/opencti-graphql/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+➡️ Parsing manifest...
+➡️ Writing manifest file...
+✅ Manifest saved to: /Users/florian.delemarre/filigran/octi/opencti/opencti-platform/opencti-graphql/src/__generated__/opencti-manifest.json
+[?25l[2m◼[22m Parse Configuration
+[2K[1A[2K[G[2m◼[22m Parse Configuration
+[2m◼[22m Generate outputs
+[2K[1A[2K[1A[2K[G[33m⠋[39m Parse Configuration
+[2m◼[22m Generate outputs
+[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[2m◼[22m Generate outputs
+[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m⠋[39m Generate outputs
+[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [2m◼[22m Generate to src/generated/graphql.ts
+[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [2m◼[22m Generate to src/generated/graphql.ts
+  [2m◼[22m Generate to ./graphql.schema.json
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m⠋[39m Generate to src/generated/graphql.ts
+  [2m◼[22m Generate to ./graphql.schema.json
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m⠋[39m Generate to src/generated/graphql.ts
+  [33m⠋[39m Generate to ./graphql.schema.json
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [2m◼[22m Load GraphQL schemas
+  [33m❯[39m Generate to ./graphql.schema.json
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [2m◼[22m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+  [33m❯[39m Generate to ./graphql.schema.json
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [2m◼[22m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [2m◼[22m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [2m◼[22m Load GraphQL schemas
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [2m◼[22m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [2m◼[22m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [2m◼[22m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [2m◼[22m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [33m⠋[39m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [2m◼[22m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [33m⠋[39m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [33m⠋[39m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [33m⠙[39m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [33m⠙[39m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [33m⠹[39m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [33m⠹[39m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [32m✔[39m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [33m⠹[39m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [32m✔[39m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [32m✔[39m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [32m✔[39m Load GraphQL schemas
+    [33m⠹[39m Load GraphQL documents
+    [2m◼[22m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [32m✔[39m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [32m✔[39m Load GraphQL schemas
+    [33m⠹[39m Load GraphQL documents
+    [2m◼[22m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [32m✔[39m Load GraphQL schemas
+    [33m⠹[39m Load GraphQL documents
+    [2m◼[22m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [32m✔[39m Load GraphQL schemas
+    [32m✔[39m Load GraphQL documents
+    [2m◼[22m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [32m✔[39m Load GraphQL schemas
+    [33m⠹[39m Load GraphQL documents
+    [2m◼[22m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [32m✔[39m Load GraphQL schemas
+    [32m✔[39m Load GraphQL documents
+    [2m◼[22m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [32m✔[39m Load GraphQL schemas
+    [32m✔[39m Load GraphQL documents
+    [2m◼[22m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [32m✔[39m Load GraphQL schemas
+    [32m✔[39m Load GraphQL documents
+    [33m⠹[39m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [32m✔[39m Load GraphQL schemas
+    [32m✔[39m Load GraphQL documents
+    [2m◼[22m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [32m✔[39m Load GraphQL schemas
+    [32m✔[39m Load GraphQL documents
+    [33m⠹[39m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [32m✔[39m Load GraphQL schemas
+    [32m✔[39m Load GraphQL documents
+    [33m⠹[39m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [32m✔[39m Load GraphQL schemas
+    [32m✔[39m Load GraphQL documents
+    [32m✔[39m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [32m✔[39m Load GraphQL schemas
+    [32m✔[39m Load GraphQL documents
+    [33m⠹[39m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [32m✔[39m Load GraphQL schemas
+    [32m✔[39m Load GraphQL documents
+    [32m✔[39m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [32m✔[39m Load GraphQL schemas
+    [32m✔[39m Load GraphQL documents
+    [32m✔[39m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [32m✔[39m Generate to src/generated/graphql.ts
+  [33m❯[39m Generate to ./graphql.schema.json
+    [32m✔[39m Load GraphQL schemas
+    [32m✔[39m Load GraphQL documents
+    [32m✔[39m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [32m✔[39m Generate to src/generated/graphql.ts
+  [32m✔[39m Generate to ./graphql.schema.json
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[32m✔[39m Generate outputs
+[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[32m✔[39m Generate outputs
+[?25h[?25h
+  [37mbuild/[0m[1mscript-generate-schema.js[0m       [33m32.2mb ⚠️[0m
+  [37mbuild/[0m[1mnodecallspython-6QKQGNSG.node[0m  [36m165.6kb[0m
+
+⚡ [32mDone in 1564ms[0m
+
+  [37mbuild/[0m[1mback.js[0m                         [33m39.7mb ⚠️[0m
+  [37mbuild/[0m[1mscript-insert-dataset.js[0m        [33m39.2mb ⚠️[0m
+  [37mbuild/[0m[1mscript-clean-relations.js[0m       [33m37.0mb ⚠️[0m
+  [37mbuild/[0m[1mchild-lock.manager.js[0m            [33m2.1mb ⚠️[0m
+  [37mbuild/[0m[1mscript-wait-for-api.js[0m           [33m1.2mb ⚠️[0m
+  [37mbuild/[0m[1msafeEjs.worker.js[0m              [36m210.2kb[0m
+  [37mbuild/[0m[1mnodecallspython-6QKQGNSG.node[0m  [36m165.6kb[0m
+  [37mbuild/[0m[1mback.js.map[0m                     [36m75.8mb[0m
+  [37mbuild/[0m[1mscript-insert-dataset.js.map[0m    [36m74.9mb[0m
+  [37mbuild/[0m[1mscript-clean-relations.js.map[0m   [36m69.5mb[0m
+  [37mbuild/[0m[1mchild-lock.manager.js.map[0m        [36m9.6mb[0m
+  [37mbuild/[0m[1mscript-wait-for-api.js.map[0m       [36m6.7mb[0m
+  [37mbuild/[0m[1msafeEjs.worker.js.map[0m          [36m551.9kb[0m
+
+⚡ [32mDone in 3723ms[0m
+{"category":"APP","environment":"development","level":"info","message":"[OPENCTI] Starting platform","source":"backend","timestamp":"2026-02-06T15:08:38.247Z","version":"6.9.15"}
+{"category":"APP","level":"info","message":"[FEATURE-FLAG] Activated features still in development: *","source":"backend","timestamp":"2026-02-06T15:08:38.248Z","version":"6.9.15"}
+{"category":"APP","level":"info","message":"[OPENCTI] Checking dependencies statuses","source":"backend","timestamp":"2026-02-06T15:08:38.248Z","version":"6.9.15"}
+{"category":"APP","level":"info","message":"[CHECK] checking if Search engine is alive","source":"backend","timestamp":"2026-02-06T15:08:38.248Z","version":"6.9.15"}
+{"category":"APP","level":"info","message":"[SEARCH] Engine client not specified, trying to discover it with opensearch client","source":"backend","timestamp":"2026-02-06T15:08:38.254Z","version":"6.9.15"}
+{"category":"APP","level":"info","message":"[SEARCH] Engine detected to elk","source":"backend","timestamp":"2026-02-06T15:08:38.271Z","version":"6.9.15"}
+{"category":"APP","level":"info","message":"[SEARCH] elk (8.19.10) client selected / runtime sorting enabled / attachment processor enabled","source":"backend","timestamp":"2026-02-06T15:08:38.356Z","version":"6.9.15"}
+{"category":"APP","level":"info","message":"[CHECK] Search engine ok, checking if File storage is alive","source":"backend","timestamp":"2026-02-06T15:08:38.357Z","version":"6.9.15"}
+{"category":"APP","level":"info","message":"[CHECK] File storage ok, checking if RabbitMQ is alive","source":"backend","timestamp":"2026-02-06T15:08:38.388Z","version":"6.9.15"}
+{"category":"APP","level":"info","message":"[CHECK] RabbitMQ ok, checking if Redis is alive","source":"backend","timestamp":"2026-02-06T15:08:38.406Z","version":"6.9.15"}
+{"category":"APP","level":"info","message":"[REDIS] Clients initialized","redisMode":"single","source":"backend","timestamp":"2026-02-06T15:08:38.411Z","version":"6.9.15"}
+{"category":"APP","level":"info","message":"[CHECK] Redis ok, checking if SMTP is alive","source":"backend","timestamp":"2026-02-06T15:08:38.411Z","version":"6.9.15"}
+{"category":"APP","level":"info","message":"[CHECK] SMTP done, checking if python is available","source":"backend","timestamp":"2026-02-06T15:08:38.889Z","version":"6.9.15"}
+{"category":"APP","level":"info","message":"[CHECK] Python3 is available","source":"backend","timestamp":"2026-02-06T15:08:38.902Z","version":"6.9.15"}
+{"category":"APP","level":"info","message":"[LOCKING] Locking fork process started","source":"backend","timestamp":"2026-02-06T15:08:38.904Z","version":"6.9.15"}
+{"category":"APP","level":"info","message":"[OPENCTI-MODULE] Cache manager pub sub listener initialized","source":"backend","timestamp":"2026-02-06T15:08:38.909Z","version":"6.9.15"}
+{"category":"APP","level":"info","message":"[INIT] Starting platform initialization","source":"backend","timestamp":"2026-02-06T15:08:39.076Z","version":"6.9.15"}
+{"category":"APP","level":"info","message":"[INIT] New platform detected, initialization...","source":"backend","timestamp":"2026-02-06T15:08:39.086Z","version":"6.9.15"}
+{"category":"APP","level":"info","message":"[INIT] Platform initialization done","source":"backend","timestamp":"2026-02-06T15:08:39.323Z","version":"6.9.15"}
+{"category":"APP","cause":{"attributes":{"genre":"TECHNICAL","http_status":500},"code":"CONFIGURATION_ERROR","message":"Fail initialize schema, index already exists, previous initialization fail because you kill the platform before the end of the initialization. Please remove your elastic/opensearch data and restart.","name":"CONFIGURATION_ERROR","stack":"GraphQLError: Fail initialize schema, index already exists, previous initialization fail because you kill the platform before the end of the initialization. Please remove your elastic/opensearch data and restart.\n    at error (/Users/florian.delemarre/filigran/octi/opencti/opencti-platform/opencti-graphql/src/config/errors.js:7:10)\n    at ConfigurationError (/Users/florian.delemarre/filigran/octi/opencti/opencti-platform/opencti-graphql/src/config/errors.js:99:53)\n    at initializeSchema (/Users/florian.delemarre/filigran/octi/opencti/opencti-platform/opencti-graphql/src/database/engine.ts:1397:11)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async platformInit (/Users/florian.delemarre/filigran/octi/opencti/opencti-platform/opencti-graphql/src/initialization.js:106:7)\n    at async platformStart (/Users/florian.delemarre/filigran/octi/opencti/opencti-platform/opencti-graphql/src/boot.js:36:7)"},"level":"error","message":"[OPENCTI] Platform default initialization failed","source":"backend","timestamp":"2026-02-06T15:08:39.326Z","version":"6.9.15"}

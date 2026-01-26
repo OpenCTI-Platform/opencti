@@ -1,0 +1,155 @@
+> python worker.py
+
+{"timestamp": "2026-01-05T14:29:12.633253Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T14:29:12.697820Z", "level": "ERROR", "name": "worker", "message": "ConnectionError", "exc_info": "Traceback (most recent call last):\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.14/site-packages/urllib3/connection.py\", line 204, in _new_conn\n    sock = connection.create_connection(\n        (self._dns_host, self.port),\n    ...<2 lines>...\n        socket_options=self.socket_options,\n    )\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.14/site-packages/urllib3/util/connection.py\", line 85, in create_connection\n    raise err\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.14/site-packages/urllib3/util/connection.py\", line 73, in create_connection\n    sock.connect(sa)\n    ~~~~~~~~~~~~^^^^\nConnectionRefusedError: [Errno 61] Connection refused\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.14/site-packages/urllib3/connectionpool.py\", line 787, in urlopen\n    response = self._make_request(\n        conn,\n    ...<10 lines>...\n        **response_kw,\n    )\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.14/site-packages/urllib3/connectionpool.py\", line 493, in _make_request\n    conn.request(\n    ~~~~~~~~~~~~^\n        method,\n        ^^^^^^^\n    ...<6 lines>...\n        enforce_content_length=enforce_content_length,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.14/site-packages/urllib3/connection.py\", line 500, in request\n    self.endheaders()\n    ~~~~~~~~~~~~~~~^^\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.2/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/client.py\", line 1353, in endheaders\n    self._send_output(message_body, encode_chunked=encode_chunked)\n    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.2/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/client.py\", line 1113, in _send_output\n    self.send(msg)\n    ~~~~~~~~~^^^^^\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.2/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/client.py\", line 1057, in send\n    self.connect()\n    ~~~~~~~~~~~~^^\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.14/site-packages/urllib3/connection.py\", line 331, in connect\n    self.sock = self._new_conn()\n                ~~~~~~~~~~~~~~^^\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.14/site-packages/urllib3/connection.py\", line 219, in _new_conn\n    raise NewConnectionError(\n        self, f\"Failed to establish a new connection: {e}\"\n    ) from e\nurllib3.exceptions.NewConnectionError: HTTPConnection(host='localhost', port=4000): Failed to establish a new connection: [Errno 61] Connection refused\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.14/site-packages/requests/adapters.py\", line 644, in send\n    resp = conn.urlopen(\n        method=request.method,\n    ...<9 lines>...\n        chunked=chunked,\n    )\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.14/site-packages/urllib3/connectionpool.py\", line 841, in urlopen\n    retries = retries.increment(\n        method, url, error=new_e, _pool=self, _stacktrace=sys.exc_info()[2]\n    )\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.14/site-packages/urllib3/util/retry.py\", line 519, in increment\n    raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nurllib3.exceptions.MaxRetryError: HTTPConnectionPool(host='localhost', port=4000): Max retries exceeded with url: /graphql (Caused by NewConnectionError(\"HTTPConnection(host='localhost', port=4000): Failed to establish a new connection: [Errno 61] Connection refused\"))\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/Users/florian.delemarre/filigran/octi/opencti/opencti-worker/src/worker.py\", line 257, in start\n    connectors: List[Any] = self.api.connector.list()\n                            ~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"/Users/florian.delemarre/filigran/octi/opencti/client-python/pycti/api/opencti_api_connector.py\", line 88, in list\n    result = self.api.query(query)\n  File \"/Users/florian.delemarre/filigran/octi/opencti/client-python/pycti/api/opencti_api_client.py\", line 576, in query\n    r = self.session.post(\n        self.api_url,\n    ...<5 lines>...\n        timeout=self.session_requests_timeout,\n    )\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.14/site-packages/requests/sessions.py\", line 637, in post\n    return self.request(\"POST\", url, data=data, json=json, **kwargs)\n           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.14/site-packages/requests/sessions.py\", line 589, in request\n    resp = self.send(prep, **send_kwargs)\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.14/site-packages/requests/sessions.py\", line 703, in send\n    r = adapter.send(request, **kwargs)\n  File \"/Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.14/site-packages/requests/adapters.py\", line 677, in send\n    raise ConnectionError(e, request=request)\nrequests.exceptions.ConnectionError: HTTPConnectionPool(host='localhost', port=4000): Max retries exceeded with url: /graphql (Caused by NewConnectionError(\"HTTPConnection(host='localhost', port=4000): Failed to establish a new connection: [Errno 61] Connection refused\"))", "attributes": {"reason": "HTTPConnectionPool(host='localhost', port=4000): Max retries exceeded with url: /graphql (Caused by NewConnectionError(\"HTTPConnection(host='localhost', port=4000): Failed to establish a new connection: [Errno 61] Connection refused\"))"}}
+{"timestamp": "2026-01-05T14:30:12.698692Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T14:30:12.769722Z", "level": "INFO", "name": "api", "message": "Health check (platform version)..."}
+{"timestamp": "2026-01-05T14:30:12.792604Z", "level": "INFO", "name": "worker", "message": "Thread for queue started", "attributes": {"consumer_type": "push", "queue": "push_bf7619c6-48da-4ccb-bd9d-4cbea1c7a186"}}
+{"timestamp": "2026-01-05T14:30:12.793178Z", "level": "INFO", "name": "api", "message": "Health check (platform version)..."}
+{"timestamp": "2026-01-05T14:30:12.809939Z", "level": "INFO", "name": "worker", "message": "Thread for queue started", "attributes": {"consumer_type": "push", "queue": "push_d917735a-2277-595a-93ba-bd2637c7feb4"}}
+{"timestamp": "2026-01-05T14:30:12.810363Z", "level": "INFO", "name": "api", "message": "Health check (platform version)..."}
+{"timestamp": "2026-01-05T14:30:12.826127Z", "level": "INFO", "name": "worker", "message": "Thread for queue started", "attributes": {"consumer_type": "push", "queue": "push_d336676c-4ee5-4257-96ff-b2a86688d4af"}}
+{"timestamp": "2026-01-05T14:30:12.826587Z", "level": "INFO", "name": "api", "message": "Health check (platform version)..."}
+{"timestamp": "2026-01-05T14:30:12.841479Z", "level": "INFO", "name": "worker", "message": "Thread for queue started", "attributes": {"consumer_type": "push", "queue": "push_c194e700-afb6-4c4e-ad1b-d4a00590e735"}}
+{"timestamp": "2026-01-05T14:30:12.842079Z", "level": "INFO", "name": "api", "message": "Health check (platform version)..."}
+{"timestamp": "2026-01-05T14:30:12.856192Z", "level": "INFO", "name": "worker", "message": "Thread for queue started", "attributes": {"consumer_type": "push", "queue": "push_background-task-0"}}
+{"timestamp": "2026-01-05T14:30:12.856676Z", "level": "INFO", "name": "api", "message": "Health check (platform version)..."}
+{"timestamp": "2026-01-05T14:30:12.870604Z", "level": "INFO", "name": "worker", "message": "Thread for queue started", "attributes": {"consumer_type": "push", "queue": "push_background-task-1"}}
+{"timestamp": "2026-01-05T14:30:12.870928Z", "level": "INFO", "name": "api", "message": "Health check (platform version)..."}
+{"timestamp": "2026-01-05T14:30:12.884151Z", "level": "INFO", "name": "worker", "message": "Thread for queue started", "attributes": {"consumer_type": "push", "queue": "push_background-task-2"}}
+{"timestamp": "2026-01-05T14:30:12.884497Z", "level": "INFO", "name": "api", "message": "Health check (platform version)..."}
+{"timestamp": "2026-01-05T14:30:12.897032Z", "level": "INFO", "name": "worker", "message": "Thread for queue started", "attributes": {"consumer_type": "push", "queue": "push_background-task-3"}}
+{"timestamp": "2026-01-05T14:30:12.897390Z", "level": "INFO", "name": "api", "message": "Health check (platform version)..."}
+{"timestamp": "2026-01-05T14:30:12.909918Z", "level": "INFO", "name": "worker", "message": "Thread for queue started", "attributes": {"consumer_type": "push", "queue": "push_sync"}}
+{"timestamp": "2026-01-05T14:30:12.910202Z", "level": "INFO", "name": "api", "message": "Health check (platform version)..."}
+{"timestamp": "2026-01-05T14:30:12.923749Z", "level": "INFO", "name": "worker", "message": "Thread for queue started", "attributes": {"consumer_type": "push", "queue": "push_playbook"}}
+{"timestamp": "2026-01-05T14:31:12.927732Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T14:32:13.205987Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T14:33:13.264154Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T14:34:13.314317Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T14:35:13.379045Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T14:36:13.434352Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T14:37:13.505804Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T14:38:13.570416Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T14:39:13.641516Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T14:40:13.717257Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T14:41:13.782997Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T14:42:13.848812Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T14:43:13.915243Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T14:44:13.983551Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T14:45:14.060146Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T14:46:14.131899Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T14:47:14.213464Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T14:48:14.282543Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T14:49:14.352724Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T14:50:14.427173Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T14:51:14.488642Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T14:52:14.552618Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T14:53:14.613487Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T14:54:14.677704Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T14:55:14.743862Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T14:56:14.810611Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T14:57:14.882024Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T14:58:14.953282Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T14:59:15.026649Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:00:15.093356Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:01:15.165588Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:02:15.238371Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:03:15.315527Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:04:15.374622Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:05:15.441040Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:06:15.502077Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:07:15.574632Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:08:15.641359Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:09:15.716857Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:10:15.802336Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:11:15.869428Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:12:15.940549Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:13:16.010106Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:14:16.070107Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:15:16.138564Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:16:16.204357Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:17:16.275765Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:18:16.346031Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:19:16.426284Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:20:16.489078Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:21:16.548024Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:22:16.616444Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:23:16.690525Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:24:16.744683Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:25:16.792118Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:26:16.856281Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:27:16.927487Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:28:16.988829Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:29:17.061989Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:30:17.127179Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:31:17.189215Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:32:17.239052Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:33:17.292722Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:34:17.347670Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:35:17.406093Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:36:17.473292Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:37:17.534184Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:38:17.583779Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:39:17.637119Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:40:17.690949Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:41:17.742367Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:42:17.803878Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:43:17.874925Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:44:17.943998Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:45:18.015123Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:46:18.082140Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:47:18.144213Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:48:18.200084Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:49:18.337095Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:50:18.410887Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:51:18.470218Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:52:18.543113Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:53:18.610211Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:54:18.678782Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:55:18.745654Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:56:18.810492Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:57:18.875453Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:58:18.947140Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T15:59:19.008381Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T16:00:19.084613Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T16:01:19.152898Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T16:02:19.206981Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T16:03:19.272649Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T16:04:19.332328Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T16:05:19.400583Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T16:06:19.469746Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T16:07:19.538395Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T16:08:19.616268Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T16:09:19.675915Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T16:10:19.739634Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T16:11:19.816310Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T16:12:19.888838Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T16:13:19.927530Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T16:14:19.982576Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T16:15:20.037775Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T16:16:20.093193Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T16:17:20.165256Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T16:18:20.237323Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T16:19:20.300784Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T16:20:20.366672Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T16:21:20.449797Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T16:22:20.519326Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T16:23:20.588454Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T16:24:20.662502Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T16:25:20.732417Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T16:26:20.784621Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T16:27:20.853055Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T16:28:20.914817Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T16:29:20.978256Z", "level": "INFO", "name": "api", "message": "Getting connectors ..."}
+{"timestamp": "2026-01-05T16:29:42.285617Z", "level": "INFO", "name": "worker", "message": "Thread for queue terminated", "attributes": {"consumer_type": "push", "queue": "push_background-task-2"}}
+{"timestamp": "2026-01-05T16:29:42.285840Z", "level": "INFO", "name": "worker", "message": "Thread for queue terminated", "attributes": {"consumer_type": "push", "queue": "push_background-task-3"}}
+{"timestamp": "2026-01-05T16:29:42.397583Z", "level": "INFO", "name": "worker", "message": "Thread for queue terminated", "attributes": {"consumer_type": "push", "queue": "push_sync"}}
+{"timestamp": "2026-01-05T16:29:42.400943Z", "level": "INFO", "name": "worker", "message": "Thread for queue terminated", "attributes": {"consumer_type": "push", "queue": "push_playbook"}}
+{"timestamp": "2026-01-05T16:29:43.141655Z", "level": "INFO", "name": "worker", "message": "Thread for queue terminated", "attributes": {"consumer_type": "push", "queue": "push_bf7619c6-48da-4ccb-bd9d-4cbea1c7a186"}}
+{"timestamp": "2026-01-05T16:29:43.142389Z", "level": "INFO", "name": "worker", "message": "Thread for queue terminated", "attributes": {"consumer_type": "push", "queue": "push_d917735a-2277-595a-93ba-bd2637c7feb4"}}
+{"timestamp": "2026-01-05T16:29:43.142637Z", "level": "INFO", "name": "worker", "message": "Thread for queue terminated", "attributes": {"consumer_type": "push", "queue": "push_background-task-0"}}
+{"timestamp": "2026-01-05T16:29:43.142731Z", "level": "INFO", "name": "worker", "message": "Thread for queue terminated", "attributes": {"consumer_type": "push", "queue": "push_c194e700-afb6-4c4e-ad1b-d4a00590e735"}}
+{"timestamp": "2026-01-05T16:29:43.142800Z", "level": "INFO", "name": "worker", "message": "Thread for queue terminated", "attributes": {"consumer_type": "push", "queue": "push_background-task-1"}}
+{"timestamp": "2026-01-05T16:29:43.145401Z", "level": "INFO", "name": "worker", "message": "Thread for queue terminated", "attributes": {"consumer_type": "push", "queue": "push_d336676c-4ee5-4257-96ff-b2a86688d4af"}}
+{"timestamp": "2026-01-05T16:29:43.145558Z", "level": "INFO", "name": "worker", "message": "Thread for worker terminated"}

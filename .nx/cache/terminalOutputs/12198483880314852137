@@ -1,0 +1,24 @@
+> yarn lint
+
+[0m[0m
+[0m[4m/Users/florian.delemarre/filigran/octi/opencti/opencti-platform/opencti-graphql/src/initialization.js[24m[0m
+[0m  [2m15:65[22m  [31merror[39m  'UnsupportedError' is defined but never used. Allowed unused vars must match /^_/u  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4m/Users/florian.delemarre/filigran/octi/opencti/opencti-platform/opencti-graphql/src/python/.venv/lib/python3.12/site-packages/urllib3/contrib/emscripten/emscripten_fetch_worker.js[24m[0m
+[0m  [2m0:0[22m  [31merror[39m  Parsing error: "parserOptions.project" has been provided for @typescript-eslint/parser.[0m
+[0mThe file was not found in any of the provided project(s): src/python/.venv/lib/python3.12/site-packages/urllib3/contrib/emscripten/emscripten_fetch_worker.js[0m
+[0m[0m
+[0m[31m[1m✖ 2 problems (2 errors, 0 warnings)[22m[39m[0m
+[0m[31m[1m[22m[39m[0m
+Rule                                    | Time (ms) | Relative
+:---------------------------------------|----------:|--------:
+@typescript-eslint/no-floating-promises |  2945.716 |    29.1%
+import/extensions                       |  1341.621 |    13.3%
+@stylistic/indent                       |  1283.464 |    12.7%
+@typescript-eslint/no-unused-vars       |   741.694 |     7.3%
+@stylistic/comma-style                  |   368.036 |     3.6%
+@stylistic/space-in-parens              |   289.623 |     2.9%
+@stylistic/object-curly-spacing         |   282.583 |     2.8%
+@stylistic/keyword-spacing              |   209.597 |     2.1%
+@stylistic/comma-spacing                |   204.288 |     2.0%
+@stylistic/no-extra-parens              |   177.343 |     1.8%

@@ -1,0 +1,262 @@
+> yarn start
+
+📝 Getting connectors manifest
+➡️ Fetching manifest from: https://raw.githubusercontent.com/OpenCTI-Platform/connectors/refs/heads/master/manifest.json
+(node:19844) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/florian.delemarre/filigran/octi/opencti/opencti-platform/opencti-graphql/script/get-connectors-manifest.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/florian.delemarre/filigran/octi/opencti/opencti-platform/opencti-graphql/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+➡️ Parsing manifest...
+➡️ Writing manifest file...
+✅ Manifest saved to: /Users/florian.delemarre/filigran/octi/opencti/opencti-platform/opencti-graphql/src/__generated__/opencti-manifest.json
+[?25l[2m◼[22m Parse Configuration
+[2K[1A[2K[G[2m◼[22m Parse Configuration
+[2m◼[22m Generate outputs
+[2K[1A[2K[1A[2K[G[33m⠋[39m Parse Configuration
+[2m◼[22m Generate outputs
+[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[2m◼[22m Generate outputs
+[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m⠋[39m Generate outputs
+[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [2m◼[22m Generate to src/generated/graphql.ts
+[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [2m◼[22m Generate to src/generated/graphql.ts
+  [2m◼[22m Generate to ./graphql.schema.json
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m⠋[39m Generate to src/generated/graphql.ts
+  [2m◼[22m Generate to ./graphql.schema.json
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m⠋[39m Generate to src/generated/graphql.ts
+  [33m⠋[39m Generate to ./graphql.schema.json
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [2m◼[22m Load GraphQL schemas
+  [33m❯[39m Generate to ./graphql.schema.json
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [2m◼[22m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+  [33m❯[39m Generate to ./graphql.schema.json
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [2m◼[22m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [2m◼[22m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [2m◼[22m Load GraphQL schemas
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [2m◼[22m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [2m◼[22m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [2m◼[22m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [2m◼[22m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [33m⠋[39m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [2m◼[22m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [33m⠋[39m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [33m⠋[39m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [33m⠙[39m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [33m⠙[39m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [32m✔[39m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [33m⠙[39m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [32m✔[39m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [32m✔[39m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [32m✔[39m Load GraphQL schemas
+    [33m⠙[39m Load GraphQL documents
+    [2m◼[22m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [32m✔[39m Load GraphQL schemas
+    [2m◼[22m Load GraphQL documents
+    [2m◼[22m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [32m✔[39m Load GraphQL schemas
+    [33m⠙[39m Load GraphQL documents
+    [2m◼[22m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [32m✔[39m Load GraphQL schemas
+    [33m⠙[39m Load GraphQL documents
+    [2m◼[22m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [32m✔[39m Load GraphQL schemas
+    [32m✔[39m Load GraphQL documents
+    [2m◼[22m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [32m✔[39m Load GraphQL schemas
+    [33m⠙[39m Load GraphQL documents
+    [2m◼[22m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [32m✔[39m Load GraphQL schemas
+    [32m✔[39m Load GraphQL documents
+    [2m◼[22m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [32m✔[39m Load GraphQL schemas
+    [32m✔[39m Load GraphQL documents
+    [2m◼[22m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [32m✔[39m Load GraphQL schemas
+    [32m✔[39m Load GraphQL documents
+    [33m⠙[39m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [32m✔[39m Load GraphQL schemas
+    [32m✔[39m Load GraphQL documents
+    [2m◼[22m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [32m✔[39m Load GraphQL schemas
+    [32m✔[39m Load GraphQL documents
+    [33m⠙[39m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [32m✔[39m Load GraphQL schemas
+    [32m✔[39m Load GraphQL documents
+    [33m⠙[39m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [32m✔[39m Load GraphQL schemas
+    [32m✔[39m Load GraphQL documents
+    [32m✔[39m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [32m✔[39m Load GraphQL schemas
+    [32m✔[39m Load GraphQL documents
+    [33m⠙[39m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [33m❯[39m Generate to src/generated/graphql.ts
+    [32m✔[39m Load GraphQL schemas
+    [32m✔[39m Load GraphQL documents
+    [32m✔[39m Generate
+  [33m❯[39m Generate to ./graphql.schema.json
+    [32m✔[39m Load GraphQL schemas
+    [32m✔[39m Load GraphQL documents
+    [32m✔[39m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [32m✔[39m Generate to src/generated/graphql.ts
+  [33m❯[39m Generate to ./graphql.schema.json
+    [32m✔[39m Load GraphQL schemas
+    [32m✔[39m Load GraphQL documents
+    [32m✔[39m Generate
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[33m❯[39m Generate outputs
+  [32m✔[39m Generate to src/generated/graphql.ts
+  [32m✔[39m Generate to ./graphql.schema.json
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[32m✔[39m Generate outputs
+[2K[1A[2K[1A[2K[G[32m✔[39m Parse Configuration
+[32m✔[39m Generate outputs
+[?25h[?25h
+  [37mbuild/[0m[1mscript-generate-schema.js[0m       [33m26.0mb ⚠️[0m
+  [37mbuild/[0m[1mnodecallspython-DVG5MPZE.node[0m  [36m165.6kb[0m
+
+⚡ [32mDone in 4550ms[0m
+/Users/florian.delemarre/filigran/octi/opencti/opencti-platform/opencti-graphql/build/script-generate-schema.js:1369
+      Threat actor individual roles are not mutually exclusive. For example, an actor can be both a financial backer for attacks and also direct attacks`,entity_types:[Dl],fields:[{key:"roles",required:!1,multiple:!0}]},threat_actor_individual_sophistication_ov:{description:'Threat actor individual sophistication vocabulary captures the skill level of a threat actor individual. It ranges from "none", which describes a complete novice, to "strategic", which describes an attacker who is able to influence supply chains to introduce vulnerabilities. This vocabulary is separate from resource level because an innovative, highly-skilled threat actor individual may have access to very few resources while a minimal-level actor might have the resources of an organized crime ring',entity_types:[Dl],fields:[{key:"sophistication",required:!1,multiple:!1}]},tool_types_ov:{description:"Tool types describe the categories of tools that can be used to perform attacks",entity_types:[Bo],fields:[{key:"tool_types",required:!1,multiple:!0}]},gender_ov:{description:"Gender describes the characteristics of men and women that are socially constructed. The definition of gender varies from society to society and can change over time.",entity_types:[Dl],fields:[{key:"gender",required:!1,multiple:!1}]},marital_status_ov:{description:"Marital status describes the state of an intimate relationship a person has with one or more people, or none at all.",entity_types:[Dl],fields:[{key:"marital_status",required:!1,multiple:!1}]},hair_color_ov:{description:"The color of a person's hair.",entity_types:[Dl],fields:[{key:"hair_color",required:!1,multiple:!1}]},eye_color_ov:{description:"The color of a person's eyes.",entity_types:[Dl],fields:[{key:"eye_color",required:!1,multiple:!1}]}};var jM="EntitySetting";var mO="ManagerConfiguration";var Mv="Notifier";var d6="AIBus";var K2="Support-Package",Qat="SupportBus";var s3="DisseminationList";var O2s=["/etc/ssl/certs/ca-certificates.crt","/etc/pki/tls/certs/ca-bundle.crt","/etc/ssl/ca-bundle.pem","/etc/pki/tls/cacert.pem","/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem","/etc/ssl/cert.pem"],P2s="production",iOi="opencti_session",Lx=fO.version,rOi="APP",w2s="AUDIT",Er=(t,e=!0)=>{let n=Bp.default.get(t);return $g(n)||Vi(n)?e:n===!0||n==="true"};Bp.default.env({separator:"__",lowerCase:!0,parseValues:!0});Bp.default.add("argv",{e:{alias:"env",describe:"Execution environment"},c:{alias:"conf",describe:"Configuration file"}});var{timestamp:Jat}=iT.format,F2s=process.env.INIT_CWD||process.cwd(),YDi=t=>Hat.default.join(F2s,t),Znn=Bp.default.get("env")||Bp.default.get("node_env")||process.env.NODE_ENV||P2s,aOi=t=>{let e=Hat.default.join(YDi("config"),`${t.toLowerCase()}.json`);return t.toLowerCase()==="dev"&&!(0,Fce.existsSync)(e)?Hat.default.join(YDi("config"),"development.json"):e},UF=Znn!=="production",HDi=Bp.default.get("conf"),Bce=Bp.default.get("app:node_identifier")||an(),B2s=`platform:instance:${Bce}`,Jnn;HDi?Jnn=HDi:Jnn=aOi(Znn);Bp.default.file(Znn,Jnn);Bp.default.file("default",aOi("default"));var mGp=Bp.default.get("app:auth_payload_body_size")??null,V2s=Bp.default.get("app:app_logs:logs_level"),L2s=Er("app:app_logs:logs_files",!0),j2s=Er("app:app_logs:logs_console",!0),U2s=Bp.default.get("app:app_logs:control:max_depth_size")??10,q2s=Bp.default.get("app:app_logs:control:max_depth_keys")??100,z2s=Bp.default.get("app:app_logs:control:max_array_size")??50,WDi=Bp.default.get("app:app_logs:control:max_string_size")??5e3,Q2s=Er("app:app_logs:extended_error_message",!1),yO=t=>Q2s?t:{},G2s=(t,e,n)=>{if(t instanceof nOi.GraphQLError){let i=t.extensions??{},r=i.data??{},a=Wat(r,e,n);return{name:i.code??t.name,code:i.code,message:t.message,stack:t.stack,attributes:a}}return t instanceof Error?{name:t.name,code:tJt,message:t.message,stack:t.stack}:t},Wat=(t,e,n=0)=>{let i=n>U2s,r=e.current_nb_key>q2s,a=typeof t=="function";if(t!==null){if(i||r||a)return null;if(Array.isArray(t)){let o=t.slice(0,z2s),s=[];for(let d=0;d<o.length;d+=1){let u=Wat(o[d],e,n);u&&(s[d]=u)}return s}if(typeof t=="string"&&t.length>WDi)return`${t.substring(0,WDi-3)}...`;if(typeof t=="object"){let o=G2s(t,e,n),s={},d=Object.keys(o),u=n+1;for(let l=0;l<d.length;l+=1){e.current_nb_key+=1;let c=d[l];s[c]=Wat(o[c],e,u),s[c]||delete s[c]}return s}}return t},_nn=(t,e={})=>{let i=Wat(t,{current_nb_key:0});return{...e,...i,version:Lx}},wNe=[],XDi=Bp.default.get("app:app_logs:logs_directory");if(L2s){let t=Bp.default.get("app:app_logs:logs_max_files");wNe.push(new PNe.default({filename:"error.log",dirname:XDi,level:"error",maxFiles:t})),wNe.push(new PNe.default({filename:"opencti.log",dirname:XDi,maxFiles:t}))}j2s&&wNe.push(new iT.default.transports.Console);var Y2s=iT.default.createLogger({level:"debug",format:iT.format.combine(Jat(),iT.format.errors({stack:!0}),iT.format.json()),transports:wNe}),e7e=iT.default.createLogger({level:V2s,format:iT.format.combine(Jat(),iT.format.errors({stack:!0}),iT.format.json()),transports:wNe}),H2s=Er("app:audit_logs:logs_files",!0),W2s=Er("app:audit_logs:logs_console",!0),X2s=Bp.default.get("app:audit_logs:trace_request_headers")??["user-agent","x-forwarded-for"],oOi=t=>{let e=t.headers["x-forwarded-for"]||t.socket.remoteAddress;return{...bx(X2s.map(i=>({[i]:t.header(i)}))),ip:e}},sOi=Bp.default.get("app:audit_logs:logs_in_transports")??["administration"],Zat=[];if(H2s){let t=Bp.default.get("app:audit_logs:logs_directory"),e=Bp.default.get("app:audit_logs:logs_max_files");Zat.push(new PNe.default({filename:"audit.log",dirname:t,maxFiles:e}))}W2s&&Zat.push(new iT.default.transports.Console);var K2s=iT.default.createLogger({level:"info",format:iT.format.combine(Jat(),iT.format.errors({stack:!0}),iT.format.json()),transports:Zat}),t7e=".support",dOi="support",uOi=iT.default.createLogger({level:"warn",format:iT.format.combine(Jat(),iT.format.errors({stack:!0}),iT.format.json()),transports:[new PNe.default({filename:dOi,dirname:t7e,maxFiles:3,maxSize:"10m",level:"warn"})]}),lOi="./telemetry",cOi="telemetry",J2s=[new PNe.default({dirname:lOi,filename:cOi,maxFiles:3,maxSize:"1m",level:"info"})],Z2s=iT.default.createLogger({level:"info",format:iT.format.printf(t=>`${t.message}`),transports:J2s});var FNe={info:t=>Y2s.log("info",t)},Oe={_log:(t,e,n={})=>{if(wNe.length>0&&e7e.isLevelEnabled(t)){let i=_nn(n,{category:rOi,source:"backend"});e7e.log(t,e,i),e7e.isLevelEnabled("warn")&&uOi.log(t,e,i)}},debug:(t,e={})=>Oe._log("debug",t,e),info:(t,e={})=>Oe._log("info",t,e),warn:(t,e={})=>Oe._log("warn",t,e),error:(t,e={})=>Oe._log("error",t,e),query:(t,e)=>e7e.query(t,e)},Xat={_log:(t,e,n,i={})=>{if(Zat.length>0){let r={email:e.user_email,...e.origin},a=$g(i)?{auth:r}:{resource:i,auth:r},o=_nn(a,{category:w2s,source:"backend"});K2s.log(t,n,o)}},info:(t,e,n={})=>Xat._log("info",t,e,n),error:(t,e,n={})=>Xat._log("error",t,e,n)},$nn={_log:(t,e,n={})=>{let i=_nn(n,{category:rOi,source:"frontend"});e7e.log(t,e,i),uOi.log(t,e,i)},error:(t,e={})=>$nn._log("error",t,e)},pOi={log:t=>{Z2s.log("info",t)}},yGp=Bp.default.get("app:port"),_Di,Wnn=((_Di=Bp.default.get("app:base_path"))==null?void 0:_Di.trim())??"",Gat=Wnn.endsWith("/")?Wnn.slice(0,-1):Wnn,Xnn=$g(Gat)||Gat.startsWith("/")?Gat:`/${Gat}`,$Di,Knn=(($Di=Bp.default.get("app:base_url"))==null?void 0:$Di.trim())??"",KDi=Knn.endsWith("/")?Knn.slice(0,-1):Knn,Ote=t=>{if(KDi)return KDi+Xnn;if(t){let[,e]=t.headers.host?t.headers.host.split(":"):[],i=e!=="80"&&e!=="443"&&e?`:${e}`:"";return`${t.protocol}://${t.hostname}${i}${Xnn}`}return Xnn};var n7e=t=>{if(t&&t.length>0)return{ca:t};for(let e of O2s)try{if((0,Fce.lstatSync)(e).isFile())return{ca:[(0,Fce.readFileSync)(e)]}}catch(n){if(n.code!=="ENOENT")throw C0("Configuration failure of the CA certificate",{cause:n})}return{ca:[]}},u6=t=>{if(t)return t.startsWith("-----BEGIN")?t:(0,Fce.readFileSync)(t)},_2s=t=>t.replace(/[/\-\\^$*+?.()|[\]{}]/g,"\\$&"),JDi=(t,e)=>{for(let n=0;n<e.length;n+=1){let i=e[n];if(i.includes("*")){let r=_2s(i).replaceAll("\\*",".*");if(new RegExp(r,"g").test(t))return!0}if(i===t)return!0;if(Yat.default.isValid(t))try{let r=Yat.default.parse(t),a=Yat.default.parseCIDR(i);if(r.match(a))return!0}catch{}}return!1},$2s=()=>{let t=Bp.default.get("http_proxy"),e=Bp.default.get("https_proxy"),n=(Bp.default.get("no_proxy")??"").split(","),i=Bp.default.get("https_proxy_ca").map(a=>u6(a));process.env.HTTP_PROXY="",process.env.HTTPS_PROXY="",process.env.NO_PROXY="";let r={};return e&&(r["https:"]={build:()=>new eOi.HttpsProxyAgent(e,{rejectUnauthorized:Er("https_proxy_reject_unauthorized",!1),...n7e(i)}),isExcluded:a=>JDi(a,n)}),t&&(r["http:"]={build:()=>new tOi.HttpProxyAgent(t),isExcluded:a=>JDi(a,n)}),r},BNe=t=>{let e=$2s(),n=new URL(t),i=e[n.protocol];if(i)return i.isExcluded(n.hostname)?void 0:i.build()},AGp=Er("app:enabled",!0),fOi=Er("app:enabled_ui",!0),Wk=Er("demo_mode",!1),vGp=UF?!1:!fOi||Er("app:graphql:playground:force_disabled_introspection",!0),mOi=fOi&&Er("app:graphql:playground:enabled",!0),gGp=Er("app:graphql:armor_protection:disabled",!0),yOi=Er("app:telemetry:tracing:enabled",!1),AOi=Er("app:telemetry:metrics:enabled",!1),hGp=Er("notification_manager:enabled",!0),bGp=Er("publisher_manager:enabled",!0),TGp=Er("connector_manager:enabled",!0),kGp=Er("file_index_manager:enabled",!0),NGp=Er("expiration_scheduler:enabled",!1),SGp=Er("task_scheduler:enabled",!1),IGp=Er("sync_manager:enabled",!1),EGp=Er("ingestion_manager:enabled",!1),CGp=Er("rule_engine:enabled",!1),RGp=Er("history_manager:enabled",!1),MGp=Er("playbook_manager:enabled",!1),HN="Active",_at="Expired",ein=()=>{let t=Bp.default.get("app:locked_account_statuses");return{[HN]:"All good folks",[_at]:"Your account has expired. If you would like to reactivate your account, please contact your administrator.",...t}},wce=ein(),ejs=()=>{let t=Bp.default.get("app:account_statuses_default");if(t){if(wce[t])return t;throw Ge("Invalid default_initialize_account_status configuration",{default:t,statuses:wce})}return HN},vOi=ejs(),tjs={stopping:!1},gOi=()=>tjs.stopping;var Kat=Bp.default.get("app:enabled_dev_features")??[],njs="*",k5=t=>Kat.includes(njs)||Kat.includes(t),l6=Bp.default.get("redis:namespace")?`${Bp.default.get("redis:namespace")}:`:"",pi=`${l6}_OPENCTI_DATA_`,ZDi=`${l6}_OPENCTI_CONTEXT_`,De={[wi]:{EDIT_TOPIC:`${pi}SETTINGS_EDIT_TOPIC`,ADDED_TOPIC:`${pi}SETTINGS_ADDED_TOPIC`},[jM]:{EDIT_TOPIC:`${pi}ENTITY_SETTING_EDIT_TOPIC`,ADDED_TOPIC:`${pi}ENTITY_SETTING_ADDED_TOPIC`},[vo]:{EDIT_TOPIC:`${pi}GROUP_EDIT_TOPIC`,ADDED_TOPIC:`${pi}GROUP_ADDED_TOPIC`,DELETE_TOPIC:`${pi}GROUP_DELETE_TOPIC`},[F4]:{EDIT_TOPIC:`${pi}RULE_EDIT_TOPIC`},[Ec]:{EDIT_TOPIC:`${pi}ROLE_EDIT_TOPIC`,ADDED_TOPIC:`${pi}ROLE_ADDED_TOPIC`,DELETE_TOPIC:`${pi}ROLE_DELETE_TOPIC`},[qt]:{EDIT_TOPIC:`${pi}USER_EDIT_TOPIC`,ADDED_TOPIC:`${pi}USER_ADDED_TOPIC`,DELETE_TOPIC:`${pi}USER_DELETE_TOPIC`},[Os]:{EDIT_TOPIC:`${pi}WORKSPACE_EDIT_TOPIC`,ADDED_TOPIC:`${pi}WORKSPACE_ADDED_TOPIC`},[nO]:{EDIT_TOPIC:`${pi}THEME_EDIT_TOPIC`,ADDED_TOPIC:`${pi}THEME_ADDED_TOPIC`,DELETE_TOPIC:`${pi}THEME_DELETE_TOPIC`},[nf]:{EDIT_TOPIC:`${pi}PUBLIC_DASHBOARD_EDIT_TOPIC`,ADDED_TOPIC:`${pi}PUBLIC_DASHBOARD_ADDED_TOPIC`,DELETE_TOPIC:`${pi}PUBLIC_DASHBOARD_DELETE_TOPIC`},[Ic]:{EDIT_TOPIC:`${pi}DRAFT_WORKSPACE_EDIT_TOPIC`,ADDED_TOPIC:`${pi}DRAFT_WORKSPACE_ADDED_TOPIC`,DELETE_TOPIC:`${pi}DRAFT_WORKSPACE_DELETE_TOPIC`},[fb]:{EDIT_TOPIC:`${pi}VOCABULARY_EDIT_TOPIC`,ADDED_TOPIC:`${pi}VOCABULARY_ADDED_TOPIC`},[Ro]:{EDIT_TOPIC:`${pi}CONNECTOR_EDIT_TOPIC`},[ob]:{EDIT_TOPIC:`${pi}TAXII_COLLECTION_EDIT_TOPIC`,ADDED_TOPIC:`${pi}TAXII_COLLECTION_ADDED_TOPIC`},[eh]:{EDIT_TOPIC:`${pi}STREAM_COLLECTION_EDIT_TOPIC`,DELETE_TOPIC:`${pi}STREAM_COLLECTION_DELETE_TOPIC`,ADDED_TOPIC:`${pi}STREAM_COLLECTION_ADDED_TOPIC`},[Xv]:{EDIT_TOPIC:`${pi}SYNC_EDIT_TOPIC`,ADDED_TOPIC:`${pi}SYNC_ADDED_TOPIC`},[cr]:{EDIT_TOPIC:`${pi}MARKING_DEFINITION_EDIT_TOPIC`,DELETE_TOPIC:`${pi}MARKING_DEFINITION_EDIT_TOPIC`,ADDED_TOPIC:`${pi}MARKING_DEFINITION_ADDED_TOPIC`},[Cc]:{EDIT_TOPIC:`${pi}LABEL_EDIT_TOPIC`,ADDED_TOPIC:`${pi}LABEL_ADDED_TOPIC`},[Ho]:{EDIT_TOPIC:`${pi}EXTERNAL_REFERENCE_EDIT_TOPIC`,ADDED_TOPIC:`${pi}EXTERNAL_REFERENCE_ADDED_TOPIC`},[rf]:{EDIT_TOPIC:`${pi}KILL_CHAIN_PHASE_EDIT_TOPIC`,ADDED_TOPIC:`${pi}KILL_CHAIN_PHASE_ADDED_TOPIC`},[ln]:{EDIT_TOPIC:`${pi}INTERNAL_OBJECT_EDIT_TOPIC`,ADDED_TOPIC:`${pi}INTERNAL_OBJECT_ADDED_TOPIC`,DELETE_TOPIC:`${pi}INTERNAL_OBJECT_DELETE_TOPIC`,CONTEXT_TOPIC:`${ZDi}INTERNAL_OBJECT_CONTEXT_TOPIC`},[Zb]:{EDIT_TOPIC:`${pi}STIX_OBJECT_EDIT_TOPIC`,ADDED_TOPIC:`${pi}STIX_OBJECT_ADDED_TOPIC`},[Mi]:{EDIT_TOPIC:`${pi}STIX_CORE_OBJECT_EDIT_TOPIC`,ADDED_TOPIC:`${pi}STIX_CORE_OBJECT_ADDED_TOPIC`},[wt]:{EDIT_TOPIC:`${pi}STIX_DOMAIN_OBJECT_EDIT_TOPIC`,ADDED_TOPIC:`${pi}STIX_DOMAIN_OBJECT_ADDED_TOPIC`,DELETE_TOPIC:`${pi}STIX_DOMAIN_OBJECT_DELETE_TOPIC`,CONTEXT_TOPIC:`${ZDi}STIX_DOMAIN_OBJECT_CONTEXT_TOPIC`},[Zn]:{EDIT_TOPIC:`${pi}STIX_CYBER_OBSERVABLE_EDIT_TOPIC`,ADDED_TOPIC:`${pi}STIX_CYBER_OBSERVABLE_ADDED_TOPIC`},[Da]:{EDIT_TOPIC:`${pi}STIX_CORE_RELATIONSHIP_EDIT_TOPIC`,ADDED_TOPIC:`${pi}STIX_CORE_RELATIONSHIP_ADDED_TOPIC`},[Xi]:{EDIT_TOPIC:`${pi}STIX_SIGHTING_RELATIONSHIP_EDIT_TOPIC`,ADDED_TOPIC:`${pi}STIX_SIGHTING_RELATIONSHIP_ADDED_TOPIC`},[Sc]:{EDIT_TOPIC:`${pi}ABSTRACT_STIX_REF_RELATIONSHIP_EDIT_TOPIC`,DELETE_TOPIC:`${pi}ABSTRACT_STIX_REF_RELATIONSHIP_DELETE_TOPIC`,ADDED_TOPIC:`${pi}ABSTRACT_STIX_REF_RELATIONSHIP_ADDED_TOPIC`},[Rw]:{EDIT_TOPIC:`${pi}ENTITY_TYPE_DECAY_RULE_EDIT_TOPIC`,DELETE_TOPIC:`${pi}ENTITY_TYPE_DECAY_RULE_DELETE_TOPIC`,ADDED_TOPIC:`${pi}ENTITY_TYPE_DECAY_RULE_ADDED_TOPIC`},[V0]:{EDIT_TOPIC:`${pi}ENTITY_TYPE_DECAY_EXCLUSION_RULE_EDIT_TOPIC`,DELETE_TOPIC:`${pi}ENTITY_TYPE_DECAY_EXCLUSION_RULE_DELETE_TOPIC`,ADDED_TOPIC:`${pi}ENTITY_TYPE_DECAY_EXCLUSION_RULE_ADDED_TOPIC`},[eO]:{EDIT_TOPIC:`${pi}ENTITY_TYPE_EXCLUSION_LIST_EDIT_TOPIC`,DELETE_TOPIC:`${pi}ENTITY_TYPE_EXCLUSION_LIST_DELETE_TOPIC`,ADDED_TOPIC:`${pi}ENTITY_TYPE_EXCLUSION_LIST_ADDED_TOPIC`},[s3]:{EDIT_TOPIC:`${pi}ENTITY_TYPE_DISSEMINATION_LIST_EDIT_TOPIC`,DELETE_TOPIC:`${pi}ENTITY_TYPE_DISSEMINATION_LIST_DELETE_TOPIC`,ADDED_TOPIC:`${pi}ENTITY_TYPE_DISSEMINATION_LIST_ADDED_TOPIC`},[mO]:{EDIT_TOPIC:`${pi}ENTITY_TYPE_MANAGER_CONFIGURATION_EDIT_TOPIC`,ADDED_TOPIC:`${pi}ENTITY_TYPE_MANAGER_CONFIGURATION_ADDED_TOPIC`},[YN]:{EDIT_TOPIC:`${pi}ENTITY_TYPE_NOTIFICATION_EDIT_TOPIC`,ADDED_TOPIC:`${pi}ENTITY_TYPE_NOTIFICATION_ADDED_TOPIC`},[Fg]:{EDIT_TOPIC:`${pi}ENTITY_TYPE_TRIGGER_EDIT_TOPIC`,DELETE_TOPIC:`${pi}ENTITY_TYPE_TRIGGER_DELETE_TOPIC`,ADDED_TOPIC:`${pi}ENTITY_TYPE_TRIGGER_ADDED_TOPIC`},[Mv]:{EDIT_TOPIC:`${pi}ENTITY_TYPE_NOTIFIER_EDIT_TOPIC`,DELETE_TOPIC:`${pi}ENTITY_TYPE_NOTIFIER_DELETE_TOPIC`,ADDED_TOPIC:`${pi}ENTITY_TYPE_NOTIFIER_ADDED_TOPIC`},[xte]:{EDIT_TOPIC:`${pi}ENTITY_TYPE_NOTIFICATION_NUMBER_EDIT_TOPIC`},[d6]:{EDIT_TOPIC:`${pi}ENTITY_TYPE_AI_BUS_EDIT_TOPIC`},[Qat]:{EDIT_TOPIC:`${pi}ENTITY_TYPE_SUPPORT_PACKAGE_EDIT_TOPIC`},[LT]:{EDIT_TOPIC:`${pi}TEMPLATE_EDIT_TOPIC`,ADDED_TOPIC:`${pi}TEMPLATE_ADDED_TOPIC`,DELETE_TOPIC:`${pi}TEMPLATE_DELETE_TOPIC`},[Ty]:{EDIT_TOPIC:`${pi}PIR_EDIT_TOPIC`,ADDED_TOPIC:`${pi}PIR_ADDED_TOPIC`,DELETE_TOPIC:`${pi}PIR_DELETE_TOPIC`},[EM]:{EDIT_TOPIC:`${pi}DESIGN_EDIT_TOPIC`,ADDED_TOPIC:`${pi}DESIGN_EDIT_TOPIC`,DELETE_TOPIC:`${pi}DESIGN_EDIT_TOPIC`},[CM]:{EDIT_TOPIC:`${pi}ENTITY_TYPE_EMAIL_TEMPLATE_EDIT_TOPIC`,DELETE_TOPIC:`${pi}ENTITY_TYPE_EMAIL_TEMPLATE_DELETE_TOPIC`,ADDED_TOPIC:`${pi}ENTITY_TYPE_EMAIL_TEMPLATE_ADDED_TOPIC`}},$at=t=>De[t],jt=Bp.default;var eot={deps:[],add(t){this.deps=[...this.get(),...t]},get(){return this.deps??[]}},hOi=t=>t.mandatoryType==="external"||t.mandatoryType==="internal",ijs=t=>t.type==="date",bOi=t=>t.type==="object"&&t.format!=="flat",tin=(t,e)=>{let n=t.split(".");if(n.length===1)return e;if(!bOi(e))throw Me(`Cannot resolve path [${t}], [${e.name}] is not an object`);let i=e.mappings.find(r=>r.name===n[1]);if(!i)throw Me(`Schema definition named [${e.name}] is missing mapping for attribute [${n[1]}]`);return n.length>2?(n.shift(),tin(n.join("."),i)):i},i7e=!1,Un={allAttributes:new Map,attributes:{},attributesByTypes:{string:new Map,date:new Map,numeric:new Map,boolean:new Map,object:new Map},registeredTypes:[],upsertByEntity:new Map,registerAttributes(t,e){if(i7e)throw Ge("Register attributes use after usage, please check your imports");this.registeredTypes.push(t);let n=this.attributes[t]??new Map,i=Object.values(this.attributes);e.filter(o=>!o.featureFlag||k5(o.featureFlag)).forEach(o=>{var u;i.forEach(l=>{let p=Array.from(l.values()).filter(f=>f.label===o.label&&f.name!==o.name);if(p.length>0)throw Ge("You can't have two attributes with the same label and a different name in the platform",{attributesWithSameLabelAndDifferentName:p,attribute:o})});let s=(u=i.find(l=>l.get(o.name)))==null?void 0:u.get(o.name);if(s){if(s.type==="string"){if(s.type!==o.type)throw Ge("You can't have two attributes with the same name and a different type in the platform",{existingAttribute:s,attribute:o});if(s.format!==o.format&&!(ztt.includes(s.format)&&ztt.includes(o.format)))throw Ge("You can't have two string attributes with the same name and different format if the formats are not both short format",{existingAttribute:s,attribute:o})}if(s.type==="numeric"&&(s.type!==o.type||s.precision!==o.precision))throw Ge("You can't have two attributes with the same name and a different type in the platform",{existingAttribute:s,attribute:o});if(s.type==="object"&&(s.type!==o.type||s.format!==o.format))throw Ge("You can't have two attributes with the same name and a different type in the platform",{existingAttribute:s,attribute:o});if((s.type==="date"||s.type==="boolean")&&s.type!==o.type)throw Ge("You can't have two attributes with the same name and a different type in the platform",{existingAttribute:s,attribute:o})}if(n.has(o.name))throw Ge("You can't register two attributes with the same name on an entity",{attributeName:o.name,entityType:t});if(o.type==="object"&&o.format!=="flat"&&o.sortBy&&tin(o.sortBy.path,o).type!==o.sortBy.type)throw Ge("You can't define a sortBy with path and type that do not match the corresponding mapping",{attributeName:o.name,entityType:t});let d={...o};d.type==="object"&&d.format!=="flat"&&d.mappings.length>0&&(d={...d,mappings:d.mappings.filter(l=>!l.featureFlag||k5(l.featureFlag))}),n.set(d.name,d),this.allAttributes.set(d.name,d)});let r=new Map(Ws(t).map(o=>Array.from((this.attributes[o]??new Map).values())).flat().map(o=>[o.name,o])),a=new Map([...r,...n]);this.attributes[t]=a,a.forEach(o=>{this.attributesByTypes[o.type].set(o.name),o.upsert&&this.upsertByEntity.set(t,[...this.upsertByEntity.get(t)??[],o.name])})},selectEntityType(t){if(i7e=!0,this.attributes[t])return t;let e=[...Ws(t)].reverse();for(let n=0;n<e.length;n+=1){let i=e[n];if(this.attributes[i])return i}throw Ge("Register relations has no registration for type",{type:t})},getAllAttributes(){return i7e=!0,Sg(t=>t.name,Object.values(this.attributes).map(t=>Array.from(t.values())).flat())},getIdAttributes(){return this.getAllAttributes().filter(t=>t.type==="string"&&t.format==="id")},getIdAttributeNames(){return this.getIdAttributes().map(t=>t.name)},getRegisteredTypes(){return this.registeredTypes},getAttributes(t){return this.attributes[this.selectEntityType(t)]??new Map},getAttributeNames(t){return Array.from(this.getAttributes(t).keys())},getAttribute(t,e){var n;return(n=this.getAttributes(t))==null?void 0:n.get(e)},getAttributeByName(t){return this.allAttributes.get(t)},isMultipleAttribute(t,e){var n;return((n=this.getAttribute(t,e))==null?void 0:n.multiple)??!1},getAllAttributesNames(){return i7e=!0,Array.from(this.allAttributes.keys())},getUpsertAttributeNames(t){return this.upsertByEntity.get(this.selectEntityType(t))??[]},isSpecificTypeAttribute(t,...e){if(t.includes(".")&&!t.endsWith("*")){let n=Un.getAttributeByName(t.split(".")[0]);if(n&&n.type==="object"&&n.format==="standard"){let{type:i}=Un.getAttributeMappingFromPath(t);return e.includes(i)}}return i7e=!0,e.reduce((n,i)=>this.attributesByTypes[i].has(t)||n,!1)},getAttributeMappingFromPath(t){let e=t.split("."),n=this.getAttributeByName(e[0]);if(!n)throw Me(`Cannot resolve path [${t}], missing schema definition for attribute [${e[0]}}]`);return tin(t,n)}},r7e=t=>Un.isSpecificTypeAttribute(t,"boolean"),Pte=t=>Un.isSpecificTypeAttribute(t,"date"),c6=t=>Un.isSpecificTypeAttribute(t,"numeric"),tot=t=>Un.isSpecificTypeAttribute(t,"date","numeric","boolean"),N5=t=>Un.isSpecificTypeAttribute(t,"object"),TOi=t=>{let e=Un.getAttributeByName(t.split(".")[0]);return e?e.type==="object"&&e.format==="flat":!1},VNe=(t,e)=>e.startsWith(Wv)||Un.isMultipleAttribute(t,e),kOi=(t,e)=>{let n=hOi(e);if(n&&Vi(t))throw Me(`Validation against schema failed on attribute [${e.name}]: this mandatory field cannot be nil`);if(ijs(e)&&!Vi(t))try{Ike.parseValue(t)}catch{throw Me(`Validation against schema failed on attribute [${e.name}]: this date field is not in a valid format`)}if(bOi(e)){if(!n&&Vi(t))return;if(e.multiple&&!Array.isArray(t))throw Me(`Validation against schema failed on attribute [${e.name}]: value must be an array`);if(!e.multiple&&(Array.isArray(t)||!GV(Object,t)))throw Me(`Validation against schema failed on attribute [${e.name}]: value must be an object`);(Array.isArray(t)?t:[t]).forEach(r=>{let a=Object.keys(r);e.mappings.forEach(o=>{if(hOi(o)&&!a.includes(o.name))throw Me(`Validation against schema failed on attribute [${e.name}]: mandatory field [${o.name}] is not present`);let s=r[o.name];kOi(s,o)})})}},NOi=t=>{if(!t.entity_type)throw Me("Validation against schema failed: element has no entity_type");Un.getAttributes(t.entity_type),Object.keys(t).forEach(e=>{let n=t[e],i=Un.getAttribute(t.entity_type,e);i&&kOi(n,i)})};var rjs=[iO,I2,bw,rke,BN,MH,Vee,Lee,Cg,Ex,Cx,K8,Mh,aAi];Un.registerAttributes(SM,rjs);var ajs=[xH,Bee];Un.registerAttributes(Zb,ajs);var ojs=[Xtt];Aa.add(Mi,[wt,Zn]);Un.registerAttributes(Mi,ojs);var jDe=Se(Yk());var eAa=Se(EOi()),Qh=Se(S5()),$7n=Se(uPi()),RMt=Se(Bg()),MAe=Se(I5()),n9n=Se(Px());var qin=Se(Yk());var qLi=Se(S5()),iW=Se(Yk());var wLi=Se(Yk()),FLi=Se(OLi());var y7s=64;var Vte=(0,FLi.extendMoment)(wLi.default),Xk=0,zF="1970-01-01T00:00:00.000Z",Kk=1e14,p6="5138-11-16T09:46:40.000Z",A7s="YYYY-MM-DDTHH:mm:ss.SSS";var fr=t=>t?Vte(t).utc():Vte().utc(),v7s=(t=null)=>fr(t).toDate().getTime();var cot=t=>fr(parseInt(t.split("-")[0],10)).toISOString(),pot=(t=null,e=0)=>`${v7s(t)}-${e}`,cn=()=>fr().toISOString(),QNe=()=>g7s(cn()),nW=t=>{let e=fr().diff(fr(t)),n=Vte.duration(e);return Math.floor(n.asMinutes())};var l7e=t=>fr(t).format(A7s);var g7s=t=>fr(t).format("YYYY-MM-DD HH:mm");var Ey=(t,e)=>Vte.range(t,e),Jk=(t,e)=>{let n=t.intersect(e);if(n)return{start:n.start.toISOString(),end:n.end.toISOString()};let i=Vte.min([t.start,e.start]),r=Vte.max([e.end,e.end]);return{start:i.toISOString(),end:r.toISOString()}},GNe=t=>Vte().utc().subtract(t,"minutes");var Pin=t=>{let e=new Date;return e.setDate(e.getDate()-t),e.toISOString().split("T")[0]},h7s=(t=null,e=!0)=>{let n=new Date;return t&&(n=fr(t).toDate()),e&&n.setHours(0,0,0,0),n},Rs=t=>Vte(h7s()).subtract(t,"months").format();var PLi=["SHA-512","SHA-256","SHA-1","MD5"],Gce=t=>{if(t.hashes)for(let e=0;e<PLi.length;e+=1){let n=PLi[e];if(t.hashes[n])return t.hashes[n]}return null};var QF=(t,e=y7s,n=!0)=>{if(t==null||t.length<=e)return t;let i=t.substr(0,e);return n?i.includes(" ")?`${i.substr(0,Math.min(i.length,i.lastIndexOf(" ")))}...`:`${i}...`:i},b7s=t=>{let e=t.name||t.cpe||t.swid||"Unknown";return e!=="Unknown"&&t.version?`${e} (${t.version})`:e},E5=t=>{switch(t.entity_type){case Dh:return t.name||t.number||"Unknown";case qk:return t.path||"Unknown";case M0:return t.body||t.subject;case ms:return Gce(t)||t.payload_bin||t.url||"Unknown";case Za:return Gce(t)||t.name||"Unknown";case oO:return Gce(t)||t.subject||t.issuer||"Unknown";case x0:return t.name||"Unknown";case xg:return t.src_port||t.dst_port||"Unknown";case th:return t.pid||t.command_line||"Unknown";case wp:return b7s(t);case VA:return t.account_login||t.user_id||"Unknown";case OM:return t.iban||t.number||"Unknown";case P0:return t.card_number||t.holder_name||"Unknown";case D0:return t.attribute_key||"Unknown";case O0:return t.name||t.data||"Unknown";case Ev:return t.content||t.title||t.url||"Unknown";case xx:return t.persona_name||"Unknown";case UN:return t.fingerprint_sha256||t.fingerprint_md5||t.key_type||"Unknown";default:return t.value||t.name||"Unknown"}},C5=t=>{if(t){let e=parseFloat(t);if(e<0||e>100||!Number.isInteger(e))throw al("The score should be an integer between 0 and 100","x_opencti_score")}return!0},BLi=()=>`
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+
+t [GraphQLError]: You can't register two attributes with the same name on an entity
+    at Uk [90m(/Users/florian.delemarre/filigran/octi/opencti/opencti-platform/opencti-graphql/[39mbuild/script-generate-schema.js:1366:66868[90m)[39m
+    at Ge [90m(/Users/florian.delemarre/filigran/octi/opencti/opencti-platform/opencti-graphql/[39mbuild/script-generate-schema.js:1366:68259[90m)[39m
+    at [90m/Users/florian.delemarre/filigran/octi/opencti/opencti-platform/opencti-graphql/[39mbuild/script-generate-schema.js:1369:17788
+    at Array.forEach (<anonymous>)
+    at Object.registerAttributes [90m(/Users/florian.delemarre/filigran/octi/opencti/opencti-platform/opencti-graphql/[39mbuild/script-generate-schema.js:1369:16425[90m)[39m
+    at ei [90m(/Users/florian.delemarre/filigran/octi/opencti/opencti-platform/opencti-graphql/[39mbuild/script-generate-schema.js:2553:41205[90m)[39m
+    at Object.<anonymous> [90m(/Users/florian.delemarre/filigran/octi/opencti/opencti-platform/opencti-graphql/[39mbuild/script-generate-schema.js:3027:3001089[90m)[39m
+[90m    at Module._compile (node:internal/modules/cjs/loader:1521:14)[39m
+[90m    at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)[39m
+[90m    at Module.load (node:internal/modules/cjs/loader:1266:32)[39m
+[90m    at Module._load (node:internal/modules/cjs/loader:1091:12)[39m
+[90m    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:164:12)[39m
+[90m    at node:internal/main/run_main_module:28:49[39m {
+  path: [90mundefined[39m,
+  locations: [90mundefined[39m,
+  extensions: {
+    code: [32m'UNSUPPORTED_ERROR'[39m,
+    data: {
+      http_status: [33m500[39m,
+      genre: [32m'BUSINESS'[39m,
+      attributeName: [32m'standard_id'[39m,
+      entityType: [32m'DraftWorkspace'[39m
+    }
+  }
+}
+
+Node.js v20.19.6

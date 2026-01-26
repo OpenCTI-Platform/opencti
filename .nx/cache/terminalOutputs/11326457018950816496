@@ -1,0 +1,1052 @@
+> yarn dev
+
+[0m[34m[INFO] [0m[default] compiling...
+[0m[34m[INFO] [0m[default] compiled documents: 2333 reader, 1595 normalization, 2341 operation text
+[0m[34m[INFO] [0mCompilation completed.
+[0m[34m[INFO] [0mDone.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J
+  [32m[1mVITE[22m v7.3.1[39m  [2mready in [0m[1m2859[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m3000[22m/[39m
+[2m  [32m➜[39m  [1mNetwork[22m[2m: use [22m[1m--host[22m[2m to expose[22m
+[2m[32m  ➜[39m[22m[2m  press [22m[1mh + enter[22m[2m to show help[22m
+[36m[vite-plugin-static-copy][39m [32mCollected 27 items.[39m
+[2m6:16:29 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /graphql[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1122:18)
+    at afterConnectMultiple (node:net:1689:7)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m6:16:30 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /graphql[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1122:18)
+    at afterConnectMultiple (node:net:1689:7) [33m(x2)[39m
+[BABEL] Note: The code generator has deoptimised the styling of /Users/florian.delemarre/filigran/octi/opencti/opencti-platform/opencti-front/node_modules/.vite/deps/chunk-KARFF5CC.js?v=d977b2be as it exceeds the max of 500KB.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m6:16:31 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /graphql[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1122:18)
+    at afterConnectMultiple (node:net:1689:7) [33m(x3)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m6:16:31 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /graphql[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1122:18)
+    at afterConnectMultiple (node:net:1689:7) [33m(x4)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m6:16:31 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /graphql[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1122:18)
+    at afterConnectMultiple (node:net:1689:7) [33m(x5)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m6:16:32 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /graphql[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1122:18)
+    at afterConnectMultiple (node:net:1689:7) [33m(x6)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m6:16:34 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /graphql[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1122:18)
+    at afterConnectMultiple (node:net:1689:7) [33m(x7)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m6:16:37 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /graphql[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1122:18)
+    at afterConnectMultiple (node:net:1689:7) [33m(x8)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m6:16:39 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /graphql[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1122:18)
+    at afterConnectMultiple (node:net:1689:7) [33m(x9)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m6:16:40 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /graphql[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1122:18)
+    at afterConnectMultiple (node:net:1689:7) [33m(x10)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m6:16:40 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /graphql[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1122:18)
+    at afterConnectMultiple (node:net:1689:7) [33m(x11)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m6:16:41 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /graphql[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1122:18)
+    at afterConnectMultiple (node:net:1689:7) [33m(x12)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m6:16:41 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /graphql[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1122:18)
+    at afterConnectMultiple (node:net:1689:7) [33m(x13)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m6:16:42 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /graphql[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1122:18)
+    at afterConnectMultiple (node:net:1689:7) [33m(x14)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m6:16:44 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /graphql[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1122:18)
+    at afterConnectMultiple (node:net:1689:7) [33m(x15)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m6:16:47 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /graphql[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1122:18)
+    at afterConnectMultiple (node:net:1689:7) [33m(x16)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m6:16:48 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/private/components/common/files/FileImportViewer.tsx[22m
+[2m6:16:49 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /graphql[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1122:18)
+    at afterConnectMultiple (node:net:1689:7)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m6:16:50 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /graphql[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1122:18)
+    at afterConnectMultiple (node:net:1689:7) [33m(x2)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m6:16:50 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /graphql[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1122:18)
+    at afterConnectMultiple (node:net:1689:7) [33m(x3)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m6:16:51 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /graphql[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1122:18)
+    at afterConnectMultiple (node:net:1689:7) [33m(x4)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m6:16:51 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /graphql[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1122:18)
+    at afterConnectMultiple (node:net:1689:7) [33m(x5)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m6:16:52 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /graphql[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1122:18)
+    at afterConnectMultiple (node:net:1689:7) [33m(x6)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m6:16:54 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /graphql[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1122:18)
+    at afterConnectMultiple (node:net:1689:7) [33m(x7)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m6:17:09 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/private/components/common/files/FileImportViewer.tsx[22m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m6:17:32 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/private/components/common/files/FileImportViewer.tsx[22m [33m(x2)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m6:19:30 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/private/components/common/files/FileImportViewer.tsx[22m [33m(x3)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m6:19:30 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/private/components/common/files/import_files/ImportFilesContext.tsx[22m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m6:19:30 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/private/components/nav/TopBar.tsx[22m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m6:19:30 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/utils/Security.tsx[22m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m6:19:30 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/private/components/common/entreprise_edition/EETooltip.tsx, /src/private/components/cases/feedbacks/FeedbackCreation.tsx, /src/private/components/settings/sub_types/entity_setting/EntitySettingSettings.tsx, /src/private/components/common/stix_domain_objects/StixDomainObjectCreation.jsx, /src/utils/Security.tsx, /src/private/components/cases/case_incidents/CaseIncidentCreation.tsx, /src/private/components/cases/case_rfis/CaseRfiCreation.tsx, /src/private/components/analyses/groupings/GroupingCreation.tsx, /src/private/components/analyses/reports/ReportCreation.tsx, /src/private/components/analyses/notes/NoteCreation.tsx, /src/private/components/cases/case_rfts/CaseRftCreation.tsx, /src/private/components/common/form/AuthorizedMembersField.tsx, /src/components/list_lines/ListLines.jsx, /src/components/SearchInput.jsx, /src/private/components/settings/LabelsVocabulariesMenu.tsx, /src/private/components/common/stix_domain_objects/StixDomainObjectsExportsContent.jsx, /src/private/components/observations/stix_cyber_observables/StixCyberObservablesExportsContent.jsx, /src/private/components/common/stix_core_relationships/StixCoreRelationshipsExportsContent.jsx, /src/private/components/common/stix_core_objects/StixCoreObjectsExportsContent.jsx, /src/private/components/common/files/FileLine.tsx, /src/components/dataGrid/DataTableFilters.tsx, /src/private/components/data/DataTableToolBar.jsx, /src/private/components/common/entreprise_edition/EEChip.tsx, /src/private/components/common/lists/FilterAutocomplete.tsx, /src/components/filters/FilterChipPopover.tsx, /src/private/components/common/files/workbench/WorkbenchFileViewer.jsx, /src/private/components/common/files/FileImportViewer.tsx, /src/private/components/common/files/draftWorkspace/DraftWorkspaceViewer.tsx, /src/private/components/common/files/import_files/ImportFilesDialog.tsx, /src/private/components/drafts/Drafts.tsx, /src/private/components/nav/LeftBar.jsx, /src/private/components/drafts/DraftPopover.tsx, /src/private/components/drafts/DraftContextBanner.tsx, /src/private/components/common/files/import_files/ImportFilesContext.tsx, /src/private/components/data/forms/view/FormView.tsx, /src/private/components/data/import/ManageImportConnectorMessage.tsx, /src/private/components/nav/TopBar.tsx, /src/private/components/settings/platform_alerts/PlatformCriticalAlertDialog.tsx, /src/private/components/chatbox/AskArianeButton.tsx, /src/private/components/settings/Experience.tsx, /src/private/components/common/entreprise_edition/EnterpriseEditionButton.tsx, /src/private/components/settings/xtm-hub/XtmHubSettings.tsx, /src/private/components/analyses/reports/Root.tsx, /src/private/components/common/stix_core_objects/StixCoreObjectSecurityCoverage.tsx, /src/private/components/common/containers/ContainerHeader.jsx, /src/private/components/common/containers/ContainerStixDomainObjects.tsx, /src/private/components/common/ai/AIInsights.tsx, /src/private/components/common/containers/ContainerStixCyberObservables.tsx, /src/private/components/common/stix_domain_objects/StixDomainObjectOverview.jsx, /src/private/components/common/stix_core_objects/StixCoreObjectEnrollPlaybook.tsx, /src/private/components/common/stix_core_objects/StixCoreObjectSubscribers.tsx, /src/private/components/common/stix_core_objects/StixCoreObjectSharing.tsx, /src/private/components/common/stix_core_objects/StixCoreObjectFileExport.tsx, /src/private/components/common/containers/ContainerStixDomainObjectLine.jsx, /src/components/ExportButtons.jsx, /src/private/components/common/stix_core_objects/StixCoreObjectsSuggestions.jsx, /src/private/components/common/containers/ContainerStixCyberObservableLine.jsx, /src/private/components/analyses/notes/StixCoreObjectOrStixCoreRelationshipNotesCards.tsx, /src/private/components/analyses/external_references/StixCoreObjectExternalReferencesLines.tsx, /src/private/components/common/form/CommitMessage.tsx, /src/components/ItemAssignees.tsx, /src/components/ItemParticipants.tsx, /src/private/components/common/stix_domain_objects/StixDomainObjectHeader.jsx, /src/components/ItemCreators.tsx, /src/private/components/common/stix_core_objects/StixCoreObjectContentFiles.tsx, /src/private/components/common/stix_domain_objects/StixDomainObjectAttackPatternsKillChain.tsx, /src/private/components/common/stix_core_relationships/StixCoreRelationshipOverview.jsx, /src/private/components/common/stix_core_objects/StixCoreObjectEnrollPlaybookLines.jsx, /src/private/components/common/stix_core_objects/StixCoreObjectAskAI.tsx, /src/private/components/common/stix_core_objects/StixCoreObjectEnrichmentLines.jsx, /src/private/components/common/containers/ContainerStixCoreObjectPopover.jsx, /src/private/components/analyses/notes/StixCoreObjectOrStixCoreRelationshipNoteCard.tsx, /src/private/components/analyses/opinions/StixCoreObjectOpinionsRadarDialog.tsx, /src/private/components/common/stix_core_objects_or_stix_relationships/StixCoreObjectOrCoreRelationshipLabelsView.jsx, /src/private/components/common/containers/ContainerStixCoreObjectsMappingLine.jsx, /src/private/components/common/stix_core_objects/StixCoreObjectContentFilesList.tsx, /src/private/components/common/stix_domain_objects/StixDomainObjectAttackPatternsKillChainMatrixInLine.tsx, /src/private/components/common/stix_core_relationships/StixCoreRelationships.tsx, /src/private/components/common/stix_core_relationships/StixCoreRelationshipSharing.tsx, /src/private/components/analyses/notes/NotePopover.tsx, /src/private/components/analyses/external_references/ExternalReferenceEnrichmentLines.jsx, /src/private/components/analyses/opinions/OpinionPopover.tsx, /src/private/components/analyses/opinions/OpinionEditionOverview.jsx, /src/private/components/common/stix_core_relationships/StixCoreRelationshipStixCoreRelationshipsLines.jsx, /src/private/components/analyses/external_references/StixCoreRelationshipExternalReferencesLines.jsx, /src/private/components/analyses/notes/NoteEdition.tsx, /src/private/components/analyses/opinions/OpinionEdition.jsx, /src/private/components/analyses/notes/NoteEditionOverview.tsx[22m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m6:19:30 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/private/components/common/files/import_files/ImportFilesContext.tsx[22m
+[2m6:19:33 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [33mhmr invalidate [39m[2m/src/utils/Security.tsx[22m Could not Fast Refresh ("CAPABILITY_INFORMATION" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+[2m6:19:33 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/private/components/settings/sub_types/entity_setting/EntitySettingSettings.tsx, /src/private/components/cases/case_incidents/CaseIncidentCreation.tsx, /src/private/components/cases/case_rfis/CaseRfiCreation.tsx, /src/private/components/analyses/groupings/GroupingCreation.tsx, /src/private/components/analyses/reports/ReportCreation.tsx, /src/private/components/cases/case_rfts/CaseRftCreation.tsx, /src/components/list_lines/ListLines.jsx, /src/private/components/common/stix_domain_objects/StixDomainObjectsExportsContent.jsx, /src/private/components/observations/stix_cyber_observables/StixCyberObservablesExportsContent.jsx, /src/private/components/common/stix_core_relationships/StixCoreRelationshipsExportsContent.jsx, /src/private/components/common/stix_core_objects/StixCoreObjectsExportsContent.jsx, /src/private/components/common/files/FileLine.tsx, /src/components/dataGrid/DataTableFilters.tsx, /src/private/components/data/DataTableToolBar.jsx, /src/private/components/common/files/workbench/WorkbenchFileViewer.jsx, /src/private/components/common/files/FileImportViewer.tsx, /src/private/components/common/files/import_files/ImportFilesDialog.tsx, /src/private/components/drafts/DraftPopover.tsx, /src/private/components/drafts/DraftContextBanner.tsx, /src/private/components/nav/TopBar.tsx, /src/private/components/nav/LeftBar.jsx, /src/private/components/analyses/reports/Root.tsx, /src/private/components/common/containers/ContainerHeader.jsx, /src/private/components/common/containers/ContainerStixDomainObjects.tsx, /src/private/components/common/containers/ContainerStixCyberObservables.tsx, /src/private/components/common/stix_domain_objects/StixDomainObjectOverview.jsx, /src/private/components/common/stix_core_objects/StixCoreObjectMenuItemUnderEE.tsx, /src/private/components/common/stix_core_objects/StixCoreObjectEnrollPlaybook.tsx, /src/private/components/common/containers/ContainerStixDomainObjectLine.jsx, /src/components/ExportButtons.jsx, /src/private/components/common/containers/ContainerStixCyberObservableLine.jsx, /src/private/components/analyses/notes/StixCoreObjectOrStixCoreRelationshipNotesCards.tsx, /src/private/components/analyses/external_references/StixCoreObjectExternalReferencesLines.tsx, /src/private/components/common/form/CommitMessage.tsx, /src/private/components/common/stix_domain_objects/StixDomainObjectHeader.jsx, /src/components/ItemCreators.tsx, /src/private/components/common/stix_core_objects/StixCoreObjectContentFiles.tsx, /src/private/components/common/stix_domain_objects/StixDomainObjectAttackPatternsKillChain.tsx, /src/private/components/common/stix_core_relationships/StixCoreRelationshipOverview.jsx, /src/private/components/common/stix_core_objects/StixCoreObjectEnrollPlaybookLines.jsx, /src/private/components/common/stix_core_objects/StixCoreObjectEnrichmentLines.jsx, /src/private/components/common/containers/ContainerStixCoreObjectPopover.jsx, /src/private/components/analyses/notes/StixCoreObjectOrStixCoreRelationshipNoteCard.tsx, /src/private/components/analyses/opinions/StixCoreObjectOpinionsRadarDialog.tsx, /src/private/components/common/stix_core_objects_or_stix_relationships/StixCoreObjectOrCoreRelationshipLabelsView.jsx, /src/private/components/common/containers/ContainerStixCoreObjectsMappingLine.jsx, /src/private/components/common/stix_core_objects/StixCoreObjectContentFilesList.tsx, /src/private/components/common/stix_domain_objects/StixDomainObjectAttackPatternsKillChainMatrixInLine.tsx, /src/private/components/common/stix_core_relationships/StixCoreRelationships.tsx, /src/private/components/analyses/notes/NotePopover.tsx, /src/private/components/analyses/external_references/ExternalReferenceEnrichmentLines.jsx, /src/private/components/analyses/opinions/OpinionPopover.tsx, /src/private/components/common/stix_core_relationships/StixCoreRelationshipStixCoreRelationshipsLines.jsx, /src/private/components/analyses/external_references/StixCoreRelationshipExternalReferencesLines.jsx, /src/private/components/analyses/notes/NoteEdition.tsx, /src/private/components/analyses/opinions/OpinionEdition.jsx[22m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m6:19:36 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/private/components/common/files/FileImportViewer.tsx[22m
+[2m6:19:39 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [33mhmr invalidate [39m[2m/src/private/components/common/files/import_files/ImportFilesContext.tsx[22m Could not Fast Refresh ("useImportFilesContext" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+[2m6:19:39 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/private/components/common/files/import_files/ImportFilesDialog.tsx, /src/private/components/common/files/import_files/ImportFilesUploader.tsx, /src/private/components/common/files/import_files/ImportFilesOptions.tsx, /src/private/components/common/files/import_files/ImportFilesUploadProgress.tsx, /src/private/components/common/files/import_files/ImportFilesStepper.tsx, /src/private/components/common/files/import_files/ImportFilesToggleMode.tsx, /src/private/components/common/files/import_files/ImportFilesFormSelector.tsx, /src/private/components/common/files/import_files/ImportFilesFormView.tsx, /src/private/components/common/files/import_files/ImportFilesDropzone.tsx, /src/private/components/common/files/import_files/ImportFilesList.tsx, /src/private/components/data/forms/view/FormView.tsx[22m
+[2m6:19:39 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [33mhmr invalidate [39m[2m/src/private/components/common/stix_core_objects/StixCoreObjectFileExport.tsx[22m Could not Fast Refresh ("BUILT_IN_FROM_TEMPLATE" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+[2m6:19:39 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/private/components/common/containers/ContainerHeader.jsx, /src/private/components/common/stix_domain_objects/StixDomainObjectHeader.jsx, /src/private/components/common/stix_core_objects/StixCoreObjectContentFiles.tsx, /src/private/components/common/form/StixCoreObjectFileExportForm.tsx, /src/private/components/common/stix_core_objects/StixCoreObjectContentFilesList.tsx[22m
+[2m6:19:44 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [33mhmr invalidate [39m[2m/src/private/components/common/form/StixCoreObjectFileExportForm.tsx[22m Could not Fast Refresh ("renderIcon" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+[2m6:19:44 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/private/components/common/form/StixCoreObjectFileExportForm.tsx[22m[2m (circular import invalidate)[22m

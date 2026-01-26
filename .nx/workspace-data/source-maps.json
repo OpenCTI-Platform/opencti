@@ -1,0 +1,2266 @@
+{
+  "opencti-platform/opencti-front": {
+    "root": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "tags": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "tags.npm:private": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.0": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.1": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.2": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.3": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.4": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.5": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.6": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.7": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.8": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.9": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.10": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.11": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.12": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.13": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.14": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.15": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.16": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.17": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.18": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.19": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.js": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.js.packageName": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.js.packageVersion": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.js.isInPackageManagerWorkspaces": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.relay": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.relay.executor": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.relay.options": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.relay.metadata": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.relay.options.script": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.relay.metadata.scriptContent": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.relay.metadata.runCommand": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.dev:vite:debug": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.dev:vite:debug.executor": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.dev:vite:debug.options": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.dev:vite:debug.metadata": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.dev:vite:debug.options.script": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.dev:vite:debug.metadata.scriptContent": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.dev:vite:debug.metadata.runCommand": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start.executor": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start.options": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start.metadata": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start.options.script": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start.metadata.scriptContent": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start.metadata.runCommand": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.esbuild": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.esbuild.executor": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.esbuild.options": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.esbuild.metadata": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.esbuild.options.script": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.esbuild.metadata.scriptContent": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.esbuild.metadata.runCommand": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:standalone": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:standalone.executor": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:standalone.options": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:standalone.metadata": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:standalone.options.script": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:standalone.metadata.scriptContent": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:standalone.metadata.runCommand": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.control": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.control.executor": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.control.options": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.control.metadata": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.control.options.script": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.control.metadata.scriptContent": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.control.metadata.runCommand": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:watch": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:watch.executor": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:watch.options": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:watch.metadata": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:watch.options.script": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:watch.metadata.scriptContent": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:watch.metadata.runCommand": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:coverage": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:coverage.executor": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:coverage.options": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:coverage.metadata": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:coverage.options.script": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:coverage.metadata.scriptContent": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:coverage.metadata.runCommand": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.check-ts": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.check-ts.executor": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.check-ts.options": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.check-ts.metadata": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.check-ts.options.script": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.check-ts.metadata.scriptContent": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.check-ts.metadata.runCommand": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.i18n-checker": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.i18n-checker.executor": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.i18n-checker.options": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.i18n-checker.metadata": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.i18n-checker.options.script": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.i18n-checker.metadata.scriptContent": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.i18n-checker.metadata.runCommand": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.extract-translation": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.extract-translation.executor": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.extract-translation.options": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.extract-translation.metadata": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.extract-translation.options.script": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.extract-translation.metadata.scriptContent": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.extract-translation.metadata.runCommand": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.verify-translation": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.verify-translation.executor": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.verify-translation.options": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.verify-translation.metadata": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.verify-translation.options.script": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.verify-translation.metadata.scriptContent": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.verify-translation.metadata.runCommand": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.sort-translation": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.sort-translation.executor": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.sort-translation.options": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.sort-translation.metadata": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.sort-translation.options.script": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.sort-translation.metadata.scriptContent": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.sort-translation.metadata.runCommand": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.auto-translation:all": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.auto-translation:all.executor": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.auto-translation:all.options": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.auto-translation:all.metadata": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.auto-translation:all.options.script": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.auto-translation:all.metadata.scriptContent": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.auto-translation:all.metadata.runCommand": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.verify-licenses": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.verify-licenses.executor": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.verify-licenses.options": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.verify-licenses.metadata": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.verify-licenses.options.script": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.verify-licenses.metadata.scriptContent": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.verify-licenses.metadata.runCommand": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:e2e": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:e2e.executor": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:e2e.options": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:e2e.metadata": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:e2e.options.script": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:e2e.metadata.scriptContent": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:e2e.metadata.runCommand": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:e2e:ui": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:e2e:ui.executor": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:e2e:ui.options": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:e2e:ui.metadata": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:e2e:ui.options.script": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:e2e:ui.metadata.scriptContent": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:e2e:ui.metadata.runCommand": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.generate-test-e2e": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.generate-test-e2e.executor": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.generate-test-e2e.options": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.generate-test-e2e.metadata": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.generate-test-e2e.options.script": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.generate-test-e2e.metadata.scriptContent": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.generate-test-e2e.metadata.runCommand": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:e2e:coverage": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:e2e:coverage.executor": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:e2e:coverage.options": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:e2e:coverage.metadata": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:e2e:coverage.options.script": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:e2e:coverage.metadata.scriptContent": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:e2e:coverage.metadata.runCommand": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.show-report-e2e": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.show-report-e2e.executor": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.show-report-e2e.options": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.show-report-e2e.metadata": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.show-report-e2e.options.script": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.show-report-e2e.metadata.scriptContent": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.show-report-e2e.metadata.runCommand": [
+      "opencti-platform/opencti-front/package.json",
+      "nx/core/package-json"
+    ],
+    "$schema": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "types": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.install": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.install.executor": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.install.options": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.install.metadata": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.install.options.cwd": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.install.options.command": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.install.metadata.description": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.executor": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.dependsOn": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.options": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.metadata": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.options.cwd": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.options.command": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.metadata.description": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.executor": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.metadata": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options.cwd": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options.command": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.metadata.description": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.metadata": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.cwd": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.command": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.metadata.description": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.e2e": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.e2e.executor": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.e2e.dependsOn": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.e2e.options": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.e2e.metadata": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.e2e.options.cwd": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.e2e.options.command": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.e2e.metadata.description": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.dev": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.dev.executor": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.dev.continuous": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.dev.options": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.dev.metadata": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.dev.options.cwd": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.dev.options.command": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.dev.metadata.description": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.graphql": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.graphql.executor": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.graphql.options": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.graphql.dependsOn": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.graphql.metadata": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.graphql.options.cwd": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.graphql.options.command": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.graphql.metadata.description": [
+      "opencti-platform/opencti-front/project.json",
+      "nx/core/project-json"
+    ]
+  },
+  "opencti-platform/opencti-graphql": {
+    "root": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "tags": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "tags.npm:private": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.0": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.1": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.2": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.3": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.4": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.5": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.6": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.7": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.8": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.9": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.10": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.11": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.12": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.13": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.14": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.15": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.16": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.17": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.18": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.19": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.20": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.21": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.22": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.23": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.24": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.25": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.26": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.27": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.28": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.js": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.js.packageName": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.js.packageVersion": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.js.isInPackageManagerWorkspaces": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.check-ts": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.check-ts.executor": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.check-ts.options": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.check-ts.metadata": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.check-ts.options.script": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.check-ts.metadata.scriptContent": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.check-ts.metadata.runCommand": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.install:python": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.install:python.executor": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.install:python.options": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.install:python.metadata": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.install:python.options.script": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.install:python.metadata.scriptContent": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.install:python.metadata.runCommand": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:types": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:types.executor": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:types.options": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:types.metadata": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:types.options.script": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:types.metadata.scriptContent": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:types.metadata.runCommand": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:schema": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:schema.executor": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:schema.options": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:schema.metadata": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:schema.options.script": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:schema.metadata.scriptContent": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:schema.metadata.runCommand": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:prod": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:prod.executor": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:prod.options": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:prod.metadata": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:prod.options.script": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:prod.metadata.scriptContent": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:prod.metadata.runCommand": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:dev": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:dev.executor": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:dev.options": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:dev.metadata": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:dev.options.script": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:dev.metadata.scriptContent": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:dev.metadata.runCommand": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:antlr": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:antlr.executor": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:antlr.options": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:antlr.metadata": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:antlr.options.script": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:antlr.metadata.scriptContent": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build:antlr.metadata.runCommand": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.migrate:add": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.migrate:add.executor": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.migrate:add.options": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.migrate:add.metadata": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.migrate:add.options.script": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.migrate:add.metadata.scriptContent": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.migrate:add.metadata.runCommand": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.clean:relations": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.clean:relations.executor": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.clean:relations.options": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.clean:relations.metadata": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.clean:relations.options.script": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.clean:relations.metadata.scriptContent": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.clean:relations.metadata.runCommand": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.backend:stack:analysis": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.backend:stack:analysis.executor": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.backend:stack:analysis.options": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.backend:stack:analysis.metadata": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.backend:stack:analysis.options.script": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.backend:stack:analysis.metadata.scriptContent": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.backend:stack:analysis.metadata.runCommand": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.frontend:stack:analysis": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.frontend:stack:analysis.executor": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.frontend:stack:analysis.options": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.frontend:stack:analysis.metadata": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.frontend:stack:analysis.options.script": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.frontend:stack:analysis.metadata.scriptContent": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.frontend:stack:analysis.metadata.runCommand": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start.executor": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start.options": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start.metadata": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start.options.script": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start.metadata.scriptContent": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start.metadata.runCommand": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:e2e": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:e2e.executor": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:e2e.options": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:e2e.metadata": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:e2e.options.script": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:e2e.metadata.scriptContent": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:e2e.metadata.runCommand": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:light": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:light.executor": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:light.options": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:light.metadata": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:light.options.script": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:light.metadata.scriptContent": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:light.metadata.runCommand": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:cluster": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:cluster.executor": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:cluster.options": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:cluster.metadata": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:cluster.options.script": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:cluster.metadata.scriptContent": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:cluster.metadata.runCommand": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.serv": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.serv.executor": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.serv.options": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.serv.metadata": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.serv.options.script": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.serv.metadata.scriptContent": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.serv.metadata.runCommand": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.insert:dev": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.insert:dev.executor": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.insert:dev.options": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.insert:dev.metadata": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.insert:dev.options.script": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.insert:dev.metadata.scriptContent": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.insert:dev.metadata.runCommand": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.insert:dev:e2e": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.insert:dev:e2e.executor": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.insert:dev:e2e.options": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.insert:dev:e2e.metadata": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.insert:dev:e2e.options.script": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.insert:dev:e2e.metadata.scriptContent": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.insert:dev:e2e.metadata.runCommand": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:dev:init": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:dev:init.executor": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:dev:init.options": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:dev:init.metadata": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:dev:init.options.script": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:dev:init.metadata.scriptContent": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:dev:init.metadata.runCommand": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:dev:resume": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:dev:resume.executor": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:dev:resume.options": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:dev:resume.metadata": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:dev:resume.options.script": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:dev:resume.metadata.scriptContent": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:dev:resume.metadata.runCommand": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:dev": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:dev.executor": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:dev.options": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:dev.metadata": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:dev.options.script": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:dev.metadata.scriptContent": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:dev.metadata.runCommand": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:ci-unit": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:ci-unit.executor": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:ci-unit.options": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:ci-unit.metadata": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:ci-unit.options.script": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:ci-unit.metadata.scriptContent": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:ci-unit.metadata.runCommand": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:ci-integration": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:ci-integration.executor": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:ci-integration.options": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:ci-integration.metadata": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:ci-integration.options.script": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:ci-integration.metadata.scriptContent": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:ci-integration.metadata.runCommand": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:ci-integration-sync": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:ci-integration-sync.executor": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:ci-integration-sync.options": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:ci-integration-sync.metadata": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:ci-integration-sync.options.script": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:ci-integration-sync.metadata.scriptContent": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:ci-integration-sync.metadata.runCommand": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:ci-rules-and-others": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:ci-rules-and-others.executor": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:ci-rules-and-others.options": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:ci-rules-and-others.metadata": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:ci-rules-and-others.options.script": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:ci-rules-and-others.metadata.scriptContent": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:ci-rules-and-others.metadata.runCommand": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:watch:resume": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:watch:resume.executor": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:watch:resume.options": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:watch:resume.metadata": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:watch:resume.options.script": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:watch:resume.metadata.scriptContent": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:watch:resume.metadata.runCommand": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:watch": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:watch.executor": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:watch.options": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:watch.metadata": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:watch.options.script": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:watch.metadata.scriptContent": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:watch.metadata.runCommand": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.verify-licenses": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.verify-licenses.executor": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.verify-licenses.options": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.verify-licenses.metadata": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.verify-licenses.options.script": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.verify-licenses.metadata.scriptContent": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.verify-licenses.metadata.runCommand": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.get-connectors-manifest": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.get-connectors-manifest.executor": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.get-connectors-manifest.options": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.get-connectors-manifest.metadata": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.get-connectors-manifest.options.script": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.get-connectors-manifest.metadata.scriptContent": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.get-connectors-manifest.metadata.runCommand": [
+      "opencti-platform/opencti-graphql/package.json",
+      "nx/core/package-json"
+    ],
+    "$schema": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "types": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.install": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.install.executor": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.install.dependsOn": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.install.options": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.install.metadata": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.install.options.cwd": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.install.options.command": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.install.metadata.description": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.executor": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.options": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.metadata": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.options.cwd": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.options.command": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.metadata.description": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.executor": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.metadata": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options.cwd": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.options.command": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.metadata.description": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.wait-api": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.wait-api.executor": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.wait-api.options": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.wait-api.metadata": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.wait-api.options.cwd": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.wait-api.options.command": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.wait-api.metadata.description": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.metadata": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.cwd": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.command": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.metadata.description": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.dev": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.dev.executor": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.dev.continuous": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.dev.options": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.dev.metadata": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.dev.options.cwd": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.dev.options.command": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.dev.metadata.description": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.graphql": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.graphql.executor": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.graphql.options": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.graphql.metadata": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.graphql.options.cwd": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.graphql.options.command": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.graphql.metadata.description": [
+      "opencti-platform/opencti-graphql/project.json",
+      "nx/core/project-json"
+    ]
+  },
+  "client-python": {
+    "root": [
+      "client-python/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "client-python/project.json",
+      "nx/core/project-json"
+    ],
+    "$schema": [
+      "client-python/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "client-python/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "client-python/project.json",
+      "nx/core/project-json"
+    ],
+    "types": [
+      "client-python/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "client-python/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.install": [
+      "client-python/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.install.executor": [
+      "client-python/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.install.options": [
+      "client-python/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.install.metadata": [
+      "client-python/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.install.options.cwd": [
+      "client-python/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.install.options.command": [
+      "client-python/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.install.metadata.description": [
+      "client-python/project.json",
+      "nx/core/project-json"
+    ]
+  },
+  "opencti-worker": {
+    "root": [
+      "opencti-worker/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "opencti-worker/project.json",
+      "nx/core/project-json"
+    ],
+    "$schema": [
+      "opencti-worker/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "opencti-worker/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "opencti-worker/project.json",
+      "nx/core/project-json"
+    ],
+    "types": [
+      "opencti-worker/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "opencti-worker/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.install": [
+      "opencti-worker/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.install.executor": [
+      "opencti-worker/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.install.dependsOn": [
+      "opencti-worker/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.install.options": [
+      "opencti-worker/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.install.metadata": [
+      "opencti-worker/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.install.options.cwd": [
+      "opencti-worker/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.install.options.command": [
+      "opencti-worker/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.install.metadata.description": [
+      "opencti-worker/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.dev": [
+      "opencti-worker/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.dev.executor": [
+      "opencti-worker/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.dev.continuous": [
+      "opencti-worker/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.dev.dependsOn": [
+      "opencti-worker/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.dev.options": [
+      "opencti-worker/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.dev.metadata": [
+      "opencti-worker/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.dev.options.cwd": [
+      "opencti-worker/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.dev.options.command": [
+      "opencti-worker/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.dev.metadata.description": [
+      "opencti-worker/project.json",
+      "nx/core/project-json"
+    ]
+  }
+}

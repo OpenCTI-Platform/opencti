@@ -1,0 +1,136 @@
+> pip install -r requirements.txt && pip install -e .
+
+Ignoring python-magic-bin: markers 'sys_platform == "win32"' don't match your environment
+Collecting boto3~=1.38.27 (from -r requirements.txt (line 2))
+  Downloading boto3-1.38.46-py3-none-any.whl.metadata (6.6 kB)
+Requirement already satisfied: datefinder~=0.7.3 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from -r requirements.txt (line 3)) (0.7.3)
+Requirement already satisfied: pika~=1.3.0 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from -r requirements.txt (line 4)) (1.3.2)
+Requirement already satisfied: python-magic~=0.4.27 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from -r requirements.txt (line 5)) (0.4.27)
+Requirement already satisfied: python_json_logger~=3.3.0 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from -r requirements.txt (line 7)) (3.3.0)
+Requirement already satisfied: PyYAML~=6.0 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from -r requirements.txt (line 8)) (6.0.3)
+Requirement already satisfied: pydantic<3,>=2.8.2 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from -r requirements.txt (line 9)) (2.12.5)
+Requirement already satisfied: requests<3,>=2.32.0 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from -r requirements.txt (line 10)) (2.32.5)
+Requirement already satisfied: setuptools~=80.9.0 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from -r requirements.txt (line 11)) (80.9.0)
+Requirement already satisfied: cachetools~=5.5.2 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from -r requirements.txt (line 12)) (5.5.2)
+Requirement already satisfied: prometheus-client~=0.22.1 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from -r requirements.txt (line 13)) (0.22.1)
+Requirement already satisfied: opentelemetry-api~=1.35.0 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from -r requirements.txt (line 14)) (1.35.0)
+Requirement already satisfied: opentelemetry-sdk~=1.35.0 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from -r requirements.txt (line 15)) (1.35.0)
+Requirement already satisfied: deprecation~=2.1.0 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from -r requirements.txt (line 16)) (2.1.0)
+Requirement already satisfied: fastapi<1,>=0.115.2 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from -r requirements.txt (line 17)) (0.124.4)
+Requirement already satisfied: uvicorn<0.36.0,>=0.34.0 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from uvicorn[standard]<0.36.0,>=0.34.0->-r requirements.txt (line 18)) (0.35.0)
+Requirement already satisfied: filigran-sseclient>=1.0.2 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from -r requirements.txt (line 20)) (1.0.2)
+Requirement already satisfied: stix2~=3.0.1 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from -r requirements.txt (line 21)) (3.0.1)
+Collecting botocore<1.39.0,>=1.38.46 (from boto3~=1.38.27->-r requirements.txt (line 2))
+  Downloading botocore-1.38.46-py3-none-any.whl.metadata (5.7 kB)
+Collecting jmespath<2.0.0,>=0.7.1 (from boto3~=1.38.27->-r requirements.txt (line 2))
+  Downloading jmespath-1.1.0-py3-none-any.whl.metadata (7.6 kB)
+Collecting s3transfer<0.14.0,>=0.13.0 (from boto3~=1.38.27->-r requirements.txt (line 2))
+  Downloading s3transfer-0.13.1-py3-none-any.whl.metadata (1.7 kB)
+Requirement already satisfied: regex>=2017.02.08 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from datefinder~=0.7.3->-r requirements.txt (line 3)) (2026.1.15)
+Requirement already satisfied: python-dateutil>=2.4.2 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from datefinder~=0.7.3->-r requirements.txt (line 3)) (2.9.0.post0)
+Requirement already satisfied: pytz in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from datefinder~=0.7.3->-r requirements.txt (line 3)) (2025.2)
+Requirement already satisfied: annotated-types>=0.6.0 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from pydantic<3,>=2.8.2->-r requirements.txt (line 9)) (0.7.0)
+Requirement already satisfied: pydantic-core==2.41.5 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from pydantic<3,>=2.8.2->-r requirements.txt (line 9)) (2.41.5)
+Requirement already satisfied: typing-extensions>=4.14.1 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from pydantic<3,>=2.8.2->-r requirements.txt (line 9)) (4.15.0)
+Requirement already satisfied: typing-inspection>=0.4.2 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from pydantic<3,>=2.8.2->-r requirements.txt (line 9)) (0.4.2)
+Requirement already satisfied: charset_normalizer<4,>=2 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from requests<3,>=2.32.0->-r requirements.txt (line 10)) (3.4.4)
+Requirement already satisfied: idna<4,>=2.5 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from requests<3,>=2.32.0->-r requirements.txt (line 10)) (3.11)
+Requirement already satisfied: urllib3<3,>=1.21.1 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from requests<3,>=2.32.0->-r requirements.txt (line 10)) (2.6.3)
+Requirement already satisfied: certifi>=2017.4.17 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from requests<3,>=2.32.0->-r requirements.txt (line 10)) (2026.1.4)
+Requirement already satisfied: importlib-metadata<8.8.0,>=6.0 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from opentelemetry-api~=1.35.0->-r requirements.txt (line 14)) (8.7.1)
+Requirement already satisfied: opentelemetry-semantic-conventions==0.56b0 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from opentelemetry-sdk~=1.35.0->-r requirements.txt (line 15)) (0.56b0)
+Requirement already satisfied: packaging in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from deprecation~=2.1.0->-r requirements.txt (line 16)) (25.0)
+Requirement already satisfied: starlette<0.51.0,>=0.40.0 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from fastapi<1,>=0.115.2->-r requirements.txt (line 17)) (0.50.0)
+Requirement already satisfied: annotated-doc>=0.0.2 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from fastapi<1,>=0.115.2->-r requirements.txt (line 17)) (0.0.4)
+Requirement already satisfied: click>=7.0 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from uvicorn<0.36.0,>=0.34.0->uvicorn[standard]<0.36.0,>=0.34.0->-r requirements.txt (line 18)) (8.3.1)
+Requirement already satisfied: h11>=0.8 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from uvicorn<0.36.0,>=0.34.0->uvicorn[standard]<0.36.0,>=0.34.0->-r requirements.txt (line 18)) (0.16.0)
+Requirement already satisfied: six in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from filigran-sseclient>=1.0.2->-r requirements.txt (line 20)) (1.17.0)
+Requirement already satisfied: simplejson in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from stix2~=3.0.1->-r requirements.txt (line 21)) (3.20.2)
+Requirement already satisfied: stix2-patterns>=1.2.0 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from stix2~=3.0.1->-r requirements.txt (line 21)) (2.0.0)
+Requirement already satisfied: httptools>=0.6.3 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from uvicorn[standard]<0.36.0,>=0.34.0->-r requirements.txt (line 18)) (0.7.1)
+Requirement already satisfied: python-dotenv>=0.13 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from uvicorn[standard]<0.36.0,>=0.34.0->-r requirements.txt (line 18)) (1.2.1)
+Requirement already satisfied: uvloop>=0.15.1 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from uvicorn[standard]<0.36.0,>=0.34.0->-r requirements.txt (line 18)) (0.22.1)
+Requirement already satisfied: watchfiles>=0.13 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from uvicorn[standard]<0.36.0,>=0.34.0->-r requirements.txt (line 18)) (1.1.1)
+Requirement already satisfied: websockets>=10.4 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from uvicorn[standard]<0.36.0,>=0.34.0->-r requirements.txt (line 18)) (16.0)
+Requirement already satisfied: zipp>=3.20 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from importlib-metadata<8.8.0,>=6.0->opentelemetry-api~=1.35.0->-r requirements.txt (line 14)) (3.23.0)
+Requirement already satisfied: anyio<5,>=3.6.2 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from starlette<0.51.0,>=0.40.0->fastapi<1,>=0.115.2->-r requirements.txt (line 17)) (4.12.1)
+Requirement already satisfied: antlr4-python3-runtime~=4.9.0 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from stix2-patterns>=1.2.0->stix2~=3.0.1->-r requirements.txt (line 21)) (4.9.3)
+Downloading boto3-1.38.46-py3-none-any.whl (139 kB)
+Downloading botocore-1.38.46-py3-none-any.whl (13.7 MB)
+[?25l   [38;5;237m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/13.7 MB[0m [31m?[0m eta [36m-:--:--[0m[2K   [38;2;249;38;114m━[0m[38;2;249;38;114m╸[0m[38;5;237m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.5/13.7 MB[0m [31m3.1 MB/s[0m eta [36m0:00:05[0m[2K   [38;2;249;38;114m━━━[0m[38;5;237m╺[0m[38;5;237m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m1.0/13.7 MB[0m [31m3.2 MB/s[0m eta [36m0:00:04[0m[2K   [38;2;249;38;114m━━━━[0m[38;2;249;38;114m╸[0m[38;5;237m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m1.6/13.7 MB[0m [31m2.6 MB/s[0m eta [36m0:00:05[0m[2K   [38;2;249;38;114m━━━━━━[0m[38;5;237m╺[0m[38;5;237m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m2.1/13.7 MB[0m [31m2.7 MB/s[0m eta [36m0:00:05[0m[2K   [38;2;249;38;114m━━━━━━[0m[38;2;249;38;114m╸[0m[38;5;237m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m2.4/13.7 MB[0m [31m2.8 MB/s[0m eta [36m0:00:05[0m[2K   [38;2;249;38;114m━━━━━━━━[0m[38;5;237m╺[0m[38;5;237m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m2.9/13.7 MB[0m [31m2.5 MB/s[0m eta [36m0:00:05[0m[2K   [38;2;249;38;114m━━━━━━━━━[0m[38;2;249;38;114m╸[0m[38;5;237m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m3.4/13.7 MB[0m [31m2.5 MB/s[0m eta [36m0:00:05[0m[2K   [38;2;249;38;114m━━━━━━━━━━[0m[38;2;249;38;114m╸[0m[38;5;237m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m3.7/13.7 MB[0m [31m2.3 MB/s[0m eta [36m0:00:05[0m[2K   [38;2;249;38;114m━━━━━━━━━━━━[0m[38;5;237m╺[0m[38;5;237m━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m4.2/13.7 MB[0m [31m2.3 MB/s[0m eta [36m0:00:05[0m[2K   [38;2;249;38;114m━━━━━━━━━━━━[0m[38;2;249;38;114m╸[0m[38;5;237m━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m4.5/13.7 MB[0m [31m2.3 MB/s[0m eta [36m0:00:04[0m[2K   [38;2;249;38;114m━━━━━━━━━━━━━━[0m[38;2;249;38;114m╸[0m[38;5;237m━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m5.0/13.7 MB[0m [31m2.2 MB/s[0m eta [36m0:00:04[0m[2K   [38;2;249;38;114m━━━━━━━━━━━━━━━━[0m[38;5;237m╺[0m[38;5;237m━━━━━━━━━━━━━━━━━━━━━━━[0m [32m5.5/13.7 MB[0m [31m2.3 MB/s[0m eta [36m0:00:04[0m[2K   [38;2;249;38;114m━━━━━━━━━━━━━━━━[0m[38;2;249;38;114m╸[0m[38;5;237m━━━━━━━━━━━━━━━━━━━━━━━[0m [32m5.8/13.7 MB[0m [31m2.2 MB/s[0m eta [36m0:00:04[0m[2K   [38;2;249;38;114m━━━━━━━━━━━━━━━━━━[0m[38;5;237m╺[0m[38;5;237m━━━━━━━━━━━━━━━━━━━━━[0m [32m6.3/13.7 MB[0m [31m2.2 MB/s[0m eta [36m0:00:04[0m[2K   [38;2;249;38;114m━━━━━━━━━━━━━━━━━━━[0m[38;2;249;38;114m╸[0m[38;5;237m━━━━━━━━━━━━━━━━━━━━[0m [32m6.8/13.7 MB[0m [31m2.3 MB/s[0m eta [36m0:00:04[0m[2K   [38;2;249;38;114m━━━━━━━━━━━━━━━━━━━━━[0m[38;5;237m╺[0m[38;5;237m━━━━━━━━━━━━━━━━━━[0m [32m7.3/13.7 MB[0m [31m2.2 MB/s[0m eta [36m0:00:03[0m[2K   [38;2;249;38;114m━━━━━━━━━━━━━━━━━━━━━━[0m[38;2;249;38;114m╸[0m[38;5;237m━━━━━━━━━━━━━━━━━[0m [32m7.9/13.7 MB[0m [31m2.3 MB/s[0m eta [36m0:00:03[0m[2K   [38;2;249;38;114m━━━━━━━━━━━━━━━━━━━━━━━[0m[38;2;249;38;114m╸[0m[38;5;237m━━━━━━━━━━━━━━━━[0m [32m8.1/13.7 MB[0m [31m2.2 MB/s[0m eta [36m0:00:03[0m[2K   [38;2;249;38;114m━━━━━━━━━━━━━━━━━━━━━━━━━[0m[38;5;237m╺[0m[38;5;237m━━━━━━━━━━━━━━[0m [32m8.7/13.7 MB[0m [31m2.2 MB/s[0m eta [36m0:00:03[0m[2K   [38;2;249;38;114m━━━━━━━━━━━━━━━━━━━━━━━━━[0m[38;2;249;38;114m╸[0m[38;5;237m━━━━━━━━━━━━━━[0m [32m8.9/13.7 MB[0m [31m2.2 MB/s[0m eta [36m0:00:03[0m[2K   [38;2;249;38;114m━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[38;5;237m╺[0m[38;5;237m━━━━━━━━━━━━[0m [32m9.4/13.7 MB[0m [31m2.2 MB/s[0m eta [36m0:00:02[0m[2K   [38;2;249;38;114m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[38;2;249;38;114m╸[0m[38;5;237m━━━━━━━━━━[0m [32m10.2/13.7 MB[0m [31m2.3 MB/s[0m eta [36m0:00:02[0m[2K   [38;2;249;38;114m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[38;2;249;38;114m╸[0m[38;5;237m━━━━━━━━━[0m [32m10.5/13.7 MB[0m [31m2.2 MB/s[0m eta [36m0:00:02[0m[2K   [38;2;249;38;114m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[38;2;249;38;114m╸[0m[38;5;237m━━━━━━━[0m [32m11.3/13.7 MB[0m [31m2.3 MB/s[0m eta [36m0:00:02[0m[2K   [38;2;249;38;114m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[38;5;237m╺[0m[38;5;237m━━━━━[0m [32m11.8/13.7 MB[0m [31m2.3 MB/s[0m eta [36m0:00:01[0m[2K   [38;2;249;38;114m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[38;2;249;38;114m╸[0m[38;5;237m━━━━[0m [32m12.3/13.7 MB[0m [31m2.3 MB/s[0m eta [36m0:00:01[0m[2K   [38;2;249;38;114m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[38;5;237m╺[0m[38;5;237m━[0m [32m13.1/13.7 MB[0m [31m2.4 MB/s[0m eta [36m0:00:01[0m[2K   [38;2;249;38;114m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[38;2;249;38;114m╸[0m[38;5;237m━[0m [32m13.4/13.7 MB[0m [31m2.4 MB/s[0m eta [36m0:00:01[0m[2K   [38;2;114;156;31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m13.7/13.7 MB[0m [31m2.4 MB/s[0m eta [36m0:00:00[0m
+[?25hDownloading jmespath-1.1.0-py3-none-any.whl (20 kB)
+Downloading s3transfer-0.13.1-py3-none-any.whl (85 kB)
+Installing collected packages: jmespath, botocore, s3transfer, boto3
+Successfully installed boto3-1.38.46 botocore-1.38.46 jmespath-1.1.0 s3transfer-0.13.1
+
+[1m[[0m[34;49mnotice[0m[1;39;49m][0m[39;49m A new release of pip is available: [0m[31;49m24.2[0m[39;49m -> [0m[32;49m25.3[0m
+[1m[[0m[34;49mnotice[0m[1;39;49m][0m[39;49m To update, run: [0m[32;49mpip install --upgrade pip[0m
+Obtaining file:///Users/florian.delemarre/filigran/octi/opencti/client-python
+  Installing build dependencies ... [?25l- \ | / - done
+[?25h  Checking if build backend supports build_editable ... [?25ldone
+[?25h  Getting requirements to build editable ... [?25l- done
+[?25h  Preparing editable metadata (pyproject.toml) ... [?25l- done
+[?25hRequirement already satisfied: boto3~=1.38.27 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from pycti==6.9.9) (1.38.46)
+Requirement already satisfied: datefinder~=0.7.3 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from pycti==6.9.9) (0.7.3)
+Requirement already satisfied: pika~=1.3.0 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from pycti==6.9.9) (1.3.2)
+Requirement already satisfied: pydantic<3,>=2.8.2 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from pycti==6.9.9) (2.12.5)
+Requirement already satisfied: python-magic~=0.4.27 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from pycti==6.9.9) (0.4.27)
+Requirement already satisfied: python_json_logger~=3.3.0 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from pycti==6.9.9) (3.3.0)
+Requirement already satisfied: PyYAML~=6.0 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from pycti==6.9.9) (6.0.3)
+Requirement already satisfied: requests<3,>=2.32.0 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from pycti==6.9.9) (2.32.5)
+Requirement already satisfied: setuptools~=80.9.0 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from pycti==6.9.9) (80.9.0)
+Requirement already satisfied: cachetools~=5.5.2 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from pycti==6.9.9) (5.5.2)
+Requirement already satisfied: prometheus-client~=0.22.1 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from pycti==6.9.9) (0.22.1)
+Requirement already satisfied: opentelemetry-api~=1.35.0 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from pycti==6.9.9) (1.35.0)
+Requirement already satisfied: opentelemetry-sdk~=1.35.0 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from pycti==6.9.9) (1.35.0)
+Requirement already satisfied: deprecation~=2.1.0 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from pycti==6.9.9) (2.1.0)
+Requirement already satisfied: fastapi<0.125.0,>=0.124.0 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from pycti==6.9.9) (0.124.4)
+Requirement already satisfied: uvicorn<0.36.0,>=0.34.0 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from uvicorn[standard]<0.36.0,>=0.34.0->pycti==6.9.9) (0.35.0)
+Requirement already satisfied: filigran-sseclient>=1.0.2 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from pycti==6.9.9) (1.0.2)
+Requirement already satisfied: stix2~=3.0.1 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from pycti==6.9.9) (3.0.1)
+Requirement already satisfied: botocore<1.39.0,>=1.38.46 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from boto3~=1.38.27->pycti==6.9.9) (1.38.46)
+Requirement already satisfied: jmespath<2.0.0,>=0.7.1 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from boto3~=1.38.27->pycti==6.9.9) (1.1.0)
+Requirement already satisfied: s3transfer<0.14.0,>=0.13.0 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from boto3~=1.38.27->pycti==6.9.9) (0.13.1)
+Requirement already satisfied: regex>=2017.02.08 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from datefinder~=0.7.3->pycti==6.9.9) (2026.1.15)
+Requirement already satisfied: python-dateutil>=2.4.2 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from datefinder~=0.7.3->pycti==6.9.9) (2.9.0.post0)
+Requirement already satisfied: pytz in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from datefinder~=0.7.3->pycti==6.9.9) (2025.2)
+Requirement already satisfied: packaging in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from deprecation~=2.1.0->pycti==6.9.9) (25.0)
+Requirement already satisfied: starlette<0.51.0,>=0.40.0 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from fastapi<0.125.0,>=0.124.0->pycti==6.9.9) (0.50.0)
+Requirement already satisfied: typing-extensions>=4.8.0 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from fastapi<0.125.0,>=0.124.0->pycti==6.9.9) (4.15.0)
+Requirement already satisfied: annotated-doc>=0.0.2 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from fastapi<0.125.0,>=0.124.0->pycti==6.9.9) (0.0.4)
+Requirement already satisfied: six in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from filigran-sseclient>=1.0.2->pycti==6.9.9) (1.17.0)
+Requirement already satisfied: importlib-metadata<8.8.0,>=6.0 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from opentelemetry-api~=1.35.0->pycti==6.9.9) (8.7.1)
+Requirement already satisfied: opentelemetry-semantic-conventions==0.56b0 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from opentelemetry-sdk~=1.35.0->pycti==6.9.9) (0.56b0)
+Requirement already satisfied: annotated-types>=0.6.0 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from pydantic<3,>=2.8.2->pycti==6.9.9) (0.7.0)
+Requirement already satisfied: pydantic-core==2.41.5 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from pydantic<3,>=2.8.2->pycti==6.9.9) (2.41.5)
+Requirement already satisfied: typing-inspection>=0.4.2 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from pydantic<3,>=2.8.2->pycti==6.9.9) (0.4.2)
+Requirement already satisfied: charset_normalizer<4,>=2 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from requests<3,>=2.32.0->pycti==6.9.9) (3.4.4)
+Requirement already satisfied: idna<4,>=2.5 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from requests<3,>=2.32.0->pycti==6.9.9) (3.11)
+Requirement already satisfied: urllib3<3,>=1.21.1 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from requests<3,>=2.32.0->pycti==6.9.9) (2.6.3)
+Requirement already satisfied: certifi>=2017.4.17 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from requests<3,>=2.32.0->pycti==6.9.9) (2026.1.4)
+Requirement already satisfied: simplejson in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from stix2~=3.0.1->pycti==6.9.9) (3.20.2)
+Requirement already satisfied: stix2-patterns>=1.2.0 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from stix2~=3.0.1->pycti==6.9.9) (2.0.0)
+Requirement already satisfied: click>=7.0 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from uvicorn<0.36.0,>=0.34.0->uvicorn[standard]<0.36.0,>=0.34.0->pycti==6.9.9) (8.3.1)
+Requirement already satisfied: h11>=0.8 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from uvicorn<0.36.0,>=0.34.0->uvicorn[standard]<0.36.0,>=0.34.0->pycti==6.9.9) (0.16.0)
+Requirement already satisfied: httptools>=0.6.3 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from uvicorn[standard]<0.36.0,>=0.34.0->pycti==6.9.9) (0.7.1)
+Requirement already satisfied: python-dotenv>=0.13 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from uvicorn[standard]<0.36.0,>=0.34.0->pycti==6.9.9) (1.2.1)
+Requirement already satisfied: uvloop>=0.15.1 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from uvicorn[standard]<0.36.0,>=0.34.0->pycti==6.9.9) (0.22.1)
+Requirement already satisfied: watchfiles>=0.13 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from uvicorn[standard]<0.36.0,>=0.34.0->pycti==6.9.9) (1.1.1)
+Requirement already satisfied: websockets>=10.4 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from uvicorn[standard]<0.36.0,>=0.34.0->pycti==6.9.9) (16.0)
+Requirement already satisfied: zipp>=3.20 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from importlib-metadata<8.8.0,>=6.0->opentelemetry-api~=1.35.0->pycti==6.9.9) (3.23.0)
+Requirement already satisfied: anyio<5,>=3.6.2 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from starlette<0.51.0,>=0.40.0->fastapi<0.125.0,>=0.124.0->pycti==6.9.9) (4.12.1)
+Requirement already satisfied: antlr4-python3-runtime~=4.9.0 in /Users/florian.delemarre/filigran/octi/.python-venv/lib/python3.12/site-packages (from stix2-patterns>=1.2.0->stix2~=3.0.1->pycti==6.9.9) (4.9.3)
+Building wheels for collected packages: pycti
+  Building editable for pycti (pyproject.toml) ... [?25l- done
+[?25h  Created wheel for pycti: filename=pycti-6.9.9-0.editable-py3-none-any.whl size=4736 sha256=cc246b413ec221bd8692477015fb5e9df647e1722b608d2d120b91e49077570d
+  Stored in directory: /private/var/folders/sp/txb3qh8x1t1cqs1frgzjj3cr0000gn/T/pip-ephem-wheel-cache-w0ritnk4/wheels/d9/d6/83/4da90e587d0130c3b0b86fedcab4953362debe331b7ba14368
+Successfully built pycti
+Installing collected packages: pycti
+  Attempting uninstall: pycti
+    Found existing installation: pycti 6.9.8
+    Uninstalling pycti-6.9.8:
+      Successfully uninstalled pycti-6.9.8
+Successfully installed pycti-6.9.9
+
+[1m[[0m[34;49mnotice[0m[1;39;49m][0m[39;49m A new release of pip is available: [0m[31;49m24.2[0m[39;49m -> [0m[32;49m25.3[0m
+[1m[[0m[34;49mnotice[0m[1;39;49m][0m[39;49m To update, run: [0m[32;49mpip install --upgrade pip[0m
