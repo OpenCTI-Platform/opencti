@@ -1,5 +1,4 @@
 import React from 'react';
-import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import StixNestedRefRelationshipCreationFromEntityContainer from '../stix_nested_ref_relationships/StixNestedRefRelationshipCreationFromEntityContainer';
 import { useFormatter } from '../../../../components/i18n';
@@ -9,6 +8,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { StixDomainObjectNestedEntitiesLinesQuery, StixDomainObjectNestedEntitiesLinesQuery$variables } from './__generated__/StixDomainObjectNestedEntitiesLinesQuery.graphql';
 import StixDomainObjectNestedEntitiesLines, { stixDomainObjectNestedEntitiesLinesQuery } from './StixDomainObjectNestedEntitiesLines';
+import Label from '../../../../components/common/label/Label';
 
 interface StixDomainObjectNestedEntitiesProps {
   entityId: string;
@@ -35,22 +35,24 @@ const StixDomainObjectNestedEntities = ({
   );
   return (
     <div style={{ marginTop: 20 }}>
-      <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-        {t_i18n('Nested objects')}
-      </Typography>
-      <Security
-        needs={[KNOWLEDGE_KNUPDATE]}
-        placeholder={<div style={{ height: 29 }} />}
+      <Label action={(
+        <Security
+          needs={[KNOWLEDGE_KNUPDATE]}
+          placeholder={<div style={{ height: 29 }} />}
+        >
+          <StixNestedRefRelationshipCreationFromEntityContainer
+            paginationOptions={paginationOptions}
+            entityId={entityId}
+            variant="inLine"
+            entityType={entityType}
+          />
+        </Security>
+      )}
       >
-        <StixNestedRefRelationshipCreationFromEntityContainer
-          paginationOptions={paginationOptions}
-          entityId={entityId}
-          variant="inLine"
-          entityType={entityType}
-        />
-      </Security>
-      <div className="clearfix" />
-      <List style={{ marginTop: -10 }}>
+        {t_i18n('Nested objects')}
+      </Label>
+
+      <List sx={{ py: 0 }}>
         {queryRef && (
           <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
             <StixDomainObjectNestedEntitiesLines

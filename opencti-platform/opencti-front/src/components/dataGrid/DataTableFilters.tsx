@@ -152,7 +152,10 @@ const DataTableFilters = ({
             color="secondary"
             value={currentView || 'lines'}
             exclusive={true}
-            style={hasToggleGroup ? { marginLeft: theme.spacing(1) } : undefined}
+            sx={hasToggleGroup
+              ? { marginLeft: 1, gap: 1 }
+              : undefined
+            }
             onChange={(_, value) => {
               if (value && value === 'export') {
                 helpers.handleToggleExports();
