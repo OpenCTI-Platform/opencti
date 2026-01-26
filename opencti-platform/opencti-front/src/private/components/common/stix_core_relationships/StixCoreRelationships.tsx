@@ -3,6 +3,7 @@ import { AutoFix } from 'mdi-material-ui';
 import { graphql } from 'react-relay';
 import { getDraftModeColor } from '@components/common/draft/DraftChip';
 import { useTheme } from '@mui/styles';
+import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import { StixCoreRelationshipsLinesPaginationQuery, StixCoreRelationshipsLinesPaginationQuery$variables } from './__generated__/StixCoreRelationshipsLinesPaginationQuery.graphql';
 import { StixCoreRelationshipsLines_data$data } from './__generated__/StixCoreRelationshipsLines_data.graphql';
 import StixCoreRelationshipCreationFromEntity from './StixCoreRelationshipCreationFromEntity';
@@ -26,9 +27,9 @@ interface StixCoreRelationshipsProps {
   entityId: string;
   currentView?: string;
   viewButtons: ReactElement[];
-  targetTypes: string[]
-  direction: 'fromEntity' | 'toEntity' | 'all'
-  relationshipTypes: string[]
+  targetTypes: string[];
+  direction: 'fromEntity' | 'toEntity' | 'all';
+  relationshipTypes: string[];
   defaultStartTime?: string;
   defaultStopTime?: string;
 }
@@ -354,6 +355,13 @@ const StixCoreRelationships: FunctionComponent<StixCoreRelationshipsProps> = (
     setNumberOfElements: storageHelpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<StixCoreRelationshipsLinesPaginationQuery>;
 
+  useInitCreateRelationshipContext({
+    onCreate: undefined,
+    connectionKey: 'Pagination_stixCoreRelationships',
+    paginationOptions: queryPaginationOptions,
+    reversed: false,
+  });
+
   return (
     <>
       <div style={{ marginTop: -12 }}>
@@ -364,7 +372,7 @@ const StixCoreRelationships: FunctionComponent<StixCoreRelationshipsProps> = (
             resolvePath={(data: StixCoreRelationshipsLines_data$data) => data.stixCoreRelationships?.edges?.map((n) => n.node)}
             storageKey={LOCAL_STORAGE_KEY}
             initialValues={initialValues}
-            toolbarFilters={contextFilters}
+            contextFilters={contextFilters}
             lineFragment={stixCoreRelationshipsFragment}
             preloadedPaginationProps={preloadedPaginationProps}
             exportContext={{ entity_type: 'stix-core-relationship' }}

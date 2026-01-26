@@ -2,6 +2,7 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
+import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import InfrastructureDetails from './InfrastructureDetails';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -76,6 +77,8 @@ const Infrastructure = ({
 }: {
   data: Infrastructure_infrastructure$key;
 }) => {
+  useInitCreateRelationshipContext();
+
   const classes = useStyles();
   const infrastructureData = useFragment<Infrastructure_infrastructure$key>(
     infrastructureFragment,

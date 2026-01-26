@@ -14,8 +14,8 @@ import {
 import { Filter, FilterGroup, FilterValue, handleFilterHelpers } from './filtersHelpers-types';
 
 interface useFiltersStateProps {
-  filters: FilterGroup,
-  latestAddFilterId?: string
+  filters: FilterGroup;
+  latestAddFilterId?: string;
 }
 const useFiltersState = (initFilters: FilterGroup | null = emptyFilterGroup, defaultClearFilters: FilterGroup = emptyFilterGroup): [FilterGroup, handleFilterHelpers] => {
   const [filtersState, setFiltersState] = useState<useFiltersStateProps>({

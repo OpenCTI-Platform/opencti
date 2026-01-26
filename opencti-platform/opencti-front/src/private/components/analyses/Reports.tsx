@@ -212,7 +212,7 @@ const Reports: FunctionComponent = () => {
           resolvePath={(data: ReportsLines_data$data) => data.reports?.edges?.map((n) => n?.node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
-          toolbarFilters={contextFilters}
+          contextFilters={contextFilters}
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={reportLineFragment}
           exportContext={{ entity_type: 'Report' }}
@@ -220,7 +220,7 @@ const Reports: FunctionComponent = () => {
           createButton={(
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <div style={{ display: 'flex' }}>
-                <StixCoreObjectForms entityType='Report' />
+                <StixCoreObjectForms entityType="Report" />
                 <ReportCreation paginationOptions={queryPaginationOptions} />
               </div>
             </Security>

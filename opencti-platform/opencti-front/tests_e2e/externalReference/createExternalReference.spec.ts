@@ -4,7 +4,7 @@ import ExternalReferenceFormPageModel from '../model/form/externalReferenceForm.
 import ExternalReferencePage from '../model/externalReference.pageModel';
 import ExternalReferenceDetailsPage from '../model/externalReferenceDetails.pageModel';
 
-test('Create a new external reference', async ({ page }) => {
+test('Create a new external reference', { tag: ['@ce'] }, async ({ page }) => {
   const externalReferencePage = new ExternalReferencePage(page);
   const externalReferenceForm = new ExternalReferenceFormPageModel(page);
   const externalReferenceDetails = new ExternalReferenceDetailsPage(page);

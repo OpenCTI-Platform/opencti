@@ -33,7 +33,7 @@ const statusTemplateEditionQuery = graphql`
 `;
 
 interface StatusTemplatePopoverProps {
-  data: StatusTemplatesLine_node$data
+  data: StatusTemplatesLine_node$data;
   paginationOptions?: StatusTemplatesLinesPaginationQuery$variables;
 }
 

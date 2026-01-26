@@ -72,8 +72,8 @@ const DecayRulesLines: FunctionComponent<DecayRulesLinesProps> = ({
   paginationOptions,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
-  DecayRulesLinesPaginationQuery,
-  DecayRulesLines_data$key
+    DecayRulesLinesPaginationQuery,
+    DecayRulesLines_data$key
   >({
     queryRef,
     linesQuery: decayRulesLinesQuery,

@@ -176,7 +176,8 @@ const IndividualEditionOverviewComponent = (props) => {
     ]),
   )(individual);
   return (
-    <Formik enableReinitialize={true}
+    <Formik
+      enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={individualValidator}
       validateOnChange={true}
@@ -205,7 +206,7 @@ const IndividualEditionOverviewComponent = (props) => {
             onSubmit={handleSubmitField}
             helperText={
               <SubscriptionFocus context={context} fieldName="name" />
-              }
+            }
           />
           <Field
             component={MarkdownField}
@@ -220,7 +221,7 @@ const IndividualEditionOverviewComponent = (props) => {
             onSubmit={handleSubmitField}
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
-              }
+            }
           />
           <ConfidenceField
             onFocus={editor.changeFocus}
@@ -244,7 +245,7 @@ const IndividualEditionOverviewComponent = (props) => {
             onSubmit={handleSubmitField}
             helperText={
               <SubscriptionFocus context={context} fieldName="contact_information" />
-              }
+            }
           />
           <OpenVocabField
             label={t_i18n('Reliability')}
@@ -260,17 +261,17 @@ const IndividualEditionOverviewComponent = (props) => {
             containerStyle={fieldSpacingContainerStyle}
           />
           {individual.workflowEnabled && (
-          <StatusField
-            name="x_opencti_workflow_id"
-            type="Individual"
-            onFocus={editor.changeFocus}
-            onChange={handleSubmitField}
-            setFieldValue={setFieldValue}
-            style={{ marginTop: 20 }}
-            helpertext={
-              <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
-                }
-          />
+            <StatusField
+              name="x_opencti_workflow_id"
+              type="Individual"
+              onFocus={editor.changeFocus}
+              onChange={handleSubmitField}
+              setFieldValue={setFieldValue}
+              style={{ marginTop: 20 }}
+              helpertext={
+                <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
+              }
+            />
           )}
           <CreatedByField
             name="createdBy"
@@ -279,7 +280,7 @@ const IndividualEditionOverviewComponent = (props) => {
             setFieldValue={setFieldValue}
             helpertext={
               <SubscriptionFocus context={context} fieldName="createdBy" />
-              }
+            }
             onChange={editor.changeCreated}
           />
           <ObjectMarkingField
@@ -288,19 +289,19 @@ const IndividualEditionOverviewComponent = (props) => {
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking" />
-              }
+            }
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
           {enableReferences && (
-          <CommitMessage
-            submitForm={submitForm}
-            disabled={isSubmitting || !isValid || !dirty}
-            setFieldValue={setFieldValue}
-            open={false}
-            values={values.references}
-            id={individual.id}
-          />
+            <CommitMessage
+              submitForm={submitForm}
+              disabled={isSubmitting || !isValid || !dirty}
+              setFieldValue={setFieldValue}
+              open={false}
+              values={values.references}
+              id={individual.id}
+            />
           )}
         </Form>
       )}

@@ -6,7 +6,7 @@ import {
   type ListObjectsV2CommandInput,
   type ListObjectsV2CommandOutput,
   S3Client,
-  type S3ClientConfig
+  type S3ClientConfig,
 } from '@aws-sdk/client-s3';
 import { getDefaultRoleAssumerWithWebIdentity } from '@aws-sdk/client-sts';
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
@@ -31,6 +31,20 @@ const useAwsLogs = booleanConf('minio:use_aws_logs', false);
 const disableChecksumValidation = booleanConf('minio:disable_checksum_validation', false);
 export const defaultValidationMode = conf.get('app:validation_mode');
 
+/**
+ * Export S3 connection configuration for connectors.
+ * This allows connectors to upload bundles directly to S3 storage.
+ */
+export const s3ConnectionConfig = () => ({
+  endpoint: clientEndpoint,
+  port: clientPort,
+  use_ssl: useSslConnection,
+  bucket_name: bucketName,
+  bucket_region: bucketRegion,
+  access_key: clientAccessKey,
+  secret_key: clientSecretKey,
+});
+
 let s3Client: S3Client; // Client reference
 
 const buildCredentialProvider = async () => {
@@ -40,8 +54,8 @@ const buildCredentialProvider = async () => {
       return defaultProvider({
         roleAssumerWithWebIdentity: getDefaultRoleAssumerWithWebIdentity({
           // You must explicitly pass a region if you are not using us-east-1
-          region: bucketRegion
-        })
+          region: bucketRegion,
+        }),
       });
     };
   }
@@ -51,7 +65,7 @@ const buildCredentialProvider = async () => {
   return () => {
     return {
       ...userPasswordAuth,
-      ...(clientSessionToken && { sessionToken: clientSessionToken })
+      ...(clientSessionToken && { sessionToken: clientSessionToken }),
     };
   };
 };
@@ -113,7 +127,7 @@ export const isStorageAlive = () => initializeBucket();
 export const deleteFileFromStorage = async (id: string) => {
   return s3Client.send(new s3.DeleteObjectCommand({
     Bucket: bucketName,
-    Key: id
+    Key: id,
   }));
 };
 
@@ -127,7 +141,7 @@ export const downloadFile = async (id: string): Promise<Readable | null> => {
   try {
     const object = await s3Client.send(new s3.GetObjectCommand({
       Bucket: bucketName,
-      Key: id
+      Key: id,
     }));
     if (!object || !object.Body) {
       logApp.error('[FILE STORAGE] Cannot retrieve file from S3, null body in response', { fileId: id });
@@ -160,7 +174,7 @@ export const streamToString = (stream: any, encoding: BufferEncoding = 'utf8'): 
 export const getFileContent = async (id: string, encoding: BufferEncoding = 'utf8'): Promise<string | undefined> => {
   const object: GetObjectCommandOutput = await s3Client.send(new s3.GetObjectCommand({
     Bucket: bucketName,
-    Key: id
+    Key: id,
   }));
   if (!object.Body) {
     return undefined;
@@ -172,7 +186,7 @@ export const rawCopyFile = async (sourceId: string, targetId: string) => {
   const input = {
     Bucket: bucketName,
     CopySource: `${bucketName}/${sourceId}`, // CopySource must start with bucket name, but not Key
-    Key: targetId
+    Key: targetId,
   };
   const command = new CopyObjectCommand(input);
   await s3Client.send(command);
@@ -185,7 +199,7 @@ export const getFileSize = async (user: AuthUser, fileS3Path: string): Promise<n
   try {
     const object: HeadObjectCommandOutput = await s3Client.send(new s3.HeadObjectCommand({
       Bucket: bucketName,
-      Key: fileS3Path
+      Key: fileS3Path,
     }));
     return object.ContentLength;
   } catch (err) {
@@ -199,8 +213,8 @@ export const rawUpload = async (key: string, body: string | Readable | Buffer) =
     params: {
       Bucket: bucketName,
       Key: key,
-      Body: body
-    }
+      Body: body,
+    },
   });
   await s3Upload.done();
 };
@@ -209,7 +223,7 @@ export const rawListObjects = async (directory: string, recursive: boolean, cont
   const requestParams: ListObjectsV2CommandInput = {
     Bucket: bucketName,
     Prefix: directory,
-    Delimiter: recursive ? undefined : '/'
+    Delimiter: recursive ? undefined : '/',
   };
   if (continuationToken) {
     requestParams.ContinuationToken = continuationToken;

@@ -219,7 +219,7 @@ const FeedEditionContainer = (props) => {
   const areAttributesValid = () => {
     if (
       selectedTypes.length === 0
-            || Object.keys(feedAttributes).length === 0
+      || Object.keys(feedAttributes).length === 0
     ) {
       return false;
     }
@@ -227,15 +227,15 @@ const FeedEditionContainer = (props) => {
       const feedAttribute = feedAttributes[n];
       if (
         !feedAttribute
-                || !feedAttribute.attribute
-                || !feedAttribute.mappings
-                || R.values(feedAttribute.mappings).length !== selectedTypes.length
-                || R.values(feedAttribute.mappings).filter(
-                  (m) => !m.attribute
-                        || !m.type
-                        || m.attribute.length === 0
-                        || m.type.length === 0,
-                ).length > 0
+        || !feedAttribute.attribute
+        || !feedAttribute.mappings
+        || R.values(feedAttribute.mappings).length !== selectedTypes.length
+        || R.values(feedAttribute.mappings).filter(
+          (m) => !m.attribute
+            || !m.type
+            || m.attribute.length === 0
+            || m.type.length === 0,
+        ).length > 0
       ) {
         return false;
       }
@@ -365,7 +365,7 @@ const FeedEditionContainer = (props) => {
                       />
                       {!values.feed_public && (
                         <ObjectMembersField
-                          label={'Accessible for'}
+                          label="Accessible for"
                           style={fieldSpacingContainerStyle}
                           multiple={true}
                           helpertext={t('Leave the field empty to grant all authenticated users')}
@@ -417,8 +417,8 @@ const FeedEditionContainer = (props) => {
                       fullWidth={true}
                       multiple={false}
                       containerstyle={{ width: '100%', marginTop: 20 }}
-                    ><MenuItem key={'created_at'} value={'created_at'}>{t('Creation date')}</MenuItem>
-                      <MenuItem key={'updated_at'} value={'updated_at'}>{t('Update date')}</MenuItem>
+                    ><MenuItem key="created_at" value="created_at">{t('Creation date')}</MenuItem>
+                      <MenuItem key="updated_at" value="updated_at">{t('Update date')}</MenuItem>
                     </Field>
                     <Field
                       component={SelectField}
@@ -516,7 +516,7 @@ const FeedEditionContainer = (props) => {
                                                 n.value,
                                                 ignoredAttributesInFeeds,
                                               )
-                                               && !n.value.startsWith('i_'),
+                                              && !n.value.startsWith('i_'),
                                             ),
                                           )(
                                             resultProps.schemaAttributeNames.edges,

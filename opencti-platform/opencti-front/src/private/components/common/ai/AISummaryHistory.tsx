@@ -33,12 +33,12 @@ const aISummaryHistoryQuery = graphql`
 `;
 
 interface AISummaryHistoryComponentProps {
-  refetch: () => void
+  refetch: () => void;
   language: string;
   setLanguage: (language: string) => void;
-  content: string
-  loading: boolean
-  result: AISummaryHistoryStixCoreObjectAskAiHistoryQuery$data | null
+  content: string;
+  loading: boolean;
+  result: AISummaryHistoryStixCoreObjectAskAiHistoryQuery$data | null;
 }
 
 const AISummaryHistoryComponent = ({
@@ -77,9 +77,9 @@ const AISummaryHistoryComponent = ({
 };
 
 interface AISummaryHistoryProps {
-  id: string
-  loading: boolean
-  setLoading: (loading: boolean) => void
+  id: string;
+  loading: boolean;
+  setLoading: (loading: boolean) => void;
 }
 
 const AISummaryHistory = ({ id, loading, setLoading }: AISummaryHistoryProps) => {

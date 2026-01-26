@@ -238,16 +238,16 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
 
     const getOptions = shouldAddSelfId
       ? [
-        {
-          value: SELF_ID,
-          label: SELF_ID_VALUE,
-          group: 'Instance',
-          parentTypes: [],
-          color: 'primary',
-          type: 'Instance',
-        },
-        ...getEntitiesOptions,
-      ]
+          {
+            value: SELF_ID,
+            label: SELF_ID_VALUE,
+            group: 'Instance',
+            parentTypes: [],
+            color: 'primary',
+            type: 'Instance',
+          },
+          ...getEntitiesOptions,
+        ]
       : getEntitiesOptions;
 
     const entitiesOptions = getOptions.filter((option) => !optionsValues.includes(option.value));
@@ -369,7 +369,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
           filterValues={computedValues}
           helpers={helpers}
           label={filterLabel}
-          type={'number'}
+          type="number"
         />
       );
     }
@@ -392,38 +392,40 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     const finalFilterDefinition = useFilterDefinition(fKey, entityTypes, subKey);
     return (
       <>
-        { availableOperators.length > 0 && <Select
-          labelId="change-operator-select-label"
-          id="change-operator-select"
-          value={filterOperator}
-          label="Operator"
-          fullWidth={true}
-          onChange={(event) => handleChangeOperator(event, finalFilterDefinition)}
-          style={{ marginBottom: 15 }}
-          disabled={disabled}
-          MenuProps={{
+        { availableOperators.length > 0 && (
+          <Select
+            labelId="change-operator-select-label"
+            id="change-operator-select"
+            value={filterOperator}
+            label="Operator"
+            fullWidth={true}
+            onChange={(event) => handleChangeOperator(event, finalFilterDefinition)}
+            style={{ marginBottom: 15 }}
+            disabled={disabled}
+            MenuProps={{
             // Force MUI to use a backdrop
-            hideBackdrop: false,
-            BackdropProps: {
-              style: {
+              hideBackdrop: false,
+              BackdropProps: {
+                style: {
                 // Make the backdrop invisible because we already have one
-                backgroundColor: 'rgba(0, 0, 0, 0)',
+                  backgroundColor: 'rgba(0, 0, 0, 0)',
+                },
+                // Prevent clicks from going through
+                onClick: (e) => {
+                  stopEvent(e);
+                  handleClose();
+                },
+                onMouseDown: stopEvent,
               },
-              // Prevent clicks from going through
-              onClick: (e) => {
-                stopEvent(e);
-                handleClose();
-              },
-              onMouseDown: stopEvent,
-            },
-          }}
-                                           >
-          {availableOperators.map((value) => (
-            <MenuItem key={value} value={value}>
-              {t_i18n(OperatorKeyValues[value])}
-            </MenuItem>
-          ))}
-        </Select>}
+            }}
+          >
+            {availableOperators.map((value) => (
+              <MenuItem key={value} value={value}>
+                {t_i18n(OperatorKeyValues[value])}
+              </MenuItem>
+            ))}
+          </Select>
+        )}
         {noValueOperator && isSpecificFilter(finalFilterDefinition) && (
           <>{getSpecificFilter(finalFilterDefinition, subKey, disabled)}</>
         )}
@@ -479,45 +481,51 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       }}
     >
       {filterDefinition?.subFilters && filterDefinition.subFilters.length > 1
-        ? <div
-            style={{
-              width: 250,
-              padding: 8,
-            }}
-          >
-          {displayOperatorAndFilter(filterKey, filterDefinition?.subFilters[0].filterKey, disableSubfilter1)}
-          <Chip
-            style={{
-              fontFamily: 'Consolas, monaco, monospace',
-              margin: '10px 10px 15px 0',
-            }}
-            label={t_i18n('WITH')}
-          />
-          {displayOperatorAndFilter(filterKey, filterDefinition.subFilters[1].filterKey, disableSubfilter2)}
-        </div>
-        : <div style={{ display: 'inline-flex' }}>
-          <div
-            style={{
-              width: 250,
-              padding: 8,
-            }}
-          >
-            {displayOperatorAndFilter(filterKey)}
-          </div>
-          {filterOperator === 'within'
-            && <div style={{ width: 150, display: 'inline-flex' }}>
-              <div style={{
-                color: theme.palette.text.disabled,
-                borderLeft: '0.5px solid',
-                marginLeft: '10px',
-                marginTop: '10px',
-                marginBottom: '10px',
+        ? (
+            <div
+              style={{
+                width: 250,
+                padding: 8,
               }}
+            >
+              {displayOperatorAndFilter(filterKey, filterDefinition?.subFilters[0].filterKey, disableSubfilter1)}
+              <Chip
+                style={{
+                  fontFamily: 'Consolas, monaco, monospace',
+                  margin: '10px 10px 15px 0',
+                }}
+                label={t_i18n('WITH')}
               />
-              <QuickRelativeDateFiltersButtons filter={filter} helpers={helpers} handleClose={handleClose} />
+              {displayOperatorAndFilter(filterKey, filterDefinition.subFilters[1].filterKey, disableSubfilter2)}
             </div>
-          }
-        </div>
+          )
+        : (
+            <div style={{ display: 'inline-flex' }}>
+              <div
+                style={{
+                  width: 250,
+                  padding: 8,
+                }}
+              >
+                {displayOperatorAndFilter(filterKey)}
+              </div>
+              {filterOperator === 'within'
+                && (
+                  <div style={{ width: 150, display: 'inline-flex' }}>
+                    <div style={{
+                      color: theme.palette.text.disabled,
+                      borderLeft: '0.5px solid',
+                      marginLeft: '10px',
+                      marginTop: '10px',
+                      marginBottom: '10px',
+                    }}
+                    />
+                    <QuickRelativeDateFiltersButtons filter={filter} helpers={helpers} handleClose={handleClose} />
+                  </div>
+                )
+              }
+            </div>
+          )
       }
     </Popover>
   );

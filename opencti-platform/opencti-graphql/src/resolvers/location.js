@@ -2,12 +2,13 @@ import { addLocation, findLocationPaginated, findById } from '../domain/location
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
-  stixDomainObjectDelete,
   stixDomainObjectDeleteRelation,
+  stixDomainObjectDelete,
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
 import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../modules/administrativeArea/administrativeArea-types';
+import { ENTITY_TYPE_LOCATION } from '../schema/general';
 
 const locationResolvers = {
   Query: {
@@ -27,7 +28,7 @@ const locationResolvers = {
   },
   Mutation: {
     locationEdit: (_, { id }, context) => ({
-      delete: () => stixDomainObjectDelete(context, context.user, id),
+      delete: () => stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_LOCATION),
       fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
       contextClean: () => stixDomainObjectCleanContext(context, context.user, id),

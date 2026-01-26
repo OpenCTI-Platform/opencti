@@ -42,7 +42,7 @@ const convertFilters = (filters, perspective) => {
       return {
         mode: filters.mode,
         filters: newFilters,
-        filterGroups: filters.filterGroups
+        filterGroups: filters.filterGroups,
       };
     }
   }
@@ -102,17 +102,17 @@ export const up = async (next) => {
           {
             bool: {
               must: [{ term: { 'entity_type.keyword': { value: 'Workspace' } } }],
-            }
+            },
           },
         ],
         minimum_should_match: 1,
       },
-    }
+    },
   };
   await elUpdateByQueryForMigration(
     '[MIGRATION] Migrate widgets',
     READ_DATA_INDICES,
-    workspacesUpdateQuery
+    workspacesUpdateQuery,
   );
   next();
 };

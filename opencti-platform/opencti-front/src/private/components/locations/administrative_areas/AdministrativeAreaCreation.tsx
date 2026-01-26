@@ -56,7 +56,7 @@ interface AdministrativeAreaAddInput {
   description: string;
   latitude: string;
   longitude: string;
-  confidence: number | null
+  confidence: number | null;
   createdBy: FieldOption | null;
   objectMarking: FieldOption[];
   objectLabel: FieldOption[];
@@ -342,7 +342,7 @@ const AdministrativeAreaCreation = ({
   };
 
   const CreateAreaControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Administrative-Area' {...props} />
+    <CreateEntityControlledDial entityType="Administrative-Area" {...props} />
   );
   return (
     <Drawer

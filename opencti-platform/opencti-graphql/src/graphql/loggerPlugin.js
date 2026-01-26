@@ -109,7 +109,7 @@ export default {
                 context_data: {
                   operation: context.operationName,
                   input: context.request.variables,
-                }
+                },
               });
             }
           } else if (FUNCTIONAL_ERRORS.includes(errorCode)) {

@@ -15,9 +15,17 @@ class User:
     You can view the properties, token_properties, session_properties, and
     me_properties attributes of a User object to view what attributes will be
     present in a User or MeUser object.
+
+    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
+        """Initialize the User instance.
+
+        :param opencti: OpenCTI API client instance
+        :type opencti: OpenCTIApiClient
+        """
         self.opencti = opencti
         self.properties = """
             id
@@ -46,6 +54,9 @@ class User:
             roles {
                 id, name, description
                 capabilities {
+                    id, name
+                }
+                capabilitiesInDraft {
                     id, name
                 }
             }
@@ -134,6 +145,9 @@ class User:
                 id, name
             }
             capabilities {
+                id, name, description
+            }
+            capabilitiesInDraft {
                 id, name, description
             }
             groups {
@@ -346,7 +360,7 @@ class User:
                 )
         else:
             self.opencti.admin_logger.error(
-                "[opencti_user] Missing paramters: id, search, or filters"
+                "[opencti_user] Missing parameters: id, search, or filters"
             )
             return None
 
@@ -429,6 +443,7 @@ class User:
         groups = kwargs.get("groups", None)
         user_confidence_level = kwargs.get("user_confidence_level", None)
         custom_attributes = kwargs.get("customAttributes", None)
+        user_service_account = kwargs.get("user_service_account", False)
         include_token = kwargs.get("include_token", False)
 
         if name is None or user_email is None:
@@ -479,6 +494,7 @@ class User:
                     "monochrome_labels": monochrome_labels,
                     "groups": groups,
                     "user_confidence_level": user_confidence_level,
+                    "user_service_account": user_service_account,
                 }
             },
         )
@@ -646,7 +662,7 @@ class User:
             return None
 
         self.opencti.admin_logger.info(
-            "Removing used from group", {"id": id, "group_id": group_id}
+            "Removing user from group", {"id": id, "group_id": group_id}
         )
         query = (
             """
@@ -682,6 +698,7 @@ class User:
             self.opencti.admin_logger.error(
                 "[opencti_user] Missing parameters: id and organization_id"
             )
+            return None
 
         self.opencti.admin_logger.info(
             "Adding user to organization",
@@ -723,6 +740,7 @@ class User:
             self.opencti.admin_logger.error(
                 "[opencti_user] Missing parameters: id and organization_id"
             )
+            return None
 
         self.opencti.admin_logger.info(
             "Removing user from organization",
@@ -786,12 +804,21 @@ class User:
         )
 
     def send_mail(self, **kwargs):
+        """Send an email to a user using a template.
+
+        :param id: the user ID to send the email to
+        :type id: str
+        :param template_id: the email template ID to use
+        :type template_id: str
+        :return: None
+        """
         id = kwargs.get("id", None)
         template_id = kwargs.get("template_id", None)
         if id is None or template_id is None:
             self.opencti.admin_logger.error(
                 "[opencti_user] Missing parameters: id and template_id"
             )
+            return None
 
         self.opencti.admin_logger.info(
             "Send email to user", {"id": id, "template_id": template_id}
@@ -808,6 +835,13 @@ class User:
         self.opencti.query(query, {"input": input})
 
     def process_multiple_fields(self, data):
+        """Process and normalize fields in user data.
+
+        :param data: the user data dictionary to process
+        :type data: dict
+        :return: the processed user data with normalized fields
+        :rtype: dict
+        """
         if "roles" in data:
             data["roles"] = self.opencti.process_multiple(data["roles"])
             data["rolesIds"] = self.opencti.process_multiple_ids(data["roles"])

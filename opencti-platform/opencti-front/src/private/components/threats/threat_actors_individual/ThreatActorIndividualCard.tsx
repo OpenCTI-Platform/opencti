@@ -129,7 +129,7 @@ interface ThreatActorIndividualCardProps {
   bookmarksIds?: string[];
 }
 const ThreatActorIndividualCard: FunctionComponent<
-ThreatActorIndividualCardProps
+  ThreatActorIndividualCardProps
 > = ({ node, onLabelClick, bookmarksIds }) => {
   const data = useFragment(ThreatActorIndividualCardFragment, node);
   return (

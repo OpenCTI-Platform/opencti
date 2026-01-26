@@ -29,7 +29,7 @@ export const addIngestion = async (context: AuthContext, user: AuthUser, input: 
       type: 'TAXII-PUSH',
       name: element.name,
       is_running: element.ingestion_running ?? false,
-      connector_user_id: input.user_id
+      connector_user_id: input.user_id,
     });
     await publishUserAction({
       user,
@@ -37,7 +37,7 @@ export const addIngestion = async (context: AuthContext, user: AuthUser, input: 
       event_scope: 'create',
       event_access: 'administration',
       message: `creates taxii collection ingestion \`${input.name}\``,
-      context_data: { id: element.id, entity_type: ENTITY_TYPE_INGESTION_TAXII_COLLECTION, input }
+      context_data: { id: element.id, entity_type: ENTITY_TYPE_INGESTION_TAXII_COLLECTION, input },
     });
   }
   return element;
@@ -57,7 +57,7 @@ export const ingestionEditField = async (context: AuthContext, user: AuthUser, i
     type: 'TAXII-PUSH',
     name: element.name,
     is_running: element.ingestion_running ?? false,
-    connector_user_id: element.user_id
+    connector_user_id: element.user_id,
   });
 
   await publishUserAction({
@@ -66,7 +66,7 @@ export const ingestionEditField = async (context: AuthContext, user: AuthUser, i
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for taxii collection ingestion \`${element.name}\``,
-    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_TAXII_COLLECTION, input }
+    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_TAXII_COLLECTION, input },
   });
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
 };
@@ -80,7 +80,7 @@ export const ingestionDelete = async (context: AuthContext, user: AuthUser, inge
     event_scope: 'delete',
     event_access: 'administration',
     message: `deletes taxii collection ingestion \`${deleted.name}\``,
-    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_TAXII_COLLECTION, input: deleted }
+    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_TAXII_COLLECTION, input: deleted },
   });
   return ingestionId;
 };

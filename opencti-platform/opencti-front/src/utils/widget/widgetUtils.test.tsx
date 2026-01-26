@@ -40,7 +40,7 @@ describe('widgetUtils', () => {
       expect(getCurrentCategory('heatmap')).toBe('timeseries');
       expect(getCurrentCategory('tree')).toBe('distribution');
       expect(getCurrentCategory('map')).toBe('distribution');
-      expect(getCurrentCategory('bookmark')).toBe('timeseries');
+      expect(getCurrentCategory('bookmark')).toBe('list');
       expect(getCurrentCategory('wordcloud')).toBe('distribution');
     });
 

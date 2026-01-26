@@ -52,7 +52,7 @@ import {
   userWithOrigin,
   userRoles,
   sendEmailToUser,
-  findUserPaginated
+  findUserPaginated,
 } from '../domain/user';
 import { subscribeToInstanceEvents, subscribeToUserEvents } from '../graphql/subscriptionWrapper';
 import { publishUserAction } from '../listener/UserActionListener';
@@ -62,6 +62,8 @@ import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { executionContext, REDACTED_USER } from '../utils/access';
 import { getNotifiers } from '../modules/notifier/notifier-domain';
 import { PROVIDERS } from '../config/providers-configuration';
+import { RELATION_HAS_CAPABILITY_IN_DRAFT } from '../schema/internalRelationship';
+import { loadCreator } from '../database/members';
 
 const userResolvers = {
   Query: {
@@ -78,6 +80,7 @@ const userResolvers = {
     systemMembers: () => findAllSystemMemberPaginated(),
     sessions: () => findSessions(),
     capabilities: (_, args, context) => findCapabilities(context, context.user, args),
+    capabilitiesInDraft: (_, args, context) => findCapabilities(context, context.user, args, RELATION_HAS_CAPABILITY_IN_DRAFT),
     bookmarks: (_, args, context) => bookmarks(context, context.user, args),
   },
   User: {
@@ -115,15 +118,16 @@ const userResolvers = {
     default_dashboards: (current, _, context) => findDefaultDashboards(context, context.user, current),
     default_dashboard: (current, _, context) => findWorskpaceById(context, context.user, current.default_dashboard),
     draftContext: (current, _, context) => findDraftById(context, context.user, current.draft_context),
-    effective_confidence_level: (current, args, context) => getUserEffectiveConfidenceLevel(current, context),
+    effective_confidence_level: (current, _, context) => getUserEffectiveConfidenceLevel(current, context),
     personal_notifiers: (current, _, context) => getNotifiers(context, context.user, current.personal_notifiers),
   },
   UserSession: {
-    user: (session, _, context) => context.batch.creatorBatchLoader.load(session.user_id),
+    user: (session, _, context) => loadCreator(context, context.user, session.user_id),
   },
   Role: {
     editContext: (role) => fetchEditContext(role.id),
     capabilities: (role, _, context) => roleCapabilities(context, context.user, role.id),
+    capabilitiesInDraft: (role, _, context) => roleCapabilities(context, context.user, role.id, RELATION_HAS_CAPABILITY_IN_DRAFT),
   },
   Group: {
     roles: (group, args, context) => groupRolesPaginated(context, context.user, group.id, args),
@@ -175,7 +179,7 @@ const userResolvers = {
         event_scope: 'login',
         event_access: 'administration',
         status: 'error',
-        context_data: { username: ENABLED_DEMO_MODE ? REDACTED_USER.name : input.email, provider: 'form' }
+        context_data: { username: ENABLED_DEMO_MODE ? REDACTED_USER.name : input.email, provider: 'form' },
       });
       // User cannot be authenticated in any providers
       throw AuthenticationFailure();
@@ -192,7 +196,7 @@ const userResolvers = {
         event_scope: 'update',
         event_access: 'administration',
         message: `kills \`specific session\` for user \`${actionEmail}\``,
-        context_data: { id: user.id, entity_type: ENTITY_TYPE_USER, input: { user_id: user.id, session_id: kill.sessionId } }
+        context_data: { id: user.id, entity_type: ENTITY_TYPE_USER, input: { user_id: user.id, session_id: kill.sessionId } },
       });
       return id;
     },
@@ -208,7 +212,7 @@ const userResolvers = {
         event_scope: 'update',
         event_access: 'administration',
         message: `kills \`all sessions\` for user \`${actionEmail}\``,
-        context_data: { id: user.id, entity_type: ENTITY_TYPE_USER, input: { user_id: id } }
+        context_data: { id: user.id, entity_type: ENTITY_TYPE_USER, input: { user_id: id } },
       });
       return sessionIds;
     },
@@ -243,7 +247,7 @@ const userResolvers = {
     bookmarkDelete: (_, { id }, context) => deleteBookmark(context, context.user, id),
     sendUserMail: (_, { input }, context) => {
       return sendEmailToUser(context, context.user, input);
-    }
+    },
   },
   Subscription: {
     me: {

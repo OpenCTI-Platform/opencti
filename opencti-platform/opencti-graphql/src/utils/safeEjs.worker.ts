@@ -16,6 +16,16 @@ export interface WorkerReply {
   error?: string;
 }
 
+export const customEscapeFunction = (value: any): string => {
+  if (Array.isArray(value) && value.length === 0) {
+    return '';
+  }
+  const result = JSON.stringify(value);
+  return result && result.startsWith('"') && result.endsWith('"')
+    ? result.slice(1, -1)
+    : result;
+};
+
 // Main worker execution
 const executeWorker = async () => {
   const { template, data, options, useJsonEscape } = workerData as WorkerRequest;
@@ -24,10 +34,7 @@ const executeWorker = async () => {
   const safeEjsOptions = { ...options };
   if (useJsonEscape) {
     // Recreate the escape function for JSON stringification
-    safeEjsOptions.escape = (value: any) => {
-      const result = JSON.stringify(value);
-      return result.startsWith('"') && result.endsWith('"') ? result.slice(1, -1) : result;
-    };
+    safeEjsOptions.escape = customEscapeFunction;
   }
 
   // Use the core logic from safeEjs (await in case it returns a Promise)
@@ -35,7 +42,7 @@ const executeWorker = async () => {
   // Send result back to main thread
   const message: WorkerReply = {
     success: true,
-    result
+    result,
   };
   parentPort?.postMessage(message);
 };
@@ -44,7 +51,7 @@ executeWorker().catch((error) => {
   // Send error back to main thread
   const message: WorkerReply = {
     success: false,
-    error: error instanceof Error ? error.message : 'Unknown error'
+    error: error instanceof Error ? error.message : 'Unknown error',
   };
   parentPort?.postMessage(message);
 });

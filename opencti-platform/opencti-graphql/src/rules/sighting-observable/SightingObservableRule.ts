@@ -54,7 +54,7 @@ const sightingObservableRuleBuilder = (): RuleRuntime => {
           confidence: computedConfidence,
           first_seen: range.start,
           last_seen: range.end,
-          objectMarking: elementMarkings
+          objectMarking: elementMarkings,
         });
         await createInferredRelation(context, input, ruleContent);
       }
@@ -62,7 +62,7 @@ const sightingObservableRuleBuilder = (): RuleRuntime => {
     const listFromArgs: RelationOptions<BasicStoreRelation> = {
       fromId: toObservable,
       toTypes: [ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION],
-      callback: listFromCallback
+      callback: listFromCallback,
     };
     await fullRelationsList(context, RULE_MANAGER_USER, STIX_SIGHTING_RELATIONSHIP, listFromArgs);
   };
@@ -95,7 +95,7 @@ const sightingObservableRuleBuilder = (): RuleRuntime => {
           confidence: computedConfidence,
           first_seen: range.start,
           last_seen: range.end,
-          objectMarking: elementMarkings
+          objectMarking: elementMarkings,
         });
         await createInferredRelation(context, input, ruleContent);
       }
@@ -103,7 +103,7 @@ const sightingObservableRuleBuilder = (): RuleRuntime => {
     const listFromArgs: RelationOptions<BasicStoreRelation> = {
       toId: fromObservable,
       fromTypes: [ENTITY_TYPE_INDICATOR],
-      callback: listFromCallback
+      callback: listFromCallback,
     };
     await fullRelationsList(context, RULE_MANAGER_USER, RELATION_BASED_ON, listFromArgs);
   };

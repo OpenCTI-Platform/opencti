@@ -6,6 +6,8 @@ import IconButton from '@mui/material/IconButton';
 import { AssignmentOutlined } from '@mui/icons-material';
 import StixCoreObjectFormSelector from '@components/common/stix_core_objects/StixCoreObjectFormSelector';
 import { useFormatter } from '../../../../components/i18n';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
+import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 
 // region types
 interface StixCoreObjectFormsProps {
@@ -73,7 +75,13 @@ const StixCoreObjectForms: FunctionComponent<StixCoreObjectFormsProps> = ({ enti
   useEffect(() => {
     loadQuery(formsPaginationOptions, { fetchPolicy: 'store-and-network' });
   }, []);
-  return (
+
+  // Remove create button in Draft context without the minimal right access "canEdit"
+  const draftContext = useDraftContext();
+  const currentAccessRight = useGetCurrentUserAccessRight(draftContext?.currentUserAccessRight);
+  const canDisplayButton = !draftContext || currentAccessRight.canEdit;
+
+  return canDisplayButton && (
     <>
       {queryRef && (
         <Suspense>

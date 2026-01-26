@@ -27,7 +27,7 @@ const INGESTION_JSON_DEFINITION: ModuleDefinition<StoreEntityIngestionJson, Stix
     id: 'ingestion-json',
     name: ENTITY_TYPE_INGESTION_JSON,
     category: ABSTRACT_INTERNAL_OBJECT,
-    aliased: false
+    aliased: false,
   },
   identifier: {
     definition: {
@@ -64,7 +64,7 @@ const INGESTION_JSON_DEFINITION: ModuleDefinition<StoreEntityIngestionJson, Stix
   representative: (stix: StixIngestionJson) => {
     return stix.name;
   },
-  converter_2_1: convertIngestionJsonToStix
+  converter_2_1: convertIngestionJsonToStix,
 };
 
 registerDefinition(INGESTION_JSON_DEFINITION);

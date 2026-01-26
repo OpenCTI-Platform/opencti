@@ -16,15 +16,20 @@ import Security from '../../../../utils/Security';
 import PopoverMenu from '../../../../components/PopoverMenu';
 import StixCoreObjectMenuItemUnderEE from '../../common/stix_core_objects/StixCoreObjectMenuItemUnderEE';
 import { useFormatter } from '../../../../components/i18n';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
+import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 
 const StixCyberObservableHeaderComponent = ({ stixCyberObservable, DeleteComponent }) => {
   const [openSharing, setOpenSharing] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
   const { t_i18n } = useFormatter();
+  const draftContext = useDraftContext();
+  const currentDraftAccessRight = useGetCurrentUserAccessRight(draftContext?.currentUserAccessRight);
+  const canEdit = !draftContext || currentDraftAccessRight.canEdit;
 
-  const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]);
-  const isKnowledgeEnricher = useGranted([KNOWLEDGE_KNENRICHMENT]);
-  const canDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]);
+  const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]) && canEdit;
+  const isKnowledgeEnricher = useGranted([KNOWLEDGE_KNENRICHMENT]) && canEdit;
+  const canDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]) && canEdit;
 
   const handleOpenDelete = () => setOpenDelete(true);
 

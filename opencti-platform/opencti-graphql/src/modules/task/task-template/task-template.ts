@@ -9,11 +9,11 @@ const TASK_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityTaskTemplate, StixTa
   type: {
     id: 'task-template',
     name: ENTITY_TYPE_TASK_TEMPLATE,
-    category: ABSTRACT_INTERNAL_OBJECT
+    category: ABSTRACT_INTERNAL_OBJECT,
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_TASK_TEMPLATE]: [{ src: NAME_FIELD }]
+      [ENTITY_TYPE_TASK_TEMPLATE]: [{ src: NAME_FIELD }],
     },
     resolvers: {
       name(data: object) {
@@ -30,6 +30,6 @@ const TASK_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityTaskTemplate, StixTa
   representative: (stix: StixTaskTemplate) => {
     return stix.name;
   },
-  converter_2_1: convertCaseTaskToStix
+  converter_2_1: convertCaseTaskToStix,
 };
 registerDefinition(TASK_TEMPLATE_DEFINITION);

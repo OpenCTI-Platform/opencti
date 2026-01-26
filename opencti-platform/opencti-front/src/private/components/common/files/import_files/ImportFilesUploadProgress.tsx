@@ -34,7 +34,7 @@ const ImportFilesUploadProgress: React.FC<ImportFilesUploadProgressProps> = ({
           <ListItem
             key={file.name}
             divider
-            secondaryAction={
+            secondaryAction={(
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 {
                   file.status === 'error' ? (
@@ -44,7 +44,7 @@ const ImportFilesUploadProgress: React.FC<ImportFilesUploadProgressProps> = ({
                   )
                 }
               </Box>
-            }
+            )}
           >
             <UploadFileOutlined color="primary" sx={{ marginRight: 2 }} />
             {file.name}

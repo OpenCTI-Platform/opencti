@@ -6,13 +6,13 @@ import { useFormatter } from '../../../../components/i18n';
 import GradientButton from '../../../../components/GradientButton';
 import ConfirmationDialog from './ConfirmationDialog';
 import { UserContext } from '../../../../utils/hooks/useAuth';
-import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useExternalTab from './useExternalTab';
 import ProcessInstructions from './ProcessInstructions';
 import ProcessLoader from './ProcessLoader';
 import ProcessDialog from './ProcessDialog';
 import type { Theme } from '../../../../components/Theme';
+import { LICENSE_OPTION_TRIAL } from '@components/LicenceBanner';
 
 enum ProcessSteps {
   INSTRUCTIONS = 'INSTRUCTIONS',
@@ -52,7 +52,8 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const { settings, about } = useContext(UserContext);
-  const isEnterpriseEdition = useEnterpriseEdition();
+  const eeSettings = settings?.platform_enterprise_edition;
+  const isEnterpriseEdition = eeSettings?.license_validated;
   const registrationHubUrl = settings?.platform_xtmhub_url ?? 'https://hub.filigran.io/app';
   const [processStep, setProcessStep] = useState<ProcessSteps>(
     ProcessSteps.INSTRUCTIONS,
@@ -263,6 +264,9 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
   };
 
   if (isRegistered) {
+    if (isEnterpriseEdition && eeSettings?.license_type === LICENSE_OPTION_TRIAL) {
+      return null;
+    }
     return (
       <>
         <div style={{ float: 'right', marginTop: theme.spacing(-2), position: 'relative' }}>

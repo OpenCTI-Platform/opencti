@@ -92,14 +92,14 @@ export const IndividualLine: FunctionComponent<IndividualLineProps> = ({
         <ItemIcon type="Individual" />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.name.width }}
             >
               {data.name}
-              {data.draftVersion && (<DraftChip/>)}
+              {data.draftVersion && (<DraftChip />)}
             </div>
             <div
               className={classes.bodyItem}
@@ -124,7 +124,7 @@ export const IndividualLine: FunctionComponent<IndividualLineProps> = ({
               {fd(data.modified)}
             </div>
           </div>
-          }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />
@@ -150,7 +150,7 @@ export const IndividualLineDummy = ({
         />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -197,7 +197,7 @@ export const IndividualLineDummy = ({
               />
             </div>
           </div>
-          }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />

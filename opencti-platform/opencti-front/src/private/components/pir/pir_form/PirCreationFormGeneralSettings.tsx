@@ -85,13 +85,15 @@ const PirCreationFormGeneralSettings = ({ redisQueryRef }: PirCreationFormGenera
         <MenuItem value={182}>{t_i18n('6 months')}</MenuItem>
       </Field>
       {showRescanAlert
-        && <Alert severity="warning" variant="outlined" style={{ marginTop: 20 }}>
-          <AlertTitle>{t_i18n('Rescan begins before stream first event date')}</AlertTitle>
-          {t_i18n(
-            'Events before stream first event date ({firstEventDate}) won\'t be taken into account.',
-            { values: { firstEventDate: fld(firstEventDate) } },
-          )}
-        </Alert>
+        && (
+          <Alert severity="warning" variant="outlined" style={{ marginTop: 20 }}>
+            <AlertTitle>{t_i18n('Rescan begins before stream first event date')}</AlertTitle>
+            {t_i18n(
+              'Events before stream first event date ({firstEventDate}) won\'t be taken into account.',
+              { values: { firstEventDate: fld(firstEventDate) } },
+            )}
+          </Alert>
+        )
       }
     </>
   );

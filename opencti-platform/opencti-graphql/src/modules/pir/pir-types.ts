@@ -22,70 +22,76 @@ export const ENTITY_TYPE_PIR = 'Pir';
 export const PIR_TYPES = Object.values(PirType);
 
 export interface PirCriterion {
-  filters: string
-  weight: number
+  filters: string;
+  weight: number;
 }
 
 export interface BasicStoreEntityPir extends BasicStoreEntity {
-  name: string
-  pir_type: PirType
-  description: string
-  pir_rescan_days: number
-  pir_criteria: PirCriterion[]
-  pir_filters: string
-  lastEventId: string
+  name: string;
+  pir_type: PirType;
+  description: string;
+  pir_rescan_days: number;
+  pir_criteria: PirCriterion[];
+  pir_filters: string;
+  lastEventId: string;
   restricted_members: Array<AuthorizedMember>;
 }
 
 export interface StoreEntityPir extends StoreEntity {
-  name: string
-  pir_type: PirType
-  description: string
-  pir_rescan_days: number
-  pir_criteria: PirCriterion[]
-  pir_filters: string
-  lastEventId: string
+  name: string;
+  pir_type: PirType;
+  description: string;
+  pir_rescan_days: number;
+  pir_criteria: PirCriterion[];
+  pir_filters: string;
+  lastEventId: string;
   restricted_members: Array<AuthorizedMember>;
 }
 
 export interface StixPir extends StixInternal {
-  name: string
+  name: string;
 }
 
 export interface ParsedPirCriterion {
-  filters: FilterGroup
-  weight: number
+  filters: FilterGroup;
+  weight: number;
 }
 
 export interface ParsedPir {
-  id: string
-  name: string
-  pir_type: PirType
-  description: string
-  pir_rescan_days: number
+  id: string;
+  name: string;
+  pir_type: PirType;
+  description: string;
+  pir_rescan_days: number;
   // Criteria are filters with a weight,
   // they are used to compute matching score.
-  pir_criteria: ParsedPirCriterion[]
+  pir_criteria: ParsedPirCriterion[];
   // Filters do not count when computing score, their role
   // is to exclude some data (low confidence for example).
-  pir_filters: FilterGroup
+  pir_filters: FilterGroup;
 }
 
 interface PirDependency {
-  element_id: string,
-  author_id?: string | null,
+  element_id: string;
+  author_id?: string | null;
 }
 
 export interface PirExplanation {
-  dependencies: PirDependency[],
-  criterion: PirCriterion,
+  dependencies: PirDependency[];
+  criterion: PirCriterion;
 }
 
 export interface BasicStoreRelationPir extends BasicStoreRelation {
-  pir_explanation: PirExplanation[],
-  pir_score: number,
-  authorized_authorities: string[],
+  pir_explanation: PirExplanation[];
+  pir_score: number;
+  authorized_authorities: string[];
 }
 
 export interface StoreRelationPir extends StoreRelation, BasicStoreRelationPir {
+}
+
+export interface PirInformation {
+  pir_id: string;
+  pir_score: number;
+  last_pir_score_date: string;
 }

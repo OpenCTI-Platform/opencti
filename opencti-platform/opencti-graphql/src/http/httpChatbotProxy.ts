@@ -23,9 +23,9 @@ export const getChatbotProxy = async (req: Express.Request, res: Express.Respons
 
     const settings = await getEntityFromCache<BasicStoreSettings>(context, context.user, ENTITY_TYPE_SETTINGS);
     const isChatbotCGUAccepted: boolean = settings.filigran_chatbot_ai_cgu_status === CguStatus.Enabled;
-    const license_pem = getEnterpriseEditionActivePem(settings.enterprise_license);
+    const { pem } = getEnterpriseEditionActivePem(settings);
     const licenseInfo = getEnterpriseEditionInfo(settings);
-    const isLicenseValidated = licenseInfo.license_validated;
+    const isLicenseValidated = pem !== undefined && licenseInfo.license_validated;
 
     if (!isChatbotCGUAccepted || !isLicenseValidated) {
       logApp.error('Error in chatbot proxy', { cguStatus: settings.filigran_chatbot_ai_cgu_status, isLicenseValidated, chatbotUrl: XTM_ONE_CHATBOT_URL });
@@ -36,7 +36,7 @@ export const getChatbotProxy = async (req: Express.Request, res: Express.Respons
     const vars = {
       OPENCTI_URL: getChatbotUrl(req),
       OPENCTI_TOKEN: context.user?.api_token,
-      'X-API-KEY': Buffer.from(license_pem, 'utf-8').toString('base64'),
+      'X-API-KEY': Buffer.from(pem, 'utf-8').toString('base64'),
       X_XTM_PRODUCT: 'OpenCTI',
       X_OPENCTI_VERSION: PLATFORM_VERSION,
     };
@@ -58,8 +58,8 @@ export const getChatbotProxy = async (req: Express.Request, res: Express.Respons
         vars: {
           ...req.body?.overrideConfig?.vars,
           ...vars,
-        }
-      }
+        },
+      },
     };
 
     // Repost the request to Flowise with enhanced headers and body
@@ -95,7 +95,7 @@ export const getChatbotProxy = async (req: Express.Request, res: Express.Respons
     response.data.on('error', (error: Error) => {
       logApp.error('Stream error in chatbot proxy', { cause: error });
       if (!res.headersSent) {
-        const { message } = (error as Error);
+        const { message } = error as Error;
         res.status(500).send({
           status: 'error',
           error: message,
@@ -106,7 +106,7 @@ export const getChatbotProxy = async (req: Express.Request, res: Express.Respons
     });
   } catch (e: unknown) {
     logApp.error('Error in chatbot proxy', { cause: e });
-    const { message } = (e as Error);
+    const { message } = e as Error;
 
     if (axios.isAxiosError(e) && e.response) {
       res.status(e.response.status).send({

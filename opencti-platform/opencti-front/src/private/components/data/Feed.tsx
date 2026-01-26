@@ -27,7 +27,7 @@ const Feed = () => {
     location,
     LOCAL_STORAGE_KEY,
   );
-  const [feedState, setFeedState] = useState<{ orderAsc: boolean, searchTerm: string, view: string, sortBy: string }>({
+  const [feedState, setFeedState] = useState<{ orderAsc: boolean; searchTerm: string; view: string; sortBy: string }>({
     orderAsc: params.orderAsc !== false,
     searchTerm: params.searchTerm ?? '',
     view: params.view ?? 'lines',
@@ -92,11 +92,11 @@ const Feed = () => {
         displayImport={false}
         secondaryAction={true}
         keyword={feedState.searchTerm}
-        createButton={
+        createButton={(
           <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
             <FeedCreation paginationOptions={paginationOptions} />
           </Security>
-        }
+        )}
       >
         <QueryRenderer
           query={FeedLinesQuery}
@@ -127,7 +127,7 @@ const Feed = () => {
       }}
       >
         <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Data sharing') }, { label: t_i18n('CSV feeds'), current: true }]} />
-        <SharingMenu/>
+        <SharingMenu />
         {feedState.view === 'lines' ? renderLines(paginationOptions) : ''}
       </Box>
     </div>

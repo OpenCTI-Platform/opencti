@@ -121,7 +121,7 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
         )}
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -153,7 +153,7 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
                 && data.notifiers
                   .map<React.ReactNode>((n) => (
                     <code key={n.id}>{n.name}</code>
-                ))
+                  ))
                   .reduce((prev, curr) => [prev, ', ', curr])}
             </div>
             {data.trigger_type === 'live' && filters && (
@@ -171,42 +171,42 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
               >
                 <Chip
                   classes={{ root: classes.chipInList3 }}
-                  label={
+                  label={(
                     <span>
                       <strong>{t_i18n('Period: ')}</strong>
                       {data.period}
                     </span>
-                                    }
+                  )}
                 />
                 {currentTime.length > 1 && (
-                <Chip
-                  classes={{ root: classes.chipInList3 }}
-                  label={
-                    <span>
-                      <strong>{t_i18n('Day: ')}</strong>
-                      {day}
-                    </span>
-                                        }
-                />
+                  <Chip
+                    classes={{ root: classes.chipInList3 }}
+                    label={(
+                      <span>
+                        <strong>{t_i18n('Day: ')}</strong>
+                        {day}
+                      </span>
+                    )}
+                  />
                 )}
                 {data.trigger_time && data.trigger_time.length > 0 && (
-                <Chip
-                  classes={{ root: classes.chipInList3 }}
-                  label={
-                    <span>
-                      <strong>{t_i18n('Time: ')}</strong>
-                      {nt(time)}
-                    </span>
-                                        }
-                />
+                  <Chip
+                    classes={{ root: classes.chipInList3 }}
+                    label={(
+                      <span>
+                        <strong>{t_i18n('Time: ')}</strong>
+                        {nt(time)}
+                      </span>
+                    )}
+                  />
                 )}
               </div>
             )}
           </div>
-                }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
-        <AlertingPopover data={data} paginationOptions={paginationOptions}/>
+        <AlertingPopover data={data} paginationOptions={paginationOptions} />
       </ListItemIcon>
     </ListItem>
   );
@@ -222,19 +222,19 @@ export const AlertingLineDummy = ({
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={
+      secondaryAction={(
         <Box sx={{ root: classes.itemIconDisabled }}>
           <IconButton disabled={true} aria-haspopup="true" size="large">
-            <MoreVert/>
+            <MoreVert />
           </IconButton>
         </Box>
-      }
+      )}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <Skeleton animation="wave" variant="circular" width={30} height={30}/>
+        <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             {Object.values(dataColumns).map((value) => (
               <div
@@ -251,7 +251,7 @@ export const AlertingLineDummy = ({
               </div>
             ))}
           </div>
-                }
+        )}
       />
     </ListItem>
   );

@@ -122,7 +122,7 @@ const Trash: React.FC = () => {
         >
           {queryRef && (
             <React.Suspense
-              fallback={
+              fallback={(
                 <>
                   {Array(20)
                     .fill(0)
@@ -133,7 +133,7 @@ const Trash: React.FC = () => {
                       />
                     ))}
                 </>
-              }
+              )}
             >
               <DeleteOperationsLines
                 queryRef={queryRef}
@@ -170,15 +170,17 @@ const Trash: React.FC = () => {
         <Breadcrumbs elements={[{ label: t_i18n('Trash'), current: true }]} />
         <Tooltip
           sx={{ marginBottom: 2 }}
-          title={<>
-            {t_i18n('Entities and relationships manually deleted from the platform will appear in this view, and can be restored.')}
-            <br/>
-            {t_i18n('Elements deleted by connectors or during platform synchronization are not put into the trash.')}
-            <br/>
-            { isModuleEnable(GARBAGE_COLLECTION_MANAGER) && (
-              t_i18n('An element will persist in the trash for a fixed period of time before being permanently deleted, according to the garbage collection manager settings.')
-            )}
-          </>}
+          title={(
+            <>
+              {t_i18n('Entities and relationships manually deleted from the platform will appear in this view, and can be restored.')}
+              <br />
+              {t_i18n('Elements deleted by connectors or during platform synchronization are not put into the trash.')}
+              <br />
+              { isModuleEnable(GARBAGE_COLLECTION_MANAGER) && (
+                t_i18n('An element will persist in the trash for a fixed period of time before being permanently deleted, according to the garbage collection manager settings.')
+              )}
+            </>
+          )}
         >
           <InformationOutline
             fontSize="small"

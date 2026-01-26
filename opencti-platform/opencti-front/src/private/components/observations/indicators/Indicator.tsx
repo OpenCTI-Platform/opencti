@@ -2,6 +2,7 @@ import { graphql } from 'relay-runtime';
 import React from 'react';
 import { useFragment } from 'react-relay';
 import { Grid } from '@mui/material';
+import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import { Indicator_indicator$key } from './__generated__/Indicator_indicator.graphql';
 import IndicatorDetails from './IndicatorDetails';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -67,7 +68,11 @@ interface IndicatorProps {
   indicatorData: Indicator_indicator$key;
 }
 
-const Indicator: React.FC<IndicatorProps> = ({ indicatorData }) => {
+const Indicator: React.FC<IndicatorProps> = ({
+  indicatorData,
+}) => {
+  useInitCreateRelationshipContext();
+
   const indicator = useFragment<Indicator_indicator$key>(
     indicatorFragment,
     indicatorData,

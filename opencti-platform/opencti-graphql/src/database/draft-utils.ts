@@ -25,7 +25,7 @@ export const isDraftFile = (fileKey: string, draftId: string, suffix = ''): bool
 };
 
 export type BuildDraftFilterOpts = {
-  includeDeletedInDraft?: boolean | null
+  includeDeletedInDraft?: boolean | null;
 };
 export const buildDraftFilter = (context: AuthContext, user: AuthUser, opts: BuildDraftFilterOpts = {}) => {
   const { includeDeletedInDraft = false } = opts;
@@ -36,17 +36,17 @@ export const buildDraftFilter = (context: AuthContext, user: AuthUser, opts: Bui
       bool: {
         must_not: [
           { term: { _index: READ_INDEX_DRAFT_OBJECTS } },
-          { term: { 'draft_ids.keyword': draftContext } }
-        ]
-      }
+          { term: { 'draft_ids.keyword': draftContext } },
+        ],
+      },
     };
     const mustDraft = {
       bool: {
         must: [
           { term: { _index: READ_INDEX_DRAFT_OBJECTS } },
-          { term: { 'draft_ids.keyword': draftContext } }
-        ]
-      }
+          { term: { 'draft_ids.keyword': draftContext } },
+        ],
+      },
     };
     const draftBool = {
       bool: {
@@ -61,8 +61,8 @@ export const buildDraftFilter = (context: AuthContext, user: AuthUser, opts: Bui
         bool: {
           must_not: [
             { terms: { 'draft_change.draft_operation.keyword': [DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_LINKED] } },
-          ]
-        }
+          ],
+        },
       };
       draftMust.push(excludeDeletedDraft);
     }
@@ -76,10 +76,10 @@ export const isDraftSupportedEntity = (element: Record<string, any>): boolean =>
 
 export const FILES_UPDATE_KEY = files.name;
 type PatchValue = {
-  replaced_value: any[],
-  added_value: any[],
-  removed_value: any[],
-  initial_value: any[]
+  replaced_value: any[];
+  added_value: any[];
+  removed_value: any[];
+  initial_value: any[];
 };
 type UpdatePatch = Record<string, PatchValue>;
 // Transform a raw update patched stored in a draft_updates_patch to a list of reverse field patch inputs
@@ -136,7 +136,9 @@ export const buildUpdateFieldPatch = (rawUpdatePatch: string): InternalEditInput
 export const getConsolidatedUpdatePatch = (currentUpdatePatch: UpdatePatch, updatedInputsResolved: InternalEditInput[]): UpdatePatch => {
   const newUpdatePatch = currentUpdatePatch;
   const nonResolvedInput = updatedInputsResolved
-    .map((i) => { return { key: i.key, value: i.value?.map((v) => ((v && typeof v !== 'string' && v.standard_id) ? v.standard_id : v)), operation: i.operation ?? UPDATE_OPERATION_REPLACE, previous: i.previous ?? [] }; });
+    .map((i) => {
+      return { key: i.key, value: i.value?.map((v) => ((v && typeof v !== 'string' && v.standard_id) ? v.standard_id : v)), operation: i.operation ?? UPDATE_OPERATION_REPLACE, previous: i.previous ?? [] };
+    });
   for (let i = 0; i < nonResolvedInput.length; i += 1) {
     const currentNonResolvedInput = nonResolvedInput[i];
     const currentUpdates = currentUpdatePatch[currentNonResolvedInput.key];
@@ -183,9 +185,9 @@ export const getConsolidatedUpdatePatch = (currentUpdatePatch: UpdatePatch, upda
 export const getDraftChanges = (initialInstance: BasicStoreBase, updatedInputs: InternalEditInput[]): DraftChange => {
   const currentDraftChanges = initialInstance.draft_change ?? { draft_operation: DRAFT_OPERATION_UPDATE };
   if (updatedInputs.length === 0
-      || currentDraftChanges?.draft_operation === DRAFT_OPERATION_CREATE
-      || currentDraftChanges?.draft_operation === DRAFT_OPERATION_DELETE
-      || currentDraftChanges?.draft_operation === DRAFT_OPERATION_DELETE_LINKED) {
+    || currentDraftChanges?.draft_operation === DRAFT_OPERATION_CREATE
+    || currentDraftChanges?.draft_operation === DRAFT_OPERATION_DELETE
+    || currentDraftChanges?.draft_operation === DRAFT_OPERATION_DELETE_LINKED) {
     return currentDraftChanges;
   }
 

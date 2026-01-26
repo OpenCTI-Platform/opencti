@@ -257,12 +257,12 @@ const AttackPatternEditionOverviewComponent = (props) => {
             style={fieldSpacingContainerStyle}
             required={(mandatoryAttributes.includes('killChainPhases'))}
             setFieldValue={setFieldValue}
-            helpertext={
+            helpertext={(
               <SubscriptionFocus
                 context={context}
                 fieldName="killChainPhases"
               />
-            }
+            )}
             onChange={editor.changeKillChainPhases}
           />
           {attackPattern.workflowEnabled && (
@@ -273,12 +273,12 @@ const AttackPatternEditionOverviewComponent = (props) => {
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
               style={{ marginTop: 20 }}
-              helpertext={
+              helpertext={(
                 <SubscriptionFocus
                   context={context}
                   fieldName="x_opencti_workflow_id"
                 />
-              }
+              )}
             />
           )}
           <CreatedByField
@@ -302,14 +302,14 @@ const AttackPatternEditionOverviewComponent = (props) => {
             onChange={editor.changeMarking}
           />
           {enableReferences && (
-          <CommitMessage
-            submitForm={submitForm}
-            disabled={isSubmitting || !isValid || !dirty}
-            setFieldValue={setFieldValue}
-            open={false}
-            values={values.references}
-            id={attackPattern.id}
-          />
+            <CommitMessage
+              submitForm={submitForm}
+              disabled={isSubmitting || !isValid || !dirty}
+              setFieldValue={setFieldValue}
+              open={false}
+              values={values.references}
+              id={attackPattern.id}
+            />
           )}
         </Form>
       )}

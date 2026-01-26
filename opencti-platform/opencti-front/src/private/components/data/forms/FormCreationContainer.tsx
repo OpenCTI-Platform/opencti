@@ -105,7 +105,7 @@ const CreateFormControlledDial = (props: CreateFormControlledDialProps) => {
       >
         <FileUploadOutlined fontSize="small" color="primary" />
       </ToggleButton>
-      <CreateEntityControlledDial entityType='Form' {...props} />
+      <CreateEntityControlledDial entityType="Form" {...props} />
     </>
   );
 };

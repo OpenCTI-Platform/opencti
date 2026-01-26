@@ -3,11 +3,11 @@ import Paper from '@mui/material/Paper';
 import React, { CSSProperties, FunctionComponent, ReactNode } from 'react';
 
 interface WidgetContainerProps {
-  children: ReactNode
-  height?: CSSProperties['height']
-  title?: string
-  variant?: string
-  withoutTitle?: boolean
+  children: ReactNode;
+  height?: CSSProperties['height'];
+  title?: string;
+  variant?: string;
+  withoutTitle?: boolean;
 }
 
 const WidgetContainer: FunctionComponent<WidgetContainerProps> = ({

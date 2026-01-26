@@ -36,7 +36,7 @@ const pirCreateMutation = graphql`
 `;
 
 interface PirCreationProps {
-  paginationOptions: PirsListQuery$variables
+  paginationOptions: PirsListQuery$variables;
 }
 
 const PirCreation = ({ paginationOptions }: PirCreationProps) => {
@@ -73,7 +73,7 @@ const PirCreation = ({ paginationOptions }: PirCreationProps) => {
   return (
     <>
       <CreateEntityControlledDial
-        entityType='Pir'
+        entityType="Pir"
         onOpen={handleOpenDialog}
       />
 

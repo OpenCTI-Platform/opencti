@@ -9,7 +9,7 @@ import PublicDashboard from './dashboards/public_dashboards/PublicDashboards';
 
 const DashboardRoute = () => (
   <Security needs={[EXPLORE]} placeholder={<Navigate to="/dashboard" />}>
-    <Workspaces type={'dashboard'} />
+    <Workspaces type="dashboard" />
   </Security>
 );
 
@@ -20,14 +20,14 @@ const DashboardWorkspaceRoute = () => (
 );
 
 const PublicDashboardRoute = () => (
-  <Security needs={[EXPLORE]} placeholder={<Navigate to="/dashboard"/>}>
-    <PublicDashboard/>
+  <Security needs={[EXPLORE]} placeholder={<Navigate to="/dashboard" />}>
+    <PublicDashboard />
   </Security>
 );
 
 const InvestigationRoute = () => (
   <Security needs={[INVESTIGATION]} placeholder={<Navigate to="/dashboard" />}>
-    <Workspaces type={'investigation'} />
+    <Workspaces type="investigation" />
   </Security>
 );
 

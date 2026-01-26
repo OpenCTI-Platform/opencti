@@ -68,8 +68,8 @@ const SubTypeWorkflowStatusEdit: FunctionComponent<StatusEditionProps> = ({
   queryRef,
 }) => {
   const data = usePreloadedFragment<
-  SubTypeWorkflowStatusEditQuery,
-  SubTypeWorkflowStatusEdit_subType$key
+    SubTypeWorkflowStatusEditQuery,
+    SubTypeWorkflowStatusEdit_subType$key
   >({
     queryDef: statusEditQuery,
     fragmentDef: statusEditFragment,
@@ -81,11 +81,11 @@ const SubTypeWorkflowStatusEdit: FunctionComponent<StatusEditionProps> = ({
   const initialValues: StatusEditForm = {
     template: data.template
       ? {
-        label: data.template.name,
-        value: data.template.id,
-        color: data.template.color,
+          label: data.template.name,
+          value: data.template.id,
+          color: data.template.color,
 
-      }
+        }
       : null,
     order: String(data.order) || '',
   };
@@ -132,7 +132,7 @@ const SubTypeWorkflowStatusEdit: FunctionComponent<StatusEditionProps> = ({
               <StatusTemplateField
                 name="template"
                 setFieldValue={setFieldValue}
-                helpertext={''}
+                helpertext=""
               />
               <Field
                 component={TextField}

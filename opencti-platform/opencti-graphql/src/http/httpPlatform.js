@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { URL } from 'node:url';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -37,7 +36,14 @@ import { getChatbotProxy } from './httpChatbotProxy';
 import { isStrategyActivated, StrategyType } from '../config/providers-configuration';
 
 export const sanitizeReferer = (refererToSanitize) => {
-  if (!refererToSanitize) return '/';
+  // NOTE: basePath will be configured, if the site is hosted behind a reverseProxy otherwise '/' should be accurate
+  // Ternary Operator (?): Defaults if basePath is undefined, null, "" (empty string), 0, etc (falsy values).
+  // basePath is trimmed in '../config/conf.js' to prevent a user from setting it to something like '       '
+  // NOTE: Do NOT use Nullish Coalescing (??): Would only default if basePath is undefined or null.
+  // It might be set to an empty string and would fail to set properly in base2return var in next line
+  const base2return = basePath ? basePath : '/';
+  // In some odd configurations refererToSanitize will be the string('undefined') versus value(undefined)
+  if (!refererToSanitize || refererToSanitize === 'undefined') return base2return;
   const base = getBaseUrl();
   const resolvedUrl = new URL(refererToSanitize, base).toString();
   if (resolvedUrl === base || resolvedUrl.startsWith(`${base}/`)) {
@@ -49,21 +55,22 @@ export const sanitizeReferer = (refererToSanitize) => {
     return resolvedUrl;
   }
   logApp.info('Error auth provider callback : url has been altered', { url: refererToSanitize });
-  return '/';
+  return base2return;
 };
 
 const extractRefererPathFromReq = (req) => {
-  if (isNotEmptyField(req.headers.referer)) {
-    try {
-      const refererUrl = new URL(req.headers.referer);
-      // Keep only the pathname to prevent OPEN REDIRECT CWE-601
-      return refererUrl.pathname;
-    } catch {
-      // prevent any invalid referer
-      logApp.warn('Invalid referer for redirect extraction', { referer: req.headers.referer });
-    }
+  if (isEmptyField(req.headers.referer)) {
+    return undefined;
   }
-  return undefined;
+
+  try {
+    const refererUrl = new URL(req.headers.referer);
+    // Keep only the pathname and search to prevent OPEN REDIRECT CWE-601
+    return refererUrl.pathname + refererUrl.search;
+  } catch {
+    // prevent any invalid referer
+    logApp.warn('Invalid referer for redirect extraction', { referer: req.headers.referer });
+  }
 };
 
 const publishFileDownload = async (executeContext, auth, file) => {
@@ -75,7 +82,7 @@ const publishFileDownload = async (executeContext, auth, file) => {
     event_type: 'file',
     event_access: 'extended',
     event_scope: 'download',
-    context_data: data
+    context_data: data,
   });
 };
 
@@ -88,7 +95,7 @@ const publishFileRead = async (executeContext, auth, file) => {
     event_type: 'file',
     event_access: 'extended',
     event_scope: 'read',
-    context_data: data
+    context_data: data,
   });
 };
 
@@ -401,7 +408,7 @@ const createApp = async (app, schema) => {
           event_type: 'authentication',
           event_access: 'administration',
           event_scope: 'logout',
-          context_data: undefined
+          context_data: undefined,
         });
         await delUserContext(user);
         res.clearCookie(OPENCTI_SESSION);
@@ -454,17 +461,29 @@ const createApp = async (app, schema) => {
       const { provider } = req.params;
       const strategy = passport._strategy(provider);
       const referer = extractRefererPathFromReq(req);
+
       if (strategy._saml) {
         // For SAML, no session is required, referer will be send back through RelayState
-        req.query.RelayState = referer;
-      } else {
-        // For openid / oauth, session is required so we can use it
-        req.session.referer = referer;
+        return passport.authenticate(
+          provider,
+          { additionalParams: { RelayState: referer } },
+          (err) => {
+            setCookieError(res, err?.message);
+            next(err);
+          },
+        )(req, res, next);
       }
-      passport.authenticate(provider, {}, (err) => {
-        setCookieError(res, err?.message);
-        next(err);
-      })(req, res, next);
+
+      // For openid / oauth, session is required so we can use it
+      req.session.referer = referer;
+      return passport.authenticate(
+        provider,
+        {},
+        (err) => {
+          setCookieError(res, err?.message);
+          next(err);
+        },
+      )(req, res, next);
     } catch (e) {
       setCookieError(res, e.message);
       logApp.error('Error auth provider', { cause: e });
@@ -477,6 +496,7 @@ const createApp = async (app, schema) => {
   const urlencodedParser = AUTH_PAYLOAD_BODY_SIZE ? bodyParser.urlencoded({ extended: true, limit: AUTH_PAYLOAD_BODY_SIZE }) : bodyParser.urlencoded({ extended: true });
   app.all(`${basePath}/auth/:provider/callback`, urlencodedParser, async (req, res, next) => {
     const { provider } = req.params;
+
     const callbackLogin = () => new Promise((accept, reject) => {
       passport.authenticate(provider, {}, (err, user) => {
         if (err || !user) {
@@ -486,6 +506,7 @@ const createApp = async (app, schema) => {
         }
       })(req, res, next);
     });
+
     try {
       const context = executionContext(`${provider}_strategy`);
       const logged = await callbackLogin();
@@ -543,7 +564,7 @@ const createApp = async (app, schema) => {
       const data = await readFile(`${__dirname}/../public/index.html`, 'utf8');
       const settingsTitle = settings?.platform_title;
       const description = 'OpenCTI is an open source platform allowing organizations'
-          + ' to manage their cyber threat intelligence knowledge and observables.';
+        + ' to manage their cyber threat intelligence knowledge and observables.';
       const settingFavicon = settings?.platform_favicon;
       const withOptionValued = data
         .replace(/%BASE_PATH%/g, basePath)

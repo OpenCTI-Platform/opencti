@@ -10,13 +10,13 @@ import { useComputeDefaultValues } from '../../../../utils/hooks/useDefaultValue
 type CsvMapperRepresentations = CsvMapperEditionContainerFragment_csvMapper$data['representations'];
 
 export type CsvMapperAddInput = {
-  id: string,
-  errors: string | null | undefined,
-  representations: CsvMapperRepresentations,
-  has_header: boolean,
-  name: string,
-  separator: string,
-  skipLineChar: string | null | undefined
+  id: string;
+  errors: string | null | undefined;
+  representations: CsvMapperRepresentations;
+  has_header: boolean;
+  name: string;
+  separator: string;
+  skipLineChar: string | null | undefined;
 };
 
 /**

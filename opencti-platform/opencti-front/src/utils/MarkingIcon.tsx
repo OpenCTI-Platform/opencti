@@ -4,9 +4,9 @@ import type { Theme } from '../components/Theme';
 
 interface MarkingIconProps {
   color: string | undefined | null;
-  theme: Theme
+  theme: Theme;
 }
-const MarkingIcon = ({ color, theme }: MarkingIconProps) : React.ReactNode => {
+const MarkingIcon = ({ color, theme }: MarkingIconProps): React.ReactNode => {
   if (color === 'transparent') {
     const transparentColor = theme.palette.mode === 'light' ? '#2b2b2b' : '#ffffff';
     return (
@@ -21,7 +21,7 @@ const MarkingIcon = ({ color, theme }: MarkingIconProps) : React.ReactNode => {
     return (
       <ItemIcon
         type="Marking-Definition"
-        color={'#2b2b2b'}
+        color="#2b2b2b"
       />
     );
   }

@@ -157,23 +157,23 @@ class IncidentKnowledgeComponent extends Component {
           padding: 0,
         }}
         id={location.pathname.includes('matrix') ? 'parent' : 'container'}
-        data-testid='incident-response-knowledge'
+        data-testid="incident-response-knowledge"
       >
         {mode !== 'graph' && (
-        <ContainerHeader
-          container={caseData}
-          link={`/dashboard/cases/incidents/${caseData.id}/knowledge`}
-          modes={['graph', 'timeline', 'correlation', 'matrix']}
-          currentMode={mode}
-          knowledge={true}
-          enableSuggestions={true}
-          investigationAddFromContainer={investigationAddFromContainer}
-        />
+          <ContainerHeader
+            container={caseData}
+            link={`/dashboard/cases/incidents/${caseData.id}/knowledge`}
+            modes={['graph', 'timeline', 'correlation', 'matrix']}
+            currentMode={mode}
+            knowledge={true}
+            enableSuggestions={true}
+            investigationAddFromContainer={investigationAddFromContainer}
+          />
         )}
         <Routes>
           <Route
             path="/graph"
-            element={
+            element={(
               <QueryRenderer
                 query={incidentKnowledgeGraphQuery}
                 variables={{ id: caseData.id }}
@@ -195,11 +195,12 @@ class IncidentKnowledgeComponent extends Component {
                     />
                   );
                 }}
-              />}
+              />
+            )}
           />
           <Route
             path="/timeline"
-            element={
+            element={(
               <>
                 <ContentKnowledgeTimeLineBar
                   handleTimeLineSearch={this.handleTimeLineSearch.bind(this)}
@@ -243,11 +244,12 @@ class IncidentKnowledgeComponent extends Component {
                     );
                   }}
                 />
-              </>}
+              </>
+            )}
           />
           <Route
             path="/correlation"
-            element={
+            element={(
               <QueryRenderer
                 query={incidentKnowledgeCorrelationQuery}
                 variables={{ id: caseData.id }}
@@ -267,26 +269,27 @@ class IncidentKnowledgeComponent extends Component {
                     />
                   );
                 }}
-              />}
+              />
+            )}
           />
           <Route
             path="/matrix"
-            element={
+            element={(
               <StixDomainObjectAttackPatterns
                 stixDomainObjectId={caseData.id}
                 defaultStartTime={caseData.first_seen}
                 defaultStopTime={caseData.last_seen}
                 entityType={caseData.entity_type}
               />
-            }
+            )}
           />
           <Route
             path="/relations/:relationId"
-            element={
+            element={(
               <StixCoreRelationship
                 entityId={caseData.id}
               />
-            }
+            )}
           />
         </Routes>
       </div>

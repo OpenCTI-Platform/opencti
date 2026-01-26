@@ -142,7 +142,7 @@ interface RelationShipFromAndToComponentProps {
   direction: string;
 }
 const RelationShipFromAndToComponent: FunctionComponent<
-RelationShipFromAndToComponentProps
+  RelationShipFromAndToComponentProps
 > = ({ queryRef, direction }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -173,7 +173,7 @@ interface RelationShipFromAndToProps {
 }
 
 const RelationShipFromAndTo: FunctionComponent<
-Omit<RelationShipFromAndToProps, 'queryRef'>
+  Omit<RelationShipFromAndToProps, 'queryRef'>
 > = ({ id, direction }) => {
   const queryRef = useQueryLoading<RelationShipFromAndToQuery>(
     relationShipFromAndToQuery,

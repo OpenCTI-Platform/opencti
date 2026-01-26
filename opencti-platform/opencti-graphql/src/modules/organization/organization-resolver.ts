@@ -12,14 +12,14 @@ import {
   organizationDelete,
   organizationMembersPaginated,
   organizationSectorsPaginated,
-  parentOrganizationsPaginated
+  parentOrganizationsPaginated,
 } from './organization-domain';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
   stixDomainObjectDeleteRelation,
   stixDomainObjectEditContext,
-  stixDomainObjectEditField
+  stixDomainObjectEditField,
 } from '../../domain/stixDomainObject';
 import type { Resolvers } from '../../generated/graphql';
 import type { BasicStoreEntityOrganization } from './organization-types';

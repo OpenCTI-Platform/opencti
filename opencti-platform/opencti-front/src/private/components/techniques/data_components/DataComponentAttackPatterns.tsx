@@ -61,14 +61,14 @@ const DataComponentAttackPatternsComponent: FunctionComponent<{
                 return (
                   <ListItemText
                     key={idx}
-                    primary={
+                    primary={(
                       <Skeleton
                         animation="wave"
                         variant="rectangular"
                         width="90%"
                         height="100%"
                       />
-                    }
+                    )}
                   />
                 );
               }
@@ -78,7 +78,7 @@ const DataComponentAttackPatternsComponent: FunctionComponent<{
                   dense={true}
                   divider={true}
                   disablePadding={true}
-                  secondaryAction={
+                  secondaryAction={(
                     <IconButton
                       aria-label="Remove"
                       onClick={() => removeAttackPattern(attackPattern.id)}
@@ -86,7 +86,7 @@ const DataComponentAttackPatternsComponent: FunctionComponent<{
                     >
                       <LinkOff />
                     </IconButton>
-                  }
+                  )}
                 >
                   <ListItemButton
                     component={Link}

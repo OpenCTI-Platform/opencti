@@ -10,11 +10,12 @@ import { type EntityOptions, internalLoadById, pageEntitiesConnection, storeLoad
 import { isStixId } from '../../schema/schemaUtils';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../../schema/stixRefRelationship';
 import { elCount } from '../../database/engine';
-import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
+import { isEmptyField, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
 import type { DomainFindById } from '../../domain/domainTypes';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 
 import { type BasicStoreEntityGrouping, ENTITY_TYPE_CONTAINER_GROUPING, type GroupingNumberResult } from './grouping-types';
+import { now } from '../../utils/format';
 
 export const findById: DomainFindById<BasicStoreEntityGrouping> = (context: AuthContext, user: AuthUser, groupingId: string) => {
   return storeLoadById<BasicStoreEntityGrouping>(context, user, groupingId, ENTITY_TYPE_CONTAINER_GROUPING);
@@ -25,7 +26,8 @@ export const findGroupingPaginated = (context: AuthContext, user: AuthUser, opts
 };
 
 export const addGrouping = async (context: AuthContext, user: AuthUser, grouping: GroupingAddInput) => {
-  const created = await createEntity(context, user, grouping, ENTITY_TYPE_CONTAINER_GROUPING);
+  const groupingToCreate = isEmptyField(grouping.created) ? { ...grouping, created: now() } : grouping;
+  const created = await createEntity(context, user, groupingToCreate, ENTITY_TYPE_CONTAINER_GROUPING);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 

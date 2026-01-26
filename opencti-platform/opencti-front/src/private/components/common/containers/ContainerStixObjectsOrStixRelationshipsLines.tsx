@@ -16,7 +16,7 @@ interface ContainerStixObjectsOrStixRelationshipsLinesProps {
 }
 
 const ContainerStixObjectsOrStixRelationshipsLines: FunctionComponent<
-ContainerStixObjectsOrStixRelationshipsLinesProps
+  ContainerStixObjectsOrStixRelationshipsLinesProps
 > = ({ dataColumns, container, paginationOptions, enableReferences }) => {
   const { t_i18n } = useFormatter();
   return (

@@ -27,7 +27,7 @@ import EntitiesTabPageModel from '../model/EntitiesTab.pageModel';
  * Delete incident response.
  * Check deletion.
  */
-test('Incident Response Creation', async ({ page }) => {
+test('Incident Response Creation', { tag: ['@ce'] }, async ({ page }) => {
   await fakeDate(page, 'April 1 2024 12:00:00');
   const leftNavigation = new LeftBarPage(page);
   const incidentResponsePage = new IncidentResponsePage(page);
@@ -158,8 +158,8 @@ test('Incident Response Creation', async ({ page }) => {
   const revoked = incidentResponseDetailsPage.getTextForHeading('Revoked', 'NO');
   await expect(revoked).toBeVisible();
 
-  await expect( incidentResponseDetailsPage.overview.getLabel('campaign')).toBeVisible();
-  await expect( incidentResponseDetailsPage.overview.getLabel('report')).toBeVisible();
+  await expect(incidentResponseDetailsPage.overview.getLabel('campaign')).toBeVisible();
+  await expect(incidentResponseDetailsPage.overview.getLabel('report')).toBeVisible();
 
   const creators = incidentResponseDetailsPage.getTextForHeading('Creators', 'ADMIN');
   await expect(creators).toBeVisible();
@@ -290,7 +290,7 @@ test('Incident Response Creation', async ({ page }) => {
  * Delete incident response by background task.
  * Check deletion.
  */
-test('Incident response live entities creation and relationships', async ({ page }) => {
+test('Incident response live entities creation and relationships', { tag: ['@ce'] }, async ({ page }) => {
   const leftNavigation = new LeftBarPage(page);
   const toolbar = new ToolbarPageModel(page);
   const incidentResponsePage = new IncidentResponsePage(page);

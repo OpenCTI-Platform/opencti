@@ -13,7 +13,7 @@ export const up = async (next) => {
     await addCapability(context, SYSTEM_USER, {
       name: 'EXPLORE_EXUPDATE_PUBLISH',
       description: 'Manage Public Dashboards',
-      attribute_order: 1300
+      attribute_order: 1300,
     });
   }
 

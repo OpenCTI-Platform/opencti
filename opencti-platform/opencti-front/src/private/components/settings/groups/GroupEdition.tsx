@@ -5,10 +5,10 @@ import { GroupEditionContainerQuery } from './__generated__/GroupEditionContaine
 import GroupEditionContainer, { groupEditionContainerQuery } from './GroupEditionContainer';
 
 interface GroupEditionProps {
-  handleClose?: () => void
-  groupId: string
-  open?: boolean
-  disabled?: boolean
+  handleClose?: () => void;
+  groupId: string;
+  open?: boolean;
+  disabled?: boolean;
 }
 
 const GroupEdition: FunctionComponent<GroupEditionProps> = ({

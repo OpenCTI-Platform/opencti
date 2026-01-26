@@ -110,7 +110,7 @@ class CourseOfActionAttackPatternComponent extends Component {
                   dense={true}
                   divider={true}
                   disablePadding={true}
-                  secondaryAction={
+                  secondaryAction={(
                     <IconButton
                       aria-label="Remove"
                       onClick={this.removeAttackPattern.bind(
@@ -121,7 +121,7 @@ class CourseOfActionAttackPatternComponent extends Component {
                     >
                       <LinkOff />
                     </IconButton>
-                  }
+                  )}
                 >
                   <ListItemButton
                     component={Link}

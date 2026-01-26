@@ -2,6 +2,7 @@ import { graphql } from 'relay-runtime';
 import React from 'react';
 import { useFragment } from 'react-relay';
 import { Grid } from '@mui/material';
+import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import { Sector_sector$key } from './__generated__/Sector_sector.graphql';
 import SectorDetails from './SectorDetails';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -67,7 +68,11 @@ interface SectorProps {
   sectorData: Sector_sector$key;
 }
 
-const Sector: React.FC<SectorProps> = ({ sectorData }) => {
+const Sector: React.FC<SectorProps> = ({
+  sectorData,
+}) => {
+  useInitCreateRelationshipContext();
+
   const sector = useFragment<Sector_sector$key>(
     sectorFragment,
     sectorData,

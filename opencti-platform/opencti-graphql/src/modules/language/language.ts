@@ -10,11 +10,11 @@ const LANGUAGE_DEFINITION: ModuleDefinition<StoreEntityLanguage, StixLanguage> =
     id: 'languages',
     name: ENTITY_TYPE_LANGUAGE,
     category: ABSTRACT_STIX_DOMAIN_OBJECT,
-    aliased: true
+    aliased: true,
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_LANGUAGE]: [{ src: NAME_FIELD }]
+      [ENTITY_TYPE_LANGUAGE]: [{ src: NAME_FIELD }],
     },
     resolvers: {
       name(data: object) {
@@ -29,7 +29,7 @@ const LANGUAGE_DEFINITION: ModuleDefinition<StoreEntityLanguage, StixLanguage> =
   representative: (stix: StixLanguage) => {
     return stix.name;
   },
-  converter_2_1: convertLanguageToStix
+  converter_2_1: convertLanguageToStix,
 };
 
 registerDefinition(LANGUAGE_DEFINITION);

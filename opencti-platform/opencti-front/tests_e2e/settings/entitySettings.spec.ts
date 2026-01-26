@@ -3,7 +3,7 @@ import ReportPage from '../model/report.pageModel';
 import { expect, test } from '../fixtures/baseFixtures';
 import SearchPageModel from '../model/search.pageModel';
 
-test('Testing content customization for Report', async ({ page }) => {
+test('Testing content customization for Report', { tag: ['@ce'] }, async ({ page }) => {
   await page.goto('/');
   const leftBarPage = new LeftBarPage(page);
   const reportPage = new ReportPage(page);

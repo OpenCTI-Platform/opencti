@@ -4,9 +4,11 @@ import { stixLoadByIdStringify } from '../database/middleware';
 import { connectorsForEnrichment } from '../database/repository';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { INPUT_GRANTED_REFS } from '../schema/general';
-import { filterMembersWithUsersOrgs, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, REDACTED_USER } from '../utils/access';
+import { isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, REDACTED_USER } from '../utils/access';
 import { ENABLED_DEMO_MODE } from '../config/conf';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
+import { FunctionalError } from '../config/errors';
+import { loadCreators } from '../database/members';
 
 const internalLoadThroughDenormalized = (context, user, element, inputName) => {
   if (inputName === INPUT_GRANTED_REFS) {
@@ -24,6 +26,10 @@ const internalLoadThroughDenormalized = (context, user, element, inputName) => {
   }
   // If not, reload through denormalized relationships
   const ref = schemaRelationsRefDefinition.getRelationRef(element.entity_type, inputName);
+  // Some refs defined on API are not part of all entities in schema due to an API/schema misalignment
+  if (!ref) {
+    throw FunctionalError('No ref of this type is defined for this entity type in DB schema', { entity_type: element.entity_type, inputName });
+  }
   return context.batch.relsBatchLoader.load({ element, definition: ref });
 };
 
@@ -72,13 +78,7 @@ const stixResolvers = {
       /* v8 ignore next */
       return 'Unknown';
     },
-    creators: async (stix, _, context) => {
-      const creators = await context.batch.creatorsBatchLoader.load(stix.creator_id);
-      if (!creators) {
-        return [];
-      }
-      return filterMembersWithUsersOrgs(context, context.user, creators);
-    },
+    creators: async (stix, _, context) => loadCreators(context, context.user, stix),
   },
 };
 

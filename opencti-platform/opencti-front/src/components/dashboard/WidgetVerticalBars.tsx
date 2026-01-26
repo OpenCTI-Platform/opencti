@@ -8,12 +8,12 @@ import type { Theme } from '../Theme';
 import { useFormatter } from '../i18n';
 
 interface WidgetVerticalBarsProps {
-  series: ApexAxisChartSeries
-  interval?: string | null
-  isStacked?: boolean
-  hasLegend?: boolean
-  withExport?: boolean
-  readonly?: boolean
+  series: ApexAxisChartSeries;
+  interval?: string | null;
+  isStacked?: boolean;
+  hasLegend?: boolean;
+  withExport?: boolean;
+  readonly?: boolean;
 }
 
 const WidgetVerticalBars = ({

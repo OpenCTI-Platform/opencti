@@ -24,7 +24,7 @@ import {
   RELATION_PARTICIPATES_IN,
   RELATION_RESIDES_IN,
   RELATION_TARGETS,
-  RELATION_USES
+  RELATION_USES,
 } from '../../schema/stixCoreRelationship';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
@@ -40,7 +40,7 @@ import {
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
   ENTITY_TYPE_TOOL,
-  ENTITY_TYPE_VULNERABILITY
+  ENTITY_TYPE_VULNERABILITY,
 } from '../../schema/stixDomainObject';
 import { REL_BUILT_IN, REL_EXTENDED, REL_NEW } from '../../database/stix';
 import { ENTITY_TYPE_NARRATIVE } from '../narrative/narrative-types';
@@ -59,7 +59,7 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL]: [{ src: NAME_FIELD }, { src: INNER_TYPE }]
+      [ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL]: [{ src: NAME_FIELD }, { src: INNER_TYPE }],
     },
     resolvers: {
       name(data: object) {
@@ -110,7 +110,7 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
       mappings: [
         { name: 'measure', label: 'Height measure', type: 'numeric', mandatoryType: 'external', upsert: true, precision: 'float', editDefault: false, multiple: false, isFilterable: true },
         { name: 'date_seen', label: 'Height measure date', type: 'date', mandatoryType: 'external', upsert: true, editDefault: false, multiple: false, isFilterable: true },
-      ]
+      ],
     },
     {
       name: 'weight',
@@ -124,8 +124,8 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
       isFilterable: false,
       mappings: [
         { name: 'measure', label: 'Weight measure', type: 'numeric', mandatoryType: 'external', upsert: true, precision: 'float', editDefault: false, multiple: false, isFilterable: true },
-        { name: 'date_seen', label: 'Weight measure date', type: 'date', mandatoryType: 'external', upsert: true, editDefault: false, multiple: false, isFilterable: true }
-      ]
+        { name: 'date_seen', label: 'Weight measure date', type: 'date', mandatoryType: 'external', upsert: true, editDefault: false, multiple: false, isFilterable: true },
+      ],
     },
     { name: 'confidence', label: 'Confidence', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: true, multiple: false, upsert: false, isFilterable: true },
     { name: 'revoked', label: 'Revoked', type: 'boolean', mandatoryType: 'no', editDefault: true, multiple: false, upsert: false, isFilterable: true },
@@ -142,7 +142,7 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
         { name: ENTITY_TYPE_CHANNEL, type: REL_BUILT_IN },
         { name: ENTITY_TYPE_ATTACK_PATTERN, type: REL_BUILT_IN },
         { name: ENTITY_TYPE_INFRASTRUCTURE, type: REL_BUILT_IN },
-      ]
+      ],
     },
     {
       name: RELATION_TARGETS,
@@ -158,7 +158,7 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
         { name: ENTITY_TYPE_VULNERABILITY, type: REL_BUILT_IN },
         { name: ENTITY_TYPE_EVENT, type: REL_EXTENDED },
         { name: ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA, type: REL_BUILT_IN },
-      ]
+      ],
     },
     {
       name: RELATION_LOCATED_AT,
@@ -168,116 +168,116 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
         { name: ENTITY_TYPE_LOCATION_POSITION, type: REL_BUILT_IN },
         { name: ENTITY_TYPE_LOCATION_REGION, type: REL_BUILT_IN },
         { name: ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA, type: REL_BUILT_IN },
-      ]
+      ],
     },
     {
       name: RELATION_ATTRIBUTED_TO,
       targets: [
         { name: ENTITY_TYPE_IDENTITY_INDIVIDUAL, type: REL_BUILT_IN },
         { name: ENTITY_TYPE_IDENTITY_ORGANIZATION, type: REL_BUILT_IN },
-      ]
+      ],
     },
     {
       name: RELATION_IMPERSONATES,
       targets: [
         { name: ENTITY_TYPE_IDENTITY_INDIVIDUAL, type: REL_BUILT_IN },
         { name: ENTITY_TYPE_IDENTITY_ORGANIZATION, type: REL_BUILT_IN },
-      ]
+      ],
     },
     {
       name: RELATION_COMPROMISES,
       targets: [
         { name: ENTITY_TYPE_INFRASTRUCTURE, type: REL_BUILT_IN },
-      ]
+      ],
     },
     {
       name: RELATION_HOSTS,
       targets: [
         { name: ENTITY_TYPE_INFRASTRUCTURE, type: REL_BUILT_IN },
-      ]
+      ],
     },
     {
       name: RELATION_OWNS,
       targets: [
         { name: ENTITY_TYPE_INFRASTRUCTURE, type: REL_BUILT_IN },
-      ]
+      ],
     },
     {
       name: RELATION_PARTICIPATES_IN,
       targets: [
         { name: ENTITY_TYPE_CAMPAIGN, type: REL_NEW },
-      ]
+      ],
     },
     {
       name: RELATION_PART_OF,
       targets: [
         { name: ENTITY_TYPE_THREAT_ACTOR_GROUP, type: REL_NEW },
-      ]
+      ],
     },
     {
       name: RELATION_COOPERATES_WITH,
       targets: [
         { name: ENTITY_TYPE_THREAT_ACTOR_GROUP, type: REL_NEW },
         { name: ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL, type: REL_NEW },
-      ]
+      ],
     },
     { name: RELATION_EMPLOYED_BY,
       targets: [
         { name: ENTITY_TYPE_THREAT_ACTOR_GROUP, type: REL_EXTENDED },
         { name: ENTITY_TYPE_IDENTITY_ORGANIZATION, type: REL_EXTENDED },
-      ]
+      ],
     },
     { name: RELATION_RESIDES_IN,
       targets: [
         { name: ENTITY_TYPE_LOCATION_COUNTRY, type: REL_EXTENDED },
-      ]
+      ],
     },
     { name: RELATION_CITIZEN_OF,
       targets: [
         { name: ENTITY_TYPE_LOCATION_COUNTRY, type: REL_EXTENDED },
-      ]
+      ],
     },
     { name: RELATION_NATIONAL_OF,
       targets: [
         { name: ENTITY_TYPE_LOCATION_COUNTRY, type: REL_EXTENDED },
-      ]
+      ],
     },
     { name: RELATION_KNOWN_AS,
       targets: [
         { name: ENTITY_PERSONA, type: REL_EXTENDED },
-      ]
+      ],
     },
     { name: RELATION_KNOWN_AS,
       targets: [
         { name: ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL, type: REL_EXTENDED },
-      ]
+      ],
     },
     { name: RELATION_REPORTS_TO,
       targets: [
         { name: ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL, type: REL_EXTENDED },
-      ]
+      ],
     },
     { name: RELATION_SUPPORTS,
       targets: [
         { name: ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL, type: REL_EXTENDED },
-      ]
+      ],
     },
     { name: RELATION_REPORTS_TO,
       targets: [
         { name: ENTITY_TYPE_THREAT_ACTOR_GROUP, type: REL_EXTENDED },
-      ]
+      ],
     },
     { name: RELATION_SUPPORTS,
       targets: [
         { name: ENTITY_TYPE_THREAT_ACTOR_GROUP, type: REL_EXTENDED },
-      ]
+      ],
     },
     {
       name: RELATION_DERIVED_FROM,
       targets: [
         { name: ENTITY_TYPE_THREAT_ACTOR_GROUP, type: REL_BUILT_IN },
-      ]
-    }
+      ],
+    },
   ],
   relationsRefs: [
     objectOrganization,
@@ -287,6 +287,6 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
   representative: (stix: StixThreatActorIndividual) => {
     return stix.name;
   },
-  converter_2_1: convertThreatActorIndividualToStix
+  converter_2_1: convertThreatActorIndividualToStix,
 };
 registerDefinition(THREAT_ACTOR_INDIVIDUAL_DEFINITION);

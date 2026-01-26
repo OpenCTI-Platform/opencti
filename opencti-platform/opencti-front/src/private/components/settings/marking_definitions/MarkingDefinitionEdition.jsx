@@ -124,12 +124,12 @@ class MarkingDefinitionEditionContainer extends Component {
                 fullWidth={true}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
-                helperText={
+                helperText={(
                   <SubscriptionFocus
                     context={editContext}
                     fieldName="definition_type"
                   />
-                  }
+                )}
               />
               <Field
                 component={TextField}
@@ -140,12 +140,12 @@ class MarkingDefinitionEditionContainer extends Component {
                 style={{ marginTop: 20 }}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
-                helperText={
+                helperText={(
                   <SubscriptionFocus
                     context={editContext}
                     fieldName="definition"
                   />
-                  }
+                )}
               />
               <Field
                 component={ColorPickerField}
@@ -155,12 +155,12 @@ class MarkingDefinitionEditionContainer extends Component {
                 style={{ marginTop: 20 }}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
-                helperText={
+                helperText={(
                   <SubscriptionFocus
                     context={editContext}
                     fieldName="x_opencti_color"
                   />
-                  }
+                )}
               />
               <Field
                 component={TextField}
@@ -172,12 +172,12 @@ class MarkingDefinitionEditionContainer extends Component {
                 style={{ marginTop: 20 }}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
-                helperText={
+                helperText={(
                   <SubscriptionFocus
                     context={editContext}
                     fieldName="x_opencti_order"
                   />
-                  }
+                )}
               />
             </Form>
           )}

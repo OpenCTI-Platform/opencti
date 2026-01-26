@@ -28,6 +28,8 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import IntrusionSetEdition from './IntrusionSetEdition';
 import IntrusionSetDeletion from './IntrusionSetDeletion';
+import StixCoreRelationshipCreationFromEntityHeader from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
+import CreateRelationshipContextProvider from '../../common/stix_core_relationships/CreateRelationshipContextProvider';
 
 const subscription = graphql`
   subscription RootIntrusionSetSubscription($id: ID!) {
@@ -68,6 +70,7 @@ const intrusionSetQuery = graphql`
           coverage_score
         }
       }
+      ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...IntrusionSet_intrusionSet
       ...IntrusionSetKnowledge_intrusionSet
@@ -111,13 +114,13 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
   const paddingRight = getPaddingRight(location.pathname, intrusionSetId, '/dashboard/threats/intrusion_sets');
   const link = `/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge`;
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {intrusionSet ? (
         <>
           <Routes>
             <Route
               path="/knowledge/*"
-              element={
+              element={(
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -139,7 +142,7 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
                   data={intrusionSet}
                   attribution={['Threat-Actor-Individual', 'Threat-Actor-Group']}
                 />
-              }
+              )}
             />
           </Routes>
           <div style={{ paddingRight }} data-testid="intrusionSet-details-page">
@@ -157,7 +160,14 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
                   <IntrusionSetEdition intrusionSetId={intrusionSet.id} />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              RelateComponent={(
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <StixCoreRelationshipCreationFromEntityHeader
+                    data={intrusionSet}
+                  />
+                </Security>
+              )}
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <IntrusionSetDeletion id={intrusionSet.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
@@ -217,10 +227,10 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
                 />
               </Tabs>
               {isOverview && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                <AIInsights id={intrusionSet.id} />
-                <StixCoreObjectSecurityCoverage id={intrusionSet.id} coverage={intrusionSet.securityCoverage} />
-              </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                  <AIInsights id={intrusionSet.id} />
+                  <StixCoreObjectSecurityCoverage id={intrusionSet.id} coverage={intrusionSet.securityCoverage} />
+                </div>
               )}
             </Box>
             <Routes>
@@ -238,19 +248,19 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
               />
               <Route
                 path="/knowledge/*"
-                element={
+                element={(
                   <div key={forceUpdate}>
                     <IntrusionSetKnowledge intrusionSetData={intrusionSet} />
                   </div>
-                }
+                )}
               />
               <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={intrusionSet}
                   />
-                }
+                )}
               />
               <Route
                 path="/analyses"
@@ -260,14 +270,14 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
               />
               <Route
                 path="/files"
-                element={
+                element={(
                   <FileManager
                     id={intrusionSetId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={intrusionSet}
                   />
-                }
+                )}
               />
               <Route
                 path="/history"
@@ -281,12 +291,12 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 
 const Root = () => {
-  const { intrusionSetId } = useParams() as { intrusionSetId: string; };
+  const { intrusionSetId } = useParams() as { intrusionSetId: string };
   const queryRef = useQueryLoading<RootIntrusionSetQuery>(intrusionSetQuery, {
     id: intrusionSetId,
   });

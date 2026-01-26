@@ -29,15 +29,15 @@ const entitySelectSearchQuery = graphql`
 `;
 
 export type EntityOption = Pick<FieldOption, 'label' | 'value'> & {
-  type: string
+  type: string;
 };
 
 interface EntitySelectBaseProps {
-  label: string
-  variant?: TextFieldVariants
-  size?: TextFieldProps['size']
-  onInputChange: (val: string) => void
-  queryRef: PreloadedQuery<EntitySelectSearchQuery>
+  label: string;
+  variant?: TextFieldVariants;
+  size?: TextFieldProps['size'];
+  onInputChange: (val: string) => void;
+  queryRef: PreloadedQuery<EntitySelectSearchQuery>;
 }
 
 interface EntitySelectComponentProps extends EntitySelectBaseProps {
@@ -102,7 +102,7 @@ const EntitySelectComponent = ({
               checked={!!(value as EntityOption[]).find((v) => option.value === v.value)}
             />
           )}
-          <ItemIcon type={option.type}/>
+          <ItemIcon type={option.type} />
           <span style={{
             overflow: 'hidden',
             textOverflow: 'ellipsis',
@@ -132,7 +132,7 @@ const EntitySelectComponent = ({
 };
 
 type EntitySelectProps = Omit<EntitySelectComponentProps, 'onInputChange' | 'queryRef'> & {
-  types: string[]
+  types: string[];
 };
 
 const EntitySelect = ({ types, ...otherProps }: EntitySelectProps) => {

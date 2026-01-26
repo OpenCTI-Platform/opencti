@@ -32,9 +32,9 @@ interface FintelDesignFormProps {
 
 export type FintelDesignFormValues = {
   file?: File | null;
-  gradiantFromColor?: string | null | undefined
-  gradiantToColor?: string | null | undefined
-  textColor?: string | null | undefined
+  gradiantFromColor?: string | null | undefined;
+  gradiantToColor?: string | null | undefined;
+  textColor?: string | null | undefined;
 };
 
 const FintelDesignForm: FunctionComponent<FintelDesignFormProps> = ({ onFileUploaded, fintelDesign }) => {

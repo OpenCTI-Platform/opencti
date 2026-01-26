@@ -23,9 +23,10 @@ import {
   findJsonMapperForIngestionById,
   ingestionJsonEditField,
   ingestionJsonResetState,
-  testJsonIngestionMapping
+  testJsonIngestionMapping,
 } from './ingestion-json-domain';
 import { connectorIdFromIngestId } from '../../domain/connector';
+import { loadCreator } from '../../database/members';
 
 const ingestionJsonResolvers: Resolvers = {
   Query: {
@@ -33,7 +34,7 @@ const ingestionJsonResolvers: Resolvers = {
     ingestionJsons: (_, args, context) => findJsonIngestionPaginated(context, context.user, args),
   },
   IngestionJson: {
-    user: (ingestionJson, _, context) => context.batch.creatorBatchLoader.load(ingestionJson.user_id),
+    user: (ingestionJson, _, context) => loadCreator(context, context.user, ingestionJson.user_id),
     connector_id: (ingestionJson) => connectorIdFromIngestId(ingestionJson.id),
     jsonMapper: (ingestionJson, _, context) => findJsonMapperForIngestionById(context, context.user, ingestionJson.json_mapper_id),
   },

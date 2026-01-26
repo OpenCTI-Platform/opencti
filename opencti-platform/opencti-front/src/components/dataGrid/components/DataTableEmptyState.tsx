@@ -1,10 +1,10 @@
 import React from 'react';
 
 type DataTableEmptyStateProps = {
-  message: string
+  message: string;
 };
 
-const DataTableEmptyState = ({ message } : DataTableEmptyStateProps) => {
+const DataTableEmptyState = ({ message }: DataTableEmptyStateProps) => {
   return (
     <div style={{
       display: 'table',

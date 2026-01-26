@@ -24,10 +24,10 @@ import { useFormatter } from '../../../../../components/i18n';
 import { useComputeLink } from '../../../../../utils/hooks/useAppData';
 
 interface PirThreatMapTooltipProps {
-  data?: PirThreatMapMarker[]
-  onMouseLeave?: MouseEventHandler
-  x: number
-  y: number
+  data?: PirThreatMapMarker[];
+  onMouseLeave?: MouseEventHandler;
+  x: number;
+  y: number;
 }
 
 const PirThreatMapTooltip = ({

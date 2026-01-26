@@ -93,7 +93,7 @@ const JsonTaxiiMiddleware = express.json({
       return false;
     }
   },
-  limit: nconf.get('app:max_payload_body_size') || '50mb'
+  limit: nconf.get('app:max_payload_body_size') || '50mb',
 });
 
 const initTaxiiApi = (app) => {
@@ -262,7 +262,7 @@ const initTaxiiApi = (app) => {
         total_count: objects.length,
         success_count: 0,
         failure_count: 0,
-        pending_count: objects.length
+        pending_count: objects.length,
       });
     } catch (e) {
       const errorDetail = errorConverter(e);
@@ -275,9 +275,9 @@ const initTaxiiApi = (app) => {
     try {
       const context = await checkAuthenticationFromRequest(req, res);
       const work = await findWorkById(context, context.user, status_id);
-      if (!work) throw UnsupportedError('Work not found');
+      if (!work) throw UnsupportedError('Work not found', { status_id });
       const stats = await computeWorkStatus(work);
-      if (!stats) throw UnsupportedError('Work not found');
+      if (!stats) throw UnsupportedError('Work not found', { status_id });
       const failure_count = (work.errors ?? []).length;
       const total_count = parseInt(stats.import_expected_number, 10);
       const processed_number = stats.import_processed_number ? parseInt(stats.import_processed_number, 10) : 0;
@@ -290,7 +290,7 @@ const initTaxiiApi = (app) => {
         total_count,
         success_count,
         failure_count,
-        pending_count
+        pending_count,
       });
     } catch (e) {
       const errorDetail = errorConverter(e);

@@ -83,7 +83,7 @@ export const up = async (next) => {
                 { key: [key], values: [], operator: nilOperator, mode }, // create a filter for the former null id
               ],
               filterGroups: [],
-            }
+            },
           );
         }
       } else {
@@ -126,37 +126,37 @@ export const up = async (next) => {
           {
             bool: {
               must: [{ term: { 'entity_type.keyword': { value: 'Trigger' } } }],
-            }
+            },
           },
           {
             bool: {
               must: [{ term: { 'entity_type.keyword': { value: 'TaxiiCollection' } } }],
-            }
+            },
           },
           {
             bool: {
               must: [{ term: { 'entity_type.keyword': { value: 'Feed' } } }],
-            }
+            },
           },
           {
             bool: {
               must: [{ term: { 'entity_type.keyword': { value: 'StreamCollection' } } }],
-            }
+            },
           },
           {
             bool: {
               must: [{ term: { 'entity_type.keyword': { value: 'RetentionRule' } } }],
-            }
+            },
           },
         ],
         minimum_should_match: 1,
       },
-    }
+    },
   };
   await elUpdateByQueryForMigration(
     '[MIGRATION] Triggers, Taxii, Feeds, Streams and Retention rules filters refacto',
     READ_DATA_INDICES,
-    entitiesUpdateQuery
+    entitiesUpdateQuery,
   );
 
   // 02. not finished query background tasks
@@ -175,12 +175,12 @@ export const up = async (next) => {
           {
             key: 'completed',
             values: ['false'],
-          }
+          },
         ],
         filterGroups: [],
       },
-      noFiltersChecking: true
-    }
+      noFiltersChecking: true,
+    },
   );
 
   let tasksFiltersConvertor = {};
@@ -206,12 +206,12 @@ export const up = async (next) => {
           { term: { 'completed.keyword': { value: 'false' } } },
         ],
       },
-    }
+    },
   };
   await elUpdateByQueryForMigration(
     '[MIGRATION] Query tasks filters refacto',
     READ_DATA_INDICES,
-    tasksUpdateQuery
+    tasksUpdateQuery,
   );
 
   // 03. Workspaces
@@ -278,17 +278,17 @@ export const up = async (next) => {
           {
             bool: {
               must: [{ term: { 'entity_type.keyword': { value: 'Workspace' } } }],
-            }
+            },
           },
         ],
         minimum_should_match: 1,
       },
-    }
+    },
   };
   await elUpdateByQueryForMigration(
     '[MIGRATION] Workspaces filters refacto',
     READ_DATA_INDICES,
-    workspacesUpdateQuery
+    workspacesUpdateQuery,
   );
 
   // 04. Playbooks
@@ -343,17 +343,17 @@ export const up = async (next) => {
           {
             bool: {
               must: [{ term: { 'entity_type.keyword': { value: 'Playbook' } } }],
-            }
+            },
           },
         ],
         minimum_should_match: 1,
       },
-    }
+    },
   };
   await elUpdateByQueryForMigration(
     '[MIGRATION] Playbooks filters refacto',
     READ_DATA_INDICES,
-    playbooksUpdateQuery
+    playbooksUpdateQuery,
   );
 
   logApp.info(`${message} > done`);

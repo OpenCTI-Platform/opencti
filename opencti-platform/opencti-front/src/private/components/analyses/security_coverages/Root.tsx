@@ -107,7 +107,7 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
                 <SecurityCoverageEdition securityCoverageId={securityCoverage.id} />
               </Security>
             )}
-            DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+            DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
               <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                 <SecurityCoverageDeletion securityCoverageId={securityCoverage.id} isOpen={isOpen} handleClose={onClose} />
               </Security>
@@ -155,7 +155,7 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
             </Tabs>
             {isOverview && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                <AIInsights id={securityCoverage.id}/>
+                <AIInsights id={securityCoverage.id} />
               </div>
             )}
           </Box>
@@ -168,48 +168,48 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
             />
             <Route
               path="/knowledge/*"
-              element={
+              element={(
                 <div>
                   <SecurityCoverageKnowledge
                     securityCoverageData={securityCoverage}
                   />
                 </div>
-              }
+              )}
             />
             <Route
               path="/content/*"
-              element={
+              element={(
                 <StixCoreObjectContentRoot
                   stixCoreObject={securityCoverage}
                 />
-              }
+              )}
             />
             <Route
               path="/files"
-              element={
+              element={(
                 <FileManager
                   id={securityCoverageId}
                   connectorsImport={connectorsForImport}
                   connectorsExport={connectorsForExport}
                   entity={securityCoverage}
                 />
-               }
+              )}
             />
             <Route
               path="/history"
-              element={
+              element={(
                 <StixCoreObjectHistory
                   stixCoreObjectId={securityCoverageId}
                 />
-               }
+              )}
             />
             <Route
               path="/relations/:relationId"
-              element={
+              element={(
                 <StixCoreRelationship
                   entityId={securityCoverageId}
                 />
-                  }
+              )}
             />
           </Routes>
         </div>
@@ -221,7 +221,7 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
 };
 
 const Root = () => {
-  const { securityCoverageId } = useParams() as { securityCoverageId: string; };
+  const { securityCoverageId } = useParams() as { securityCoverageId: string };
   const queryRef = useQueryLoading<RootSecurityCoverageQuery>(securityCoverageQuery, {
     id: securityCoverageId,
   });

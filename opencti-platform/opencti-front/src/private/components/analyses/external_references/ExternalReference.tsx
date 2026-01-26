@@ -36,7 +36,7 @@ interface ExternalReferenceComponentProps {
 }
 
 const ExternalReferenceComponent: FunctionComponent<
-ExternalReferenceComponentProps
+  ExternalReferenceComponentProps
 > = ({ externalReference, connectorsImport }) => {
   const classes = useStyles();
   const overviewLayoutCustomization = useOverviewLayoutCustomization('External-Reference');

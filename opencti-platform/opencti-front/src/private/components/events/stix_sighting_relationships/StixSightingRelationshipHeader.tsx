@@ -9,11 +9,13 @@ import Security from '../../../../utils/Security';
 import useGranted, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
+import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 
 interface StixSightingRelationshipHeaderProps {
-  headerName?: string,
-  onOpenDelete: () => void,
-  onOpenEdit: () => void,
+  headerName?: string;
+  onOpenDelete: () => void;
+  onOpenEdit: () => void;
 }
 
 const StixSightingRelationshipHeader = ({
@@ -21,9 +23,13 @@ const StixSightingRelationshipHeader = ({
   onOpenDelete,
   onOpenEdit,
 }: StixSightingRelationshipHeaderProps) => {
-  const canDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]);
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
+  // Remove CRUD button in Draft context without the minimal right access "canEdit"
+  const draftContext = useDraftContext();
+  const currentAccessRight = useGetCurrentUserAccessRight(draftContext?.currentUserAccessRight);
+  const canEdit = !draftContext || currentAccessRight.canEdit;
+  const canDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]) && canEdit;
 
   return (
     <div style={{
@@ -62,11 +68,11 @@ const StixSightingRelationshipHeader = ({
             )}
           </PopoverMenu>
         )}
-        {(
+        {canEdit && (
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <Button
-              variant='contained'
-              size='medium'
+              variant="contained"
+              size="medium"
               aria-label={t_i18n('Update')}
               onClick={onOpenEdit}
               style={{ marginLeft: theme.spacing(0.5) }}

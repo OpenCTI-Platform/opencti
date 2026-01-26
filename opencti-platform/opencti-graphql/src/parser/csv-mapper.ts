@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import { DateTime } from 'luxon';
 import type { AttributeDefinition, AttrType, ObjectAttribute } from '../schema/attribute-definition';
 import { entityType, relationshipType, standardId } from '../schema/attribute-definition';
@@ -176,7 +175,7 @@ const handleBasedOnAttribute = (
   input: Record<string, InputType>,
   definition: AttributeDefinition | null,
   otherEntities: Map<string, Record<string, InputType>>,
-  refEntities: Record<string, BasicStoreObject>
+  refEntities: Record<string, BasicStoreObject>,
 ) => {
   // Handle default value based_on attribute except markings which are handled later on.
   if (definition && attribute.default_values && attribute.default_values.length > 0 && attribute.key !== INPUT_MARKINGS) {
@@ -233,7 +232,7 @@ const handleAttributes = (
   representation: CsvMapperRepresentation,
   input: Record<string, InputType>,
   otherEntities: Map<string, Record<string, InputType>>,
-  refEntities: Record<string, BasicStoreObject>
+  refEntities: Record<string, BasicStoreObject>,
 ) => {
   const { entity_type } = representation.target;
   const hashesNames = getHashesNames(entity_type);
@@ -318,7 +317,7 @@ const mapRecord = async (
   representation: CsvMapperRepresentation,
   otherEntities: Map<string, Record<string, InputType>>,
   refEntities: Record<string, BasicStoreObject>,
-  chosenMarkings: string[]
+  chosenMarkings: string[],
 ) => {
   if (!isValidTarget(record, representation)) {
     return null;
@@ -338,15 +337,18 @@ const mapRecord = async (
   if (!isValidInput(filledInput)) {
     return null;
   }
-
-  handleId(representation, filledInput);
+  try {
+    handleId(representation, filledInput);
+  } catch {
+    return null;
+  }
   return filledInput;
 };
 
 export const handleRefEntities = async (
   context: AuthContext,
   user: AuthUser,
-  mapper: CsvMapperParsed | JsonMapperParsed
+  mapper: CsvMapperParsed | JsonMapperParsed,
 ) => {
   const { representations, user_chosen_markings } = mapper;
   // IDs of entity refs retrieved from default values of based_on attributes in csv mapper.
@@ -370,7 +372,7 @@ export const handleRefEntities = async (
       ...refIdsToResolve,
       // Also resolve the markings chosen by the user if any.
       ...(user_chosen_markings || []),
-    ]
+    ],
   );
 };
 
@@ -416,7 +418,7 @@ export const mappingProcess = async (
       representation,
       results,
       refEntities,
-      user_chosen_markings ?? []
+      user_chosen_markings ?? [],
     );
     if (input) {
       results.set(representation.id, input);
@@ -433,7 +435,7 @@ export const mappingProcess = async (
       representation,
       results,
       refEntities,
-      user_chosen_markings ?? []
+      user_chosen_markings ?? [],
     );
     if (input) {
       results.set(representation.id, input);
@@ -450,7 +452,7 @@ export const mappingProcess = async (
       representation,
       results,
       refEntities,
-      user_chosen_markings ?? []
+      user_chosen_markings ?? [],
     );
     if (input) {
       results.set(representation.id, input);

@@ -92,8 +92,8 @@ const TriggersLines: FunctionComponent<TriggerLinesProps> = ({
   bypassEditionRestriction,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
-  TriggersLinesPaginationQuery,
-  TriggersLines_data$key
+    TriggersLinesPaginationQuery,
+    TriggersLines_data$key
   >({
     linesQuery: triggersLinesQuery,
     linesFragment: triggersLinesFragment,

@@ -2,6 +2,7 @@ import { graphql } from 'relay-runtime';
 import React from 'react';
 import { useFragment } from 'react-relay';
 import { Grid } from '@mui/material';
+import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import { Individual_individual$key } from './__generated__/Individual_individual.graphql';
 import IndividualDetails from './IndividualDetails';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -70,7 +71,12 @@ interface IndividualProps {
   viewAs: string;
 }
 
-const Individual: React.FC<IndividualProps> = ({ individualData, viewAs }) => {
+const Individual: React.FC<IndividualProps> = ({
+  individualData,
+  viewAs,
+}) => {
+  useInitCreateRelationshipContext();
+
   const individual = useFragment<Individual_individual$key>(
     individualFragment,
     individualData,

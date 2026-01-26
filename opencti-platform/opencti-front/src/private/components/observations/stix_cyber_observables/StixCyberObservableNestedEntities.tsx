@@ -45,7 +45,7 @@ const StixCyberObservableNestedEntities: React.FC<StixCyberObservableNestedEntit
       </Typography>
       <Security
         needs={[KNOWLEDGE_KNUPDATE]}
-        placeholder={<div style={{ height: 29 }}/>}
+        placeholder={<div style={{ height: 29 }} />}
       >
         <StixNestedRefRelationshipCreationFromEntityContainer
           paginationOptions={paginationOptions}
@@ -63,7 +63,7 @@ const StixCyberObservableNestedEntities: React.FC<StixCyberObservableNestedEntit
               keyword={searchTerm}
             />
           </div>
-          <div className="clearfix"/>
+          <div className="clearfix" />
         </>
       )}
       <Paper

@@ -98,7 +98,7 @@ export const tasksDataColumns: DataColumns = {
     width: '12%',
     isSortable: true,
     render: (task: TasksLine_node$data) => (
-      <ItemDueDate due_date={task.due_date} variant={'inList'} />
+      <ItemDueDate due_date={task.due_date} variant="inList" />
     ),
   },
   objectAssignee: {
@@ -191,7 +191,7 @@ export const TasksLine: FunctionComponent<TasksLineProps> = ({
         <ItemIcon type="Task" />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             {Object.values(tasksDataColumns).map((value) => (
               <div
@@ -203,7 +203,7 @@ export const TasksLine: FunctionComponent<TasksLineProps> = ({
               </div>
             ))}
           </div>
-        }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />
@@ -226,7 +226,7 @@ export const TasksLineDummy = () => {
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             {Object.values(tasksDataColumns).map((value) => (
               <div
@@ -243,7 +243,7 @@ export const TasksLineDummy = () => {
               </div>
             ))}
           </div>
-        }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />

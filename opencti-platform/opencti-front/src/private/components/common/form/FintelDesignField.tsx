@@ -35,25 +35,25 @@ const fintelDesignFieldQuery = graphql`
 `;
 
 export interface FintelDesign {
-  file_id: string | null | undefined,
-  gradiantFromColor: string | null | undefined,
-  gradiantToColor: string | null | undefined,
-  textColor: string | null | undefined,
+  file_id: string | null | undefined;
+  gradiantFromColor: string | null | undefined;
+  gradiantToColor: string | null | undefined;
+  textColor: string | null | undefined;
 }
 
 export type FintelDesignFieldOption = {
   label: string;
-  value: FintelDesign
+  value: FintelDesign;
 };
 
 interface FintelDesignFieldComponentProps {
-  label?: string
+  label?: string;
   name: string;
-  style?: React.CSSProperties,
+  style?: React.CSSProperties;
   helperText?: string;
   onChange?: (name: string, value: FieldOption[]) => void;
-  required?: boolean
-  queryRef: PreloadedQuery<FintelDesignFieldQuery>
+  required?: boolean;
+  queryRef: PreloadedQuery<FintelDesignFieldQuery>;
 }
 
 const FintelDesignFieldComponent: FunctionComponent<FintelDesignFieldComponentProps> = ({
@@ -108,7 +108,7 @@ const FintelDesignField = ({ ...props }: FintelDesignFieldProps) => {
   const queryRef = useQueryLoading<FintelDesignFieldQuery>(fintelDesignFieldQuery);
   const { name, label } = props;
   return queryRef ? (
-    <React.Suspense fallback={
+    <React.Suspense fallback={(
       <Field
         component={AutocompleteField}
         name={name}
@@ -120,7 +120,7 @@ const FintelDesignField = ({ ...props }: FintelDesignFieldProps) => {
           label,
         }}
       />
-      }
+    )}
     >
       <FintelDesignFieldComponent {...props} queryRef={queryRef} />
     </React.Suspense>

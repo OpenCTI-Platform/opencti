@@ -18,13 +18,13 @@ export const up = async (next) => {
   const accessIngestionCapability = await addCapability(context, SYSTEM_USER, {
     name: 'INGESTION',
     attribute_order: 2600,
-    description: 'Access ingestion'
+    description: 'Access ingestion',
   });
   // ------ Create Manage ingestion
   const manageIngestionCapability = await addCapability(context, SYSTEM_USER, {
     name: 'INGESTION_SETINGESTIONS',
     description: 'Manage ingestion',
-    attribute_order: 2610
+    attribute_order: 2610,
   });
 
   // ------ Update roles

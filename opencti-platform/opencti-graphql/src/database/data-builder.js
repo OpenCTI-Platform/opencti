@@ -14,7 +14,7 @@ import {
   RELATION_GRANTED_TO,
   RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT_LABEL,
-  RELATION_OBJECT_MARKING
+  RELATION_OBJECT_MARKING,
 } from '../schema/stixRefRelationship';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
@@ -42,7 +42,11 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
     R.assoc('entity_type', type),
     R.assoc('creator_id', [user.internal_id]),
     R.dissoc('update'),
+    R.dissoc('upsertOperations'),
     R.dissoc('file'),
+    R.dissoc('fileMarkings'),
+    R.dissoc('files'),
+    R.dissoc('filesMarkings'),
     R.omit(schemaRelationsRefDefinition.getInputNames(input.entity_type)),
   )(input);
   if (inferred) {
@@ -54,7 +58,7 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
   if (isDatedInternalObject(type)) {
     data = R.pipe(
       R.assoc('created_at', today),
-      R.assoc('updated_at', today)
+      R.assoc('updated_at', today),
     )(data);
   }
   // Stix-Object
@@ -69,14 +73,14 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
       R.dissoc('stix_id'),
       R.assoc('created_at', today),
       R.assoc('updated_at', today),
-      R.assoc('refreshed_at', today)
+      R.assoc('refreshed_at', today),
     )(data);
   }
   // Stix-Meta-Object
   if (isStixMetaObject(type)) {
     data = R.pipe(
       R.assoc('created', R.isNil(input.created) ? today : input.created),
-      R.assoc('modified', R.isNil(input.modified) ? today : input.modified)
+      R.assoc('modified', R.isNil(input.modified) ? today : input.modified),
     )(data);
   }
   // STIX-Core-Object
@@ -87,7 +91,7 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
       R.assoc('confidence', R.isNil(input.confidence) ? 0 : input.confidence),
       R.assoc('lang', R.isNil(input.lang) ? 'en' : input.lang),
       R.assoc('created', R.isNil(input.created) ? today : input.created),
-      R.assoc('modified', R.isNil(input.modified) ? today : input.modified)
+      R.assoc('modified', R.isNil(input.modified) ? today : input.modified),
     )(data);
     // Get statuses
     const platformStatuses = await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS);
@@ -123,7 +127,7 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
       // For organizations management
       if (relType === RELATION_GRANTED_TO && isSegregationEntity) {
         if (isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && input[inputField]
-            && (!Array.isArray(input[inputField]) || input[inputField].length > 0)) {
+          && (!Array.isArray(input[inputField]) || input[inputField].length > 0)) {
           relToCreate.push(...buildInnerRelation(data, input[inputField], RELATION_GRANTED_TO));
         } else if (!context.user_inside_platform_organization) {
           // If user is not part of the platform organization, put its own organizations
@@ -149,7 +153,7 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
   const entity = R.pipe(
     R.assoc('id', internalId),
     R.assoc('base_type', BASE_TYPE_ENTITY),
-    R.assoc('parent_types', getParentTypes(type))
+    R.assoc('parent_types', getParentTypes(type)),
   )(data);
 
   // Simply return the data
@@ -233,7 +237,7 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
       throw DatabaseError('You cant create a relation with a stop_time less than the start_time', {
         from: input.fromId,
         to: input.toId,
-        type: relationshipType
+        type: relationshipType,
       });
     }
   }
@@ -248,7 +252,7 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
       throw DatabaseError('You cant create a relation with a stop_time less than the start_time', {
         from: input.fromId,
         to: input.toId,
-        type: relationshipType
+        type: relationshipType,
       });
     }
   }
@@ -264,7 +268,7 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
       throw DatabaseError('You cant create a relation with last_seen less than first_seen', {
         from: input.fromId,
         to: input.toId,
-        type: relationshipType
+        type: relationshipType,
       });
     }
   }
@@ -277,7 +281,7 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
   if (isStixRelationshipExceptRef(relationshipType)) {
     // We need to link the data to organization sharing, only for core and sightings.
     if (isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && input[INPUT_GRANTED_REFS]
-        && (!Array.isArray(input[INPUT_GRANTED_REFS]) || input[INPUT_GRANTED_REFS].length > 0)) {
+      && (!Array.isArray(input[INPUT_GRANTED_REFS]) || input[INPUT_GRANTED_REFS].length > 0)) {
       relToCreate.push(...buildInnerRelation(data, input[INPUT_GRANTED_REFS], RELATION_GRANTED_TO));
     } else if (!context.user_inside_platform_organization) {
       // If user is not part of the platform organization, put its own organizations
@@ -309,14 +313,14 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
     R.assoc('toType', to.entity_type),
     R.assoc('entity_type', relationshipType),
     R.assoc('parent_types', getParentTypes(relationshipType)),
-    R.assoc('base_type', BASE_TYPE_RELATION)
+    R.assoc('base_type', BASE_TYPE_RELATION),
   )(data);
   // 06. Return result if no need to reverse the relations from and to
   return {
     element: created,
     isCreation: true,
     previous: null,
-    relations: relToCreate
+    relations: relToCreate,
   };
 };
 
@@ -361,7 +365,7 @@ const buildRelationInput = (input) => {
       throw DatabaseError('You cant create a relation with stop_time less than start_time', {
         from: input.fromId,
         to: input.toId,
-        type: relationshipType
+        type: relationshipType,
       });
     }
   }
@@ -376,7 +380,7 @@ const buildRelationInput = (input) => {
       throw DatabaseError('You cant create a relation with stop_time less than start_time', {
         from: input.fromId,
         to: input.toId,
-        type: relationshipType
+        type: relationshipType,
       });
     }
   }
@@ -392,7 +396,7 @@ const buildRelationInput = (input) => {
       throw DatabaseError('You cant create a relation with a first_seen greater than the last_seen', {
         from: input.fromId,
         to: input.toId,
-        type: relationshipType
+        type: relationshipType,
       });
     }
   }

@@ -300,7 +300,7 @@ const CountryCreation = ({
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_countries', paginationOptions, 'countryAdd');
 
   const CreateCountryControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Country' {...props} />
+    <CreateEntityControlledDial entityType="Country" {...props} />
   );
   return (
     <Drawer

@@ -105,13 +105,13 @@ const FileWorkComponent = (props) => {
             <>
               {messages.length > 0
                 ? R.map(
-                  (message) => (
-                    <div key={message.message}>
-                      [{nsdt(message.timestamp)}] {message.message}
-                    </div>
-                  ),
-                  messages,
-                )
+                    (message) => (
+                      <div key={message.message}>
+                        [{nsdt(message.timestamp)}] {message.message}
+                      </div>
+                    ),
+                    messages,
+                  )
                 : t(work.status)}
             </>
           );
@@ -181,17 +181,17 @@ const FileWorkComponent = (props) => {
                   }
                 />
                 {!!work.draft_context && !draftContext && (
-                <Tooltip title={t('Navigate to draft')}>
-                  <span>
-                    <IconButton
-                      color="primary"
-                      onClick={() => navigateToDraft(work.draft_context)}
-                      size="small"
-                    >
-                      <ArchitectureOutlined fontSize="small" />
-                    </IconButton>
-                  </span>
-                </Tooltip>
+                  <Tooltip title={t('Navigate to draft')}>
+                    <span>
+                      <IconButton
+                        color="primary"
+                        onClick={() => navigateToDraft(work.draft_context)}
+                        size="small"
+                      >
+                        <ArchitectureOutlined fontSize="small" />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
                 )}
                 <Tooltip title={!isCurrentContextWork ? t('Not available in draft') : t('Delete')}>
                   <span>
@@ -200,7 +200,7 @@ const FileWorkComponent = (props) => {
                       disabled={work.status === 'deleting'}
                       size="small"
                     >
-                      <DeleteOutlined fontSize="small" color={isCurrentContextWork ? 'primary' : 'disabled'}/>
+                      <DeleteOutlined fontSize="small" color={isCurrentContextWork ? 'primary' : 'disabled'} />
                     </IconButton>
                   </span>
                 </Tooltip>

@@ -12,9 +12,9 @@ import { commitMutation, defaultCommitMutation } from '../relay/environment';
 
 interface ItemParticipantsProps {
   participants: {
-    readonly entity_type: string
-    readonly id: string
-    readonly name: string
+    readonly entity_type: string;
+    readonly id: string;
+    readonly name: string;
   }[];
   stixDomainObjectId: string;
 }
@@ -44,7 +44,7 @@ const ItemParticipants: FunctionComponent<ItemParticipantsProps> = ({ participan
           <Chip
             key={participant.id}
             variant="outlined"
-            icon={<PersonOutline color={'primary'} />}
+            icon={<PersonOutline color="primary" />}
             label={truncate(participant.name, 25).toUpperCase()}
             style={{
               color: theme.palette.primary.main,
@@ -53,11 +53,11 @@ const ItemParticipants: FunctionComponent<ItemParticipantsProps> = ({ participan
               borderRadius: theme.borderRadius,
             }}
             onDelete={canUpdateKnowledge ? () => (handleRemoveParticipant(participant.id)) : undefined}
-            deleteIcon={
+            deleteIcon={(
               <CancelOutlined
                 style={{ color: theme.palette.primary.main }}
               />
-            }
+            )}
           />
         </Tooltip>
       ))}

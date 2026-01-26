@@ -1,0 +1,17 @@
+<%
+  var inst = (data && data[0] && data[0].instance) ? data[0].instance : {};
+%>{
+  "source": "OpenCTI",
+  "event": "New OpenCTI Report",
+  "id": "<%=notification.id%>3",
+  "timestamp":"<%= ((+new Date()) / 1000) | 0 %>",
+  "reports": [
+    {
+      "title": "<%= (content && content[0] && content[0].title) ? content[0].title : '' %>",
+      "description": "<%= inst.description || '' %>",
+      "report_id":"<%=content[0].events[0].instance_id %>",
+      "published": "<%= inst.published || '' %>",
+      "author": "<%= inst.created_by_ref || inst.created_by_ref_id || 'Unknown' %>",
+    }
+  ]
+}

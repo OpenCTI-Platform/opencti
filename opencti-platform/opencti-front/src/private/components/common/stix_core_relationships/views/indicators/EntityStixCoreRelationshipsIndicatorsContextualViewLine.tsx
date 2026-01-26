@@ -73,21 +73,21 @@ const contextualViewLineFragment = graphql`
 `;
 
 interface ContextualViewLineProps {
-  node: EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$key
-  dataColumns: DataColumns
-  onToggleEntity: UseEntityToggle<EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data>['onToggleEntity']
-  selectedElements: UseEntityToggle<EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data>['selectedElements']
-  deSelectedElements: UseEntityToggle<EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data>['deSelectedElements']
-  selectAll: UseEntityToggle<EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data>['selectAll']
+  node: EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$key;
+  dataColumns: DataColumns;
+  onToggleEntity: UseEntityToggle<EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data>['onToggleEntity'];
+  selectedElements: UseEntityToggle<EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data>['selectedElements'];
+  deSelectedElements: UseEntityToggle<EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data>['deSelectedElements'];
+  selectAll: UseEntityToggle<EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data>['selectAll'];
   onToggleShiftEntity: (
     index: number,
-    entity: EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data
-  ) => void
-  index: number
+    entity: EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data,
+  ) => void;
+  index: number;
 }
 
 const EntityStixCoreRelationshipsIndicatorsContextualViewLine: FunctionComponent<
-ContextualViewLineProps
+  ContextualViewLineProps
 > = ({
   node,
   dataColumns,
@@ -132,7 +132,7 @@ ContextualViewLineProps
         <ItemIcon type={stixCoreObject.entity_type} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             {Object.values(dataColumns).map((value) => (
               <div
@@ -144,7 +144,7 @@ ContextualViewLineProps
               </div>
             ))}
           </div>
-        }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRight />

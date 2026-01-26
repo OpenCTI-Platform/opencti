@@ -2,7 +2,8 @@ import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from
 import conf, { booleanConf, getBaseUrl, logApp } from '../config/conf';
 import { FunctionalError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
-import { createStreamProcessor, NOTIFICATION_STREAM_NAME, type StreamProcessor } from '../database/redis';
+import { createStreamProcessor } from '../database/stream/stream-handler';
+import { redisGetManagerEventState, redisSetManagerEventState } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
 import { sendMail, smtpComputeFrom, smtpIsAlive } from '../database/smtp';
 import type { NotifierTestInput } from '../generated/graphql';
@@ -16,7 +17,7 @@ import {
   NOTIFIER_CONNECTOR_UI,
   NOTIFIER_CONNECTOR_WEBHOOK,
   type NOTIFIER_CONNECTOR_WEBHOOK_INTERFACE,
-  SIMPLIFIED_EMAIL_TEMPLATE
+  SIMPLIFIED_EMAIL_TEMPLATE,
 } from '../modules/notifier/notifier-statics';
 import { type BasicStoreEntityNotifier, ENTITY_TYPE_NOTIFIER } from '../modules/notifier/notifier-types';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
@@ -32,7 +33,7 @@ import {
   type DigestEvent,
   getNotifications,
   type KnowledgeNotificationEvent,
-  type NotificationUser
+  type NotificationUser,
 } from './notificationManager';
 import { type GetHttpClient, getHttpClient } from '../utils/http-client';
 import { extractRepresentative } from '../database/entity-representative';
@@ -40,11 +41,13 @@ import { extractStixRepresentativeForUser } from '../database/stix-representativ
 import { EVENT_TYPE_UPDATE } from '../database/utils';
 import { sanitizeNotificationData } from '../utils/templateContextSanitizer';
 import { safeRender } from '../utils/safeEjs.client';
+import { NOTIFICATION_STREAM_NAME, type StreamProcessor } from '../database/stream/stream-utils';
 
 const DOC_URI = 'https://docs.opencti.io';
 const PUBLISHER_ENGINE_KEY = conf.get('publisher_manager:lock_key');
 const PUBLISHER_ENABLE_BUFFERING = conf.get('publisher_manager:enable_buffering');
 const PUBLISHER_BUFFERING_SECONDS = conf.get('publisher_manager:buffering_seconds');
+const PUBLISHER_MANAGER_NAME = 'publisher_manager';
 const STREAM_SCHEDULE_TIME = 10000;
 
 export async function processNotificationData(
@@ -63,7 +66,7 @@ export async function processNotificationData(
       const event: NotificationContentEvent = {
         operation: type,
         message,
-        instance_id: instance.id
+        instance_id: instance.id,
       };
 
       const notificationUser = usersMap.get(user.user_id);
@@ -91,7 +94,7 @@ export function assembleTemplateData(
   triggers: BasicStoreEntityTrigger[],
   settings: BasicStoreSettings,
   user: NotificationUser,
-  data: NotificationData[]
+  data: NotificationData[],
 ) {
   const platformBackgroundColor = (settings.platform_theme_dark_background ?? '#0a1929').substring(1);
   return {
@@ -103,7 +106,7 @@ export function assembleTemplateData(
     data,
     doc_uri: DOC_URI,
     platform_uri: getBaseUrl(),
-    background_color: platformBackgroundColor
+    background_color: platformBackgroundColor,
   };
 }
 
@@ -113,7 +116,7 @@ export async function handleUINotification(
   triggerIds: Array<string | undefined>,
   notificationType: string,
   user: NotificationUser,
-  content: Array<{ title: string; events: NotificationContentEvent[] }>
+  content: Array<{ title: string; events: NotificationContentEvent[] }>,
 ) {
   const notificationPayload = {
     name: notificationName,
@@ -124,7 +127,7 @@ export async function handleUINotification(
     created: now(),
     created_at: now(),
     updated_at: now(),
-    is_read: false
+    is_read: false,
   } as NotificationAddInput;
 
   try {
@@ -150,17 +153,17 @@ export async function handleEmailNotification(
   };
 
   const renderedTitle = await safeRender(title, sanitizedData, {
-    useNotificationTool: true
+    useNotificationTool: true,
   });
   const renderedEmail = await safeRender(template, sanitizedData, {
-    useNotificationTool: true
+    useNotificationTool: true,
   });
 
   const emailPayload = {
     from: await smtpComputeFrom(),
     to: user.user_email,
     subject: renderedTitle,
-    html: renderedEmail
+    html: renderedEmail,
   };
 
   await sendMail(emailPayload, { identifier: triggerIds, category: 'notification' });
@@ -178,7 +181,7 @@ export async function handleSimplifiedEmailNotification(
     logo,
     footer,
     background_color,
-    url_suffix
+    url_suffix,
   } = JSON.parse(configurationString ?? '{}') as NOTIFIER_CONNECTOR_SIMPLIFIED_EMAIL_INTERFACE;
 
   const sanitizedData = {
@@ -192,17 +195,17 @@ export async function handleSimplifiedEmailNotification(
   };
 
   const renderedTitle = await safeRender(title, sanitizedData, {
-    useNotificationTool: true
+    useNotificationTool: true,
   });
   const renderedEmail = await safeRender(SIMPLIFIED_EMAIL_TEMPLATE, sanitizedData, {
-    useNotificationTool: true
+    useNotificationTool: true,
   });
 
   const emailPayload = {
     from: await smtpComputeFrom(),
     to: user.user_email,
     subject: renderedTitle,
-    html: renderedEmail
+    html: renderedEmail,
   };
   if (!emailPayload.to) {
     logApp.warn('[OPENCTI-MODULE] No recipient defined in email payload', { toId: user.user_id, manager: 'PUBLISHER_MANAGER' });
@@ -216,7 +219,7 @@ export async function handleWebhookNotification(configurationString: string | un
 
   // Use safeRender with JSON escape option for webhook templates
   const renderedWebhookTemplate = await safeRender(template, sanitizeNotificationData(templateData), {
-    useJsonEscape: true
+    useJsonEscape: true,
   });
   const webhookPayload = JSON.parse(renderedWebhookTemplate);
 
@@ -238,7 +241,6 @@ export const internalProcessNotification = async (
   notificationData: NotificationData[],
   triggerList: BasicStoreEntityTrigger[],
   usersMap: Map<string, AuthUser>,
-  // eslint-disable-next-line consistent-return
 ): Promise<void> => {
   if (notificationUser.user_service_account) {
     throw UnsupportedError('Cannot send notification to service account user');
@@ -293,7 +295,7 @@ export const processNotificationEvent = async (
 
   const allNotifiers = await getEntitiesListFromCache<BasicStoreEntityNotifier>(context, SYSTEM_USER, ENTITY_TYPE_NOTIFIER);
   const notifierMap = new Map<string, BasicStoreEntityNotifier>(
-    allNotifiers.map((notifier) => [notifier.internal_id, notifier])
+    allNotifiers.map((notifier) => [notifier.internal_id, notifier]),
   );
 
   for (let i = 0; i < userNotifiers.length; i += 1) {
@@ -339,7 +341,7 @@ const createFullNotificationMessage = (
 export const processLiveNotificationEvent = async (
   context: AuthContext,
   notificationMap: Map<string, BasicStoreEntityTrigger>,
-  event: KnowledgeNotificationEvent | ActivityNotificationEvent | ActionNotificationEvent
+  event: KnowledgeNotificationEvent | ActivityNotificationEvent | ActionNotificationEvent,
 ): Promise<void> => {
   const { targets, data: instance, origin, notification_id } = event as KnowledgeNotificationEvent;
   const usersMap = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
@@ -363,15 +365,15 @@ const processDigestNotificationEvent = async (context: AuthContext, notification
   await processNotificationEvent(context, notificationMap, event.notification_id, user, dataWithFullMessage, usersMap);
 };
 
-const liveNotificationBufferPerEntity: Record<string, { timestamp: number, events: SseEvent<KnowledgeNotificationEvent>[] }> = {};
+const liveNotificationBufferPerEntity: Record<string, { timestamp: number; events: SseEvent<KnowledgeNotificationEvent>[] }> = {};
 
 const processBufferedEvents = async (
   context: AuthContext,
   triggerMap: Map<string, BasicStoreEntityTrigger>,
-  events: KnowledgeNotificationEvent[]
+  events: KnowledgeNotificationEvent[],
 ) => {
   const usersFromCache = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  const notifDataPerUser: Record<string, { user: NotificationUser, data: NotificationData }[]> = {};
+  const notifDataPerUser: Record<string, { user: NotificationUser; data: NotificationData }[]> = {};
   // We process all events to transform them into notification data per user
   for (let i = 0; i < events.length; i += 1) {
     const event = events[i];
@@ -442,7 +444,7 @@ const processBufferedEvents = async (
 
 const handleEntityNotificationBuffer = async (forceSend = false) => {
   const dateNow = Date.now();
-  const context = executionContext('publisher_manager');
+  const context = executionContext(PUBLISHER_MANAGER_NAME);
   const bufferKeys = Object.keys(liveNotificationBufferPerEntity);
   // Iterate on all buffers to check if they need to be sent
   for (let i = 0; i < bufferKeys.length; i += 1) {
@@ -469,7 +471,7 @@ const publisherStreamHandler = async (streamEvents: Array<SseEvent<StreamNotifEv
     if (streamEvents.length === 0) {
       return;
     }
-    const context = executionContext('publisher_manager');
+    const context = executionContext(PUBLISHER_MANAGER_NAME);
     const notifications = await getNotifications(context);
     const notificationMap = new Map(notifications.map((n) => [n.trigger.internal_id, n.trigger]));
     for (let index = 0; index < streamEvents.length; index += 1) {
@@ -499,6 +501,7 @@ const publisherStreamHandler = async (streamEvents: Array<SseEvent<StreamNotifEv
         }
         await processDigestNotificationEvent(context, notificationMap, digestEvent.data);
       }
+      await redisSetManagerEventState(PUBLISHER_MANAGER_NAME, streamEvent.id);
     }
   } catch (e) {
     logApp.error('[OPENCTI-MODULE] Publisher manager stream error', { cause: e, manager: 'PUBLISHER_MANAGER' });
@@ -525,8 +528,9 @@ const initPublisherManager = () => {
       running = true;
       logApp.info('[OPENCTI-PUBLISHER] Running publisher manager');
       const opts = { withInternal: false, streamName: NOTIFICATION_STREAM_NAME, bufferTime: 5000 };
-      streamProcessor = createStreamProcessor(SYSTEM_USER, 'Publisher manager', publisherStreamHandler, opts);
-      await streamProcessor.start('live');
+      streamProcessor = createStreamProcessor('Publisher manager', publisherStreamHandler, opts);
+      const lastEventState = await redisGetManagerEventState(PUBLISHER_MANAGER_NAME);
+      await streamProcessor.start(lastEventState ?? 'live');
       while (!shutdown && streamProcessor.running()) {
         lock.signal.throwIfAborted();
         if (PUBLISHER_ENABLE_BUFFERING) {

@@ -561,8 +561,8 @@ const expandFilterGroup = (
 });
 
 export interface GraphToolbarExpandToolsProps {
-  onInvestigationExpand?: (newObjects: ObjectToParse[]) => void
-  onInvestigationRollback?: () => void
+  onInvestigationExpand?: (newObjects: ObjectToParse[]) => void;
+  onInvestigationRollback?: () => void;
 }
 
 const GraphToolbarExpandTools = ({

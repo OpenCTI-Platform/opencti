@@ -44,7 +44,7 @@ const fintelTemplatesFragment = graphql`
 `;
 
 interface FintelTemplatesGridProps {
-  data: FintelTemplatesGrid_templates$key
+  data: FintelTemplatesGrid_templates$key;
 }
 
 const FintelTemplatesGrid = ({ data }: FintelTemplatesGridProps) => {
@@ -99,7 +99,7 @@ const FintelTemplatesGrid = ({ data }: FintelTemplatesGridProps) => {
       <VisuallyHiddenInput
         ref={inputFileRef}
         type="file"
-        accept={'application/JSON'}
+        accept="application/JSON"
         onChange={onUpload}
       />
       <Grid item xs={6}>

@@ -18,8 +18,8 @@ import FieldOrEmpty from '../FieldOrEmpty';
 
 interface WidgetTimelineProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: { value: any, link?: string }[]
-  dateAttribute?: string
+  data: { value: any; link?: string }[];
+  dateAttribute?: string;
 }
 
 const WidgetTimeline = ({ data, dateAttribute = 'created_at' }: WidgetTimelineProps) => {

@@ -8,7 +8,7 @@ import {
   isStixDomainObjectContainer,
   isStixDomainObjectIdentity,
   isStixDomainObjectLocation,
-  isStixDomainObjectThreatActor
+  isStixDomainObjectThreatActor,
 } from './stixDomainObject';
 import { DatabaseError } from '../config/errors';
 import { isStixMetaObject } from './stixMetaObject';

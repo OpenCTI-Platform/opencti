@@ -44,11 +44,13 @@ const DataTableLineDummy = () => {
   );
 };
 
-export const DataTableLinesDummy = ({ number = 10 }: { number?: number }) => <>
-  {Array(Math.min(number, 25)).fill(0).map((_, idx) => (
-    <DataTableLineDummy key={idx} />
-  ))}
-</>;
+export const DataTableLinesDummy = ({ number = 10 }: { number?: number }) => (
+  <>
+    {Array(Math.min(number, 25)).fill(0).map((_, idx) => (
+      <DataTableLineDummy key={idx} />
+    ))}
+  </>
+);
 
 const DataTableCell = ({
   cell,
@@ -209,10 +211,10 @@ const DataTableLine = ({
                   },
                 }}
                 checked={
-                (selectAll
-                  && !((data.id || 'id') in (deSelectedElements || {})))
-                || (data.id || 'id') in (selectedElements || {})
-              }
+                  (selectAll
+                    && !((data.id || 'id') in (deSelectedElements || {})))
+                  || (data.id || 'id') in (selectedElements || {})
+                }
               />
             )}
             {(startsWithIcon && icon) && (

@@ -81,8 +81,8 @@ const CitiesLines: FunctionComponent<CitiesLinesProps> = ({
   paginationOptions,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
-  CitiesLinesPaginationQuery,
-  CitiesLines_data$key
+    CitiesLinesPaginationQuery,
+    CitiesLines_data$key
   >({
     linesQuery: citiesLinesQuery,
     linesFragment: citiesLinesFragment,

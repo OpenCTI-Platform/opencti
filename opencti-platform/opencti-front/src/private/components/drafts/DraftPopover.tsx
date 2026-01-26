@@ -27,6 +27,7 @@ import { RelayError } from '../../../relay/relayTypes';
 import stopEvent from '../../../utils/domEvent';
 import DeleteDialog from '../../../components/DeleteDialog';
 import useDeletion from '../../../utils/hooks/useDeletion';
+import { useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
 
 const draftPopoverDeleteMutation = graphql`
     mutation DraftPopoverDeleteMutation($id: ID!) {
@@ -41,6 +42,7 @@ interface DraftPopoverProps {
   updater?: (
     store: RecordSourceSelectorProxy<DraftContextBannerMutation$data>,
   ) => void;
+  currentUserAccessRight?: string;
 }
 
 const DraftPopover: React.FC<DraftPopoverProps> = ({
@@ -48,12 +50,14 @@ const DraftPopover: React.FC<DraftPopoverProps> = ({
   draftLocked,
   paginationOptions,
   updater,
+  currentUserAccessRight,
 }) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
   const [openSwitch, setOpenSwitch] = useState(false);
   const [switchToDraft, setSwitchToDraft] = useState(false);
   const [commitSwitchToDraft] = useApiMutation<DraftContextBannerMutation>(draftContextBannerMutation);
+  const currentAccessRight = useGetCurrentUserAccessRight(currentUserAccessRight);
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
     values: { entity_type: t_i18n('entity_DraftWorkspace') },
@@ -149,7 +153,7 @@ const DraftPopover: React.FC<DraftPopoverProps> = ({
           open={Boolean(anchorEl)}
           onClose={handleClose}
         >
-          <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+          <MenuItem onClick={handleOpenDelete} disabled={!currentAccessRight.canEdit}>{t_i18n('Delete')}</MenuItem>
           <MenuItem onClick={handleOpenSwitch} disabled={draftLocked}>{t_i18n('Switch to Draft')}</MenuItem>
         </Menu>
         <DeleteDialog

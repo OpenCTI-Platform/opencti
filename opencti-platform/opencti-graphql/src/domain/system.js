@@ -21,7 +21,7 @@ export const addSystem = async (context, user, system) => {
     context,
     user,
     assoc('identity_class', ENTITY_TYPE_IDENTITY_SYSTEM.toLowerCase(), system),
-    ENTITY_TYPE_IDENTITY_SYSTEM
+    ENTITY_TYPE_IDENTITY_SYSTEM,
   );
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

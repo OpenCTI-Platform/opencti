@@ -99,6 +99,7 @@ import useGranted, {
   SETTINGS_SETACCESSES,
   SETTINGS_SETCASETEMPLATES,
   SETTINGS_SETCUSTOMIZATION,
+  SETTINGS_SETDISSEMINATION,
   SETTINGS_SETKILLCHAINPHASES,
   SETTINGS_SETLABELS,
   SETTINGS_SETMANAGEXTMHUB,
@@ -110,12 +111,12 @@ import useGranted, {
   TAXIIAPI,
   VIRTUAL_ORGANIZATION_ADMIN,
 } from '../../../utils/hooks/useGranted';
+import useHasOnlyAccessToImportDraftTab from '../../../utils/hooks/useHasOnlyAccessToImportDraftTab';
 import { MESSAGING$ } from '../../../relay/environment';
 import { useHiddenEntities, useIsHiddenEntities } from '../../../utils/hooks/useEntitySettings';
 import useAuth from '../../../utils/hooks/useAuth';
 import useHelper from '../../../utils/hooks/useHelper';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
-import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import useDimensions from '../../../utils/hooks/useDimensions';
 
 export const SMALL_BAR_WIDTH = 55;
@@ -224,9 +225,9 @@ const LeftBar = () => {
     settings: { filigran_chatbot_ai_cgu_status },
   } = useAuth();
   const navigate = useNavigate();
-  const isEnterpriseEdition = useEnterpriseEdition();
+  const hasOnlyAccessToImportDraftTab = useHasOnlyAccessToImportDraftTab();
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
-  const isGrantedToImport = useGranted([KNOWLEDGE_KNASKIMPORT]);
+  const isGrantedToImport = useGranted([KNOWLEDGE_KNASKIMPORT]) || hasOnlyAccessToImportDraftTab;
   const isGrantedToProcessing = useGranted([KNOWLEDGE_KNUPDATE, AUTOMATION_AUTMANAGE, CSVMAPPERS]);
   const isGrantedToSharing = useGranted([TAXIIAPI]);
   const isGrantedToManage = useGranted([BYPASS]);
@@ -242,7 +243,7 @@ const LeftBar = () => {
   const isGrantedToIngestion = useGranted([MODULES, INGESTION, INGESTION_SETINGESTIONS]);
   const isOrganizationAdmin = useGranted([VIRTUAL_ORGANIZATION_ADMIN]);
   const isGrantedToCustomization = useGranted([SETTINGS_SETCUSTOMIZATION]);
-  const isGrantedToSecurity = useGranted([SETTINGS_SETMARKINGS, SETTINGS_SETACCESSES]);
+  const isGrantedToSecurity = useGranted([SETTINGS_SETMARKINGS, SETTINGS_SETACCESSES, SETTINGS_SETDISSEMINATION]);
   const isGrantedToAudit = useGranted([SETTINGS_SECURITYACTIVITY]);
   const isGrantedToExplore = useGranted([EXPLORE]);
 
@@ -966,7 +967,7 @@ const LeftBar = () => {
                   { granted: isGrantedToImport && !draftContext, link: '/dashboard/data/import', label: 'Import' },
                   { granted: isGrantedToProcessing && !draftContext, link: '/dashboard/data/processing', label: 'Processing' },
                   { granted: isGrantedToSharing && !draftContext, link: '/dashboard/data/sharing', label: 'Data sharing' },
-                  ...(isEnterpriseEdition ? [{ granted: isGrantedToManage && !draftContext, link: '/dashboard/data/restriction', label: 'Restriction' }] : []),
+                  { granted: isGrantedToManage && !draftContext, link: '/dashboard/data/restriction', label: 'Restriction' },
                 ],
               )}
             </Security>
@@ -1003,6 +1004,7 @@ const LeftBar = () => {
           VIRTUAL_ORGANIZATION_ADMIN,
           SETTINGS_SETPARAMETERS,
           SETTINGS_SETACCESSES,
+          SETTINGS_SETDISSEMINATION,
           SETTINGS_SETMARKINGS,
           SETTINGS_SETCUSTOMIZATION,
           SETTINGS_SETLABELS,

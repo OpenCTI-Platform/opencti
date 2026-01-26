@@ -162,34 +162,39 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
   };
 
   const renderActivityTrigger = (values: TriggerActivityLiveAddInput, setFieldValue: (name: string, value: FieldOption[]) => void) => {
-    return <>
-      <ObjectMembersField label={'Recipients'} style={fieldSpacingContainerStyle}
-        onChange={setFieldValue}
-        multiple={true} name={'recipients'}
-      />
-      <span>
-        <Box
-          sx={{
-            display: 'flex',
-            gap: 1,
-            marginTop: '20px',
-          }}
-        >
-          <Filters
-            availableFilterKeys={[
-              'event_type',
-              'event_scope',
-              'members_user',
-              'members_group',
-              'members_organization',
-            ]}
-            helpers={helpers}
-            searchContext={{ entityTypes: ['History'] }}
-          />
-        </Box>
-        <div className="clearfix"/>
-      </span>
-    </>;
+    return (
+      <>
+        <ObjectMembersField
+          label="Recipients"
+          style={fieldSpacingContainerStyle}
+          onChange={setFieldValue}
+          multiple={true}
+          name="recipients"
+        />
+        <span>
+          <Box
+            sx={{
+              display: 'flex',
+              gap: 1,
+              marginTop: '20px',
+            }}
+          >
+            <Filters
+              availableFilterKeys={[
+                'event_type',
+                'event_scope',
+                'members_user',
+                'members_group',
+                'members_organization',
+              ]}
+              helpers={helpers}
+              searchContext={{ entityTypes: ['History'] }}
+            />
+          </Box>
+          <div className="clearfix" />
+        </span>
+      </>
+    );
   };
 
   const liveFields = (setFieldValue: (field: string, value: unknown, shouldValidate?: boolean | undefined) => void, values: TriggerActivityLiveAddInput) => (
@@ -241,7 +246,7 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
             size="large"
             color="primary"
           >
-            <Close fontSize="small" color="primary"/>
+            <Close fontSize="small" color="primary" />
           </IconButton>
           <Typography variant="h6">{t_i18n('Create a live activity trigger')}</Typography>
         </div>
@@ -289,12 +294,14 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
   );
 
   const renderContextual = () => (
-    <Dialog disableRestoreFocus={true}
+    <Dialog
+      disableRestoreFocus={true}
       open={open ?? false}
       onClose={handleClose}
       slotProps={{ paper: { elevation: 1 } }}
     >
-      <Formik initialValues={liveInitialValues}
+      <Formik
+        initialValues={liveInitialValues}
         validationSchema={liveActivityTriggerValidation(t_i18n)}
         onSubmit={onLiveSubmit}
         onReset={onReset}

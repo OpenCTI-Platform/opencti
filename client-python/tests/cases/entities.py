@@ -1318,7 +1318,7 @@ class SettingsTest(EntityTest):
         return self.own_class()
 
     def update_data(self):
-        return {"platform_title": "This is a test platform", "platform_theme": "light"}
+        return {"platform_title": "This is a test platform"}
 
     def get_filter(self):
         return None

@@ -1,10 +1,32 @@
 class OpenCTIApiPlaybook:
-    """OpenCTIApiPlaybook"""
+    """OpenCTI Playbook API class.
+
+    Manages playbook operations.
+
+    :param api: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type api: OpenCTIApiClient
+    """
 
     def __init__(self, api):
+        """Initialize the OpenCTIApiPlaybook instance.
+
+        :param api: OpenCTI API client instance
+        :type api: OpenCTIApiClient
+        """
         self.api = api
 
     def playbook_step_execution(self, playbook: dict, bundle: str):
+        """Execute a playbook step.
+
+        :param playbook: the playbook configuration dict containing execution_id, event_id,
+            execution_start, playbook_id, data_instance_id, step_id, previous_step_id,
+            and previous_bundle
+        :type playbook: dict
+        :param bundle: the STIX bundle to process
+        :type bundle: str
+        :return: None
+        :rtype: None
+        """
         self.api.app_logger.info(
             "Executing playbook step",
             {
@@ -34,8 +56,15 @@ class OpenCTIApiPlaybook:
         )
 
     def delete(self, **kwargs):
-        id = kwargs.get("id", None)
-        if id is not None:
+        """Delete a playbook.
+
+        :param id: the playbook id
+        :type id: str
+        :return: None
+        :rtype: None
+        """
+        playbook_id = kwargs.get("id", None)
+        if playbook_id is not None:
             query = """
                 mutation PlaybookDelete($id: ID!) {
                     playbookDelete(id: $id)
@@ -44,11 +73,11 @@ class OpenCTIApiPlaybook:
             self.api.query(
                 query,
                 {
-                    "id": id,
+                    "id": playbook_id,
                 },
             )
         else:
             self.api.app_logger.error(
-                "[stix_playbook] Cant delete playbook, missing parameters: id"
+                "[opencti_playbook] Cannot delete playbook, missing parameter: id"
             )
             return None

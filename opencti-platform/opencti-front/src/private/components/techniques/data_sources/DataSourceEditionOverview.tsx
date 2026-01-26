@@ -122,11 +122,11 @@ const DATA_SOURCE_TYPE = 'Data-Source';
 interface DataSourceEditionOverviewProps {
   data: DataSourceEditionOverview_dataSource$key;
   context:
-  | readonly ({
-    readonly focusOn: string | null | undefined;
-    readonly name: string;
-  } | null)[]
-  | null | undefined;
+    | readonly ({
+      readonly focusOn: string | null | undefined;
+      readonly name: string;
+    } | null)[]
+    | null | undefined;
   enableReferences?: boolean;
   handleClose: () => void;
 }
@@ -145,7 +145,7 @@ interface DataSourceEditionFormValues {
 }
 
 const DataSourceEditionOverview: FunctionComponent<
-DataSourceEditionOverviewProps
+  DataSourceEditionOverviewProps
 > = ({ data, context, enableReferences = false, handleClose }) => {
   const { t_i18n } = useFormatter();
   const dataSource = useFragment(dataSourceEditionOverviewFragment, data);
@@ -305,12 +305,12 @@ DataSourceEditionOverviewProps
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
               style={{ marginTop: 20 }}
-              helpertext={
+              helpertext={(
                 <SubscriptionFocus
                   context={context}
                   fieldName="x_opencti_workflow_id"
                 />
-              }
+              )}
             />
           )}
           <CreatedByField
@@ -338,7 +338,7 @@ DataSourceEditionOverviewProps
             type="platforms_ov"
             name="x_mitre_platforms"
             required={(mandatoryAttributes.includes('x_mitre_platforms'))}
-            variant={'edit'}
+            variant="edit"
             onSubmit={handleSubmitField}
             onChange={setFieldValue}
             containerStyle={fieldSpacingContainerStyle}
@@ -350,7 +350,7 @@ DataSourceEditionOverviewProps
             type="collection_layers_ov"
             name="collection_layers"
             required={(mandatoryAttributes.includes('collection_layers'))}
-            variant={'edit'}
+            variant="edit"
             onSubmit={handleSubmitField}
             onChange={setFieldValue}
             containerStyle={fieldSpacingContainerStyle}

@@ -1,5 +1,5 @@
-import { filter, includes } from 'ramda';
 import useAuth from './useAuth';
+import useHelper from './useHelper';
 
 export const OPENCTI_ADMIN_UUID = '88ec0c6a-13ce-5e39-b486-354fe4a7084f';
 export const BYPASS = 'BYPASS';
@@ -59,33 +59,47 @@ export const isOnlyOrganizationAdmin = () => {
   return userCapabilities.includes(VIRTUAL_ORGANIZATION_ADMIN) && !userCapabilities.includes(BYPASS) && !userCapabilities.includes(SETTINGS_SETACCESSES);
 };
 
+export const getCapabilitiesName = (capabilities: readonly { name: string }[]) => {
+  return (capabilities ?? []).map((capability) => capability?.name);
+};
+
+export const isBypassUser = (me: { id: string; capabilities: readonly { name: string }[] }) => {
+  const userCapabilities = getCapabilitiesName(me.capabilities);
+  return userCapabilities.includes(BYPASS);
+};
+
 const useGranted = (capabilities: string[], matchAll = false): boolean => {
+  const { me } = useAuth();
+  const { isFeatureEnable } = useHelper();
+  const isCapabilitiesInDraftEnabled = isFeatureEnable('CAPABILITIES_IN_DRAFT');
+
   // Prevent use of the old SETTINGS capability for future uses
   if (capabilities.includes(SETTINGS)) {
     throw new Error('The SETTINGS capability should not be used');
   }
 
-  const { me } = useAuth();
+  let userCapabilities: string[] = [];
+  const userBaseCapabilities = getCapabilitiesName(me.capabilities);
 
-  const userCapabilities = (me.capabilities ?? []).map((c) => c.name);
-  if (userCapabilities.includes(BYPASS)) {
+  if (isBypassUser(me)) {
     return true;
   }
-  let numberOfAvailableCapabilities = 0;
-  for (let index = 0; index < capabilities.length; index += 1) {
-    const checkCapability = capabilities[index];
-    const matchingCapabilities = filter(
-      (r) => includes(checkCapability, r),
-      userCapabilities,
-    );
-    if (matchingCapabilities.length > 0) {
-      numberOfAvailableCapabilities += 1;
-    }
+
+  // If the user is in draft mode, add capabilities in draft to the base capabilities
+  if (isCapabilitiesInDraftEnabled && me.draftContext) {
+    const userCapabilitiesInDraft = getCapabilitiesName(me.capabilitiesInDraft);
+    userCapabilities = Array.from(new Set([...userBaseCapabilities, ...userCapabilitiesInDraft]));
+  } else {
+    userCapabilities = userBaseCapabilities;
   }
-  if (matchAll) {
-    return numberOfAvailableCapabilities === capabilities.length;
-  }
-  return numberOfAvailableCapabilities > 0;
+
+  // Check if any of the user capabilities includes the requested capability as a substring
+  const capabilityMatches = (requestedCapability: string) =>
+    userCapabilities.some((u) => requestedCapability !== BYPASS && u.includes(requestedCapability));
+
+  return matchAll
+    ? capabilities.every(capabilityMatches)
+    : capabilities.some(capabilityMatches);
 };
 
 export default useGranted;

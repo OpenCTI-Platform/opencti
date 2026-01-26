@@ -12,14 +12,25 @@ export const rootPublicQuery = graphql`
   query LoginRootPublicQuery {
     publicSettings {
       platform_enterprise_edition_license_validated
-      platform_theme
+      platform_theme {
+        id
+        name
+        theme_background
+        theme_paper
+        theme_nav
+        theme_primary
+        theme_secondary
+        theme_accent
+        theme_text_color
+        theme_logo
+        theme_logo_collapsed
+        theme_logo_login
+      }
       platform_login_message
       platform_consent_message
       platform_banner_text
       platform_banner_level
       platform_consent_confirm_text
-      platform_theme_dark_logo_login
-      platform_theme_light_logo_login
       platform_whitemark
       platform_providers {
         name
@@ -27,8 +38,8 @@ export const rootPublicQuery = graphql`
         provider
       }
       playground_enabled
-      ...AppThemeProvider_settings
       ...AppIntlProvider_settings
+      ...AppThemeProvider_settings
       ...PublicSettingsProvider_settings
       metrics_definition {
         entity_type
@@ -48,16 +59,17 @@ const queryRef = loadQuery<LoginRootPublicQuery>(
 );
 
 const LoginRoot = ({ type }: { type: string }) => {
-  const { publicSettings: settings } = usePreloadedQuery<LoginRootPublicQuery>(
+  const data = usePreloadedQuery<LoginRootPublicQuery>(
     rootPublicQuery,
     queryRef,
   );
+
   return (
     <StyledEngineProvider injectFirst={true}>
-      <ConnectedThemeProvider settings={settings}>
+      <ConnectedThemeProvider settings={data.publicSettings}>
         <CssBaseline />
-        <ConnectedIntlProvider settings={settings}>
-          <Login settings={settings} type={type} />
+        <ConnectedIntlProvider settings={data.publicSettings}>
+          <Login settings={data.publicSettings} type={type} />
         </ConnectedIntlProvider>
       </ConnectedThemeProvider>
     </StyledEngineProvider>

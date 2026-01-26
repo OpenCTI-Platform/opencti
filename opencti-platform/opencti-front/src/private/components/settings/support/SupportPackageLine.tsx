@@ -162,32 +162,36 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
       <ListItem
         divider={true}
         style={{ ...styles.item }}
-        secondaryAction={
+        secondaryAction={(
           <>
-            {!isReady && <Tooltip title={t_i18n('Force download on this support package')}>
-              <span>
-                <IconButton disabled={!isTooLong} onClick={handleForceZip}>
-                  <DownloadingOutlined fontSize="small" />
-                </IconButton>
-              </span>
-            </Tooltip>}
-            {isReady && <Tooltip title={t_i18n('Download this support package')}>
-              <span>
-                <IconButton
-                  disabled={!data.package_url}
-                  href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(
-                    data.package_url || '',
-                  )}`}
-                >
-                  <GetAppOutlined fontSize="small" />
-                </IconButton>
-              </span>
-            </Tooltip>}
+            {!isReady && (
+              <Tooltip title={t_i18n('Force download on this support package')}>
+                <span>
+                  <IconButton disabled={!isTooLong} onClick={handleForceZip}>
+                    <DownloadingOutlined fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            )}
+            {isReady && (
+              <Tooltip title={t_i18n('Download this support package')}>
+                <span>
+                  <IconButton
+                    disabled={!data.package_url}
+                    href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(
+                      data.package_url || '',
+                    )}`}
+                  >
+                    <GetAppOutlined fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            )}
             <Tooltip title={t_i18n('Delete this support package')}>
               <span>
                 <IconButton
                   disabled={!isReady && !isTooLong}
-                  color='inherit'
+                  color="inherit"
                   onClick={handleOpenDelete}
                   size="small"
                 >
@@ -196,28 +200,28 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
               </span>
             </Tooltip>
           </>
-        }
+        )}
       >
         <ListItemIcon>
           {isProgress && !isTimeout && (
             <CircularProgress
               size={20}
-              color='inherit'
+              color="inherit"
             />
           )}
           {isProgress && isTimeout && (
-          <FileOutline
-            color='inherit'
-          />
+            <FileOutline
+              color="inherit"
+            />
           )}
           {!isProgress && (
             <FileOutline
-              color='inherit'
+              color="inherit"
             />
           )}
         </ListItemIcon>
         <ListItemText
-          primary={
+          primary={(
             <>
               <div style={{ width: dataColumns.name.width, ...styles.bodyItem }}>
                 {data.name}
@@ -240,7 +244,7 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
                 {fndt(data.created_at)}
               </div>
             </>
-          }
+          )}
         />
       </ListItem>
       <DeleteDialog

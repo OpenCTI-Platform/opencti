@@ -20,8 +20,8 @@ const convertWorkspaceToStix = (instance: StoreEntityWorkspace): StixWorkspace =
         ...stixDomainObject.extensions[STIX_EXT_OCTI],
         extension_type: 'new-sdo',
         object_refs_inferred: convertObjectReferences(instance, true),
-      })
-    }
+      }),
+    },
   };
 };
 

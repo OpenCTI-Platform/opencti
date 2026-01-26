@@ -34,7 +34,7 @@ const CreateFintelDesignControlledDial = (
   props: DrawerControlledDialProps,
 ) => (
   <CreateEntityControlledDial
-    entityType='FintelDesign'
+    entityType="FintelDesign"
     {...props}
   />
 );
@@ -48,7 +48,7 @@ interface FintelDesignCreationFormProps {
   updater: (
     store: RecordSourceSelectorProxy,
     key: string,
-    response: { id: string; name: string } | null | undefined
+    response: { id: string; name: string } | null | undefined,
   ) => void;
   onReset?: () => void;
   onCompleted?: () => void;

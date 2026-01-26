@@ -243,43 +243,43 @@ export const stixCoreRelationshipCreationMutation = graphql`
 `;
 
 interface StixCoreRelationshipCreationFormInput {
-  confidence: string,
-  fromId: string,
-  toId: string,
-  relationship_type: string,
-  start_time?: string,
-  stop_time?: string,
-  killChainPhases: FieldOption[],
-  createdBy?: FieldOption,
-  objectMarking: FieldOption[],
-  externalReferences: FieldOption[],
+  confidence: string;
+  fromId: string;
+  toId: string;
+  relationship_type: string;
+  start_time?: string;
+  stop_time?: string;
+  killChainPhases: FieldOption[];
+  createdBy?: FieldOption;
+  objectMarking: FieldOption[];
+  externalReferences: FieldOption[];
 }
 
 interface StixCoreRelationshipCreationAddInput {
-  confidence: number,
-  fromId: string,
-  toId: string,
-  relationship_type: string,
-  start_time: string | null,
-  stop_time: string | null,
-  killChainPhases: (string | null | undefined)[],
-  createdBy?: string | null,
-  objectMarking: (string | null | undefined)[],
-  externalReferences: (string | null | undefined)[],
+  confidence: number;
+  fromId: string;
+  toId: string;
+  relationship_type: string;
+  start_time: string | null;
+  stop_time: string | null;
+  killChainPhases: (string | null | undefined)[];
+  createdBy?: string | null;
+  objectMarking: (string | null | undefined)[];
+  externalReferences: (string | null | undefined)[];
 }
 
 interface StixCoreRelationshipCreationProps {
-  onClose: () => void,
-  onReverseRelation: () => void,
-  fromObjects: (GraphNode | GraphLink)[],
-  toObjects: (GraphNode | GraphLink)[],
-  handleResult: (rel: ObjectToParse) => void,
-  confidence?: number | null,
-  startTime: string,
-  stopTime: string,
-  defaultCreatedBy: string | { label: string, type: string, value: string },
-  defaultMarkingDefinitions: FieldOption[],
-  open: boolean,
+  onClose: () => void;
+  onReverseRelation: () => void;
+  fromObjects: (GraphNode | GraphLink)[];
+  toObjects: (GraphNode | GraphLink)[];
+  handleResult: (rel: ObjectToParse) => void;
+  confidence?: number | null;
+  startTime: string;
+  stopTime: string;
+  defaultCreatedBy: string | { label: string; type: string; value: string };
+  defaultMarkingDefinitions: FieldOption[];
+  open: boolean;
 }
 
 const StixCoreRelationshipCreation = ({
@@ -332,7 +332,7 @@ const StixCoreRelationshipCreation = ({
             const { stixCoreRelationships } = data as StixCoreRelationshipCreationQuery$data;
             if (stixCoreRelationships) {
               const newStep = stixCoreRelationships.edges
-              && stixCoreRelationships.edges.length > 0
+                && stixCoreRelationships.edges.length > 0
                 ? 1
                 : 2;
               setStep(newStep);
@@ -707,9 +707,9 @@ const StixCoreRelationshipCreation = ({
         onClose={handleClose}
       >
         {step === 0
-        || step === undefined
-        || fromObjects === null
-        || toObjects === null
+          || step === undefined
+          || fromObjects === null
+          || toObjects === null
           ? renderLoader()
           : ''}
         {step === 1 ? renderSelectRelation() : ''}
@@ -720,7 +720,7 @@ const StixCoreRelationshipCreation = ({
         open={displayProgress}
         value={progress}
         onClose={handleCloseProgressBar}
-        variant='determinate'
+        variant="determinate"
       />
     </>
   );

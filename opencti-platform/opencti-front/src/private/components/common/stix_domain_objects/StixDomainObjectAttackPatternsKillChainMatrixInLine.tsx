@@ -12,6 +12,7 @@ import {
   StixDomainObjectAttackPatternsKillChainContainer_data$data,
 } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainContainer_data.graphql';
 import StixCoreRelationshipCreationFromEntity from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
+import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
@@ -98,6 +99,10 @@ const StixDomainObjectAttackPatternsKillChainMatrixInline: FunctionComponent<Sti
     loadQuery(queryPaginationOptions, { fetchPolicy: 'store-and-network' });
   }, [queryRef]);
 
+  useInitCreateRelationshipContext({
+    onCreate: refetch,
+  });
+
   const preloadedPaginationProps = {
     linesQuery: stixDomainObjectAttackPatternsKillChainQuery,
     linesFragment: stixDomainObjectAttackPatternsKillChainContainerFragment,
@@ -120,7 +125,7 @@ const StixDomainObjectAttackPatternsKillChainMatrixInline: FunctionComponent<Sti
             resolvePath={(data: StixDomainObjectAttackPatternsKillChainContainer_data$data) => (data.attackPatterns?.edges ?? []).map((n) => n.node)}
             storageKey={LOCAL_STORAGE_KEY}
             initialValues={initialValues}
-            toolbarFilters={contextFilters}
+            contextFilters={contextFilters}
             preloadedPaginationProps={preloadedPaginationProps}
             lineFragment={stixDomainObjectAttackPatternsKillChainContainerLineFragment}
             exportContext={{ entity_type: 'Attack-Pattern' }}

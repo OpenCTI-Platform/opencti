@@ -5,7 +5,7 @@ import {
   READ_DATA_INDICES,
   READ_INDEX_STIX_META_RELATIONSHIPS,
   READ_RELATIONSHIPS_INDICES,
-  READ_INDEX_STIX_CORE_RELATIONSHIPS
+  READ_INDEX_STIX_CORE_RELATIONSHIPS,
 } from '../database/utils';
 import { RELATION_RELATED_TO } from '../schema/stixCoreRelationship';
 import { executionContext, SYSTEM_USER } from '../utils/access';
@@ -41,11 +41,11 @@ export const up = async (next) => {
                 bool: {
                   must: [
                     { term: { 'connections.role.keyword': { value: 'related-to_from' } } },
-                    { term: { 'connections.internal_id.keyword': { value: from } } }
-                  ]
-                }
-              }
-            }
+                    { term: { 'connections.internal_id.keyword': { value: from } } },
+                  ],
+                },
+              },
+            },
           },
           {
             nested: {
@@ -54,14 +54,14 @@ export const up = async (next) => {
                 bool: {
                   must: [
                     { term: { 'connections.role.keyword': { value: 'related-to_to' } } },
-                    { term: { 'connections.internal_id.keyword': { value: to } } }
-                  ]
-                }
-              }
-            }
-          }
-        ]
-      }
+                    { term: { 'connections.internal_id.keyword': { value: to } } },
+                  ],
+                },
+              },
+            },
+          },
+        ],
+      },
     };
     const findQuery = {
       index: READ_INDEX_STIX_CORE_RELATIONSHIPS,
@@ -101,17 +101,17 @@ export const up = async (next) => {
       query: {
         bool: {
           must: { term: { 'entity_type.keyword': { value: linkedToType } } },
-          must_not: { terms: { 'internal_id.keyword': linkedToRefRelationsDuplicatesIds } }
-        }
-      }
+          must_not: { terms: { 'internal_id.keyword': linkedToRefRelationsDuplicatesIds } },
+        },
+      },
     },
     dest: {
-      index: INDEX_STIX_CORE_RELATIONSHIPS
+      index: INDEX_STIX_CORE_RELATIONSHIPS,
     },
     script: {
       source: reindexLinkedToToRelatedToSource,
-      params: { linkedToType, relToType: RELATION_RELATED_TO, relToParentTypes }
-    }
+      params: { linkedToType, relToType: RELATION_RELATED_TO, relToParentTypes },
+    },
   };
 
   await elReindexByQueryForMigration('[MIGRATION] Reindexing and updating non-duplicate linked-to refs', null, reindexLinkedToToRelatedToQuery);
@@ -133,7 +133,7 @@ export const up = async (next) => {
   const updateRelWithLinkedToFromOrToQuery = {
     script: {
       source: updateRelWithLinkedToFromOrToSource,
-      params: { linkedToType, relToType: RELATION_RELATED_TO, relToTypes, linkedToRefRelationsDuplicatesIds }
+      params: { linkedToType, relToType: RELATION_RELATED_TO, relToTypes, linkedToRefRelationsDuplicatesIds },
     },
     query: {
       nested: {
@@ -141,12 +141,12 @@ export const up = async (next) => {
         query: {
           bool: {
             must: [
-              { term: { 'connections.types.keyword': { value: linkedToType } } }
-            ]
-          }
+              { term: { 'connections.types.keyword': { value: linkedToType } } },
+            ],
+          },
         },
-      }
-    }
+      },
+    },
   };
   await elUpdateByQueryForMigration('[MIGRATION] Updating relations with a linked-to from or to', [READ_RELATIONSHIPS_INDICES], updateRelWithLinkedToFromOrToQuery);
 
@@ -161,12 +161,12 @@ export const up = async (next) => {
   const updateDenormalizedLinkedToQuery = {
     script: {
       source: updateDenormalizedLinkedToSource,
-      params: { relLinkedTo, relRelatedTo }
+      params: { relLinkedTo, relRelatedTo },
     },
     query: {
       exists: {
-        field: relLinkedTo
-      }
+        field: relLinkedTo,
+      },
     },
   };
 
@@ -179,9 +179,9 @@ export const up = async (next) => {
     [READ_INDEX_STIX_META_RELATIONSHIPS],
     {
       query: {
-        term: { 'entity_type.keyword': { value: linkedToType } }
-      }
-    }
+        term: { 'entity_type.keyword': { value: linkedToType } },
+      },
+    },
   );
 
   logApp.info('[MIGRATION] Update all linked-to refs to related-to rels finished');

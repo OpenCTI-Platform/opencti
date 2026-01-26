@@ -12,7 +12,7 @@ import conf, {
   ENABLED_RULE_ENGINE,
   ENABLED_SYNC_MANAGER,
   ENABLED_TASK_SCHEDULER,
-  logApp
+  logApp,
 } from './config/conf';
 import httpServer from './http/httpServer';
 import expiredManager from './manager/expiredManager';
@@ -26,7 +26,7 @@ import ingestionManager from './manager/ingestionManager';
 import historyManager from './manager/historyManager';
 import notificationManager from './manager/notificationManager';
 import publisherManager from './manager/publisherManager';
-import playbookManager from './manager/playbookManager';
+import playbookManager from './manager/playbookManager/playbookManager';
 import { isAttachmentProcessorEnabled } from './database/engine';
 import fileIndexManager from './manager/fileIndexManager';
 import { shutdownAllManagers, startAllManagers } from './manager/managerModule';

@@ -4,14 +4,14 @@ import {
   findSecurityCoverageById,
   securityCoverageDelete,
   securityCoverageStixBundle,
-  objectCovered
+  objectCovered,
 } from './securityCoverage-domain';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
   stixDomainObjectDeleteRelation,
   stixDomainObjectEditContext,
-  stixDomainObjectEditField
+  stixDomainObjectEditField,
 } from '../../domain/stixDomainObject';
 import type { Resolvers } from '../../generated/graphql';
 
@@ -22,7 +22,7 @@ const SecurityCoverageResolvers: Resolvers = {
   },
   SecurityCoverage: {
     objectCovered: (SecurityCoverage, _, context) => objectCovered<any>(context, context.user, SecurityCoverage.id),
-    toStixBundle: (SecurityCoverage, _, context) => securityCoverageStixBundle(context, context.user, SecurityCoverage.id)
+    toStixBundle: (SecurityCoverage, _, context) => securityCoverageStixBundle(context, context.user, SecurityCoverage.id),
   },
   Mutation: {
     securityCoverageAdd: (_, { input }, context) => addSecurityCoverage(context, context.user, input),

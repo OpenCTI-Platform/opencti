@@ -161,7 +161,7 @@ const AttackPatternEditionDetailsComponent = (props) => {
             label={t_i18n('Platforms')}
             type="platforms_ov"
             name="x_mitre_platforms"
-            variant={'edit'}
+            variant="edit"
             onSubmit={handleSubmitField}
             onChange={(name, value) => setFieldValue(name, value)}
             containerStyle={fieldSpacingContainerStyle}
@@ -189,12 +189,12 @@ const AttackPatternEditionDetailsComponent = (props) => {
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={
+            helperText={(
               <SubscriptionFocus
                 context={context}
                 fieldName="x_mitre_detection"
               />
-            }
+            )}
           />
           {enableReferences && (
             <CommitMessage

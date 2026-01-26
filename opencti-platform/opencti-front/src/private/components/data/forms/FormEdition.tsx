@@ -238,12 +238,12 @@ const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
           onChange={handleDescriptionChange}
         />
         <FormControlLabel
-          control={
+          control={(
             <Switch
               checked={formActive}
               onChange={handleActiveChange}
             />
-          }
+          )}
           label={t_i18n('Active')}
           style={{ marginTop: 20 }}
         />

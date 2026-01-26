@@ -7,7 +7,7 @@ import {
   type CsvMapperRepresentation,
   type CsvMapperResolved,
   ENTITY_TYPE_CSV_MAPPER,
-  type StoreEntityCsvMapper
+  type StoreEntityCsvMapper,
 } from './csvMapper-types';
 import { type CsvMapperAddInput, type EditInput, FilterMode, type QueryCsvMappersArgs } from '../../../generated/graphql';
 import { createInternalObject, deleteInternalObject, editInternalObject } from '../../../domain/internalObject';
@@ -48,9 +48,9 @@ export const csvMapperTest = async (context: AuthContext, user: AuthUser, config
   if (csvMapperParsed.has_header) {
     removeHeaderFromFullFile(csvLines, csvMapperParsed.skipLineChar);
   }
-  const bundlerOpts : CsvBundlerTestOpts = {
+  const bundlerOpts: CsvBundlerTestOpts = {
     applicantUser: user,
-    csvMapper: csvMapperParsed
+    csvMapper: csvMapperParsed,
   };
   const allObjects = await getCsvTestObjects(context, csvLines, bundlerOpts);
   return {
@@ -88,8 +88,8 @@ export const deleteCsvMapper = async (context: AuthContext, user: AuthUser, csvM
     filters: {
       mode: FilterMode.Or,
       filterGroups: [],
-      filters: [{ key: ['csv_mapper_id'], values: [csvMapperId] }]
-    }
+      filters: [{ key: ['csv_mapper_id'], values: [csvMapperId] }],
+    },
   };
   const ingesters = await fullEntitiesList<BasicStoreEntityIngestionCsv>(context, user, [ENTITY_TYPE_INGESTION_CSV], opts);
   // prevent deletion if an ingester uses the mapper
@@ -124,7 +124,7 @@ export const csvMapperExport = async (context: AuthContext, user: AuthUser, csvM
       separator,
       representations: parsedRepresentations,
       skipLineChar,
-    }
+    },
   });
 };
 
@@ -168,7 +168,7 @@ export const csvMapperSchemaAttributes = async (context: AuthContext, user: Auth
     ...schemaTypesDefinition.get(ABSTRACT_STIX_DOMAIN_OBJECT),
     ...schemaTypesDefinition.get(ABSTRACT_STIX_META_OBJECT),
     ...schemaTypesDefinition.get(ABSTRACT_STIX_CORE_RELATIONSHIP),
-    STIX_SIGHTING_RELATIONSHIP
+    STIX_SIGHTING_RELATIONSHIP,
   ].sort();
 
   // Add attribute definitions
@@ -186,15 +186,15 @@ export const csvMapperSchemaAttributes = async (context: AuthContext, user: Auth
         multiple: attribute.multiple,
         mappings: 'mappings' in attribute
           ? attribute.mappings.map((mapping) => ({
-            name: mapping.name,
-            label: mapping.label,
-            type: mapping.type,
-            mandatoryType: mapping.mandatoryType,
-            mandatory: mapping.mandatoryType === 'external',
-            editDefault: mapping.editDefault,
-            multiple: mapping.multiple,
-          }))
-          : undefined
+              name: mapping.name,
+              label: mapping.label,
+              type: mapping.type,
+              mandatoryType: mapping.mandatoryType,
+              mandatory: mapping.mandatoryType === 'external',
+              editDefault: mapping.editDefault,
+              multiple: mapping.multiple,
+            }))
+          : undefined,
       }];
     });
     if (isStixCoreRelationship(type) || isStixSightingRelationship(type)) {
@@ -205,7 +205,7 @@ export const csvMapperSchemaAttributes = async (context: AuthContext, user: Auth
         mandatoryType: 'external',
         multiple: false,
         mandatory: true,
-        editDefault: false
+        editDefault: false,
       });
       attributes.push({
         name: 'to',
@@ -214,12 +214,12 @@ export const csvMapperSchemaAttributes = async (context: AuthContext, user: Auth
         mandatoryType: 'external',
         multiple: false,
         mandatory: true,
-        editDefault: false
+        editDefault: false,
       });
     }
     schemaAttributes.push({
       name: type,
-      attributes
+      attributes,
     });
   });
   // Add refs definitions
@@ -228,7 +228,7 @@ export const csvMapperSchemaAttributes = async (context: AuthContext, user: Auth
     const refs = schemaRelationsRefDefinition.getRelationsRef(type);
     const schemaAttribute = schemaAttributes.find((a) => a.name === type) ?? {
       name: type,
-      attributes: []
+      attributes: [],
     };
     schemaAttribute.attributes.push(...Array.from(refs.values()).flatMap((ref) => {
       if (INTERNAL_REFS.includes(ref.name)) return [];
@@ -282,7 +282,7 @@ export const csvMapperSchemaAttributes = async (context: AuthContext, user: Auth
         const entity = entities[val.id];
         return {
           id: val.id,
-          name: entity ? (extractRepresentative(entity).main ?? val.id) : val.id
+          name: entity ? (extractRepresentative(entity).main ?? val.id) : val.id,
         };
       });
     }

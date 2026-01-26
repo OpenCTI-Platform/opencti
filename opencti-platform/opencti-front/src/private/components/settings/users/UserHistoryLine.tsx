@@ -95,7 +95,7 @@ export const userHistoryLineFragment = graphql`
 `;
 
 interface UserHistoryLineProps {
-  node: UserHistoryLine_node$key,
+  node: UserHistoryLine_node$key;
 }
 
 const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
@@ -336,13 +336,13 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
           <div className={classes.date}>{nsdt(log.timestamp)}</div>
           <Tooltip
             classes={{ tooltip: classes.tooltip }}
-            title={
+            title={(
               <MarkdownDisplay
                 content={`\`${log.user?.name}\` ${log.context_data?.message}`}
                 remarkGfmPlugin={true}
                 commonmark={true}
               />
-              }
+            )}
           >
             <div className={classes.description}>
               <MarkdownDisplay

@@ -120,13 +120,13 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={
+      secondaryAction={(
         <TriggerPopover
           id={data.id}
           paginationOptions={paginationOptions}
           disabled={!bypassEditionRestriction && !data.isDirectAdministrator}
         />
-      }
+      )}
     >
       <ListItemIcon>
         {data.trigger_type === 'live' ? (
@@ -136,7 +136,7 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
         )}
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <>
             <div
               className={classes.bodyItem}
@@ -166,7 +166,7 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
               {(data.notifiers
                 && data.notifiers.length > 0)
                 ? data.notifiers
-                  .map<React.ReactNode>((n) => <code key={n.id} style={{ marginRight: 5 }}>{n.name}</code>)
+                    .map<React.ReactNode>((n) => <code key={n.id} style={{ marginRight: 5 }}>{n.name}</code>)
                 : '-'
               }
             </div>
@@ -218,39 +218,39 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
               >
                 <Chip
                   classes={{ root: classes.chipInList3 }}
-                  label={
+                  label={(
                     <span>
                       <strong>{t_i18n('Period: ')}</strong>
                       {data.period}
                     </span>
-                  }
+                  )}
                 />
                 {currentTime.length > 1 && (
                   <Chip
                     classes={{ root: classes.chipInList3 }}
-                    label={
+                    label={(
                       <span>
                         <strong>{t_i18n('Day: ')}</strong>
                         {day}
                       </span>
-                    }
+                    )}
                   />
                 )}
                 {data.trigger_time && data.trigger_time.length > 0 && (
                   <Chip
                     classes={{ root: classes.chipInList3 }}
-                    label={
+                    label={(
                       <span>
                         <strong>{t_i18n('Time: ')}</strong>
                         {nt(time)}
                       </span>
-                    }
+                    )}
                   />
                 )}
               </div>
             )}
           </>
-        }
+        )}
       />
     </ListItem>
   );
@@ -266,17 +266,17 @@ export const TriggerLineDummy = ({
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={
+      secondaryAction={(
         <Box sx={{ root: classes.itemIconDisabled }}>
-          <MoreVert/>
+          <MoreVert />
         </Box>
-      }
+      )}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <>
             {Object.values(dataColumns).map((value) => (
               <div
@@ -293,7 +293,7 @@ export const TriggerLineDummy = ({
               </div>
             ))}
           </>
-        }
+        )}
       />
     </ListItem>
   );

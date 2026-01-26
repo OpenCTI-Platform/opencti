@@ -10,7 +10,7 @@ import {
   topEntitiesList,
   pageEntitiesConnection,
   pageRegardingEntitiesConnection,
-  storeLoadById
+  storeLoadById,
 } from '../database/middleware-loader';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
@@ -19,7 +19,7 @@ import {
   ABSTRACT_STIX_RELATIONSHIP,
   buildRefRelationKey,
   ENTITY_TYPE_CONTAINER,
-  ENTITY_TYPE_IDENTITY
+  ENTITY_TYPE_IDENTITY,
 } from '../schema/general';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { buildPagination, READ_ENTITIES_INDICES, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_RELATIONSHIPS_INDICES } from '../database/utils';
@@ -117,7 +117,7 @@ export const containersNumber = (context, user, args) => {
       context,
       user,
       READ_INDEX_STIX_DOMAIN_OBJECTS,
-      { ...R.dissoc('endDate', args), types: [ENTITY_TYPE_CONTAINER] }
+      { ...R.dissoc('endDate', args), types: [ENTITY_TYPE_CONTAINER] },
     ),
   };
 };
@@ -229,17 +229,17 @@ export const containersObjectsOfObject = async (context, user, { id, types, filt
           standard_id: c.standard_id,
           entity_type: c.entity_type,
           parent_types: c.parent_types,
-          relationship_type: c.parent_types.includes(ABSTRACT_BASIC_RELATIONSHIP) ? c.entity_type : null
+          relationship_type: c.parent_types.includes(ABSTRACT_BASIC_RELATIONSHIP) ? c.entity_type : null,
         },
         to: {
           id: toId,
           standard_id: resolvedObjectsMap[toId].standard_id,
           entity_type: resolvedObjectsMap[toId].entity_type,
           parent_types: resolvedObjectsMap[toId].parent_types,
-          relationship_type: resolvedObjectsMap[toId].parent_types.includes(ABSTRACT_BASIC_RELATIONSHIP) ? resolvedObjectsMap[toId].entity_type : null
-        }
+          relationship_type: resolvedObjectsMap[toId].parent_types.includes(ABSTRACT_BASIC_RELATIONSHIP) ? resolvedObjectsMap[toId].entity_type : null,
+        },
       }
-    ))).flat())
+    ))).flat()),
   );
   const limit = hasMoreThanMaxObject ? resolvedObjects.length : 0;
   const globalCount = hasMoreThanMaxObject ? loadedReportsCount : resolvedObjects.length;
@@ -310,7 +310,7 @@ export const getFintelTemplates = async (context, user, container) => {
         key: 'start_date',
         values: [nowDate],
         operator: 'lte',
-      }
+      },
     ],
     filterGroups: [],
   };
@@ -374,8 +374,13 @@ export const aiSummary = async (context, user, args) => {
   # Reports
   ${JSON.stringify(content)}
   
-  # Instructions
-    - Your response should match the provided content format which is HTML, including appropriate HTML tags such as <h2>, <ul>, and any necessary styling or structure. Ensure the content is well-formatted, semantic, and compatible with modern browsers.
+  # IMPORTANT: Output Format
+    - Your response MUST be in HTML format only. DO NOT use Markdown syntax.
+    - Use HTML tags like <h2>, <h3>, <p>, <ul>, <li>, <strong>, <em> for formatting.
+    - DO NOT use Markdown syntax such as ##, ###, **, *, - for lists, etc.
+    - Example: Use <h2>Key Findings</h2> NOT ## Key Findings
+    - Example: Use <ul><li>Item</li></ul> NOT - Item
+    - Your response should include appropriate HTML tags such as <h2>, <ul>, and any necessary styling or structure. Ensure the content is well-formatted, semantic, and compatible with modern browsers.
     - Do not include <html>, <head> and <body> tags.
   `;
   const userPromptTopics = `
@@ -400,7 +405,7 @@ export const aiSummary = async (context, user, args) => {
   const summary = {
     result: finalResult,
     topics: topics.split(',').map((n) => n.trim()),
-    updated_at: now()
+    updated_at: now(),
   };
   aiResponseCache[identifier] = summary;
   return summary;

@@ -63,7 +63,7 @@ export const observedDataFragment = graphql`
 `;
 
 interface ObservedDataProps {
-  observedDataData: ObservedData_observedData$key
+  observedDataData: ObservedData_observedData$key;
 }
 
 const ObservedData: React.FC<ObservedDataProps> = ({ observedDataData }) => {

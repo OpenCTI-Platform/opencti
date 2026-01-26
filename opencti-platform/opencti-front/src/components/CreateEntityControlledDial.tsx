@@ -4,6 +4,8 @@ import { useTheme } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';
 import { DrawerControlledDialProps } from '../private/components/common/drawer/Drawer';
 import { useFormatter } from './i18n';
+import useDraftContext from '../utils/hooks/useDraftContext';
+import { useGetCurrentUserAccessRight } from '../utils/authorizedMembers';
 
 interface CreateEntityControlledDialProps extends DrawerControlledDialProps {
   entityType: string;
@@ -23,12 +25,17 @@ const CreateEntityControlledDial: FunctionComponent<CreateEntityControlledDialPr
 }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const valueString = t_i18n(`entity_${entityType}`);
+  const valueString = entityType ? t_i18n(`entity_${entityType}`) : t_i18n('Entity');
   const buttonValue = t_i18n('', {
     id: 'Create ...',
     values: { entity_type: valueString },
   });
-  return (
+  // Remove create button in Draft context without the minimal right access "canEdit"
+  const draftContext = useDraftContext();
+  const currentAccessRight = useGetCurrentUserAccessRight(draftContext?.currentUserAccessRight);
+  const canDisplayButton = !draftContext || currentAccessRight.canEdit;
+
+  return canDisplayButton ? (
     <Button
       onClick={onOpen}
       color={color}
@@ -41,6 +48,8 @@ const CreateEntityControlledDial: FunctionComponent<CreateEntityControlledDialPr
     >
       {buttonValue}
     </Button>
+  ) : (
+    <></>
   );
 };
 

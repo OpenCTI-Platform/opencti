@@ -1,4 +1,4 @@
-import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_CYBER_OBSERVABLE_HASHED_OBSERVABLE, } from './general';
+import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_CYBER_OBSERVABLE_HASHED_OBSERVABLE } from './general';
 import { schemaTypesDefinition } from './schema-types';
 
 export const ENTITY_AUTONOMOUS_SYSTEM = 'Autonomous-System';
@@ -74,7 +74,7 @@ export const STIX_CYBER_OBSERVABLES = [
   ENTITY_PAYMENT_CARD,
   ENTITY_MEDIA_CONTENT,
   ENTITY_PERSONA,
-  ENTITY_SSH_KEY
+  ENTITY_SSH_KEY,
 ];
 schemaTypesDefinition.register(ABSTRACT_STIX_CYBER_OBSERVABLE, STIX_CYBER_OBSERVABLES);
 
@@ -84,5 +84,5 @@ export const isStixCyberObservable = (type: string) => schemaTypesDefinition.isT
   || type === ABSTRACT_STIX_CYBER_OBSERVABLE;
 
 export const stixCyberObservableOptions = {
-  StixCyberObservablesOrdering: {}
+  StixCyberObservablesOrdering: {},
 };

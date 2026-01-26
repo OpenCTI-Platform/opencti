@@ -16,10 +16,11 @@ import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { UnsupportedError } from '../config/errors';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { getEnterpriseEditionInfoFromPem } from '../modules/settings/licensing';
+import { decodeLicensePem, getEnterpriseEditionInfo } from '../modules/settings/licensing';
 import { getClusterInformation } from '../database/cluster-module';
 import { completeXTMHubDataForRegistration } from '../utils/settings.helper';
 import { XTM_ONE_CHATBOT_URL } from '../http/httpChatbotProxy';
+import { findById as findThemeById } from '../modules/theme/theme-domain';
 
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
@@ -96,14 +97,16 @@ export const getProtectedSensitiveConfig = async (context, user) => {
     platform_organization: {
       enabled: booleanConf('protected_sensitive_config:platform_organization:enabled', false),
       protected_ids: [],
-    }
+    },
   };
 };
 
 export const getSettings = async (context) => {
   const platformSettings = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
   const clusterInfo = await getClusterInformation();
-  const eeInfo = getEnterpriseEditionInfoFromPem(platformSettings.internal_id, platformSettings.enterprise_license);
+  const eeInfo = getEnterpriseEditionInfo(platformSettings);
+
+  const platformTheme = await findThemeById(context, SYSTEM_USER, platformSettings.platform_theme);
 
   return {
     ...platformSettings,
@@ -124,12 +127,13 @@ export const getSettings = async (context) => {
     platform_ai_type: `${getAIEndpointType()} ${nconf.get('ai:type')}`,
     platform_ai_model: nconf.get('ai:model'),
     platform_ai_has_token: !!isNotEmptyField(nconf.get('ai:token')),
+    platform_theme: platformTheme,
     platform_trash_enabled: nconf.get('app:trash:enabled') ?? true,
     platform_translations: nconf.get('app:translations') ?? '{}',
     filigran_chatbot_ai_url: XTM_ONE_CHATBOT_URL,
     platform_feature_flags: [
       { id: 'RUNTIME_SORTING', enable: isRuntimeSortEnable() },
-      ...(ENABLED_FEATURE_FLAGS.map((feature) => ({ id: feature, enable: true })))
+      ...(ENABLED_FEATURE_FLAGS.map((feature) => ({ id: feature, enable: true }))),
     ],
     playground_enabled: PLAYGROUND_ENABLED,
   };
@@ -187,7 +191,7 @@ const ACCESS_SETTINGS_MANAGE_XTMHUB_KEYS = [
   'xtm_hub_registration_user_name',
   'xtm_hub_registration_status',
   'xtm_hub_should_send_connectivity_email',
-  'xtm_hub_backend_is_reachable'
+  'xtm_hub_backend_is_reachable',
 ];
 
 export const settingsEditField = async (context, user, settingsId, input) => {
@@ -211,7 +215,7 @@ export const settingsEditField = async (context, user, settingsId, input) => {
   if (enterpriseLicense && enterpriseLicense.value?.length > 0) {
     const license = enterpriseLicense.value[0];
     if (isNotEmptyField(license)) {
-      const info = getEnterpriseEditionInfoFromPem(settings.internal_id, license);
+      const info = decodeLicensePem(settings, license);
       if (!info.license_validated) {
         throw UnsupportedError('Invalid license');
       }
@@ -224,10 +228,14 @@ export const settingsEditField = async (context, user, settingsId, input) => {
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`${data.map((i) => i.key).join(', ')}\` for \`platform settings\``,
-    context_data: { id: settingsId, entity_type: ENTITY_TYPE_SETTINGS, input: data }
+    context_data: { id: settingsId, entity_type: ENTITY_TYPE_SETTINGS, input: data },
   });
   const updatedSettings = await getSettings(context);
   return notify(BUS_TOPICS.Settings.EDIT_TOPIC, updatedSettings, user);
+};
+
+export const setupEnterpriseLicense = (context, user, { settingId, license }) => {
+  return settingsEditField(context, user, settingId, [{ key: 'enterprise_license', value: [license] }]);
 };
 
 export const getMessagesFilteredByRecipients = (user, settings) => {
@@ -241,7 +249,7 @@ export const getMessagesFilteredByRecipients = (user, settings) => {
 export const settingEditMessage = async (context, user, settingsId, message) => {
   const messageToStore = {
     ...message,
-    updated_at: now()
+    updated_at: now(),
   };
   const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
   const messages = JSON.parse(settings.platform_messages ?? '[]');
@@ -251,7 +259,7 @@ export const settingEditMessage = async (context, user, settingsId, message) => 
   } else {
     messages.push({
       ...messageToStore,
-      id: generateInternalId()
+      id: generateInternalId(),
     });
   }
   const patch = { platform_messages: JSON.stringify(messages) };
@@ -289,7 +297,7 @@ export const getCriticalAlerts = async (context, user) => {
       message: 'Some groups have field group_confidence_level to null, members will not be able to use the platform properly.',
       details: {
         groups: groupsWithNull,
-      }
+      },
     }];
   }
 

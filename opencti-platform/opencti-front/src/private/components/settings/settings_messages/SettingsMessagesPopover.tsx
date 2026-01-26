@@ -31,8 +31,8 @@ const SettingsMessagesPopover = ({
   settingsId,
   message,
 }: {
-  settingsId: string
-  message: SettingsMessagesLine_settingsMessage$data
+  settingsId: string;
+  message: SettingsMessagesLine_settingsMessage$data;
 }) => {
   const { t_i18n } = useFormatter();
 

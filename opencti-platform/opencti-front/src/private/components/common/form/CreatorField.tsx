@@ -1,22 +1,21 @@
-import React, { FunctionComponent, ReactNode, useState } from 'react';
-import { Field } from 'formik';
+import React, { FunctionComponent, ReactNode, SyntheticEvent, useState } from 'react';
 import { graphql } from 'react-relay';
 import Box from '@mui/material/Box';
 import { Link } from 'react-router-dom';
 import { OpenInNewOutlined } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import { fetchQuery } from '../../../../relay/environment';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import AutocompleteField, { AutocompleteFieldProps } from '../../../../components/AutocompleteField';
 import { useFormatter } from '../../../../components/i18n';
 import { CreatorFieldSearchQuery$data } from './__generated__/CreatorFieldSearchQuery.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
-import { FieldOption } from '../../../../utils/field';
+import Field, { FieldOption } from '../../../../utils/field';
 
 interface CreatorFieldProps {
   name: string;
   label: string;
-  onChange?: (name: string, value: FieldOption) => void;
+  onChange?: (name: string, value: FieldOption | null) => void;
   containerStyle?: Record<string, string | number>;
   showConfidence?: boolean;
   helpertext?: string;
@@ -48,7 +47,7 @@ const CreatorFieldQuery = graphql`
 type CreatorNode = NonNullable<CreatorFieldSearchQuery$data['members']>['edges'][number]['node'];
 
 type CreatorOption = FieldOption & {
-  extra?: ReactNode,
+  extra?: ReactNode;
 };
 
 const CreatorField: FunctionComponent<CreatorFieldProps> = ({
@@ -93,32 +92,34 @@ const CreatorField: FunctionComponent<CreatorFieldProps> = ({
     return null;
   };
 
-  const searchCreators = (event: React.ChangeEvent<HTMLInputElement>) => {
-    fetchQuery(CreatorFieldQuery, {
-      search: event && event.target.value ? event.target.value : '',
-    })
-      .toPromise()
-      .then((data) => {
-        const NewCreators = (
-          (data as CreatorFieldSearchQuery$data)?.members?.edges ?? []
-        ).map((n) => ({
-          label: n?.node.name ?? t_i18n('Unknown'),
-          value: n?.node.id,
-          extra: getExtraFromNode(n?.node),
-        }));
-        const templateValues = [...creatorOptions, ...NewCreators];
-        // Keep only the unique list of options
-        const uniqTemplates = templateValues.filter((item, index) => {
-          return (
-            templateValues.findIndex((e) => e.value === item.value) === index
-          );
+  const searchCreators = (event?: SyntheticEvent<Element, Event>) => {
+    if (event?.target instanceof HTMLInputElement) {
+      const search = event.target.value ?? '';
+      fetchQuery(CreatorFieldQuery, { search })
+        .toPromise()
+        .then((data) => {
+          const NewCreators = (
+            (data as CreatorFieldSearchQuery$data)?.members?.edges ?? []
+          ).map((n) => ({
+            label: n?.node.name ?? t_i18n('Unknown'),
+            value: n?.node.id,
+            extra: getExtraFromNode(n?.node),
+          }));
+          const templateValues = [...creatorOptions, ...NewCreators];
+          // Keep only the unique list of options
+          const uniqTemplates = templateValues.filter((item, index) => {
+            return (
+              templateValues.findIndex((e) => e.value === item.value) === index
+            );
+          });
+          setCreatorOptions(uniqTemplates);
         });
-        setCreatorOptions(uniqTemplates);
-      });
+    }
   };
+
   return (
     <div style={{ width: '100%' }}>
-      <Field
+      <Field<AutocompleteFieldProps<false>>
         disabled={disabled}
         component={AutocompleteField}
         name={name}
@@ -138,14 +139,14 @@ const CreatorField: FunctionComponent<CreatorFieldProps> = ({
           props: React.HTMLAttributes<HTMLLIElement>,
           option: CreatorOption,
         ) => (
-          <li {...props} >
+          <li {...props}>
             <div
               style={{
                 paddingTop: 4,
                 color: option.color,
               }}
             >
-              <ItemIcon type="user"/>
+              <ItemIcon type="user" />
             </div>
             <div
               style={{

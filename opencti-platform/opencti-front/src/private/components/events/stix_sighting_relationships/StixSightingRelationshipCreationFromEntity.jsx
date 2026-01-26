@@ -252,7 +252,7 @@ const StixSightingRelationshipCreationFromEntity = ({
               />
             </ListItemIcon>
             <ListItemText
-              primary={
+              primary={(
                 <Skeleton
                   animation="wave"
                   variant="rectangular"
@@ -260,15 +260,15 @@ const StixSightingRelationshipCreationFromEntity = ({
                   height={15}
                   style={{ marginBottom: 10 }}
                 />
-              }
-              secondary={
+              )}
+              secondary={(
                 <Skeleton
                   animation="wave"
                   variant="rectangular"
                   width="90%"
                   height={15}
                 />
-              }
+              )}
             />
           </ListItem>
         ))}
@@ -400,7 +400,7 @@ const StixSightingRelationshipCreationFromEntity = ({
               onSubmit={handleSearch}
             />
           </div>
-          <div className="clearfix"/>
+          <div className="clearfix" />
           {renderSearchResults()}
         </div>
       </div>
@@ -461,7 +461,7 @@ const StixSightingRelationshipCreationFromEntity = ({
     switch (variant) {
       case 'controlledDial':
         return (
-          <CreateEntityControlledDial entityType='Sighting' onOpen={handleOpen} />
+          <CreateEntityControlledDial entityType="Sighting" onOpen={handleOpen} />
         );
       case 'inLine':
         return (

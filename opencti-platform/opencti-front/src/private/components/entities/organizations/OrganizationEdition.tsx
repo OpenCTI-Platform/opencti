@@ -8,7 +8,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 
 interface OrganizationEditionProps {
-  organizationId: string
+  organizationId: string;
 }
 
 const OrganizationEdition = ({ organizationId }: OrganizationEditionProps) => {

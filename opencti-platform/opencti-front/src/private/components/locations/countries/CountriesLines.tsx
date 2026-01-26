@@ -81,8 +81,8 @@ const CountriesLines: FunctionComponent<CountriesLinesProps> = ({
   paginationOptions,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
-  CountriesLinesPaginationQuery,
-  CountriesLines_data$key
+    CountriesLinesPaginationQuery,
+    CountriesLines_data$key
   >({
     linesQuery: countriesLinesQuery,
     linesFragment: countriesLinesFragment,

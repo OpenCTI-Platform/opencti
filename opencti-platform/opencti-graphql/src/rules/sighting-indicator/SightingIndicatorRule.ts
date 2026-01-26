@@ -53,7 +53,7 @@ const sightingIndicatorRuleBuilder = (): RuleRuntime => {
           confidence: computedConfidence,
           first_seen: range.start,
           last_seen: range.end,
-          objectMarking: elementMarkings
+          objectMarking: elementMarkings,
         });
         await createInferredRelation(context, input, ruleContent);
       }
@@ -61,7 +61,7 @@ const sightingIndicatorRuleBuilder = (): RuleRuntime => {
     const listFromArgs: RelationOptions<BasicStoreRelation> = {
       fromId: fromIndicator,
       toTypes: [ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION],
-      callback: listFromCallback
+      callback: listFromCallback,
     };
     await fullRelationsList(context, RULE_MANAGER_USER, STIX_SIGHTING_RELATIONSHIP, listFromArgs);
   };
@@ -94,7 +94,7 @@ const sightingIndicatorRuleBuilder = (): RuleRuntime => {
           confidence: computedConfidence,
           first_seen: range.start,
           last_seen: range.end,
-          objectMarking: elementMarkings
+          objectMarking: elementMarkings,
         });
         await createInferredRelation(context, input, ruleContent);
       }
@@ -102,7 +102,7 @@ const sightingIndicatorRuleBuilder = (): RuleRuntime => {
     const listFromArgs: RelationOptions<BasicStoreRelation> = {
       fromId: fromIndicator,
       toTypes: [ABSTRACT_STIX_CYBER_OBSERVABLE],
-      callback: listFromCallback
+      callback: listFromCallback,
     };
     await fullRelationsList(context, RULE_MANAGER_USER, RELATION_BASED_ON, listFromArgs);
   };

@@ -111,7 +111,7 @@ const ThreatActorIndividualBiographicsComponent = ({
       <Typography variant="h4" gutterBottom={true}>
         {t_i18n('Biographic Information')}
       </Typography>
-      <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+      <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
         <Grid container={true} spacing={3}>
           <DetailGrid
             title={t_i18n('Eye Color')}
@@ -143,7 +143,7 @@ const ThreatActorIndividualBiographicsComponent = ({
             title={t_i18n('Height')}
             tooltip={t_i18n('Known observed height(s) for the Identity.')}
           >
-            <List dense={true} disablePadding={true} id={'HeightIDRead'}>
+            <List dense={true} disablePadding={true} id="HeightIDRead">
               {(threatActorIndividual.height ?? []).length > 0 ? (
                 (threatActorIndividual.height ?? []).map((height, i) => (
                   <HeightDisplay
@@ -165,7 +165,7 @@ const ThreatActorIndividualBiographicsComponent = ({
             title={t_i18n('Weight')}
             tooltip={t_i18n('Known observed weight(s) for the Individual.')}
           >
-            <List dense={true} disablePadding={true} id={'WeightIDRead'}>
+            <List dense={true} disablePadding={true} id="WeightIDRead">
               {(threatActorIndividual.weight ?? []).length > 0 ? (
                 (threatActorIndividual.weight ?? []).map((weight, i) => (
                   <WeightDisplay

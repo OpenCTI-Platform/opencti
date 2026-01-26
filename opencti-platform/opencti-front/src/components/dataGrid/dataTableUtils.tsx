@@ -104,7 +104,7 @@ export const defaultRender: NonNullable<DataTableColumn['render']> = (data, disp
       <Tooltip title={data}>
         <div style={{ maxWidth: '100%', display: 'flex' }}>
           <Truncate>{data}</Truncate>
-          {displayDraftChip && (<DraftChip/>)}
+          {displayDraftChip && (<DraftChip />)}
         </div>
       </Tooltip>
     </FieldOrEmpty>
@@ -161,18 +161,18 @@ const defaultColumns: DataTableProps['dataColumns'] = {
             'Data-Component',
             'Data-Source',
           ].includes(entity_type) ? (
-            <Chip
-              classes={{ root: classes.chipNoLink }}
-              label={n(containersNumber.total)}
-            />
-            ) : (
-              <Chip
-                classes={{ root: classes.chip }}
-                label={n(containersNumber.total)}
-                component={Link}
-                to={linkAnalyses}
-              />
-            )}
+                <Chip
+                  classes={{ root: classes.chipNoLink }}
+                  label={n(containersNumber.total)}
+                />
+              ) : (
+                <Chip
+                  classes={{ root: classes.chip }}
+                  label={n(containersNumber.total)}
+                  component={Link}
+                  to={linkAnalyses}
+                />
+              )}
         </>
       );
     },
@@ -347,7 +347,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     id: 'due_date',
     label: 'Due Date',
     percentWidth: 15,
-    render: ({ due_date }) => <ItemDueDate due_date={due_date} variant={'inList'} />,
+    render: ({ due_date }) => <ItemDueDate due_date={due_date} variant="inList" />,
   },
   effective_confidence_level: {
     id: 'effective_confidence_level',
@@ -762,8 +762,10 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Nb.',
     percentWidth: 8,
     isSortable: true,
-    render: ({ number_observed }, { n }) => (<Tooltip title={number_observed}><>{n(number_observed)}</>
-    </Tooltip>),
+    render: ({ number_observed }, { n }) => (
+      <Tooltip title={number_observed}><>{n(number_observed)}</>
+      </Tooltip>
+    ),
   },
   objectAssignee: {
     id: 'objectAssignee',
@@ -861,7 +863,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
         title={operatingSystem?.name}
       >
         <>{operatingSystem?.name ?? '-'}</>
-      </Tooltip>),
+      </Tooltip>
+    ),
   },
   opinions_metrics_mean: {
     id: 'opinions_metrics_mean',
@@ -994,7 +997,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
             classes={{ root: classes.chipInList }}
             color="primary"
             variant="outlined"
-            label={ t_i18n(`relationship_${relationship_type}`) ?? t_i18n('Unknown') }
+            label={t_i18n(`relationship_${relationship_type}`) ?? t_i18n('Unknown')}
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -1541,18 +1544,18 @@ const defaultColumns: DataTableProps['dataColumns'] = {
 };
 
 type MetricConf = {
-  attribute: string
-  name: string
+  attribute: string;
+  name: string;
 };
 
 export type MetricsDefinition = {
-  readonly entity_type: string
-  readonly metrics: readonly MetricConf[] | null | undefined
+  readonly entity_type: string;
+  readonly metrics: readonly MetricConf[] | null | undefined;
 };
 
 export type Metric = {
-  readonly name: string
-  readonly value: string
+  readonly name: string;
+  readonly value: string;
 };
 
 export const buildMetricsColumns = (

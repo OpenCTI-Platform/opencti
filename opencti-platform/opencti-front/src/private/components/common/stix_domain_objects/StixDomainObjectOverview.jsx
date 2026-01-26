@@ -147,25 +147,25 @@ const StixDomainObjectOverview = ({
           padding: '15px',
           borderRadius: 4,
         }}
-        className='paper-for-grid'
+        className="paper-for-grid"
         variant="outlined"
       >
         <Grid container={false} spacing={3}>
           {isRequestAccessRFI && (
-            <ProcessingStatusOverview data={stixDomainObject}/>
+            <ProcessingStatusOverview data={stixDomainObject} />
           )}
         </Grid>
         <Grid container={true} spacing={3}>
           <Grid item xs={6}>
             {stixDomainObject.objectMarking && (
-            <>
-              <Typography variant="h3" gutterBottom={true}>
-                {t_i18n('Marking')}
-              </Typography>
-              <ItemMarkings
-                markingDefinitions={stixDomainObject.objectMarking ?? []}
-              />
-            </>
+              <>
+                <Typography variant="h3" gutterBottom={true}>
+                  {t_i18n('Marking')}
+                </Typography>
+                <ItemMarkings
+                  markingDefinitions={stixDomainObject.objectMarking ?? []}
+                />
+              </>
             )}
             <div>
               <Typography
@@ -186,45 +186,45 @@ const StixDomainObjectOverview = ({
               />
             </div>
             {(displayConfidence || displayReliability) && (
-            <Grid container={true} columnSpacing={1}>
-              {displayReliability && (
-              <Grid item xs={6}>
-                <Typography
-                  variant="h3"
-                  gutterBottom={true}
-                  style={{ marginTop: 20 }}
-                >
-                  {t_i18n('Reliability')}
-                  {isReliabilityOfSource && (
-                  <span style={{ fontStyle: 'italic' }}>
-                    {' '}
-                    ({t_i18n('of author')})
-                  </span>
-                  )}
-                </Typography>
-                <ItemOpenVocab
-                  displayMode="chip"
-                  type="reliability_ov"
-                  value={reliability?.toString()}
-                />
+              <Grid container={true} columnSpacing={1}>
+                {displayReliability && (
+                  <Grid item xs={6}>
+                    <Typography
+                      variant="h3"
+                      gutterBottom={true}
+                      style={{ marginTop: 20 }}
+                    >
+                      {t_i18n('Reliability')}
+                      {isReliabilityOfSource && (
+                        <span style={{ fontStyle: 'italic' }}>
+                          {' '}
+                          ({t_i18n('of author')})
+                        </span>
+                      )}
+                    </Typography>
+                    <ItemOpenVocab
+                      displayMode="chip"
+                      type="reliability_ov"
+                      value={reliability?.toString()}
+                    />
+                  </Grid>
+                )}
+                {displayConfidence && (
+                  <Grid item xs={6}>
+                    <Typography
+                      variant="h3"
+                      gutterBottom={true}
+                      style={{ marginTop: 20 }}
+                    >
+                      {t_i18n('Confidence level')}
+                    </Typography>
+                    <ItemConfidence
+                      confidence={stixDomainObject.confidence}
+                      entityType={stixDomainObject.entity_type}
+                    />
+                  </Grid>
+                )}
               </Grid>
-              )}
-              {displayConfidence && (
-              <Grid item xs={6}>
-                <Typography
-                  variant="h3"
-                  gutterBottom={true}
-                  style={{ marginTop: 20 }}
-                >
-                  {t_i18n('Confidence level')}
-                </Typography>
-                <ItemConfidence
-                  confidence={stixDomainObject.confidence}
-                  entityType={stixDomainObject.entity_type}
-                />
-              </Grid>
-              )}
-            </Grid>
             )}
             {displayOpinions && <StixCoreObjectOpinions stixCoreObjectId={stixDomainObject.id} />}
             <Typography
@@ -269,7 +269,7 @@ const StixDomainObjectOverview = ({
               </>
             )}
             {displayAssignees && (
-              <div data-testid='sdo-overview-assignees'>
+              <div data-testid="sdo-overview-assignees">
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                   <Typography
                     variant="h3"
@@ -295,7 +295,7 @@ const StixDomainObjectOverview = ({
               </div>
             )}
             {displayParticipants && (
-              <div data-testid='sdo-overview-participants'>
+              <div data-testid="sdo-overview-participants">
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                   <Typography
                     variant="h3"
@@ -418,22 +418,23 @@ const StixDomainObjectOverview = ({
           <List>
             {stixIds.map(
               (stixId) => stixId.length > 0 && (
-              <ListItem
-                key={stixId}disableGutters={true}
-                dense={true}
-                secondaryAction={
-                  <IconButton
-                    edge="end"
-                    aria-label="delete"
-                    onClick={() => deleteStixId(stixId)}
-                    size="large"
-                  >
-                    <Delete />
-                  </IconButton>
-                }
-              >
-                <ListItemText primary={stixId} />
-              </ListItem>
+                <ListItem
+                  key={stixId}
+                  disableGutters={true}
+                  dense={true}
+                  secondaryAction={(
+                    <IconButton
+                      edge="end"
+                      aria-label="delete"
+                      onClick={() => deleteStixId(stixId)}
+                      size="large"
+                    >
+                      <Delete />
+                    </IconButton>
+                  )}
+                >
+                  <ListItemText primary={stixId} />
+                </ListItem>
               ),
             )}
           </List>

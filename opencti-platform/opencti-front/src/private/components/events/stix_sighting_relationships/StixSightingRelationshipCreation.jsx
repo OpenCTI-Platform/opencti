@@ -638,9 +638,9 @@ class StixSightingRelationshipCreation extends Component {
         onClose={this.handleClose.bind(this)}
       >
         {step === 0
-        || step === undefined
-        || fromObject === null
-        || toObjects === null
+          || step === undefined
+          || fromObject === null
+          || toObjects === null
           ? this.renderLoader()
           : ''}
         {step === 1 ? this.renderSelectSighting() : ''}

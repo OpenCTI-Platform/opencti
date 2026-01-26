@@ -212,29 +212,29 @@ const TasksList = ({ data, options }) => {
   return (
     <div>
       {tasks.length === 0 && (
-      <Paper
-        classes={{ root: classes.paper }}
-        variant="outlined"
-        style={{ marginBottom: 20 }}
-      >
-        <div
-          style={{
-            display: 'table',
-            height: '100%',
-            width: '100%',
-          }}
+        <Paper
+          classes={{ root: classes.paper }}
+          variant="outlined"
+          style={{ marginBottom: 20 }}
         >
-          <span
+          <div
             style={{
-              display: 'table-cell',
-              verticalAlign: 'middle',
-              textAlign: 'center',
+              display: 'table',
+              height: '100%',
+              width: '100%',
             }}
           >
-            {t_i18n('No task')}
-          </span>
-        </div>
-      </Paper>
+            <span
+              style={{
+                display: 'table-cell',
+                verticalAlign: 'middle',
+                textAlign: 'center',
+              }}
+            >
+              {t_i18n('No task')}
+            </span>
+          </div>
+        </Paper>
       )}
       {tasks.map((taskEdge) => {
         const task = taskEdge.node;
@@ -294,57 +294,59 @@ const TasksList = ({ data, options }) => {
               <Grid item xs={5}>
                 <Grid container={true} spacing={1}>
                   {task.description && (
-                  <Grid item xs={12}>
-                    <Typography variant="h3" gutterBottom={true}>
-                      {`${t_i18n('Description')}: ${task.description}`}
-                    </Typography>
-                  </Grid>
+                    <Grid item xs={12}>
+                      <Typography variant="h3" gutterBottom={true}>
+                        {`${t_i18n('Description')}: ${task.description}`}
+                      </Typography>
+                    </Grid>
                   )}
                   <Grid item xs={12}>
                     <Typography variant="h3" gutterBottom={true}>
                       {t_i18n('Targeted entities')} ({n(task.task_expected_number)})
                     </Typography>
                     {task.task_search && (
-                    <span>
-                      <Chip
-                        classes={{ root: classes.filter }}
-                        label={
-                          <div>
-                            <strong>{t_i18n('Search')}</strong>:{' '}
-                            {task.task_search}
-                          </div>
-                            }
-                      />
-                      <Chip
-                        classes={{ root: classes.operator }}
-                        label={t_i18n('AND')}
-                      />
-                    </span>
+                      <span>
+                        <Chip
+                          classes={{ root: classes.filter }}
+                          label={(
+                            <div>
+                              <strong>{t_i18n('Search')}</strong>:{' '}
+                              {task.task_search}
+                            </div>
+                          )}
+                        />
+                        <Chip
+                          classes={{ root: classes.operator }}
+                          label={t_i18n('AND')}
+                        />
+                      </span>
                     )}
                     {task.type !== 'RULE'
-                        && (isFilterGroupNotEmpty(filters)
-                          ? <TasksFilterValueContainer
+                      && (isFilterGroupNotEmpty(filters)
+                        ? (
+                            <TasksFilterValueContainer
                               filters={filters}
                               entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Notification', 'User']}
                             />
-                          : (
+                          )
+                        : (
                             <Chip
                               classes={{ root: classes.filter }}
-                              label={
+                              label={(
                                 <div>
                                   <strong>{t_i18n('List of entities')}</strong>:{' '}
                                   {listIds}
                                 </div>
-                              }
+                              )}
                             />
                           )
-                        )
-                      }
+                      )
+                    }
                     {task.type === 'RULE' && (
-                    <Chip
-                      classes={{ root: classes.filter }}
-                      label={<div>{t_i18n('All rule targets')}</div>}
-                    />
+                      <Chip
+                        classes={{ root: classes.filter }}
+                        label={<div>{t_i18n('All rule targets')}</div>}
+                      />
                     )}
                   </Grid>
                   <Grid item xs={12}>
@@ -352,47 +354,47 @@ const TasksList = ({ data, options }) => {
                       {t_i18n('Actions')}
                     </Typography>
                     {task.type === 'RULE' && (
-                    <Chip
-                      classes={{ root: classes.operator }}
-                      label={<div>{t_i18n('APPLY RULE')}</div>}
-                    />
+                      <Chip
+                        classes={{ root: classes.operator }}
+                        label={<div>{t_i18n('APPLY RULE')}</div>}
+                      />
                     )}
                     {task.actions
-                        && R.map(
-                          (action) => (
-                            <div key={task.actions.indexOf(action)}>
+                      && R.map(
+                        (action) => (
+                          <div key={task.actions.indexOf(action)}>
+                            <Chip
+                              classes={{ root: classes.operator }}
+                              label={action.type}
+                            />
+                            {action.context && (
                               <Chip
-                                classes={{ root: classes.operator }}
-                                label={action.type}
+                                classes={{ root: classes.filter }}
+                                label={(
+                                  <div>
+                                    {action.context.field && (
+                                      <span>
+                                        <strong>
+                                          {t_i18n(action.context.field)}
+                                        </strong>
+                                        :{' '}
+                                      </span>
+                                    )}
+                                    {truncate(
+                                      R.join(
+                                        ', ',
+                                        action.context.values || [],
+                                      ),
+                                      80,
+                                    )}
+                                  </div>
+                                )}
                               />
-                              {action.context && (
-                                <Chip
-                                  classes={{ root: classes.filter }}
-                                  label={
-                                    <div>
-                                      {action.context.field && (
-                                        <span>
-                                          <strong>
-                                            {t_i18n(action.context.field)}
-                                          </strong>
-                                          :{' '}
-                                        </span>
-                                      )}
-                                      {truncate(
-                                        R.join(
-                                          ', ',
-                                          action.context.values || [],
-                                        ),
-                                        80,
-                                      )}
-                                    </div>
-                                  }
-                                />
-                              )}
-                            </div>
-                          ),
-                          task.actions,
-                        )}
+                            )}
+                          </div>
+                        ),
+                        task.actions,
+                      )}
                   </Grid>
                 </Grid>
               </Grid>
@@ -421,12 +423,14 @@ const TasksList = ({ data, options }) => {
                     {nsdt(lastTaskExecutionDate)}
                   </Grid>
                   {(task.scope ?? task.type)
-                      && <Grid item xs={2}>
+                    && (
+                      <Grid item xs={2}>
                         <Typography variant="h3" gutterBottom={true}>
                           {t_i18n('Scope')}
                         </Typography>
                         <TaskScope scope={task.scope ?? task.type} label={t_i18n(task.scope ?? task.type)} />
                       </Grid>
+                    )
                   }
                   <Grid item xs={2}>
                     <Typography variant="h3" gutterBottom={true}>
@@ -445,12 +449,12 @@ const TasksList = ({ data, options }) => {
                     />
                   </Grid>
                 </Grid>
-                <br/>
+                <br />
               </Grid>
               <Button
                 style={{ position: 'absolute', right: 10, top: 10 }}
                 variant={taskErrors.length > 0 ? 'contained' : 'outlined'}
-                color={'error'}
+                color="error"
                 disabled={taskErrors.length === 0}
                 onClick={() => handleOpenErrors(taskErrors)}
                 size="small"
@@ -458,26 +462,30 @@ const TasksList = ({ data, options }) => {
                 {taskErrors.length} {t_i18n('errors')}
               </Button>
               {task.scope // if task.scope exists = it is list task or a query task
-                ? <Button
-                    style={{ position: 'absolute', right: 10, bottom: 10 }}
-                    variant="outlined"
-                    onClick={() => handleDeleteTask(task.id)}
-                    size="small"
-                  >
-                  <Delete fontSize="small"/>
+                ? (
+                    <Button
+                      style={{ position: 'absolute', right: 10, bottom: 10 }}
+                      variant="outlined"
+                      onClick={() => handleDeleteTask(task.id)}
+                      size="small"
+                    >
+                      <Delete fontSize="small" />
                   &nbsp;&nbsp;{t_i18n('Delete')}
-                </Button>
-                : <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-                  <Button
-                    style={{ position: 'absolute', right: 10, bottom: 10 }}
-                    variant="outlined"
-                    onClick={() => handleDeleteTask(task.id)}
-                    size="small"
-                  >
-                    <Delete fontSize="small" />
+                    </Button>
+                  )
+                : (
+                    <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                      <Button
+                        style={{ position: 'absolute', right: 10, bottom: 10 }}
+                        variant="outlined"
+                        onClick={() => handleDeleteTask(task.id)}
+                        size="small"
+                      >
+                        <Delete fontSize="small" />
                     &nbsp;&nbsp;{t_i18n('Delete')}
-                  </Button>
-                </Security>
+                      </Button>
+                    </Security>
+                  )
               }
             </Grid>
           </Paper>

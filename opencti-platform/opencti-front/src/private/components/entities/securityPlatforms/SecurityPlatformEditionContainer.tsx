@@ -10,8 +10,8 @@ import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings
 
 interface securityPlatformContainerProps {
   handleClose: () => void;
-  securityPlatform:SecurityPlatformEditionContainer_securityPlatform$data,
-  controlledDial?: DrawerControlledDialType
+  securityPlatform: SecurityPlatformEditionContainer_securityPlatform$data;
+  controlledDial?: DrawerControlledDialType;
 }
 
 const SecurityPlatformEditionContainer: FunctionComponent<securityPlatformContainerProps> = ({

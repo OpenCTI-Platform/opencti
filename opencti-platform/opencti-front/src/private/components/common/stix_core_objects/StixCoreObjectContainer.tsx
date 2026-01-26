@@ -69,7 +69,7 @@ type StixDomainObjectCreationCallbackType = {
   entity_type: string;
   representative?: {
     main: string;
-  }
+  };
   name: string;
 };
 
@@ -236,7 +236,7 @@ const StixCoreObjectContainer = ({ elementId }: StixCoreObjectContainerProps) =>
                             onClick={handleToggleContainerCreationDrawer(true)}
                             size="small"
                           >
-                            <AddOutlined/>
+                            <AddOutlined />
                           </IconButton>
                         </InputAdornment>
                         {params.InputProps.endAdornment}
@@ -263,12 +263,12 @@ const StixCoreObjectContainer = ({ elementId }: StixCoreObjectContainerProps) =>
           />
           <FormControlLabel
             style={{ marginTop: 20 }}
-            control={
+            control={(
               <Checkbox
                 checked={includeNeighbours}
                 onChange={handleChangeIncludeNeighboursOption}
               />
-            }
+            )}
             label={t_i18n('Also include first neighbours')}
           />
         </DialogContent>

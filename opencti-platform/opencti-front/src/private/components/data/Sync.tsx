@@ -1,31 +1,36 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import MuiAlert from '@mui/material/Alert';
-import { useTheme } from '@mui/styles';
-import { Theme } from 'src/components/Theme';
 import { SyncLinesPaginationQuery$data, SyncLinesPaginationQuery$variables } from '@components/data/sync/__generated__/SyncLinesPaginationQuery.graphql';
 import { QueryRenderer } from '../../../relay/environment';
 import ListLines from '../../../components/list_lines/ListLines';
 import SyncLines, { SyncLinesQuery } from './sync/SyncLines';
 import SyncCreation from './sync/SyncCreation';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import useAuth from '../../../utils/hooks/useAuth';
+import useAuth, { UserContext } from '../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../components/i18n';
 import { SYNC_MANAGER } from '../../../utils/platformModulesHelper';
 import IngestionMenu from './IngestionMenu';
-import Alert from '../../../components/Alert';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import Security from '../../../utils/Security';
 import { INGESTION_SETINGESTIONS } from '../../../utils/hooks/useGranted';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import PageContainer from '../../../components/PageContainer';
+import SyncImport from '@components/data/SyncImport';
+import { isNotEmptyField } from '../../../utils/utils';
+import GradientButton from '../../../components/GradientButton';
+import { PaginationOptions } from '../../../components/list_lines';
 
 const LOCAL_STORAGE_KEY = 'sync';
 
 const Sync = () => {
-  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   const { platformModuleHelpers } = useAuth();
+  const { settings, isXTMHubAccessible } = useContext(UserContext);
+
+  const importFromHubUrl = isNotEmptyField(settings?.platform_xtmhub_url)
+    ? `${settings.platform_xtmhub_url}/redirect/opencti_integrations?platform_id=${settings.id}`
+    : '';
 
   setTitle(t_i18n('Remote OCTI Streams | Ingestion | Data'));
 
@@ -33,7 +38,7 @@ const Sync = () => {
     viewStorage,
     paginationOptions,
     helpers: storageHelpers,
-  } = usePaginationLocalStorage<SyncLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, {
+  } = usePaginationLocalStorage<PaginationOptions>(LOCAL_STORAGE_KEY, {
     sortBy: 'name',
     orderAsc: false,
     searchTerm: '',
@@ -94,22 +99,6 @@ const Sync = () => {
         <Breadcrumbs
           elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('OpenCTI Streams'), current: true }]}
         />
-        <Alert content={
-          <>
-            {t_i18n('You can configure your platform to consume OpenCTI Streams. A list of public and commercial native feeds is available in the')}{' '}
-            <a
-              href="https://filigran.notion.site/63392969969c4941905520d37dc7ad4a?v=0a5716cac77b4406825ba3db0acfaeb2"
-              target="_blank"
-              style={{ color: theme.palette.secondary.main }}
-              rel="noreferrer"
-            >
-              {t_i18n('OpenCTI ecosystem space')}
-            </a>
-            .
-          </>
-        }
-          style={{ marginBottom: theme.spacing(2) }}
-        />
         <ListLines
           sortBy={viewStorage.sortBy}
           orderAsc={viewStorage.orderAsc}
@@ -119,11 +108,25 @@ const Sync = () => {
           displayImport={false}
           secondaryAction={true}
           keyword={viewStorage.searchTerm}
-          createButton={
+          createButton={(
             <Security needs={[INGESTION_SETINGESTIONS]}>
-              <SyncCreation paginationOptions={paginationOptions} />
+              <>
+                <SyncImport paginationOptions={paginationOptions} />
+                {isXTMHubAccessible && isNotEmptyField(importFromHubUrl) && (
+                  <GradientButton
+                    size="small"
+                    sx={{ marginLeft: 1 }}
+                    href={importFromHubUrl}
+                    target="_blank"
+                    title={t_i18n('Import from Hub')}
+                  >
+                    {t_i18n('Import from Hub')}
+                  </GradientButton>
+                )}
+                <SyncCreation triggerButton paginationOptions={paginationOptions} />
+              </>
             </Security>
-          }
+          )}
         >
           <QueryRenderer
             query={SyncLinesQuery}

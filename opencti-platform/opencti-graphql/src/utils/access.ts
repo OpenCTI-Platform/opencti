@@ -1,31 +1,38 @@
-import * as R from 'ramda';
-import { v4 as uuidv4 } from 'uuid';
-import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import type { Context, Span, Tracer } from '@opentelemetry/api';
 import { context as telemetryContext, trace } from '@opentelemetry/api';
-import { OPENCTI_SYSTEM_UUID } from '../schema/general';
-import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
-import { getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
-import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
-import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
-import type { AuthContext, AuthUser, UserRole } from '../types/user';
-import type { BasicStoreCommon } from '../types/store';
-import type { StixObject } from '../types/stix-2-1-common';
-import { STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
-import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
-import { telemetry } from '../config/tracing';
-import type { BasicStoreSettings } from '../types/settings';
+import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
+import * as R from 'ramda';
+import { v4 as uuidv4 } from 'uuid';
 import { ACCOUNT_STATUS_ACTIVE, isFeatureEnabled } from '../config/conf';
-import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { FunctionalError, UnsupportedError } from '../config/errors';
-import { extractIdsFromStoreObject, isNotEmptyField, REDACTED_INFORMATION, RESTRICTED_INFORMATION } from '../database/utils';
-import { isStixObject } from '../schema/stixCoreObject';
-import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import type { UpdateEvent } from '../types/event';
+import { telemetry } from '../config/tracing';
+import { getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
+import { extractIdsFromStoreObject, isNotEmptyField, READ_INDEX_INTERNAL_RELATIONSHIPS, REDACTED_INFORMATION, RESTRICTED_INFORMATION } from '../database/utils';
+import { type Creator, type FilterGroup, FilterMode, FilterOperator, type Participant } from '../generated/graphql';
+import type { BasicStoreEntityDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-types';
+import { OPENCTI_SYSTEM_UUID } from '../schema/general';
+import { ENTITY_TYPE_GROUP, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
 import { RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
-import { type Creator, type FilterGroup, FilterMode, type Participant } from '../generated/graphql';
+import { schemaAttributesDefinition } from '../schema/schema-attributes';
+import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
+import { isStixObject } from '../schema/stixCoreObject';
+import { STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
+import type { UpdateEvent } from '../types/event';
+import { fullEntitiesList, fullRelationsList, pageEntitiesConnection } from '../database/middleware-loader';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
+import { isFilterGroupNotEmpty } from './filtering/filtering-utils';
+import type { BasicStoreSettings } from '../types/settings';
+import type { StixObject } from '../types/stix-2-1-common';
+import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
+import type { BasicConnection, BasicStoreCommon, BasicStoreEntity, BasicStoreRelation } from '../types/store';
+import type { AuthContext, AuthUser, UserRole } from '../types/user';
+import { ID_SUBFILTER, INSTANCE_REGARDING_OF, RELATION_INFERRED_SUBFILTER, RELATION_TYPE_SUBFILTER } from './filtering/filtering-constants';
 
 export const DEFAULT_INVALID_CONF_VALUE = 'ChangeMe';
+
+export const MEMBERS_ENTITY_TYPES = [ENTITY_TYPE_USER, ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_GROUP];
 
 export const BYPASS = 'BYPASS';
 export const KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE = 'KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE';
@@ -38,14 +45,20 @@ export const TAXIIAPI_SETCOLLECTIONS = 'TAXIIAPI_SETCOLLECTIONS';
 export const INGESTION_SETINGESTIONS = 'INGESTION_SETINGESTIONS';
 export const CSVMAPPERS = 'CSVMAPPERS';
 export const KNOWLEDGE = 'KNOWLEDGE';
+export const KNOWLEDGE_KNPARTICIPATE = 'KNOWLEDGE_KNPARTICIPATE';
 export const KNOWLEDGE_KNUPDATE = 'KNOWLEDGE_KNUPDATE';
 export const KNOWLEDGE_ORGANIZATION_RESTRICT = 'KNOWLEDGE_KNUPDATE_KNORGARESTRICT';
+export const KNOWLEDGE_KNUPDATE_KNDELETE = 'KNOWLEDGE_KNUPDATE_KNDELETE';
+export const KNOWLEDGE_KNUPDATE_KNMERGE = 'KNOWLEDGE_KNUPDATE_KNMERGE';
 export const KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS = 'KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS';
+export const KNOWLEDGE_KNUPLOAD = 'KNOWLEDGE_KNUPLOAD';
 export const KNOWLEDGE_KNASKIMPORT = 'KNOWLEDGE_KNASKIMPORT';
+export const KNOWLEDGE_KNENRICHMENT = 'KNOWLEDGE_KNENRICHMENT';
 export const KNOWLEDGE_KNDISSEMINATION = 'KNOWLEDGE_KNDISSEMINATION';
 export const VIRTUAL_ORGANIZATION_ADMIN = 'VIRTUAL_ORGANIZATION_ADMIN';
 export const SETTINGS_SETACCESSES = 'SETTINGS_SETACCESSES';
 export const SETTINGS_SECURITYACTIVITY = 'SETTINGS_SECURITYACTIVITY';
+export const SETTINGS_SETCUSTOMIZATION = 'SETTINGS_SETCUSTOMIZATION';
 export const SETTINGS_SETLABELS = 'SETTINGS_SETLABELS';
 export const PIRAPI = 'PIRAPI';
 export const AUTOMATION = 'AUTOMATION';
@@ -66,6 +79,13 @@ export const RESTRICTED_USER_UUID = '27d2b0af-4d1e-42ae-a50c-9691bf57f35d';
 const PIR_MANAGER_USER_UUID = '1e20b6e5-e0f7-46f2-bacb-c37e4f8707a2';
 const HUB_REGISTRATION_MANAGER_USER_UUID = 'e16d7175-17c7-4dae-bd3c-48c939f47dfb';
 
+export enum AccessOperation {
+  EDIT = 'edit',
+  DELETE = 'delete',
+  MANAGE_ACCESS = 'manage-access',
+  MANAGE_AUTHORITIES_ACCESS = 'manage-authorities-access',
+}
+
 export const MEMBER_ACCESS_ALL = 'ALL';
 export const MEMBER_ACCESS_CREATOR = 'CREATOR';
 export const MEMBER_ACCESS_RIGHT_ADMIN = 'admin';
@@ -78,9 +98,9 @@ if (isFeatureEnabled('ACCESS_RESTRICTION_CAN_USE')) {
 }
 
 type ObjectWithCreators = {
-  id: string,
-  entity_type: string,
-  creator_id?: string | string[] | undefined
+  id: string;
+  entity_type: string;
+  creator_id?: string | string[] | undefined;
 };
 
 const administratorRoleId = uuidv4();
@@ -88,7 +108,7 @@ export const ADMINISTRATOR_ROLE: UserRole = {
   id: administratorRoleId,
   entity_type: 'Role',
   internal_id: administratorRoleId,
-  name: ROLE_ADMINISTRATOR
+  name: ROLE_ADMINISTRATOR,
 };
 
 const defaultRoleId = uuidv4();
@@ -96,7 +116,7 @@ export const DEFAULT_ROLE: UserRole = {
   id: defaultRoleId,
   entity_type: 'Role',
   internal_id: defaultRoleId,
-  name: ROLE_DEFAULT
+  name: ROLE_DEFAULT,
 };
 
 export const SYSTEM_USER: AuthUser = {
@@ -490,7 +510,7 @@ export const HUB_REGISTRATION_MANAGER_USER: AuthUser = {
   restrict_delete: false,
 };
 
-export interface AuthorizedMember { id: string, access_right: string, groups_restriction_ids?: string[] | null }
+export interface AuthorizedMember { id: string; access_right: string; groups_restriction_ids?: string[] | null }
 
 class TracingContext {
   ctx: Context | undefined;
@@ -530,7 +550,7 @@ export const executionContext = (source: string, auth?: AuthUser, draftContext?:
     source,
     tracing,
     user: auth ?? undefined,
-    draft_context: draftContext ?? undefined
+    draft_context: draftContext ?? undefined,
   };
 };
 
@@ -545,7 +565,7 @@ export const INTERNAL_USERS = {
   [REDACTED_USER.id]: REDACTED_USER,
   [RESTRICTED_USER.id]: RESTRICTED_USER,
   [PIR_MANAGER_USER.id]: PIR_MANAGER_USER,
-  [HUB_REGISTRATION_MANAGER_USER.id]: HUB_REGISTRATION_MANAGER_USER
+  [HUB_REGISTRATION_MANAGER_USER.id]: HUB_REGISTRATION_MANAGER_USER,
 };
 
 export const INTERNAL_USERS_WITHOUT_REDACTED = {
@@ -557,15 +577,27 @@ export const INTERNAL_USERS_WITHOUT_REDACTED = {
   [EXPIRATION_MANAGER_USER.id]: EXPIRATION_MANAGER_USER,
   [DECAY_MANAGER_USER.id]: DECAY_MANAGER_USER,
   [PIR_MANAGER_USER.id]: PIR_MANAGER_USER,
-  [HUB_REGISTRATION_MANAGER_USER.id]: HUB_REGISTRATION_MANAGER_USER
+  [HUB_REGISTRATION_MANAGER_USER.id]: HUB_REGISTRATION_MANAGER_USER,
+};
+
+export const isInternalUser = (user: AuthUser): boolean => {
+  return INTERNAL_USERS[user.id] !== undefined;
 };
 
 export const isBypassUser = (user: AuthUser): boolean => {
   return R.find((s) => s.name === BYPASS, user.capabilities || []) !== undefined;
 };
 
+export const isServiceAccountUser = (user: AuthUser): boolean => {
+  return user.user_service_account === true;
+};
+
 export const isUserHasCapability = (user: AuthUser, capability: string): boolean => {
-  return isBypassUser(user) || (user.capabilities || []).some((s) => capability !== BYPASS && s.name.includes(capability));
+  const isInDraftContext = !!user.draft_context;
+  const isIncludedInCapabilities = (user.capabilities || []).some((s) => capability !== BYPASS && s.name.includes(capability));
+  const isIncludedInDraftCapabilities = (user.capabilitiesInDraft || []).some((s) => s.name.includes(capability));
+
+  return isBypassUser(user) || isIncludedInCapabilities || (isInDraftContext && isIncludedInDraftCapabilities);
 };
 
 export const isUserHasCapabilities = (user: AuthUser, capabilities: string[] = []) => {
@@ -574,6 +606,22 @@ export const isUserHasCapabilities = (user: AuthUser, capabilities: string[] = [
 
 export const isOnlyOrgaAdmin = (user: AuthUser) => {
   return !isUserHasCapability(user, SETTINGS_SET_ACCESSES) && isUserHasCapability(user, VIRTUAL_ORGANIZATION_ADMIN);
+};
+
+/**
+ * Construct a filter to restrict users visibility
+ * In case the user has not set_access capa and is organization administrator, don't check regardingOf filter rights
+ */
+export const buildUserOrganizationRestrictedFiltersOptions = (user: AuthUser, inputFilters?: FilterGroup) => {
+  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+    // If user is not a set access administrator, user can only see directly attached organization users
+    const organizationIds = user.administrated_organizations.map((organization) => organization.id);
+    const filters = buildRegardingOfDirectParticipateToFilters(organizationIds, inputFilters);
+    // dont check regardingOf filter id if user is admin of an orga, to avoid regardingOf filter error if the user has not access to his own organization
+    const noRegardingOfFilterIdsCheck = isOnlyOrgaAdmin(user) ? true : false;
+    return { filters, noRegardingOfFilterIdsCheck };
+  }
+  return { filters: inputFilters, noRegardingOfFilterIdsCheck: false };
 };
 
 // returns all user member access ids : his id, his organizations ids (and parent organizations), his groups ids
@@ -595,11 +643,11 @@ export const computeUserMemberAccessIds = (user: AuthUser) => {
 };
 
 // region entity access by user
-export const getExplicitUserAccessRight = (user: AuthUser, element: { restricted_members?: AuthorizedMember[], authorized_authorities?: string[] }) => {
+export const getExplicitUserAccessRight = (user: AuthUser, element: { restricted_members?: AuthorizedMember[]; authorized_authorities?: string[] }) => {
   const userMemberAccessIds = computeUserMemberAccessIds(user);
   const userGroupsIds = user.groups.map((group) => group.internal_id);
   const foundAccessMembers = (element.restricted_members ?? []).filter((u) => (u.id === MEMBER_ACCESS_ALL || userMemberAccessIds.includes(u.id))
-      && (!u.groups_restriction_ids || u.groups_restriction_ids.length === 0 || u.groups_restriction_ids.every((g) => userGroupsIds.includes(g))));
+    && (!u.groups_restriction_ids || u.groups_restriction_ids.length === 0 || u.groups_restriction_ids.every((g) => userGroupsIds.includes(g))));
   if (!foundAccessMembers.length) { // user has no access
     return null;
   }
@@ -615,7 +663,7 @@ export const getExplicitUserAccessRight = (user: AuthUser, element: { restricted
   return MEMBER_ACCESS_RIGHT_VIEW;
 };
 
-export const getUserAccessRight = (user: AuthUser, element: { restricted_members?: AuthorizedMember[], authorized_authorities?: string[] }) => {
+export const getUserAccessRight = (user: AuthUser, element: { restricted_members?: AuthorizedMember[]; authorized_authorities?: string[] }) => {
   // if user is bypass, user has admin access (needed for data management usage)
   if (isBypassUser(user)) {
     return MEMBER_ACCESS_RIGHT_ADMIN;
@@ -629,15 +677,20 @@ export const getUserAccessRight = (user: AuthUser, element: { restricted_members
   if ((element.authorized_authorities ?? []).some((c: string) => userMemberAccessIds.includes(c) || isUserHasCapability(user, c))) {
     return MEMBER_ACCESS_RIGHT_ADMIN;
   }
+
+  if (isServiceAccountUser(user)) {
+    return MEMBER_ACCESS_RIGHT_EDIT;
+  }
+
   return getExplicitUserAccessRight(user, element);
 };
 
-export const hasAuthorizedMemberAccess = (user: AuthUser, element: { restricted_members?: AuthorizedMember[], authorized_authorities?: string[] }) => {
+export const hasAuthorizedMemberAccess = (user: AuthUser, element: { restricted_members?: AuthorizedMember[]; authorized_authorities?: string[] }) => {
   const userAccessRight = getUserAccessRight(user, element);
   return !!userAccessRight;
 };
 
-export const isUserInAuthorizedMember = (user: AuthUser, element: { restricted_members?: AuthorizedMember[], authorized_authorities?: string[] }) => {
+export const isUserInAuthorizedMember = (user: AuthUser, element: { restricted_members?: AuthorizedMember[]; authorized_authorities?: string[] }) => {
   const userAccessRight = getExplicitUserAccessRight(user, element);
   return !!userAccessRight;
 };
@@ -702,7 +755,7 @@ export const checkUserFilterStoreElements = (
   user: AuthUser,
   element: BasicStoreCommon,
   authorizedMarkings: string[],
-  hasPlatformOrg: boolean
+  hasPlatformOrg: boolean,
 ) => {
   // 1. Check markings
   if (!isMarkingAllowed(element, authorizedMarkings)) {
@@ -822,22 +875,11 @@ export const isDirectAdministrator = (user: AuthUser, element: any) => {
   return elementAccessIds.some((a: string) => userMemberAccessIds.includes(a));
 };
 
-// ensure that user can access the element (operation: edit / delete / manage-access)
-export const validateUserAccessOperation = (user: AuthUser, element: any, operation: 'edit' | 'delete' | 'manage-access' | 'manage-authorities-access') => {
-  if (isInternalObject(element.entity_type) && isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
-    return true;
-  }
-  if (isStixObject(element.entity_type)
-    && operation === 'manage-access'
-    && !isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS)
-  ) {
-    return false;
-  }
-  if (operation === 'manage-authorities-access'
-    && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)
-  ) {
-    return false;
-  }
+const hasUserAccessToOperation = (
+  user: AuthUser,
+  element: { restricted_members?: AuthorizedMember[]; authorized_authorities?: string[] },
+  operation: AccessOperation,
+) => {
   const userAccessRight = getUserAccessRight(user, element);
   if (!userAccessRight) { // user has no access
     return false;
@@ -849,6 +891,37 @@ export const validateUserAccessOperation = (user: AuthUser, element: any, operat
     return userAccessRight === MEMBER_ACCESS_RIGHT_ADMIN;
   }
   return true;
+};
+
+// Ensure that user can access the element (operation: edit / delete / manage-access)
+export const validateUserAccessOperation = (user: AuthUser, element: any, operation: AccessOperation, draft?: BasicStoreEntityDraftWorkspace | null) => {
+  // 1. Check draft authorized members permissions
+  if (draft && !hasUserAccessToOperation(user, draft, operation)) {
+    return false;
+  }
+
+  // 2. Internal objects management
+  if (isInternalObject(element.entity_type) && isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+    return true;
+  }
+
+  // 3. Specific STIX object management restrictions
+  if (isStixObject(element.entity_type)
+    && operation === 'manage-access'
+    && !isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS)
+  ) {
+    return false;
+  }
+
+  // 4. General access management restrictions
+  if (operation === 'manage-authorities-access'
+    && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)
+  ) {
+    return false;
+  }
+
+  // 5. Check access to the element (entity, container, etc.)
+  return hasUserAccessToOperation(user, element, operation);
 };
 
 export const isValidMemberAccessRight = (accessRight: string) => {
@@ -900,56 +973,80 @@ export const isUserInPlatformOrganization = (user: AuthUser, settings: BasicStor
 
 type ParticipantWithOrgIds = Participant & Creator & {
   representative?: {
-    main: string,
-    secondary: string
-  }
+    main: string;
+    secondary: string;
+  };
   [RELATION_PARTICIPATE_TO]?: string[];
   user_service_account?: boolean;
 };
 
 export enum FilterMembersMode {
-  RESTRICT = 'restrict',
-  EXCLUDE = 'exclude'
+  RESTRICT = 'restrict', // remove restricted users
+  EXCLUDE = 'exclude', // replace restricted users by a user named 'RESTRICTED'
 }
-export const filterMembersWithUsersOrgs = async (
+
+/**
+ * Post-Filter a list of users by applying organization restriction on users visibility
+ */
+export const filterMembersUsersWithUsersOrgs = async (
   context: AuthContext,
   user: AuthUser,
   members: ParticipantWithOrgIds[],
   filterMode = FilterMembersMode.RESTRICT,
 ): Promise<ParticipantWithOrgIds[]> => {
-  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  const userInPlatformOrg = isUserInPlatformOrganization(user, settings);
-  if (!userInPlatformOrg) {
-    const userOrgIds = (user.organizations || []).map((org) => org.id);
-    const resultMembers = [];
-    for (let i = 0; i < members.length; i += 1) {
-      const member = members[i];
-      if (member.id === user.id || INTERNAL_USERS[member.id] || member.user_service_account) {
+  const userCanViewAllUsers = [SETTINGS_SET_ACCESSES, AUTOMATION_AUTMANAGE, SETTINGS_SETCUSTOMIZATION].some((capa) => isUserHasCapability(user, capa));
+  const platformSettings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+
+  // case 1. no orga restriction on user visibility
+  if (userCanViewAllUsers || !platformSettings.platform_organization || platformSettings.view_all_users) {
+    return members;
+  }
+
+  // case 2. apply orga restriction on users
+  // fetch organizations directly linked to the user
+  const userDirectOrganizations = await pageEntitiesConnection(
+    context,
+    SYSTEM_USER, // we need to fetch all the organizations directly linked to the user, even if the user has not the right to see them
+    [ENTITY_TYPE_IDENTITY_ORGANIZATION],
+    { filters: buildRegardingOfDirectParticipateToFilters([user.id]) },
+  );
+  const userDirectOrganizationsIds = userDirectOrganizations.edges.map((n) => n.node.id);
+
+  const resultMembers = [];
+  for (let i = 0; i < members.length; i += 1) {
+    const member = members[i];
+    if (member.id === user.id || INTERNAL_USERS[member.id] || member.user_service_account) {
+      resultMembers.push(member);
+    } else {
+      // fetch organizations directly linked to the member
+      const memberDirectOrganizations = await pageEntitiesConnection(
+        context,
+        SYSTEM_USER, // we use SYSTEM_USER here to be able to use the regardingOf filter with organization the current user has not necessarily access to
+        [ENTITY_TYPE_IDENTITY_ORGANIZATION],
+        { filters: buildRegardingOfDirectParticipateToFilters([member.id]) },
+      );
+      const memberOrgIds = memberDirectOrganizations.edges.map((n) => n.node.id) ?? [];
+      const noOrg = memberOrgIds.length === 0; // if user has no direct organization, he has no direct inferred organization either, so no organizations at all
+      const sameOrg = memberOrgIds.some((id) => userDirectOrganizationsIds.includes(id));
+      if (sameOrg || noOrg) {
         resultMembers.push(member);
       } else {
-        const memberOrgIds = member[RELATION_PARTICIPATE_TO] ?? [];
-        const sameOrg = memberOrgIds.some((id) => userOrgIds.includes(id));
-        if (sameOrg) {
-          resultMembers.push(member);
-        } else {
-          if (filterMode === FilterMembersMode.RESTRICT) {
-            const restrictedMember = {
-              ...member,
-              name: RESTRICTED_USER.name,
-              user_email: RESTRICTED_USER.user_email,
-              representative: {
-                main: RESTRICTED_USER.name,
-                secondary: RESTRICTED_USER.name
-              }
-            };
-            resultMembers.push(restrictedMember);
-          }
+        if (filterMode === FilterMembersMode.RESTRICT) {
+          const restrictedMember = {
+            ...member,
+            name: RESTRICTED_USER.name,
+            user_email: RESTRICTED_USER.user_email,
+            representative: {
+              main: RESTRICTED_USER.name,
+              secondary: RESTRICTED_USER.name,
+            },
+          };
+          resultMembers.push(restrictedMember);
         }
       }
     }
-    return resultMembers;
   }
-  return members;
+  return resultMembers;
 };
 
 interface ListArgs {
@@ -958,41 +1055,160 @@ interface ListArgs {
   [key: string]: any;
 }
 
-export const applyOrganizationRestriction = async (
+export const buildRegardingOfDirectParticipateToFilters = (ids: string[], filters?: FilterGroup) => {
+  return {
+    mode: FilterMode.And,
+    filters: [
+      {
+        key: [INSTANCE_REGARDING_OF],
+        operator: FilterOperator.Eq,
+        values: [
+          {
+            key: RELATION_TYPE_SUBFILTER,
+            values: [RELATION_PARTICIPATE_TO],
+          },
+          {
+            key: ID_SUBFILTER,
+            values: ids,
+          },
+          {
+            key: RELATION_INFERRED_SUBFILTER,
+            values: ['false'],
+          },
+        ],
+      },
+    ],
+    filterGroups: filters && isFilterGroupNotEmpty(filters) ? [filters] : [],
+  };
+};
+
+export const findMembersPaginatedWithOrgaRestriction = async (
   context: AuthContext,
   user: AuthUser,
-  args: ListArgs,
-) => {
-  const { filters: argsFilters } = args;
-  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  const userInPlatformOrg = isUserInPlatformOrganization(user, settings);
-
-  if (!userInPlatformOrg) {
-    const userOrgIds = (user.organizations || []).map((org) => org.id);
-    const membersFilters = {
-      key: ['participate-to'],
-      values: userOrgIds,
-      operator: 'eq',
-    };
-    const userTypeFilters = {
-      key: ['entity_type'],
-      values: [ENTITY_TYPE_USER],
-      operator: 'not_eq',
-    };
-    const userMembersFilter = {
-      mode: FilterMode.Or,
-      filters: [membersFilters, userTypeFilters],
-      filterGroups: [],
-    };
-    const filters = {
-      mode: FilterMode.And,
-      filters: [],
-      filterGroups: argsFilters ? [argsFilters, userMembersFilter] : [userMembersFilter],
-    };
-    return {
-      ...args,
-      filters,
-    };
-  }
-  return args;
+  args: ListArgs = {},
+): Promise<BasicConnection<BasicStoreEntity>> => {
+  return fetchMembersWithOrgaRestriction(context, user, args, true) as Promise<BasicConnection<BasicStoreEntity>>;
 };
+
+export const findAllMembersWithOrgaRestriction = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: ListArgs = {},
+): Promise<BasicStoreEntity[]> => {
+  return fetchMembersWithOrgaRestriction(context, user, args) as Promise<BasicStoreEntity[]>;
+};
+
+/**
+ * Fetch members (users, groups and organizations) by applying users visibility restrictions according to their organizations if needed
+ * Don't use this function directly !!
+ * Use a typed version of this function: findMembersPaginatedWithOrgaRestriction or findAllMembersWithOrgaRestriction
+ */
+const fetchMembersWithOrgaRestriction = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: ListArgs = {},
+  isResultConnection = false,
+) => {
+  const membersFetchFunction = isResultConnection ? pageEntitiesConnection : fullEntitiesList;
+  const { entityTypes = null, filters = undefined } = args;
+  if (entityTypes && entityTypes.some((t) => !MEMBERS_ENTITY_TYPES.includes(t))) {
+    throw FunctionalError('Members types can only be User, Organization and Group', { entityTypes });
+  }
+  const types = entityTypes || MEMBERS_ENTITY_TYPES;
+  if (types.includes(ENTITY_TYPE_USER)) { // case 1. add organization restriction for users if necessary
+    const userCanViewAllUsers = [SETTINGS_SET_ACCESSES, AUTOMATION_AUTMANAGE, SETTINGS_SETCUSTOMIZATION].some((capa) => isUserHasCapability(user, capa));
+    const platformSettings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+
+    // case 1.1. no orga restriction on user visibility
+    if (userCanViewAllUsers || !platformSettings.platform_organization || platformSettings.view_all_users) {
+      return membersFetchFunction(context, user, types, args);
+    }
+
+    // case 1.2. add orga restriction on user visibility
+    // fetch organizations directly linked to the user to construct the filter
+    const userDirectOrganizationRelations = await fullRelationsList<BasicStoreRelation>(
+      context,
+      SYSTEM_USER, // we need to fetch all the organizations directly linked to the user, even if the user has not the right to see them
+      [RELATION_PARTICIPATE_TO],
+      {
+        fromId: user.id,
+        indices: [READ_INDEX_INTERNAL_RELATIONSHIPS], // we only fetch direct (no inferred) internal relationships
+      },
+    );
+    const userDirectOrganizationsIds = userDirectOrganizationRelations.map((n) => n.toId);
+    // construct the filter for the users that are in the user direct organizations
+    const usersWithinUserOrgaFilters = userDirectOrganizationsIds.length > 0
+      ? buildRegardingOfDirectParticipateToFilters(userDirectOrganizationsIds).filters
+      : [];
+
+    // construct the filter on users
+    // the users that are visible:
+    // users in no organizations
+    // OR users with user_service_account=true
+    // OR users that directly participate in an organization the user also participates directly to
+    const usersFilterGroup = {
+      mode: FilterMode.And,
+      filters: [
+        { key: ['entity_type'], values: [ENTITY_TYPE_USER] },
+      ],
+      filterGroups: [{
+        mode: FilterMode.Or,
+        filters: [
+          { key: [RELATION_PARTICIPATE_TO], values: [], operator: FilterOperator.Nil },
+          { key: ['user_service_account'], values: ['true'] },
+          ...usersWithinUserOrgaFilters,
+        ],
+        filterGroups: [],
+      }],
+    };
+
+    // eventually add groups and organizations entity types
+    const typesWithoutUser = types.filter((t) => t !== ENTITY_TYPE_USER);
+    const membersFilterGroup = typesWithoutUser.length > 0
+      ? {
+          mode: FilterMode.Or,
+          filters: [
+            { key: ['entity_type'], values: typesWithoutUser },
+          ],
+          filterGroups: [usersFilterGroup],
+        }
+      : usersFilterGroup;
+
+    // eventually add input filters
+    const finalFilterGroup = filters
+      ? {
+          mode: FilterMode.And,
+          filters: [],
+          filterGroups: [membersFilterGroup, filters],
+        }
+      : membersFilterGroup;
+
+    // list the members
+    return membersFetchFunction(
+      context,
+      user,
+      types,
+      {
+        ...args,
+        filters: finalFilterGroup,
+        noRegardingOfFilterIdsCheck: true, // don't check regardingOf filter ids to avoid error if a user has not access to an orga id of the filter values
+      },
+    );
+  } else { // case 2. no users to fetch, so no special restriction on user visibility
+    return membersFetchFunction(context, user, types, args);
+  }
+};
+
+export const CAPABILITIES_IN_DRAFT_NAMES = [
+  KNOWLEDGE,
+  KNOWLEDGE_KNPARTICIPATE,
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+  KNOWLEDGE_KNUPDATE_KNMERGE,
+  KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE,
+  KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS,
+  KNOWLEDGE_KNUPLOAD,
+  KNOWLEDGE_KNASKIMPORT,
+  KNOWLEDGE_KNENRICHMENT,
+  SETTINGS_SETLABELS,
+];

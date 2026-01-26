@@ -69,7 +69,7 @@ const XtmHubSettingsComponent = () => {
       <Paper
         classes={{ root: classes.paper }}
         variant="outlined"
-        className='paper-for-grid'
+        className="paper-for-grid"
       >
         <Typography variant="h6">
           {t_i18n('Experiment valuable threat management resources in the XTM Hub')}

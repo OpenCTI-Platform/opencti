@@ -1,5 +1,3 @@
-# coding: utf-8
-
 import base64
 import datetime
 import json
@@ -16,6 +14,7 @@ import pytz
 from cachetools import LRUCache
 from opentelemetry import metrics
 from requests import RequestException, Timeout
+from typing_extensions import deprecated
 
 from pycti.entities.opencti_identity import Identity
 from pycti.utils.constants import (
@@ -38,6 +37,10 @@ from pycti.utils.opencti_stix2_utils import (
 datefinder.ValueError = ValueError, OverflowError
 utc = pytz.UTC
 
+# For Python 3.11+, datetime.UTC is preferred over datetime.timezone.utc
+# Fallback to datetime.timezone.utc for older Python versions
+UTC = getattr(datetime, "UTC", datetime.timezone.utc)
+
 # Spec version
 SPEC_VERSION = "2.1"
 ERROR_TYPE_LOCK = "LOCK_ERROR"
@@ -46,10 +49,14 @@ ERROR_TYPE_BAD_GATEWAY = "Bad Gateway"
 ERROR_TYPE_DRAFT_LOCK = "DRAFT_LOCKED"
 ERROR_TYPE_TIMEOUT = "Request timed out"
 
-# Extensions
-STIX_EXT_OCTI = "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
-STIX_EXT_OCTI_SCO = "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
-STIX_EXT_MITRE = "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b"
+#: STIX Extension ID for OpenCTI custom objects and properties
+STIX_EXT_OCTI: str = "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
+
+#: STIX Extension ID for OpenCTI custom Cyber Observables (SCO)
+STIX_EXT_OCTI_SCO: str = "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
+
+#: STIX Extension ID for MITRE ATT&CK framework objects
+STIX_EXT_MITRE: str = "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b"
 PROCESSING_COUNT: int = 4
 MAX_PROCESSING_COUNT: int = 100
 
@@ -85,24 +92,47 @@ bundles_success_counter = meter.create_counter(
 
 
 class OpenCTIStix2:
-    """Python API for Stix2 in OpenCTI
+    """Python API for Stix2 in OpenCTI.
 
-    :param opencti: OpenCTI instance
+    Handles conversion between STIX2 format and OpenCTI internal format,
+    including import/export operations and bundle processing.
+
+    :param opencti: OpenCTI API client instance
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
+        """Initialize the OpenCTIStix2 helper.
+
+        :param opencti: OpenCTI API client instance
+        :type opencti: OpenCTIApiClient
+        """
         self.opencti = opencti
         self.stix2_update = OpenCTIStix2Update(opencti)
         self.mapping_cache = LRUCache(maxsize=50000)
         self.mapping_cache_permanent = {}
 
     def get_in_cache(self, data_id):
+        """Get an item from the cache.
+
+        :param data_id: ID of the data to retrieve
+        :type data_id: str
+        :return: Cached data or None if not found
+        :rtype: dict or None
+        """
         api_draft_id = self.opencti.get_draft_id()
         if data_id + api_draft_id in self.mapping_cache:
             return self.mapping_cache[data_id + api_draft_id]
         return None
 
     def set_in_cache(self, data_id, data):
+        """Store an item in the cache.
+
+        :param data_id: ID of the data to store
+        :type data_id: str
+        :param data: Data to cache
+        :type data: dict
+        """
         api_draft_id = self.opencti.get_draft_id()
         self.mapping_cache[data_id + api_draft_id] = data
 
@@ -119,11 +149,11 @@ class OpenCTIStix2:
         )
 
     def convert_markdown(self, text: str) -> str:
-        """converts input text to markdown style code annotation
+        """Convert input text to markdown style code annotation.
 
-        :param text: input text
+        :param text: Input text to convert
         :type text: str
-        :return: sanitized text with markdown style code annotation
+        :return: Sanitized text with markdown style code annotation
         :rtype: str
         """
         if text is not None:
@@ -132,19 +162,12 @@ class OpenCTIStix2:
             return None
 
     def format_date(self, date: Any = None) -> str:
-        """Format a date to ISO 8601 string format.
+        """Convert multiple input date formats to OpenCTI style dates.
 
-        :param date: Date to format (various formats supported)
+        :param date: Input date (datetime, date, str or None)
         :type date: Any
         :return: ISO 8601 formatted date string
         :rtype: str
-        """
-        """converts multiple input date formats to OpenCTI style dates
-
-        :param date: input date
-        :type date: Any [datetime, date, str or none]
-        :return: OpenCTI style date
-        :rtype: string
         """
         if isinstance(date, datetime.datetime):
             date_value = date
@@ -156,22 +179,22 @@ class OpenCTIStix2:
             except (dateutil.parser.ParserError, TypeError, OverflowError) as e:
                 raise ValueError(f"{e}: {date} does not contain a valid date string")
         else:
-            date_value = datetime.datetime.utcnow()
+            date_value = datetime.datetime.now(tz=UTC)
 
         if not date_value.tzinfo:
             self.opencti.app_logger.info("No timezone found. Setting to UTC")
-            date_value = date_value.replace(tzinfo=datetime.timezone.utc)
+            date_value = date_value.replace(tzinfo=UTC)
 
         return date_value.isoformat(timespec="milliseconds").replace("+00:00", "Z")
 
     def filter_objects(self, uuids: List, objects: List) -> List:
-        """filters objects based on UUIDs
+        """Filter objects based on UUIDs.
 
-        :param uuids: list of UUIDs
+        :param uuids: List of UUIDs to filter by
         :type uuids: list
-        :param objects: list of objects to filter
+        :param objects: List of objects to filter
         :type objects: list
-        :return: list of filtered objects
+        :return: List of filtered objects not in the uuids list
         :rtype: list
         """
 
@@ -183,12 +206,12 @@ class OpenCTIStix2:
         return result
 
     def pick_aliases(self, stix_object: Dict) -> Optional[List]:
-        """check stix2 object for multiple aliases and return a list
+        """Check STIX2 object for multiple aliases and return a list.
 
-        :param stix_object: valid stix2 object
-        :type stix_object:
-        :return: list of aliases
-        :rtype: list
+        :param stix_object: Valid STIX2 object
+        :type stix_object: Dict
+        :return: List of aliases or None if no aliases found
+        :rtype: list or None
         """
 
         # Add aliases
@@ -208,19 +231,19 @@ class OpenCTIStix2:
         update: bool = False,
         types: List = None,
     ) -> Optional[Tuple[list, list]]:
-        """import a stix2 bundle from a file
+        """Import a STIX2 bundle from a file.
 
-        :param file_path: valid path to the file
+        :param file_path: Valid path to the file
         :type file_path: str
-        :param update: whether to updated data in the database, defaults to False
+        :param update: Whether to update data in the database, defaults to False
         :type update: bool, optional
-        :param types: list of stix2 types, defaults to None
+        :param types: List of STIX2 types to filter, defaults to None
         :type types: list, optional
-        :return: list of imported stix2 objects
-        :rtype: List
+        :return: Tuple of (imported objects, failed objects) or None if file not found
+        :rtype: Tuple[list, list] or None
         """
         if not os.path.isfile(file_path):
-            self.opencti.app_logger.error("The bundle file does not exists")
+            self.opencti.app_logger.error("The bundle file does not exist")
             return None
         with open(os.path.join(file_path), encoding="utf-8") as file:
             data = json.load(file)
@@ -234,24 +257,32 @@ class OpenCTIStix2:
         work_id: str = None,
         objects_max_refs: int = 0,
     ) -> Tuple[list, list]:
-        """import a stix2 bundle from JSON data
+        """Import a STIX2 bundle from JSON data.
 
-        :param json_data: JSON data
-        :type json_data:
-        :param update: whether to updated data in the database, defaults to False
+        :param json_data: JSON data as string or bytes
+        :type json_data: str or bytes
+        :param update: Whether to update data in the database, defaults to False
         :type update: bool, optional
-        :param types: list of stix2 types, defaults to None
+        :param types: List of STIX2 types to filter, defaults to None
         :type types: list, optional
-        :param work_id work_id: str, optional
-        :param objects_max_refs: max deps amount of objects, reject object import if larger than configured amount
+        :param work_id: Work ID for tracking import progress
+        :type work_id: str, optional
+        :param objects_max_refs: Maximum object references; rejects import if exceeded
         :type objects_max_refs: int, optional
-        :return: list of imported stix2 objects and a list of stix2 objects with too many deps
-        :rtype: Tuple[List,List]
+        :return: Tuple of (imported objects, objects with too many dependencies)
+        :rtype: Tuple[list, list]
         """
         data = json.loads(json_data)
         return self.import_bundle(data, update, types, work_id, objects_max_refs)
 
     def resolve_author(self, title: str) -> Optional[Identity]:
+        """Resolve an author identity from a title string.
+
+        :param title: Title to search for known author names
+        :type title: str
+        :return: Identity object if author found, None otherwise
+        :rtype: Identity or None
+        """
         if "fireeye" in title.lower() or "mandiant" in title.lower():
             return self.get_author("FireEye")
         if "eset" in title.lower():
@@ -293,6 +324,13 @@ class OpenCTIStix2:
         return None
 
     def get_author(self, name: str) -> Identity:
+        """Get or create an author identity by name.
+
+        :param name: Name of the author organization
+        :type name: str
+        :return: Identity object for the author
+        :rtype: Identity
+        """
         name_in_cache = self.get_in_cache(name)
         if name_in_cache is not None:
             return name_in_cache
@@ -308,13 +346,13 @@ class OpenCTIStix2:
     def extract_embedded_relationships(
         self, stix_object: Dict, types: List = None
     ) -> Dict:
-        """extracts embedded relationship objects from a stix2 entity
+        """Extract embedded relationship objects from a STIX2 entity.
 
-        :param stix_object: valid stix2 object
-        :type stix_object:
-        :param types: list of stix2 types, defaults to None
+        :param stix_object: Valid STIX2 object
+        :type stix_object: Dict
+        :param types: List of STIX2 types to filter, defaults to None
         :type types: list, optional
-        :return: embedded relationships as dict
+        :return: Dictionary containing embedded relationships and references
         :rtype: dict
         """
 
@@ -589,6 +627,51 @@ class OpenCTIStix2:
                     if generated_ref_id is None:
                         continue
                     else:
+                        # Collect files for external reference
+                        ext_ref_files = []
+                        if "x_opencti_files" in external_reference:
+                            ext_ref_files.extend(external_reference["x_opencti_files"])
+                        if (
+                            self.opencti.get_attribute_in_extension(
+                                "files", external_reference
+                            )
+                            is not None
+                        ):
+                            ext_ref_files.extend(
+                                self.opencti.get_attribute_in_extension(
+                                    "files", external_reference
+                                )
+                            )
+
+                        # Prepare all files for upload during creation
+                        files_to_upload = []
+                        files_markings = []
+                        for file_obj in ext_ref_files:
+                            data = None
+                            if "data" in file_obj:
+                                data = base64.b64decode(file_obj["data"])
+                            elif "uri" in file_obj:
+                                file_url = self.opencti.api_url.replace(
+                                    "/graphql", file_obj["uri"]
+                                )
+                                data = self.opencti.fetch_opencti_file(
+                                    fetch_uri=file_url, binary=True, serialize=False
+                                )
+                            if data is not None:
+                                files_to_upload.append(
+                                    self.opencti.file(
+                                        file_obj["name"],
+                                        data,
+                                        file_obj.get(
+                                            "mime_type", "application/octet-stream"
+                                        ),
+                                    )
+                                )
+                                files_markings.append(
+                                    file_obj.get("object_marking_refs", None)
+                                )
+
+                        # Create external reference with all files attached
                         external_reference_id = self.opencti.external_reference.create(
                             source_name=source_name,
                             url=url,
@@ -598,42 +681,10 @@ class OpenCTIStix2:
                                 if "description" in external_reference
                                 else None
                             ),
+                            files=files_to_upload if files_to_upload else None,
+                            filesMarkings=files_markings if files_markings else None,
                         )["id"]
-                    if "x_opencti_files" in external_reference:
-                        for file in external_reference["x_opencti_files"]:
-                            if "data" in file:
-                                self.opencti.external_reference.add_file(
-                                    id=external_reference_id,
-                                    file_name=file["name"],
-                                    version=file.get("version", None),
-                                    data=base64.b64decode(file["data"]),
-                                    fileMarkings=file.get("object_marking_refs", None),
-                                    mime_type=file["mime_type"],
-                                    no_trigger_import=file.get(
-                                        "no_trigger_import", False
-                                    ),
-                                )
-                    if (
-                        self.opencti.get_attribute_in_extension(
-                            "files", external_reference
-                        )
-                        is not None
-                    ):
-                        for file in self.opencti.get_attribute_in_extension(
-                            "files", external_reference
-                        ):
-                            if "data" in file:
-                                self.opencti.external_reference.add_file(
-                                    id=external_reference_id,
-                                    file_name=file["name"],
-                                    version=file.get("version", None),
-                                    data=base64.b64decode(file["data"]),
-                                    fileMarkings=file.get("object_marking_refs", None),
-                                    mime_type=file["mime_type"],
-                                    no_trigger_import=file.get(
-                                        "no_trigger_import", False
-                                    ),
-                                )
+
                     external_references_ids.append(external_reference_id)
                     if stix_object["type"] in [
                         "threat-actor",
@@ -658,7 +709,7 @@ class OpenCTIStix2:
                                     source_name,
                                     base_date=datetime.datetime.fromtimestamp(0),
                                 )
-                        except:
+                        except (TypeError, OverflowError):
                             matches = None
                         published = None
                         yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
@@ -672,7 +723,7 @@ class OpenCTIStix2:
                                     ):
                                         published = match.strftime("%Y-%m-%dT%H:%M:%SZ")
                                         break
-                            except:
+                            except (TypeError, OverflowError):
                                 pass
                         if published is None:
                             published = default_date.strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -741,7 +792,7 @@ class OpenCTIStix2:
                             update=True,
                         )
                         reports[external_reference_id] = report
-                except:
+                except Exception:
                     self.opencti.app_logger.warning(
                         "Cannot generate external reference"
                     )
@@ -767,6 +818,47 @@ class OpenCTIStix2:
                 if generated_ref_id is None:
                     continue
                 else:
+                    # Prepare all files for direct upload during creation
+                    files_to_upload = []
+                    files_markings = []
+                    all_files = []
+                    if "x_opencti_files" in external_reference:
+                        all_files = external_reference["x_opencti_files"]
+                    elif (
+                        self.opencti.get_attribute_in_extension(
+                            "files", external_reference
+                        )
+                        is not None
+                    ):
+                        all_files = self.opencti.get_attribute_in_extension(
+                            "files", external_reference
+                        )
+
+                    for file_obj in all_files:
+                        data = None
+                        if "data" in file_obj:
+                            data = base64.b64decode(file_obj["data"])
+                        elif "uri" in file_obj:
+                            file_url = self.opencti.api_url.replace(
+                                "/graphql", file_obj["uri"]
+                            )
+                            data = self.opencti.fetch_opencti_file(
+                                fetch_uri=file_url, binary=True, serialize=False
+                            )
+                        if data is not None:
+                            files_to_upload.append(
+                                self.opencti.file(
+                                    file_obj["name"],
+                                    data,
+                                    file_obj.get(
+                                        "mime_type", "application/octet-stream"
+                                    ),
+                                )
+                            )
+                            files_markings.append(
+                                file_obj.get("object_marking_refs", None)
+                            )
+
                     external_reference_id = self.opencti.external_reference.create(
                         source_name=source_name,
                         url=url,
@@ -776,38 +868,10 @@ class OpenCTIStix2:
                             if "description" in external_reference
                             else None
                         ),
+                        files=files_to_upload if files_to_upload else None,
+                        filesMarkings=files_markings if files_markings else None,
                     )["id"]
-                if "x_opencti_files" in external_reference:
-                    for file in external_reference["x_opencti_files"]:
-                        if "data" in file:
-                            self.opencti.external_reference.add_file(
-                                id=external_reference_id,
-                                file_name=file["name"],
-                                version=file.get("version", None),
-                                data=base64.b64decode(file["data"]),
-                                fileMarkings=file.get("object_marking_refs", None),
-                                mime_type=file["mime_type"],
-                                no_trigger_import=file.get("no_trigger_import", False),
-                                embedded=file.get("embedded", False),
-                            )
-                if (
-                    self.opencti.get_attribute_in_extension("files", external_reference)
-                    is not None
-                ):
-                    for file in self.opencti.get_attribute_in_extension(
-                        "files", external_reference
-                    ):
-                        if "data" in file:
-                            self.opencti.external_reference.add_file(
-                                id=external_reference_id,
-                                file_name=file["name"],
-                                version=file.get("version", None),
-                                data=base64.b64decode(file["data"]),
-                                fileMarkings=file.get("object_marking_refs", None),
-                                mime_type=file["mime_type"],
-                                no_trigger_import=file.get("no_trigger_import", False),
-                                embedded=file.get("embedded", False),
-                            )
+
                 external_references_ids.append(external_reference_id)
         # Granted refs
         granted_refs_ids = []
@@ -948,6 +1012,7 @@ class OpenCTIStix2:
             "tool": self.opencti.tool,
             "vulnerability": self.opencti.vulnerability,
             "incident": self.opencti.incident,
+            "x-opencti-incident": self.opencti.incident,
             "marking-definition": self.opencti.marking_definition,
             "case-rfi": self.opencti.case_rfi,
             "x-opencti-case-rfi": self.opencti.case_rfi,
@@ -1016,16 +1081,16 @@ class OpenCTIStix2:
     def import_object(
         self, stix_object: Dict, update: bool = False, types: List = None
     ) -> Optional[List]:
-        """import a stix2 object
+        """Import a STIX2 object into OpenCTI.
 
-        :param stix_object: valid stix2 object
-        :type stix_object:
-        :param update: whether to updated data in the database, defaults to False
+        :param stix_object: Valid STIX2 object to import
+        :type stix_object: Dict
+        :param update: Whether to update data in the database, defaults to False
         :type update: bool, optional
-        :param types: list of stix2 types, defaults to None
+        :param types: List of STIX2 types to filter, defaults to None
         :type types: list, optional
-        :return: list of imported stix2 objects
-        :rtype: list
+        :return: List of imported STIX2 objects or None on failure
+        :rtype: list or None
         """
 
         self.opencti.app_logger.info(
@@ -1045,6 +1110,37 @@ class OpenCTIStix2:
         reports = embedded_relationships["reports"]
         sample_refs_ids = embedded_relationships["sample_refs"]
 
+        # Extract files
+        x_opencti_files = []
+        if "x_opencti_files" in stix_object:
+            x_opencti_files.extend(stix_object["x_opencti_files"])
+        if self.opencti.get_attribute_in_extension("files", stix_object) is not None:
+            x_opencti_files.extend(
+                self.opencti.get_attribute_in_extension("files", stix_object)
+            )
+
+        # Prepare all files for direct upload during creation
+        files_to_upload = []
+        files_markings = []
+        for file_obj in x_opencti_files:
+            data = None
+            if "data" in file_obj:
+                data = base64.b64decode(file_obj["data"])
+            elif "uri" in file_obj:
+                url = self.opencti.api_url.replace("/graphql", file_obj["uri"])
+                data = self.opencti.fetch_opencti_file(
+                    fetch_uri=url, binary=True, serialize=False
+                )
+            if data is not None:
+                files_to_upload.append(
+                    self.opencti.file(
+                        file_obj["name"],
+                        data,
+                        file_obj.get("mime_type", "application/octet-stream"),
+                    )
+                )
+                files_markings.append(file_obj.get("object_marking_refs", None))
+
         # Extra
         extras = {
             "created_by_id": created_by_id,
@@ -1056,6 +1152,8 @@ class OpenCTIStix2:
             "external_references_ids": external_references_ids,
             "reports": reports,
             "sample_ids": sample_refs_ids,
+            "files": files_to_upload if files_to_upload else None,
+            "filesMarkings": files_markings if files_markings else None,
         }
 
         stix_helper = self.get_stix_helper().get(stix_object["type"])
@@ -1107,43 +1205,20 @@ class OpenCTIStix2:
                         id=reports[external_reference_id]["id"],
                         stixObjectOrStixRelationshipId=stix_object_result["id"],
                     )
-            # Add files
-            if "x_opencti_files" in stix_object:
-                for file in stix_object["x_opencti_files"]:
-                    if "data" in file:
-                        self.opencti.stix_domain_object.add_file(
-                            id=stix_object_result["id"],
-                            file_name=file["name"],
-                            version=file.get("version", None),
-                            data=base64.b64decode(file["data"]),
-                            fileMarkings=file.get("object_marking_refs", None),
-                            mime_type=file["mime_type"],
-                            no_trigger_import=file.get("no_trigger_import", False),
-                            embedded=file.get("embedded", False),
-                        )
-            if (
-                self.opencti.get_attribute_in_extension("files", stix_object)
-                is not None
-            ):
-                for file in self.opencti.get_attribute_in_extension(
-                    "files", stix_object
-                ):
-                    if "data" in file:
-                        self.opencti.stix_domain_object.add_file(
-                            id=stix_object_result["id"],
-                            file_name=file["name"],
-                            version=file.get("version", None),
-                            data=base64.b64decode(file["data"]),
-                            fileMarkings=file.get("object_marking_refs", None),
-                            mime_type=file["mime_type"],
-                            no_trigger_import=file.get("no_trigger_import", False),
-                            embedded=file.get("embedded", False),
-                        )
         return stix_object_results
 
     def import_observable(
         self, stix_object: Dict, update: bool = False, types: List = None
     ) -> None:
+        """Import a STIX cyber observable into OpenCTI.
+
+        :param stix_object: Valid STIX2 cyber observable object
+        :type stix_object: Dict
+        :param update: Whether to update existing data in the database, defaults to False
+        :type update: bool, optional
+        :param types: List of STIX2 types to filter, defaults to None
+        :type types: list, optional
+        """
         # Extract
         embedded_relationships = self.extract_embedded_relationships(stix_object, types)
         created_by_id = embedded_relationships["created_by"]
@@ -1157,6 +1232,37 @@ class OpenCTIStix2:
         reports = embedded_relationships["reports"]
         sample_refs_ids = embedded_relationships["sample_refs"]
 
+        # Extract files
+        x_opencti_files = []
+        if "x_opencti_files" in stix_object:
+            x_opencti_files.extend(stix_object["x_opencti_files"])
+        if self.opencti.get_attribute_in_extension("files", stix_object) is not None:
+            x_opencti_files.extend(
+                self.opencti.get_attribute_in_extension("files", stix_object)
+            )
+
+        # Prepare all files for direct upload during creation
+        files_to_upload = []
+        files_markings = []
+        for file_obj in x_opencti_files:
+            data = None
+            if "data" in file_obj:
+                data = base64.b64decode(file_obj["data"])
+            elif "uri" in file_obj:
+                url = self.opencti.api_url.replace("/graphql", file_obj["uri"])
+                data = self.opencti.fetch_opencti_file(
+                    fetch_uri=url, binary=True, serialize=False
+                )
+            if data is not None:
+                files_to_upload.append(
+                    self.opencti.file(
+                        file_obj["name"],
+                        data,
+                        file_obj.get("mime_type", "application/octet-stream"),
+                    )
+                )
+                files_markings.append(file_obj.get("object_marking_refs", None))
+
         # Extra
         extras = {
             "created_by_id": created_by_id,
@@ -1169,7 +1275,12 @@ class OpenCTIStix2:
             "external_references_ids": external_references_ids,
             "reports": reports,
             "sample_ids": sample_refs_ids,
+            "files": files_to_upload if files_to_upload else None,
+            "filesMarkings": files_markings if files_markings else None,
         }
+        upsert_operations = self.opencti.get_attribute_in_extension(
+            "opencti_upsert_operations", stix_object
+        )
         if stix_object["type"] == "simple-observable":
             stix_observable_result = self.opencti.stix_cyber_observable.create(
                 simple_observable_id=stix_object["id"],
@@ -1212,6 +1323,9 @@ class OpenCTIStix2:
                     extras["granted_refs_ids"] if "granted_refs_ids" in extras else []
                 ),
                 update=update,
+                files=extras.get("files"),
+                filesMarkings=extras.get("filesMarkings"),
+                upsert_operations=upsert_operations,
             )
         else:
             stix_observable_result = self.opencti.stix_cyber_observable.create(
@@ -1236,40 +1350,11 @@ class OpenCTIStix2:
                     extras["granted_refs_ids"] if "granted_refs_ids" in extras else []
                 ),
                 update=update,
+                files=extras.get("files"),
+                filesMarkings=extras.get("filesMarkings"),
+                upsert_operations=upsert_operations,
             )
         if stix_observable_result is not None:
-            # Add files
-            if "x_opencti_files" in stix_object:
-                for file in stix_object["x_opencti_files"]:
-                    if "data" in file:
-                        self.opencti.stix_cyber_observable.add_file(
-                            id=stix_observable_result["id"],
-                            file_name=file["name"],
-                            version=file.get("version", None),
-                            data=base64.b64decode(file["data"]),
-                            fileMarkings=file.get("object_marking_refs", None),
-                            mime_type=file["mime_type"],
-                            no_trigger_import=file.get("no_trigger_import", False),
-                            embedded=file.get("embedded", False),
-                        )
-            if (
-                self.opencti.get_attribute_in_extension("files", stix_object)
-                is not None
-            ):
-                for file in self.opencti.get_attribute_in_extension(
-                    "files", stix_object
-                ):
-                    if "data" in file:
-                        self.opencti.stix_cyber_observable.add_file(
-                            id=stix_observable_result["id"],
-                            file_name=file["name"],
-                            version=file.get("version", None),
-                            data=base64.b64decode(file["data"]),
-                            fileMarkings=file.get("object_marking_refs", None),
-                            mime_type=file["mime_type"],
-                            no_trigger_import=file.get("no_trigger_import", False),
-                            embedded=file.get("embedded", False),
-                        )
             if "id" in stix_object:
                 self.set_in_cache(
                     stix_object["id"],
@@ -1330,6 +1415,15 @@ class OpenCTIStix2:
     def import_relationship(
         self, stix_relation: Dict, update: bool = False, types: List = None
     ) -> None:
+        """Import a STIX core relationship into OpenCTI.
+
+        :param stix_relation: Valid STIX2 relationship object
+        :type stix_relation: Dict
+        :param update: Whether to update existing data in the database, defaults to False
+        :type update: bool, optional
+        :param types: List of STIX2 types to filter, defaults to None
+        :type types: list, optional
+        """
         # Extract
         embedded_relationships = self.extract_embedded_relationships(
             stix_relation, types
@@ -1376,7 +1470,7 @@ class OpenCTIStix2:
                             external_reference["source_name"],
                             base_date=datetime.datetime.fromtimestamp(0),
                         )
-                except:
+                except (TypeError, OverflowError):
                     matches = None
                 date = None
                 yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
@@ -1389,7 +1483,7 @@ class OpenCTIStix2:
                             ):
                                 date = match.strftime("%Y-%m-%dT%H:%M:%SZ")
                                 break
-                    except:
+                    except (TypeError, OverflowError):
                         date = None
 
         stix_relation_result = self.opencti.stix_core_relationship.import_from_stix2(
@@ -1430,6 +1524,19 @@ class OpenCTIStix2:
         update: bool = False,
         types: List = None,
     ) -> None:
+        """Import a STIX sighting relationship into OpenCTI.
+
+        :param stix_sighting: Valid STIX2 sighting object
+        :type stix_sighting: Dict
+        :param from_id: ID of the source entity (sighting_of_ref)
+        :type from_id: str
+        :param to_id: ID of the target entity (where_sighted_ref)
+        :type to_id: str
+        :param update: Whether to update existing data in the database, defaults to False
+        :type update: bool, optional
+        :param types: List of STIX2 types to filter, defaults to None
+        :type types: list, optional
+        """
         # Extract
         embedded_relationships = self.extract_embedded_relationships(
             stix_sighting, types
@@ -1460,6 +1567,9 @@ class OpenCTIStix2:
         }
 
         # Create the sighting
+        upsert_operations = self.opencti.get_attribute_in_extension(
+            "opencti_upsert_operations", stix_sighting
+        )
 
         if (
             "x_opencti_negative" not in stix_sighting
@@ -1530,6 +1640,7 @@ class OpenCTIStix2:
                 if "x_opencti_ignore_dates" in stix_sighting
                 else None
             ),
+            upsert_operations=upsert_operations,
         )
         if stix_sighting_result is not None:
             self.set_in_cache(
@@ -1546,6 +1657,15 @@ class OpenCTIStix2:
 
     # region export
     def generate_export(self, entity: Dict, no_custom_attributes: bool = False) -> Dict:
+        """Generate a STIX2 export from an OpenCTI entity.
+
+        :param entity: OpenCTI entity dictionary to export
+        :type entity: Dict
+        :param no_custom_attributes: Whether to exclude custom x_opencti attributes, defaults to False
+        :type no_custom_attributes: bool, optional
+        :return: STIX2 formatted entity dictionary
+        :rtype: Dict
+        """
         # Handle model deviation
         original_entity_type = entity["entity_type"]
 
@@ -1711,10 +1831,7 @@ class OpenCTIStix2:
                 ):
                     external_reference["x_opencti_files"] = []
                     for file in entity_external_reference["importFiles"]:
-                        url = (
-                            self.opencti.api_url.replace("graphql", "storage/get/")
-                            + file["id"]
-                        )
+                        url = self.opencti.api_url.replace("/graphql", file["uri"])
                         data = self.opencti.fetch_opencti_file(
                             url, binary=True, serialize=True
                         )
@@ -1736,8 +1853,8 @@ class OpenCTIStix2:
         if "hashes" in entity:
             hashes = entity["hashes"]
             entity["hashes"] = {}
-            for hash in hashes:
-                entity["hashes"][hash["algorithm"]] = hash["hash"]
+            for hash_item in hashes:
+                entity["hashes"][hash_item["algorithm"]] = hash_item["hash"]
 
         # Final
         entity["x_opencti_id"] = entity["id"]
@@ -1757,8 +1874,17 @@ class OpenCTIStix2:
 
     @staticmethod
     def prepare_id_filters_export(
-        id: Union[str, List[str]], access_filter: Dict = None
+        entity_id: Union[str, List[str]], access_filter: Dict = None
     ) -> Dict:
+        """Prepare filter configuration for entity ID-based export queries.
+
+        :param entity_id: Single entity ID or list of entity IDs to filter
+        :type entity_id: Union[str, List[str]]
+        :param access_filter: Additional access filter to combine, defaults to None
+        :type access_filter: Dict, optional
+        :return: Filter configuration dictionary for API queries
+        :rtype: Dict
+        """
         if access_filter is not None:
             return {
                 "mode": "and",
@@ -1768,7 +1894,11 @@ class OpenCTIStix2:
                         "filters": [
                             {
                                 "key": "ids",
-                                "values": id if isinstance(id, list) else [id],
+                                "values": (
+                                    entity_id
+                                    if isinstance(entity_id, list)
+                                    else [entity_id]
+                                ),
                             }
                         ],
                         "filterGroups": [],
@@ -1785,7 +1915,9 @@ class OpenCTIStix2:
                     {
                         "key": "ids",
                         "mode": "or",
-                        "values": id if isinstance(id, list) else [id],
+                        "values": (
+                            entity_id if isinstance(entity_id, list) else [entity_id]
+                        ),
                     }
                 ],
             }
@@ -1797,9 +1929,21 @@ class OpenCTIStix2:
         access_filter: Dict = None,
         no_custom_attributes: bool = False,
     ) -> List:
+        """Prepare an entity for STIX2 export with related objects.
+
+        :param entity: Entity dictionary to prepare for export
+        :type entity: Dict
+        :param mode: Export mode - 'simple' for entity only, 'full' for entity with relations
+        :type mode: str
+        :param access_filter: Access filter for the export, defaults to None
+        :type access_filter: Dict, optional
+        :param no_custom_attributes: Whether to exclude custom attributes, defaults to False
+        :type no_custom_attributes: bool, optional
+        :return: List of STIX2 objects ready for export
+        :rtype: List
+        """
         result = []
         objects_to_get = []
-        relations_to_get = []
 
         # CreatedByRef
         if (
@@ -1986,7 +2130,7 @@ class OpenCTIStix2:
             del entity["attribute_count"]
             from_to_check = entity["from"]["id"]
             relationships_from_filter = self.prepare_id_filters_export(
-                id=from_to_check, access_filter=access_filter
+                entity_id=from_to_check, access_filter=access_filter
             )
             x = self.opencti.opencti_stix_object_or_stix_relationship.list(
                 filters=relationships_from_filter
@@ -2000,7 +2144,7 @@ class OpenCTIStix2:
 
             to_to_check = [entity["to"]["id"]]
             relationships_to_filter = self.prepare_id_filters_export(
-                id=to_to_check, access_filter=access_filter
+                entity_id=to_to_check, access_filter=access_filter
             )
             y = self.opencti.opencti_stix_object_or_stix_relationship.list(
                 filters=relationships_to_filter
@@ -2017,7 +2161,7 @@ class OpenCTIStix2:
         if "from" in entity:
             from_to_check = entity["from"]["id"]
             relationships_from_filter = self.prepare_id_filters_export(
-                id=from_to_check, access_filter=access_filter
+                entity_id=from_to_check, access_filter=access_filter
             )
             x = self.opencti.opencti_stix_object_or_stix_relationship.list(
                 filters=relationships_from_filter
@@ -2032,7 +2176,7 @@ class OpenCTIStix2:
         if "to" in entity:
             to_to_check = [entity["to"]["id"]]
             relationships_to_filter = self.prepare_id_filters_export(
-                id=to_to_check, access_filter=access_filter
+                entity_id=to_to_check, access_filter=access_filter
             )
             y = self.opencti.opencti_stix_object_or_stix_relationship.list(
                 filters=relationships_to_filter
@@ -2131,8 +2275,8 @@ class OpenCTIStix2:
             # Get extra refs
             for key in entity.keys():
                 if key.endswith("_ref"):
-                    type = entity[key].split("--")[0]
-                    if type in STIX_CYBER_OBSERVABLE_MAPPING:
+                    stix_type = entity[key].split("--")[0]
+                    if stix_type in STIX_CYBER_OBSERVABLE_MAPPING:
                         objects_to_get.append(
                             {
                                 "id": entity[key],
@@ -2150,8 +2294,8 @@ class OpenCTIStix2:
                         )
                 elif key.endswith("_refs"):
                     for value in entity[key]:
-                        type = value.split("--")[0]
-                        if type in STIX_CYBER_OBSERVABLE_MAPPING:
+                        stix_type = value.split("--")[0]
+                        if stix_type in STIX_CYBER_OBSERVABLE_MAPPING:
                             objects_to_get.append(
                                 {
                                     "id": value,
@@ -2239,25 +2383,6 @@ class OpenCTIStix2:
                     )
                     uuids = uuids + [x["id"] for x in entity_object_bundle]
                     result = result + entity_object_bundle
-            for (
-                relation_object
-            ) in relations_to_get:  # never appended after initialization
-
-                def find_relation_object_data(current_relation_object):
-                    return current_relation_object.id == relation_object["id"]
-
-                relation_object_data = self.prepare_export(
-                    entity=filter(
-                        find_relation_object_data,
-                        self.opencti.stix_core_relationship.list(filters=access_filter),
-                    )
-                )
-                relation_object_bundle = self.filter_objects(
-                    uuids, relation_object_data
-                )
-                uuids = uuids + [x["id"] for x in relation_object_bundle]
-                result = result + relation_object_bundle
-
             # Get extra reports
             """
             for uuid in uuids:
@@ -2294,21 +2419,21 @@ class OpenCTIStix2:
 
             # Refilter all the reports object refs
             final_result = []
-            for entity in result:
-                if entity["type"] in [
+            for result_entity in result:
+                if result_entity["type"] in [
                     "report",
                     "note",
                     "opinion",
                     "observed-data",
                     "grouping",
                 ]:
-                    if "object_refs" in entity:
-                        entity["object_refs"] = [
-                            k for k in entity["object_refs"] if k in uuids
+                    if "object_refs" in result_entity:
+                        result_entity["object_refs"] = [
+                            k for k in result_entity["object_refs"] if k in uuids
                         ]
-                    final_result.append(entity)
+                    final_result.append(result_entity)
                 else:
-                    final_result.append(entity)
+                    final_result.append(result_entity)
             return final_result
         else:
             return []
@@ -2322,6 +2447,23 @@ class OpenCTIStix2:
         no_custom_attributes: bool = False,
         only_entity: bool = False,
     ) -> Dict:
+        """Get a STIX2 bundle or single object from an entity ID.
+
+        :param entity_type: Type of the entity to export
+        :type entity_type: str
+        :param entity_id: ID of the entity to export
+        :type entity_id: str
+        :param mode: Export mode - 'simple' or 'full', defaults to 'simple'
+        :type mode: str
+        :param access_filter: Access filter for the export, defaults to None
+        :type access_filter: Dict, optional
+        :param no_custom_attributes: Whether to exclude custom attributes, defaults to False
+        :type no_custom_attributes: bool, optional
+        :param only_entity: If True, return only the entity object instead of a bundle
+        :type only_entity: bool, optional
+        :return: STIX2 bundle dictionary or single STIX2 object if only_entity is True
+        :rtype: Dict
+        """
         bundle = {
             "type": "bundle",
             "id": "bundle--" + str(uuid.uuid4()),
@@ -2350,7 +2492,7 @@ class OpenCTIStix2:
         return bundle
 
     # Please use get_stix_bundle_or_object_from_entity_id instead
-    @DeprecationWarning
+    @deprecated("Use get_stix_bundle_or_object_from_entity_id instead")
     def export_entity(
         self,
         entity_type: str,
@@ -2360,6 +2502,26 @@ class OpenCTIStix2:
         no_custom_attributes: bool = False,
         only_entity: bool = False,
     ) -> Dict:
+        """Export an entity as a STIX2 bundle.
+
+        .. deprecated::
+            Use :meth:`get_stix_bundle_or_object_from_entity_id` instead.
+
+        :param entity_type: Type of the entity to export
+        :type entity_type: str
+        :param entity_id: ID of the entity to export
+        :type entity_id: str
+        :param mode: Export mode - 'simple' or 'full', defaults to 'simple'
+        :type mode: str
+        :param access_filter: Access filter for the export, defaults to None
+        :type access_filter: Dict, optional
+        :param no_custom_attributes: Whether to exclude custom attributes, defaults to False
+        :type no_custom_attributes: bool, optional
+        :param only_entity: If True, return only the entity object instead of a bundle
+        :type only_entity: bool, optional
+        :return: STIX2 bundle dictionary or single STIX2 object
+        :rtype: Dict
+        """
         return self.get_stix_bundle_or_object_from_entity_id(
             entity_type=entity_type,
             entity_id=entity_id,
@@ -2378,7 +2540,26 @@ class OpenCTIStix2:
         orderMode: str = None,
         getAll: bool = True,
         withFiles: bool = False,
-    ) -> [Dict]:
+    ) -> List[Dict]:
+        """List entities for export based on type and filters.
+
+        :param entity_type: Type of entities to list
+        :type entity_type: str
+        :param search: Search parameters, defaults to None
+        :type search: Dict, optional
+        :param filters: Filter parameters, defaults to None
+        :type filters: Dict, optional
+        :param orderBy: Field to order results by, defaults to None
+        :type orderBy: str, optional
+        :param orderMode: Order direction ('asc' or 'desc'), defaults to None
+        :type orderMode: str, optional
+        :param getAll: Whether to get all results, defaults to True
+        :type getAll: bool, optional
+        :param withFiles: Whether to include files in the export, defaults to False
+        :type withFiles: bool, optional
+        :return: List of entity dictionaries
+        :rtype: List[Dict]
+        """
         if IdentityTypes.has_value(entity_type):
             entity_type = "Identity"
 
@@ -2460,6 +2641,25 @@ class OpenCTIStix2:
         mode: str = "simple",
         access_filter: Dict = None,
     ) -> Dict:
+        """Export a list of entities as a STIX2 bundle.
+
+        :param entity_type: Type of entities to export
+        :type entity_type: str
+        :param search: Search parameters, defaults to None
+        :type search: Dict, optional
+        :param filters: Filter parameters, defaults to None
+        :type filters: Dict, optional
+        :param order_by: Field to order results by, defaults to None
+        :type order_by: str, optional
+        :param order_mode: Order direction ('asc' or 'desc'), defaults to None
+        :type order_mode: str, optional
+        :param mode: Export mode - 'simple' or 'full', defaults to 'simple'
+        :type mode: str
+        :param access_filter: Access filter for the export, defaults to None
+        :type access_filter: Dict, optional
+        :return: STIX2 bundle containing all exported entities
+        :rtype: Dict
+        """
         bundle = {
             "type": "bundle",
             "id": "bundle--" + str(uuid.uuid4()),
@@ -2501,11 +2701,21 @@ class OpenCTIStix2:
 
     def export_selected(
         self,
-        entities_list: [dict],
+        entities_list: List[dict],
         mode: str = "simple",
         access_filter: Dict = None,
     ) -> Dict:
+        """Export selected entities as a STIX2 bundle.
 
+        :param entities_list: List of entities to export
+        :type entities_list: List[dict]
+        :param mode: Export mode ('simple' or 'full'), defaults to 'simple'
+        :type mode: str
+        :param access_filter: Access filter for the export
+        :type access_filter: Dict
+        :return: STIX2 bundle containing exported entities
+        :rtype: Dict
+        """
         bundle = {
             "type": "bundle",
             "id": "bundle--" + str(uuid.uuid4()),
@@ -2530,6 +2740,11 @@ class OpenCTIStix2:
         return bundle
 
     def apply_patch_files(self, item):
+        """Apply file patches to an item.
+
+        :param item: Item containing file patch operations
+        :type item: dict
+        """
         field_patch = self.opencti.get_attribute_in_extension(
             "opencti_field_patch", item
         )
@@ -2561,6 +2776,11 @@ class OpenCTIStix2:
                     )
 
     def apply_patch(self, item):
+        """Apply field patches to an item.
+
+        :param item: Item containing field patch operations
+        :type item: dict
+        """
         field_patch = self.opencti.get_attribute_in_extension(
             "opencti_field_patch", item
         )
@@ -2608,21 +2828,41 @@ class OpenCTIStix2:
         self.apply_patch_files(item)
 
     def rule_apply(self, item):
+        """Apply a rule to an item.
+
+        :param item: Item to apply the rule to
+        :type item: dict
+        """
         rule_id = self.opencti.get_attribute_in_extension("opencti_rule", item)
         if rule_id is None:
             rule_id = item["opencti_rule"]
         self.opencti.stix_core_object.rule_apply(element_id=item["id"], rule_id=rule_id)
 
     def rule_clear(self, item):
+        """Clear a rule from an item.
+
+        :param item: Item to clear the rule from
+        :type item: dict
+        """
         rule_id = self.opencti.get_attribute_in_extension("opencti_rule", item)
         if rule_id is None:
             rule_id = item["opencti_rule"]
         self.opencti.stix_core_object.rule_clear(element_id=item["id"], rule_id=rule_id)
 
     def rules_rescan(self, item):
+        """Rescan rules for an item.
+
+        :param item: Item to rescan rules for
+        :type item: dict
+        """
         self.opencti.stix_core_object.rules_rescan(element_id=item["id"])
 
     def organization_share(self, item):
+        """Share an item with organizations.
+
+        :param item: Item to share
+        :type item: dict
+        """
         organization_ids = self.opencti.get_attribute_in_extension(
             "sharing_organization_ids", item
         )
@@ -2649,6 +2889,11 @@ class OpenCTIStix2:
             )
 
     def organization_unshare(self, item):
+        """Unshare an item from organizations.
+
+        :param item: Item to unshare
+        :type item: dict
+        """
         organization_ids = self.opencti.get_attribute_in_extension(
             "sharing_organization_ids", item
         )
@@ -2674,6 +2919,12 @@ class OpenCTIStix2:
             )
 
     def element_add_organizations(self, item):
+        """Add organizations to an element.
+
+        :param item: Item to add organizations to
+        :type item: dict
+        :raises ValueError: If the operation is not compatible with the item type
+        """
         organization_ids = self.opencti.get_attribute_in_extension(
             "organization_ids", item
         )
@@ -2691,6 +2942,12 @@ class OpenCTIStix2:
             )
 
     def element_remove_organizations(self, item):
+        """Remove organizations from an element.
+
+        :param item: Item to remove organizations from
+        :type item: dict
+        :raises ValueError: If the operation is not compatible with the item type
+        """
         organization_ids = self.opencti.get_attribute_in_extension(
             "organization_ids", item
         )
@@ -2708,6 +2965,12 @@ class OpenCTIStix2:
             )
 
     def element_add_groups(self, item):
+        """Add groups to an element.
+
+        :param item: Item to add groups to
+        :type item: dict
+        :raises ValueError: If the operation is not compatible with the item type
+        """
         group_ids = self.opencti.get_attribute_in_extension("group_ids", item)
         if group_ids is None:
             group_ids = item["group_ids"]
@@ -2720,6 +2983,12 @@ class OpenCTIStix2:
             )
 
     def element_remove_groups(self, item):
+        """Remove groups from an element.
+
+        :param item: Item to remove groups from
+        :type item: dict
+        :raises ValueError: If the operation is not compatible with the item type
+        """
         group_ids = self.opencti.get_attribute_in_extension("group_ids", item)
         if group_ids is None:
             group_ids = item["group_ids"]
@@ -2733,6 +3002,12 @@ class OpenCTIStix2:
             )
 
     def send_email(self, item):
+        """Send an email for an item.
+
+        :param item: Item to send email for
+        :type item: dict
+        :raises ValueError: If the operation is not supported for the item type
+        """
         template_id = self.opencti.get_attribute_in_extension("template_id", item)
         if template_id is None:
             template_id = item["template_id"]
@@ -2745,6 +3020,14 @@ class OpenCTIStix2:
             )
 
     def element_operation_delete(self, item, operation):
+        """Delete an element.
+
+        :param item: Item to delete
+        :type item: dict
+        :param operation: Delete operation type ('delete' or 'delete_force')
+        :type operation: str
+        :raises ValueError: If the delete operation fails or helper not found
+        """
         # If data is stix, just use the generic stix function for deletion
         force_delete = operation == "delete_force"
         if item["type"] == "relationship":
@@ -2770,6 +3053,11 @@ class OpenCTIStix2:
                 )
 
     def element_remove_from_draft(self, item):
+        """Remove an element from draft.
+
+        :param item: Item to remove from draft
+        :type item: dict
+        """
         if item["type"] == "relationship":
             self.opencti.stix_core_relationship.remove_from_draft(id=item["id"])
         elif item["type"] == "sighting":
@@ -2779,6 +3067,14 @@ class OpenCTIStix2:
             self.opencti.stix_core_object.remove_from_draft(id=item["id"])
 
     def apply_opencti_operation(self, item, operation):
+        """Apply an OpenCTI operation to an item.
+
+        :param item: Item to apply the operation to
+        :type item: dict
+        :param operation: Operation to apply (delete, restore, merge, patch, etc.)
+        :type operation: str
+        :raises ValueError: If the operation is not supported
+        """
         if operation == "delete" or operation == "delete_force":
             self.element_operation_delete(item=item, operation=operation)
         elif operation == "revert_draft":
@@ -2798,13 +3094,13 @@ class OpenCTIStix2:
         elif operation == "patch":
             self.apply_patch(item=item)
         elif operation == "pir_flag_element":
-            id = item["id"]
-            input = item["input"]
-            self.opencti.pir.pir_flag_element(id=id, input=input)
+            element_id = item["id"]
+            pir_input = item["input"]
+            self.opencti.pir.pir_flag_element(id=element_id, input=pir_input)
         elif operation == "pir_unflag_element":
-            id = item["id"]
-            input = item["input"]
-            self.opencti.pir.pir_unflag_element(id=id, input=input)
+            element_id = item["id"]
+            pir_input = item["input"]
+            self.opencti.pir.pir_unflag_element(id=element_id, input=pir_input)
         elif operation == "rule_apply":
             self.rule_apply(item=item)
         elif operation == "rule_clear":
@@ -2849,242 +3145,262 @@ class OpenCTIStix2:
         item,
         update: bool = False,
         types: List = None,
-        processing_count: int = 0,
         work_id: str = None,
     ):
-        worker_logger = self.opencti.logger_class("worker")
-        # Ultimate protection to avoid infinite retry
-        if processing_count > MAX_PROCESSING_COUNT:
-            if work_id is not None:
-                item_str = json.dumps(item)
-                self.opencti.work.report_expectation(
-                    work_id,
-                    {
-                        "error": "Max number of retries reached, please see error logs of workers for more details",
-                        "source": (
-                            item_str if len(item_str) < 50000 else "Bundle too large"
-                        ),
-                    },
-                )
-                return False
-        try:
-            self.opencti.set_retry_number(processing_count)
-            opencti_operation = self.opencti.get_attribute_in_extension(
-                "opencti_operation", item
-            )
-            if opencti_operation is not None:
-                self.apply_opencti_operation(item, opencti_operation)
-            elif "opencti_operation" in item:
-                self.apply_opencti_operation(item, item["opencti_operation"])
-            elif item["type"] == "relationship":
-                # Import relationship
-                self.import_relationship(item, update, types)
-            elif item["type"] == "sighting":
-                # region Resolve the to
-                to_ids = []
-                if "x_opencti_where_sighted_refs" in item:
-                    for where_sighted_ref in item["x_opencti_where_sighted_refs"]:
-                        to_ids.append(where_sighted_ref)
-                elif "where_sighted_refs" in item:
-                    for where_sighted_ref in item["where_sighted_refs"]:
-                        to_ids.append(where_sighted_ref)
-                # endregion
-                # region Resolve the from
-                from_id = None
-                if "x_opencti_sighting_of_ref" in item:
-                    from_id = item["x_opencti_sighting_of_ref"]
-                elif "sighting_of_ref" in item:
-                    from_id = item["sighting_of_ref"]
-                # endregion
-                # region create the sightings
-                if len(to_ids) > 0:
-                    if from_id:
+        """Import a single STIX2 item into OpenCTI.
+
+        :param item: STIX2 item to import
+        :type item: dict
+        :param update: Whether to update existing data, defaults to False
+        :type update: bool, optional
+        :param types: List of STIX2 types to filter, defaults to None
+        :type types: List, optional
+        :param work_id: Work ID for tracking import progress, defaults to None
+        :type work_id: str, optional
+        :return: True on success
+        :rtype: bool
+        """
+        opencti_operation = self.opencti.get_attribute_in_extension(
+            "opencti_operation", item
+        )
+        if opencti_operation is not None:
+            self.apply_opencti_operation(item, opencti_operation)
+        elif "opencti_operation" in item:
+            self.apply_opencti_operation(item, item["opencti_operation"])
+        elif item["type"] == "relationship":
+            # Import relationship
+            self.import_relationship(item, update, types)
+        elif item["type"] == "sighting":
+            # region Resolve the to
+            to_ids = []
+            if "x_opencti_where_sighted_refs" in item:
+                for where_sighted_ref in item["x_opencti_where_sighted_refs"]:
+                    to_ids.append(where_sighted_ref)
+            elif "where_sighted_refs" in item:
+                for where_sighted_ref in item["where_sighted_refs"]:
+                    to_ids.append(where_sighted_ref)
+            # endregion
+            # region Resolve the from
+            from_id = None
+            if "x_opencti_sighting_of_ref" in item:
+                from_id = item["x_opencti_sighting_of_ref"]
+            elif "sighting_of_ref" in item:
+                from_id = item["sighting_of_ref"]
+            # endregion
+            # region create the sightings
+            if len(to_ids) > 0:
+                if from_id:
+                    for to_id in to_ids:
+                        self.import_sighting(item, from_id, to_id, update)
+                # Import observed_data_refs
+                if "observed_data_refs" in item:
+                    for observed_data_ref in item["observed_data_refs"]:
                         for to_id in to_ids:
-                            self.import_sighting(item, from_id, to_id, update)
-                    # Import observed_data_refs
-                    if "observed_data_refs" in item:
-                        for observed_data_ref in item["observed_data_refs"]:
-                            for to_id in to_ids:
-                                self.import_sighting(
-                                    item, observed_data_ref, to_id, update
-                                )
-                # endregion
-            elif item["type"] == "label":
-                stix_ids = self.opencti.get_attribute_in_extension("stix_ids", item)
-                self.opencti.label.create(
-                    stix_id=item["id"],
-                    value=item["value"],
-                    color=item["color"],
-                    x_opencti_stix_ids=stix_ids,
-                    update=update,
-                )
-            elif item["type"] == "vocabulary":
-                stix_ids = self.opencti.get_attribute_in_extension("stix_ids", item)
-                self.opencti.vocabulary.create(
-                    stix_id=item["id"],
-                    name=item["name"],
-                    category=item["category"],
-                    description=(
-                        item["description"] if "description" in item else None
-                    ),
-                    aliases=item["aliases"] if "aliases" in item else None,
-                    x_opencti_stix_ids=stix_ids,
-                    update=update,
-                )
-            elif item["type"] == "external-reference":
-                stix_ids = self.opencti.get_attribute_in_extension("stix_ids", item)
-                self.opencti.external_reference.create(
-                    stix_id=item["id"],
-                    source_name=(
-                        item["source_name"] if "source_name" in item else None
-                    ),
-                    url=item["url"] if "url" in item else None,
-                    external_id=(
-                        item["external_id"] if "external_id" in item else None
-                    ),
-                    description=(
-                        item["description"] if "description" in item else None
-                    ),
-                    x_opencti_stix_ids=stix_ids,
-                    update=update,
-                )
-            elif item["type"] == "kill-chain-phase":
-                stix_ids = self.opencti.get_attribute_in_extension("stix_ids", item)
-                self.opencti.kill_chain_phase.create(
-                    stix_id=item["id"],
-                    kill_chain_name=item["kill_chain_name"],
-                    phase_name=item["phase_name"],
-                    x_opencti_order=item["order"] if "order" in item else 0,
-                    x_opencti_stix_ids=stix_ids,
-                    update=update,
-                )
-            elif StixCyberObservableTypes.has_value(item["type"]):
-                if types is None or len(types) == 0:
-                    self.import_observable(item, update, types)
-                elif item["type"] in types or "observable" in types:
-                    self.import_observable(item, update, types)
+                            self.import_sighting(item, observed_data_ref, to_id, update)
+            # endregion
+        elif item["type"] == "label":
+            stix_ids = self.opencti.get_attribute_in_extension("stix_ids", item)
+            self.opencti.label.create(
+                stix_id=item["id"],
+                value=item["value"],
+                color=item["color"],
+                x_opencti_stix_ids=stix_ids,
+                update=update,
+            )
+        elif item["type"] == "vocabulary":
+            stix_ids = self.opencti.get_attribute_in_extension("stix_ids", item)
+            self.opencti.vocabulary.create(
+                stix_id=item["id"],
+                name=item["name"],
+                category=item["category"],
+                description=(item["description"] if "description" in item else None),
+                aliases=item["aliases"] if "aliases" in item else None,
+                x_opencti_stix_ids=stix_ids,
+                update=update,
+            )
+        elif item["type"] == "external-reference":
+            stix_ids = self.opencti.get_attribute_in_extension("stix_ids", item)
+            self.opencti.external_reference.create(
+                stix_id=item["id"],
+                source_name=(item["source_name"] if "source_name" in item else None),
+                url=item["url"] if "url" in item else None,
+                external_id=(item["external_id"] if "external_id" in item else None),
+                description=(item["description"] if "description" in item else None),
+                x_opencti_stix_ids=stix_ids,
+                update=update,
+            )
+        elif item["type"] == "kill-chain-phase":
+            stix_ids = self.opencti.get_attribute_in_extension("stix_ids", item)
+            self.opencti.kill_chain_phase.create(
+                stix_id=item["id"],
+                kill_chain_name=item["kill_chain_name"],
+                phase_name=item["phase_name"],
+                x_opencti_order=item["order"] if "order" in item else 0,
+                x_opencti_stix_ids=stix_ids,
+                update=update,
+            )
+        elif StixCyberObservableTypes.has_value(item["type"]):
+            if types is None or len(types) == 0:
+                self.import_observable(item, update, types)
+            elif item["type"] in types or "observable" in types:
+                self.import_observable(item, update, types)
+        else:
+            # Check the scope
+            if item["type"] == "marking-definition" or types is None or len(types) == 0:
+                self.import_object(item, update, types)
+            # Handle identity & location if part of the scope
+            elif item["type"] in types:
+                self.import_object(item, update, types)
             else:
-                # Check the scope
-                if (
-                    item["type"] == "marking-definition"
-                    or types is None
-                    or len(types) == 0
-                ):
-                    self.import_object(item, update, types)
-                # Handle identity & location if part of the scope
-                elif item["type"] in types:
-                    self.import_object(item, update, types)
-                else:
-                    # Specific OpenCTI scopes
-                    if item["type"] == "identity":
-                        if "identity_class" in item:
-                            if ("class" in types or "sector" in types) and item[
-                                "identity_class"
-                            ] == "class":
-                                self.import_object(item, update, types)
-                            elif item["identity_class"] in types:
-                                self.import_object(item, update, types)
-                    elif item["type"] == "location":
-                        if "x_opencti_location_type" in item:
-                            if item["x_opencti_location_type"].lower() in types:
-                                self.import_object(item, update, types)
-                        elif (
+                # Specific OpenCTI scopes
+                if item["type"] == "identity":
+                    if "identity_class" in item:
+                        if ("class" in types or "sector" in types) and item[
+                            "identity_class"
+                        ] == "class":
+                            self.import_object(item, update, types)
+                        elif item["identity_class"] in types:
+                            self.import_object(item, update, types)
+                elif item["type"] == "location":
+                    if "x_opencti_location_type" in item:
+                        if item["x_opencti_location_type"].lower() in types:
+                            self.import_object(item, update, types)
+                    elif (
+                        self.opencti.get_attribute_in_extension("location_type", item)
+                        is not None
+                    ):
+                        if (
                             self.opencti.get_attribute_in_extension(
                                 "location_type", item
-                            )
-                            is not None
+                            ).lower()
+                            in types
                         ):
-                            if (
-                                self.opencti.get_attribute_in_extension(
-                                    "location_type", item
-                                ).lower()
-                                in types
-                            ):
-                                self.import_object(item, update, types)
-            if work_id is not None:
-                self.opencti.work.report_expectation(work_id, None)
-            bundles_success_counter.add(1)
-            return True
-        except (RequestException, Timeout):
-            bundles_timeout_error_counter.add(1)
-            worker_logger.warning("A connection error or timeout occurred")
-            # Platform is under heavy load: wait for unlock & retry almost indefinitely.
-            sleep_jitter = round(random.uniform(10, 30), 2)
-            time.sleep(sleep_jitter)
-            return self.import_item(item, update, types, processing_count + 1, work_id)
-        except Exception as ex:  # pylint: disable=broad-except
-            error = str(ex)
-            error_msg = traceback.format_exc()
-            in_retry = processing_count < PROCESSING_COUNT
-            # Platform is under heavy load, wait for unlock & retry indefinitely.
-            if ERROR_TYPE_LOCK in error_msg:
-                bundles_lock_error_counter.add(1)
-                sleep_jitter = round(random.uniform(1, 3), 2)
+                            self.import_object(item, update, types)
+        if work_id is not None:
+            self.opencti.work.report_expectation(work_id, None)
+        bundles_success_counter.add(1)
+        return True
+
+    def import_item_with_retries(
+        self,
+        item,
+        update: bool = False,
+        types: List = None,
+        work_id: str = None,
+    ):
+        """Import a single STIX2 item with automatic retry on failures.
+
+        Handles various error types including timeouts, lock errors, missing references,
+        and bad gateway errors with appropriate retry strategies.
+
+        :param item: STIX2 item to import
+        :type item: dict
+        :param update: Whether to update existing data, defaults to False
+        :type update: bool, optional
+        :param types: List of STIX2 types to filter, defaults to None
+        :type types: List, optional
+        :param work_id: Work ID for tracking import progress, defaults to None
+        :type work_id: str, optional
+        :return: None on success, the failed item on permanent failure
+        :rtype: dict or None
+        """
+        processing_count = 0
+        worker_logger = self.opencti.logger_class("worker")
+        while processing_count <= MAX_PROCESSING_COUNT:
+            try:
+                self.opencti.set_retry_number(processing_count)
+                self.import_item(item, update, types, work_id)
+                return None
+            except (RequestException, Timeout):
+                bundles_timeout_error_counter.add(1)
+                worker_logger.warning("A connection error or timeout occurred")
+                # Platform is under heavy load: wait for unlock & retry almost indefinitely.
+                sleep_jitter = round(random.uniform(10, 30), 2)
                 time.sleep(sleep_jitter)
-                return self.import_item(
-                    item, update, types, processing_count + 1, work_id
-                )
-            # Platform detects a missing reference and have to retry
-            elif ERROR_TYPE_MISSING_REFERENCE in error_msg and in_retry:
-                bundles_missing_reference_error_counter.add(1)
-                sleep_jitter = round(random.uniform(1, 3), 2)
-                time.sleep(sleep_jitter)
-                return self.import_item(
-                    item, update, types, processing_count + 1, work_id
-                )
-            # A bad gateway error occurs
-            elif ERROR_TYPE_BAD_GATEWAY in error_msg:
-                worker_logger.error(
-                    "Message reprocess for bad gateway",
-                    {"count": processing_count},
-                )
-                bundles_bad_gateway_error_counter.add(1)
-                time.sleep(60)
-                return self.import_item(
-                    item, update, types, processing_count + 1, work_id
-                )
-            # Request timeout error occurs
-            elif ERROR_TYPE_TIMEOUT in error_msg:
-                worker_logger.error(
-                    "Message reprocess for request timed out",
-                    {"count": processing_count},
-                )
-                bundles_timed_out_error_counter.add(1)
-                time.sleep(60)
-                return self.import_item(
-                    item, update, types, processing_count + 1, work_id
-                )
-            # A draft lock error occurs
-            elif ERROR_TYPE_DRAFT_LOCK in error_msg:
-                bundles_technical_error_counter.add(1)
-                if work_id is not None:
-                    self.opencti.work.api.set_draft_id("")
-                    self.opencti.work.report_expectation(
-                        work_id,
-                        {
-                            "error": error,
-                            "source": "Draft in read only",
-                        },
+                processing_count += 1
+            except Exception as ex:  # pylint: disable=broad-except
+                error = str(ex)
+                error_msg = traceback.format_exc()
+                in_retry = processing_count < PROCESSING_COUNT
+                # Platform is under heavy load, wait for unlock & retry indefinitely.
+                if ERROR_TYPE_LOCK in error_msg:
+                    bundles_lock_error_counter.add(1)
+                    sleep_jitter = round(random.uniform(1, 3), 2)
+                    time.sleep(sleep_jitter)
+                    processing_count += 1
+                # Platform detects a missing reference and have to retry
+                elif ERROR_TYPE_MISSING_REFERENCE in error_msg and in_retry:
+                    bundles_missing_reference_error_counter.add(1)
+                    sleep_jitter = round(random.uniform(1, 3), 2)
+                    time.sleep(sleep_jitter)
+                    processing_count += 1
+                # A bad gateway error occurs
+                elif ERROR_TYPE_BAD_GATEWAY in error_msg:
+                    worker_logger.error(
+                        "Message reprocess for bad gateway",
+                        {"count": processing_count},
                     )
-                return False
-            # Platform does not know what to do and raises an error:
-            # That also works for missing reference with too much execution
-            else:
-                bundles_technical_error_counter.add(1)
-                if work_id is not None:
-                    item_str = json.dumps(item)
-                    self.opencti.work.report_expectation(
-                        work_id,
-                        {
-                            "error": error,
-                            "source": (
-                                item_str
-                                if len(item_str) < 50000
-                                else "Bundle too large"
-                            ),
-                        },
+                    bundles_bad_gateway_error_counter.add(1)
+                    time.sleep(60)
+                    processing_count += 1
+                # Request timeout error occurs
+                elif ERROR_TYPE_TIMEOUT in error_msg:
+                    worker_logger.error(
+                        "Message reprocess for request timed out",
+                        {"count": processing_count},
                     )
-                return False
+                    bundles_timed_out_error_counter.add(1)
+                    time.sleep(60)
+                    processing_count += 1
+                # A draft lock error occurs
+                elif ERROR_TYPE_DRAFT_LOCK in error_msg:
+                    bundles_technical_error_counter.add(1)
+                    if work_id is not None:
+                        self.opencti.work.api.set_draft_id("")
+                        self.opencti.work.report_expectation(
+                            work_id,
+                            {
+                                "error": error,
+                                "source": "Draft in read only",
+                            },
+                        )
+                    return None
+                # Platform does not know what to do and raises an error:
+                # That also works for missing reference with too much execution
+                else:
+                    bundles_technical_error_counter.add(1)
+                    worker_logger.error(
+                        "Unrecognized error during bundle import", {"error": error}
+                    )
+                    if work_id is not None:
+                        item_str = json.dumps(item)
+                        self.opencti.work.report_expectation(
+                            work_id,
+                            {
+                                "error": error,
+                                "source": (
+                                    item_str
+                                    if len(item_str) < 50000
+                                    else "Bundle too large"
+                                ),
+                            },
+                        )
+                    return None
+
+        max_retry_error_message = "Max number of retries reached, please see error logs of workers for more details. Bundle will be sent to dead letter queue."
+        worker_logger.error(max_retry_error_message)
+        if work_id is not None:
+            item_str = json.dumps(item)
+            self.opencti.work.report_expectation(
+                work_id,
+                {
+                    "error": max_retry_error_message,
+                    "source": (
+                        item_str if len(item_str) < 50000 else "Bundle too large"
+                    ),
+                },
+            )
+        return item
 
     def import_bundle(
         self,
@@ -3094,6 +3410,23 @@ class OpenCTIStix2:
         work_id: str = None,
         objects_max_refs: int = 0,
     ) -> Tuple[list, list]:
+        """Import a complete STIX2 bundle into OpenCTI.
+
+        :param stix_bundle: STIX2 bundle dictionary to import
+        :type stix_bundle: Dict
+        :param update: Whether to update existing data, defaults to False
+        :type update: bool, optional
+        :param types: List of STIX2 types to filter, defaults to None
+        :type types: List, optional
+        :param work_id: Work ID for tracking import progress, defaults to None
+        :type work_id: str, optional
+        :param objects_max_refs: Maximum number of object references allowed; objects exceeding
+            this limit will be rejected. Set to 0 to disable the limit.
+        :type objects_max_refs: int, optional
+        :return: Tuple of (list of successfully imported elements, list of failed/too-large elements)
+        :rtype: Tuple[list, list]
+        :raises ValueError: If the bundle is not properly formatted or empty
+        """
         # Check if the bundle is correctly formatted
         if "type" not in stix_bundle or stix_bundle["type"] != "bundle":
             raise ValueError("JSON data type is not a STIX2 bundle")
@@ -3144,31 +3477,53 @@ class OpenCTIStix2:
                     )
                     too_large_elements_bundles.append(item)
                 else:
-                    self.import_item(item, update, types, 0, work_id)
-                    imported_elements.append({"id": item["id"], "type": item["type"]})
+                    failed_item = self.import_item_with_retries(
+                        item, update, types, work_id
+                    )
+                    if failed_item is not None:
+                        too_large_elements_bundles.append(item)
+                    else:
+                        imported_elements.append(
+                            {"id": item["id"], "type": item["type"]}
+                        )
 
         return imported_elements, too_large_elements_bundles
 
     @staticmethod
     def put_attribute_in_extension(
-        object, extension_id, key, value, multiple=False
+        stix_object, extension_id, key, value, multiple=False
     ) -> any:
-        if ("x_opencti_" + key) in object:
-            del object["x_opencti_" + key]
-        if ("x_mitre_" + key) in object:
-            del object["x_mitre_" + key]
-        if "extensions" not in object:
-            object["extensions"] = {}
-        if extension_id not in object["extensions"]:
-            object["extensions"][extension_id] = {}
-        if key in object["extensions"][extension_id]:
+        """Add or update an attribute in a STIX object's extension.
+
+        :param stix_object: STIX object to modify
+        :type stix_object: dict
+        :param extension_id: ID of the extension to add the attribute to
+        :type extension_id: str
+        :param key: Attribute key name
+        :type key: str
+        :param value: Attribute value to set
+        :type value: any
+        :param multiple: If True, append value to a list; if False, replace the value
+        :type multiple: bool
+        :return: Modified STIX object
+        :rtype: dict
+        """
+        if ("x_opencti_" + key) in stix_object:
+            del stix_object["x_opencti_" + key]
+        if ("x_mitre_" + key) in stix_object:
+            del stix_object["x_mitre_" + key]
+        if "extensions" not in stix_object:
+            stix_object["extensions"] = {}
+        if extension_id not in stix_object["extensions"]:
+            stix_object["extensions"][extension_id] = {}
+        if key in stix_object["extensions"][extension_id]:
             if multiple:
-                object["extensions"][extension_id][key].append(value)
+                stix_object["extensions"][extension_id][key].append(value)
             else:
-                object["extensions"][extension_id][key] = value
+                stix_object["extensions"][extension_id][key] = value
         else:
             if multiple:
-                object["extensions"][extension_id][key] = [value]
+                stix_object["extensions"][extension_id][key] = [value]
             else:
-                object["extensions"][extension_id][key] = value
-        return object
+                stix_object["extensions"][extension_id][key] = value
+        return stix_object

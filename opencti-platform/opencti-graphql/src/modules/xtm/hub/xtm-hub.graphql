@@ -1,4 +1,3 @@
-
 type CheckXTMHubConnectivityResponse {
   status: XTMHubRegistrationStatus
 }
@@ -11,5 +10,6 @@ type Success {
 }
 type Mutation {
   checkXTMHubConnectivity: CheckXTMHubConnectivityResponse! @auth(for: [SETTINGS_SETPARAMETERS])
-    autoRegisterOpenCTI(input: AutoRegisterInput!): Success! @auth(for: [SETTINGS_SETPARAMETERS])
+  autoRegisterOpenCTI(input: AutoRegisterInput!): Success! @auth(for: [SETTINGS_SETPARAMETERS])
+  contactUsXtmHub: Success! @auth
 }

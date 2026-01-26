@@ -91,7 +91,7 @@ const Individuals = () => {
       >
         {queryRef && (
           <React.Suspense
-            fallback={
+            fallback={(
               <>
                 {Array(20)
                   .fill(0)
@@ -102,7 +102,7 @@ const Individuals = () => {
                     />
                   ))}
               </>
-            }
+            )}
           >
             <IndividualsLines
               queryRef={queryRef}

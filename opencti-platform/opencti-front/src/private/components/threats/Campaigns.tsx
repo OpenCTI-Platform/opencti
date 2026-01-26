@@ -95,7 +95,7 @@ const Campaigns = () => {
         createButton={(
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <div style={{ display: 'flex' }}>
-              <StixCoreObjectForms entityType='Campaign' />
+              <StixCoreObjectForms entityType="Campaign" />
               <CampaignCreation paginationOptions={queryPaginationOptions} />
             </div>
           </Security>
@@ -103,7 +103,7 @@ const Campaigns = () => {
       >
         {queryRef && (
           <React.Suspense
-            fallback={
+            fallback={(
               <Grid
                 container={true}
                 spacing={3}
@@ -121,7 +121,7 @@ const Campaigns = () => {
                     </Grid>
                   ))}
               </Grid>
-            }
+            )}
           >
             <CampaignsCards
               queryRef={queryRef}
@@ -165,26 +165,26 @@ const Campaigns = () => {
             resolvePath={(data: CampaignsCards_data$data) => data.campaigns?.edges?.map((n) => n?.node)}
             storageKey={LOCAL_STORAGE_KEY}
             initialValues={initialValues}
-            toolbarFilters={contextFilters}
+            contextFilters={contextFilters}
             preloadedPaginationProps={preloadedPaginationProps}
             lineFragment={CampaignCardFragment}
             exportContext={{ entity_type: 'Campaign' }}
             additionalHeaderButtons={[
-              (<ToggleButton key="cards" value="cards" aria-label="cards">
+              <ToggleButton key="cards" value="cards" aria-label="cards">
                 <Tooltip title={t_i18n('Cards view')}>
                   <ViewModuleOutlined fontSize="small" color="primary" />
                 </Tooltip>
-              </ToggleButton>),
-              (<ToggleButton key="lines" value="lines" aria-label="lines">
+              </ToggleButton>,
+              <ToggleButton key="lines" value="lines" aria-label="lines">
                 <Tooltip title={t_i18n('Lines view')}>
                   <ViewListOutlined color="secondary" fontSize="small" />
                 </Tooltip>
-              </ToggleButton>),
+              </ToggleButton>,
             ]}
             createButton={(
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <div style={{ display: 'flex' }}>
-                  <StixCoreObjectForms entityType='Campaign' />
+                  <StixCoreObjectForms entityType="Campaign" />
                   <CampaignCreation paginationOptions={queryPaginationOptions} />
                 </div>
               </Security>

@@ -51,8 +51,8 @@ const publicStixRelationshipsMapQuery = graphql`
 `;
 
 interface PublicStixRelationshipsMapComponentProps {
-  dataSelection: Widget['dataSelection']
-  queryRef: PreloadedQuery<PublicStixRelationshipsMapQuery>
+  dataSelection: Widget['dataSelection'];
+  queryRef: PreloadedQuery<PublicStixRelationshipsMapQuery>;
 }
 
 const PublicStixRelationshipsMapComponent = ({

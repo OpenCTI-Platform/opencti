@@ -23,7 +23,7 @@ const publishEventToConnectors = async (context, user, element, targetConnectors
       return createWork(contextOutOfDraft, user, connector, workMessage, elementStandardId, { draftContext }).then((work) => {
         return { connector, work };
       });
-    }, targetConnectors)
+    }, targetConnectors),
   );
   // Send message to all correct connectors queues
   for (let index = 0; index < workList.length; index += 1) {
@@ -41,14 +41,14 @@ const publishEventToConnectors = async (context, user, element, targetConnectors
         applicant_id: null, // No specific user asking for the import
         draft_id: draftContext ?? null,
         trigger, // create | update
-        mode: 'auto'
+        mode: 'auto',
       },
       event: {
         event_type: CONNECTOR_INTERNAL_ENRICHMENT,
         entity_id: elementStandardId,
         entity_type: element.entity_type,
         stix_entity,
-        stix_objects
+        stix_objects,
       },
     };
     await pushToConnector(connector.internal_id, message);

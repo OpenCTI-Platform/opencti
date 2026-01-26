@@ -26,7 +26,7 @@ import { RELATION_GRANTED_TO } from '../../../src/schema/stixRefRelationship';
 import type { BasicStoreEntityOrganization } from '../../../src/modules/organization/organization-types';
 import type { StixObject, StixOpenctiExtension } from '../../../src/types/stix-2-1-common';
 import type { Group } from '../../../src/types/group';
-import type { UpdateEvent } from '../../../src/types/event';
+import type {Change, UpdateEvent} from '../../../src/types/event';
 
 const inPlatformContext = { ...testContext, user_inside_platform_organization: true };
 
@@ -265,6 +265,7 @@ describe('User stream update event testing', async () => {
         patch: [{ op: 'add', path: '/object_refs/4', value: 'campaign--bce98eb5-25a9-5ba7-b4a0-b160a79d0de7' }],
         reverse_patch: [{ op: 'remove', path: '/objects_refs/4' }],
         related_restrictions: { markings: ['f2aedb16-b107-49d3-adc5-edc945514360'] },
+        changes: [],
       }
     };
     const hasAccess_userAllowed = await isUserCanAccessStreamUpdateEvent(user_is_allowed as AuthUser, updateEvent as UpdateEvent);
@@ -289,6 +290,7 @@ describe('User stream update event testing', async () => {
         patch: [{ op: 'add', path: '/object_refs/4', value: 'campaign--bce98eb5-25a9-5ba7-b4a0-b160a79d0de7' }],
         reverse_patch: [{ op: 'remove', path: '/objects_refs/4' }],
         related_restrictions: { markings: [] },
+        changes: [],
       }
     };
     const hasAccess = await isUserCanAccessStreamUpdateEvent(user as AuthUser, updateEvent as UpdateEvent);

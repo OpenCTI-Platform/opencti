@@ -6,8 +6,8 @@ import { useFormatter } from '../../../../components/i18n';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 interface StixCoreObjectFileExportButtonProps {
-  onOpen: () => void
-  isExportPossible: boolean
+  onOpen: () => void;
+  isExportPossible: boolean;
 }
 
 const StixCoreObjectFileExportButton = ({

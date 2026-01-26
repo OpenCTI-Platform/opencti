@@ -27,9 +27,9 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface ItemConfidenceProps {
-  confidence: number | null | undefined,
-  variant?: string,
-  entityType: string,
+  confidence: number | null | undefined;
+  variant?: string;
+  entityType: string;
 }
 
 const ItemConfidence: FunctionComponent<ItemConfidenceProps> = ({ confidence, variant, entityType }) => {

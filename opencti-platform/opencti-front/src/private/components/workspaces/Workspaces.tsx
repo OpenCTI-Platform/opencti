@@ -189,7 +189,7 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
           }}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialStorageValues}
-          toolbarFilters={filters}
+          contextFilters={filters}
           preloadedPaginationProps={{
             linesQuery: workspacesLinesQuery,
             linesFragment: workspacesLineFragment,

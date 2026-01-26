@@ -32,7 +32,7 @@ export const addIncident = async (context, user, incident) => {
   const incidentToCreate = pipe(
     assoc('created', isNil(incident.created) ? now() : incident.created),
     assoc('first_seen', isNil(incident.first_seen) ? new Date(FROM_START) : incident.first_seen),
-    assoc('last_seen', isNil(incident.last_seen) ? new Date(UNTIL_END) : incident.last_seen)
+    assoc('last_seen', isNil(incident.last_seen) ? new Date(UNTIL_END) : incident.last_seen),
   )(incident);
   const created = await createEntity(context, user, incidentToCreate, ENTITY_TYPE_INCIDENT);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);

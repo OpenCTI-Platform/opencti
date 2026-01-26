@@ -4,22 +4,22 @@ import { CsvMapperEditionContainerFragment_csvMapper$data, CsvMapperOperator } f
 export type CsvMapperRepresentation = CsvMapperEditionContainerFragment_csvMapper$data['representations'][number];
 
 export type CsvMapperRepresentationEdit = Omit<CsvMapperRepresentation, 'attributes'> & {
-  attributes: CsvMapperRepresentationAttributeEdit[]
+  attributes: CsvMapperRepresentationAttributeEdit[];
 };
 
 export interface CsvMapperRepresentationFormData {
-  id: string
-  type: string
-  target_type?: string
-  column_based?: CsvMapperColumnBasedFormData | null
+  id: string;
+  type: string;
+  target_type?: string;
+  column_based?: CsvMapperColumnBasedFormData | null;
   attributes: {
-    [key: string]: CsvMapperRepresentationAttributeFormData
-  }
+    [key: string]: CsvMapperRepresentationAttributeFormData;
+  };
 }
 
 export interface CsvMapperColumnBasedFormData {
-  enabled: boolean
-  column_reference?: string | null
-  operator?: CsvMapperOperator | null
-  value?: string | null
+  enabled: boolean;
+  column_reference?: string | null;
+  operator?: CsvMapperOperator | null;
+  value?: string | null;
 }

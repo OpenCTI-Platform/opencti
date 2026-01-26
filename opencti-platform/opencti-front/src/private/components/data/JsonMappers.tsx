@@ -84,9 +84,9 @@ const JsonMappers = () => {
       isSortable: false,
       render: (data: JsonMapperLine_jsonMapper$data) => {
         return data.errors === null ? (
-          <CheckCircleOutlined fontSize="small" color="success"/>
+          <CheckCircleOutlined fontSize="small" color="success" />
         ) : (
-          <CancelOutlined fontSize="small" color="error"/>
+          <CancelOutlined fontSize="small" color="error" />
         );
       },
     },
@@ -113,7 +113,7 @@ const JsonMappers = () => {
 
   return queryRefMappers && queryRefSchemaAttributes
     && (
-      <Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
+      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
         <JsonMappersProvider mappersQueryRef={queryRefMappers} schemaAttributesQueryRef={queryRefSchemaAttributes}>
           <div className={classes.container} data-testid="json-mapper-page">
             <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Processing') }, { label: t_i18n('JSON mappers'), current: true }]} />
@@ -137,13 +137,13 @@ const JsonMappers = () => {
                       value="import"
                       size="small"
                       onClick={() => inputFileRef.current?.click()}
-                      data-testid='ImporJsonMapper'
+                      data-testid="ImporJsonMapper"
                       title={t_i18n('Import a JSON mapper')}
                     >
-                      <FileUploadOutlined fontSize="small" color={'primary'} />
+                      <FileUploadOutlined fontSize="small" color="primary" />
                     </ToggleButton>
                     <Button
-                      variant='contained'
+                      variant="contained"
                       disableElevation
                       sx={{ marginLeft: 1 }}
                       onClick={() => setOpen(true)}
@@ -152,10 +152,10 @@ const JsonMappers = () => {
                     </Button>
                   </>
                 </>
-                  )}
+              )}
             >
               <React.Suspense
-                fallback={<Loader variant={LoaderVariant.inElement}/>}
+                fallback={<Loader variant={LoaderVariant.inElement} />}
               >
                 <JsonMapperLines
                   paginationOptions={paginationOptions}
@@ -166,7 +166,7 @@ const JsonMappers = () => {
             <VisuallyHiddenInput
               ref={inputFileRef}
               type="file"
-              accept={'application/JSON'}
+              accept="application/JSON"
               onChange={handleFileImport}
             />
             <JsonMapperCreationContainer

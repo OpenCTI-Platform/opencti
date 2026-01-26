@@ -10,9 +10,17 @@ class Settings:
 
     See the properties attribute to understand which properties are fetched by
     default on graphql queries.
+
+    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
+        """Initialize the Settings instance.
+
+        :param opencti: OpenCTI API client instance
+        :type opencti: OpenCTIApiClient
+        """
         self.opencti = opencti
         self.properties = """
             id
@@ -39,25 +47,24 @@ class Settings:
             platform_user_statuses {
                 status, message
             }
-            platform_theme
-            platform_theme_dark_background
-            platform_theme_dark_paper
-            platform_theme_dark_nav
-            platform_theme_dark_primary
-            platform_theme_dark_secondary
-            platform_theme_dark_accent
-            platform_theme_dark_logo
-            platform_theme_dark_logo_collapsed
-            platform_theme_dark_logo_login
-            platform_theme_light_background
-            platform_theme_light_paper
-            platform_theme_light_nav
-            platform_theme_light_primary
-            platform_theme_light_secondary
-            platform_theme_light_accent
-            platform_theme_light_logo
-            platform_theme_light_logo_collapsed
-            platform_theme_light_logo_login
+            platform_theme {
+                id
+                standard_id
+                entity_type
+                parent_types
+                name
+                theme_background
+                theme_paper
+                theme_nav
+                theme_primary
+                theme_secondary
+                theme_accent
+                theme_logo
+                theme_logo_collapsed
+                theme_logo_login
+                theme_text_color
+                built_in
+            }
             platform_map_tile_server_dark
             platform_map_tile_server_light
             platform_ai_enabled
@@ -171,25 +178,6 @@ class Settings:
             platform_favicon
             platform_email
             platform_language
-            platform_theme
-            platform_theme_dark_background
-            platform_theme_dark_paper
-            platform_theme_dark_nav
-            platform_theme_dark_primary
-            platform_theme_dark_secondary
-            platform_theme_dark_accent
-            platform_theme_dark_logo
-            platform_theme_dark_logo_collapsed
-            platform_theme_dark_logo_login
-            platform_theme_light_background
-            platform_theme_light_paper
-            platform_theme_light_nav
-            platform_theme_light_primary
-            platform_theme_light_secondary
-            platform_theme_light_accent
-            platform_theme_light_logo
-            platform_theme_light_logo_collapsed
-            platform_theme_light_logo_login
             platform_login_message
             platform_consent_message
             platform_consent_confirm_text
@@ -342,8 +330,10 @@ class Settings:
         """
         id = kwargs.get("id", None)
         input = kwargs.get("input", None)
-        if id is None:
-            self.opencti.admin_logger.info("[opencti_settings] Missing parameters: id")
+        if id is None or input is None:
+            self.opencti.admin_logger.error(
+                "[opencti_settings] Missing parameters: id and input"
+            )
             return None
 
         query = (
@@ -366,6 +356,13 @@ class Settings:
         )
 
     def process_multiple_fields(self, data):
+        """Process and normalize fields in settings data.
+
+        :param data: the settings data dictionary to process
+        :type data: dict
+        :return: the processed settings data with normalized fields
+        :rtype: dict
+        """
         if "platform_messages" in data:
             data["platform_messages"] = self.opencti.process_multiple(
                 data["platform_messages"]

@@ -1,7 +1,7 @@
 import {
   addReport,
-  findReportPaginated,
   findById,
+  findReportPaginated,
   reportContainsStixObjectOrStixRelationship,
   reportDeleteElementsCount,
   reportDeleteWithElements,
@@ -23,10 +23,8 @@ import {
 } from '../domain/stixDomainObject';
 import { distributionEntities } from '../database/middleware';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
-import { loadThroughDenormalized } from './stix';
-import { INPUT_PARTICIPANT } from '../schema/general';
-import { filterMembersWithUsersOrgs } from '../utils/access';
 import { findSecurityCoverageByCoveredId } from '../modules/securityCoverage/securityCoverage-domain';
+import { loadParticipants } from '../database/members';
 
 const reportResolvers = {
   Query: {
@@ -62,18 +60,17 @@ const reportResolvers = {
   },
   Report: {
     deleteWithElementsCount: (report, _, context) => reportDeleteElementsCount(context, context.user, report.id),
-    objectParticipant: async (container, _, context) => {
-      const participants = await loadThroughDenormalized(context, context.user, container, INPUT_PARTICIPANT, { sortBy: 'user_email' });
-      if (!participants) {
-        return [];
-      }
-      return filterMembersWithUsersOrgs(context, context.user, participants);
-    },
+    objectParticipant: async (container, _, context) => loadParticipants(context, context.user, container),
     securityCoverage: (report, _, context) => findSecurityCoverageByCoveredId(context, context.user, report.id),
   },
   Mutation: {
     reportEdit: (_, { id }, context) => ({
-      delete: ({ purgeElements }) => (purgeElements ? reportDeleteWithElements(context, context.user, id) : stixDomainObjectDelete(context, context.user, id)),
+      delete: ({ purgeElements }) => {
+        if (purgeElements) {
+          return reportDeleteWithElements(context, context.user, id);
+        }
+        return stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_CONTAINER_REPORT);
+      },
       fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
       contextClean: () => stixDomainObjectCleanContext(context, context.user, id),

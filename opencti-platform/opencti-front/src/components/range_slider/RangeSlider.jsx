@@ -56,13 +56,13 @@ class TimeRange extends React.Component {
     this.props.onChangeCallback(formattedNewTime);
   };
 
-  // eslint-disable-next-line class-methods-use-this
   checkIsSelectedIntervalNotValid = ([start, end], source, target) => {
     const { value: startInterval } = source;
     const { value: endInterval } = target;
 
-    // eslint-disable-next-line no-mixed-operators
-    if (startInterval > start && endInterval <= end || startInterval >= start && endInterval < end) { return true; }
+    if ((startInterval > start && endInterval <= end) || (startInterval >= start && endInterval < end)) {
+      return true;
+    }
     if (start >= startInterval && end <= endInterval) return true;
 
     const isStartInBlockedInterval = start > startInterval && start < endInterval && end >= endInterval;
@@ -112,7 +112,7 @@ class TimeRange extends React.Component {
     const { disabledIntervals } = this;
 
     return (
-      <div className={containerClassName || 'react_time_range__time_range_container' }>
+      <div className={containerClassName || 'react_time_range__time_range_container'}>
         <Slider
           mode={mode}
           step={step}
@@ -159,34 +159,34 @@ class TimeRange extends React.Component {
           </Tracks>
 
           {disabledIntervals?.length > 0 && (
-          <Tracks left={false} right={false}>
-            {({ getTrackProps }) => (
-              <>
-                {disabledIntervals.map(({ id, source, target }) => (
-                  <Track
-                    key={id}
-                    source={source}
-                    target={target}
-                    getTrackProps={getTrackProps}
-                    disabled
-                  />
-                ))}
-              </>
-            )}
-          </Tracks>
+            <Tracks left={false} right={false}>
+              {({ getTrackProps }) => (
+                <>
+                  {disabledIntervals.map(({ id, source, target }) => (
+                    <Track
+                      key={id}
+                      source={source}
+                      target={target}
+                      getTrackProps={getTrackProps}
+                      disabled
+                    />
+                  ))}
+                </>
+              )}
+            </Tracks>
           )}
 
           {showNow && (
-          <Tracks left={false} right={false}>
-            {({ getTrackProps }) => (
-              <Track
-                key={this.now?.id}
-                source={this.now?.source}
-                target={this.now?.target}
-                getTrackProps={getTrackProps}
-              />
-            )}
-          </Tracks>
+            <Tracks left={false} right={false}>
+              {({ getTrackProps }) => (
+                <Track
+                  key={this.now?.id}
+                  source={this.now?.source}
+                  target={this.now?.target}
+                  getTrackProps={getTrackProps}
+                />
+              )}
+            </Tracks>
           )}
 
           <Ticks values={this.getDateTicks()}>

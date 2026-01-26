@@ -8,7 +8,7 @@ import { APP_BASE_PATH } from '../relay/environment';
 pdfjs.GlobalWorkerOptions.workerSrc = `${APP_BASE_PATH}/static/ext/pdf.worker.mjs`;
 
 interface PdfViewerProps {
-  pdf: File
+  pdf: File;
 }
 
 const PdfViewer = ({ pdf }: PdfViewerProps) => {

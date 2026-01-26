@@ -3,7 +3,7 @@ import React, { ReactElement } from 'react';
 import { Stack } from '@mui/material';
 
 type EEMenuProps = {
-  children: ReactElement,
+  children: ReactElement;
 };
 
 const EEMenu = ({ children }: EEMenuProps) => {

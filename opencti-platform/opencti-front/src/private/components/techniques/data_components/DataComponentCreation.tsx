@@ -50,14 +50,14 @@ const dataComponentMutation = graphql`
 `;
 
 interface DataComponentAddInput {
-  name: string
-  description: string
-  createdBy: FieldOption | null
-  objectMarking: FieldOption[]
-  objectLabel: FieldOption[]
-  externalReferences: FieldOption[]
-  confidence: number | null
-  file: File | null
+  name: string;
+  description: string;
+  createdBy: FieldOption | null;
+  objectMarking: FieldOption[];
+  objectLabel: FieldOption[];
+  externalReferences: FieldOption[];
+  confidence: number | null;
+  file: File | null;
 }
 
 interface DataComponentFormProps {
@@ -311,10 +311,10 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
 };
 
 const DataComponentCreation: FunctionComponent<{
-  contextual?: boolean,
-  display?: boolean,
-  inputValue?: string,
-  paginationOptions: DataComponentsLinesPaginationQuery$variables
+  contextual?: boolean;
+  display?: boolean;
+  inputValue?: string;
+  paginationOptions: DataComponentsLinesPaginationQuery$variables;
 }> = ({
   contextual,
   display,
@@ -333,7 +333,7 @@ const DataComponentCreation: FunctionComponent<{
     'dataComponentAdd',
   );
   const CreateDataComponentControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Data-Component' {...props} />
+    <CreateEntityControlledDial entityType="Data-Component" {...props} />
   );
   const CreateDataComponentControlledDialContextual = CreateDataComponentControlledDial({
     onOpen: handleOpen,

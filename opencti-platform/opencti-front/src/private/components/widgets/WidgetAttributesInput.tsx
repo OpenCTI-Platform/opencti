@@ -26,7 +26,7 @@ import { toCamelCase } from '../../../utils/String';
 import DeleteDialog from '../../../components/DeleteDialog';
 import useDeletion from '../../../utils/hooks/useDeletion';
 
-const stixCoreObjectsAvailableAttributesColumns: { attribute: string, label: string }[] = [
+const stixCoreObjectsAvailableAttributesColumns: { attribute: string; label: string }[] = [
   { attribute: 'representative.main', label: 'Representative' },
   { attribute: 'representative.secondary', label: 'Description' },
   { attribute: 'entity_type', label: 'Entity type' },
@@ -41,7 +41,7 @@ const stixCoreObjectsAvailableAttributesColumns: { attribute: string, label: str
   { attribute: 'createdBy.x_opencti_reliability', label: 'Reliability (of author)' },
 ];
 
-const attributesByEntityType: Map<string, { attribute: string, label: string }[]> = new Map([
+const attributesByEntityType: Map<string, { attribute: string; label: string }[]> = new Map([
   ['Attack-Pattern', [
     { attribute: 'x_mitre_id', label: 'External ID' },
   ]],
@@ -104,13 +104,13 @@ const attributesByEntityType: Map<string, { attribute: string, label: string }[]
 ]);
 
 interface WidgetAttributesInputValue {
-  attributes: WidgetColumn[]
+  attributes: WidgetColumn[];
 }
 
 interface WidgetCreationAttributesProps {
-  value: readonly WidgetColumn[],
-  onChange: (value: WidgetColumn[]) => void,
-  queryRef: PreloadedQuery<WidgetAttributesInputContainerInstanceQuery>,
+  value: readonly WidgetColumn[];
+  onChange: (value: WidgetColumn[]) => void;
+  queryRef: PreloadedQuery<WidgetAttributesInputContainerInstanceQuery>;
 }
 
 const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = ({
@@ -133,7 +133,7 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
   const entityType = stixCoreObject?.entity_type ?? fintelEntityType;
 
   const specificAttributesOfType = attributesByEntityType.get(entityType ?? '') ?? [];
-  const availableAttributes: { attribute: string, label: string }[] = stixCoreObjectsAvailableAttributesColumns
+  const availableAttributes: { attribute: string; label: string }[] = stixCoreObjectsAvailableAttributesColumns
     .concat(specificAttributesOfType)
     .sort((a, b) => a.label.localeCompare(b.label));
 
@@ -272,7 +272,7 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
                           <Select
                             label={t_i18n('Attribute')}
                             sx={{ flex: 1 }}
-                            value=''
+                            value=""
                             disabled={!config.widget.dataSelection[0].instance_id}
                             onChange={({ target }) => {
                               const attribute = findAttribute(target.value as string);

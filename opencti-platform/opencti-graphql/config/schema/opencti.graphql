@@ -2,6 +2,8 @@
 
 directive @auth(for: [Capabilities] = [], and: Boolean = false) on OBJECT | FIELD_DEFINITION
 directive @public on OBJECT | FIELD_DEFINITION
+directive @allowUnprotectedOTP on OBJECT | FIELD_DEFINITION
+directive @allowUnlicensedLTS on OBJECT | FIELD_DEFINITION
 directive @constraint(
   # String constraints
   minLength: Int
@@ -495,6 +497,13 @@ type LogEdge {
   cursor: String!
   node: Log!
 }
+type Change {
+  field: String!
+  previous: [String!]
+  new: [String!]
+  added: [String!]
+  removed: [String!]
+}
 type ContextData {
   entity_id: String
   entity_name: String
@@ -508,6 +517,7 @@ type ContextData {
   pir_ids: [String!] @auth(for: [PIRAPI])
   pir_score: Int @auth(for: [PIRAPI])
   pir_match_from: Boolean @auth(for: [PIRAPI])
+  changes: [Change]
 }
 type Log {
   id: ID!
@@ -806,6 +816,7 @@ type Synchronizer {
   ssl_verify: Boolean
   synchronized: Boolean
   queue_messages: Int!
+  toConfigurationExport: String!
 }
 
 type SynchronizerEdge {
@@ -823,13 +834,21 @@ input SynchronizerAddInput {
   uri: String! @constraint(minLength: 2)
   token: String
   stream_id: String! @constraint(minLength: 2)
-  user_id: String
+  user_id: String!
+  automatic_user: Boolean
+  confidence_level: Int
   recover: DateTime
   current_state_date: DateTime
   listen_deletion: Boolean!
   no_dependencies: Boolean!
   ssl_verify: Boolean
   synchronized: Boolean
+}
+
+
+input SynchronizerAddAutoUserInput {
+    user_name: String!
+    confidence_level: Int!
 }
 
 input SynchronizerFetchInput {
@@ -1262,7 +1281,7 @@ interface BasicObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
 }
 
@@ -1370,36 +1389,29 @@ type PublicProvider {
     provider: String!
 }
 
-interface ThemeSettings {
-    platform_title: String
-    platform_favicon: String
-    platform_theme: String
-    platform_theme_dark_background: String
-    platform_theme_dark_paper: String
-    platform_theme_dark_nav: String
-    platform_theme_dark_primary: String
-    platform_theme_dark_secondary: String
-    platform_theme_dark_accent: String
-    platform_theme_dark_logo: String
-    platform_theme_dark_logo_collapsed: String
-    platform_theme_dark_logo_login: String
-    platform_theme_light_background: String
-    platform_theme_light_paper: String
-    platform_theme_light_nav: String
-    platform_theme_light_primary: String
-    platform_theme_light_secondary: String
-    platform_theme_light_accent: String
-    platform_theme_light_logo: String
-    platform_theme_light_logo_collapsed: String
-    platform_theme_light_logo_login: String
-}
-
 interface IntlSettings {
     platform_language: String
     platform_translations: String
 }
 
-type PublicSettings implements ThemeSettings & IntlSettings {
+type MetricAttributes {
+  attribute: String!
+  name: String!
+  description: String
+}
+
+type MetricDefinition {
+  entity_type: String!
+  metrics: [MetricAttributes!]
+}
+
+interface ThemeSettings {
+  platform_title: String
+  platform_favicon: String
+  platform_theme: Theme
+}
+
+type PublicSettings implements IntlSettings & ThemeSettings {
     id: ID!
     platform_title: String
     platform_favicon: String
@@ -1408,35 +1420,15 @@ type PublicSettings implements ThemeSettings & IntlSettings {
     platform_consent_confirm_text: String
     platform_banner_text: String
     platform_banner_level: String
-    platform_theme: String
-    platform_theme_dark_background: String
-    platform_theme_dark_paper: String
-    platform_theme_dark_nav: String
-    platform_theme_dark_primary: String
-    platform_theme_dark_secondary: String
-    platform_theme_dark_accent: String
-    platform_theme_dark_logo: String
-    platform_theme_dark_logo_collapsed: String
-    platform_theme_dark_logo_login: String
-    platform_theme_light_background: String
-    platform_theme_light_paper: String
-    platform_theme_light_nav: String
-    platform_theme_light_primary: String
-    platform_theme_light_secondary: String
-    platform_theme_light_accent: String
-    platform_theme_light_logo: String
-    platform_theme_light_logo_collapsed: String
-    platform_theme_light_logo_login: String
+    platform_theme: Theme
     platform_map_tile_server_dark: String
     platform_map_tile_server_light: String
     platform_whitemark: Boolean
     platform_language: String
     platform_translations: String
-
     platform_providers: [PublicProvider!]!
     platform_enterprise_edition_license_validated: Boolean!
     playground_enabled: Boolean!
-
     metrics_definition: [MetricDefinition!]
 }
 
@@ -1451,6 +1443,11 @@ type MetricDefinition {
     metrics: [MetricAttributes!]
 }
 
+enum PlatformType {
+    LTS
+    STANDARD
+}
+
 type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSettings {
   id: ID!
   standard_id: String!
@@ -1463,6 +1460,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_title: String
   platform_favicon: String
   platform_email: String
+  platform_type: PlatformType!
   platform_email_configurable: Boolean!
   platform_cluster: Cluster!
   platform_modules: [Module!]
@@ -1470,25 +1468,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_providers: [Provider!]!
   platform_user_statuses: [UserStatus!]!
   platform_language: String
-  platform_theme: String
-  platform_theme_dark_background: String
-  platform_theme_dark_paper: String
-  platform_theme_dark_nav: String
-  platform_theme_dark_primary: String
-  platform_theme_dark_secondary: String
-  platform_theme_dark_accent: String
-  platform_theme_dark_logo: String
-  platform_theme_dark_logo_collapsed: String
-  platform_theme_dark_logo_login: String
-  platform_theme_light_background: String
-  platform_theme_light_paper: String
-  platform_theme_light_nav: String
-  platform_theme_light_primary: String
-  platform_theme_light_secondary: String
-  platform_theme_light_accent: String
-  platform_theme_light_logo: String
-  platform_theme_light_logo_collapsed: String
-  platform_theme_light_logo_login: String
+  platform_theme: Theme
   platform_map_tile_server_dark: String
   platform_map_tile_server_light: String
   platform_openaev_url: String
@@ -1522,11 +1502,13 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   password_policy_min_lowercase: Int
   password_policy_min_uppercase: Int
   platform_messages: [SettingsMessage!]
+  platform_session_max_concurrent: Int
   messages_administration: [SettingsMessage!] @auth(for: [SETTINGS_SETPARAMETERS])
   analytics_google_analytics_v4: String
   playground_enabled: Boolean!
   request_access_enabled: Boolean!
   metrics_definition: [MetricDefinition!]
+  view_all_users: Boolean
   # Technical
   editContext: [EditUserContext!] @auth(for: [SETTINGS_SETPARAMETERS])
   # XTM Hub
@@ -1581,7 +1563,7 @@ type Group implements InternalObject & BasicObject {
   standard_id: String!
   entity_type: String!
   auto_integration_assignation: [String]!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # Group
   name: String!
@@ -1763,7 +1745,7 @@ type User implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # User
   user_email: String!
@@ -1786,6 +1768,7 @@ type User implements BasicObject & InternalObject {
     orderMode: OrderingMode
   ): [Role!]!
   capabilities: [Capability]!
+  capabilitiesInDraft: [Capability]!
   default_hidden_types: [String!]!
   user_confidence_level: ConfidenceLevel
   effective_confidence_level: EffectiveConfidenceLevel
@@ -1843,6 +1826,7 @@ type MeUser implements BasicObject & InternalObject {
   personal_notifiers: [Notifier!]
   objectOrganization: MeOrganizationConnection
   capabilities: [Capability!]!
+  capabilitiesInDraft: [Capability!]!
   default_hidden_types: [String]!
   user_confidence_level: ConfidenceLevel
   effective_confidence_level: EffectiveConfidenceLevel
@@ -1926,6 +1910,11 @@ input UserOTPLoginInput {
   code: String!
 }
 
+input LicenseActivationInput {
+    settingId: ID!
+    license: String! @constraint(minLength: 2, format: "not-blank")
+}
+
 input UserOTPActivationInput {
   secret: String!
   code: String!
@@ -1950,7 +1939,7 @@ type Role implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # Role
   name: String!
@@ -1959,6 +1948,7 @@ type Role implements BasicObject & InternalObject {
   updated_at: DateTime!
   refreshed_at: DateTime
   capabilities: [Capability]
+  capabilitiesInDraft: [Capability]
   editContext: [EditUserContext!]
   can_manage_sensitive_config: Boolean
 }
@@ -1981,7 +1971,7 @@ type Capability implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # Capability
   name: String!
@@ -2142,6 +2132,16 @@ type RabbitMQConnection {
   pass: String!
 }
 
+type S3Connection {
+  endpoint: String!
+  port: Int!
+  use_ssl: Boolean!
+  bucket_name: String!
+  bucket_region: String!
+  access_key: String!
+  secret_key: String!
+}
+
 input ConnectorInfoInput {
   run_and_terminate: Boolean!
   buffering: Boolean!
@@ -2162,6 +2162,7 @@ type ConnectorInfo {
 
 type ConnectorConfig {
   connection: RabbitMQConnection! @auth(for: [CONNECTORAPI])
+  s3: S3Connection! @auth(for: [CONNECTORAPI])
   listen: String!
   listen_routing: String!
   listen_exchange: String!
@@ -2221,7 +2222,7 @@ type Connector implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # Connector
   name: String!
@@ -2269,7 +2270,7 @@ type ManagedConnector implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # Connector
   name: String!
@@ -2299,7 +2300,7 @@ type ConnectorManager implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # Manager
   name: String!
@@ -2375,7 +2376,7 @@ interface StixObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -2385,6 +2386,7 @@ interface StixObject {
   created_at: DateTime!
   updated_at: DateTime!
   refreshed_at: DateTime
+  x_opencti_modified_at: DateTime
   draftVersion: DraftVersion
   # Technical
   creators: [Creator!]
@@ -2414,7 +2416,7 @@ interface StixMetaObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   x_opencti_stix_ids: [StixId]
@@ -2453,7 +2455,7 @@ type MarkingDefinition implements BasicObject & StixObject & StixMetaObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -2462,6 +2464,7 @@ type MarkingDefinition implements BasicObject & StixObject & StixMetaObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -2488,6 +2491,7 @@ input MarkingDefinitionAddInput {
   x_opencti_color: String
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   clientMutationId: String
   update: Boolean
 }
@@ -2524,7 +2528,7 @@ type Label implements BasicObject & StixObject & StixMetaObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -2533,6 +2537,7 @@ type Label implements BasicObject & StixObject & StixMetaObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -2555,6 +2560,7 @@ input LabelAddInput {
   color: String
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   clientMutationId: String
   update: Boolean
 }
@@ -2584,7 +2590,7 @@ type ExternalReference implements BasicObject & StixObject & StixMetaObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -2593,6 +2599,7 @@ type ExternalReference implements BasicObject & StixObject & StixMetaObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -2635,14 +2642,18 @@ type ExternalReference implements BasicObject & StixObject & StixMetaObject {
 input ExternalReferenceAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
-  source_name: String! @constraint(minLength: 2, format: "not-blank")
+  source_name: String! @constraint(minLength: 1, format: "not-blank")
   description: String
   url: String
   hash: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
   external_id: String
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   clientMutationId: String
   update: Boolean
 }
@@ -2670,7 +2681,7 @@ type KillChainPhase implements BasicObject & StixObject & StixMetaObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -2679,6 +2690,7 @@ type KillChainPhase implements BasicObject & StixObject & StixMetaObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -2702,6 +2714,7 @@ input KillChainPhaseAddInput {
   x_opencti_order: Int!
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   clientMutationId: String
   update: Boolean
 }
@@ -2710,6 +2723,11 @@ input KillChainPhaseAddInput {
 type Representative {
   main: String!
   secondary: String
+}
+
+enum UnknownStixCoreObjectsOrdering {
+  value
+  entity_type
 }
 
 enum StixCoreObjectsOrdering {
@@ -2754,7 +2772,7 @@ interface StixCoreObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -2763,6 +2781,7 @@ interface StixCoreObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # StixCoreObject
@@ -2925,7 +2944,7 @@ interface StixDomainObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -2934,6 +2953,7 @@ interface StixDomainObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # StixCoreObject
@@ -3068,6 +3088,7 @@ input StixDomainObjectAddInput {
   clientMutationId: String
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   update: Boolean
 }
 
@@ -3095,7 +3116,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -3104,6 +3125,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -3275,10 +3297,15 @@ input AttackPatternAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 type AttackPatternForMatrix {
   attack_pattern_id: String!
@@ -3331,7 +3358,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -3340,6 +3367,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -3483,10 +3511,15 @@ input CampaignAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 ############## Containers
@@ -3516,7 +3549,7 @@ interface Container {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -3525,6 +3558,7 @@ interface Container {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # StixCoreObject
@@ -3675,7 +3709,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -3684,6 +3718,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -3858,10 +3893,15 @@ input NoteAddInput {
   objects: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 input NoteUserAddInput {
   stix_id: String
@@ -3911,7 +3951,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -3920,6 +3960,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -4091,10 +4132,15 @@ input ObservedDataAddInput {
   objects: [String]!
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 ################ Opinions
@@ -4123,7 +4169,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -4132,6 +4178,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -4302,10 +4349,14 @@ input OpinionAddInput {
   objects: [String]
   created: DateTime
   modified: DateTime
-  update: Boolean
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
+  update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
 }
 input OpinionUserAddInput {
   stix_id: String
@@ -4323,6 +4374,7 @@ input OpinionUserAddInput {
   objects: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   update: Boolean
   clientMutationId: String
 }
@@ -4354,7 +4406,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -4363,6 +4415,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -4545,11 +4598,16 @@ input ReportAddInput {
   objects: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
   authorized_members: [MemberAccessInput!]
+  upsertOperations: [EditInput!]
 }
 
 ############## CoursesOfAction
@@ -4576,7 +4634,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -4585,6 +4643,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -4725,10 +4784,15 @@ input CourseOfActionAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 ############## Identities
@@ -4759,7 +4823,7 @@ interface Identity {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -4768,6 +4832,7 @@ interface Identity {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # StixCoreObject
@@ -4903,11 +4968,17 @@ input IdentityAddInput {
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   created: DateTime
   modified: DateTime
+  file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
   update: Boolean
+  upsertOperations: [EditInput!]
 }
 
 ################ Individuals
@@ -4933,7 +5004,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -4942,6 +5013,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -5091,10 +5163,15 @@ input IndividualAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 ################ Sectors
@@ -5121,7 +5198,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -5130,6 +5207,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -5275,10 +5353,15 @@ input SectorAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 ################ Systems
@@ -5304,7 +5387,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -5313,6 +5396,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -5461,10 +5545,15 @@ input SystemAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 ############## Infrastructures
@@ -5496,7 +5585,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -5505,6 +5594,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -5648,10 +5738,15 @@ input InfrastructureAddInput {
   killChainPhases: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 ############## IntrusionSets
@@ -5680,7 +5775,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -5689,6 +5784,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -5840,9 +5936,14 @@ input IntrusionSetAddInput {
   x_opencti_workflow_id: String
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 ############## Locations
@@ -5870,7 +5971,7 @@ interface Location {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -5879,6 +5980,7 @@ interface Location {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # StixCoreObject
@@ -6017,8 +6119,14 @@ input LocationAddInput {
   clientMutationId: String
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   update: Boolean
+  file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 ################ Positions
@@ -6045,7 +6153,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -6054,6 +6162,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -6200,10 +6309,15 @@ input PositionAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 ################ Cities
@@ -6231,7 +6345,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -6240,6 +6354,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -6384,10 +6499,15 @@ input CityAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 enum CountriesOrdering {
@@ -6411,7 +6531,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -6420,6 +6540,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -6562,10 +6683,15 @@ input CountryAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 ################ Regions
@@ -6590,7 +6716,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -6599,6 +6725,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -6743,10 +6870,15 @@ input RegionAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 ############## Malware
@@ -6782,7 +6914,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -6791,6 +6923,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -6945,10 +7078,15 @@ input MalwareAddInput {
   samples: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 ############## ThreatActorsGroup
@@ -6980,7 +7118,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -6989,6 +7127,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -7135,7 +7274,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -7144,6 +7283,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -7303,10 +7443,15 @@ input ThreatActorGroupAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 ############## Tools
@@ -7332,7 +7477,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -7341,6 +7486,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -7482,10 +7628,15 @@ input ToolAddInput {
   killChainPhases: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 ############## Vulnerabilities
@@ -7515,7 +7666,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -7524,6 +7675,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -7764,10 +7916,15 @@ input VulnerabilityAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 ############## Incident
@@ -7801,7 +7958,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -7810,6 +7967,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -7960,10 +8118,15 @@ input IncidentAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 ######## STIX CYBER OBSERVABLES ENTITIES
@@ -7990,7 +8153,7 @@ interface StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -7999,6 +8162,7 @@ interface StixCyberObservable {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # StixCoreObject
@@ -8108,7 +8272,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -8117,6 +8281,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -8233,12 +8398,16 @@ input AutonomousSystemAddInput {
   name: String
   rir: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -8247,6 +8416,7 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -8367,12 +8537,16 @@ input DirectoryAddInput {
   mtime: DateTime
   atime: DateTime
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -8381,6 +8555,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -8493,12 +8668,16 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
 input DomainNameAddInput {
   value: String!
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -8507,6 +8686,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -8621,12 +8801,16 @@ input EmailAddrAddInput {
   value: String
   display_name: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -8635,6 +8819,7 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -8759,12 +8944,16 @@ input EmailMessageAddInput {
   received_lines: [String]
   body: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -8773,6 +8962,7 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -8889,11 +9079,16 @@ input EmailMimePartTypeAddInput {
   content_type: String
   content_disposition: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 ############## HashedObservable
 input HashInput {
   algorithm: String! @constraint(minLength: 3)
   hash: String! @constraint(minLength: 5)
+  upsertOperations: [EditInput!]
 }
 type Hash {
   algorithm: String!
@@ -8912,7 +9107,7 @@ interface HashedObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -8921,6 +9116,7 @@ interface HashedObservable {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # StixCoreObject
@@ -9032,7 +9228,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -9041,6 +9237,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -9166,12 +9363,16 @@ input ArtifactAddInput {
   decryption_key: String
   x_opencti_additional_names: [String]
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberObservable & HashedObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -9180,6 +9381,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -9314,12 +9516,16 @@ input StixFileAddInput {
   x_opencti_additional_names: [String]
   obsContent: ID
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 type X509Certificate implements BasicObject & StixObject & StixCoreObject & StixCyberObservable & HashedObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -9328,6 +9534,7 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -9497,12 +9704,16 @@ input X509CertificateAddInput {
   certificate_policies: String
   policy_mappings: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -9511,6 +9722,7 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -9626,12 +9838,16 @@ input IPv4AddrAddInput {
   belongsTo: [String]
   resolvesTo: [String]
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -9640,6 +9856,7 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -9753,12 +9970,16 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
 input IPv6AddrAddInput {
   value: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -9767,6 +9988,7 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -9879,12 +10101,16 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
 input MacAddrAddInput {
   value: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -9893,6 +10119,7 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -10005,12 +10232,16 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
 input MutexAddInput {
   name: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -10019,6 +10250,7 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -10154,12 +10386,16 @@ input NetworkTrafficAddInput {
   src_packets: Int
   dst_packets: Int
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -10168,6 +10404,7 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -10326,12 +10563,16 @@ input ProcessAddInput {
   service_type: String # windows-service-type-enum
   service_status: String # windows-service-status-enum
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 type Software implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -10340,6 +10581,7 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -10473,12 +10715,16 @@ input SoftwareAddInput {
   version: String
   x_opencti_product: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -10487,6 +10733,7 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -10599,12 +10846,16 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
 input UrlAddInput {
   value: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -10613,6 +10864,7 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -10752,12 +11004,16 @@ input UserAccountAddInput {
   account_first_login: DateTime
   account_last_login: DateTime
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -10766,6 +11022,7 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -10881,13 +11138,17 @@ input WindowsRegistryKeyAddInput {
   attribute_key: String
   modified_time: DateTime
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
   number_of_subkeys: Int
+  upsertOperations: [EditInput!]
 }
 type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -10896,6 +11157,7 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -11012,12 +11274,16 @@ input WindowsRegistryValueTypeAddInput {
   data: String
   data_type: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 type CryptographicKey implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -11026,6 +11292,7 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -11138,12 +11405,16 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
 input CryptographicKeyAddInput {
   value: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -11152,6 +11423,7 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -11264,12 +11536,16 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
 input CryptocurrencyWalletAddInput {
   value: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -11278,6 +11554,7 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -11390,12 +11667,16 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
 input HostnameAddInput {
   value: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -11404,6 +11685,7 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -11516,12 +11798,16 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
 input TextAddInput {
   value: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -11530,6 +11816,7 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -11642,12 +11929,16 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
 input UserAgentAddInput {
   value: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -11656,6 +11947,7 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -11773,12 +12065,16 @@ input BankAccountAddInput {
   bic: String
   account_number: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 type TrackingNumber implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -11787,6 +12083,7 @@ type TrackingNumber implements BasicObject & StixObject & StixCoreObject & StixC
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -11902,12 +12199,16 @@ type TrackingNumber implements BasicObject & StixObject & StixCoreObject & StixC
 input TrackingNumberAddInput {
   value: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 type Credential implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -11916,6 +12217,7 @@ type Credential implements BasicObject & StixObject & StixCoreObject & StixCyber
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -12031,12 +12333,16 @@ type Credential implements BasicObject & StixObject & StixCoreObject & StixCyber
 input CredentialAddInput {
   value: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -12045,6 +12351,7 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -12157,12 +12464,16 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
 input PhoneNumberAddInput {
   value: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -12171,6 +12482,7 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -12289,12 +12601,16 @@ input PaymentCardAddInput {
   cvv: Int
   holder_name: String
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -12303,6 +12619,7 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -12424,12 +12741,16 @@ input MediaContentAddInput {
   url: String!
   publication_date: DateTime
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 type Persona implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -12438,6 +12759,7 @@ type Persona implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -12551,13 +12873,18 @@ type Persona implements BasicObject & StixObject & StixCoreObject & StixCyberObs
 input PersonaAddInput {
   persona_name: String! @constraint(minLength: 2, format: "not-blank")
   persona_type: String!
+  file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 
 type SSHKey implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -12566,6 +12893,7 @@ type SSHKey implements BasicObject & StixObject & StixCoreObject & StixCyberObse
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -12691,6 +13019,11 @@ input SSHKeyAddInput {
   comment: String
   created: DateTime
   expiration_date: DateTime
+  file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  upsertOperations: [EditInput!]
 }
 ###### RELATIONSHIPS
 
@@ -12698,7 +13031,7 @@ interface BasicRelationship {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   fromRole: String
   toRole: String
@@ -12716,7 +13049,7 @@ type InternalRelationship implements BasicRelationship {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   fromRole: String
   toRole: String
@@ -12860,6 +13193,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | Status
   | PublicDashboard
   | Pir
+  | Theme
 union StixObjectOrStixRelationship =
   MarkingDefinition
   | Label
@@ -13028,6 +13362,7 @@ union StixCoreObjectOrStixCoreRelationship =
   | ManagerConfiguration
   | Workspace
   | PublicDashboard
+  | Theme
 
 enum StixRelationshipsOrdering {
   entity_type
@@ -13065,7 +13400,7 @@ interface StixRelationship {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   fromRole: String
   toRole: String
@@ -13142,12 +13477,13 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   fromRole: String
   toRole: String
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   # StixRelationship
   representative: Representative!
@@ -13244,10 +13580,12 @@ input StixCoreRelationshipAddInput {
   externalReferences: [String]
   killChainPhases: [String]
   x_opencti_workflow_id: String
+  x_opencti_modified_at: DateTime
   coverage_information: [SecurityCoverageExpectation!]
   # Technical
   clientMutationId: String
   update: Boolean
+  upsertOperations: [EditInput!]
 }
 
 ############## StixSightingRelationships
@@ -13284,12 +13622,13 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   fromRole: String
   toRole: String
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   # StixRelationship
   representative: Representative!
@@ -13356,6 +13695,8 @@ input StixSightingRelationshipAddInput {
   clientMutationId: String
   update: Boolean
   x_opencti_workflow_id: String
+  x_opencti_modified_at: DateTime
+  upsertOperations: [EditInput!]
 }
 
 ############## StixRefRelationships
@@ -13390,7 +13731,7 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   fromRole: String
   toRole: String
@@ -13453,11 +13794,25 @@ input StixRefRelationshipAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
 }
 input StixRefRelationshipsAddInput {
   relationship_type: String!
   fromIds: [StixRef]
   toIds: [StixRef!]!
+}
+
+type SynchronizerAddInputFromImport {
+    name: String!
+    uri: String!
+    stream_id: String!
+    current_state_date: DateTime
+    listen_deletion: Boolean!
+    ssl_verify: Boolean!
+    no_dependencies: Boolean!
+    synchronized: Boolean!
 }
 
 ### QUERIES
@@ -13568,14 +13923,14 @@ type Query {
 
   ######## INTERNAL OBJECT ENTITIES
   publicSettings: PublicSettings! @public # All returned information are public
-  settings: Settings! @auth
+  settings: Settings! @auth @allowUnlicensedLTS
   group(id: String!): Group @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
   groups(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): GroupConnection
   @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
   roles(first: Int, after: ID, orderBy: RolesOrdering, orderMode: OrderingMode, search: String): RoleConnection
   @auth(for: [SETTINGS_SETACCESSES])
   me: MeUser! @auth
-  otpGeneration: OtpElement @auth
+  otpGeneration: OtpElement @auth @allowUnprotectedOTP
   user(id: String!): User @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   creators(entityTypes: [String!]): CreatorConnection @auth(for: [KNOWLEDGE])
   assignees(entityTypes: [String!]): AssigneeConnection @auth(for: [KNOWLEDGE])
@@ -13600,6 +13955,7 @@ type Query {
   sessions: [UserSession] @auth(for: [SETTINGS_SETACCESSES])
   role(id: String!): Role @auth(for: [SETTINGS_SETACCESSES])
   capabilities(first: Int): CapabilityConnection @auth(for: [SETTINGS_SETACCESSES])
+  capabilitiesInDraft(first: Int): CapabilityConnection @auth(for: [SETTINGS_SETACCESSES])
   connector(id: String!): Connector @auth(for: [MODULES])
   connectors: [Connector!]! @auth(for: [MODULES])
   connectorManager(managerId: ID!): ConnectorManager! @auth(for: [MODULES])
@@ -13700,7 +14056,9 @@ type Query {
   rules: [Rule] @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
   ruleManagerInfo: RuleManager @auth(for: [SETTINGS_SETCUSTOMIZATION])
   synchronizer(id: String!): Synchronizer @auth(for: [INGESTION])
-  synchronizers(
+    synchronizerAddInputFromImport(file: Upload!): SynchronizerAddInputFromImport! @auth(for: [CONNECTORAPI])
+
+    synchronizers(
     first: Int
     after: ID
     orderBy: SynchronizersOrdering
@@ -13795,6 +14153,11 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
   ): StixCoreObjectConnection @auth(for: [KNOWLEDGE])
+  unknownStixCoreObjects(
+    values: [String!]!
+    orderBy: UnknownStixCoreObjectsOrdering
+    orderMode: OrderingMode
+  ): [String!]! @auth(for: [KNOWLEDGE])
   stixCoreObjectsExportFiles(first: Int, exportContext: ExportContext!): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT])
   stixCoreObjectsTimeSeries(
     authorId: String
@@ -13857,7 +14220,10 @@ type Query {
     order: String
     distributionParameters: StixCoreObjectsDistributionParameters
   ): [MultiDistribution] @auth(for: [KNOWLEDGE, EXPLORE])
-  filtersRepresentatives(filters: FilterGroup!): [RepresentativeWithId!]! @auth(for: [KNOWLEDGE, SETTINGS_SECURITYACTIVITY, INGESTION_SETINGESTIONS, SETTINGS_SETACCESSES, SETTINGS_SETCUSTOMIZATION])
+  filtersRepresentatives(
+    filters: FilterGroup!
+    isMeValueForbidden: Boolean
+  ): [RepresentativeWithId!]! @auth(for: [KNOWLEDGE, SETTINGS_SECURITYACTIVITY, INGESTION_SETINGESTIONS, SETTINGS_SETACCESSES, SETTINGS_SETCUSTOMIZATION])
 
   ######## STIX DOMAIN OBJECT ENTITIES
 
@@ -15197,12 +15563,13 @@ type Mutation {
   uploadImport(file: Upload!, fileMarkings: [String]): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
   uploadAndAskJobImport(file: Upload!, fileMarkings: [String!], connectors: [ConnectorWithConfig!], validationMode: ValidationMode, draftId: String, noTriggerImport: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNASKIMPORT])
   uploadPending(file: Upload!, entityId: String, labels: [String], errorOnExisting: Boolean, file_markings: [String!], refreshEntity: Boolean): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
-  askJobImport(fileName: ID!, connectorId: String, configuration: String, bypassEntityId: String, bypassValidation: Boolean, validationMode: ValidationMode, forceValidation: Boolean): File
-  @auth(for: [KNOWLEDGE_KNASKIMPORT])
+  askJobImport(fileName: ID!, connectorId: String, configuration: String, bypassEntityId: String, bypassValidation: Boolean, validationMode: ValidationMode, forceValidation: Boolean): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
+  createDraftAndAskJobImport(fileName: ID!, connectorId: String, configuration: String, bypassEntityId: String, bypassValidation: Boolean, validationMode: ValidationMode, forceValidation: Boolean,  authorized_members: [MemberAccessInput!]): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
   resetFileIndexing: Boolean @auth(for: [SETTINGS_FILEINDEXING])
 
   ### SYNC
   synchronizerAdd(input: SynchronizerAddInput!): Synchronizer @auth(for: [CONNECTORAPI])
+  synchronizerAddAutoUser(id: ID!, input: SynchronizerAddAutoUserInput!): Synchronizer @auth(for:[CONNECTORAPI])
   synchronizerEdit(id: ID!): SynchronizerEditMutations @auth(for: [CONNECTORAPI])
   synchronizerStart(id: ID!): Synchronizer @auth(for: [CONNECTORAPI])
   synchronizerStop(id: ID!): Synchronizer @auth(for: [CONNECTORAPI])
@@ -15233,11 +15600,12 @@ type Mutation {
   ######## INTERNAL OBJECT ENTITIES
   frontendErrorLog(message: String!, codeStack: String, componentStack: String): Boolean @auth
   token(input: UserLoginInput): String @public # Use for login
-  otpActivation(input: UserOTPActivationInput): MeUser @auth
+  otpActivation(input: UserOTPActivationInput): MeUser @auth @allowUnprotectedOTP
   otpDeactivation: MeUser @auth
   otpUserDeactivation(id: ID!): MeUser @auth(for: [SETTINGS_SETACCESSES])
-  otpLogin(input: UserOTPLoginInput): Boolean @auth @rateLimit(limit: 1, duration: 1)
+  otpLogin(input: UserOTPLoginInput): Boolean @auth @rateLimit(limit: 1, duration: 1) @allowUnprotectedOTP
   settingsEdit(id: ID!): SettingsEditMutations @auth
+  setupEnterpriseLicense(input: LicenseActivationInput!): Settings @auth(for: [SETTINGS_SETPARAMETERS, SETTINGS_SETMANAGEXTMHUB]) @allowUnlicensedLTS
   subTypeEdit(id: ID!): SubTypeEditMutations @auth(for: [SETTINGS_SETCUSTOMIZATION])
   statusTemplateAdd(input: StatusTemplateAddInput!): StatusTemplate! @auth(for: [SETTINGS_SETSTATUSTEMPLATES])
   statusTemplateDelete(id: ID!): ID! @auth(for: [SETTINGS_SETSTATUSTEMPLATES])
@@ -15253,7 +15621,7 @@ type Mutation {
   bookmarkAdd(id: ID!, type: String!): StixDomainObject @auth(for: [KNOWLEDGE])
   bookmarkDelete(id: ID!): ID @auth(for: [KNOWLEDGE])
   sendUserMail(input: SendUserMailInput!): Boolean @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
-  logout: ID @auth
+  logout: ID @auth @allowUnprotectedOTP
   roleAdd(input: RoleAddInput!): Role @auth(for: [SETTINGS_SETACCESSES])
   sessionKill(id: ID!): ID @auth(for: [SETTINGS_SETACCESSES])
   userSessionsKill(id: ID!): [ID] @auth(for: [SETTINGS_SETACCESSES])
@@ -15378,6 +15746,7 @@ type Mutation {
     stix_id: StixId
     x_opencti_score: Int
     x_opencti_description: String
+    x_opencti_modified_at: DateTime
     createIndicator: Boolean
     createdBy: String
     objectMarking: [String]
@@ -15386,6 +15755,7 @@ type Mutation {
     externalReferences: [String]
     clientMutationId: String
     update: Boolean
+    upsertOperations: [EditInput!]
     AutonomousSystem: AutonomousSystemAddInput
     Directory: DirectoryAddInput
     DomainName: DomainNameAddInput
@@ -15425,6 +15795,7 @@ type Mutation {
   stixCyberObservablesExportPush(entity_id: String, entity_type: String!, file: Upload!, file_markings: [String]!, listFilters: String): Boolean @auth(for: [CONNECTORAPI])
   artifactImport(
     file: Upload!
+    fileMarkings: [String]
     x_opencti_description: String
     createdBy: String
     objectMarking: [String]

@@ -1,17 +1,8 @@
 import { useReactFlow } from 'reactflow';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { graphql } from 'react-relay';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
-import DialogTitle from '@mui/material/DialogTitle';
 import { commitMutation } from '../../../../../relay/environment';
-import PlaybookAddComponents from '../PlaybookAddComponents';
-import Transition from '../../../../../components/Transition';
-import { useFormatter } from '../../../../../components/i18n';
 
 export const useManipulateComponentsPlaybookUpdatePositionsMutation = graphql`
   mutation useManipulateComponentsPlaybookUpdatePositionsMutation(
@@ -79,14 +70,6 @@ export const useManipulateComponentsDeleteNodeMutation = graphql`
   }
 `;
 
-export const useManipulateComponentsDeleteLinkMutation = graphql`
-  mutation useManipulateComponentsDeleteLinkMutation($id: ID!, $linkId: ID!) {
-    playbookDeleteLink(id: $id, linkId: $linkId) {
-      id
-    }
-  }
-`;
-
 const deleteEdgesAndAllChildren = (definitionNodes, definitionEdges, edges) => {
   const edgesToDelete = edges;
   const nodesToDelete = [];
@@ -120,11 +103,12 @@ const deleteEdgesAndAllChildren = (definitionNodes, definitionEdges, edges) => {
   };
 };
 
-const useManipulateComponents = (playbook, playbookComponents) => {
+const useManipulateComponents = (playbook) => {
   const [selectedNode, setSelectedNode] = useState(null);
   const [selectedEdge, setSelectedEdge] = useState(null);
   const [action, setAction] = useState(null);
   const { getNode, getNodes, getEdges, setNodes, setEdges } = useReactFlow();
+
   // region local graph
   const applyAddNodeFromPlaceholder = (
     result,
@@ -459,8 +443,8 @@ const useManipulateComponents = (playbook, playbookComponents) => {
         let i = selectedNode.data.component.ports.length;
         i
         < component.ports.length
-          - selectedNode.data.component.ports.length
-          + (selectedNode.data.component.ports.length > 0 ? 1 : 0);
+        - selectedNode.data.component.ports.length
+        + (selectedNode.data.component.ports.length > 0 ? 1 : 0);
         // eslint-disable-next-line no-plusplus
         i++
       ) {
@@ -599,6 +583,7 @@ const useManipulateComponents = (playbook, playbookComponents) => {
     setEdges(newEdges);
   };
   // endregion
+
   // region backend graph
   const addNodeFromPlaceholder = (component, name, config) => {
     const jsonConfig = config ? JSON.stringify(config) : null;
@@ -791,6 +776,7 @@ const useManipulateComponents = (playbook, playbookComponents) => {
     });
   };
   // endregion
+
   const onConfigAdd = (component, name, config) => {
     // We are in a placeholder
     if (selectedNode && action === 'config') {
@@ -805,60 +791,17 @@ const useManipulateComponents = (playbook, playbookComponents) => {
   const onConfigReplace = (component, name, config) => {
     replaceNode(component, name, config);
   };
-  const renderManipulateComponents = () => {
-    const { t_i18n } = useFormatter();
-    return (
-      <>
-        <PlaybookAddComponents
-          action={action}
-          setSelectedNode={setSelectedNode}
-          setSelectedEdge={setSelectedEdge}
-          selectedNode={selectedNode}
-          selectedEdge={selectedEdge}
-          onConfigAdd={onConfigAdd}
-          onConfigReplace={onConfigReplace}
-          playbookComponents={playbookComponents}
-        />
-        <Dialog
-          slotProps={{ paper: { elevation: 1 } }}
-          open={selectedNode !== null && action === 'delete'}
-          keepMounted={true}
-          slots={{ transition: Transition }}
-          onClose={() => {
-            setSelectedNode(null);
-            setAction(null);
-          }}
-        >
-          <DialogTitle>
-            {t_i18n('Are you sure?')}
-          </DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              {t_i18n('Do you want to delete this node?')}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={() => {
-                setSelectedNode(null);
-                setAction(null);
-              }}
-            >
-              {t_i18n('Cancel')}
-            </Button>
-            <Button color="secondary" onClick={deleteNode}>
-              {t_i18n('Confirm')}
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </>
-    );
-  };
+
   return {
+    action,
     setAction,
+    selectedNode,
     setSelectedNode,
+    selectedEdge,
     setSelectedEdge,
-    renderManipulateComponents,
+    onConfigAdd,
+    onConfigReplace,
+    deleteNode,
   };
 };
 

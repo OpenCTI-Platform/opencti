@@ -26,7 +26,7 @@ export const convertIpv6ToBinary = (ipv6: string, isRange?: boolean, range?: num
     test = [
       ...test.slice(0, emptyFieldIndex + 1),
       ...Array(8 - test.length).fill('0'),
-      ...test.slice(emptyFieldIndex + 1)
+      ...test.slice(emptyFieldIndex + 1),
     ];
   }
 
@@ -45,8 +45,8 @@ export const convertIpv4ToBinary = (ipv4: string, isRange?: boolean, range?: num
 };
 
 export interface ConvertedIpAddr {
-  ipv4: { ranges: number[], values: string[] }
-  ipv6: { ranges: number[], values: string[] }
+  ipv4: { ranges: number[]; values: string[] };
+  ipv6: { ranges: number[]; values: string[] };
 }
 
 export const convertIpAddr = (list: string[]) => {

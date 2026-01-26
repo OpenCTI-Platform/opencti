@@ -97,7 +97,7 @@ const dataColumns: DataColumns = {
     render: (node, { t, classes }) => (
       <Chip
         classes={{ root: classes.chipInList }}
-        color={'success'}
+        color="success"
         variant="outlined"
         label={t('Started')}
       />
@@ -120,7 +120,7 @@ const PublicFeedLine = ({ node }: { node: PublicFeedLines_node$key }) => {
       classes={{ root: classes.item }}
       color="primary"
       divider={true}
-      secondaryAction={
+      secondaryAction={(
         <>
           <Tooltip title={t_i18n('Copy uri to clipboard for your csv client')}>
             <span>
@@ -137,13 +137,13 @@ const PublicFeedLine = ({ node }: { node: PublicFeedLines_node$key }) => {
             </span>
           </Tooltip>
         </>
-    }
+      )}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <ItemIcon type="feed" />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             {Object.values(dataColumns).map((value) => (
               <div
@@ -155,7 +155,7 @@ const PublicFeedLine = ({ node }: { node: PublicFeedLines_node$key }) => {
               </div>
             ))}
           </div>
-        }
+        )}
       />
     </ListItem>
   );
@@ -191,7 +191,7 @@ const PublicFeedLines = () => {
       <Typography
         variant="h5"
         gutterBottom={true}
-        color={'error'}
+        color="error"
         style={{ marginTop: 20 }}
       >
         {t_i18n('No available public CSV feeds on this platform')}

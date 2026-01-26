@@ -9,11 +9,11 @@ const EXCLUSION_LIST_DEFINITION: ModuleDefinition<StoreEntityExclusionList, Stix
     id: 'exclusion-list',
     name: ENTITY_TYPE_EXCLUSION_LIST,
     category: ABSTRACT_INTERNAL_OBJECT,
-    aliased: false
+    aliased: false,
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_EXCLUSION_LIST]: () => uuidv4()
+      [ENTITY_TYPE_EXCLUSION_LIST]: () => uuidv4(),
     },
   },
   attributes: [
@@ -26,7 +26,7 @@ const EXCLUSION_LIST_DEFINITION: ModuleDefinition<StoreEntityExclusionList, Stix
       editDefault: false,
       multiple: false,
       upsert: false,
-      isFilterable: true
+      isFilterable: true,
     },
     {
       name: 'description',
@@ -37,7 +37,7 @@ const EXCLUSION_LIST_DEFINITION: ModuleDefinition<StoreEntityExclusionList, Stix
       editDefault: false,
       multiple: false,
       upsert: false,
-      isFilterable: false
+      isFilterable: false,
     },
     {
       name: 'enabled',
@@ -47,7 +47,7 @@ const EXCLUSION_LIST_DEFINITION: ModuleDefinition<StoreEntityExclusionList, Stix
       editDefault: false,
       multiple: false,
       upsert: false,
-      isFilterable: true
+      isFilterable: true,
     },
     {
       name: 'exclusion_list_entity_types',
@@ -58,7 +58,7 @@ const EXCLUSION_LIST_DEFINITION: ModuleDefinition<StoreEntityExclusionList, Stix
       editDefault: false,
       multiple: true,
       upsert: false,
-      isFilterable: true
+      isFilterable: true,
     },
     {
       name: 'exclusion_list_values_count',
@@ -69,7 +69,7 @@ const EXCLUSION_LIST_DEFINITION: ModuleDefinition<StoreEntityExclusionList, Stix
       editDefault: false,
       multiple: false,
       upsert: false,
-      isFilterable: false
+      isFilterable: false,
     },
     {
       name: 'file_id',
@@ -80,7 +80,7 @@ const EXCLUSION_LIST_DEFINITION: ModuleDefinition<StoreEntityExclusionList, Stix
       editDefault: false,
       multiple: false,
       upsert: false,
-      isFilterable: false
+      isFilterable: false,
     },
     {
       name: 'exclusion_list_file_size',
@@ -91,14 +91,14 @@ const EXCLUSION_LIST_DEFINITION: ModuleDefinition<StoreEntityExclusionList, Stix
       editDefault: false,
       multiple: false,
       upsert: false,
-      isFilterable: false
-    }
+      isFilterable: false,
+    },
   ],
   relations: [],
   representative: (instance: StixExclusionList) => {
     return instance.name;
   },
-  converter_2_1: convertExclusionListToStix
+  converter_2_1: convertExclusionListToStix,
 };
 
 registerDefinition(EXCLUSION_LIST_DEFINITION);

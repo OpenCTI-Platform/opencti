@@ -25,7 +25,7 @@ class AddLocationsLinesContainer extends Component {
     return (
       <StixCoreRelationshipCreationFromEntityList
         entity={intrusionSet}
-        relationshipType={'originates-from'}
+        relationshipType="originates-from"
         availableDatas={data?.locations}
         existingDatas={intrusionSetLocations}
         updaterOptions={{ path: 'locations' }}

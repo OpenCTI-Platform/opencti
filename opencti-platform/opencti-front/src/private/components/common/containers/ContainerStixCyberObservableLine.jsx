@@ -125,20 +125,20 @@ const ContainerStixCyberObservableLineComponent = (props) => {
           classes={{ root: classes.itemIcon }}
           style={{ minWidth: 40 }}
           onClick={(event) => !isOnlyThroughInference
-          && (event.shiftKey
-            ? onToggleShiftEntity(index, node, event)
-            : onToggleEntity(node, event))
-        }
+            && (event.shiftKey
+              ? onToggleShiftEntity(index, node, event)
+              : onToggleEntity(node, event))
+          }
         >
           <Checkbox
             edge="start"
             disabled={isOnlyThroughInference}
             checked={
-            (selectAll
-              && !isOnlyThroughInference
-              && !(node.id in deSelectedElements))
-            || node.id in selectedElements
-          }
+              (selectAll
+                && !isOnlyThroughInference
+                && !(node.id in deSelectedElements))
+              || node.id in selectedElements
+            }
             disableRipple={true}
           />
         </ListItemIcon>
@@ -146,7 +146,7 @@ const ContainerStixCyberObservableLineComponent = (props) => {
           <ItemIcon type={node.entity_type} />
         </ListItemIcon>
         <ListItemText
-          primary={
+          primary={(
             <div>
               <div
                 className={classes.bodyItem}
@@ -159,7 +159,7 @@ const ContainerStixCyberObservableLineComponent = (props) => {
                 style={{ width: dataColumns.observable_value.width }}
               >
                 {renderObservableValue(node)}
-                {node.draftVersion && (<DraftChip/>)}
+                {node.draftVersion && (<DraftChip />)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -193,18 +193,18 @@ const ContainerStixCyberObservableLineComponent = (props) => {
                   'Data-Component',
                   'Data-Source',
                 ].includes(node.entity_type) ? (
-                  <Chip
-                    classes={{ root: classes.chipNoLink }}
-                    label={n(node.containersNumber.total)}
-                  />
-                  ) : (
-                    <Chip
-                      classes={{ root: classes.chip }}
-                      label={n(node.containersNumber.total)}
-                      component={Link}
-                      to={linkAnalyses}
-                    />
-                  )}
+                      <Chip
+                        classes={{ root: classes.chipNoLink }}
+                        label={n(node.containersNumber.total)}
+                      />
+                    ) : (
+                      <Chip
+                        classes={{ root: classes.chip }}
+                        label={n(node.containersNumber.total)}
+                        component={Link}
+                        to={linkAnalyses}
+                      />
+                    )}
               </div>
               <div
                 className={classes.bodyItem}
@@ -217,7 +217,7 @@ const ContainerStixCyberObservableLineComponent = (props) => {
                 />
               </div>
             </div>
-        }
+          )}
         />
       </ListItemButton>
     </ListItem>
@@ -293,11 +293,11 @@ export const ContainerStixCyberObservableLineDummy = (props) => {
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={
-        <IconButton classes={classes.itemIconDisabled } disabled={true} aria-haspopup="true" size="large">
+      secondaryAction={(
+        <IconButton classes={classes.itemIconDisabled} disabled={true} aria-haspopup="true" size="large">
           <MoreVert />
         </IconButton>
-      }
+      )}
     >
       <ListItemIcon
         classes={{ root: classes.itemIconDisabled }}
@@ -309,7 +309,7 @@ export const ContainerStixCyberObservableLineDummy = (props) => {
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -389,7 +389,7 @@ export const ContainerStixCyberObservableLineDummy = (props) => {
               />
             </div>
           </div>
-        }
+        )}
       />
     </ListItem>
   );

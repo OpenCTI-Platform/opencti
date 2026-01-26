@@ -42,7 +42,7 @@ interface VocabularyCategoryLineProps {
 }
 
 export const VocabularyCategoryLine: FunctionComponent<
-VocabularyCategoryLineProps
+  VocabularyCategoryLineProps
 > = ({ dataColumns, node }) => {
   const classes = useStyles();
   return (
@@ -56,7 +56,7 @@ VocabularyCategoryLineProps
         <ShortTextOutlined />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             {Object.values(dataColumns).map((value) => (
               <div
@@ -68,7 +68,7 @@ VocabularyCategoryLineProps
               </div>
             ))}
           </div>
-        }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />
@@ -86,7 +86,7 @@ export const VocabularyCategoryLineDummy = ({
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
       <ListItemText
-        primary={
+        primary={(
           <div>
             {Object.values(dataColumns).map((value) => (
               <div
@@ -103,7 +103,7 @@ export const VocabularyCategoryLineDummy = ({
               </div>
             ))}
           </div>
-        }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />

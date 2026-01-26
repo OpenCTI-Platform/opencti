@@ -61,7 +61,7 @@ interface CsvMapperRepresentationFormProps
 }
 
 const CsvMapperRepresentationForm: FunctionComponent<
-CsvMapperRepresentationFormProps
+  CsvMapperRepresentationFormProps
 > = ({
   form,
   field,
@@ -172,7 +172,7 @@ CsvMapperRepresentationFormProps
               renderOption={(props, option) => (
                 <li {...props}>
                   <div className={classes.icon}>
-                    <ItemIcon type={option.label}/>
+                    <ItemIcon type={option.label} />
                   </div>
                   <div className={classes.text}>
                     {t_i18n(`${prefixLabel}${option.label}`)}
@@ -182,11 +182,11 @@ CsvMapperRepresentationFormProps
             />
             <div style={{ marginTop: 20 }}>
               {field.name.startsWith('entity_representation') && (
-              <Field
-                component={CsvMapperConditionalEntityMapping}
-                representation={value}
-                representationName={name}
-              />
+                <Field
+                  component={CsvMapperConditionalEntityMapping}
+                  representation={value}
+                  representationName={name}
+                />
               )}
               <CsvMapperRepresentationAttributesForm
                 handleErrors={handleErrors}

@@ -43,7 +43,7 @@ const pirQuery = graphql`
 `;
 
 interface PirComponentProps {
-  pirQueryRef: PreloadedQuery<PirQuery>
+  pirQueryRef: PreloadedQuery<PirQuery>;
 }
 
 const PirComponent = ({
@@ -51,7 +51,7 @@ const PirComponent = ({
 }: PirComponentProps) => {
   const { pir } = usePreloadedQuery(pirQuery, pirQueryRef);
 
-  if (!pir) return <ErrorNotFound/>;
+  if (!pir) return <ErrorNotFound />;
 
   return (
     <>
@@ -81,7 +81,7 @@ const PirComponent = ({
 
 const Pir = () => {
   const { pirId } = useParams() as { pirId?: string };
-  if (!pirId) return <ErrorNotFound/>;
+  if (!pirId) return <ErrorNotFound />;
   const pirQueryRef = useQueryLoading<PirQuery>(pirQuery, { id: pirId });
 
   return (

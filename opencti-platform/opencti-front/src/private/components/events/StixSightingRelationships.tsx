@@ -369,7 +369,7 @@ const StixSightingRelationships = () => {
           resolvePath={(data: StixSightingRelationshipsLines_data$data) => data.stixSightingRelationships?.edges?.map((n) => n?.node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
-          toolbarFilters={contextFilters}
+          contextFilters={contextFilters}
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={stixSightingsLineFragment}
           exportContext={{ entity_type: 'stix-sighting-relationship' }}

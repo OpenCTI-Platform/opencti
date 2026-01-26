@@ -2,7 +2,9 @@ import type { Resolvers } from '../../../generated/graphql';
 import { buildRefRelationKey } from '../../../schema/general';
 import { RELATION_OBJECT_ASSIGNEE } from '../../../schema/stixRefRelationship';
 import { stixDomainObjectDelete } from '../../../domain/stixDomainObject';
+
 import { addCaseRft, caseRftContainsStixObjectOrStixRelationship, findRftPaginated, findById } from './case-rft-domain';
+import { ENTITY_TYPE_CONTAINER_CASE_RFT } from './case-rft-types';
 
 const caseRftResolvers: Resolvers = {
   Query: {
@@ -21,9 +23,9 @@ const caseRftResolvers: Resolvers = {
       return addCaseRft(context, context.user, input);
     },
     caseRftDelete: (_, { id }, context) => {
-      return stixDomainObjectDelete(context, context.user, id);
+      return stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_CONTAINER_CASE_RFT);
     },
-  }
+  },
 };
 
 export default caseRftResolvers;

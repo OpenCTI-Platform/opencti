@@ -10,7 +10,7 @@ const examples = jsonFewShotExamples.map((item) => ({
   input: item.input,
   output: JSON.stringify(OutputSchema.safeParse(item.output)).replace(
     /"/g,
-    "'"
+    "'",
   ),
 }));
 

@@ -12,20 +12,20 @@ const ImportMenu = () => {
     <Tabs value={location.pathname} sx={{ paddingBottom: 3 }}>
       <Tab
         component={Link}
-        to={'/dashboard/data/import/file'}
-        value={'/dashboard/data/import/file'}
+        to="/dashboard/data/import/file"
+        value="/dashboard/data/import/file"
         label={t_i18n('Global files')}
       />
       <Tab
         component={Link}
-        to={'/dashboard/data/import/draft'}
-        value={'/dashboard/data/import/draft'}
+        to="/dashboard/data/import/draft"
+        value="/dashboard/data/import/draft"
         label={t_i18n('Drafts')}
       />
       <Tab
         component={Link}
-        to={'/dashboard/data/import/workbench'}
-        value={'/dashboard/data/import/workbench'}
+        to="/dashboard/data/import/workbench"
+        value="/dashboard/data/import/workbench"
         label={t_i18n('Analyst workbenches')}
       />
     </Tabs>

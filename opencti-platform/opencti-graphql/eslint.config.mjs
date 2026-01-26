@@ -1,11 +1,11 @@
 // eslint.config.js
-import { defineConfig } from 'eslint/config';
-import eslint from '@eslint/js';
-import tseslint from 'typescript-eslint';
-import globals from 'globals';
-import importPlugin from 'eslint-plugin-import';
-import importNewlines from 'eslint-plugin-import-newlines';
-import stylistic from '@stylistic/eslint-plugin';
+import { defineConfig } from 'eslint/config'
+import eslint from '@eslint/js'
+import tseslint from 'typescript-eslint'
+import globals from 'globals'
+import importPlugin from 'eslint-plugin-import'
+import importNewlines from 'eslint-plugin-import-newlines'
+import stylistic from '@stylistic/eslint-plugin'
 
 export default defineConfig([
   {
@@ -28,6 +28,7 @@ export default defineConfig([
 
   // Base JS rules
   eslint.configs.recommended,
+  stylistic.configs.recommended,
 
   // Typescript rules
   ...tseslint.configs.recommended,
@@ -67,15 +68,20 @@ export default defineConfig([
         project: './tsconfig.json',
         tsconfigRootDir: import.meta.dirname,
       },
-			globals: {
+      globals: {
         ...globals.node,
       },
     },
 
     rules: {
-      '@stylistic/quotes': ['error', 'single', { 'avoidEscape': true }],
+      '@stylistic/multiline-ternary': 'off',
+      '@stylistic/brace-style': ['error', '1tbs'],
+      '@stylistic/arrow-parens': ['error', 'always'],
+      '@stylistic/space-before-blocks': 'error',
+      '@stylistic/quote-props': ['error', 'as-needed'],
+      '@stylistic/quotes': ['error', 'single', { avoidEscape: true }],
+      '@stylistic/member-delimiter-style': ['error', { singleline: { requireLast: false } }],
       '@stylistic/semi': ['error', 'always'],
-      '@stylistic/no-multiple-empty-lines': ['error', { 'max': 1, 'maxEOF': 1 }],
       'import/extensions': [
         'error',
         'ignorePackages',
@@ -88,7 +94,7 @@ export default defineConfig([
         ignoreStrings: true,
         ignoreTemplateLiterals: true,
       }],
-      camelcase: 'off',
+      'camelcase': 'off',
       'no-underscore-dangle': 'off',
       'no-await-in-loop': 'off',
       'import/no-import-module-exports': 'off',
@@ -110,7 +116,7 @@ export default defineConfig([
         },
       ],
 
-      'import-newlines/enforce': ['error', { items: 20, 'max-len': 180 }],
+      'import-newlines/enforce': ['error', { 'items': 20, 'max-len': 180 }],
       '@typescript-eslint/no-floating-promises': 'error',
     },
   },
@@ -123,5 +129,5 @@ export default defineConfig([
       '@typescript-eslint/return-await': 'off',
       '@typescript-eslint/no-use-before-define': 'off',
     },
-  }
-]);
+  },
+])

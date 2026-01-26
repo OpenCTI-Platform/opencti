@@ -83,8 +83,8 @@ const IntrusionSetsCards: FunctionComponent<IntrusionSetsCardsProps> = ({
 }) => {
   const [bookmarks, setBookmarks] = useState([]);
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
-  IntrusionSetsCardsPaginationQuery,
-  IntrusionSetsCards_data$key
+    IntrusionSetsCardsPaginationQuery,
+    IntrusionSetsCards_data$key
   >({
     linesQuery: intrusionSetsCardsQuery,
     linesFragment: intrusionSetsCardsFragment,

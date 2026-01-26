@@ -12,7 +12,8 @@ import { now } from 'src/utils/Time';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { availableEntityTypes, exclusionListUpdateValidator } from '@components/settings/exclusion_lists/ExclusionListUtils';
-import { APP_BASE_PATH, handleErrorInForm } from '../../../../relay/environment'; import AutocompleteField from '../../../../components/AutocompleteField';
+import { APP_BASE_PATH, handleErrorInForm } from '../../../../relay/environment';
+import AutocompleteField from '../../../../components/AutocompleteField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import MarkdownField from '../../../../components/fields/MarkdownField';
@@ -33,7 +34,7 @@ export const exclusionListMutationFieldPatch = graphql`
 interface ExclusionListEditionComponentProps {
   data: ExclusionListsLine_node$data;
   isOpen: boolean;
-  refetchStatus: () => void,
+  refetchStatus: () => void;
   onClose: () => void;
 }
 
@@ -147,106 +148,106 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
     >
       {initialValues
         ? (
-          <Formik<ExclusionListEditionFormData>
-            enableReinitialize={true}
-            validateOnBlur={true}
-            validateOnChange={true}
-            initialValues={initialValues}
-            validationSchema={exclusionListUpdateValidator(t_i18n)}
-            onSubmit={onSubmit}
-          >
-            {({ submitForm, isSubmitting, setFieldValue }) => (
-              <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
-                  component={TextField}
-                  name="name"
-                  label={t_i18n('Name')}
-                  fullWidth={true}
-                  required
-                />
-                <Field
-                  component={MarkdownField}
-                  controlledSelectedTab='write'
-                  name="description"
-                  label={t_i18n('Description')}
-                  fullWidth={true}
-                  multiline={true}
-                  rows={2}
-                  style={{ marginTop: 20 }}
-                />
-                <Field
-                  component={AutocompleteField}
-                  name="exclusion_list_entity_types"
-                  fullWidth={true}
-                  multiple
-                  style={fieldSpacingContainerStyle}
-                  options={entityTypesOptions}
-                  renderOption={(
-                    props: React.HTMLAttributes<HTMLLIElement>,
-                    option: FieldOption,
-                  ) => (
-                    <li key={option.value} {...props}>
-                      <ItemIcon type={option.value} />
-                      <span style={{ padding: '0 4px 0 4px' }}>{option.label}</span>
-                    </li>
-                  )}
-                  textfieldprops={{ label: t_i18n('Apply on indicator observable types') }}
-                  required
-                />
-                <div style={{ display: 'flex' }}>
-                  <FormControlLabel
-                    style={fieldSpacingContainerStyle}
-                    control={
-                      <Switch
-                        checked={isUploadFileChecked}
-                        onChange={(_, isChecked) => {
-                          setIsUploadFileChecked(isChecked);
-                        }}
-                      />
-                  }
-                    disabled={isContentFieldDisable}
-                    label={isContentFieldDisable
-                      ? t_i18n('This exclusion list is too large to be displayed')
-                      : t_i18n('Upload file')
-                  }
+            <Formik<ExclusionListEditionFormData>
+              enableReinitialize={true}
+              validateOnBlur={true}
+              validateOnChange={true}
+              initialValues={initialValues}
+              validationSchema={exclusionListUpdateValidator(t_i18n)}
+              onSubmit={onSubmit}
+            >
+              {({ submitForm, isSubmitting, setFieldValue }) => (
+                <Form style={{ margin: '20px 0 20px 0' }}>
+                  <Field
+                    component={TextField}
+                    name="name"
+                    label={t_i18n('Name')}
+                    fullWidth={true}
+                    required
                   />
-                </div>
-                {isUploadFileChecked
-                  ? <CustomFileUploader acceptMimeTypes={'text/plain'} setFieldValue={setFieldValue} />
-                  : (
-                    <Field
-                      name="fileContent"
+                  <Field
+                    component={MarkdownField}
+                    controlledSelectedTab="write"
+                    name="description"
+                    label={t_i18n('Description')}
+                    fullWidth={true}
+                    multiline={true}
+                    rows={2}
+                    style={{ marginTop: 20 }}
+                  />
+                  <Field
+                    component={AutocompleteField}
+                    name="exclusion_list_entity_types"
+                    fullWidth={true}
+                    multiple
+                    style={fieldSpacingContainerStyle}
+                    options={entityTypesOptions}
+                    renderOption={(
+                      props: React.HTMLAttributes<HTMLLIElement>,
+                      option: FieldOption,
+                    ) => (
+                      <li key={option.value} {...props}>
+                        <ItemIcon type={option.value} />
+                        <span style={{ padding: '0 4px 0 4px' }}>{option.label}</span>
+                      </li>
+                    )}
+                    textfieldprops={{ label: t_i18n('Apply on indicator observable types') }}
+                    required
+                  />
+                  <div style={{ display: 'flex' }}>
+                    <FormControlLabel
                       style={fieldSpacingContainerStyle}
-                      component={TextField}
-                      multiline
-                      rows={10}
-                      fullWidth
+                      control={(
+                        <Switch
+                          checked={isUploadFileChecked}
+                          onChange={(_, isChecked) => {
+                            setIsUploadFileChecked(isChecked);
+                          }}
+                        />
+                      )}
+                      disabled={isContentFieldDisable}
+                      label={isContentFieldDisable
+                        ? t_i18n('This exclusion list is too large to be displayed')
+                        : t_i18n('Upload file')
+                      }
                     />
-                  )
-                }
-                <div style={{ marginTop: 20, textAlign: 'right' }}>
-                  <Button
-                    variant="contained"
-                    disabled={isSubmitting}
-                    style={{ marginLeft: 16 }}
-                    onClick={onClose}
-                  >
-                    {t_i18n('Cancel')}
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                    style={{ marginLeft: 16 }}
-                  >
-                    {t_i18n('Update')}
-                  </Button>
-                </div>
-              </Form>
-            )}
-          </Formik>
-        )
+                  </div>
+                  {isUploadFileChecked
+                    ? <CustomFileUploader acceptMimeTypes="text/plain" setFieldValue={setFieldValue} />
+                    : (
+                        <Field
+                          name="fileContent"
+                          style={fieldSpacingContainerStyle}
+                          component={TextField}
+                          multiline
+                          rows={10}
+                          fullWidth
+                        />
+                      )
+                  }
+                  <div style={{ marginTop: 20, textAlign: 'right' }}>
+                    <Button
+                      variant="contained"
+                      disabled={isSubmitting}
+                      style={{ marginLeft: 16 }}
+                      onClick={onClose}
+                    >
+                      {t_i18n('Cancel')}
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      onClick={submitForm}
+                      disabled={isSubmitting}
+                      style={{ marginLeft: 16 }}
+                    >
+                      {t_i18n('Update')}
+                    </Button>
+                  </div>
+                </Form>
+              )}
+            </Formik>
+          )
         : <Loader />
       }
 

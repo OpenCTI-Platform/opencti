@@ -57,7 +57,7 @@ export const notesNumber = (context, user, args) => ({
     context,
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
-    pipe(assoc('types', [ENTITY_TYPE_CONTAINER_NOTE]), dissoc('endDate'))(args)
+    pipe(assoc('types', [ENTITY_TYPE_CONTAINER_NOTE]), dissoc('endDate'))(args),
   ),
 });
 

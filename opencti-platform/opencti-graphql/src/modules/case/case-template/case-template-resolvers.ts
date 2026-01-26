@@ -7,7 +7,7 @@ import {
   caseTemplateEdit,
   findCaseTemplatePaginated,
   findById,
-  taskTemplatesPaginated
+  taskTemplatesPaginated,
 } from './case-template-domain';
 
 const caseTemplateResolvers: Resolvers = {

@@ -24,7 +24,7 @@ const ajv = new Ajv();
 export const validateAndFormatSchemaAttribute = (
   attributeName: string,
   attributeDefinition: AttributeDefinition | undefined,
-  editInput: EditInput
+  editInput: EditInput,
 ) => {
   // Basic validation
   if (!attributeDefinition || isEmptyField(editInput.value)) {
@@ -111,7 +111,7 @@ const validateMandatoryAttributes = (
   input: Record<string, unknown>,
   entitySetting: BasicStoreEntityEntitySetting,
   isCreation: boolean,
-  validation: (inputKeys: string[], mandatoryKey: string) => boolean
+  validation: (inputKeys: string[], mandatoryKey: string) => boolean,
 ) => {
   const attributesConfiguration = getAttributesConfiguration(entitySetting);
   if (!attributesConfiguration) {
@@ -137,7 +137,7 @@ const validateMandatoryAttributesOnCreation = async (
   context: AuthContext,
   user: AuthUser,
   input: Record<string, unknown>,
-  entitySetting: BasicStoreEntityEntitySetting
+  entitySetting: BasicStoreEntityEntitySetting,
 ) => {
   const validateMandatoryAttributesOnCreationFn = async () => {
     // Should have all the mandatory keys and the associated values not null
@@ -155,7 +155,7 @@ const validateMandatoryAttributesOnUpdate = async (
   context: AuthContext,
   user: AuthUser,
   input: Record<string, unknown>,
-  entitySetting: BasicStoreEntityEntitySetting
+  entitySetting: BasicStoreEntityEntitySetting,
 ) => {
   const validateMandatoryAttributesOnUpdateFn = async () => {
     // If the mandatory key is present the associated value should be not null
@@ -225,7 +225,9 @@ export const validateInputUpdate = async (
     }
     // Convert input to record
     const instanceFromInputs: Record<string, unknown> = {};
-    editInputs.forEach((obj) => { instanceFromInputs[obj.key] = obj.value; });
+    editInputs.forEach((obj) => {
+      instanceFromInputs[obj.key] = obj.value;
+    });
     // Generic validator
     await validateFormatSchemaAttributes(context, user, instanceType, editInputs);
     await validateMandatoryAttributesOnUpdate(context, user, instanceFromInputs, entitySetting);

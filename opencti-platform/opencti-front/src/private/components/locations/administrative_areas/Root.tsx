@@ -9,6 +9,8 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
+import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
+import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import AdministrativeArea from './AdministrativeArea';
 import AdministrativeAreaKnowledge from './AdministrativeAreaKnowledge';
@@ -57,6 +59,7 @@ const administrativeAreaQuery = graphql`
       name
       x_opencti_aliases
       x_opencti_graph_data
+      ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...AdministrativeArea_administrativeArea
       ...AdministrativeAreaKnowledge_administrativeArea
@@ -77,7 +80,7 @@ const administrativeAreaQuery = graphql`
 
 const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => {
   const subConfig = useMemo<
-  GraphQLSubscriptionConfig<RootAdministrativeAreasSubscription>
+    GraphQLSubscriptionConfig<RootAdministrativeAreasSubscription>
   >(
     () => ({
       subscription,
@@ -94,13 +97,13 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
   const link = `/dashboard/locations/administrative_areas/${administrativeAreaId}/knowledge`;
   const paddingRight = getPaddingRight(location.pathname, administrativeArea?.id, '/dashboard/locations/administrative_areas');
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {administrativeArea ? (
         <>
           <Routes>
             <Route
               path="/knowledge/*"
-              element={
+              element={(
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -120,7 +123,7 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
                   ]}
                   data={administrativeArea}
                 />
-              }
+              )}
             />
           </Routes>
           <div style={{ paddingRight }}>
@@ -141,7 +144,14 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
                   />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              RelateComponent={(
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <StixCoreRelationshipCreationFromEntityHeader
+                    data={administrativeArea}
+                  />
+                </Security>
+              )}
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <AdministrativeAreaDeletion id={administrativeArea.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
@@ -209,63 +219,63 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
                 path="/"
                 element={
                   <AdministrativeArea administrativeAreaData={administrativeArea} />
-              }
+                }
               />
               <Route
                 path="/knowledge"
                 element={
                   <Navigate to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge/overview`} replace={true} />
-              }
+                }
               />
               <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={administrativeArea}
                   />
-              }
+                )}
               />
               <Route
                 path="/knowledge/*"
-                element={
+                element={(
                   <div key={forceUpdate}>
                     <AdministrativeAreaKnowledge administrativeAreaData={administrativeArea} />
                   </div>
-                }
+                )}
               />
               <Route
                 path="/analyses"
                 element={
                   <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={administrativeArea} />
-              }
+                }
               />
               <Route
                 path="/sightings"
-                element={
+                element={(
                   <EntityStixSightingRelationships
                     entityId={administrativeArea.id}
                     entityLink={link}
                     noPadding={true}
                     isTo={true}
                   />
-              }
+                )}
               />
               <Route
                 path="/files"
-                element={
+                element={(
                   <FileManager
                     id={administrativeAreaId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={administrativeArea}
                   />
-              }
+                )}
               />
               <Route
                 path="/history"
                 element={
                   <StixCoreObjectHistory stixCoreObjectId={administrativeAreaId} />
-              }
+                }
               />
             </Routes>
           </div>
@@ -273,7 +283,7 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 

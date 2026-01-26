@@ -68,7 +68,7 @@ interface EventAddInput {
 }
 
 interface EventFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  updater: (store: RecordSourceSelectorProxy, key: string, response: EventCreationMutation['response']['eventAdd']) => void;
   onReset?: () => void;
   onCompleted?: () => void;
   defaultCreatedBy?: FieldOption;
@@ -122,9 +122,9 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
     resetBulk,
   } = useBulkCommit<EventCreationMutation>({
     commit,
-    relayUpdater: (store) => {
+    relayUpdater: (store, response) => {
       if (updater) {
-        updater(store, 'eventAdd');
+        updater(store, 'eventAdd', response?.eventAdd);
       }
     },
   });
@@ -352,7 +352,7 @@ const EventCreation = ({
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_events', paginationOptions, 'eventAdd');
 
   const CreateEventControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Event' {...props} />
+    <CreateEntityControlledDial entityType="Event" {...props} />
   );
   return (
     <Drawer

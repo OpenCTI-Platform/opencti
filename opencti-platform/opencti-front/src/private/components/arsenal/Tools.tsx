@@ -155,7 +155,7 @@ const Tools = () => {
           resolvePath={(data: ToolsLines_data$data) => data.tools?.edges?.map((n) => n?.node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
-          toolbarFilters={contextFilters}
+          contextFilters={contextFilters}
           preloadedPaginationProps={preloadedPaginationOptions}
           lineFragment={toolLineFragment}
           exportContext={{ entity_type: 'Tool' }}

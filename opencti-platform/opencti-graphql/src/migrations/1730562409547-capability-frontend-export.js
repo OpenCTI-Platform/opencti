@@ -11,7 +11,7 @@ export const up = async (next) => {
   const frontendExportCapability = await addCapability(context, SYSTEM_USER, {
     name: 'KNOWLEDGE_KNFRONTENDEXPORT',
     description: 'Can use web interface export functions (PDF, PNG, etc.)',
-    attribute_order: 160
+    attribute_order: 160,
   });
   // ------ Update roles to avoid any breaking change in the current behavior (all knowledge access = export in frontend)
   const callback = async (roles) => {

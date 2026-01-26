@@ -12,10 +12,10 @@ const WorkspaceDeletion = ({
   handleClose,
   workspaceType,
 }: {
-  id: string,
-  isOpen: boolean,
-  handleClose: () => void,
-  workspaceType: string | null | undefined
+  id: string;
+  isOpen: boolean;
+  handleClose: () => void;
+  workspaceType: string | null | undefined;
 }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();

@@ -53,6 +53,7 @@ import {
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import StixCoreObjectReportsHorizontalBar from '../../analyses/reports/StixCoreObjectReportsHorizontalBar';
+import { useInitCreateRelationshipContext } from '../stix_core_relationships/CreateRelationshipContextProvider';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -145,7 +146,7 @@ interface StixDomainObjectThreatKnowledgeProps {
 }
 
 const StixDomainObjectThreatKnowledge: FunctionComponent<
-StixDomainObjectThreatKnowledgeProps
+  StixDomainObjectThreatKnowledgeProps
 /*
   TODO
   we should reword the component to be able to manipulate data easier
@@ -160,6 +161,9 @@ StixDomainObjectThreatKnowledgeProps
   const [nestedRelationships, setNestedRelationships] = useState(false);
   const [openTimeField, setOpenTimeField] = useState(false);
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
+
+  // Reset 'Create Relationship' target types
+  useInitCreateRelationshipContext();
 
   const LOCAL_STORAGE_KEY = `stix-domain-object-${stixDomainObjectId}`;
   const link = `${resolveLink(stixDomainObjectType)}/${stixDomainObjectId}/knowledge`;
@@ -488,14 +492,14 @@ StixDomainObjectThreatKnowledgeProps
             </FormControl>
             <FormControlLabel
               style={{ marginTop: 20 }}
-              control={
+              control={(
                 <Switch
                   checked={nestedRelationships}
                   onChange={handleChangeNestedRelationships}
                   name="nested-relationships"
                   color="primary"
                 />
-              }
+              )}
               label={t_i18n('Display nested relationships')}
             />
           </Popover>

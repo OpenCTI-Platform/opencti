@@ -8,10 +8,10 @@ import {
   INPUT_COVERED,
   RELATION_COVERED,
   type StixSecurityCoverage,
-  type StoreEntitySecurityCoverage
+  type StoreEntitySecurityCoverage,
 } from './securityCoverage-types';
 import convertSecurityCoverageToStix from './securityCoverage-converter';
-import { createdBy, objectLabel, objectMarking, objectOrganization, } from '../../schema/stixRefRelationship';
+import { createdBy, objectLabel, objectMarking, objectOrganization } from '../../schema/stixRefRelationship';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_VULNERABILITY } from '../../schema/stixDomainObject';
 import { COVERED_ENTITIES_TYPE, securityCoverageStixBundle } from './securityCoverage-domain';
 import { RELATION_HAS_COVERED } from '../../schema/stixCoreRelationship';
@@ -43,6 +43,9 @@ const SECURITY_COVERAGE_DEFINITION: ModuleDefinition<StoreEntitySecurityCoverage
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: false },
     { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'periodicity', /* PT1S */ label: 'Periodicity', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'duration', label: 'Duration', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'type_affinity', label: 'Type affinity', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'platforms_affinity', label: 'Platform(s) affinity', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, isFilterable: true },
     { name: 'external_uri', label: 'External URI', type: 'string', format: 'short', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     // TODO Move this field to upper level. Stix Domain Object
     { name: 'auto_enrichment_disable', label: 'Auto enrichment disable', type: 'boolean', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
@@ -61,7 +64,7 @@ const SECURITY_COVERAGE_DEFINITION: ModuleDefinition<StoreEntitySecurityCoverage
         { name: ENTITY_TYPE_ATTACK_PATTERN, type: REL_NEW },
         { name: ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, type: REL_NEW },
         { name: ENTITY_TYPE_VULNERABILITY, type: REL_NEW },
-      ]
+      ],
     },
   ],
   relationsRefs: [
@@ -84,13 +87,13 @@ const SECURITY_COVERAGE_DEFINITION: ModuleDefinition<StoreEntitySecurityCoverage
     objectLabel,
     objectMarking,
     createdBy,
-    { ...objectOrganization, isFilterable: false }
+    { ...objectOrganization, isFilterable: false },
   ],
   representative: (stix: StixSecurityCoverage) => {
     return stix.name;
   },
   converter_2_1: convertSecurityCoverageToStix,
-  bundleResolver: securityCoverageStixBundle
+  bundleResolver: securityCoverageStixBundle,
 };
 
 registerDefinition(SECURITY_COVERAGE_DEFINITION);

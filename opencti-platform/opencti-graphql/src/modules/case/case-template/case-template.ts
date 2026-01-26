@@ -29,7 +29,7 @@ const CASE_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityCaseTemplate, StixCa
   type: {
     id: 'case-template',
     name: ENTITY_TYPE_CASE_TEMPLATE,
-    category: ABSTRACT_INTERNAL_OBJECT
+    category: ABSTRACT_INTERNAL_OBJECT,
   },
   identifier: {
     definition: {
@@ -45,6 +45,6 @@ const CASE_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityCaseTemplate, StixCa
   representative: (stix: StixCaseTemplate) => {
     return stix.name;
   },
-  converter_2_1: convertCaseTemplateToStix
+  converter_2_1: convertCaseTemplateToStix,
 };
 registerDefinition(CASE_TEMPLATE_DEFINITION);

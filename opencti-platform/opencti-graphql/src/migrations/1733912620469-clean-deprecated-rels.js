@@ -12,7 +12,7 @@ import {
   ENTITY_TYPE_LOCATION_COUNTRY,
   ENTITY_TYPE_LOCATION_REGION,
   ENTITY_TYPE_MALWARE,
-  ENTITY_TYPE_THREAT_ACTOR_GROUP
+  ENTITY_TYPE_THREAT_ACTOR_GROUP,
 } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';
 import { ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, isStixCyberObservable } from '../schema/stixCyberObservable';
@@ -52,7 +52,7 @@ export const up = async (next) => {
       } else {
         const updateQuery = [
           { update: { _index: threat._index, _id: threat._id, retry_on_conflict: 5 } },
-          { script: `ctx._source.remove('${relKeyRelatedTo}')` }
+          { script: `ctx._source.remove('${relKeyRelatedTo}')` },
         ];
         bulkOperationsRelatedTo.push(...updateQuery);
       }
@@ -109,7 +109,7 @@ export const up = async (next) => {
       } else {
         const updateQuery = [
           { update: { _index: location._index, _id: location._id, retry_on_conflict: 5 } },
-          { script: `ctx._source.remove('${relKeyLocatedAt}')` }
+          { script: `ctx._source.remove('${relKeyLocatedAt}')` },
         ];
         bulkOperationsLocatedAt.push(...updateQuery);
       }
@@ -143,17 +143,17 @@ export const up = async (next) => {
           {
             bool: {
               must: [{ term: { 'entity_type.keyword': { value: ENTITY_TYPE_LOCATION_REGION } } }],
-            }
+            },
           },
           {
             bool: {
               must: [{ term: { 'entity_type.keyword': { value: ENTITY_TYPE_LOCATION_COUNTRY } } }],
-            }
+            },
           },
           {
             bool: {
               must: [{ term: { 'entity_type.keyword': { value: ENTITY_TYPE_IDENTITY_SECTOR } } }],
-            }
+            },
           },
         ],
         minimum_should_match: 1,
@@ -163,7 +163,7 @@ export const up = async (next) => {
   await elUpdateByQueryForMigration(
     message,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
-    updateQueryForTargets
+    updateQueryForTargets,
   );
 
   logMigration.info(`${message} > done`);

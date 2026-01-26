@@ -30,8 +30,8 @@ const connectorConfig: ConnectorConfig = {
   name: 'Draft validation built in connector',
   config: {
     enable: true,
-    validate_before_import: false
-  }
+    validate_before_import: false,
+  },
 };
 
 // For now, connector queues are only used to push validated bundle to worker

@@ -126,7 +126,7 @@ class StixCyberObservableOverview extends Component {
         <Typography variant="h4" gutterBottom={true}>
           {t('Basic information')}
         </Typography>
-        <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+        <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
           <Grid container={true} spacing={3}>
             <Grid item xs={6}>
               <Typography variant="h3" gutterBottom={true}>
@@ -250,23 +250,23 @@ class StixCyberObservableOverview extends Component {
             <List>
               {stixIds.map(
                 (stixId) => stixId.length > 0 && (
-                <ListItem
-                  key={stixId}
-                  disableGutters={true}
-                  dense={true}
-                  secondaryAction={
-                    <IconButton
-                      edge="end"
-                      aria-label="delete"
-                      onClick={this.deleteStixId.bind(this, stixId)}
-                      size="large"
-                    >
-                      <Delete />
-                    </IconButton>
-                  }
-                >
-                  <ListItemText primary={stixId} />
-                </ListItem>
+                  <ListItem
+                    key={stixId}
+                    disableGutters={true}
+                    dense={true}
+                    secondaryAction={(
+                      <IconButton
+                        edge="end"
+                        aria-label="delete"
+                        onClick={this.deleteStixId.bind(this, stixId)}
+                        size="large"
+                      >
+                        <Delete />
+                      </IconButton>
+                    )}
+                  >
+                    <ListItemText primary={stixId} />
+                  </ListItem>
                 ),
               )}
             </List>

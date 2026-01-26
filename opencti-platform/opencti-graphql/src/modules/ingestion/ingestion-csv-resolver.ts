@@ -15,6 +15,7 @@ import {
   testCsvIngestionMapping,
 } from './ingestion-csv-domain';
 import { userAlreadyExists } from '../user/user-domain';
+import { loadCreator } from '../../database/members';
 
 const ingestionCsvResolvers: Resolvers = {
   Query: {
@@ -22,10 +23,10 @@ const ingestionCsvResolvers: Resolvers = {
     ingestionCsvs: (_, args, context) => findCsvIngestionPaginated(context, context.user, args),
     csvFeedAddInputFromImport: (_, { file }, context) => csvFeedAddInputFromImport(context, context.user, file),
     defaultIngestionGroupCount: (_, __, context) => defaultIngestionGroupsCount(context),
-    userAlreadyExists: (_, { name }, context) => userAlreadyExists(context, name)
+    userAlreadyExists: (_, { name }, context) => userAlreadyExists(context, name),
   },
   IngestionCsv: {
-    user: (ingestionCsv, _, context) => context.batch.creatorBatchLoader.load(ingestionCsv.user_id),
+    user: (ingestionCsv, _, context) => loadCreator(context, context.user, ingestionCsv.user_id),
     csvMapper: (ingestionCsv, _, context) => csvFeedGetCsvMapper(context, context.user, ingestionCsv),
     toConfigurationExport: (ingestionCsv, _, context) => csvFeedMapperExport(context, context.user, ingestionCsv),
     duplicateCsvMapper: (ingestionCsv, _, context) => csvFeedGetNewDuplicatedCsvMapper(context, context.user, ingestionCsv),

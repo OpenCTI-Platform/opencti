@@ -166,18 +166,20 @@ const Vocabularies = () => {
           resolvePath={(data) => data.vocabularies?.edges?.map(({ node }: { node: useVocabularyCategory_Vocabularynode$data }) => node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
-          toolbarFilters={contextFilters}
+          contextFilters={contextFilters}
           lineFragment={vocabFragment}
           disableNavigation
-          taskScope={'SETTINGS'}
+          taskScope="SETTINGS"
           preloadedPaginationProps={preloadedPaginationProps}
           actions={(vocab) => <VocabularyPopover vocab={vocab} paginationOptions={queryPaginationOptions} />}
           searchContextFinal={{ entityTypes: ['Vocabulary'] }}
           icon={() => <ShortTextOutlined sx={{ color: theme.palette.primary.main }} />}
-          createButton={<VocabularyCreation
-            category={category}
-            paginationOptions={queryPaginationOptions}
-                        />}
+          createButton={(
+            <VocabularyCreation
+              category={category}
+              paginationOptions={queryPaginationOptions}
+            />
+          )}
         />
       )}
     </div>

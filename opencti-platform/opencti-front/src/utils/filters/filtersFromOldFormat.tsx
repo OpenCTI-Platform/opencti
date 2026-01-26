@@ -23,7 +23,7 @@ export const convertFiltersFromOldFormat = (filters: string): FilterGroup => {
   const newFilterGroupsContent: FilterGroup[] = [];
   toPairs(JSON.parse(filters)).forEach((pair) => {
     let key: string = head(pair);
-    const values: { id: string | null, value: string }[] = last(pair);
+    const values: { id: string | null; value: string }[] = last(pair);
     const valIds = values.map((v) => v.id);
     let operator = 'eq';
     let mode = 'or';

@@ -14,7 +14,8 @@ import {
   modified,
   revoked,
   xOpenctiAliases,
-  xOpenctiReliability
+  xOpenctiModifiedAt,
+  xOpenctiReliability,
 } from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_CONTAINER, ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION, ENTITY_TYPE_THREAT_ACTOR } from '../../schema/general';
@@ -39,7 +40,7 @@ import {
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
   ENTITY_TYPE_TOOL,
-  ENTITY_TYPE_VULNERABILITY
+  ENTITY_TYPE_VULNERABILITY,
 } from '../../schema/stixDomainObject';
 import { CVSS_SEVERITY_VALUES } from '../../domain/vulnerability';
 import { ENTITY_TYPE_PIR } from '../pir/pir-types';
@@ -47,6 +48,7 @@ import { ENTITY_TYPE_PIR } from '../pir/pir-types';
 const stixDomainObjectAttributes: Array<AttributeDefinition> = [
   created,
   modified,
+  xOpenctiModifiedAt,
   lang,
   confidence,
   revoked,
@@ -67,7 +69,7 @@ const stixDomainObjectAttributes: Array<AttributeDefinition> = [
       { name: 'pir_id', label: 'PIR ID', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_PIR], editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
       { name: 'pir_score', label: 'PIR Score', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
       { name: 'last_pir_score_date', label: 'Last score evolution', type: 'date', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
-    ]
+    ],
   },
 ];
 schemaAttributesDefinition.registerAttributes(ABSTRACT_STIX_DOMAIN_OBJECT, stixDomainObjectAttributes);
@@ -210,7 +212,7 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     xOpenctiAliases,
     iAliasedIds,
     { name: 'postal_code', label: 'Postal code', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: false, isFilterable: true },
-    { name: 'street_address', label: 'Street address', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: false, isFilterable: true }
+    { name: 'street_address', label: 'Street address', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: false, isFilterable: true },
   ],
   [ENTITY_TYPE_MALWARE]: [
     aliases,

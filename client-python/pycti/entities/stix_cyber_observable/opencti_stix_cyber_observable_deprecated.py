@@ -2,12 +2,9 @@ import deprecation
 
 
 class StixCyberObservableDeprecatedMixin:
-    """
-    deprecated [>=6.2 & <6.8]`
-    Promote a Stix-Observable to an Indicator
+    """Deprecated mixin for Stix-Cyber-Observable promotion [>=6.2 & <6.8].
 
-    :param id: the Stix-Observable id
-    :return the observable
+    Contains deprecated method to promote a Stix-Observable to an Indicator.
     """
 
     @deprecation.deprecated(
@@ -16,6 +13,20 @@ class StixCyberObservableDeprecatedMixin:
         details="Use promote_to_indicator_v2 instead.",
     )
     def promote_to_indicator(self, **kwargs):
+        """Promote a Stix-Cyber-Observable to an Indicator (deprecated).
+
+        .. deprecated:: 6.2
+            Use :meth:`promote_to_indicator_v2` instead.
+
+        :param id: the id of the Stix-Cyber-Observable
+        :type id: str
+        :param customAttributes: custom attributes to return
+        :type customAttributes: str
+        :param withFiles: whether to include files
+        :type withFiles: bool
+        :return: Indicator object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         custom_attributes = kwargs.get("customAttributes", None)
         with_files = kwargs.get("withFiles", False)

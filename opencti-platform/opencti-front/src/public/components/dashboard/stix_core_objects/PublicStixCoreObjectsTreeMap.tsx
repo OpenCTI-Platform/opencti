@@ -54,9 +54,9 @@ const publicStixCoreObjectsTreeMapQuery = graphql`
 `;
 
 interface PublicStixCoreObjectsTreeMapComponentProps {
-  parameters: Widget['parameters']
-  dataSelection: Widget['dataSelection']
-  queryRef: PreloadedQuery<PublicStixCoreObjectsTreeMapQuery>
+  parameters: Widget['parameters'];
+  dataSelection: Widget['dataSelection'];
+  queryRef: PreloadedQuery<PublicStixCoreObjectsTreeMapQuery>;
 }
 
 const PublicStixCoreObjectsTreeMapComponent = ({

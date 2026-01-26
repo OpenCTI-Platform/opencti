@@ -10,9 +10,9 @@ import type { Theme } from '../../../../components/Theme';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 
 interface StixNestedRefRelationshipEditionProps {
-  stixNestedRefRelationshipId: string,
-  open: boolean,
-  handleClose?: () => void,
+  stixNestedRefRelationshipId: string;
+  open: boolean;
+  handleClose?: () => void;
 }
 
 const StixNestedRefRelationshipEdition: FunctionComponent<StixNestedRefRelationshipEditionProps> = ({

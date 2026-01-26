@@ -79,7 +79,7 @@ export const entitySettingPatch = graphql`
 `;
 
 interface EntitySettingSettingsProps {
-  entitySettingsData: EntitySettingSettings_entitySetting$key
+  entitySettingsData: EntitySettingSettings_entitySetting$key;
 }
 
 const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProps) => {
@@ -115,8 +115,8 @@ const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProp
               !entitySetting.availableSettings.includes('platform_hidden_type')
                 ? t_i18n('This configuration is not available for this entity type')
                 : t_i18n(
-                  'This configuration hides a specific entity type across the entire platform.',
-                )
+                    'This configuration hides a specific entity type across the entire platform.',
+                  )
             }
           >
             <InformationOutline
@@ -128,7 +128,7 @@ const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProp
           <div className="clearfix" />
           <FormGroup>
             <FormControlLabel
-              control={
+              control={(
                 <Switch
                   disabled={
                     !entitySetting.availableSettings.includes(
@@ -142,7 +142,7 @@ const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProp
                   )
                   }
                 />
-              }
+              )}
               label={t_i18n('Hide in the platform')}
             />
           </FormGroup>
@@ -170,8 +170,8 @@ const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProp
               )
                 ? t_i18n('This configuration is not available for this entity type')
                 : t_i18n(
-                  'This configuration enables an entity to automatically construct an external reference from the uploaded file.',
-                )
+                    'This configuration enables an entity to automatically construct an external reference from the uploaded file.',
+                  )
             }
           >
             <InformationOutline
@@ -183,7 +183,7 @@ const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProp
           <div className="clearfix" />
           <FormGroup>
             <FormControlLabel
-              control={
+              control={(
                 <Switch
                   disabled={
                     !entitySetting.availableSettings.includes(
@@ -197,7 +197,7 @@ const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProp
                   )
                   }
                 />
-              }
+              )}
               label={t_i18n('Create external reference at upload')}
             />
           </FormGroup>
@@ -215,8 +215,8 @@ const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProp
               !entitySetting.availableSettings.includes('enforce_reference')
                 ? t_i18n('This configuration is not available for this entity type')
                 : t_i18n(
-                  'This configuration enables the requirement of a reference message on an entity creation or modification.',
-                )
+                    'This configuration enables the requirement of a reference message on an entity creation or modification.',
+                  )
             }
           >
             <InformationOutline
@@ -228,7 +228,7 @@ const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProp
           <div className="clearfix" />
           <FormGroup>
             <FormControlLabel
-              control={
+              control={(
                 <Switch
                   disabled={
                     !entitySetting.availableSettings.includes(
@@ -242,7 +242,7 @@ const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProp
                   )
                   }
                 />
-              }
+              )}
               label={t_i18n('Enforce references')}
             />
           </FormGroup>

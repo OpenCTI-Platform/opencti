@@ -159,7 +159,7 @@ const DataSources: FunctionComponent = () => {
           resolvePath={(data: DataSourcesLines_data$data) => data.dataSources?.edges?.map((e) => e?.node)}
           storageKey={LOCAL_STORAGE_KEY_DATA_SOURCES}
           initialValues={initialValues}
-          toolbarFilters={contextFilters}
+          contextFilters={contextFilters}
           preloadedPaginationProps={preloadedPaginationOptions}
           lineFragment={dataSourceLineFragment}
           exportContext={{ entity_type: 'Data-Source' }}

@@ -14,9 +14,9 @@ import { NoteCreationForm } from './NoteCreation';
 import { StixCoreObjectOrStixCoreRelationshipNotesCards_data$data } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCards_data.graphql';
 
 interface AddNotesFunctionalComponentProps {
-  stixCoreObjectOrStixCoreRelationshipId: string,
-  stixCoreObjectOrStixCoreRelationshipNotes: StixCoreObjectOrStixCoreRelationshipNotesCards_data$data,
-  paginationOptions: NotesLinesPaginationQuery$variables,
+  stixCoreObjectOrStixCoreRelationshipId: string;
+  stixCoreObjectOrStixCoreRelationshipNotes: StixCoreObjectOrStixCoreRelationshipNotesCards_data$data;
+  paginationOptions: NotesLinesPaginationQuery$variables;
 }
 
 // TODO: Rename to AddNotes and replace AddNotes.jsx
@@ -86,9 +86,9 @@ const AddNotesFunctionalComponent: FunctionComponent<AddNotesFunctionalComponent
             />
             <Button
               onClick={handleDialogOpen}
-              color='primary'
-              size='small'
-              variant='contained'
+              color="primary"
+              size="small"
+              variant="contained"
               sx={{
                 marginLeft: '10px',
                 padding: '7px 10px',
@@ -133,7 +133,7 @@ const AddNotesFunctionalComponent: FunctionComponent<AddNotesFunctionalComponent
                       />
                     </ListItemIcon>
                     <ListItemText
-                      primary={
+                      primary={(
                         <Skeleton
                           animation="wave"
                           variant="rectangular"
@@ -141,15 +141,15 @@ const AddNotesFunctionalComponent: FunctionComponent<AddNotesFunctionalComponent
                           height={15}
                           style={{ marginBottom: 10 }}
                         />
-                      }
-                      secondary={
+                      )}
+                      secondary={(
                         <Skeleton
                           animation="wave"
                           variant="rectangular"
                           width="90%"
                           height={15}
                         />
-                      }
+                      )}
                     />
                   </ListItem>
                 ))}

@@ -11,7 +11,7 @@ import {
   opinionsTimeSeries,
   opinionsTimeSeriesByAuthor,
   opinionsTimeSeriesByEntity,
-  updateOpinionsMetrics
+  updateOpinionsMetrics,
 } from '../domain/opinion';
 import {
   stixDomainObjectAddRelation,
@@ -21,7 +21,8 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import { RELATION_CREATED_BY, } from '../schema/stixRefRelationship';
+import { ENTITY_TYPE_CONTAINER_OPINION } from '../schema/stixDomainObject';
+import { RELATION_CREATED_BY } from '../schema/stixRefRelationship';
 import { KNOWLEDGE_COLLABORATION, KNOWLEDGE_UPDATE } from '../schema/general';
 import { resolveUserIndividual } from '../domain/user';
 import { BYPASS, isUserHasCapability, KNOWLEDGE_KNUPDATE } from '../utils/access';
@@ -73,7 +74,7 @@ const opinionResolvers = {
     opinionEdit: (_, { id }, context) => ({
       delete: async () => {
         await checkUserAccess(context, context.user, id);
-        return stixDomainObjectDelete(context, context.user, id);
+        return stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_CONTAINER_OPINION);
       },
       fieldPatch: async ({ input, commitMessage, references }) => {
         await checkUserAccess(context, context.user, id);

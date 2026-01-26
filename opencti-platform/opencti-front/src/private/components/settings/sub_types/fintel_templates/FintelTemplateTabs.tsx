@@ -16,12 +16,12 @@ const tabsFragment = graphql`
 `;
 
 interface ChildrenProps {
-  index: number
+  index: number;
 }
 
 interface FintelTemplateTabsProps {
-  data: FintelTemplateTabs_template$key
-  children: (props: ChildrenProps) => ReactNode
+  data: FintelTemplateTabs_template$key;
+  children: (props: ChildrenProps) => ReactNode;
 }
 
 const FintelTemplateTabs = ({ children, data }: FintelTemplateTabsProps) => {
@@ -47,11 +47,13 @@ const FintelTemplateTabs = ({ children, data }: FintelTemplateTabsProps) => {
         justifyContent: 'space-between',
       }}
       >
-        <Security needs={[KNOWLEDGE]} placeholder={(
-          <Tabs value={index} onChange={(_, i) => setIndex(i)}>
-            <Tab label={t_i18n('Template Editor')} />
-          </Tabs>
-        )}
+        <Security
+          needs={[KNOWLEDGE]}
+          placeholder={(
+            <Tabs value={index} onChange={(_, i) => setIndex(i)}>
+              <Tab label={t_i18n('Template Editor')} />
+            </Tabs>
+          )}
         >
           <Tabs value={index} onChange={(_, i) => setIndex(i)}>
             <Tab label={t_i18n('Template Editor')} />

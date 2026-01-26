@@ -1,0 +1,9 @@
+{"openCTI_version":"6.9.4","type":"taxiiFeeds","configuration": {
+  "name": "taxiiFeedsAuto",
+  "description": "Nice description",
+  "uri": "https://pastebin.com/raw/7CC8nHB0",
+  "version": "v21",
+  "collection": "taxii_collection",
+  "authentication_type": "",
+  "authentication_value": ""
+}}

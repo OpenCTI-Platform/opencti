@@ -1,7 +1,7 @@
 import type { AuthUser } from '../types/user';
 import { cropNumber } from './math';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
-import { FunctionalError } from '../config/errors';
+import { FunctionalError, INSUFFICIENT_CONFIDENCE_LEVEL } from '../config/errors';
 import { logApp } from '../config/conf';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { isBypassUser } from './access';
@@ -10,14 +10,14 @@ import { RELATION_EXTERNAL_REFERENCE, RELATION_OBJECT_LABEL } from '../schema/st
 import { INPUT_EXTERNAL_REFS, INPUT_LABELS } from '../schema/general';
 
 type ObjectWithConfidence = {
-  id: string,
-  entity_type: string,
-  confidence?: number | null
+  id: string;
+  entity_type: string;
+  confidence?: number | null;
 };
 
 type ConfidenceSource = {
-  type: 'Group' | 'User' | 'Bypass',
-  object: Group | AuthUser | null
+  type: 'Group' | 'User' | 'Bypass';
+  object: Group | AuthUser | null;
 };
 
 type ConfidenceOverride = {
@@ -40,7 +40,7 @@ export const computeUserEffectiveConfidenceLevel = (user: AuthUser) => {
   // otherwise we get all groups for this user, and select the highest max_confidence found
   let maxLevel = null;
   let source: ConfidenceSource | null = null;
-  const overridesMap = new Map<string, { max_confidence: number, source: ConfidenceSource }>();
+  const overridesMap = new Map<string, { max_confidence: number; source: ConfidenceSource }>();
   if (user.groups) {
     for (let i = 0; i < user.groups.length; i += 1) {
       // groups were not migrated when introducing group_confidence_level, so group_confidence_level might be null
@@ -49,7 +49,7 @@ export const computeUserEffectiveConfidenceLevel = (user: AuthUser) => {
         maxLevel = groupLevel;
         source = {
           type: 'Group',
-          object: user.groups[i]
+          object: user.groups[i],
         };
       }
       const groupOverrides = user.groups[i].group_confidence_level?.overrides ?? [];
@@ -138,7 +138,7 @@ export const controlUpsertInputWithUserConfidence = <T extends ObjectWithConfide
   return {
     confidenceLevelToApply,
     isConfidenceMatch,
-    isConfidenceUpper
+    isConfidenceUpper,
   };
 };
 
@@ -172,15 +172,16 @@ export const controlUserConfidenceAgainstElement = <T extends ObjectWithConfiden
     if (noThrow) {
       return false;
     }
-    throw FunctionalError('User effective max confidence level is insufficient to update this element', { user_id: user.id, element_id: existingElement.id, doc_code: 'INSUFFICIENT_CONFIDENCE_LEVEL' });
+    const data = { user_id: user.id, element_id: existingElement.id, doc_code: INSUFFICIENT_CONFIDENCE_LEVEL };
+    throw FunctionalError('User effective max confidence level is insufficient to update this element', data);
   }
 
   return true; // ok
 };
 
 type UpdateInput = {
-  key: string | string[]
-  value: string[]
+  key: string | string[];
+  value: string[];
 };
 
 /**
@@ -210,7 +211,7 @@ export const adaptUpdateInputsConfidence = <T extends ObjectWithConfidence>(user
       hasConfidenceInput = true;
       return {
         ...input,
-        value: [Math.min(overrideMaxConfidence, newValue).toString()]
+        value: [Math.min(overrideMaxConfidence, newValue).toString()],
       };
     }
     return input;

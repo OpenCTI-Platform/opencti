@@ -53,21 +53,21 @@ const toolMutation = graphql`
 const TOOL_TYPE = 'Tool';
 
 interface ToolAddInput {
-  name: string
-  description: string
-  createdBy: FieldOption | null
-  objectMarking: FieldOption[]
-  killChainPhases: FieldOption[]
-  objectLabel: FieldOption[]
-  externalReferences: { value: string }[]
-  tool_types: string[]
-  tool_version: string
-  confidence: number | null
-  file: File | null
+  name: string;
+  description: string;
+  createdBy: FieldOption | null;
+  objectMarking: FieldOption[];
+  killChainPhases: FieldOption[];
+  objectLabel: FieldOption[];
+  externalReferences: { value: string }[];
+  tool_types: string[];
+  tool_version: string;
+  confidence: number | null;
+  file: File | null;
 }
 
 interface ToolFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  updater: (store: RecordSourceSelectorProxy, key: string, response: ToolCreationMutation['response']['toolAdd']) => void;
   onReset?: () => void;
   onCompleted?: () => void;
   defaultCreatedBy?: { value: string; label: string };
@@ -117,9 +117,9 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
     resetBulk,
   } = useBulkCommit<ToolCreationMutation>({
     commit,
-    relayUpdater: (store) => {
+    relayUpdater: (store, response) => {
       if (updater) {
-        updater(store, 'toolAdd');
+        updater(store, 'toolAdd', response?.toolAdd);
       }
     },
   });
@@ -334,7 +334,7 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
 };
 
 const CreateToolControlledDial = (props: DrawerControlledDialProps) => (
-  <CreateEntityControlledDial entityType='Tool' {...props} />
+  <CreateEntityControlledDial entityType="Tool" {...props} />
 );
 
 const ToolCreation = ({

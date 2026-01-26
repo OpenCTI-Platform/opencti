@@ -1,4 +1,3 @@
-/* eslint-disable camelcase,no-case-declarations */
 import { v4 as uuidv4, v5 as uuidv5 } from 'uuid';
 import * as R from 'ramda';
 import * as jsonpatch from 'fast-json-patch';
@@ -22,6 +21,7 @@ import { isBasicRelationship } from './stixRelationship';
 import { convertTypeToStixType } from '../database/stix-2-1-converter';
 import { INPUT_DST, INPUT_SRC, isStixRefRelationship } from './stixRefRelationship';
 import { cleanObject } from '../database/stix-converter-utils';
+import nconf from 'nconf';
 
 // region hashes
 const MD5 = 'MD5';
@@ -34,6 +34,7 @@ const SSDEEP = 'SSDEEP';
 const transformObjectToUpperKeys = (data) => {
   return Object.fromEntries(Object.entries(data).map(([k, v]) => [k.toUpperCase(), v]));
 };
+const ALIASES_RULES = nconf.get('aliases_identifier_rules') ?? {};
 export const INTERNAL_FROM_FIELD = 'i_relations_from';
 export const INTERNAL_TO_FIELD = 'i_relations_to';
 export const NAME_FIELD = 'name';
@@ -73,7 +74,7 @@ export const STATIC_MARKING_IDS = [
   MARKING_TLP_GREEN,
   MARKING_TLP_AMBER,
   MARKING_TLP_AMBER_STRICT,
-  MARKING_TLP_RED
+  MARKING_TLP_RED,
 ];
 const STATIC_STANDARD_IDS = [
   { id: MARKING_TLP_CLEAR_ID, data: { definition_type: 'TLP', definition: 'TLP:WHITE' } },
@@ -81,7 +82,7 @@ const STATIC_STANDARD_IDS = [
   { id: MARKING_TLP_GREEN_ID, data: { definition_type: 'TLP', definition: 'TLP:GREEN' } },
   { id: MARKING_TLP_AMBER_ID, data: { definition_type: 'TLP', definition: 'TLP:AMBER' } },
   { id: MARKING_TLP_AMBER_STRICT_ID, data: { definition_type: 'TLP', definition: 'TLP:AMBER+STRICT' } },
-  { id: MARKING_TLP_RED_ID, data: { definition_type: 'TLP', definition: 'TLP:RED' } }
+  { id: MARKING_TLP_RED_ID, data: { definition_type: 'TLP', definition: 'TLP:RED' } },
 ];
 const getStaticIdFromData = (data) => {
   const findStatic = R.find((s) => R.equals(s.data, data), STATIC_STANDARD_IDS);
@@ -186,6 +187,7 @@ const stixBaseEntityContribution = {
     [I.ENTITY_TYPE_STREAM_COLLECTION]: () => uuidv4(),
     [I.ENTITY_TYPE_INTERNAL_FILE]: () => uuidv4(),
     [I.ENTITY_TYPE_WORK]: () => uuidv4(),
+    [I.ENTITY_TYPE_THEME]: () => uuidv4(),
     // Stix Domain
     // Entities
     [D.ENTITY_TYPE_ATTACK_PATTERN]: [[{ src: X_MITRE_ID_FIELD }], [{ src: NAME_FIELD }]],
@@ -251,7 +253,7 @@ const stixBaseRelationshipContribution = {
     relationship: [
       { src: 'relationship_type' },
       { src: 'from', dest: 'source_ref', dependencies: ['to'] }, { src: 'to', dest: 'target_ref', dependencies: ['from'] },
-      { src: 'start_time' }, { src: 'stop_time' }
+      { src: 'start_time' }, { src: 'stop_time' },
     ],
   },
   resolvers: {
@@ -260,7 +262,7 @@ const stixBaseRelationshipContribution = {
     },
     to(to) {
       return to?.standard_id;
-    }
+    },
   },
 };
 
@@ -269,7 +271,7 @@ const stixBaseSightingContribution = {
     sighting: [
       { src: 'relationship_type', dest: 'type' },
       { src: 'from', dest: 'sighting_of_ref', dependencies: ['to'] }, { src: 'to', dest: 'where_sighted_refs', dependencies: ['from'] },
-      { src: 'first_seen' }, { src: 'last_seen' }
+      { src: 'first_seen' }, { src: 'last_seen' },
     ],
   },
   resolvers: {
@@ -281,7 +283,7 @@ const stixBaseSightingContribution = {
     },
     to(to) {
       return [to?.standard_id];
-    }
+    },
   },
 };
 
@@ -289,7 +291,7 @@ const identifierContributions = [
   stixBaseCyberObservableContribution,
   stixBaseEntityContribution,
   stixBaseRelationshipContribution,
-  stixBaseSightingContribution
+  stixBaseSightingContribution,
 ];
 export const isSupportedStixType = (stixType) => [...identifierContributions.map((identifier) => Object.keys(identifier.definition)).flat()
   .map((type) => type.toLowerCase()), 'identity', 'location', 'file', 'relationship', 'sighting', 'threat-actor'].includes(stixType);
@@ -503,7 +505,12 @@ export const generateAliasesId = (rawAliases, instance) => {
     return [];
   }
   const aliases = R.uniq(rawAliases.filter((a) => isNotEmptyField(a)).map((a) => a.trim()));
-  return R.uniq(aliases.map((alias) => {
+  // Alias is an identifier only if the alias rules are respected.
+  const regexpEntityRules = ALIASES_RULES[instance.entity_type.toLowerCase()] ?? [];
+  const filteredAliases = regexpEntityRules.length > 0
+    ? aliases.filter((alias) => regexpEntityRules.some((rule) => RegExp(rule).test(alias))) : aliases;
+  // Generate ids for each remaining alias
+  return R.uniq(filteredAliases.map((alias) => {
     const instanceWithAliasAsName = { ...instance, name: alias };
     return generateStandardId(instance.entity_type, instanceWithAliasAsName);
   }));
@@ -522,7 +529,7 @@ export const generateHashedObservableStandardIds = (instance) => {
         .flatMap(([hashKey, hashValue]) => {
           if (!hashValue) return [];
           return generateStandardId(entity_type, {
-            hashes: { [hashKey]: hashValue }
+            hashes: { [hashKey]: hashValue },
           });
         });
       ids.push(...hashIds);

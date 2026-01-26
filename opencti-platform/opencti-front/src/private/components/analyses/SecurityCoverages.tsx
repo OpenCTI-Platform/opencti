@@ -192,24 +192,24 @@ const SecurityCoverages: FunctionComponent = () => {
     <ExportContextProvider>
       <Breadcrumbs elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('Security coverages'), current: true }]} />
       {queryRef && (
-      <div data-testid='security-coverages-page'>
-        <DataTable
-          dataColumns={dataColumns}
-          resolvePath={(data: SecurityCoveragesLines_data$data) => data.securityCoverages?.edges?.map((n) => n.node)}
-          storageKey={LOCAL_STORAGE_KEY}
-          initialValues={initialValues}
-          toolbarFilters={contextFilters}
-          preloadedPaginationProps={preloadedPaginationProps}
-          lineFragment={securityCoverageFragment}
-          exportContext={{ entity_type: 'Security-Coverage' }}
-          redirectionModeEnabled
-          createButton={(
-            <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <SecurityCoverageCreation paginationOptions={queryPaginationOptions} />
-            </Security>
-          )}
-        />
-      </div>
+        <div data-testid="security-coverages-page">
+          <DataTable
+            dataColumns={dataColumns}
+            resolvePath={(data: SecurityCoveragesLines_data$data) => data.securityCoverages?.edges?.map((n) => n.node)}
+            storageKey={LOCAL_STORAGE_KEY}
+            initialValues={initialValues}
+            contextFilters={contextFilters}
+            preloadedPaginationProps={preloadedPaginationProps}
+            lineFragment={securityCoverageFragment}
+            exportContext={{ entity_type: 'Security-Coverage' }}
+            redirectionModeEnabled
+            createButton={(
+              <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <SecurityCoverageCreation paginationOptions={queryPaginationOptions} />
+              </Security>
+            )}
+          />
+        </div>
       )}
     </ExportContextProvider>
   );

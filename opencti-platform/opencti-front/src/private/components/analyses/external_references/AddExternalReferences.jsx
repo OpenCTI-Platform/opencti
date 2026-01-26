@@ -64,20 +64,20 @@ const AddExternalReferences = ({
             marginLeft: 'auto',
             marginRight: '20px',
             display: 'flex',
-            flexWrap: 'wrap',
-            alignItems: 'flex-end',
+            alignItems: 'center',
             justifyContent: 'flex-end',
+            gap: '12px',
           }}
           >
             <SearchInput
               variant="inDrawer"
               onSubmit={handleSearch}
             />
-            <Button sx={{ margin: '5px 0 0 5px' }}
+            <Button
               onClick={() => setDialogOpen(true)}
-              color='primary'
-              size='small'
-              variant='contained'
+              color="primary"
+              size="small"
+              variant="contained"
             >
               {t_i18n('Create')} {t_i18n('entity_External-Reference')}
             </Button>
@@ -120,7 +120,7 @@ const AddExternalReferences = ({
                         />
                       </ListItemIcon>
                       <ListItemText
-                        primary={
+                        primary={(
                           <Skeleton
                             animation="wave"
                             variant="rectangular"
@@ -128,15 +128,15 @@ const AddExternalReferences = ({
                             height={15}
                             style={{ marginBottom: 10 }}
                           />
-                        }
-                        secondary={
+                        )}
+                        secondary={(
                           <Skeleton
                             animation="wave"
                             variant="rectangular"
                             width="90%"
                             height={15}
                           />
-                        }
+                        )}
                       />
                     </ListItem>
                   ))}

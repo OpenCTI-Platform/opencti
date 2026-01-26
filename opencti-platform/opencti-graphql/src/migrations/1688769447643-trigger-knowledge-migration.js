@@ -24,7 +24,7 @@ export const up = async (next) => {
     index: [READ_INDEX_INTERNAL_OBJECTS],
     refresh: true,
     wait_for_completion: true,
-    body: updateQuery
+    body: updateQuery,
   }).catch((err) => {
     throw DatabaseError('Error updating elastic', { cause: err });
   });

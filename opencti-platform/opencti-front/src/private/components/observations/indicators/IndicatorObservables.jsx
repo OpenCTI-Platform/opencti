@@ -23,7 +23,7 @@ const IndicatorObservablesComponent = ({ indicator }) => {
   const observablesGlobalCount = indicator.observables.pageInfo.globalCount;
 
   return (
-    <div style={{ marginTop: 20, height: 300, display: 'flex', flexFlow: 'column' }} >
+    <div style={{ marginTop: 20, height: 300, display: 'flex', flexFlow: 'column' }}>
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <Typography variant="h3" style={{ marginBottom: 0 }}>
           {t_i18n('Based on')}

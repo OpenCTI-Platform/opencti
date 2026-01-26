@@ -32,16 +32,16 @@ const useCopy = <T extends OperationType['response']>(
     if (selectAll) {
       (elementId
         ? fetchQuery(query, {
-          id: elementId,
-          search: searchTerm,
-          filters,
-          count: maxNumberOfObservablesToCopy,
-        })
+            id: elementId,
+            search: searchTerm,
+            filters,
+            count: maxNumberOfObservablesToCopy,
+          })
         : fetchQuery(query, {
-          search: searchTerm,
-          filters,
-          count: maxNumberOfObservablesToCopy,
-        })
+            search: searchTerm,
+            filters,
+            count: maxNumberOfObservablesToCopy,
+          })
       )
         .toPromise()
         .then((data) => {

@@ -52,8 +52,8 @@ const CsvMapperLines: FunctionComponent<CsvMapperLinesProps> = ({
 }) => {
   const { csvMappers } = useCsvMappersData();
   const { data } = usePaginationFragment<
-  csvMappers_MappersQuery,
-  CsvMapperLines_csvMapper$key
+    csvMappers_MappersQuery,
+    CsvMapperLines_csvMapper$key
   >(csvMapperLinesFragment, csvMappers);
 
   const csvMappersData = data?.csvMappers?.edges ?? [];

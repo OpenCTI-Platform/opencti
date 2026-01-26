@@ -296,7 +296,7 @@ const StixCyberObservableNestedEntitiesTable: React.FC<StixCyberObservableNested
       percentWidth: isInLine ? 15 : 10,
       isSortable: true,
       render: (data: StixCyberObservableNestedEntitiesTable_node$data) => (
-        <ItemEntityType entityType={data.relationship_type}/>
+        <ItemEntityType entityType={data.relationship_type} />
       ),
     },
     to_entity_type: {
@@ -304,7 +304,7 @@ const StixCyberObservableNestedEntitiesTable: React.FC<StixCyberObservableNested
       percentWidth: isInLine ? 20 : 10,
       isSortable: false,
       render: (data: StixCyberObservableNestedEntitiesTable_node$data) => (
-        <ItemEntityType entityType={data.to?.entity_type || ''}/>
+        <ItemEntityType entityType={data.to?.entity_type || ''} />
       ),
     },
     name: {
@@ -315,7 +315,7 @@ const StixCyberObservableNestedEntitiesTable: React.FC<StixCyberObservableNested
         return (
           <>
             {data.to?.name || data.to?.observable_value || data.to?.attribute_abstract || data.to?.content}
-            {data.to?.draftVersion && <DraftChip/>}
+            {data.to?.draftVersion && <DraftChip />}
           </>
         );
       },
@@ -366,7 +366,7 @@ const StixCyberObservableNestedEntitiesTable: React.FC<StixCyberObservableNested
           hideHeaders={isInLine}
           disableLineSelection
           getComputeLink={getRedirectionLink}
-          icon={(data: StixCyberObservableNestedEntitiesTable_node$data) => <ItemIcon type={data.to?.entity_type}/>}
+          icon={(data: StixCyberObservableNestedEntitiesTable_node$data) => <ItemIcon type={data.to?.entity_type} />}
           actions={(data: StixCyberObservableNestedEntitiesTable_node$data) => {
             return (
               <div style={{ marginLeft: -10 }} onClick={(e) => stopEvent(e)}>

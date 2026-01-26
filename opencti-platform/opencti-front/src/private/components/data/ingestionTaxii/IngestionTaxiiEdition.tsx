@@ -5,7 +5,10 @@ import { Field, Form, Formik } from 'formik';
 import MenuItem from '@mui/material/MenuItem';
 import { FormikConfig } from 'formik/dist/types';
 import { ExternalReferencesValues } from '@components/common/form/ExternalReferencesField';
-import { IngestionTaxiiEditionFragment_ingestionTaxii$data } from '@components/data/ingestionTaxii/__generated__/IngestionTaxiiEditionFragment_ingestionTaxii.graphql';
+import {
+  IngestionTaxiiEditionFragment_ingestionTaxii$data,
+  IngestionTaxiiEditionFragment_ingestionTaxii$key,
+} from '@components/data/ingestionTaxii/__generated__/IngestionTaxiiEditionFragment_ingestionTaxii.graphql';
 import CommitMessage from '@components/common/form/CommitMessage';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import CreatorField from '../../common/form/CreatorField';
@@ -28,11 +31,23 @@ import SwitchField from '../../../../components/fields/SwitchField';
 import PasswordTextField from '../../../../components/PasswordTextField';
 import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
-import { IngestionTaxiiEditionFragment_ingestionTaxii$key } from './__generated__/IngestionTaxiiEditionFragment_ingestionTaxii.graphql';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import { adaptFieldValue } from '../../../../utils/String';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-
+import IngestionEditionUserHandling from '@components/data/IngestionEditionUserHandling';
+export const ingestionTaxiiEditionUserHandlingPatch = graphql`
+  mutation IngestionTaxiiEditionUserHandlingMutation($id: ID!, $input: IngestionTaxiiAddAutoUserInput!) {
+    ingestionTaxiiAddAutoUser(id: $id, input: $input) {
+        id
+        name
+        user {
+            id
+            entity_type
+            name
+        }
+    }
+  }
+`;
 export const initIngestionValue = (ingestionTaxiiData: IngestionTaxiiEditionFragment_ingestionTaxii$data) => {
   return {
     ...{
@@ -46,34 +61,35 @@ export const initIngestionValue = (ingestionTaxiiData: IngestionTaxiiEditionFrag
       user_id: convertUser(ingestionTaxiiData, 'user'),
       added_after_start: ingestionTaxiiData.added_after_start,
       confidence_to_score: ingestionTaxiiData.confidence_to_score,
+      automatic_user: true,
     },
     ...(ingestionTaxiiData.authentication_type === BEARER_AUTH
       ? {
-        token: extractToken(ingestionTaxiiData.authentication_value),
-      }
+          token: extractToken(ingestionTaxiiData.authentication_value),
+        }
       : {
-        token: '',
-      }),
+          token: '',
+        }),
     ...(ingestionTaxiiData.authentication_type === BASIC_AUTH
       ? {
-        username: extractUsername(ingestionTaxiiData.authentication_value),
-        password: extractPassword(ingestionTaxiiData.authentication_value),
-      }
+          username: extractUsername(ingestionTaxiiData.authentication_value),
+          password: extractPassword(ingestionTaxiiData.authentication_value),
+        }
       : {
-        username: '',
-        password: '',
-      }),
+          username: '',
+          password: '',
+        }),
     ...(ingestionTaxiiData.authentication_type === CERT_AUTH
       ? {
-        cert: extractCert(ingestionTaxiiData.authentication_value),
-        key: extractKey(ingestionTaxiiData.authentication_value),
-        ca: extractCA(ingestionTaxiiData.authentication_value),
-      }
+          cert: extractCert(ingestionTaxiiData.authentication_value),
+          key: extractKey(ingestionTaxiiData.authentication_value),
+          ca: extractCA(ingestionTaxiiData.authentication_value),
+        }
       : {
-        cert: '',
-        key: '',
-        ca: '',
-      }),
+          cert: '',
+          key: '',
+          ca: '',
+        }),
   };
 };
 
@@ -401,11 +417,22 @@ const IngestionTaxiiEdition: FunctionComponent<IngestionTaxiiEditionProps> = ({
           )}
           <CreatorField
             name="user_id"
-            label={t_i18n('User responsible for data creation (empty = System)')}
+            label={t_i18n('User responsible for data creation')}
             onChange={handleSubmitField}
             containerStyle={fieldSpacingContainerStyle}
             showConfidence
           />
+          {ingestionTaxiiData.user?.name === 'SYSTEM'
+            && (
+              <IngestionEditionUserHandling
+                key={values.name}
+                feedName={values.name}
+                onAutoUserCreated={() => setFieldValue('user_id', `[F] ${values.name}`)}
+                dataId={ingestionTaxiiData.id}
+                mutation={ingestionTaxiiEditionUserHandlingPatch}
+              />
+            )
+          }
           <Field
             component={DateTimePickerField}
             name="added_after_start"

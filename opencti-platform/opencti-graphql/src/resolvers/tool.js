@@ -2,11 +2,12 @@ import { addTool, findToolPaginated, findById } from '../domain/tool';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
-  stixDomainObjectDelete,
   stixDomainObjectDeleteRelation,
+  stixDomainObjectDelete,
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
+import { ENTITY_TYPE_TOOL } from '../schema/stixDomainObject';
 import { loadThroughDenormalized } from './stix';
 import { INPUT_KILLCHAIN } from '../schema/general';
 
@@ -20,7 +21,7 @@ const toolResolvers = {
   },
   Mutation: {
     toolEdit: (_, { id }, context) => ({
-      delete: () => stixDomainObjectDelete(context, context.user, id),
+      delete: () => stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_TOOL),
       fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
       contextClean: () => stixDomainObjectCleanContext(context, context.user, id),

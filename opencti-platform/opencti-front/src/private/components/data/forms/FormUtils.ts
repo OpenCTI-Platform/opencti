@@ -436,6 +436,7 @@ export const convertFormBuilderDataToSchema = (
     allowDraftOverride: values.allowDraftOverride,
     mainEntityMultiple: values.mainEntityMultiple,
     mainEntityLookup: values.mainEntityLookup,
+    mainEntityDisableCreation: values.mainEntityDisableCreation,
     mainEntityFieldMode: values.mainEntityFieldMode,
     mainEntityParseField: values.mainEntityParseField,
     mainEntityParseMode: values.mainEntityParseMode,
@@ -453,6 +454,7 @@ export const convertFormBuilderDataToSchema = (
       required: field.required,
       isMandatory: field.isMandatory, // Preserve mandatory flag
       width: field.width, // Preserve field width configuration
+      multiple: field.multiple, // For openvocab, select/multiselect, and files fields
       options: field.options,
       attributeMapping: field.attributeMapping,
       defaultValue: field.defaultValue,

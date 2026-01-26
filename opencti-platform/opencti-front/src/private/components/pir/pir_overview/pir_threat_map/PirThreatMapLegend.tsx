@@ -20,8 +20,8 @@ import { itemColor } from '../../../../../utils/Colors';
 import { useFormatter } from '../../../../../components/i18n';
 
 interface PirThreatMapLegendProps {
-  entityTypes: string[]
-  onFilter: (entityTypes: string[]) => void
+  entityTypes: string[];
+  onFilter: (entityTypes: string[]) => void;
 }
 
 const PirThreatMapLegend = ({ entityTypes, onFilter }: PirThreatMapLegendProps) => {

@@ -1,4 +1,5 @@
 # Filigran
+boto3~=1.38.27
 datefinder~=0.7.3
 pika~=1.3.0
 python-magic~=0.4.27; sys_platform == 'linux' or sys_platform == 'darwin'

@@ -2,11 +2,12 @@ import { addCourseOfAction, attackPatternsPaginated, findCourseOfActionPaginated
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
-  stixDomainObjectDelete,
   stixDomainObjectDeleteRelation,
+  stixDomainObjectDelete,
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
+import { ENTITY_TYPE_COURSE_OF_ACTION } from '../schema/stixDomainObject';
 
 const courseOfActionResolvers = {
   Query: {
@@ -18,7 +19,7 @@ const courseOfActionResolvers = {
   },
   Mutation: {
     courseOfActionEdit: (_, { id }, context) => ({
-      delete: () => stixDomainObjectDelete(context, context.user, id),
+      delete: () => stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_COURSE_OF_ACTION),
       fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
       contextClean: () => stixDomainObjectCleanContext(context, context.user, id),

@@ -5,8 +5,8 @@ import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../../components/Theme';
 
 interface RulesHeaderGridCardProps extends PropsWithChildren {
-  title: string
-  icon: ReactNode
+  title: string;
+  icon: ReactNode;
 }
 
 const RulesHeaderGridCard = ({

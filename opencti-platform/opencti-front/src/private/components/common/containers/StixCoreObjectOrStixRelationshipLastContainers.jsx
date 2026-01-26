@@ -326,7 +326,7 @@ const StixCoreObjectOrStixRelationshipLastContainers = (props) => {
       <Typography variant="h4">
         {authorId ? t_i18n('Latest containers authored by this entity') : t_i18n('Latest containers about the object')}
       </Typography>
-      <Paper classes={{ root: classes.paper }} className='paper-for-grid' variant="outlined">
+      <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
         <QueryRenderer
           query={stixCoreObjectOrStixRelationshipLastContainersQuery}
           variables={{
@@ -355,16 +355,16 @@ const StixCoreObjectOrStixRelationshipLastContainers = (props) => {
                             }`}
                           >
                             <ListItemIcon>
-                              <ItemIcon type={container.entity_type}/>
+                              <ItemIcon type={container.entity_type} />
                             </ListItemIcon>
                             <ListItemText
-                              primary={
+                              primary={(
                                 <>
                                   <div
                                     className={classes.bodyItem}
                                     style={{ width: '12%' }}
                                   >
-                                    <ItemEntityType entityType={container.entity_type}/>
+                                    <ItemEntityType entityType={container.entity_type} />
                                   </div>
                                   <Tooltip title={container.name}>
                                     <div className={classes.bodyItem} style={{ width: '37%' }}>
@@ -385,7 +385,7 @@ const StixCoreObjectOrStixRelationshipLastContainers = (props) => {
                                     />
                                   </div>
                                 </>
-                                }
+                              )}
                             />
                           </ListItemButton>
                         );
@@ -434,7 +434,7 @@ const StixCoreObjectOrStixRelationshipLastContainers = (props) => {
                       />
                     </ListItemIcon>
                     <ListItemText
-                      primary={
+                      primary={(
                         <Skeleton
                           animation="wave"
                           variant="rectangular"
@@ -442,15 +442,15 @@ const StixCoreObjectOrStixRelationshipLastContainers = (props) => {
                           height={15}
                           style={{ marginBottom: 10 }}
                         />
-                      }
-                      secondary={
+                      )}
+                      secondary={(
                         <Skeleton
                           animation="wave"
                           variant="rectangular"
                           width="90%"
                           height={15}
                         />
-                      }
+                      )}
                     />
                   </ListItem>
                 ))}

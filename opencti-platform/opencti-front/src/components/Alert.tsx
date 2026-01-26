@@ -21,7 +21,7 @@ const Alert = ({ content, style, severity = 'info' }: AlertProps) => {
         variant="outlined"
         style={{ padding: `0 ${theme.spacing(1)}` }}
       >
-        <Typography variant={'body2'}>{content}</Typography>
+        <Typography variant="body2">{content}</Typography>
       </MuiAlert>
     </div>
   );

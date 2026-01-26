@@ -79,33 +79,33 @@ const indicatorMutation = graphql`
 const INDICATOR_TYPE = 'Indicator';
 
 interface IndicatorAddInput {
-  name: string
-  confidence: number | undefined
-  indicator_types: string[]
-  pattern: string
-  pattern_type: string
-  x_opencti_main_observable_type: string
-  createObservables: boolean
+  name: string;
+  confidence: number | undefined;
+  indicator_types: string[];
+  pattern: string;
+  pattern_type: string;
+  x_opencti_main_observable_type: string;
+  createObservables: boolean;
   x_mitre_platforms: string[];
-  valid_from: Date | null
-  valid_until: Date | null
-  description: string
-  createdBy: FieldOption | undefined
-  objectMarking: FieldOption[]
-  killChainPhases: FieldOption[]
-  objectLabel: FieldOption[]
-  externalReferences: { value: string }[]
-  x_opencti_detection: boolean
+  valid_from: Date | null;
+  valid_until: Date | null;
+  description: string;
+  createdBy: FieldOption | undefined;
+  objectMarking: FieldOption[];
+  killChainPhases: FieldOption[];
+  objectLabel: FieldOption[];
+  externalReferences: { value: string }[];
+  x_opencti_detection: boolean;
   x_opencti_score: number | undefined;
-  file: File | undefined
+  file: File | undefined;
 }
 
 interface IndicatorFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  updater: (store: RecordSourceSelectorProxy, key: string, response: IndicatorCreationMutation['response']['indicatorAdd']) => void;
   onReset?: () => void;
   onCompleted?: () => void;
-  defaultCreatedBy?: { value: string, label: string }
-  defaultMarkingDefinitions?: { value: string, label: string }[]
+  defaultCreatedBy?: { value: string; label: string };
+  defaultMarkingDefinitions?: { value: string; label: string }[];
   defaultConfidence?: number;
   inputValue?: string;
 }
@@ -185,9 +185,9 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
       variables: {
         input,
       },
-      updater: (store) => {
+      updater: (store, response) => {
         if (updater) {
-          updater(store, 'indicatorAdd');
+          updater(store, 'indicatorAdd', response?.indicatorAdd);
         }
       },
       onError: (error) => {
@@ -412,9 +412,9 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
 };
 
 interface IndicatorCreationProps {
-  paginationOptions: IndicatorsLinesPaginationQuery$variables,
-  contextual?: boolean,
-  display?: boolean
+  paginationOptions: IndicatorsLinesPaginationQuery$variables;
+  contextual?: boolean;
+  display?: boolean;
 }
 
 const IndicatorCreation: FunctionComponent<IndicatorCreationProps> = ({ paginationOptions, contextual, display }) => {
@@ -425,7 +425,7 @@ const IndicatorCreation: FunctionComponent<IndicatorCreationProps> = ({ paginati
   const handleClose = () => setOpen(false);
   const onReset = () => handleClose();
   const CreateIndicatorControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Indicator' {...props} />
+    <CreateEntityControlledDial entityType="Indicator" {...props} />
   );
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,

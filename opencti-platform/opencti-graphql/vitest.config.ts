@@ -12,10 +12,9 @@ export const buildTestConfig = (include: string[]) => defineConfig({
     coverage: {
       provider: 'v8',
       include: ['src/**'],
-      exclude: ['src/generated/**', 'src/migrations/**', 'src/stixpattern/**', 'src/python/**'],
+      exclude: ['src/generated/**', 'src/migrations/**', 'src/stixpattern/**', 'src/python/**', '*.md'],
       reporter: ['text', 'json', 'html'],
-    },
-    maxWorkers: 10,
+    }
   },
 });
 

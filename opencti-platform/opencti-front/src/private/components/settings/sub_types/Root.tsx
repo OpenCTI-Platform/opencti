@@ -8,7 +8,7 @@ import FintelTemplate from './fintel_templates/FintelTemplate';
 
 const RootSubType = () => {
   const { subTypeId } = useParams<{ subTypeId?: string }>();
-  if (!subTypeId) return <ErrorNotFound/>;
+  if (!subTypeId) return <ErrorNotFound />;
 
   return (
     <Suspense fallback={<Loader />}>

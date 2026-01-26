@@ -15,23 +15,25 @@ import { isNotEmptyField } from '../../utils/utils';
 import type { Theme } from '../Theme';
 import { useDataTableContext } from './components/DataTableContext';
 import { FilterSearchContext, useAvailableFilterKeysForEntityTypes } from '../../utils/filters/filtersUtils';
+import useDraftContext from '../../utils/hooks/useDraftContext';
+import { useGetCurrentUserAccessRight } from '../../utils/authorizedMembers';
 
 type DataTableInternalFiltersProps = Pick<DataTableProps,
-| 'additionalFilters'
-| 'entityTypes'> & {
-  hideSearch?: boolean
-  hideFilters?: boolean
-  availableRelationFilterTypes?: FilterIconButtonProps['availableRelationFilterTypes']
-  availableEntityTypes?: string[]
-  availableRelationshipTypes?: string[]
-  searchContextFinal?: FilterSearchContext
-  additionalHeaderButtons?: ReactNode[]
-  currentView?: string
-  exportContext?: { entity_type: string, entity_id?: string }
-};
+  | 'contextFilters'
+  | 'entityTypes'> & {
+    hideSearch?: boolean;
+    hideFilters?: boolean;
+    availableRelationFilterTypes?: FilterIconButtonProps['availableRelationFilterTypes'];
+    availableEntityTypes?: string[];
+    availableRelationshipTypes?: string[];
+    searchContextFinal?: FilterSearchContext;
+    additionalHeaderButtons?: ReactNode[];
+    currentView?: string;
+    exportContext?: { entity_type: string; entity_id?: string };
+  };
 
 const DataTableInternalFilters = ({
-  additionalFilters,
+  contextFilters,
   entityTypes,
   hideSearch,
   hideFilters,
@@ -70,7 +72,7 @@ const DataTableInternalFilters = ({
         >
           {!hideSearch && (
             <SearchInput
-              variant={'small'}
+              variant="small"
               onSubmit={helpers.handleSearch}
               keyword={searchTerm}
             />
@@ -78,7 +80,7 @@ const DataTableInternalFilters = ({
 
           {!hideFilters && (
             <DataTableFilters
-              additionalFilters={additionalFilters}
+              contextFilters={contextFilters}
               availableFilterKeys={availableFilterKeys}
               searchContextFinal={searchContextFinal}
               availableEntityTypes={availableEntityTypes}
@@ -106,26 +108,28 @@ const DataTableInternalFilters = ({
 };
 
 type DataTableInternalToolbarProps = Pick<DataTableProps,
-| 'toolbarFilters'
-| 'handleCopy'
-| 'removeAuthMembersEnabled'
-| 'removeFromDraftEnabled'
-| 'markAsReadEnabled'
-| 'entityTypes'
+  | 'contextFilters'
+  | 'handleCopy'
+  | 'removeAuthMembersEnabled'
+  | 'removeFromDraftEnabled'
+  | 'markAsReadEnabled'
+  | 'entityTypes'
 > & {
-  taskScope?: string
+  taskScope?: string;
   globalSearch?: string;
+  displayEditButtons?: boolean;
 };
 
 const DataTableInternalToolbar = ({
   taskScope,
   handleCopy,
-  toolbarFilters,
+  contextFilters,
   globalSearch,
   removeAuthMembersEnabled,
   removeFromDraftEnabled,
   markAsReadEnabled,
   entityTypes,
+  displayEditButtons,
 }: DataTableInternalToolbarProps) => {
   const theme = useTheme<Theme>();
 
@@ -156,7 +160,7 @@ const DataTableInternalToolbar = ({
         numberOfSelectedElements={numberOfSelectedElements}
         selectAll={selectAll}
         search={searchTerm ?? globalSearch}
-        filters={toolbarFilters}
+        filters={contextFilters}
         types={entityTypes}
         handleClearSelectedElements={handleClearSelectedElements}
         taskScope={taskScope}
@@ -164,41 +168,42 @@ const DataTableInternalToolbar = ({
         removeAuthMembersEnabled={removeAuthMembersEnabled}
         removeFromDraftEnabled={removeFromDraftEnabled}
         markAsReadEnabled={markAsReadEnabled}
+        displayEditButtons={displayEditButtons}
       />
     </div>
   );
 };
 
 type OCTIDataTableProps = Pick<DataTableProps,
-| 'dataColumns'
-| 'resolvePath'
-| 'storageKey'
-| 'initialValues'
-| 'availableFilterKeys'
-| 'redirectionModeEnabled'
-| 'additionalFilterKeys'
-| 'additionalFilters'
-| 'variant'
-| 'actions'
-| 'hideHeaders'
-| 'emptyStateMessage'
-| 'icon'
-| 'rootRef'
-| 'onLineClick'
-| 'getComputeLink'
-| 'disableNavigation'
-| 'disableLineSelection'
-| 'disableToolBar'
-| 'removeSelectAll'
-| 'selectOnLineClick'
-| 'createButton'
-| 'entityTypes'> & {
-  lineFragment: GraphQLTaggedNode
-  preloadedPaginationProps: UsePreloadedPaginationFragment<OperationType>,
-  exportContext?: { entity_type: string, entity_id?: string }
-  globalSearch?: string;
-  createButton?: ReactNode
-} & DataTableInternalFiltersProps & DataTableInternalToolbarProps;
+  | 'dataColumns'
+  | 'resolvePath'
+  | 'storageKey'
+  | 'initialValues'
+  | 'availableFilterKeys'
+  | 'redirectionModeEnabled'
+  | 'additionalFilterKeys'
+  | 'contextFilters'
+  | 'variant'
+  | 'actions'
+  | 'hideHeaders'
+  | 'emptyStateMessage'
+  | 'icon'
+  | 'rootRef'
+  | 'onLineClick'
+  | 'getComputeLink'
+  | 'disableNavigation'
+  | 'disableLineSelection'
+  | 'disableToolBar'
+  | 'removeSelectAll'
+  | 'selectOnLineClick'
+  | 'createButton'
+  | 'entityTypes'> & {
+    lineFragment: GraphQLTaggedNode;
+    preloadedPaginationProps: UsePreloadedPaginationFragment<OperationType>;
+    exportContext?: { entity_type: string; entity_id?: string };
+    globalSearch?: string;
+    createButton?: ReactNode;
+  } & DataTableInternalFiltersProps & DataTableInternalToolbarProps;
 
 const DataTable = (props: OCTIDataTableProps) => {
   const {
@@ -210,11 +215,10 @@ const DataTable = (props: OCTIDataTableProps) => {
     availableRelationFilterTypes,
     preloadedPaginationProps: dataQueryArgs,
     additionalFilterKeys,
-    additionalFilters,
     lineFragment,
     exportContext,
     entityTypes,
-    toolbarFilters,
+    contextFilters,
     handleCopy,
     additionalHeaderButtons,
     currentView,
@@ -240,6 +244,11 @@ const DataTable = (props: OCTIDataTableProps) => {
     availableFilterKeys = availableFilterKeys.concat(additionalFilterKeys);
   }
 
+  // Remove toolbar in Draft context without the minimal right access "canEdit"
+  const draftContext = useDraftContext();
+  const currentAccessRight = useGetCurrentUserAccessRight(draftContext?.currentUserAccessRight);
+  const hasAuthorizedMembersCanEdit = !draftContext || currentAccessRight.canEdit;
+
   return (
     <>
       <DataTableComponent
@@ -251,7 +260,7 @@ const DataTable = (props: OCTIDataTableProps) => {
         filtersComponent={(
           <DataTableInternalFilters
             entityTypes={entityTypes}
-            additionalFilters={additionalFilters}
+            contextFilters={contextFilters}
             additionalHeaderButtons={additionalHeaderButtons}
             availableEntityTypes={availableEntityTypes}
             availableRelationFilterTypes={availableRelationFilterTypes}
@@ -262,19 +271,20 @@ const DataTable = (props: OCTIDataTableProps) => {
             exportContext={exportContext}
             searchContextFinal={computedSearchContextFinal}
           />
-      )}
+        )}
         dataTableToolBarComponent={(
           <DataTableInternalToolbar
             entityTypes={entityTypes}
             handleCopy={handleCopy}
             taskScope={taskScope}
-            toolbarFilters={toolbarFilters}
+            contextFilters={contextFilters}
             globalSearch={globalSearch}
             removeAuthMembersEnabled={removeAuthMembersEnabled}
             removeFromDraftEnabled={removeFromDraftEnabled}
             markAsReadEnabled={markAsReadEnabled}
+            displayEditButtons={hasAuthorizedMembersCanEdit}
           />
-      )}
+        )}
       />
     </>
   );

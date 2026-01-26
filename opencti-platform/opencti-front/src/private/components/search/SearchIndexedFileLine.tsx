@@ -103,7 +103,7 @@ const SearchIndexedFileLineComponent: FunctionComponent<SearchIndexedFileLineCom
           <ItemIcon type="File" />
         </ListItemIcon>
         <ListItemText
-          primary={
+          primary={(
             <div>
               {Object.values(dataColumns).map((value) => (
                 <div
@@ -115,7 +115,7 @@ const SearchIndexedFileLineComponent: FunctionComponent<SearchIndexedFileLineCom
                 </div>
               ))}
             </div>
-        }
+          )}
         />
       </ListItemButton>
     </ListItem>
@@ -162,17 +162,17 @@ export const SearchIndexedFileLineDummy = ({
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={
+      secondaryAction={(
         <Box sx={{ root: classes.itemIconDisabled }}>
-          <MoreVertOutlined/>
+          <MoreVertOutlined />
         </Box>
-      }
+      )}
     >
       <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             {Object.values(dataColumns).map((value) => (
               <div
@@ -189,7 +189,7 @@ export const SearchIndexedFileLineDummy = ({
               </div>
             ))}
           </div>
-        }
+        )}
       />
     </ListItem>
   );

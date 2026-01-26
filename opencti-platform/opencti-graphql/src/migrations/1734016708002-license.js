@@ -21,7 +21,7 @@ export const up = async (next) => {
   await elUpdateByQueryForMigration(
     '[MIGRATION] Licensing model migration',
     [READ_INDEX_INTERNAL_OBJECTS],
-    updateQuery
+    updateQuery,
   );
   logApp.info(`${message} > done`);
   next();

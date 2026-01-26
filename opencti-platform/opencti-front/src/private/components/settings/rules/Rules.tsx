@@ -22,7 +22,7 @@ export const rulesQuery = graphql`
 `;
 
 interface RulesComponentProps {
-  queryRef: PreloadedQuery<RulesQuery>
+  queryRef: PreloadedQuery<RulesQuery>;
 }
 
 const RulesComponent = ({ queryRef }: RulesComponentProps) => {

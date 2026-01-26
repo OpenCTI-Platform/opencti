@@ -17,7 +17,7 @@ export const up = async (next) => {
   await elUpdateByQueryForMigration(
     '[MIGRATION] Renaming platform messages attribute',
     [READ_INDEX_INTERNAL_OBJECTS],
-    updateQuery
+    updateQuery,
   );
   next();
 };

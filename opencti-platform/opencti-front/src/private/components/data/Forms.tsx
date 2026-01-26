@@ -98,18 +98,18 @@ const Forms = () => {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         keyword={searchTerm}
-        createButton={
+        createButton={(
           <Security needs={[INGESTION_SETINGESTIONS]}>
             <FormCreationContainer
               paginationOptions={paginationOptions}
               triggerButton={true}
             />
           </Security>
-          }
+        )}
       >
         {queryRef && (
           <React.Suspense
-            fallback={
+            fallback={(
               <>
                 {Array(20)
                   .fill(0)
@@ -117,7 +117,7 @@ const Forms = () => {
                     <FormLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>
-            }
+            )}
           >
             <FormLines
               queryRef={queryRef}

@@ -41,6 +41,7 @@ import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichm
 import { resolveLink } from '../../../../utils/Entity';
 import PopoverMenu from '../../../../components/PopoverMenu';
 import useAuth from '../../../../utils/hooks/useAuth';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import { useSettingsMessagesBannerHeight } from '../../settings/settings_messages/SettingsMessagesBanner';
 
 export const containerHeaderObjectsQuery = graphql`
@@ -460,7 +461,11 @@ const ContainerHeader = (props) => {
   const [openSharing, setOpenSharing] = useState(false);
   const [openAccessRestriction, setOpenAccessRestriction] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
-  const canDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]);
+
+  const draftContext = useDraftContext();
+  const currentDraftAccessRight = useGetCurrentUserAccessRight(draftContext?.currentUserAccessRight);
+
+  const canDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]) && (!draftContext || currentDraftAccessRight.canEdit);
 
   const handleCloseEnrollPlaybook = () => {
     setOpenEnrollPlaybook(false);
@@ -556,33 +561,33 @@ const ContainerHeader = (props) => {
     <div style={containerStyle}>
       <React.Suspense fallback={<span />}>
         {!knowledge && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Tooltip
-            title={
-              container.name
-              || container.attribute_abstract
-              || container.content
-              || container.opinion
-              || `${fd(container.first_observed)} - ${fd(container.last_observed)}`
-            }
-          >
-            <Typography variant="h1" sx={{ margin: 0, lineHeight: 'unset' }}>
-              {truncate(
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Tooltip
+              title={
                 container.name
                 || container.attribute_abstract
                 || container.content
                 || container.opinion
-                || `${fd(container.first_observed)} - ${fd(
-                  container.last_observed,
-                )}`,
-                80,
-              )}
-            </Typography>
-          </Tooltip>
-          {container.draftVersion && (
-            <DraftChip />
-          )}
-        </div>
+                || `${fd(container.first_observed)} - ${fd(container.last_observed)}`
+              }
+            >
+              <Typography variant="h1" sx={{ margin: 0, lineHeight: 'unset' }}>
+                {truncate(
+                  container.name
+                  || container.attribute_abstract
+                  || container.content
+                  || container.opinion
+                  || `${fd(container.first_observed)} - ${fd(
+                    container.last_observed,
+                  )}`,
+                  80,
+                )}
+              </Typography>
+            </Tooltip>
+            {container.draftVersion && (
+              <DraftChip />
+            )}
+          </div>
         )}
         {knowledge && (
           <div>
@@ -738,11 +743,13 @@ const ContainerHeader = (props) => {
               </Security>
             )}
             {displayEnrollPlaybook
-              && <StixCoreObjectEnrollPlaybook
-                stixCoreObjectId={container.id}
-                open={openEnrollPlaybook}
-                handleClose={displayEnrollPlaybookButton ? undefined : handleCloseEnrollPlaybook}
-                 />
+              && (
+                <StixCoreObjectEnrollPlaybook
+                  stixCoreObjectId={container.id}
+                  open={openEnrollPlaybook}
+                  handleClose={displayEnrollPlaybookButton ? undefined : handleCloseEnrollPlaybook}
+                />
+              )
             }
             {displayPopoverMenu && (
               <>
@@ -750,40 +757,40 @@ const ContainerHeader = (props) => {
                   {({ closeMenu }) => (
                     <Box>
                       {displaySharing && !displaySharingButton && (
-                      <StixCoreObjectMenuItemUnderEE
-                        setOpen={setOpenSharing}
-                        title={t_i18n('Share with an organization')}
-                        isDisabled={isSharingDisabled}
-                        handleCloseMenu={closeMenu}
-                        needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}
-                      />
+                        <StixCoreObjectMenuItemUnderEE
+                          setOpen={setOpenSharing}
+                          title={t_i18n('Share with an organization')}
+                          isDisabled={isSharingDisabled}
+                          handleCloseMenu={closeMenu}
+                          needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}
+                        />
                       )}
                       {displayAuthorizedMembers && !displayAuthorizedMembersButton && (
-                      <StixCoreObjectMenuItemUnderEE
-                        setOpen={setOpenAccessRestriction}
-                        title={t_i18n('Manage access restriction')}
-                        handleCloseMenu={closeMenu}
-                        isDisabled={!enableManageAuthorizedMembers}
-                        needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
-                      />
+                        <StixCoreObjectMenuItemUnderEE
+                          setOpen={setOpenAccessRestriction}
+                          title={t_i18n('Manage access restriction')}
+                          handleCloseMenu={closeMenu}
+                          isDisabled={!enableManageAuthorizedMembers}
+                          needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
+                        />
                       )}
                       {displayEnrollPlaybook && !displayEnrollPlaybookButton && (
-                      <StixCoreObjectMenuItemUnderEE
-                        title={t_i18n('Enroll in playbook')}
-                        setOpen={setOpenEnrollPlaybook}
-                        handleCloseMenu={closeMenu}
-                        needs={[AUTOMATION]}
-                        matchAll
-                      />
+                        <StixCoreObjectMenuItemUnderEE
+                          title={t_i18n('Enroll in playbook')}
+                          setOpen={setOpenEnrollPlaybook}
+                          handleCloseMenu={closeMenu}
+                          needs={[AUTOMATION]}
+                          matchAll
+                        />
                       )}
                       {canDelete && (
-                      <MenuItem onClick={() => {
-                        handleOpenDelete();
-                        closeMenu();
-                      }}
-                      >
-                        {t_i18n('Delete')}
-                      </MenuItem>
+                        <MenuItem onClick={() => {
+                          handleOpenDelete();
+                          closeMenu();
+                        }}
+                        >
+                          {t_i18n('Delete')}
+                        </MenuItem>
                       )}
                     </Box>
                   )}

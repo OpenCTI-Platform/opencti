@@ -108,8 +108,8 @@ interface ObjectMarkingFieldProps {
 }
 
 interface MarkingOption extends FieldOption {
-  definition_type: string
-  x_opencti_order: number
+  definition_type: string;
+  x_opencti_order: number;
 }
 
 interface OptionValues {
@@ -139,7 +139,7 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
   >(undefined);
   const [operation, setOperation] = useState<string | undefined>(undefined);
   const [otherUserAllowedMarkingsData, setOtherUserAllowedMarkingsData] = useState(
-    [] as { definition: string | null | undefined, id: string, x_opencti_color: string | null | undefined }[] | undefined,
+    [] as { definition: string | null | undefined; id: string; x_opencti_color: string | null | undefined }[] | undefined,
   );
 
   const fetchCreatorAllowedMarking = async (creatorId: string) => {
@@ -249,7 +249,7 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
   const renderOption: RenderOption = (props, option) => (
     <li {...props} key={option.value}>
       <div className={classes.icon} style={{ color: option.color }}>
-        <MarkingIcon theme={theme} color={option.color}/>
+        <MarkingIcon theme={theme} color={option.color} />
       </div>
       <div className={classes.text}>{option.label}</div>
     </li>

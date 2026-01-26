@@ -83,8 +83,8 @@ const SystemsLines: FunctionComponent<SystemsLinesProps> = ({
   onLabelClick,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
-  SystemsLinesPaginationQuery,
-  SystemsLines_data$key
+    SystemsLinesPaginationQuery,
+    SystemsLines_data$key
   >({
     linesQuery: systemsLinesQuery,
     linesFragment: systemsLinesFragment,

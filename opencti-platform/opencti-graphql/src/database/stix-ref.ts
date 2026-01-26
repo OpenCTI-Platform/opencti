@@ -9,14 +9,14 @@ export const schemaRelationsRefTypesMapping = () => {
   });
   return [
     ...Array.from(relationshipsRefs.entries()),
-    ...Array.from(schemaRelationsRefDefinition.relationsRefCacheArray.entries())
+    ...Array.from(schemaRelationsRefDefinition.relationsRefCacheArray.entries()),
   ].map(([key, refs]) => {
     return {
       key,
       values: refs.map((ref) => ({
         name: ref.name,
-        toTypes: ref.toTypes
-      }))
+        toTypes: ref.toTypes,
+      })),
     };
   });
 };

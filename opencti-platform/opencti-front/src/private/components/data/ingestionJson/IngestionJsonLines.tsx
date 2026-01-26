@@ -82,8 +82,8 @@ const IngestionJsonLines: FunctionComponent<IngestionJsonLinesProps> = ({
   paginationOptions,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
-  IngestionJsonLinesPaginationQuery,
-  IngestionJsonLines_data$key>({
+    IngestionJsonLinesPaginationQuery,
+    IngestionJsonLines_data$key>({
     queryRef,
     linesQuery: ingestionJsonLinesQuery,
     linesFragment: ingestionJsonLinesFragment,

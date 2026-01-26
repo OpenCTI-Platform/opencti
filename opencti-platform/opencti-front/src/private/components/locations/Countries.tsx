@@ -90,7 +90,7 @@ const Countries: FunctionComponent = () => {
       >
         {queryRef && (
           <React.Suspense
-            fallback={
+            fallback={(
               <>
                 {Array(20)
                   .fill(0)
@@ -98,7 +98,7 @@ const Countries: FunctionComponent = () => {
                     <CountryLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>
-            }
+            )}
           >
             <CountriesLines
               queryRef={queryRef}

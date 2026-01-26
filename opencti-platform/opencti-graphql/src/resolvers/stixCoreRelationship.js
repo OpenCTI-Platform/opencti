@@ -15,7 +15,7 @@ import {
   stixCoreRelationshipsDistribution,
   stixCoreRelationshipsExportAsk,
   stixCoreRelationshipsMultiTimeSeries,
-  stixCoreRelationshipsNumber
+  stixCoreRelationshipsNumber,
 } from '../domain/stixCoreRelationship';
 import { fetchEditContext } from '../database/redis';
 import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
@@ -32,12 +32,12 @@ import {
   notesPaginated,
   opinionsPaginated,
   reportsPaginated,
-  stixCoreObjectsExportPush
+  stixCoreObjectsExportPush,
 } from '../domain/stixCoreObject';
 import { numberOfContainersForObject } from '../domain/container';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { loadThroughDenormalized } from './stix';
-import { filterMembersWithUsersOrgs } from '../utils/access';
+import { loadCreators } from '../database/members';
 
 const stixCoreRelationshipResolvers = {
   Query: {
@@ -71,13 +71,7 @@ const stixCoreRelationshipResolvers = {
     objectOrganization: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_GRANTED_REFS, { sortBy: 'name' }),
     objectLabel: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_LABELS, { sortBy: 'value' }),
     killChainPhases: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_KILLCHAIN, { sortBy: 'phase_name' }),
-    creators: async (rel, _, context) => {
-      const creators = await context.batch.creatorsBatchLoader.load(rel.creator_id);
-      if (!creators) {
-        return [];
-      }
-      return filterMembersWithUsersOrgs(context, context.user, creators);
-    },
+    creators: async (rel, _, context) => loadCreators(context, context.user, rel),
     objectMarking: (rel, _, context) => context.batch.markingsBatchLoader.load(rel),
     // endregion
     // region inner listing - cant be batch loaded

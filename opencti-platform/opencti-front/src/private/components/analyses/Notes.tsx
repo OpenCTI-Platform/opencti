@@ -209,7 +209,7 @@ const Notes: FunctionComponent = () => {
           resolvePath={(data: NotesLines_data$data) => data.notes?.edges?.map((n) => n?.node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
-          toolbarFilters={contextFilters}
+          contextFilters={contextFilters}
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={notesLineFragment}
           exportContext={{ entity_type: 'Note' }}

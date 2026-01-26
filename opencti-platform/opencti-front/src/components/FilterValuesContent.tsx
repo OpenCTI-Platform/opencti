@@ -10,8 +10,8 @@ import { FilterDefinition } from '../utils/hooks/useAuth';
 import useAttributes from '../utils/hooks/useAttributes';
 
 export const filterValuesContentQuery = graphql`
-    query FilterValuesContentQuery($filters: FilterGroup!) {
-        filtersRepresentatives(filters: $filters) {
+    query FilterValuesContentQuery($filters: FilterGroup!, $isMeValueForbidden: Boolean) {
+        filtersRepresentatives(filters: $filters, isMeValueForbidden: $isMeValueForbidden) {
             id
             value
             entity_type
@@ -30,7 +30,7 @@ interface FilterValuesContentProps {
 }
 
 const FilterValuesContent: FunctionComponent<
-FilterValuesContentProps
+  FilterValuesContentProps
 > = ({ redirection, isFilterTooltip, filterKey, id, value, filterDefinition, filterOperator }) => {
   const { t_i18n } = useFormatter();
   const { stixCoreObjectTypes } = useAttributes();
@@ -48,17 +48,19 @@ FilterValuesContentProps
     );
   }
   if (displayedValue === SELF_ID_VALUE) {
-    displayedValue = <div>
-      <span>
-        {displayedValue}
-      </span>
-      <Tooltip
-        style={{ marginLeft: 3, marginTop: -5, paddingTop: 7 }}
-        title={t_i18n('Current entity refers to the entity in which you will use the Fintel template. Removing this filter means you will lost the context of the container in which the template is used.')}
-      >
-        <InformationOutline color="primary"/>
-      </Tooltip>
-    </div>;
+    displayedValue = (
+      <div>
+        <span>
+          {displayedValue}
+        </span>
+        <Tooltip
+          style={{ marginLeft: 3, marginTop: -5, paddingTop: 7 }}
+          title={t_i18n('Current entity refers to the entity in which you will use the Fintel template. Removing this filter means you will lost the context of the container in which the template is used.')}
+        >
+          <InformationOutline color="primary" />
+        </Tooltip>
+      </div>
+    );
   }
   const isRedirectableFilter = filterDefinition
     && filterType === 'id'

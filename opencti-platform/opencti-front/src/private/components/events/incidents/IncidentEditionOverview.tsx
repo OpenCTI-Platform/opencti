@@ -156,7 +156,7 @@ interface IncidentEditionFormValues {
 }
 
 const IncidentEditionOverviewComponent: FunctionComponent<
-IncidentEditionOverviewProps
+  IncidentEditionOverviewProps
 > = ({ incidentRef, context, enableReferences = false, handleClose }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -354,12 +354,12 @@ IncidentEditionOverviewProps
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
               style={{ marginTop: 20 }}
-              helpertext={
+              helpertext={(
                 <SubscriptionFocus
                   context={context}
                   fieldName="x_opencti_workflow_id"
                 />
-              }
+              )}
             />
           )}
           <CreatedByField

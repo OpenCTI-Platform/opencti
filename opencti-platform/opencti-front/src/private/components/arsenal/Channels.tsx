@@ -163,7 +163,7 @@ const Channels = () => {
           resolvePath={(data: ChannelsLines_data$data) => data.channels?.edges?.map((n) => n?.node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
-          toolbarFilters={contextFilters}
+          contextFilters={contextFilters}
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={channelLineFragment}
           exportContext={{ entity_type: 'Channel' }}

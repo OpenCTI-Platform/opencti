@@ -21,7 +21,7 @@ import { findById as findWorkspace } from '../workspace/workspace-domain';
 export const findWidgetsMaxMarkings = async (
   context: AuthContext,
   publicDashboard: PublicDashboardCached,
-  userAuthorPublicDashboard: AuthUser
+  userAuthorPublicDashboard: AuthUser,
 ) => {
   // To find max markings allowed for widgets we keep the intersection of markings from:
   // - Max shareable markings of the user,
@@ -56,15 +56,15 @@ export const findWidgetsMaxMarkings = async (
   const allMarkings = await getEntitiesListFromCache<StoreMarkingDefinition>(
     context,
     SYSTEM_USER,
-    ENTITY_TYPE_MARKING_DEFINITION
+    ENTITY_TYPE_MARKING_DEFINITION,
   );
   return computeAvailableMarkings(Object.values(widgetsMaxMarkingsMap), allMarkings);
 };
 
 interface WidgetArguments {
-  user: AuthUser,
-  dataSelection: PublicDashboardCachedWidget['dataSelection'],
-  parameters: PublicDashboardCachedWidget['parameters'],
+  user: AuthUser;
+  dataSelection: PublicDashboardCachedWidget['dataSelection'];
+  parameters: PublicDashboardCachedWidget['parameters'];
 }
 
 export const getWidgetArguments = async (
@@ -76,10 +76,10 @@ export const getWidgetArguments = async (
   const publicDashboardsMapByUriKey = await getEntitiesMapFromCache<PublicDashboardCached>(context, SYSTEM_USER, ENTITY_TYPE_PUBLIC_DASHBOARD);
   const publicDashboard = publicDashboardsMapByUriKey.get(uriKey);
   if (!publicDashboard) {
-    throw UnsupportedError('Dashboard not found');
+    throw UnsupportedError('Dashboard not found', { uriKey });
   }
   if (!publicDashboard.enabled) {
-    throw UnsupportedError('Dashboard not enabled');
+    throw UnsupportedError('Dashboard not enabled', { uriKey });
   }
 
   const { user_id, private_manifest }: PublicDashboardCached = publicDashboard;
@@ -88,7 +88,7 @@ export const getWidgetArguments = async (
   const platformUsersMap = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
   const platformUser = platformUsersMap.get(user_id);
   if (!platformUser) {
-    throw UnsupportedError('User not found');
+    throw UnsupportedError('User not found', { user_id });
   }
 
   // Determine the marking definitions allowed.
@@ -98,7 +98,7 @@ export const getWidgetArguments = async (
   const accessKnowledgeCapability: UserCapability = await elLoadById(
     context,
     SYSTEM_USER,
-    'capability--cbc68f4b-1d0c-51f6-a1b9-10344503b493'
+    'capability--cbc68f4b-1d0c-51f6-a1b9-10344503b493',
   ) as unknown as UserCapability;
 
   // Construct a fake user to be able to call private API
@@ -118,7 +118,7 @@ export const getWidgetArguments = async (
   return {
     user,
     parameters,
-    dataSelection
+    dataSelection,
   };
 };
 

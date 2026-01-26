@@ -461,53 +461,53 @@ const WidgetCreationParameters = () => {
 
                 {dataSelection[i].perspective === 'relationships'
                   && type === 'map' && (
-                    <TextField
-                      label={t_i18n('Zoom')}
-                      fullWidth={true}
-                      value={dataSelection[i].zoom ?? 2}
-                      placeholder={t_i18n('Zoom')}
-                      onChange={(event) => handleChangeDataValidationParameter(
-                        i,
-                        'zoom',
-                        event.target.value,
-                      )
-                      }
-                      style={{ marginTop: 20 }}
-                    />
+                  <TextField
+                    label={t_i18n('Zoom')}
+                    fullWidth={true}
+                    value={dataSelection[i].zoom ?? 2}
+                    placeholder={t_i18n('Zoom')}
+                    onChange={(event) => handleChangeDataValidationParameter(
+                      i,
+                      'zoom',
+                      event.target.value,
+                    )
+                    }
+                    style={{ marginTop: 20 }}
+                  />
                 )}
 
                 {dataSelection[i].perspective === 'relationships'
                   && type === 'map' && (
-                    <TextField
-                      label={t_i18n('Center latitude')}
-                      fullWidth={true}
-                      value={dataSelection[i].centerLat ?? 48.8566969}
-                      placeholder={t_i18n('Center latitude')}
-                      onChange={(event) => handleChangeDataValidationParameter(
-                        i,
-                        'centerLat',
-                        event.target.value,
-                      )
-                      }
-                      style={{ marginTop: 20 }}
-                    />
+                  <TextField
+                    label={t_i18n('Center latitude')}
+                    fullWidth={true}
+                    value={dataSelection[i].centerLat ?? 48.8566969}
+                    placeholder={t_i18n('Center latitude')}
+                    onChange={(event) => handleChangeDataValidationParameter(
+                      i,
+                      'centerLat',
+                      event.target.value,
+                    )
+                    }
+                    style={{ marginTop: 20 }}
+                  />
                 )}
 
                 {dataSelection[i].perspective === 'relationships'
                   && type === 'map' && (
-                    <TextField
-                      label={t_i18n('Center longitude')}
-                      fullWidth={true}
-                      value={dataSelection[i].centerLng ?? 2.3514616}
-                      placeholder={t_i18n('Center longitude')}
-                      onChange={(event) => handleChangeDataValidationParameter(
-                        i,
-                        'centerLng',
-                        event.target.value,
-                      )
-                      }
-                      style={{ marginTop: 20 }}
-                    />
+                  <TextField
+                    label={t_i18n('Center longitude')}
+                    fullWidth={true}
+                    value={dataSelection[i].centerLng ?? 2.3514616}
+                    placeholder={t_i18n('Center longitude')}
+                    onChange={(event) => handleChangeDataValidationParameter(
+                      i,
+                      'centerLng',
+                      event.target.value,
+                    )
+                    }
+                    style={{ marginTop: 20 }}
+                  />
                 )}
 
                 {type === 'attribute' && (
@@ -633,7 +633,7 @@ const WidgetCreationParameters = () => {
                                   </Select>
                                 );
                               }
-                              return <div/>;
+                              return <div />;
                             }}
                           />
                         </FormControl>
@@ -641,43 +641,43 @@ const WidgetCreationParameters = () => {
 
                     {dataSelection[i].perspective === 'entities'
                       && getCurrentSelectedEntityTypes(i).length === 0 && (
-                        <FormControl
+                      <FormControl
+                        fullWidth={true}
+                        style={{
+                          flex: 1,
+                          marginRight: 20,
+                          width: '100%',
+                        }}
+                      >
+                        <InputLabel>{t_i18n('Attribute')}</InputLabel>
+                        <Select
                           fullWidth={true}
-                          style={{
-                            flex: 1,
-                            marginRight: 20,
-                            width: '100%',
-                          }}
+                          value={dataSelection[i].attribute ?? 'entity_type'}
+                          onChange={(event) => handleChangeDataValidationParameter(
+                            i,
+                            'attribute',
+                            event.target.value,
+                          )
+                          }
                         >
-                          <InputLabel>{t_i18n('Attribute')}</InputLabel>
-                          <Select
-                            fullWidth={true}
-                            value={dataSelection[i].attribute ?? 'entity_type'}
-                            onChange={(event) => handleChangeDataValidationParameter(
-                              i,
-                              'attribute',
-                              event.target.value,
-                            )
-                            }
-                          >
-                            {[
-                              'entity_type',
-                              'created-by.internal_id',
-                              'object-label.internal_id',
-                              'object-assignee.internal_id',
-                              'object-marking.internal_id',
-                              'kill-chain-phase.internal_id',
-                              'x_opencti_workflow_id',
-                            ].map((value) => (
-                              <MenuItem
-                                key={value}
-                                value={value}
-                              >
-                                {t_i18n(capitalizeFirstLetter(value))}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
+                          {[
+                            'entity_type',
+                            'created-by.internal_id',
+                            'object-label.internal_id',
+                            'object-assignee.internal_id',
+                            'object-marking.internal_id',
+                            'kill-chain-phase.internal_id',
+                            'x_opencti_workflow_id',
+                          ].map((value) => (
+                            <MenuItem
+                              key={value}
+                              value={value}
+                            >
+                              {t_i18n(capitalizeFirstLetter(value))}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
                     )}
 
                     {dataSelection[i].perspective === 'audits' && (
@@ -725,12 +725,12 @@ const WidgetCreationParameters = () => {
 
                     {dataSelection[i].perspective === 'relationships' && (
                       <FormControlLabel
-                        control={
+                        control={(
                           <Switch
                             onChange={() => handleToggleDataValidationIsTo(i)}
                             checked={!dataSelection[i].isTo}
                           />
-                        }
+                        )}
                         label={t_i18n('Display the source')}
                       />
                     )}
@@ -758,34 +758,34 @@ const WidgetCreationParameters = () => {
       <div style={{ display: 'flex', width: '100%', marginTop: 20 }}>
         {getCurrentAvailableParameters(type).includes('stacked') && (
           <FormControlLabel
-            control={
+            control={(
               <Switch
                 onChange={() => handleToggleParameter('stacked')}
                 checked={parameters.stacked ?? undefined}
               />
-            }
+            )}
             label={t_i18n('Stacked')}
           />
         )}
         {getCurrentAvailableParameters(type).includes('distributed') && (
           <FormControlLabel
-            control={
+            control={(
               <Switch
                 onChange={() => handleToggleParameter('distributed')}
                 checked={parameters.distributed ?? undefined}
               />
-            }
+            )}
             label={t_i18n('Distributed')}
           />
         )}
         {getCurrentAvailableParameters(type).includes('legend') && (
           <FormControlLabel
-            control={
+            control={(
               <Switch
                 onChange={() => handleToggleParameter('legend')}
                 checked={parameters.legend ?? undefined}
               />
-            }
+            )}
             label={t_i18n('Display legend')}
           />
         )}

@@ -55,15 +55,15 @@ const decayRuleCreationMutation = graphql`
 `;
 
 interface DecayRuleCreationFormData {
-  name: string
-  description: string
-  order: number
-  active: boolean
-  decay_lifetime: number
-  decay_pound: number
-  decay_points: number[]
-  decay_revoke_score: number
-  decay_observable_types: string[]
+  name: string;
+  description: string;
+  order: number;
+  active: boolean;
+  decay_lifetime: number;
+  decay_pound: number;
+  decay_points: number[];
+  decay_revoke_score: number;
+  decay_observable_types: string[];
 }
 
 interface DecayRuleCreationFormProps {
@@ -282,7 +282,7 @@ const DecayRuleCreationForm: FunctionComponent<DecayRuleCreationFormProps> = ({
 
 const CreateDecayRuleControlledDial = (props: DrawerControlledDialProps) => (
   <CreateEntityControlledDial
-    entityType='DecayRule'
+    entityType="DecayRule"
     {...props}
   />
 );

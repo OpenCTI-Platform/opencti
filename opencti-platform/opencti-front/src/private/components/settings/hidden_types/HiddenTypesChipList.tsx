@@ -33,7 +33,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 const HiddenTypesChipList = ({
   hiddenTypes = [],
 }: {
-  hiddenTypes: readonly string[]
+  hiddenTypes: readonly string[];
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -43,23 +43,28 @@ const HiddenTypesChipList = ({
     .map((hiddenType) => hiddenType.target_type);
   const diff = hiddenTypesGlobal.filter((hiddenTypeGlobal) => !hiddenTypes?.includes(hiddenTypeGlobal));
 
-  return (<>
-    <Typography variant="h3" gutterBottom={true}>
-      {t_i18n('Hidden entity types')}
-    </Typography>
-    <FieldOrEmpty source={hiddenTypesGlobal.concat(hiddenTypes)}>
-      {diff.map((hiddenTypeGlobal) => (<Chip
-        key={hiddenTypeGlobal}
-        classes={{ root: classes.grey_chip }}
-        label={t_i18n(`entity_${hiddenTypeGlobal}`)}
-                                       />))}
-      {hiddenTypes.map((hiddenType) => (<Chip
-        key={hiddenType}
-        classes={{ root: classes.chip }}
-        label={t_i18n(`entity_${hiddenType}`)}
-                                        />))}
-    </FieldOrEmpty>
-  </>
+  return (
+    <>
+      <Typography variant="h3" gutterBottom={true}>
+        {t_i18n('Hidden entity types')}
+      </Typography>
+      <FieldOrEmpty source={hiddenTypesGlobal.concat(hiddenTypes)}>
+        {diff.map((hiddenTypeGlobal) => (
+          <Chip
+            key={hiddenTypeGlobal}
+            classes={{ root: classes.grey_chip }}
+            label={t_i18n(`entity_${hiddenTypeGlobal}`)}
+          />
+        ))}
+        {hiddenTypes.map((hiddenType) => (
+          <Chip
+            key={hiddenType}
+            classes={{ root: classes.chip }}
+            label={t_i18n(`entity_${hiddenType}`)}
+          />
+        ))}
+      </FieldOrEmpty>
+    </>
   );
 };
 

@@ -62,8 +62,8 @@ const publicStixCoreObjectsWordCloudQuery = graphql`
 `;
 
 interface PublicStixCoreObjectsWordCloudComponentProps {
-  queryRef: PreloadedQuery<PublicStixCoreObjectsWordCloudQuery>
-  dataSelection: Widget['dataSelection']
+  queryRef: PreloadedQuery<PublicStixCoreObjectsWordCloudQuery>;
+  dataSelection: Widget['dataSelection'];
 }
 
 const PublicStixCoreObjectsWordCloudComponent = ({
@@ -79,7 +79,7 @@ const PublicStixCoreObjectsWordCloudComponent = ({
     publicStixCoreObjectsDistribution
     && publicStixCoreObjectsDistribution.length > 0
   ) {
-    return <WidgetWordCloud data={[...publicStixCoreObjectsDistribution]} groupBy={dataSelection[0].attribute ?? 'entity_type'}/>;
+    return <WidgetWordCloud data={[...publicStixCoreObjectsDistribution]} groupBy={dataSelection[0].attribute ?? 'entity_type'} />;
   }
   return <WidgetNoData />;
 };

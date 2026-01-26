@@ -14,7 +14,7 @@ import {
   refreshedAt,
   relationshipType,
   standardId,
-  updatedAt
+  updatedAt,
 } from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { ABSTRACT_BASIC_RELATIONSHIP, ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
@@ -26,7 +26,7 @@ import {
   RELATION_TO_FILTER,
   RELATION_TO_TYPES_FILTER,
   RELATION_DYNAMIC_FROM_FILTER,
-  RELATION_DYNAMIC_TO_FILTER
+  RELATION_DYNAMIC_TO_FILTER,
 } from '../../utils/filtering/filtering-constants';
 
 export const connections: AttributeDefinition = {
@@ -50,7 +50,7 @@ export const connections: AttributeDefinition = {
         { key: RELATION_TO_FILTER, label: 'Target entity' },
         { key: RELATION_DYNAMIC_TO_FILTER, label: 'Dynamic target' },
         { key: INSTANCE_RELATION_FILTER, label: 'Related entity' },
-      ]
+      ],
     },
     { name: 'name', label: 'Name', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
     { name: 'role', label: 'Role', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },

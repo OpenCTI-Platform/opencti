@@ -1,6 +1,7 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import ToolDetails from './ToolDetails';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -64,10 +65,14 @@ const toolFragment = graphql`
 `;
 
 interface ToolProps {
-  toolData: Tool_tool$key
+  toolData: Tool_tool$key;
 }
 
-const Tool: React.FC<ToolProps> = ({ toolData }) => {
+const Tool: React.FC<ToolProps> = ({
+  toolData,
+}) => {
+  useInitCreateRelationshipContext();
+
   const tool = useFragment(toolFragment, toolData);
   const overviewLayoutCustomization = useOverviewLayoutCustomization(tool.entity_type);
 

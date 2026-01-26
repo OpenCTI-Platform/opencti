@@ -159,20 +159,20 @@ const caseIncidentMutationRelationDelete = graphql`
 `;
 
 interface CaseIncidentEditionOverviewProps {
-  caseRef: CaseIncidentEditionOverview_case$key
+  caseRef: CaseIncidentEditionOverview_case$key;
   context?: readonly (GenericContext | null)[] | null;
-  enableReferences?: boolean
-  handleClose: () => void
+  enableReferences?: boolean;
+  handleClose: () => void;
 }
 
 interface CaseIncidentEditionFormValues {
-  message?: string
-  createdBy?: FieldOption
-  objectMarking?: FieldOption[]
-  objectAssignee?: FieldOption[]
-  objectParticipant?: FieldOption[]
-  x_opencti_workflow_id: FieldOption
-  references: ExternalReferencesValues | undefined
+  message?: string;
+  createdBy?: FieldOption;
+  objectMarking?: FieldOption[];
+  objectAssignee?: FieldOption[];
+  objectParticipant?: FieldOption[];
+  x_opencti_workflow_id: FieldOption;
+  references: ExternalReferencesValues | undefined;
 }
 
 const CASE_INCIDENT_TYPE = 'Case-Incident';
@@ -401,12 +401,12 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
               onChange={editor.changeField}
               setFieldValue={setFieldValue}
               style={fieldSpacingContainerStyle}
-              helpertext={
+              helpertext={(
                 <SubscriptionFocus
                   context={context}
                   fieldName="x_opencti_workflow_id"
                 />
-              }
+              )}
             />
           )}
           <CreatedByField

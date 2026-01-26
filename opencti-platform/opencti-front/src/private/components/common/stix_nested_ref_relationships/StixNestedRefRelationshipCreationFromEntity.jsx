@@ -357,16 +357,16 @@ const StixNestedRefRelationshipCreationFromEntity = ({
   ];
   const initialFilters = actualTypeFilter.length > 0
     ? {
-      mode: 'and',
-      filterGroups: [],
-      filters: [{
-        id: uuid(),
-        key: 'entity_type',
-        values: actualTypeFilter,
-        operator: 'eq',
-        mode: 'or',
-      }],
-    }
+        mode: 'and',
+        filterGroups: [],
+        filters: [{
+          id: uuid(),
+          key: 'entity_type',
+          values: actualTypeFilter,
+          operator: 'eq',
+          mode: 'or',
+        }],
+      }
     : emptyFilterGroup;
   const [filters, helpers] = useFiltersState(initialFilters, initialFilters);
   const virtualEntityTypes = actualTypeFilter.length > 0 ? actualTypeFilter : ['Stix-Domain-Object', 'Stix-Cyber-Observable'];
@@ -470,7 +470,6 @@ const StixNestedRefRelationshipCreationFromEntity = ({
         stop_time: parse(values.stop_time).format(),
       };
       try {
-        // eslint-disable-next-line no-await-in-loop
         await commit(finalValues);
       } catch (_error) {
         setSubmitting(false);
@@ -613,7 +612,8 @@ const StixNestedRefRelationshipCreationFromEntity = ({
                         selectAll={false}
                       />
                     );
-                  } return (<></>);
+                  }
+                  return (<></>);
                 }}
               />
             </ListLines>
@@ -686,7 +686,7 @@ const StixNestedRefRelationshipCreationFromEntity = ({
               onClick={() => handleNextStep()}
             >
               {t_i18n('Continue')}
-              <ChevronRightOutlined/>
+              <ChevronRightOutlined />
             </Fab>
           )}
         </div>
@@ -894,7 +894,6 @@ const StixNestedRefRelationshipCreationFromEntity = ({
     );
   };
 
-  // eslint-disable-next-line
   const renderLoader = () => {
     return (
       <div style={{ display: 'table', height: '100%', width: '100%' }}>
@@ -947,23 +946,25 @@ const StixNestedRefRelationshipCreationFromEntity = ({
             : null
           }
           {step === 1
-            ? <QueryRenderer
-                query={stixNestedRefRelationshipResolveTypes}
-                variables={{
-                  id: entityId,
-                  toType: targetEntities[0].entity_type,
-                }}
-                render={({ props }) => {
-                  if (props && props.stixSchemaRefRelationships) {
-                    return (
-                      <div>
-                        {renderForm(props.stixSchemaRefRelationships)}
-                      </div>
-                    );
-                  }
-                  return renderLoader();
-                }}
-              />
+            ? (
+                <QueryRenderer
+                  query={stixNestedRefRelationshipResolveTypes}
+                  variables={{
+                    id: entityId,
+                    toType: targetEntities[0].entity_type,
+                  }}
+                  render={({ props }) => {
+                    if (props && props.stixSchemaRefRelationships) {
+                      return (
+                        <div>
+                          {renderForm(props.stixSchemaRefRelationships)}
+                        </div>
+                      );
+                    }
+                    return renderLoader();
+                  }}
+                />
+              )
             : null
           }
         </>

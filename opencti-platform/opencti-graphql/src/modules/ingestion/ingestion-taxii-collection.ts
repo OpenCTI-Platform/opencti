@@ -12,7 +12,7 @@ const INGESTION_DEFINITION: ModuleDefinition<StoreEntityIngestionTaxiiCollection
     id: 'ingestion-taxii-collection',
     name: ENTITY_TYPE_INGESTION_TAXII_COLLECTION,
     category: ABSTRACT_INTERNAL_OBJECT,
-    aliased: false
+    aliased: false,
   },
   identifier: {
     definition: {
@@ -39,15 +39,15 @@ const INGESTION_DEFINITION: ModuleDefinition<StoreEntityIngestionTaxiiCollection
       editDefault: false,
       multiple: false,
       upsert: true,
-      isFilterable: true
+      isFilterable: true,
     },
-    authorizedMembers
+    authorizedMembers,
   ],
   relations: [],
   representative: (stix: StixIngestionTaxiiCollection) => {
     return stix.name;
   },
-  converter_2_1: convertIngestionTaxiiCollectionToStix
+  converter_2_1: convertIngestionTaxiiCollectionToStix,
 };
 
 registerDefinition(INGESTION_DEFINITION);

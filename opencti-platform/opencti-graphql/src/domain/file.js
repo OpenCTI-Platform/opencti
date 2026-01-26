@@ -85,7 +85,7 @@ export const uploadImport = async (context, user, args) => {
     event_type: 'file',
     event_access: 'extended',
     event_scope: 'create',
-    context_data: contextData
+    context_data: contextData,
   });
   return up;
 };
@@ -113,7 +113,7 @@ export const uploadPending = async (context, user, args) => {
             o.id === entity.standard_id
               ? { ...entityAsStix, object_refs: o.object_refs }
               : o
-          ))
+          )),
         };
       }
     }
@@ -123,7 +123,7 @@ export const uploadPending = async (context, user, args) => {
     finalFile = {
       createReadStream: () => Readable.from(Buffer.from(json, 'utf-8')),
       filename: fileData.filename,
-      mimetype: fileData.mimetype
+      mimetype: fileData.mimetype,
     };
   }
 
@@ -135,7 +135,7 @@ export const uploadPending = async (context, user, args) => {
     event_type: 'file',
     event_access: 'extended',
     event_scope: 'create',
-    context_data: contextData
+    context_data: contextData,
   });
   return up;
 };
@@ -159,7 +159,7 @@ export const uploadAndAskJobImport = async (context, user, args = {}) => {
         connectorId,
         configuration,
         validationMode,
-        forceValidation: true
+        forceValidation: true,
       })
     )));
   }
@@ -170,7 +170,7 @@ export const uploadAndAskJobImport = async (context, user, args = {}) => {
 export const deleteImport = async (context, user, fileName) => {
   const draftContext = getDraftContext(context, user);
   if (draftContext && !isDraftFile(fileName, draftContext)) {
-    throw UnsupportedError('Cannot delete non draft imports in draft');
+    throw UnsupportedError('Cannot delete non draft imports in draft', { fileName });
   }
   // Imported file must be handled specifically
   // File deletion must publish a specific event
@@ -189,7 +189,7 @@ export const deleteImport = async (context, user, fileName) => {
     event_type: 'file',
     event_access: 'extended',
     event_scope: 'delete',
-    context_data: contextData
+    context_data: contextData,
   });
   return fileName;
 };
@@ -197,7 +197,7 @@ export const deleteImport = async (context, user, fileName) => {
 export const batchFileMarkingDefinitions = async (context, user, files) => {
   const markingsFromCache = await getEntitiesMapFromCache(context, user, ENTITY_TYPE_MARKING_DEFINITION);
   return files.map((s) => {
-    const markings = (s.metaData.file_markings ?? []).map((id) => markingsFromCache.get(id));
+    const markings = (s.metaData.file_markings ?? []).map((id) => markingsFromCache.get(id)).filter((marking) => marking);
     return R.sortWith([
       R.ascend(R.propOr('TLP', 'definition_type')),
       R.descend(R.propOr(0, 'x_opencti_order')),

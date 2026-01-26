@@ -4,7 +4,7 @@ import { getSessionStorageItem, setSessionStorageItem } from '../sessionStorage'
 const XTM_HUB_USER_PLATFORM_TOKEN_KEY = 'XTM_HUB_USER_PLATFORM_TOKEN_KEY';
 
 interface Return {
-  userPlatformToken: string | null
+  userPlatformToken: string | null;
 }
 
 const useXtmHubUserPlatformToken = (): Return => {

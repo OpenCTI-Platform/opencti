@@ -34,7 +34,7 @@ interface ItemEntityTypeProps {
   showIcon?: boolean;
   isRestricted?: boolean;
   style?: React.CSSProperties;
-  size?: 'small' | 'medium' | 'large'
+  size?: 'small' | 'medium' | 'large';
 }
 
 const ItemEntityType: FunctionComponent<ItemEntityTypeProps> = ({
@@ -108,10 +108,12 @@ const ItemEntityType: FunctionComponent<ItemEntityTypeProps> = ({
           ...getStyle(),
           ...style,
         }}
-        label={<>
-          {getIcon()}
-          {getLabel()}
-        </>}
+        label={(
+          <>
+            {getIcon()}
+            {getLabel()}
+          </>
+        )}
       />
     </Tooltip>
   );

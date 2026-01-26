@@ -14,7 +14,7 @@ class CustomJsonFormatter(json.JsonFormatter):
         :param record: The LogRecord instance
         :param message_dict: The message dictionary
         """
-        super(CustomJsonFormatter, self).add_fields(log_record, record, message_dict)
+        super().add_fields(log_record, record, message_dict)
         if not log_record.get("timestamp"):
             # This doesn't use record.created, so it is slightly off
             now = datetime.now(tz=timezone.utc)
@@ -29,15 +29,15 @@ def logger(level, json_logging=True):
     """Create a logger with JSON or standard formatting.
 
     :param level: Logging level (e.g., logging.INFO, logging.DEBUG)
+    :type level: int
     :param json_logging: Whether to use JSON formatting for logs
     :type json_logging: bool
     :return: AppLogger class
     :rtype: class
     """
-    # Exceptions
+    # Suppress verbose logging from third-party libraries
     logging.getLogger("urllib3").setLevel(logging.WARNING)
     logging.getLogger("pika").setLevel(logging.ERROR)
-    # Exceptions
     if json_logging:
         log_handler = logging.StreamHandler()
         log_handler.setLevel(level)
@@ -48,7 +48,18 @@ def logger(level, json_logging=True):
         logging.basicConfig(level=level)
 
     class AppLogger:
+        """Application logger class with metadata support.
+
+        Provides debug, info, warning, and error logging methods with
+        optional metadata support for structured logging.
+        """
+
         def __init__(self, name):
+            """Initialize the application logger.
+
+            :param name: Name of the logger instance
+            :type name: str
+            """
             self.local_logger = logging.getLogger(name)
 
         @staticmethod
@@ -69,6 +80,7 @@ def logger(level, json_logging=True):
             :param lib: Library name
             :type lib: str
             :param log_level: Logging level to set
+            :type log_level: int
             """
             logging.getLogger(lib).setLevel(log_level)
 

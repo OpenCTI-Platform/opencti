@@ -1,8 +1,8 @@
 import { BUS_TOPICS } from '../config/conf';
 import {
   addStixDomainObject,
-  findStixDomainObjectPaginated,
   findById,
+  findStixDomainObjectPaginated,
   stixDomainObjectAddRelation,
   stixDomainObjectAvatar,
   stixDomainObjectCleanContext,
@@ -19,16 +19,15 @@ import {
   stixDomainObjectsExportAsk,
   stixDomainObjectsNumber,
   stixDomainObjectsTimeSeries,
-  stixDomainObjectsTimeSeriesByAuthor
+  stixDomainObjectsTimeSeriesByAuthor,
 } from '../domain/stixDomainObject';
 import { findById as findStatusById, findByType } from '../domain/status';
 import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
-import { ABSTRACT_STIX_DOMAIN_OBJECT, INPUT_ASSIGNEE } from '../schema/general';
+import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { stixDomainObjectOptions as StixDomainObjectsOptions } from '../schema/stixDomainObjectOptions';
 import { stixCoreObjectExportPush, stixCoreObjectImportPush, stixCoreObjectsExportPush } from '../domain/stixCoreObject';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
-import { loadThroughDenormalized } from './stix';
-import { filterMembersWithUsersOrgs } from '../utils/access';
+import { loadAssignees } from '../database/members';
 
 const stixDomainObjectResolvers = {
   Query: {
@@ -63,13 +62,7 @@ const stixDomainObjectResolvers = {
     },
     avatar: (stixDomainObject) => stixDomainObjectAvatar(stixDomainObject),
     status: (stixDomainObject, _, context) => (stixDomainObject.x_opencti_workflow_id ? findStatusById(context, context.user, stixDomainObject.x_opencti_workflow_id) : null),
-    objectAssignee: async (stixDomainObject, args, context) => {
-      const assignees = await loadThroughDenormalized(context, context.user, stixDomainObject, INPUT_ASSIGNEE, { sortBy: 'user_email' });
-      if (!assignees) {
-        return [];
-      }
-      return filterMembersWithUsersOrgs(context, context.user, assignees);
-    },
+    objectAssignee: async (stixDomainObject, _, context) => loadAssignees(context, context.user, stixDomainObject),
     workflowEnabled: async (stixDomainObject, _, context) => {
       const statusesType = await findByType(context, context.user, stixDomainObject.entity_type);
       return statusesType.length > 0;
@@ -78,7 +71,7 @@ const stixDomainObjectResolvers = {
   },
   Mutation: {
     stixDomainObjectEdit: (_, { id }, context) => ({
-      delete: () => stixDomainObjectDelete(context, context.user, id),
+      delete: () => stixDomainObjectDelete(context, context.user, id, ABSTRACT_STIX_DOMAIN_OBJECT),
       fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
       contextClean: () => stixDomainObjectCleanContext(context, context.user, id),

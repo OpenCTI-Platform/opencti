@@ -30,7 +30,7 @@ interface EnterpriseEditionAgreementProps {
 }
 
 const EnterpriseEditionAgreement: FunctionComponent<
-EnterpriseEditionAgreementProps
+  EnterpriseEditionAgreementProps
 > = ({ open, onClose, settingsId }) => {
   const { t_i18n } = useFormatter();
   const [enterpriseLicense, setEnterpriseLicense] = useState('');
@@ -65,7 +65,7 @@ EnterpriseEditionAgreementProps
       <DialogContent>
         <Alert severity="info" style={{ marginTop: 15 }}>
           {t_i18n('OpenCTI Enterprise Edition requires a license key to be enabled. Filigran provides a free-to-use license for development and research purposes as well as for charity organizations.')}
-          <br/><br/>
+          <br /><br />
           {t_i18n('To obtain a license, please')} <a href="https://filigran.io/contact/" target="_blank" rel="noreferrer">{t_i18n('reach out to the Filigran team')}</a>.
           <br />
           {t_i18n('You just need to try?')} Get right now <a href="https://filigran.io/enterprise-editions-trial/" target="_blank" rel="noreferrer">{t_i18n('your trial license online')}</a>.

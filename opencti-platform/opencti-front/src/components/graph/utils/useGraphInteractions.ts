@@ -243,7 +243,7 @@ const useGraphInteractions = () => {
    */
   const moveSelection = (
     node: NodeObject<GraphNode>,
-    translate: { x: number, y: number, z?: number },
+    translate: { x: number; y: number; z?: number },
   ) => {
     const selectedDraggedNode = selectedNodes.find((n) => n.id === node.id);
     if (selectedDraggedNode) {
@@ -380,8 +380,8 @@ const useGraphInteractions = () => {
   const rebuildGraphData = (objects: ObjectToParse[], resetPositions = false) => {
     const filteredObjects = context === 'correlation' && graphState.correlationMode === 'observables'
       ? objects.filter((o) => (
-        o.entity_type === 'Indicator' || o.parent_types.includes('Stix-Cyber-Observable')
-      ))
+          o.entity_type === 'Indicator' || o.parent_types.includes('Stix-Cyber-Observable')
+        ))
       : objects;
     setRawObjects(filteredObjects);
     setGraphData(context === 'correlation'

@@ -97,7 +97,7 @@ const Events = () => {
       >
         {queryRef && (
           <React.Suspense
-            fallback={
+            fallback={(
               <>
                 {Array(20)
                   .fill(0)
@@ -108,7 +108,7 @@ const Events = () => {
                     />
                   ))}
               </>
-            }
+            )}
           >
             <EventsLines
               queryRef={queryRef}

@@ -20,8 +20,8 @@ export const convertGroupingToStix_2_1 = (instance: StoreEntityGrouping): StixGr
         content: instance.content,
         content_mapping: instance.content_mapping,
         object_refs_inferred: convertObjectReferences(instance, true),
-      })
-    }
+      }),
+    },
   };
 };
 

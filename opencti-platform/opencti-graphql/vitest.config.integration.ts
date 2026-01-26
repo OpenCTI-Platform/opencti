@@ -9,15 +9,19 @@ export const buildIntegrationTestConfig = (include: string[]) => defineConfig({
     include,
     testTimeout: 1200000,
     teardownTimeout: 5000,
-    globalSetup: ['./tests/utils/globalSetup.ts'],
-    setupFiles: ['./tests/utils/testSetup.js'],
+    globalSetup: ['./tests/setup/globalSetup.ts'],
+    setupFiles: ['./tests/setup/testSetup.js'],
     coverage: {
       provider: 'v8',
       include: ['src/**'],
       exclude: ['src/generated/**', 'src/migrations/**', 'src/stixpattern/**', 'src/python/**'],
       reporter: ['text', 'json', 'html'],
     },
-    maxWorkers: 1,
+    poolOptions: {
+      forks: {
+        singleFork: true,
+      },
+    },
     sequence: {
       shuffle: false,
       sequencer: class Sequencer extends BaseSequencer {

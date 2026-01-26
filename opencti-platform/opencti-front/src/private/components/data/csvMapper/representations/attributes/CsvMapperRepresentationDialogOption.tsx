@@ -11,8 +11,8 @@ import { CsvMapperRepresentationAttributeFormData } from '@components/data/csvMa
 import { useFormatter } from '../../../../../../components/i18n';
 
 interface CsvMapperRepresentationDialogOptionProps {
-  children: ReactNode
-  configuration?: CsvMapperRepresentationAttributeFormData
+  children: ReactNode;
+  configuration?: CsvMapperRepresentationAttributeFormData;
 }
 
 const CsvMapperRepresentationDialogOption: FunctionComponent<CsvMapperRepresentationDialogOptionProps> = ({ children, configuration }) => {
@@ -40,7 +40,7 @@ const CsvMapperRepresentationDialogOption: FunctionComponent<CsvMapperRepresenta
         size="large"
       >
         <Badge color="secondary" variant="dot" invisible={!visible}>
-          <CogOutline/>
+          <CogOutline />
         </Badge>
       </IconButton>
       <Dialog

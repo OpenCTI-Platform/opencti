@@ -21,7 +21,7 @@ interface DataSourceKnowledgeComponentProps {
 }
 
 const DataSourceKnowledgeComponent: FunctionComponent<
-DataSourceKnowledgeComponentProps
+  DataSourceKnowledgeComponentProps
 > = ({ data }) => {
   const dataSource = useFragment(DataSourceKnowledgeFragment, data);
   return (

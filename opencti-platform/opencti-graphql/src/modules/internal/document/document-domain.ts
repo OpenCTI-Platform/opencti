@@ -51,7 +51,7 @@ export const buildFileDataForIndexing = (file: File, draftContext?: string | und
     internal_id: file.id,
     standard_id: standardId,
     entity_type: ENTITY_TYPE_INTERNAL_FILE,
-    [buildRefRelationKey(RELATION_OBJECT_MARKING)]: file.metaData?.file_markings ?? []
+    [buildRefRelationKey(RELATION_OBJECT_MARKING)]: file.metaData?.file_markings ?? [],
   };
   if (draftContext) {
     return { ...fileIndexData, draft_ids: [draftContext], draft_change: { draft_operation: DRAFT_OPERATION_CREATE } };
@@ -86,17 +86,17 @@ export const findById: DomainFindById<BasicStoreEntityDocument> = (context: Auth
 };
 
 interface FilesOptions<T extends BasicStoreCommon> extends EntityOptions<T> {
-  entity_id?: string
-  entity_type?: string
-  modifiedSince?: string | null
-  notModifiedSince?: string | null
-  prefixMimeTypes?: string[]
-  maxFileSize?: number
-  isPending?: boolean
-  excludedPaths?: string[]
-  orderBy?: string
-  exact_path?: boolean
-  orderMode?: OrderingMode
+  entity_id?: string;
+  entity_type?: string;
+  modifiedSince?: string | null;
+  notModifiedSince?: string | null;
+  prefixMimeTypes?: string[];
+  maxFileSize?: number;
+  isPending?: boolean;
+  excludedPaths?: string[];
+  orderBy?: string;
+  exact_path?: boolean;
+  orderMode?: OrderingMode;
 }
 
 const buildFileFilters = (paths: string[], opts?: FilesOptions<BasicStoreEntityDocument>) => {
@@ -134,7 +134,7 @@ const buildFileFilters = (paths: string[], opts?: FilesOptions<BasicStoreEntityD
 export const allFilesForPaths = async (context: AuthContext, user: AuthUser, paths: string[], opts?: FilesOptions<BasicStoreEntityDocument>) => {
   const findOpts: EntityOptions<BasicStoreEntityDocument> = {
     filters: buildFileFilters(paths, opts),
-    noFiltersChecking: true // No associated model
+    noFiltersChecking: true, // No associated model
   };
   // Default ordering on lastModified starting from the oldest
   const orderOptions: any = {};
@@ -152,7 +152,7 @@ export const allRemainingFilesCount = async (context: AuthContext, user: AuthUse
   const modifiedSince = await getIndexFromDate(context);
   const findOpts: EntityOptions<BasicStoreEntityDocument> = {
     filters: buildFileFilters(paths, { ...opts, modifiedSince }),
-    noFiltersChecking: true // No associated model
+    noFiltersChecking: true, // No associated model
   };
   const remainingOpts = { ...findOpts, types: [ENTITY_TYPE_INTERNAL_FILE] };
   return elCount(context, user, [READ_INDEX_INTERNAL_OBJECTS], remainingOpts);
@@ -161,7 +161,7 @@ export const allRemainingFilesCount = async (context: AuthContext, user: AuthUse
 export const allFilesMimeTypeDistribution = async (context: AuthContext, user: AuthUser, paths: string[], opts?: FilesOptions<BasicStoreEntityDocument>) => {
   const findOpts: EntityOptions<BasicStoreEntityDocument> = {
     filters: buildFileFilters(paths, opts),
-    noFiltersChecking: true // No associated model
+    noFiltersChecking: true, // No associated model
   };
   return elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, {
     ...findOpts,
@@ -181,7 +181,7 @@ export const paginatedForPathWithEnrichment = async (context: AuthContext, user:
   const pathsToTarget = draftContext ? [`${getDraftFilePrefix(draftContext)}${path}`, path] : [path];
   const findOpts: EntityOptions<BasicStoreEntityDocument> = {
     filters: buildFileFilters(pathsToTarget, filterOpts),
-    noFiltersChecking: true // No associated model
+    noFiltersChecking: true, // No associated model
   };
   const orderOptions: any = {};
   if (isEmptyField(opts?.orderBy)) {

@@ -64,15 +64,15 @@ const AttackPatternCoursesOfActionComponent = ({ attackPattern }) => {
                 dense={true}
                 divider={true}
                 disablePadding={true}
-                secondaryAction={
+                secondaryAction={(
                   <IconButton
                     aria-label="Remove"
                     onClick={() => removeCourseOfAction(courseOfActionEdge)}
                     size="large"
                   >
-                    <LinkOff/>
+                    <LinkOff />
                   </IconButton>
-                  }
+                )}
               >
                 <ListItemButton
                   component={Link}
@@ -80,10 +80,10 @@ const AttackPatternCoursesOfActionComponent = ({ attackPattern }) => {
                 >
                   <ListItemIcon>
                     <ListItemIcon>
-                      <ProgressWrench color="primary"/>
+                      <ProgressWrench color="primary" />
                     </ListItemIcon>
                   </ListItemIcon>
-                  <ListItemText primary={courseOfAction.name}/>
+                  <ListItemText primary={courseOfAction.name} />
                 </ListItemButton>
               </ListItem>
             );

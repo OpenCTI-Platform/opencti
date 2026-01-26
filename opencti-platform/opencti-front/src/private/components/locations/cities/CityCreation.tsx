@@ -63,7 +63,7 @@ interface CityAddInput {
 }
 
 interface CityFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  updater: (store: RecordSourceSelectorProxy, key: string, response: CityCreationMutation['response']['cityAdd']) => void;
   onReset?: () => void;
   onCompleted?: () => void;
   defaultCreatedBy?: { value: string; label: string };
@@ -115,9 +115,9 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
     resetBulk,
   } = useBulkCommit<CityCreationMutation>({
     commit,
-    relayUpdater: (store) => {
+    relayUpdater: (store, response) => {
       if (updater) {
-        updater(store, 'cityAdd');
+        updater(store, 'cityAdd', response?.cityAdd);
       }
     },
   });
@@ -327,7 +327,7 @@ const CityCreation = ({
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_cities', paginationOptions, 'cityAdd');
 
   const CreateCityControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='City' {...props} />
+    <CreateEntityControlledDial entityType="City" {...props} />
   );
   return (
     <Drawer

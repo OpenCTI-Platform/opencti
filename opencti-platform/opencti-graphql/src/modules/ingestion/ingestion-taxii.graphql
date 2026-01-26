@@ -34,6 +34,7 @@ type IngestionTaxii implements InternalObject & BasicObject {
     ingestion_running: Boolean
     last_execution_date: DateTime
     confidence_to_score: Boolean
+    toConfigurationExport: String!
 }
 enum IngestionTaxiiOrdering {
     name
@@ -52,6 +53,17 @@ type IngestionTaxiiEdge {
     node: IngestionTaxii!
 }
 
+type TaxiiFeedAddInputFromImport {
+    name: String!
+    description: String!
+    uri: String!
+    version: String!
+    collection: String!
+    authentication_type: String!
+    authentication_value: String!
+    added_after_start: String
+}
+
 # Queries
 type Query {
     ingestionTaxii(id: String!): IngestionTaxii @auth(for: [INGESTION])
@@ -64,6 +76,9 @@ type Query {
         includeAuthorities: Boolean
         search: String
     ): IngestionTaxiiConnection @auth(for: [INGESTION])
+    taxiiFeedAddInputFromImport(
+        file: Upload!
+    ): TaxiiFeedAddInputFromImport! @auth(for: [INGESTION])
 }
 
 # Mutations
@@ -78,7 +93,14 @@ input IngestionTaxiiAddInput {
     added_after_start: DateTime
     ingestion_running: Boolean
     confidence_to_score: Boolean
-    user_id: String
+    user_id: String!
+    automatic_user: Boolean
+    confidence_level: Int
+}
+
+input IngestionTaxiiAddAutoUserInput {
+    user_name: String!
+    confidence_level: Int!
 }
 
 type Mutation {
@@ -86,4 +108,5 @@ type Mutation {
     ingestionTaxiiDelete(id: ID!): ID @auth(for: [INGESTION_SETINGESTIONS])
     ingestionTaxiiResetState(id: ID!): IngestionTaxii @auth(for: [INGESTION_SETINGESTIONS])
     ingestionTaxiiFieldPatch(id: ID!, input: [EditInput!]!): IngestionTaxii @auth(for: [INGESTION_SETINGESTIONS])
+    ingestionTaxiiAddAutoUser(id: ID!, input: IngestionTaxiiAddAutoUserInput!): IngestionTaxii @auth(for: [INGESTION_SETINGESTIONS])
 }

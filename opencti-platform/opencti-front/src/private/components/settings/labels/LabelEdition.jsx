@@ -110,12 +110,12 @@ class LabelEditionContainer extends Component {
                 fullWidth={true}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
-                helperText={
+                helperText={(
                   <SubscriptionFocus
                     context={editContext}
                     fieldName="value"
                   />
-                }
+                )}
               />
               <Field
                 component={ColorPickerField}
@@ -125,12 +125,12 @@ class LabelEditionContainer extends Component {
                 style={{ marginTop: 20 }}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
-                helperText={
+                helperText={(
                   <SubscriptionFocus
                     context={editContext}
                     fieldName="color"
                   />
-                }
+                )}
               />
             </Form>
           )}

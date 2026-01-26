@@ -41,7 +41,7 @@ interface ExternalReferencePopoverProps {
 }
 
 const ExternalReferencePopover: FunctionComponent<
-ExternalReferencePopoverProps
+  ExternalReferencePopoverProps
 > = ({ id, objectId, handleRemove, isExternalReferenceAttachment, variant }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
@@ -116,14 +116,14 @@ ExternalReferencePopoverProps
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem onClick={handleOpenUpdate}>{t_i18n('Update')}</MenuItem>
         {handleRemove && !isExternalReferenceAttachment && (
-        <MenuItem
-          onClick={() => {
-            handleRemove();
-            handleClose();
-          }}
-        >
-          {t_i18n('Remove from this object')}
-        </MenuItem>
+          <MenuItem
+            onClick={() => {
+              handleRemove();
+              handleClose();
+            }}
+          >
+            {t_i18n('Remove from this object')}
+          </MenuItem>
         )}
         <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>

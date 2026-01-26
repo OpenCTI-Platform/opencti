@@ -23,7 +23,7 @@ export const up = async (next) => {
   await elUpdateByQueryForMigration(
     '[MIGRATION] Fix Restrict organization access capability name',
     [READ_INDEX_INTERNAL_OBJECTS],
-    updateQuery
+    updateQuery,
   );
   next();
 };

@@ -971,12 +971,12 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
 `;
 
 interface StixRelationshipsTimelineProps {
-  variant: string,
-  height?: number,
-  startDate: string | null,
-  endDate: string | null,
-  dataSelection: WidgetDataSelection[],
-  parameters?: WidgetParameters,
+  variant: string;
+  height?: number;
+  startDate: string | null;
+  endDate: string | null;
+  dataSelection: WidgetDataSelection[];
+  parameters?: WidgetParameters;
 }
 
 const StixRelationshipsTimeline = ({
@@ -1016,8 +1016,8 @@ const StixRelationshipsTimeline = ({
             const data = stixRelationshipsEdges.flatMap((stixRelationshipEdge) => {
               const stixRelationship = stixRelationshipEdge.node;
               const remoteNode = stixRelationship.from
-              && fromId && fromId.includes(stixRelationship.from.id)
-              && selection.isTo !== false
+                && fromId && fromId.includes(stixRelationship.from.id)
+                && selection.isTo !== false
                 ? stixRelationship.to
                 : stixRelationship.from;
               if (!remoteNode) return [];

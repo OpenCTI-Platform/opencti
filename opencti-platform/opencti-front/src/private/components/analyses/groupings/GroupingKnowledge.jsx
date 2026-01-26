@@ -54,7 +54,7 @@ class GroupingKnowledgeComponent extends Component {
           height: '100%',
         }}
         id={location.pathname.includes('matrix') ? 'parent' : 'container'}
-        data-testid='groupings-knowledge'
+        data-testid="groupings-knowledge"
       >
         {mode !== 'graph' && (
           <ContainerHeader
@@ -70,7 +70,7 @@ class GroupingKnowledgeComponent extends Component {
         <Routes>
           <Route
             path="/graph"
-            element={
+            element={(
               <QueryRenderer
                 query={groupingKnowledgeGraphQuery}
                 variables={{ id: grouping.id }}
@@ -93,11 +93,11 @@ class GroupingKnowledgeComponent extends Component {
                   );
                 }}
               />
-                }
+            )}
           />
           <Route
             path="/correlation"
-            element={
+            element={(
               <QueryRenderer
                 query={groupingKnowledgeCorrelationQuery}
                 variables={{ id: grouping.id }}
@@ -118,24 +118,24 @@ class GroupingKnowledgeComponent extends Component {
                   );
                 }}
               />
-                }
+            )}
           />
           <Route
             path="/matrix"
-            element={
+            element={(
               <StixDomainObjectAttackPatterns
                 stixDomainObjectId={grouping.id}
                 entityType={grouping.entity_type}
               />
-            }
+            )}
           />
           <Route
             path="/relations/:relationId"
-            element={
+            element={(
               <StixCoreRelationship
                 entityId={grouping.id}
               />
-            }
+            )}
           />
         </Routes>
       </div>

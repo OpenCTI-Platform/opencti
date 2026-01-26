@@ -42,16 +42,16 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface InvestigationAddStixCoreObjectsLineComponentProps {
-  dataColumns: DataColumns
-  node: InvestigationAddStixCoreObjectsLine_node$data,
-  onLabelClick: HandleAddFilter,
+  dataColumns: DataColumns;
+  node: InvestigationAddStixCoreObjectsLine_node$data;
+  onLabelClick: HandleAddFilter;
   onToggleEntity: (
     entity: InvestigationAddStixCoreObjectsLine_node$data,
-    event: React.SyntheticEvent
-  ) => void,
+    event: React.SyntheticEvent,
+  ) => void;
   addedElements: {
-    [key:string]: InvestigationAddStixCoreObjectsLine_node$data
-  },
+    [key: string]: InvestigationAddStixCoreObjectsLine_node$data;
+  };
 }
 
 const InvestigationAddStixCoreObjectsLineComponent = ({
@@ -82,7 +82,7 @@ const InvestigationAddStixCoreObjectsLineComponent = ({
         <ItemIcon type={node.entity_type} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -123,7 +123,7 @@ const InvestigationAddStixCoreObjectsLineComponent = ({
               />
             </div>
           </div>
-        }
+        )}
       />
     </ListItemButton>
   );
@@ -327,7 +327,7 @@ export const InvestigationAddStixCoreObjectsLine = createFragmentContainer(
 );
 
 interface InvestigationAddStixCoreObjecstLineDummyProps {
-  dataColumns: DataColumns
+  dataColumns: DataColumns;
 }
 
 export const InvestigationAddStixCoreObjecstLineDummy = (
@@ -350,7 +350,7 @@ export const InvestigationAddStixCoreObjecstLineDummy = (
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -408,7 +408,7 @@ export const InvestigationAddStixCoreObjecstLineDummy = (
               />
             </div>
           </div>
-        }
+        )}
       />
     </ListItem>
   );

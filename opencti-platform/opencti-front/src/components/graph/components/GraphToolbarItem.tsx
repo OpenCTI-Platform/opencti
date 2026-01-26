@@ -3,11 +3,11 @@ import Tooltip from '@mui/material/Tooltip';
 import React, { ReactNode } from 'react';
 
 interface GraphToolbarItemProps {
-  title: string
-  color: IconButtonProps['color']
-  Icon: ReactNode
-  onClick: IconButtonProps['onClick']
-  disabled?: boolean
+  title: string;
+  color: IconButtonProps['color'];
+  Icon: ReactNode;
+  onClick: IconButtonProps['onClick'];
+  disabled?: boolean;
 }
 
 const GraphToolbarItem = ({

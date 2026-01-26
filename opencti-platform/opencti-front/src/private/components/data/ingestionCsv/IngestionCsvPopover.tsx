@@ -233,6 +233,9 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
           <MenuItem onClick={handleOpenUpdate}>
             {t_i18n('Update')}
           </MenuItem>
+          <MenuItem onClick={handleExport}>
+            {t_i18n('Export')}
+          </MenuItem>
           <MenuItem onClick={handleOpenDuplicate}>
             {t_i18n('Duplicate')}
           </MenuItem>
@@ -241,9 +244,6 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
           </MenuItem>
           <MenuItem onClick={handleOpenDelete}>
             {t_i18n('Delete')}
-          </MenuItem>
-          <MenuItem onClick={handleExport}>
-            {t_i18n('Export')}
           </MenuItem>
 
         </Menu>

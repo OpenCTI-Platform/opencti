@@ -25,11 +25,11 @@ const ENTITY_PIR_DEFINITION: ModuleDefinition<StoreEntityPir, StixPir> = {
     id: 'pir',
     name: ENTITY_TYPE_PIR,
     category: ABSTRACT_INTERNAL_OBJECT,
-    aliased: false
+    aliased: false,
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_PIR]: () => uuidv4()
+      [ENTITY_TYPE_PIR]: () => uuidv4(),
     },
   },
   attributes: [
@@ -45,7 +45,7 @@ const ENTITY_PIR_DEFINITION: ModuleDefinition<StoreEntityPir, StixPir> = {
   ],
   relations: [],
   representative: (stix: StixPir) => stix.name,
-  converter_2_1: convertEntityPirToStix
+  converter_2_1: convertEntityPirToStix,
 };
 
 registerDefinition(ENTITY_PIR_DEFINITION);

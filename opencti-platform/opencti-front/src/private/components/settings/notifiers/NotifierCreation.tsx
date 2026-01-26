@@ -61,9 +61,9 @@ interface NotifierAddInput {
 }
 
 interface NotifierFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void
-  onClose?: () => void
-  inputValue?: string
+  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  onClose?: () => void;
+  inputValue?: string;
 }
 
 const notifierValidation = (t: (value: string) => string) => Yup.object().shape({
@@ -172,7 +172,7 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
             style={{ marginTop: 20 }}
           />
           <ObjectMembersField
-            label={'Accessible for'}
+            label="Accessible for"
             style={fieldSpacingContainerStyle}
             onChange={setFieldValue}
             multiple={true}
@@ -261,7 +261,7 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
 
 const CreateNotifierControlledDial = (props: DrawerControlledDialProps) => (
   <CreateEntityControlledDial
-    entityType='Notifier'
+    entityType="Notifier"
     {...props}
   />
 );

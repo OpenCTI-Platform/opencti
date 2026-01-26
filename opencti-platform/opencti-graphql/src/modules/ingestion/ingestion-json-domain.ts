@@ -103,7 +103,9 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
   // Prepare headers
   const variables = isEmptyField(ingestion.ingestion_json_state) ? buildQueryObject(ingestion.query_attributes, {}) : ingestion.ingestion_json_state;
   const headerVariables = filterVariablesForAttributes(ingestion.query_attributes ?? [], variables, 'header');
-  Object.entries(headerVariables).forEach(([k, v]) => { headers[k] = String(v); });
+  Object.entries(headerVariables).forEach(([k, v]) => {
+    headers[k] = String(v);
+  });
   if (ingestion.authentication_type === IngestionAuthType.Basic) {
     const auth = Buffer.from(ingestion.authentication_value, 'utf-8').toString('base64');
     headers.Authorization = `Basic ${auth}`;
@@ -115,7 +117,7 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
     certificates = {
       cert: ingestion.authentication_value.split(':')[0],
       key: ingestion.authentication_value.split(':')[1],
-      ca: ingestion.authentication_value.split(':')[2]
+      ca: ingestion.authentication_value.split(':')[2],
     };
   }
   const httpClientOptions: GetHttpClient = { headers, rejectUnauthorized: false, responseType: 'json', certificates };
@@ -131,13 +133,13 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
   const { data: requestData, headers: responseHeaders } = await httpClient.call({
     method: ingestion.verb,
     url: parsedUri,
-    data: parsedBody
+    data: parsedBody,
   });
   const jsonMapper = await findJsonMapperById(context, SYSTEM_USER, ingestion.json_mapper_id);
   const jsonMapperParsed: JsonMapperParsed = {
     ...jsonMapper,
     representations: JSON.parse(jsonMapper.representations),
-    variables: jsonMapper.variables ? JSON.parse(jsonMapper.variables) : []
+    variables: jsonMapper.variables ? JSON.parse(jsonMapper.variables) : [],
   };
   const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
   const ingestionUser = ingestion.user_id ? platformUsers.get(ingestion.user_id) : null;
@@ -152,7 +154,7 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
       const { data: paginationData } = await httpClient.call({
         method: ingestion.pagination_with_sub_page_query_verb ?? ingestion.verb,
         url,
-        data: ingestion.body
+        data: ingestion.body,
       });
       const paginationVariables = buildQueryObject(ingestion.query_attributes, { ...paginationData, ...responseHeaders }, false);
       nextExecutionState = { ...nextExecutionState, ...paginationVariables };
@@ -201,7 +203,7 @@ export const deleteIngestionJson = async (context: AuthContext, user: AuthUser, 
     event_scope: 'delete',
     event_access: 'administration',
     message: `deletes json ingestion \`${deleted.name}\``,
-    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_JSON, input: deleted }
+    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_JSON, input: deleted },
   });
   return ingestionId;
 };
@@ -217,7 +219,7 @@ export const addIngestionJson = async (context: AuthContext, user: AuthUser, inp
       type: 'JSON',
       name: element.name,
       is_running: element.ingestion_running ?? false,
-      connector_user_id: input.user_id
+      connector_user_id: input.user_id,
     });
     await publishUserAction({
       user,
@@ -225,7 +227,7 @@ export const addIngestionJson = async (context: AuthContext, user: AuthUser, inp
       event_scope: 'create',
       event_access: 'administration',
       message: `creates json ingestion \`${input.name}\``,
-      context_data: { id: element.id, entity_type: ENTITY_TYPE_INGESTION_JSON, input }
+      context_data: { id: element.id, entity_type: ENTITY_TYPE_INGESTION_JSON, input },
     });
   }
   return element;
@@ -245,11 +247,11 @@ export const editIngestionJson = async (context: AuthContext, user: AuthUser, id
 
   const { element } = await patchAttribute(context, user, id, ENTITY_TYPE_INGESTION_JSON, {
     ...input,
-    authentication_value: authenticationValue
+    authentication_value: authenticationValue,
   });
   return {
     ...element,
-    authentication_value: removeAuthenticationCredentials(input.authentication_type as IngestionAuthType, authenticationValue)
+    authentication_value: removeAuthenticationCredentials(input.authentication_type as IngestionAuthType, authenticationValue),
   };
 };
 
@@ -265,7 +267,7 @@ export const ingestionJsonEditField = async (context: AuthContext, user: AuthUse
     const updatedAuthenticationValue = addAuthenticationCredentials(
       authentication_value,
       authenticationValueField?.value[0],
-      authentication_type
+      authentication_type,
     );
 
     const updatedInput = patchInput.map((editInput) => {
@@ -296,7 +298,7 @@ export const ingestionJsonEditField = async (context: AuthContext, user: AuthUse
     type: 'JSON',
     name: element.name,
     is_running: element.ingestion_running ?? false,
-    connector_user_id: element.user_id
+    connector_user_id: element.user_id,
   });
   await publishUserAction({
     user,
@@ -304,13 +306,13 @@ export const ingestionJsonEditField = async (context: AuthContext, user: AuthUse
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for json ingestion \`${element.name}\``,
-    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_JSON, input }
+    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_JSON, input },
   });
 
   const notif = await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
   return {
     ...notif,
-    authentication_value: removeAuthenticationCredentials(notif.authentication_type, notif.authentication_value)
+    authentication_value: removeAuthenticationCredentials(notif.authentication_type, notif.authentication_value),
   };
 };
 
@@ -330,7 +332,7 @@ export const ingestionJsonResetState = async (context: AuthContext, user: AuthUs
     event_scope: 'update',
     event_access: 'administration',
     message: `reset state of json ingestion ${ingestion.name}`,
-    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_JSON, input: ingestion }
+    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_JSON, input: ingestion },
   });
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, ingestion, user);
 };
@@ -344,6 +346,6 @@ export const testJsonIngestionMapping = async (context: AuthContext, _user: Auth
     objects: JSON.stringify(bundle.objects, null, 2),
     nbRelationships: bundle.objects.filter((object: StixObject) => object.type === 'relationship').length,
     nbEntities: bundle.objects.filter((object: StixObject) => object.type !== 'relationship').length,
-    state: JSON.stringify(nextExecutionState)
+    state: JSON.stringify(nextExecutionState),
   };
 };

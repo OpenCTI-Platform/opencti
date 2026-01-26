@@ -84,6 +84,13 @@ export const AuditCSVQuery = graphql`
             entity_type
             entity_name
             message
+            changes{
+              field
+              previous
+              new
+              added
+              removed
+            }
           }
         }
       }
@@ -203,7 +210,7 @@ const Audit = () => {
     <div style={{ marginLeft: 10 }}>
       <FormControlLabel
         value="start"
-        control={
+        control={(
           <Checkbox
             style={{ padding: 7 }}
             onChange={() => {
@@ -212,7 +219,7 @@ const Audit = () => {
             }}
             checked={types?.length === 2}
           />
-          }
+        )}
         label={t_i18n('Include knowledge')}
         labelPlacement="end"
       />
@@ -220,7 +227,7 @@ const Audit = () => {
   ) : <></>;
   return (
     <div className={classes.container} data-testid="audit-page">
-      <ActivityMenu/>
+      <ActivityMenu />
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Activity') }, {
         label: t_i18n('Events'),
         current: true,
@@ -255,7 +262,7 @@ const Audit = () => {
       >
         {queryRef && (
           <React.Suspense
-            fallback={
+            fallback={(
               <>
                 {Array(20)
                   .fill(0)
@@ -263,7 +270,7 @@ const Audit = () => {
                     <AuditLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>
-            }
+            )}
           >
             <AuditLines
               queryRef={queryRef}

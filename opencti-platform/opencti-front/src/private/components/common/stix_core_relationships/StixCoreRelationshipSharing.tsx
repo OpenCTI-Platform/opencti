@@ -95,7 +95,7 @@ const containerHeaderSharedGroupAddMutation = graphql`
 `;
 
 const StixCoreRelationshipSharing: FunctionComponent<
-ContainerHeaderSharedProps
+  ContainerHeaderSharedProps
 > = ({ elementId }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();

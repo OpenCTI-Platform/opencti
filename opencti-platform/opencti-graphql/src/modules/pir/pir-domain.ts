@@ -23,7 +23,7 @@ import {
   pageRelationsConnection,
   type RelationOptions,
   storeLoadById,
-  topRelationsList
+  topRelationsList,
 } from '../../database/middleware-loader';
 import { type BasicStoreEntityPir, type BasicStoreRelationPir, ENTITY_TYPE_PIR, type PirExplanation, type StoreEntityPir } from './pir-types';
 import {
@@ -52,7 +52,13 @@ import { getPirWithAccessCheck } from './pir-checkPirAccess';
 import { ForbiddenAccess, FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR } from '../../config/errors';
 import { ABSTRACT_STIX_REF_RELATIONSHIP, ENTITY_TYPE_CONTAINER } from '../../schema/general';
 import { addDynamicFromAndToToFilters, addFilter, extractFilterKeyValues, isFilterGroupNotEmpty } from '../../utils/filtering/filtering-utils';
-import { INSTANCE_DYNAMIC_REGARDING_OF, INSTANCE_REGARDING_OF, OBJECT_CONTAINS_FILTER, RELATION_TO_FILTER, RELATION_TYPE_FILTER } from '../../utils/filtering/filtering-constants';
+import {
+  INSTANCE_DYNAMIC_REGARDING_OF,
+  INSTANCE_REGARDING_OF,
+  OBJECT_CONTAINS_FILTER,
+  RELATION_TO_FILTER,
+  RELATION_TYPE_SUBFILTER,
+} from '../../utils/filtering/filtering-constants';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { editAuthorizedMembers } from '../../utils/authorizedMembers';
 import { isBypassUser, MEMBER_ACCESS_ALL, MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_VIEW } from '../../utils/access';
@@ -143,7 +149,7 @@ export const findPirContainers = async (
   context: AuthContext,
   user: AuthUser,
   pir: BasicStoreEntityPir,
-  opts?: EntityOptions<BasicStoreObject>
+  opts?: EntityOptions<BasicStoreObject>,
 ) => {
   await checkEnterpriseEdition(context);
   // fetch filters entities ids
@@ -155,7 +161,7 @@ export const findPirContainers = async (
     filters: [{
       key: [INSTANCE_REGARDING_OF],
       values: [
-        { key: RELATION_TYPE_FILTER, values: [RELATION_IN_PIR] },
+        { key: RELATION_TYPE_SUBFILTER, values: [RELATION_IN_PIR] },
         { key: 'id', values: [pir.id] },
       ],
     }],
@@ -171,19 +177,19 @@ export const findPirContainers = async (
       {
         key: [INSTANCE_DYNAMIC_REGARDING_OF],
         values: [
-          { key: RELATION_TYPE_FILTER, values: [RELATION_OBJECT] },
+          { key: RELATION_TYPE_SUBFILTER, values: [RELATION_OBJECT] },
           { key: 'dynamic', values: [flaggedEntitiesFilter] },
         ],
-      }
+      },
     ],
     filterGroups: [],
   };
   const filters = opts?.filters && isFilterGroupNotEmpty(opts.filters)
     ? {
-      mode: FilterMode.And,
-      filters: [],
-      filterGroups: [containsFilter, opts.filters],
-    }
+        mode: FilterMode.And,
+        filters: [],
+        filterGroups: [containsFilter, opts.filters],
+      }
     : containsFilter;
   return pageEntitiesConnection(context, user, [ENTITY_TYPE_CONTAINER], { ...opts, filters });
 };
@@ -200,7 +206,7 @@ export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAdd
     {
       id: MEMBER_ACCESS_ALL,
       access_right: MEMBER_ACCESS_RIGHT_VIEW,
-    }
+    },
   ];
   const finalInput = {
     ...serializePir(input),
@@ -246,7 +252,7 @@ export const updatePir = async (context: AuthContext, user: AuthUser, pirId: str
   const allowedKeys = ['lastEventId', 'name', 'description'];
   const keys = input.map((i) => i.key);
   if (keys.some((k) => !allowedKeys.includes(k))) {
-    throw FunctionalError('Error while updating the PIR, invalid or forbidden key.');
+    throw FunctionalError('Error while updating the PIR, invalid or forbidden key.', { pirId });
   }
   return editInternalObject<StoreEntityPir>(context, user, pirId, ENTITY_TYPE_PIR, input, opts);
 };
@@ -290,7 +296,7 @@ export const pirFlagElement = async (
         dependencies: [{ element_id: relationshipId, author_id: relationshipAuthorId }],
         criterion: {
           ...criterion,
-          filters: JSON.stringify(criterion.filters)
+          filters: JSON.stringify(criterion.filters),
         },
       }));
 

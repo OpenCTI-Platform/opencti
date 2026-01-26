@@ -1,7 +1,6 @@
-// eslint-disable-next-line max-classes-per-file
 import { parser as jsParser } from '@lezer/javascript';
 import type { Data, Options } from 'ejs';
-import { render } from 'ejs';
+import ejs from 'ejs';
 import NotificationTool from './NotificationTool';
 
 export abstract class VerifierError extends Error {
@@ -21,16 +20,16 @@ export class VerifierProcessingQuotaExceededError extends VerifierError {
 }
 
 export type SafeOptions = {
-  maxExecutedStatementCount?: number | undefined,
-  maxExecutionDuration?: number | undefined,
-  yieldMethod?: (() => Promise<void>) | undefined,
-  useNotificationTool?: boolean | undefined,
+  maxExecutedStatementCount?: number | undefined;
+  maxExecutionDuration?: number | undefined;
+  yieldMethod?: (() => Promise<void>) | undefined;
+  useNotificationTool?: boolean | undefined;
 };
 
 export type SafeRenderOptions = Options & SafeOptions;
 
 export const safeReservedPrefix = '____safe____';
-export const safeName = (name: 'statement' | 'property' | 'Object' ) => `${safeReservedPrefix}${name}`;
+export const safeName = (name: 'statement' | 'property' | 'Object') => `${safeReservedPrefix}${name}`;
 
 const forbiddenProperties = new Set([
   '__proto__',
@@ -48,28 +47,30 @@ const forbiddenProperties = new Set([
   'setPrototypeOf',
 ]);
 
-const authorizeGlobals = {
-  undefined: true,
-  Object: safeName('Object'),
-  Boolean: true,
-  Number: true,
-  BigInt: true,
-  Date: true,
-  RegExp: true,
-  String: true,
-  JSON: true,
-  Math: true,
-  Infinity: true,
-  isFinite: true,
-  NaN: true,
-  isNaN: true,
-  parseFloat: true,
-  parseInt: true,
-  encodeURI: true,
-  encodeURIComponent: true,
-  decodeURI: true,
-  decodeURIComponent: true,
-};
+const authorizeGlobals = new Map<string, string | true>([
+  ['undefined', true],
+  ['Object', safeName('Object')],
+  ['Boolean', true],
+  ['Number', true],
+  ['Array', true],
+  ['BigInt', true],
+  ['Date', true],
+  ['RegExp', true],
+  ['String', true],
+  ['JSON', true],
+  ['Math', true],
+  ['Infinity', true],
+  ['isFinite', true],
+  ['NaN', true],
+  ['isNaN', true],
+  ['parseFloat', true],
+  ['parseInt', true],
+  ['encodeURI', true],
+  ['encodeURIComponent', true],
+  ['decodeURI', true],
+  ['decodeURIComponent', true],
+  ['escape', true],
+]);
 
 const forbiddenGlobals = [
   'eval',
@@ -82,7 +83,10 @@ const forbiddenGlobals = [
 
 const noop = () => {};
 
-const createSafeContext = (async: boolean, { maxExecutedStatementCount = 0, maxExecutionDuration = 0, yieldMethod }: SafeOptions) => {
+const createSafeContext = (
+  async: boolean,
+  { maxExecutedStatementCount = 0, maxExecutionDuration = 0, yieldMethod, escape }: SafeOptions & { escape?: (str: string) => string },
+) => {
   let executedStatementCount = 0;
   const checkMaxExecutedStatementCount = maxExecutedStatementCount > 0 ? () => {
     executedStatementCount += 1;
@@ -98,7 +102,7 @@ const createSafeContext = (async: boolean, { maxExecutedStatementCount = 0, maxE
     }
   } : noop;
 
-  return {
+  const context: Record<string, unknown> = {
     [safeName('statement')]: async
       ? async () => {
         checkMaxExecutedStatementCount();
@@ -106,15 +110,16 @@ const createSafeContext = (async: boolean, { maxExecutedStatementCount = 0, maxE
         await yieldMethod?.();
       }
       : () => {
-        checkMaxExecutedStatementCount();
-        checkMaxExecutionDuration();
-      },
+          checkMaxExecutedStatementCount();
+          checkMaxExecutionDuration();
+        },
 
     [safeName('property')]: (propertyName: unknown) => {
-      if (typeof propertyName === 'string' && (propertyName.startsWith(safeReservedPrefix) || forbiddenProperties.has(propertyName))) {
-        throw new VerifierIllegalAccessError(`Forbidden property access ${JSON.stringify({ propertyName })}`);
+      const name = String(propertyName);
+      if (name.startsWith(safeReservedPrefix) || forbiddenProperties.has(name)) {
+        throw new VerifierIllegalAccessError(`Forbidden property access ${JSON.stringify({ propertyName: name })}`);
       }
-      return propertyName;
+      return name;
     },
 
     [safeName('Object')]: Object.freeze({
@@ -127,17 +132,25 @@ const createSafeContext = (async: boolean, { maxExecutedStatementCount = 0, maxE
           .filter((src) => src && typeof src === 'object')
           .forEach((src) => {
             Object.entries(src).forEach(([key, value]) => {
-              if (key.startsWith(safeReservedPrefix) || forbiddenProperties.has(key)) {
-                throw new VerifierIllegalAccessError(`Forbidden property access ${JSON.stringify({ propertyName: key })}`);
+              const name = String(key); // key should already be a string, but enforce it anyway
+              if (name.startsWith(safeReservedPrefix) || forbiddenProperties.has(name)) {
+                throw new VerifierIllegalAccessError(`Forbidden property access ${JSON.stringify({ propertyName: name })}`);
               }
-              // eslint-disable-next-line no-param-reassign
-              target[key] = value;
+
+              target[name] = value;
             });
           });
         return target;
       },
     }),
   };
+
+  // If a custom escape function is provided, make it available in template context
+  if (escape) {
+    context.escape = escape;
+  }
+
+  return context;
 };
 
 const extractEJSCode = (template: string, openTag: string, closeTag: string) => {
@@ -161,7 +174,7 @@ const extractEJSCode = (template: string, openTag: string, closeTag: string) => 
     pos = template.indexOf(openTag, pos);
     if (pos !== -1) {
       let startPos = pos + openTag.length;
-      
+
       // Skip EJS comments (<%# ... %>)
       if (template[startPos] === '#') {
         const commentStart = pos;
@@ -179,17 +192,17 @@ const extractEJSCode = (template: string, openTag: string, closeTag: string) => 
         pos = pos + closeTag.length;
         continue;
       }
-      
+
       if (template[startPos] === '=') {
         startPos += 1;
       }
-      
+
       const hasStartWhitespaceControl = ['_', '-'].includes(template[startPos]);
       let codeStartPos = startPos;
       if (hasStartWhitespaceControl) {
         codeStartPos += 1;
       }
-      
+
       pos = template.indexOf(closeTag, codeStartPos);
       if (pos === -1) {
         throw new VerifierParsingError('Unable to parse EJS template, missing close tag');
@@ -204,7 +217,7 @@ const extractEJSCode = (template: string, openTag: string, closeTag: string) => 
       if (startPos > processedPos) {
         pushFragment(template.substring(processedPos, startPos), false);
       }
-      
+
       if (hasStartWhitespaceControl) {
         pushFragment(template[startPos], false);
       }
@@ -233,7 +246,7 @@ const transformTemplate = (template: string, code: string, context: string[]) =>
     }
   });
 
-  const allowedVars = new Map(Object.entries(authorizeGlobals));
+  const allowedVars = new Map(authorizeGlobals);
   context.forEach((c) => allowedVars.set(c, true));
 
   const tree = jsParser.parse(code);
@@ -387,5 +400,5 @@ export const safeRender = (template: string, data: Data, options: SafeRenderOpti
   const code = extractEJSCode(template, `${openDelimiter}${delimiter}`, `${delimiter}${closeDelimiter}`);
   const safeTemplate = transformTemplate(template, code, Object.keys(data ?? {}));
   const safeContext = createSafeContext(async, options);
-  return render(safeTemplate, { ...(data ?? {}), ...safeContext }, options);
+  return ejs.render(safeTemplate, { ...(data ?? {}), ...safeContext }, options);
 };

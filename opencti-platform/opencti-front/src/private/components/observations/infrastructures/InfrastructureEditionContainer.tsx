@@ -20,10 +20,10 @@ export const infrastructureEditionContainerQuery = graphql`
 `;
 
 interface InfrastructureEditionContainerProps {
-  handleClose: () => void
-  queryRef: PreloadedQuery<InfrastructureEditionContainerQuery>
-  open?: boolean
-  controlledDial?: DrawerControlledDialType
+  handleClose: () => void;
+  queryRef: PreloadedQuery<InfrastructureEditionContainerQuery>;
+  open?: boolean;
+  controlledDial?: DrawerControlledDialType;
 }
 
 const InfrastructureEditionContainer: FunctionComponent<InfrastructureEditionContainerProps> = ({

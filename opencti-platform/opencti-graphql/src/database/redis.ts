@@ -1,57 +1,26 @@
-import { SEMATTRS_DB_NAME } from '@opentelemetry/semantic-conventions';
 import { Cluster, Redis } from 'ioredis';
 import type { ChainableCommander, CommonRedisOptions, ClusterOptions, RedisOptions, SentinelAddress, SentinelConnectionOptions } from 'ioredis';
 import { Redlock } from '@sesamecare-oss/redlock';
-import * as jsonpatch from 'fast-json-patch';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import * as R from 'ramda';
 import conf, { booleanConf, configureCA, DEV_MODE, getStoppingState, loadCert, logApp, REDIS_PREFIX } from '../config/conf';
-import { asyncListTransformation, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, isNotEmptyField, wait, waitInSec } from './utils';
-import { INTERNAL_EXPORTABLE_TYPES, isStixExportableInStreamData } from '../schema/stixCoreObject';
-import { DatabaseError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
-import { mergeDeepRightAll, now, utcDate } from '../utils/format';
-import type { BasicStoreCommon, StoreObject, StoreRelation } from '../types/store';
-import type { AuthContext, AuthUser } from '../types/user';
-import type {
-  ActivityStreamEvent,
-  BaseEvent,
-  CreateEventOpts,
-  DataEvent,
-  DeleteEvent,
-  EventOpts,
-  MergeEvent,
-  SseEvent,
-  StreamDataEvent,
-  UpdateEvent,
-  UpdateEventOpts
-} from '../types/event';
-import type { StixCoreObject, StixObject } from '../types/stix-2-1-common';
+import { isNotEmptyField } from './utils';
+import { DatabaseError, LockTimeoutError, TYPE_LOCK_ERROR } from '../config/errors';
+import { mergeDeepRightAll, now } from '../utils/format';
+import type { BasicStoreCommon } from '../types/store';
+import type { AuthUser } from '../types/user';
 import type { EditContext } from '../generated/graphql';
-import { telemetry } from '../config/tracing';
 import { filterEmpty } from '../types/type-utils';
 import type { ClusterConfig } from '../types/clusterConfig';
 import type { ExecutionEnvelop } from '../types/playbookExecution';
-import { generateCreateMessage, generateDeleteMessage, generateMergeMessage, generateRestoreMessage } from './generate-message';
 import { INPUT_OBJECTS } from '../schema/general';
 import { enrichWithRemoteCredentials } from '../config/credentials';
-import { getDraftContext } from '../utils/draftContext';
 import type { ExclusionListCacheItem } from './exclusionListCache';
 import { refreshLocalCacheForEntity } from './cache';
-import { asyncMap } from '../utils/data-processing';
-import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
-
-import { convertStoreToStix_2_1 } from './stix-2-1-converter';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => loadCert(path));
-export const REDIS_STREAM_NAME = `${REDIS_PREFIX}stream.opencti`;
 const PLAYBOOK_LOG_MAX_SIZE = conf.get('playbook_manager:log_max_size') || 10000;
-
-export const EVENT_CURRENT_VERSION = '4';
-
-const isStreamPublishable = (opts: EventOpts) => {
-  return opts.publishStreamEvent === undefined || opts.publishStreamEvent;
-};
 
 const connectionName = (provider: string) => `${REDIS_PREFIX}${provider.replaceAll(' ', '_')}`;
 
@@ -82,7 +51,7 @@ const redisOptions = async (provider: string, autoReconnect = false): Promise<Re
 };
 
 // From "HOST:PORT" to { host, port }
-export const generateClusterNodes = (nodes: string[]): { host: string; port: number; }[] => {
+export const generateClusterNodes = (nodes: string[]): { host: string; port: number }[] => {
   return nodes.map((h: string) => {
     const [host, port] = h.split(':');
     return { host, port: parseInt(port, 10) };
@@ -90,8 +59,8 @@ export const generateClusterNodes = (nodes: string[]): { host: string; port: num
 };
 
 // From "HOST:PORT>HOST:PORT" to { ["HOST:PORT"]: { host, port } }
-export const generateNatMap = (mappings: string[]): Record<string, { host: string; port: number; }> => {
-  const natMap: Record<string, { host: string; port: number; }> = {};
+export const generateNatMap = (mappings: string[]): Record<string, { host: string; port: number }> => {
+  const natMap: Record<string, { host: string; port: number }> = {};
   for (let i = 0; i < mappings.length; i += 1) {
     const mapping = mappings[i];
     const [from, to] = mapping.split('>');
@@ -160,8 +129,8 @@ export const createRedisClient = async (provider: string, autoReconnect = false)
 };
 
 // region Initialization of clients
-type RedisConnection = Cluster | Redis ;
-interface RedisClients { base: RedisConnection, lock: RedisConnection, pubsub: RedisPubSub }
+type RedisConnection = Cluster | Redis;
+interface RedisClients { base: RedisConnection; xrange: RedisConnection; lock: RedisConnection; pubsub: RedisPubSub }
 
 let redisClients: RedisClients;
 // Method reserved for lock child process
@@ -170,23 +139,25 @@ export const initializeOnlyRedisLockClient = async () => {
   // Disable typescript check for this specific use case.
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  redisClients = { lock, base: null, pubsub: null };
+  redisClients = { lock, base: null, pubsub: null, xrange: null };
 };
 export const initializeRedisClients = async () => {
   const base = await createRedisClient('base', true);
+  const xrange = await createRedisClient('xrange', true);
   const lock = await createRedisClient('lock', true);
   const publisher = await createRedisClient('publisher', true);
   const subscriber = await createRedisClient('subscriber', true);
   redisClients = {
     base,
+    xrange,
     lock,
     pubsub: new RedisPubSub({
       publisher,
       subscriber,
       connectionListener: (err) => {
         logApp.info('[REDIS] Redis pubsub client closed', { error: err });
-      }
-    })
+      },
+    }),
   };
 };
 export const shutdownRedisClients = () => {
@@ -198,7 +169,8 @@ export const shutdownRedisClients = () => {
 // endregion
 
 // region pubsub
-const getClientBase = (): Cluster | Redis => redisClients.base;
+export const getClientBase = (): Cluster | Redis => redisClients.base;
+export const getClientXRANGE = (): Cluster | Redis => redisClients.xrange;
 const getClientLock = (): Cluster | Redis => redisClients.lock;
 const getClientPubSub = (): RedisPubSub => redisClients.pubsub;
 export const pubSubAsyncIterator = (topic: string | string[]) => {
@@ -255,7 +227,6 @@ const keysFromList = async (listId: string, expirationTime?: number) => {
   }
   const instances = await getClientBase().zrange(listId, 0, -1);
   if (instances && instances.length > 0) {
-    // eslint-disable-next-line newline-per-chained-call
     const fetchKey = (key: string) => getClientBase().multi().ttl(key).get(key).exec();
     const instancesConfig = await Promise.all(instances.map((i) => fetchKey(i)
       .then((results) => {
@@ -400,10 +371,10 @@ export const redisFetchLatestDeletions = async () => {
   return getClientLock().zrange('platform-deletions', 0, -1);
 };
 interface LockOptions {
-  automaticExtension?: boolean,
-  retryCount?: number,
-  draftId?: string
-  child_operation?: string
+  automaticExtension?: boolean;
+  retryCount?: number;
+  draftId?: string;
+  child_operation?: string;
 }
 const defaultLockOpts: LockOptions = { automaticExtension: true, retryCount: conf.get('app:concurrency:retry_count'), draftId: '' };
 const getStackTrace = () => {
@@ -430,10 +401,9 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
   const queue = () => {
     timeout = setTimeout(
       () => {
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
         extension = extend();
       },
-      lock.expiration - Date.now() - 2 * automaticExtensionThreshold
+      lock.expiration - Date.now() - 2 * automaticExtensionThreshold,
     );
   };
   const extend = async () => {
@@ -443,7 +413,7 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
       }
       lock = await lock.extend(maxTtl);
       queue();
-    } catch (_error) {
+    } catch {
       logApp.error('Execution timeout, error extending resources', { locks });
       if (process.send) {
         // If process.send, we use a child process
@@ -486,394 +456,11 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
       try {
         // Finally try to unlock
         await lock.release();
-      } catch (_e) {
+      } catch {
         // Nothing to do here
       }
     },
   };
-};
-// endregion
-
-// region opencti data stream
-const streamTrimming = conf.get('redis:trimming') || 0;
-const mapJSToStream = (event: any) => {
-  const cmdArgs: Array<string> = [];
-  Object.keys(event).forEach((key) => {
-    const value = event[key];
-    if (value !== undefined) {
-      cmdArgs.push(key);
-      cmdArgs.push(JSON.stringify(value));
-    }
-  });
-  return cmdArgs;
-};
-const pushToStream = async (context: AuthContext, user: AuthUser, client: Cluster | Redis, event: BaseEvent, opts: EventOpts = {}) => {
-  const draftContext = getDraftContext(context, user);
-  const eventToPush = { ...event, event_id: context.eventId };
-  if (!draftContext && isStreamPublishable(opts)) {
-    const pushToStreamFn = async () => {
-      if (streamTrimming) {
-        await client.call('XADD', REDIS_STREAM_NAME, 'MAXLEN', '~', streamTrimming, '*', ...mapJSToStream(eventToPush));
-      } else {
-        await client.call('XADD', REDIS_STREAM_NAME, '*', ...mapJSToStream(eventToPush));
-      }
-    };
-    await telemetry(context, user, 'INSERT STREAM', {
-      [SEMATTRS_DB_NAME]: 'stream_engine',
-    }, pushToStreamFn);
-  }
-};
-
-// Merge
-const buildMergeEvent = async (user: AuthUser, previous: StoreObject, instance: StoreObject, sourceEntities: Array<StoreObject>): Promise<MergeEvent> => {
-  const message = generateMergeMessage(instance, sourceEntities);
-  const previousStix = convertStoreToStix_2_1(previous) as StixCoreObject;
-  const currentStix = convertStoreToStix_2_1(instance) as StixCoreObject;
-  return {
-    version: EVENT_CURRENT_VERSION,
-    type: EVENT_TYPE_MERGE,
-    scope: 'external',
-    message,
-    origin: user.origin,
-    data: currentStix,
-    context: {
-      patch: jsonpatch.compare(previousStix, currentStix),
-      reverse_patch: jsonpatch.compare(currentStix, previousStix),
-      sources: await asyncListTransformation<StixObject>(sourceEntities, convertStoreToStix_2_1) as StixCoreObject[],
-    }
-  };
-};
-export const storeMergeEvent = async (
-  context: AuthContext,
-  user: AuthUser,
-  initialInstance: StoreObject,
-  mergedInstance: StoreObject,
-  sourceEntities: Array<StoreObject>,
-  opts: EventOpts,
-) => {
-  try {
-    const event = await buildMergeEvent(user, initialInstance, mergedInstance, sourceEntities);
-    await pushToStream(context, user, getClientBase(), event, opts);
-    return event;
-  } catch (e) {
-    throw DatabaseError('Error in store merge event', { cause: e });
-  }
-};
-// Update
-export const buildStixUpdateEvent = (user: AuthUser, previousStix: StixCoreObject, stix: StixCoreObject, message: string, opts: UpdateEventOpts = {}): UpdateEvent => {
-  // Build and send the event
-  const patch = jsonpatch.compare(previousStix, stix);
-  const previousPatch = jsonpatch.compare(stix, previousStix);
-  if (patch.length === 0 || previousPatch.length === 0) {
-    throw UnsupportedError('Update event must contains a valid previous patch');
-  }
-  if (patch.length === 1 && patch[0].path === '/modified' && !opts.allow_only_modified) {
-    throw UnsupportedError('Update event must contains more operation than just modified/updated_at value');
-  }
-  const entityType = stix.extensions[STIX_EXT_OCTI].type;
-  const scope = INTERNAL_EXPORTABLE_TYPES.includes(entityType) ? 'internal' : 'external';
-  return {
-    version: EVENT_CURRENT_VERSION,
-    type: EVENT_TYPE_UPDATE,
-    scope,
-    message,
-    origin: user.origin,
-    data: stix,
-    commit: opts.commit,
-    noHistory: opts.noHistory,
-    context: {
-      patch,
-      reverse_patch: previousPatch,
-      related_restrictions: opts.related_restrictions,
-      pir_ids: opts.pir_ids
-    }
-  };
-};
-export const publishStixToStream = async (context: AuthContext, user: AuthUser, event: StreamDataEvent) => {
-  await pushToStream(context, user, getClientBase(), event);
-};
-const buildUpdateEvent = (user: AuthUser, previous: StoreObject, instance: StoreObject, message: string, opts: UpdateEventOpts): UpdateEvent => {
-  // Build and send the event
-  const stix = convertStoreToStix_2_1(instance) as StixCoreObject;
-  const previousStix = convertStoreToStix_2_1(previous) as StixCoreObject;
-  return buildStixUpdateEvent(user, previousStix, stix, message, opts);
-};
-export const storeUpdateEvent = async (context: AuthContext, user: AuthUser, previous: StoreObject, instance: StoreObject, message: string, opts: UpdateEventOpts = {}) => {
-  try {
-    if (isStixExportableInStreamData(instance)) {
-      const event = buildUpdateEvent(user, previous, instance, message, opts);
-      await pushToStream(context, user, getClientBase(), event, opts);
-      return event;
-    }
-    return undefined;
-  } catch (e) {
-    throw DatabaseError('Error in store update event', { cause: e });
-  }
-};
-// Create
-export const buildCreateEvent = (user: AuthUser, instance: StoreObject, message: string): StreamDataEvent => {
-  const stix = convertStoreToStix_2_1(instance) as StixCoreObject;
-  return {
-    version: EVENT_CURRENT_VERSION,
-    type: EVENT_TYPE_CREATE,
-    scope: INTERNAL_EXPORTABLE_TYPES.includes(instance.entity_type) ? 'internal' : 'external',
-    message,
-    origin: user.origin,
-    data: stix,
-  };
-};
-export const storeCreateRelationEvent = async (context: AuthContext, user: AuthUser, instance: StoreRelation, opts: CreateEventOpts = {}) => {
-  try {
-    if (isStixExportableInStreamData(instance)) {
-      const { withoutMessage = false, restore = false } = opts;
-      let message = '-';
-      if (!withoutMessage) {
-        message = restore ? generateRestoreMessage(instance) : generateCreateMessage(instance);
-      }
-      const event = buildCreateEvent(user, instance, message);
-      await pushToStream(context, user, getClientBase(), event, opts);
-      return event;
-    }
-    return undefined;
-  } catch (e) {
-    throw DatabaseError('Error in store create relation event', { cause: e });
-  }
-};
-export const storeCreateEntityEvent = async (context: AuthContext, user: AuthUser, instance: StoreObject, message: string, opts: CreateEventOpts = {}) => {
-  try {
-    if (isStixExportableInStreamData(instance)) {
-      const event = buildCreateEvent(user, instance, message);
-      await pushToStream(context, user, getClientBase(), event, opts);
-      return event;
-    }
-    return undefined;
-  } catch (e) {
-    throw DatabaseError('Error in store create entity event', { cause: e });
-  }
-};
-
-// Delete
-export const buildDeleteEvent = async (
-  user: AuthUser,
-  instance: StoreObject,
-  message: string,
-): Promise<DeleteEvent> => {
-  const stix = convertStoreToStix_2_1(instance) as StixCoreObject;
-  return {
-    version: EVENT_CURRENT_VERSION,
-    type: EVENT_TYPE_DELETE,
-    scope: INTERNAL_EXPORTABLE_TYPES.includes(instance.entity_type) ? 'internal' : 'external',
-    message,
-    origin: user.origin,
-    data: stix
-  };
-};
-export const storeDeleteEvent = async (context: AuthContext, user: AuthUser, instance: StoreObject, opts: EventOpts = {}) => {
-  try {
-    if (isStixExportableInStreamData(instance)) {
-      const message = generateDeleteMessage(instance);
-      const event = await buildDeleteEvent(user, instance, message);
-      await pushToStream(context, user, getClientBase(), event, opts);
-      return event;
-    }
-    return undefined;
-  } catch (e) {
-    throw DatabaseError('Error in store delete event', { cause: e });
-  }
-};
-
-const mapStreamToJS = ([id, data]: any): SseEvent<any> => {
-  const count = data.length / 2;
-  const obj: any = {};
-  for (let i = 0; i < count; i += 1) {
-    obj[data[2 * i]] = JSON.parse(data[2 * i + 1]);
-  }
-  return { id, event: obj.type, data: obj };
-};
-export const fetchStreamInfo = async (streamName = REDIS_STREAM_NAME) => {
-  const res: any = await getClientBase().xinfo('STREAM', streamName);
-  const info: any = R.fromPairs(R.splitEvery(2, res) as any);
-  const firstId = info['first-entry'][0];
-  const firstEventDate = utcDate(parseInt(firstId.split('-')[0], 10)).toISOString();
-  const lastId = info['last-entry'][0];
-  const lastEventDate = utcDate(parseInt(lastId.split('-')[0], 10)).toISOString();
-  return { lastEventId: lastId, firstEventId: firstId, firstEventDate, lastEventDate, streamSize: info.length };
-};
-
-const processStreamResult = async (results: Array<any>, callback: any, withInternal: boolean | undefined) => {
-  const transform = (r: any) => mapStreamToJS(r);
-  const filter = (s: any) => (withInternal ? true : (s.data.scope ?? 'external') === 'external');
-  const events = await asyncMap(results, transform, filter);
-  const lastEventId = events.length > 0 ? R.last(events)?.id : `${new Date().valueOf()}-0`;
-  await callback(events, lastEventId);
-  return lastEventId;
-};
-
-const STREAM_BATCH_TIME = 5000;
-const MAX_RANGE_MESSAGES = 100;
-
-export interface StreamProcessor {
-  info: () => Promise<object>;
-  start: (from: string | undefined) => Promise<void>;
-  shutdown: () => Promise<void>;
-  running: () => boolean;
-}
-
-interface StreamOption {
-  withInternal?: boolean;
-  bufferTime?: number;
-  autoReconnect?: boolean;
-  streamName?: string;
-  streamBatchSize?: number
-}
-
-export const createStreamProcessor = <T extends BaseEvent> (
-  _user: AuthUser,
-  provider: string,
-  callback: (events: Array<SseEvent<T>>, lastEventId: string) => void,
-  opts: StreamOption = {}
-): StreamProcessor => {
-  let client: Cluster | Redis;
-  let startEventId: string;
-  let processingLoopPromise: Promise<void>;
-  let streamListening = true;
-  const streamName = opts.streamName ?? REDIS_STREAM_NAME;
-
-  const processStep = async () => {
-    // since previous call is async (and blocking) we should check if we are still running before processing the message
-    if (!streamListening) {
-      return false;
-    }
-    try {
-      // Consume the data stream
-      const streamResult = await client.call(
-        'XREAD',
-        'COUNT',
-        MAX_RANGE_MESSAGES,
-        'BLOCK',
-        STREAM_BATCH_TIME,
-        'STREAMS',
-        streamName,
-        startEventId
-      ) as any[];
-      // Process the event results
-      if (streamResult && streamResult.length > 0) {
-        const [, results] = streamResult[0];
-        const lastElementId = await processStreamResult(results, callback, opts.withInternal);
-        startEventId = lastElementId || startEventId;
-      } else {
-        await processStreamResult([], callback, opts.withInternal);
-      }
-      await wait(opts.bufferTime ?? 50);
-    } catch (err) {
-      logApp.error('Redis stream consume fail', { cause: err, provider });
-      if (opts.autoReconnect) {
-        await waitInSec(5);
-      } else {
-        return false;
-      }
-    }
-    return streamListening;
-  };
-  const processingLoop = async () => {
-    while (streamListening) {
-      if (!(await processStep())) {
-        streamListening = false;
-        break;
-      }
-    }
-  };
-  return {
-    info: async () => fetchStreamInfo(streamName),
-    running: () => streamListening,
-    start: async (start = 'live') => {
-      if (streamListening) {
-        let fromStart = start;
-        if (isEmptyField(fromStart)) {
-          fromStart = 'live';
-        }
-        startEventId = fromStart === 'live' ? '$' : fromStart;
-        logApp.info('[STREAM] Starting stream processor', { provider, startEventId });
-        processingLoopPromise = (async () => {
-          client = await createRedisClient(provider, opts.autoReconnect); // Create client for this processing loop
-          try {
-            await processingLoop();
-          } finally {
-            logApp.info('[STREAM] Stream processor terminated, closing Redis client');
-            client.disconnect();
-          }
-        })();
-      }
-    },
-    shutdown: async () => {
-      logApp.info('[STREAM] Shutdown stream processor', { provider });
-      streamListening = false;
-      if (processingLoopPromise) {
-        await processingLoopPromise;
-      }
-      logApp.info('[STREAM] Stream processor current promise terminated');
-    },
-  };
-};
-// endregion
-
-// region fetch stream event range
-export const fetchStreamEventsRangeFromEventId = async (
-  client: Cluster | Redis,
-  startEventId: string,
-  callback: (events: Array<SseEvent<DataEvent>>, lastEventId: string) => void,
-  opts: StreamOption = {},
-) => {
-  const { streamBatchSize = MAX_RANGE_MESSAGES } = opts;
-  let effectiveStartEventId = startEventId;
-  try {
-    // Consume streamBatchSize number of stream events from startEventId (excluded)
-    const streamResult = await client.call(
-      'XRANGE',
-      opts.streamName ?? REDIS_STREAM_NAME,
-      `(${startEventId}`, // ( prefix to exclude startEventId
-      '+',
-      'COUNT',
-      streamBatchSize,
-    ) as any[];
-    // Process the event results
-    if (streamResult && streamResult.length > 0) {
-      const lastStreamResultId = R.last(streamResult)[0]; // id of last event fetched (internal or external)
-      await processStreamResult(streamResult, callback, opts.withInternal); // process the stream events of the range
-      if (lastStreamResultId) {
-        effectiveStartEventId = lastStreamResultId;
-      }
-    } else {
-      await processStreamResult([], callback, opts.withInternal);
-    }
-  } catch (err) {
-    logApp.error('Redis stream consume fail', { cause: err });
-    if (opts.autoReconnect) {
-      await waitInSec(2);
-    }
-  }
-  return { lastEventId: effectiveStartEventId };
-};
-
-// region opencti notification stream
-export const NOTIFICATION_STREAM_NAME = `${REDIS_PREFIX}stream.notification`;
-const notificationTrimming = conf.get('redis:notification_trimming') || 50000;
-export const storeNotificationEvent = async (context: AuthContext, event: any) => {
-  await getClientBase().call('XADD', NOTIFICATION_STREAM_NAME, 'MAXLEN', '~', notificationTrimming, '*', ...mapJSToStream(event));
-};
-export const fetchRangeNotifications = async <T extends BaseEvent> (start: Date, end: Date): Promise<Array<T>> => {
-  const streamResult = await getClientBase().call('XRANGE', NOTIFICATION_STREAM_NAME, start.getTime(), end.getTime()) as any[];
-  const streamElements: Array<SseEvent<T>> = R.map((r) => mapStreamToJS(r), streamResult);
-  return streamElements.filter((s) => s.event === 'live').map((e) => e.data);
-};
-// endregion
-
-// region opencti audit stream
-export const EVENT_ACTIVITY_VERSION = '1';
-export const ACTIVITY_STREAM_NAME = `${REDIS_PREFIX}stream.activity`;
-const auditTrimming = conf.get('redis:activity_trimming') || 50000;
-export const storeActivityEvent = async (event: ActivityStreamEvent) => {
-  await getClientBase().call('XADD', ACTIVITY_STREAM_NAME, 'MAXLEN', '~', auditTrimming, '*', ...mapJSToStream(event));
 };
 // endregion
 
@@ -958,7 +545,7 @@ export const getLastPlaybookExecutions = async (playbookId: string) => {
       id: e.playbook_execution_id,
       playbook_id: e.playbook_id,
       execution_start: steps[0].in_timestamp,
-      steps
+      steps,
     };
   });
 };
@@ -975,7 +562,7 @@ export const SUPPORT_NODE_STATUS_IN_ERROR = 100;
  * @param nodeId
  * @param nodeStatus one of SUPPORT_NODE_STATUS_IN_PROGRESS, SUPPORT_NODE_STATUS_READY, SUPPORT_NODE_STATUS_IN_ERROR
  */
-export const redisStoreSupportPackageNodeStatus = (supportPackageId:string, nodeId: string, nodeStatus: number) => {
+export const redisStoreSupportPackageNodeStatus = (supportPackageId: string, nodeId: string, nodeStatus: number) => {
   const setKeyId = `support:${supportPackageId}`;
   // redis score =  nodeStatus
   // redis member = nodeId
@@ -1015,7 +602,7 @@ export const redisGetExclusionListCache = async () => {
   const rawCache = await getClientBase().get(EXCLUSION_LIST_CACHE_KEY);
   try {
     return rawCache ? JSON.parse(rawCache) : [];
-  } catch (_e) {
+  } catch {
     logApp.error('Exclusion cache could not be parsed properly. Asking for a cache refresh.', { rawCache });
     await redisUpdateExclusionListStatus({ last_refresh_ask_date: (new Date()).toString() });
     return [];
@@ -1034,7 +621,7 @@ export const OTP_TTL = conf.get('app:forgot_password:otp_ttl_second') || 600;
 export const redisSetForgotPasswordOtp = async (
   transactionId: string,
   data: { email: string; hashedOtp: string; mfa_activated: boolean; mfa_validated: boolean; userId: string },
-  ttl: number = OTP_TTL
+  ttl: number = OTP_TTL,
 ) => {
   const forgotPasswordOtpKeyName = `forgot_password_otp_${transactionId}`;
   const pointerKey = `forgot_password_transactionId_${data.email}`;
@@ -1044,7 +631,7 @@ export const redisSetForgotPasswordOtp = async (
 export const redisGetForgotPasswordOtp = async (id: string) => {
   const keyName = `forgot_password_otp_${id}`;
   const str = await getClientBase().get(keyName) ?? '{}';
-  const values: { hashedOtp: string, email: string, mfa_activated: boolean, mfa_validated: boolean, userId: string } = JSON.parse(str);
+  const values: { hashedOtp: string; email: string; mfa_activated: boolean; mfa_validated: boolean; userId: string } = JSON.parse(str);
   const ttl = await getClientBase().ttl(keyName);
   return { ...values, ttl };
 };
@@ -1101,6 +688,18 @@ export const redisClearTelemetry = async () => {
   return getClientBase().del(TELEMETRY_EVENT_KEY);
 };
 // endregion - telemetry gauges
+
+// region - manager stream state
+const MANAGER_EVENT_STATE_KEY = 'manager_stream_state_';
+export const redisSetManagerEventState = async (managerName: string, event_state_id: string) => {
+  const managerEventStateKey = MANAGER_EVENT_STATE_KEY + managerName;
+  await getClientBase().set(managerEventStateKey, event_state_id);
+};
+export const redisGetManagerEventState = async (managerName: string) => {
+  const managerEventStateKey = MANAGER_EVENT_STATE_KEY + managerName;
+  return getClientBase().get(managerEventStateKey);
+};
+// endregion
 
 // region connector logs
 export const redisSetConnectorLogs = async (connectorId: string, logs: string[]) => {

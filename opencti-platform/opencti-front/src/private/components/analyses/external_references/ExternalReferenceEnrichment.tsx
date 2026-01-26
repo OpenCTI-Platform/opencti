@@ -9,7 +9,7 @@ import ExternalReferenceEnrichmentLines, { externalReferenceEnrichmentLinesQuery
 import Drawer from '../../common/drawer/Drawer';
 
 interface ExternalReferenceEnrichmentProps {
-  externalReferenceId: string,
+  externalReferenceId: string;
 }
 
 const ExternalReferenceEnrichment: FunctionComponent<ExternalReferenceEnrichmentProps> = (

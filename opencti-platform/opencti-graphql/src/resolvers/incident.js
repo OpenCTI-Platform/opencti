@@ -1,4 +1,4 @@
-import { addIncident, findIncidentPaginated, findById, incidentsTimeSeries, incidentsTimeSeriesByEntity } from '../domain/incident';
+import { addIncident, findById, findIncidentPaginated, incidentsTimeSeries, incidentsTimeSeriesByEntity } from '../domain/incident';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -7,11 +7,11 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
+import { ENTITY_TYPE_INCIDENT } from '../schema/stixDomainObject';
 import { RELATION_OBJECT_ASSIGNEE } from '../schema/stixRefRelationship';
-import { buildRefRelationKey, INPUT_PARTICIPANT } from '../schema/general';
-import { loadThroughDenormalized } from './stix';
-import { filterMembersWithUsersOrgs } from '../utils/access';
+import { buildRefRelationKey } from '../schema/general';
 import { findSecurityCoverageByCoveredId } from '../modules/securityCoverage/securityCoverage-domain';
+import { loadParticipants } from '../database/members';
 
 const incidentResolvers = {
   Query: {
@@ -26,31 +26,25 @@ const incidentResolvers = {
   },
   Incident: {
     securityCoverage: (incident, _, context) => findSecurityCoverageByCoveredId(context, context.user, incident.id),
-    objectParticipant: async (incident, _, context) => {
-      const participants = await loadThroughDenormalized(context, context.user, incident, INPUT_PARTICIPANT, { sortBy: 'user_email' });
-      if (!participants) {
-        return [];
-      }
-      return filterMembersWithUsersOrgs(context, context.user, participants);
-    }
+    objectParticipant: async (incident, _, context) => loadParticipants(context, context.user, incident),
   },
   IncidentsOrdering: {
     objectAssignee: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),
   },
   Mutation: {
     incidentEdit: (_, { id }, context) => ({
-      delete: () => stixDomainObjectDelete(context, context.user, id),
+      delete: () => stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_INCIDENT),
       fieldPatch: ({
         input,
         commitMessage,
-        references
+        references,
       }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
       contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
       relationAdd: ({ input }) => stixDomainObjectAddRelation(context, context.user, id, input),
       relationDelete: ({
         toId,
-        relationship_type: relationshipType
+        relationship_type: relationshipType,
       }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
     }),
     incidentAdd: (_, { input }, context) => addIncident(context, context.user, input),

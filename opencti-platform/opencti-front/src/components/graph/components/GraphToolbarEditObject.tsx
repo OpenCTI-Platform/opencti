@@ -16,8 +16,8 @@ import useGraphInteractions from '../utils/useGraphInteractions';
 import { ObjectToParse } from '../utils/useGraphParser';
 
 interface GraphToolbarEditObjectProps {
-  stixCoreObjectRefetchQuery: GraphQLTaggedNode
-  relationshipRefetchQuery: GraphQLTaggedNode
+  stixCoreObjectRefetchQuery: GraphQLTaggedNode;
+  relationshipRefetchQuery: GraphQLTaggedNode;
 }
 
 type EditionCategory = 'domainObject' | 'observable' | 'relation' | 'sighting' | 'nested';

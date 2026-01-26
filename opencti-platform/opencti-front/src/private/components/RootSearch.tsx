@@ -30,7 +30,7 @@ const RootSearch = () => {
       <Route path="/files" element={<SearchFiles />} />
       <Route path="/files/:keyword" element={<SearchFiles />} />
       <Route path="/" element={<Navigate to="/dashboard/search/knowledge" replace={true} />} />
-      <Route path="/*" element={<NoMatch/>}/>
+      <Route path="/*" element={<NoMatch />} />
     </Routes>
   );
 };

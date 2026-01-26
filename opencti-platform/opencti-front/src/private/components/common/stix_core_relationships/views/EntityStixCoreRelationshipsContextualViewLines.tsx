@@ -77,14 +77,14 @@ export const contextualViewLinesQuery = graphql`
 `;
 
 interface EntityStixCoreRelationshipsContextualViewLinesProps {
-  queryRef: PreloadedQuery<EntityStixCoreRelationshipsContextualViewLinesQuery>
-  dataColumns: DataColumns
-  paginationOptions: Partial<EntityStixCoreRelationshipsContextualViewLinesQuery$variables>
-  onToggleEntity: UseEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>['onToggleEntity']
-  selectedElements: UseEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>['selectedElements']
-  deSelectedElements: UseEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>['deSelectedElements']
-  selectAll: UseEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>['selectAll']
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements']
+  queryRef: PreloadedQuery<EntityStixCoreRelationshipsContextualViewLinesQuery>;
+  dataColumns: DataColumns;
+  paginationOptions: Partial<EntityStixCoreRelationshipsContextualViewLinesQuery$variables>;
+  onToggleEntity: UseEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>['onToggleEntity'];
+  selectedElements: UseEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>['selectedElements'];
+  deSelectedElements: UseEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>['deSelectedElements'];
+  selectAll: UseEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>['selectAll'];
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
 }
 
 const EntityStixCoreRelationshipsContextualViewLinesComponent: FunctionComponent<EntityStixCoreRelationshipsContextualViewLinesProps> = ({
@@ -98,8 +98,8 @@ const EntityStixCoreRelationshipsContextualViewLinesComponent: FunctionComponent
   setNumberOfElements,
 }) => {
   const { data, loadMore, hasMore, isLoadingMore } = usePreloadedPaginationFragment<
-  EntityStixCoreRelationshipsContextualViewLinesQuery,
-  EntityStixCoreRelationshipsContextualViewLines_data$key
+    EntityStixCoreRelationshipsContextualViewLinesQuery,
+    EntityStixCoreRelationshipsContextualViewLines_data$key
   >({
     queryRef,
     linesQuery: contextualViewLinesQuery,
@@ -130,7 +130,7 @@ const EntityStixCoreRelationshipsContextualViewLinesComponent: FunctionComponent
 };
 
 const EntityStixCoreRelationshipsContextualViewLines: FunctionComponent<
-Omit<EntityStixCoreRelationshipsContextualViewLinesProps, 'queryRef'>
+  Omit<EntityStixCoreRelationshipsContextualViewLinesProps, 'queryRef'>
 > = (props) => {
   const queryRef = useQueryLoading<EntityStixCoreRelationshipsContextualViewLinesQuery>(
     contextualViewLinesQuery,

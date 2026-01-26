@@ -7,9 +7,9 @@ import type { Theme } from './Theme';
 
 type AlertConfidenceForEntityProps = {
   entity: {
-    entity_type?: string | null
-    confidence?: number | null
-  }
+    entity_type?: string | null;
+    confidence?: number | null;
+  };
 };
 
 const AlertConfidenceForEntity: React.FC<AlertConfidenceForEntityProps> = ({ entity }) => {
