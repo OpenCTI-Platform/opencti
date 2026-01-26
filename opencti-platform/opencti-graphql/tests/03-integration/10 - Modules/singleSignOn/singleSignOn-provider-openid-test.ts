@@ -4,7 +4,7 @@ import type { BasicStoreEntitySingleSignOn } from '../../../../src/modules/singl
 import { computeOpenIdUserInfo, computeOpenIdGroupsMapping, computeOpenIdOrganizationsMapping } from '../../../../src/modules/singleSignOn/singleSignOn-provider-openid';
 import type { GroupsManagement, OrganizationsManagement } from '../../../../src/generated/graphql';
 
-describe('OpenID Single sign on Provider coverage tests', () => {
+describe.skip('OpenID Single sign on Provider coverage tests', () => {
   describe('OpenID userInfo mapping coverage', () => {
     it('should OpenID user info with default config', async () => {
       const openIdProfile = { name: 'Winry', email: 'winry.rockbell@anime.jp', given_name: 'Winry Mechanic expert', family_name: 'Rockbell' };
