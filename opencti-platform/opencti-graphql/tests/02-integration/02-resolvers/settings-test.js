@@ -12,9 +12,9 @@ const WAIT_FOR_SETTINGS_INTERVAL_MS = 250;
 const WAIT_FOR_SETTINGS_INITIAL_DELAY_MS = 250;
 
 const waitForPlatformAiEnabled = async (expectedEnabled) => {
-  const startTime = Date.now();
   let lastValue = undefined;
   await wait(WAIT_FOR_SETTINGS_INITIAL_DELAY_MS);
+  const startTime = Date.now();
   while (Date.now() - startTime < WAIT_FOR_SETTINGS_TIMEOUT_MS) {
     const settingsResult = await queryAsAdmin({ query: READ_QUERY, variables: {} });
     lastValue = settingsResult.data.settings.platform_ai_enabled !== false;
