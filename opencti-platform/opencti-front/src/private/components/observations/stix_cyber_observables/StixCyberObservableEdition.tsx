@@ -1,17 +1,14 @@
-import React, { FunctionComponent, useState } from 'react';
-import { useTheme } from '@mui/material';
+import { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { stixCyberObservableEditionOverviewFocus } from './StixCyberObservableEditionOverview';
-import ThemeDark from '../../../../components/ThemeDark';
-import ThemeLight from '../../../../components/ThemeLight';
-import { QueryRenderer } from '../../../../relay/environment';
-import StixCyberObservableEditionContainer from './StixCyberObservableEditionContainer';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
-import { StixCyberObservableEditionContainerQuery$data } from './__generated__/StixCyberObservableEditionContainerQuery.graphql';
-import Drawer from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
+import { QueryRenderer } from '../../../../relay/environment';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import Drawer from '../../common/drawer/Drawer';
+import { StixCyberObservableEditionContainerQuery$data } from './__generated__/StixCyberObservableEditionContainerQuery.graphql';
+import StixCyberObservableEditionContainer from './StixCyberObservableEditionContainer';
+import { stixCyberObservableEditionOverviewFocus } from './StixCyberObservableEditionOverview';
 
 export const stixCyberObservableEditionQuery = graphql`
   query StixCyberObservableEditionContainerQuery($id: String!) {

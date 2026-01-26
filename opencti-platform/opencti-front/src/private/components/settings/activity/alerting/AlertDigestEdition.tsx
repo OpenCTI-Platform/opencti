@@ -1,30 +1,25 @@
-import { Close } from '@mui/icons-material';
-import IconButton from '@common/button/IconButton';
 import MenuItem from '@mui/material/MenuItem';
-import Typography from '@mui/material/Typography';
-import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
-import React, { FunctionComponent } from 'react';
+import { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
-import { useFormatter } from '../../../../../components/i18n';
 import MarkdownField from '../../../../../components/fields/MarkdownField';
 import SelectField from '../../../../../components/fields/SelectField';
+import { useFormatter } from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
-import type { Theme } from '../../../../../components/Theme';
 import TimePickerField from '../../../../../components/TimePickerField';
 import { convertNotifiers, convertTriggers } from '../../../../../utils/edition';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../../utils/field';
+import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { dayStartDate, parse } from '../../../../../utils/Time';
-import ObjectMembersField from '../../../common/form/ObjectMembersField';
 import NotifierField from '../../../common/form/NotifierField';
+import ObjectMembersField from '../../../common/form/ObjectMembersField';
 import { AlertDigestEdition_trigger$key } from './__generated__/AlertDigestEdition_trigger.graphql';
 import { AlertEditionQuery } from './__generated__/AlertEditionQuery.graphql';
 import { AlertingPaginationQuery$variables } from './__generated__/AlertingPaginationQuery.graphql';
 import { digestTriggerValidation } from './AlertDigestCreation';
 import { alertEditionQuery } from './AlertEditionQuery';
 import AlertsField from './AlertsField';
-import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 
 interface AlertDigestEditionProps {
   handleClose: () => void;
@@ -76,14 +71,8 @@ const alertDigestEditionFieldPatch = graphql`
   }
 `;
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-}));
-
 const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryRef, paginationOptions, handleClose }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const data = usePreloadedQuery<AlertEditionQuery>(alertEditionQuery, queryRef);
   const trigger = useFragment<AlertDigestEdition_trigger$key>(alertDigestEditionFragment, data.triggerKnowledge);
   const [commitFieldPatch] = useApiMutation(alertDigestEditionFieldPatch);
