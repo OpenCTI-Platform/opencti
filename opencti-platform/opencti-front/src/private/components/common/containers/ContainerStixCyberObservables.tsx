@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, MouseEvent } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -22,6 +22,12 @@ import {
 } from '@components/common/containers/__generated__/ContainerStixCyberObservablesLinesPaginationQuery.graphql';
 import { ContainerStixCyberObservablesLines_data$data } from '@components/common/containers/__generated__/ContainerStixCyberObservablesLines_data.graphql';
 import ContainerStixCoreObjectPopover from '@components/common/containers/ContainerStixCoreObjectPopover';
+import { resolveLink } from '../../../../utils/Entity';
+import { typesWithNoAnalysesTab } from '../../../../utils/hooks/useAttributes';
+import Chip from '@mui/material/Chip';
+import { useTheme } from '@mui/material/styles';
+import { useFormatter } from '../../../../components/i18n';
+import { useNavigate } from 'react-router-dom';
 
 const containerStixCyberObservableLineFragment = graphql`
     fragment ContainerStixCyberObservablesLine_node on StixCyberObservable {
@@ -193,6 +199,9 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<
 > = ({ container, enableReferences }) => {
   const LOCAL_STORAGE_KEY = `container-${container.id}-stixCyberObservables`;
   const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
+  const theme = useTheme();
+  const { n } = useFormatter();
+  const navigate = useNavigate();
 
   const initialValues = {
     filters: {
@@ -314,6 +323,48 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<
       label: 'Analyses',
       percentWidth: 8,
       isSortable: false,
+      render: ({ id, entity_type, containersNumber }) => {
+        const analysesNumber = containersNumber?.total;
+        const link = `${resolveLink(entity_type)}/${id}`;
+        const linkAnalyses = `${link}/analyses`;
+        const analysesChipStyle: React.CSSProperties = {
+          fontSize: 13,
+          lineHeight: '12px',
+          height: 20,
+          textTransform: 'uppercase',
+          borderRadius: 4,
+        };
+        return (
+          <>
+            {typesWithNoAnalysesTab.includes(entity_type)
+              ? (
+                  <Chip
+                    style={analysesChipStyle}
+                    label={n(analysesNumber)}
+                  />
+                )
+              : (
+                  <Chip
+                    sx={{
+                      ...analysesChipStyle,
+                      cursor: 'pointer',
+                      '&:hover': {
+                        backgroundColor: theme.palette.primary.main,
+                      },
+                    }}
+                    label={n(analysesNumber)}
+                    onClick={(e: MouseEvent<HTMLDivElement>) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      navigate(linkAnalyses);
+                    }}
+                  />
+                )
+            }
+          </>
+        );
+      },
+
     },
     objectMarking: {
       label: 'Marking',
@@ -351,21 +402,22 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<
                     />
                   </Security>
                 )}
-                actions={(row) => (
-                  <div onClick={(e) => e.stopPropagation()}>
-                    <ContainerStixCoreObjectPopover
-                      containerId={row.containerId}
-                      toId={row.id}
-                      toStandardId={row.standard_id}
-                      relationshipType="object"
-                      paginationKey="Pagination_objects"
-                      paginationOptions={paginationOptions}
-                      selectedElements={selectedElements}
-                      setSelectedElements={setSelectedElements}
-                      enableReferences={enableReferences}
-                    />
-                  </div>
-                )}
+                actions={(row) => {
+                  return (
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <ContainerStixCoreObjectPopover
+                        containerId={container.id}
+                        toId={row.id}
+                        relationshipType="object"
+                        paginationKey="Pagination_objects"
+                        paginationOptions={queryPaginationOptions}
+                        selectedElements={selectedElements}
+                        setSelectedElements={setSelectedElements}
+                        enableReferences={enableReferences}
+                      />
+                    </div>
+                  );
+                }}
               />
             )}
           </ExportContextProvider>
