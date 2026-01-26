@@ -1,4 +1,4 @@
-directive @auth(for: [Capabilities] = [], and: Boolean = false) on OBJECT | FIELD_DEFINITION
+directive @auth(for: [Capabilities] = [], and: Boolean = false, forDraft: [Capabilities] = []) on OBJECT | FIELD_DEFINITION
 
 directive @public on OBJECT | FIELD_DEFINITION
 

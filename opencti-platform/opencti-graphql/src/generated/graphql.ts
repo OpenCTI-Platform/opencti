@@ -38629,6 +38629,7 @@ export type AllowUnprotectedOtpDirectiveResolver<Result, Parent, ContextType = a
 export type AuthDirectiveArgs = {
   and?: Maybe<Scalars['Boolean']['input']>;
   for?: Maybe<Array<Maybe<Capabilities>>>;
+  forDraft?: Maybe<Array<Maybe<Capabilities>>>;
 };
 
 export type AuthDirectiveResolver<Result, Parent, ContextType = any, Args = AuthDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;

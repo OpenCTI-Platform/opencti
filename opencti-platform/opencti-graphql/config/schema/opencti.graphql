@@ -1,6 +1,6 @@
 ### DIRECTIVES
 
-directive @auth(for: [Capabilities] = [], and: Boolean = false) on OBJECT | FIELD_DEFINITION
+directive @auth(for: [Capabilities] = [], and: Boolean = false, forDraft: [Capabilities] = []) on OBJECT | FIELD_DEFINITION
 directive @public on OBJECT | FIELD_DEFINITION
 directive @allowUnprotectedOTP on OBJECT | FIELD_DEFINITION
 directive @allowUnlicensedLTS on OBJECT | FIELD_DEFINITION
@@ -15681,7 +15681,7 @@ type Mutation {
   ###### INTERNAL
   deleteImport(fileName: String): ID @auth(for: [KNOWLEDGE_KNASKIMPORT])
   uploadImport(file: Upload!, fileMarkings: [String]): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
-  uploadAndAskJobImport(file: Upload!, fileMarkings: [String!], connectors: [ConnectorWithConfig!], validationMode: ValidationMode, draftId: String, noTriggerImport: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNASKIMPORT])
+  uploadAndAskJobImport(file: Upload!, fileMarkings: [String!], connectors: [ConnectorWithConfig!], validationMode: ValidationMode, draftId: String, noTriggerImport: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNASKIMPORT], forDraft: [KNOWLEDGE_KNASKIMPORT])
   uploadPending(file: Upload!, entityId: String, labels: [String], errorOnExisting: Boolean, file_markings: [String!], refreshEntity: Boolean): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
   askJobImport(fileName: ID!, connectorId: String, configuration: String, bypassEntityId: String, bypassValidation: Boolean, validationMode: ValidationMode, forceValidation: Boolean): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
   createDraftAndAskJobImport(fileName: ID!, connectorId: String, configuration: String, bypassEntityId: String, bypassValidation: Boolean, validationMode: ValidationMode, forceValidation: Boolean,  authorized_members: [MemberAccessInput!]): File @auth(for: [KNOWLEDGE_KNASKIMPORT])

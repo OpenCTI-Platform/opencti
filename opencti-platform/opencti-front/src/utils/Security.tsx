@@ -12,6 +12,7 @@ export const CAPABILITY_INFORMATION = {
 interface SecurityProps {
   children: ReactElement;
   needs: string[];
+  capabilitiesInDraft?: string[];
   hasAccess?: boolean;
   matchAll?: boolean;
   placeholder?: ReactElement;
@@ -51,11 +52,12 @@ export const granted = (
 const Security: FunctionComponent<SecurityProps> = ({
   needs,
   matchAll = false,
+  capabilitiesInDraft,
   hasAccess = true,
   children,
   placeholder = <span />,
 }) => {
-  const isGranted = useGranted(needs, matchAll);
+  const isGranted = useGranted(needs, matchAll, { capabilitiesInDraft });
   return isGranted && hasAccess ? children : placeholder;
 };
 

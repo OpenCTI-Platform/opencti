@@ -259,8 +259,8 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                     )
                   }
 
-                  { ee.license_type === 'nfr' && <ItemBoolean label="EE DEV LICENSE" status={false} /> }
-                  <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
+                  {ee.license_type === 'nfr' && <ItemBoolean label="EE DEV LICENSE" status={false} />}
+                  <Security needs={[KNOWLEDGE_KNASKIMPORT]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}>
                     <UploadImport
                       variant="icon"
                       fontSize="medium"
@@ -296,7 +296,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                     </IconButton>
                   </Tooltip>
                 </>
-              </Security>
+              </Security >
             )}
             <IconButton
               aria-owns={menuOpen.open ? 'menu-appbar' : undefined}
@@ -331,14 +331,14 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                 {t_i18n('Logout')}
               </MenuItem>
             </Menu>
-          </Stack>
-        </div>
-      </Toolbar>
+          </Stack >
+        </div >
+      </Toolbar >
       <FeedbackCreation
         openDrawer={openDrawer}
         handleCloseDrawer={handleCloseDrawer}
       />
-    </AppBar>
+    </AppBar >
   );
 };
 
