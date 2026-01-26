@@ -185,7 +185,7 @@ export const registerStrategy = async (authenticationStrategy: BasicStoreEntityS
           await registerOpenIdStrategy(authenticationStrategy);
           break;
         case StrategyType.LdapStrategy:
-          logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_SAML);
+          logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_LDAP);
           await registerLDAPStrategy(authenticationStrategy);
           break;
         case StrategyType.HeaderStrategy:
