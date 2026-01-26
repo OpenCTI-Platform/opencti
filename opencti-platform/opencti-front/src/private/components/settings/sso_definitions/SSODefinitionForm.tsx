@@ -1,6 +1,6 @@
 import { useFormatter } from '../../../../components/i18n';
 import * as Yup from 'yup';
-import { Field, FieldArray, Form, Formik } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
