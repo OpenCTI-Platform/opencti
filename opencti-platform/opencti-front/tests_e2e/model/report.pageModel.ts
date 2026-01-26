@@ -24,7 +24,7 @@ export default class ReportPage {
   }
 
   openNewReportForm() {
-    return this.page.getByRole('button', { name: 'Create' }).click();
+    return this.page.getByTestId('create-report-button').click();
   }
 
   closeNewreport() {
