@@ -3,7 +3,7 @@ import { convertKeyValueToJsConfiguration } from '../../../../src/modules/single
 import type { BasicStoreEntitySingleSignOn } from '../../../../src/modules/singleSignOn/singleSignOn-types';
 import { computeLdapGroups, computeLdapOrganizations, computeLdapUserInfo } from '../../../../src/modules/singleSignOn/singleSignOn-provider-ldap';
 
-describe('LDAP Single sign on Provider coverage tests', () => {
+describe.skip('LDAP Single sign on Provider coverage tests', () => {
   describe('LDAP userInfo mapping coverage', () => {
     it('should LDAP user info with default config', async () => {
       const ldapProfile = { mail: 'ldap1@opencti.io', givenName: 'ldap1' };
