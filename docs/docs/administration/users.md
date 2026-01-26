@@ -94,7 +94,7 @@ The below capabilities are applicable to the draft mode only:
 | &nbsp;&nbsp;`Ask for knowledge enrichment`              | Trigger an enrichment for a given entity in a draft.                                                                                                                                           |
 | &nbsp;&nbsp;`Manage labels`                             | Ability for users to create labels. Created labels will exist in main database.                                                                                                                |
 
-
+![ONew tab to manage draft capabilities](assets/draft_override.png)
 
 #### Examples 
 
@@ -120,7 +120,7 @@ To create a role, just click on the `+` button:
 
 Then you will be able to define the capabilities of the role:
 
-![Update role](assets/update-role.png)
+![Update role](assets/capabilities_new.png)
 
 ## Users
 
