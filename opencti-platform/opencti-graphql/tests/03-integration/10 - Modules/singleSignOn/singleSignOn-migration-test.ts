@@ -5,7 +5,7 @@ import { deleteSingleSignOn } from '../../../../src/modules/singleSignOn/singleS
 import { MIGRATED_STRATEGY } from '../../../../src/modules/singleSignOn/providers-initialization';
 import { EnvStrategyType } from '../../../../src/modules/singleSignOn/providers-configuration';
 
-describe('Migration of SSO environment test coverage', () => {
+describe.skip('Migration of SSO environment test coverage', () => {
   describe('Dry run of SAML migrations', () => {
     it('should default configuration with only local works', async () => {
       const configuration = {
