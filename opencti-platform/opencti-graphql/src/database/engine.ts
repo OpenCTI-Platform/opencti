@@ -2944,7 +2944,7 @@ const tagFiltersForPostFiltering = (filters: FilterGroup | undefined | null) => 
         })
     : [];
 
-  if (taggedFilters) {
+  if (taggedFilters.length > 0) {
     return async <T extends BasicStoreBase> (context: AuthContext, user: AuthUser, elementsIds: string[]) => {
       const postFilters: { tag: string; postFilter: (element: T) => boolean }[] = [];
       for (let i = 0; i < taggedFilters.length; i++) {
