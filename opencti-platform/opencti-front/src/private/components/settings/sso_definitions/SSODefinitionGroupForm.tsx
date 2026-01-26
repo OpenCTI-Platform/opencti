@@ -25,7 +25,6 @@ const SSODefinitionGroupForm = ({ updateField, selectedStrategy }: SSODefinition
 
     return (
       <Field
-        sx={{ marginTop: '20px' }}
         component={TextField}
         variant="standard"
         name={name}
@@ -33,6 +32,7 @@ const SSODefinitionGroupForm = ({ updateField, selectedStrategy }: SSODefinition
         label={t_i18n('Attribute in token')}
         containerstyle={{ marginTop: 12 }}
         fullWidth
+        sx={{ marginTop: '20px' }}
       />
     );
   };

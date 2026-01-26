@@ -1,16 +1,11 @@
 import React from 'react';
-import { Field, FieldArray } from 'formik';
-import { IconButton } from '@mui/material';
+import { Field } from 'formik';
 import { useFormatter } from '../../../../components/i18n';
-import SelectField from '../../../../components/fields/SelectField';
-import MenuItem from '@mui/material/MenuItem';
-import { Add, Delete } from '@mui/icons-material';
-import Typography from '@mui/material/Typography';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { SSODefinitionFormValues } from '@components/settings/sso_definitions/SSODefinitionForm';
 import TextField from '../../../../components/TextField';
 
-interface LDAPConfigProps{
+interface LDAPConfigProps {
   updateField: (field: keyof SSODefinitionFormValues, value: unknown) => void;
 }
 
@@ -21,57 +16,73 @@ const LDAPConfig = ({ updateField }: LDAPConfigProps) => {
     <>
       <Field
         component={TextField}
-        variant='standard'
-        name='searchFilter'
-        label={t_i18n('Search filter')}
+        variant="standard"
+        name="url"
+        label={t_i18n('URL')}
         onSubmit={updateField}
+        required
         fullWidth
         style={{ marginTop: 20 }}
       />
       <Field
         component={TextField}
-        variant='standard'
-        name='searchAttributes'
-        label={t_i18n('Search attributes')}
+        variant="standard"
+        name="bindDN"
+        label={t_i18n('Bind DN')}
         onSubmit={updateField}
+        required
         fullWidth
         style={{ marginTop: 20 }}
       />
       <Field
         component={TextField}
-        variant='standard'
-        name='searchBase' // search base dns
+        variant="standard"
+        name="searchBase"
         label={t_i18n('Search base')}
         onSubmit={updateField}
+        required
         fullWidth
         style={{ marginTop: 20 }}
       />
       <Field
         component={TextField}
-        variant='standard'
-        name='bindDN'
-        label={t_i18n('Bind dn')}
+        variant="standard"
+        name="searchFilter"
+        label={t_i18n('Search filter')}
         onSubmit={updateField}
+        required
         fullWidth
         style={{ marginTop: 20 }}
       />
       <Field
         component={TextField}
-        variant='standard'
-        name='bindCredentials'
-        label={t_i18n('Bind credentials')}
+        variant="standard"
+        name="groupSearchBase"
+        label={t_i18n('Group search filter')}
         onSubmit={updateField}
+        required
         fullWidth
         style={{ marginTop: 20 }}
       />
       <Field
         component={TextField}
-        variant='standard'
-        name='portNumber'
-        label={t_i18n('Port number')}
+        variant="standard"
+        name="groupSearchFilter"
+        label={t_i18n('Group search filter')}
         onSubmit={updateField}
+        required
         fullWidth
         style={{ marginTop: 20 }}
+      />
+      <Field
+        component={SwitchField}
+        variant="standard"
+        type="checkbox"
+        name="allow_self_signed"
+        required
+        label={t_i18n('Allow self signed')}
+        onChange={updateField}
+        containerstyle={{ marginLeft: 2, marginTop: 10 }}
       />
     </>
   );

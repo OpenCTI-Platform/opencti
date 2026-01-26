@@ -101,10 +101,50 @@ const useFormikToSSOConfig = (selectedStrategy: string) => {
     ];
   };
 
+  const formikToLdapConfig = (values: SSODefinitionFormValues) => {
+    return [
+      {
+        key: 'url',
+        value: values.url,
+        type: 'String',
+      },
+      {
+        key: 'bindDN',
+        value: values.bindDN,
+        type: 'String',
+      },
+      {
+        key: 'searchBase',
+        value: values.searchBase,
+        type: 'String',
+      },
+      {
+        key: 'searchFilter',
+        value: values.searchFilter,
+        type: 'String',
+      },
+      {
+        key: 'groupSearchBase',
+        value: values.groupSearchBase,
+        type: 'String',
+      },
+      {
+        key: 'groupSearchFilter',
+        value: values.groupSearchFilter,
+        type: 'String',
+      },
+      {
+        key: 'allow_self_signed',
+        value: values.allow_self_signed ? 'true' : 'false',
+        type: 'Boolean',
+      },
+    ];
+  };
   const getConfigFromStrategy = () => {
     switch (selectedStrategy) {
       case 'SAML': return formikToSamlConfig;
       case 'OpenID': return formikToOpenIDConfig;
+      case 'LDAP': return formikToLdapConfig;
       default: return () => [];
     }
   };
