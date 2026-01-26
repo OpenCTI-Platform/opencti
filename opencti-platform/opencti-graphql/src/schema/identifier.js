@@ -1,4 +1,3 @@
-/* eslint-disable camelcase,no-case-declarations */
 import { v4 as uuidv4, v5 as uuidv5 } from 'uuid';
 import * as R from 'ramda';
 import * as jsonpatch from 'fast-json-patch';
@@ -22,6 +21,7 @@ import { isBasicRelationship } from './stixRelationship';
 import { convertTypeToStixType } from '../database/stix-2-1-converter';
 import { INPUT_DST, INPUT_SRC, isStixRefRelationship } from './stixRefRelationship';
 import { cleanObject } from '../database/stix-converter-utils';
+import nconf from 'nconf';
 
 // region hashes
 const MD5 = 'MD5';
@@ -34,6 +34,7 @@ const SSDEEP = 'SSDEEP';
 const transformObjectToUpperKeys = (data) => {
   return Object.fromEntries(Object.entries(data).map(([k, v]) => [k.toUpperCase(), v]));
 };
+const ALIASES_RULES = nconf.get('aliases_identifier_rules') ?? {};
 export const INTERNAL_FROM_FIELD = 'i_relations_from';
 export const INTERNAL_TO_FIELD = 'i_relations_to';
 export const NAME_FIELD = 'name';
@@ -504,7 +505,12 @@ export const generateAliasesId = (rawAliases, instance) => {
     return [];
   }
   const aliases = R.uniq(rawAliases.filter((a) => isNotEmptyField(a)).map((a) => a.trim()));
-  return R.uniq(aliases.map((alias) => {
+  // Alias is an identifier only if the alias rules are respected.
+  const regexpEntityRules = ALIASES_RULES[instance.entity_type.toLowerCase()] ?? [];
+  const filteredAliases = regexpEntityRules.length > 0
+    ? aliases.filter((alias) => regexpEntityRules.some((rule) => RegExp(rule).test(alias))) : aliases;
+  // Generate ids for each remaining alias
+  return R.uniq(filteredAliases.map((alias) => {
     const instanceWithAliasAsName = { ...instance, name: alias };
     return generateStandardId(instance.entity_type, instanceWithAliasAsName);
   }));

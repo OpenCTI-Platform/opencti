@@ -1,0 +1,71 @@
+{
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  extends: [
+    'config:recommended',
+    'docker:enableMajor',
+  ],
+  labels: [
+    'dependencies',
+    'filigran team',
+  ],
+  commitMessagePrefix: '[deps]',
+  minimumReleaseAge: '3 days',
+  prHourlyLimit: 2,
+  prConcurrentLimit: 100,
+  branchConcurrentLimit: 100,
+  timezone: 'Europe/Paris',
+  schedule: [
+    '* 0-4,22-23 * * 1-5',
+    '* * * * 0,6',
+  ],
+  updateNotScheduled: false,
+  rebaseWhen: 'conflicted',
+  packageRules: [
+    {
+      description: 'Disable updates of images intentionally pinned to older versions for compatibility testing',
+      matchFileNames: [
+        '.drone.yml',
+      ],
+      matchDatasources: [
+        'docker',
+      ],
+      matchPackageNames: [
+        'python',
+      ],
+      matchCurrentVersion: '<=3.12',
+      enabled: false,
+    },
+    // aws-sdk-js-v3 is too frequently updated, so we update it only once a week on Sunday
+    {
+      extends: [
+        'monorepo:aws-sdk-js-v3',
+      ],
+      description: 'Update aws-sdk-js-v3 only once a week on Sunday',
+      schedule: ['* * * * 0']
+    },
+    {
+      groupName: 'devDependencies (non-major)',
+      groupSlug: 'dev-dependencies-non-major',
+      description: 'Batch non-major update of dev dependencies once a week on Sunday',
+      schedule: ['* * * * 0'],
+      matchDepTypes: [
+        'devDependencies',
+      ],
+      matchUpdateTypes: [
+        'minor',
+        'patch',
+        'pin',
+        'digest',
+      ],
+      rebaseWhen: 'always',
+      automerge: true,
+    }
+  ],
+  // do lock file maintenance once a week on Sunday
+  lockFileMaintenance: {
+    schedule: ['* * * * 0'],
+    rebaseWhen: 'always',
+    automerge: true,
+    enabled: true,
+  }
+}

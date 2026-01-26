@@ -71,7 +71,6 @@ const createBroadcastClient = (channel) => {
     id: channel.id,
     userId: channel.userId,
     expirationTime: channel.expirationTime,
-    setChannelDelay: (d) => channel.setDelay(d),
     setLastEventId: (id) => channel.setLastEventId(id),
     close: () => channel.close(),
     sendEvent: async (eventId, topic, event) => channel.sendEvent(eventId, topic, event),
@@ -188,9 +187,6 @@ const authenticateForPublic = async (req, res, next) => {
 };
 
 const createSseMiddleware = () => {
-  const wait = (ms) => {
-    return new Promise((resolve) => setTimeout(() => resolve(), ms));
-  };
   const extractQueryParameter = (req, param) => {
     const paramData = req.query[param];
     if (paramData && Array.isArray(paramData) && paramData.length > 0) {
@@ -198,7 +194,7 @@ const createSseMiddleware = () => {
     }
     return paramData;
   };
-
+  // Returns array of { store, stix } to avoid duplicate STIX conversions
   const resolveMissingReferences = async (context, user, missingRefs, cache) => {
     const refsToResolve = missingRefs.filter((m) => !cache.has(m));
     if (refsToResolve.length === 0) {
@@ -210,25 +206,27 @@ const createSseMiddleware = () => {
       return [];
     }
 
-    const allRefs = await uniqAsyncMap(missingElements, (r) => stixRefsExtractor(convertStoreToStix_2_1(r)), undefined, { flat: true });
+    // Convert to STIX once and keep both representations
+    const elementsWithStix = missingElements.map((store) => ({ store, stix: convertStoreToStix_2_1(store) }));
+
+    const allRefs = await uniqAsyncMap(elementsWithStix, (r) => stixRefsExtractor(r.stix), undefined, { flat: true });
     if (allRefs.length === 0) {
-      return missingElements;
+      return elementsWithStix;
     }
 
-    const resolvedMissingIds = new Set(await asyncMap(missingElements, (elem) => extractIdsFromStoreObject(elem), undefined, { flat: true }));
+    const resolvedMissingIds = new Set(await asyncMap(elementsWithStix, (elem) => extractIdsFromStoreObject(elem.store), undefined, { flat: true }));
     const parentRefs = allRefs.filter((parentId) => !resolvedMissingIds.has(parentId));
     if (parentRefs.length === 0) {
-      return missingElements;
+      return elementsWithStix;
     }
 
     const newMissing = await resolveMissingReferences(context, user, parentRefs, cache);
     if (newMissing.length === 0) {
-      return missingElements;
+      return elementsWithStix;
     }
 
-    return newMissing.concat(missingElements);
+    return newMissing.concat(elementsWithStix);
   };
-
   const initBroadcasting = async (req, res, client, processor) => {
     const broadcasterInfo = processor ? await processor.info() : {};
     let closed = false;
@@ -253,10 +251,8 @@ const createSseMiddleware = () => {
     broadcastClients[client.id] = client;
     await client.sendConnected({ ...broadcasterInfo, connectionId: client.id });
   };
-
   const createSseChannel = (req, res, startId) => {
     let lastEventId = startId;
-
     const buildMessage = (eventId, topic, event) => {
       let message = '';
       if (eventId) {
@@ -280,18 +276,13 @@ const createSseMiddleware = () => {
       message += '\n';
       return message;
     };
-
     const channel = {
       id: generateInternalId(),
-      delay: parseInt(extractQueryParameter(req, 'delay') || req.headers['event-delay'] || 0, 10),
       user: req.user,
       userId: req.userId,
       expirationTime: req.expirationTime,
       allowed_marking: req.allowed_marking,
       capabilities: req.capabilities,
-      setDelay: (d) => {
-        channel.delay = d;
-      },
       setLastEventId: (id) => {
         lastEventId = id;
       },
@@ -350,7 +341,7 @@ const createSseMiddleware = () => {
         return;
       }
       const { client } = createSseChannel(req, res, startStreamId);
-      const opts = { autoReconnect: true };
+      const opts = { autoReconnect: true, bufferTime: 0 };
       const processor = createStreamProcessor(user.user_email, async (elements, lastEventId) => {
         // Process the event messages
         for (let index = 0; index < elements.length; index += 1) {
@@ -378,8 +369,7 @@ const createSseMiddleware = () => {
           res.statusMessage = 'You cant access this resource';
           sendErrorStatus(req, res, 401);
         } else {
-          const { delay = 0 } = req.body;
-          client.setChannelDelay(delay);
+          // For retro compatibility as now server handle buffering directly
           res.json({ message: 'ok' });
         }
       } else {
@@ -394,9 +384,10 @@ const createSseMiddleware = () => {
   const resolveAndPublishMissingRefs = async (context, cache, channel, req, eventId, stixData) => {
     const refs = stixRefsExtractor(stixData);
     const missingInstances = await resolveMissingReferences(context, req.user, refs, cache);
-    // const missingInstances = await storeLoadByIdsWithRefs(context, req.user, missingElements);
     if (stixData.type === STIX_TYPE_RELATION || stixData.type === STIX_TYPE_SIGHTING) {
-      const missingAllPerIds = missingInstances.map((m) => [m.internal_id, m.standard_id, ...(m.x_opencti_stix_ids ?? [])].map((id) => ({ id, value: m }))).flat();
+      const missingAllPerIds = missingInstances
+        .map((m) => [m.store.internal_id, m.store.standard_id, ...(m.store.x_opencti_stix_ids ?? [])].map((id) => ({ id, value: m })))
+        .flat();
       const missingMap = new Map(missingAllPerIds.map((m) => [m.id, m.value]));
       // Check for a relation that the from and the to is correctly accessible.
       const fromId = stixData.source_ref ?? stixData.sighting_of_ref;
@@ -408,15 +399,14 @@ const createSseMiddleware = () => {
       }
     }
     for (let missingIndex = 0; missingIndex < missingInstances.length; missingIndex += 1) {
-      const missingInstance = missingInstances[missingIndex];
+      const { store: missingInstance, stix: missingData } = missingInstances[missingIndex];
       if (!cache.has(missingInstance.standard_id) && channel.connected()) {
-        const missingData = convertStoreToStix_2_1(missingInstance);
+        // missingData is already converted to STIX, no duplicate conversion needed
         const message = generateCreateMessage(missingInstance);
         const origin = { referer: EVENT_TYPE_DEPENDENCIES };
         const content = { data: missingData, message, origin, version: EVENT_CURRENT_VERSION };
         await channel.sendEvent(eventId, EVENT_TYPE_CREATE, content);
         cache.set(missingData.id, 'hit');
-        await wait(channel.delay);
       }
     }
     return true;
@@ -444,8 +434,6 @@ const createSseMiddleware = () => {
             cache.set(stixRelation.id, 'hit');
           }
         }
-        // Send the Heartbeat with last event id
-        await wait(channel.delay);
         // Return channel status to stop the iteration if channel is disconnected
         return channel.connected();
       };
@@ -558,7 +546,6 @@ const createSseMiddleware = () => {
     }
     return undefined;
   };
-
   const liveStreamHandler = async (req, res) => {
     const { id } = req.params;
     try {
@@ -593,7 +580,7 @@ const createSseMiddleware = () => {
       // Init stream and broadcasting
       let error;
       const userEmail = user.user_email;
-      const opts = { autoReconnect: true };
+      const opts = { autoReconnect: true, bufferTime: 0 };
       const processor = createStreamProcessor(userEmail, async (elements, lastEventId) => {
         // Default Live collection doesn't have a stored Object associated
         if (!error && (!collection || collection.stream_live)) {
@@ -674,9 +661,7 @@ const createSseMiddleware = () => {
             }
           }
         }
-        // Wait to prevent flooding
         channel.setLastEventId(lastEventId);
-        await wait(channel.delay);
         const newComputed = await computeUserAndCollection(req, res, { id, user, context });
         streamFilters = newComputed.streamFilters;
         collection = newComputed.collection;
@@ -714,7 +699,6 @@ const createSseMiddleware = () => {
               return channel.connected();
             }
           }
-          await wait(channel.delay);
           return channel.connected();
         };
         const queryOptions = await convertFiltersToQueryOptions(streamFilters, {
@@ -746,4 +730,5 @@ const createSseMiddleware = () => {
     },
   };
 };
+
 export default createSseMiddleware;

@@ -13,7 +13,7 @@ import { isObjectAttribute, schemaAttributesDefinition } from '../schema/schema-
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA } from '../schema/stixDomainObject';
-import { RELATION_CREATED_BY, RELATION_GRANTED_TO } from '../schema/stixRefRelationship';
+import { externalReferences, objectLabel, RELATION_CREATED_BY, RELATION_GRANTED_TO } from '../schema/stixRefRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { FunctionalError } from '../config/errors';
 
@@ -373,13 +373,17 @@ const generateRefsInputsForUpsert = (context, user, resolvedElement, _type, upda
             // In full synchro, just replace everything
             if (isUpsertSynchro) {
               inputs.push({ key: inputField, value: fullPatchInputData, operation: UPDATE_OPERATION_REPLACE });
-            } else if ((isCurrentWithData && isInputWithData && inputToCurrentDiff.length > 0 && isConfidenceMatch)
-              || (isInputWithData && !isCurrentWithData)
-            ) {
-              // If data is provided, different from existing data, and of higher confidence
-              // OR if existing data is empty and data is provided (even if lower confidence, it's better than nothing),
-              // --> apply an add operation
-              inputs.push({ key: inputField, value: inputToCurrentDiff, operation: UPDATE_OPERATION_ADD });
+            } else {
+              const fillEmptyData = isInputWithData && !isCurrentWithData;
+              const hasDataDifferential = isCurrentWithData && isInputWithData && inputToCurrentDiff.length > 0;
+              const isAllowedAddRefWithoutConfidence = relDef.name === objectLabel.name || relDef.name === externalReferences.name;
+              const isConfidenceAllowed = isConfidenceMatch || isAllowedAddRefWithoutConfidence;
+              if ((hasDataDifferential && isConfidenceAllowed) || fillEmptyData) {
+                // If data is provided, different from existing data, and of higher confidence
+                // OR if existing data is empty and data is provided (even if lower confidence, it's better than nothing),
+                // --> apply an add operation
+                inputs.push({ key: inputField, value: inputToCurrentDiff, operation: UPDATE_OPERATION_ADD });
+              }
             }
           }
         } else { // not multiple
@@ -414,16 +418,12 @@ export const generateInputsForUpsert = async (context, user, resolvedElement, ty
   // -- Upsert attributes
   const attributesInputs = generateAttributesInputsForUpsert(context, user, resolvedElement, type, updatePatch, confidenceForUpsert);
   inputs.push(...attributesInputs);
-
   // -- Upsert refs
   const refsInputs = generateRefsInputsForUpsert(context, user, resolvedElement, type, updatePatch, confidenceForUpsert, validEnterpriseEdition);
   inputs.push(...refsInputs);
-
   // -- merge inputs with upsertOperations
   if (updatePatch.upsertOperations?.length > 0 && !isBypassUser(user)) {
     throw FunctionalError('User has insufficient rights to use upsertOperations', { user_id: user.id, element_id: resolvedElement.id });
   }
-  const finalInputs = mergeUpsertInputs(resolvedElement, updatePatch, inputs, updatePatch.upsertOperations);
-
-  return finalInputs;
+  return mergeUpsertInputs(resolvedElement, updatePatch, inputs, updatePatch.upsertOperations);
 };

@@ -1,7 +1,7 @@
 import type { AuthUser } from '../types/user';
 import { cropNumber } from './math';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
-import { FunctionalError } from '../config/errors';
+import { FunctionalError, INSUFFICIENT_CONFIDENCE_LEVEL } from '../config/errors';
 import { logApp } from '../config/conf';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { isBypassUser } from './access';
@@ -172,7 +172,8 @@ export const controlUserConfidenceAgainstElement = <T extends ObjectWithConfiden
     if (noThrow) {
       return false;
     }
-    throw FunctionalError('User effective max confidence level is insufficient to update this element', { user_id: user.id, element_id: existingElement.id, doc_code: 'INSUFFICIENT_CONFIDENCE_LEVEL' });
+    const data = { user_id: user.id, element_id: existingElement.id, doc_code: INSUFFICIENT_CONFIDENCE_LEVEL };
+    throw FunctionalError('User effective max confidence level is insufficient to update this element', data);
   }
 
   return true; // ok

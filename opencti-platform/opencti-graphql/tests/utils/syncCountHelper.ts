@@ -53,7 +53,7 @@ testCreatedCounter.relationship = 133;
 testCreatedCounter.report = 36;
 testCreatedCounter.sighting = 4;
 testCreatedCounter.software = 1;
-testCreatedCounter['threat-actor'] = 19;
+testCreatedCounter['threat-actor'] = 21;
 testCreatedCounter.tool = 5;
 testCreatedCounter['tracking-number'] = 1;
 testCreatedCounter.vocabulary = VOCABULARY_NUMBERS;
@@ -90,7 +90,7 @@ testUpdatedCounter['case-rfi'] = 10;
 testUpdatedCounter['ipv4-addr'] = 4;
 testUpdatedCounter.tool = 10;
 testUpdatedCounter.sighting = 4;
-testUpdatedCounter['threat-actor'] = 17;
+testUpdatedCounter['threat-actor'] = 18;
 testUpdatedCounter.vocabulary = 3;
 testUpdatedCounter.vulnerability = 3;
 
@@ -139,7 +139,7 @@ testDeletedCounter.relationship = 1;
 testDeletedCounter.report = 28;
 testDeletedCounter.sighting = 1;
 testDeletedCounter['ssh-key'] = 1;
-testDeletedCounter['threat-actor'] = 10;
+testDeletedCounter['threat-actor'] = 12;
 testDeletedCounter.tool = 5;
 testDeletedCounter.vulnerability = 2;
 

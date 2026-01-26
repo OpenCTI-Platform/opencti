@@ -309,7 +309,7 @@ export const elConfigureAttachmentProcessor = async (): Promise<boolean> => {
         },
       ],
     }).catch((e) => {
-      logApp.error('Engine attachment processor configuration fail', { cause: e });
+      logApp.info('Engine attachment processor configuration fail', { cause: e });
       success = false;
     });
   } else {
@@ -331,7 +331,7 @@ export const elConfigureAttachmentProcessor = async (): Promise<boolean> => {
         ],
       },
     }).catch((e) => {
-      logApp.error('Engine attachment processor configuration fail', { cause: e });
+      logApp.info('Engine attachment processor configuration fail', { cause: e });
       success = false;
     });
   }
@@ -339,18 +339,18 @@ export const elConfigureAttachmentProcessor = async (): Promise<boolean> => {
 };
 
 // Look for the engine version with OpenSearch client
-export const searchEngineVersion = async (): Promise<{ platform: string; version: string }> => {
-  const engineToUse = engine as OpenClient;
-  const searchInfo = await engineToUse.info()
-    .then((info) => oebp(info).version)
-    .catch(
-      /* v8 ignore next */ (e) => {
-        throw ConfigurationError('Search engine seems down', { cause: e });
-      },
-    );
-  const searchPlatform = searchInfo.distribution || ELK_ENGINE; // openSearch or elasticSearch
-  const searchVersion = searchInfo.number;
-  return { platform: searchPlatform, version: searchVersion };
+export const searchEngineVersion = async () => {
+  try {
+    const { version: { distribution, number }, tagline } = oebp(await (engine as OpenClient).info());
+    // Try to detect OpenSearch engine, based on https://github.com/opensearch-project/OpenSearch/blame/main/server/src/main/java/org/opensearch/action/main/MainResponse.java
+    const platform = (distribution === OPENSEARCH_ENGINE || tagline?.includes('OpenSearch')) ? OPENSEARCH_ENGINE : ELK_ENGINE;
+    return {
+      platform: platform,
+      version: number,
+    } as const;
+  } catch (e) {
+    throw ConfigurationError('Search engine seems down', { cause: e });
+  }
 };
 
 export const searchEngineInit = async (): Promise<boolean> => {

@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect } from 'react';
+import React, { Suspense, useContext, useEffect } from 'react';
 import IngestionMenu from '@components/data/IngestionMenu';
 import { useQueryLoader } from 'react-relay';
 import IngestionCatalogCard from '@components/data/IngestionCatalog/IngestionCatalogCard';
@@ -27,6 +27,8 @@ import IngestionCatalogFilters from './IngestionCatalog/IngestionCatalogFilters'
 import GradientCard from '../../../components/GradientCard';
 import { MESSAGING$ } from '../../../relay/environment';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
+import { UserContext } from '../../../utils/hooks/useAuth';
+import { isNotEmptyField } from '../../../utils/utils';
 
 interface IngestionCatalogComponentProps {
   catalogsData: IngestionConnectorsCatalogsQuery['response'];
@@ -81,12 +83,15 @@ export interface IngestionConnector {
 
 const BrowseMoreButton = () => {
   const { t_i18n } = useFormatter();
-
+  const { settings } = useContext(UserContext);
+  const browseHubCatalog = isNotEmptyField(settings?.platform_xtmhub_url)
+    ? `${settings.platform_xtmhub_url}/cybersecurity-solutions/open-cti-integrations`
+    : '';
   return (
     <GradientButton
       size="small"
       sx={{ marginLeft: 1 }}
-      href="https://filigran.notion.site/OpenCTI-Ecosystem-868329e9fb734fca89692b2ed6087e76"
+      href={browseHubCatalog}
       target="_blank"
       title={t_i18n('Browse more')}
     >

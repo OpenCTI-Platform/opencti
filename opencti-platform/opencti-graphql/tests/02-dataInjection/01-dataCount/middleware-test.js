@@ -94,14 +94,14 @@ describe('Attribute updater', () => {
     const campaignId = campaign.internal_id;
     const input = { id: '92d46985-17a6-4610-8be8-cc70c82ed214' };
     const dataPromise = patchAttribute(testContext, ADMIN_USER, campaignId, ENTITY_TYPE_CAMPAIGN, input);
-    expect(dataPromise).rejects.toThrow();
+    await expect(dataPromise).rejects.toThrow();
   });
   it('should update fail for unknown attributes', async () => {
     const campaign = await elLoadById(testContext, ADMIN_USER, 'campaign--92d46985-17a6-4610-8be8-cc70c82ed214');
     const campaignId = campaign.internal_id;
     const input = { observable_value: 'test' };
     const dataPromise = patchAttribute(testContext, ADMIN_USER, campaignId, ENTITY_TYPE_CAMPAIGN, input);
-    expect(dataPromise).rejects.toThrow();
+    await expect(dataPromise).rejects.toThrow();
   });
   it('should update dont do anything if already the same', async () => {
     const campaign = await elLoadById(testContext, ADMIN_USER, 'campaign--92d46985-17a6-4610-8be8-cc70c82ed214');
@@ -179,7 +179,7 @@ describe('Entities listing', () => {
     expect(R.includes('Basic-Object', malware.parent_types)).toBeTruthy();
     expect(malware.created).toEqual('2019-09-30T16:38:26.000Z');
     expect(malware.name).toEqual('Paradise Ransomware');
-     
+
     expect(malware._index).not.toBeNull();
   });
   it('should list multiple entities', async () => {
@@ -301,7 +301,7 @@ describe('Relations listing', () => {
     expect(stixRelations.edges.length).toEqual(2);
     for (let index = 0; index < stixRelations.edges.length; index += 1) {
       const stixRelation = stixRelations.edges[index].node;
-       
+
       const toThing = await elLoadById(testContext, ADMIN_USER, stixRelation.toId);
       expect(toThing.entity_type).toEqual('Attack-Pattern');
       expect(stixRelation.fromId).toEqual(malware.internal_id);
@@ -315,7 +315,7 @@ describe('Relations listing', () => {
     // Every relations must have natural ordering for from and to
     for (let index = 0; index < stixRelations.edges.length; index += 1) {
       const stixRelation = stixRelations.edges[index].node;
-       
+
       const { fromRole, toRole, relationship_type: relationshipType } = stixRelation;
       expect(fromRole).toEqual(`${relationshipType}_from`);
       expect(toRole).toEqual(`${relationshipType}_to`);
@@ -452,7 +452,7 @@ describe('Element loader', () => {
     const report = await elLoadById(testContext, ADMIN_USER, 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7');
     const internalId = report.internal_id;
     const loadPromise = storeLoadById(testContext, ADMIN_USER, internalId);
-    expect(loadPromise).rejects.toThrow();
+    await expect(loadPromise).rejects.toThrow();
     const element = await storeLoadById(testContext, ADMIN_USER, internalId, ENTITY_TYPE_CONTAINER_REPORT);
     expect(element).not.toBeNull();
     expect(element.id).toEqual(internalId);
@@ -462,7 +462,7 @@ describe('Element loader', () => {
     // No type
     const stixId = 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7';
     const loadPromise = storeLoadById(testContext, ADMIN_USER, stixId);
-    expect(loadPromise).rejects.toThrow();
+    await expect(loadPromise).rejects.toThrow();
     const element = await storeLoadById(testContext, ADMIN_USER, stixId, ENTITY_TYPE_CONTAINER_REPORT);
     expect(element).not.toBeNull();
     expect(element.standard_id).toEqual('report--f3e554eb-60f5-587c-9191-4f25e9ba9f32');
@@ -473,7 +473,7 @@ describe('Element loader', () => {
     const relation = await elLoadById(testContext, ADMIN_USER, 'relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02');
     const relationId = relation.internal_id;
     const loadPromise = storeLoadById(testContext, ADMIN_USER, relationId, null);
-    expect(loadPromise).rejects.toThrow();
+    await expect(loadPromise).rejects.toThrow();
     const element = await storeLoadById(testContext, ADMIN_USER, relationId, 'uses');
     expect(element).not.toBeNull();
     expect(element.id).toEqual(relationId);
@@ -482,7 +482,7 @@ describe('Element loader', () => {
   it('should load relation by stix id', async () => {
     const stixId = 'relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02';
     const loadPromise = storeLoadById(testContext, ADMIN_USER, stixId, null);
-    expect(loadPromise).rejects.toThrow();
+    await expect(loadPromise).rejects.toThrow();
     const element = await storeLoadById(testContext, ADMIN_USER, stixId, 'uses');
     expect(element).not.toBeNull();
     expect(element.x_opencti_stix_ids).toEqual([stixId]);
@@ -591,7 +591,7 @@ describe('Relations time series', () => {
           operator: 'eq',
         }],
         filterGroups: [],
-      }
+      },
     };
     const series = await timeSeriesRelations(testContext, ADMIN_USER, options);
     expect(series.length).toEqual(13); // 13 months groups in the interval
@@ -633,7 +633,7 @@ describe('Entities distribution', () => {
     expect(distribution.length).toEqual(2);
     expect(distribution).toMatchObject([
       { label: '100', value: 2 },
-      { label: '75', value: 1 }
+      { label: '75', value: 1 },
     ]);
   });
   it.skip('should entity distribution filters', async () => {
@@ -773,9 +773,9 @@ describe('Relations distribution', () => {
 });
 
 // Some utils
-const createThreat = async (input) => {
-  const threat = await addThreatActorGroup(testContext, ADMIN_USER, input);
-  return storeLoadById(testContext, ADMIN_USER, threat.id, ENTITY_TYPE_THREAT_ACTOR_GROUP);
+const createThreat = async (input, user = ADMIN_USER) => {
+  const threat = await addThreatActorGroup(testContext, user, input);
+  return storeLoadByIdWithRefs(testContext, user, threat.id, ENTITY_TYPE_THREAT_ACTOR_GROUP);
 };
 const createOrganization = async (input) => {
   const organization = await addOrganization(testContext, ADMIN_USER, input);
@@ -977,7 +977,7 @@ describe('Upsert and merge entities', () => {
       loadMalware.internal_id,
       clear.internal_id,
       RELATION_OBJECT_MARKING,
-      ABSTRACT_STIX_REF_RELATIONSHIP
+      ABSTRACT_STIX_REF_RELATIONSHIP,
     );
     const checkers = await elFindByIds(testContext, ADMIN_USER, loadMalware.id);
     const test = await internalLoadById(testContext, ADMIN_USER, testMarking);
@@ -1137,6 +1137,55 @@ describe('Upsert and merge entities', () => {
     await deleteElementById(testContext, ADMIN_USER, malware03.id, ENTITY_TYPE_MALWARE);
     await deleteElementById(testContext, ADMIN_USER, loadedThreat.id, ENTITY_TYPE_THREAT_ACTOR_GROUP);
   });
+  it('should upsert multiple threat actors that need merging when using lower confidence', async () => {
+    // 01. Create Threat by admin
+    const updateUpsert01 = {
+      stix_id: 'threat-actor--d1e2ff9a-60e2-43a2-9896-986b6fcd9f01',
+      name: 'THREAT_UPDATE_UPSERT_01',
+      description: 'THREAT_UPDATE_UPSERT_01',
+      aliases: ['upsert_update_alias01'],
+      objectLabel: ['identity'],
+    };
+    const threat01 = await createThreat(updateUpsert01);
+    expect(threat01.name).toEqual('THREAT_UPDATE_UPSERT_01');
+    // 02. Create Threat by low confidence user
+    const lowConfidenceUser = buildStandardUser([], [], [], 50);
+    const updateUpsert02 = {
+      stix_id: 'threat-actor--d1e2ff9a-60e2-43a2-9896-986b6fcd9f02',
+      name: 'THREAT_UPDATE_UPSERT_02',
+      description: 'THREAT_UPDATE_UPSERT_02',
+      aliases: ['upsert_update_alias02'],
+    };
+    const threat02 = await createThreat(updateUpsert02, lowConfidenceUser);
+    expect(threat02.name).toEqual('THREAT_UPDATE_UPSERT_02');
+    // 03. Create a Threat with update=true and low confidence user.
+    const updateUpsert03 = {
+      stix_id: 'threat-actor--d1e2ff9a-60e2-43a2-9896-986b6fcd9f03',
+      name: 'THREAT_UPDATE_UPSERT_03',
+      description: 'THREAT_UPDATE_UPSERT_03',
+      x_opencti_stix_ids: ['threat-actor--d1e2ff9a-60e2-43a2-9896-986b6fcd9f02'],
+      aliases: ['upsert_update_alias01', 'upsert_update_alias02'],
+      objectLabel: ['malware', 'identity'], // will be added by upsert
+      update: true,
+    };
+    const threat03 = await createThreat(updateUpsert03, lowConfidenceUser);
+    // 04. Verify the upsert
+    expect(threat03.id).toEqual(threat01.id);
+    expect(threat03.name).toEqual(threat01.name);
+    expect(threat03.description).toEqual(threat01.description);
+    expect(threat03.x_opencti_stix_ids.length).toEqual(2);
+    expect(threat03.x_opencti_stix_ids.sort()).toEqual(['threat-actor--d1e2ff9a-60e2-43a2-9896-986b6fcd9f01',
+      'threat-actor--d1e2ff9a-60e2-43a2-9896-986b6fcd9f03']);
+    expect(threat03.creator_id.length).toEqual(2);
+    expect(threat03.creator_id.sort()).toEqual([lowConfidenceUser.id, ADMIN_USER.id]);
+    expect(threat03.objectLabel.length).toEqual(2);
+    expect(threat03.objectLabel.map((l) => l.value).sort()).toEqual(['identity', 'malware']);
+    expect(threat03.aliases.length).toEqual(1);
+    expect(threat03.aliases.sort()).toEqual(['upsert_update_alias01']);
+    // Cleanup
+    await deleteElementById(testContext, ADMIN_USER, threat01.id, ENTITY_TYPE_THREAT_ACTOR_GROUP); // delete 1 and 3
+    await deleteElementById(testContext, ADMIN_USER, threat02.id, ENTITY_TYPE_THREAT_ACTOR_GROUP);
+  });
   it('should reports keep their author after organizations merging', async () => {
     // 01. Create organizations
     const organization1 = await createOrganization({ name: 'organization1' });
@@ -1147,7 +1196,7 @@ describe('Upsert and merge entities', () => {
       name: 'REPORT_TEST_02',
       published: '2022-10-06T22:00:00.000Z',
       createdBy: organization2.id,
-      objects: [report1.id]
+      objects: [report1.id],
     });
     // Merge with fully resolved entities
     const merged = await mergeEntities(testContext, ADMIN_USER, organization1.internal_id, [organization2.internal_id]);
@@ -1179,7 +1228,7 @@ describe('Upsert and merge entities', () => {
   it('should multiple createdBy correction merged to empty target', async () => {
     const organization1 = await createOrganization({ name: 'REPORT_CREATED_BY_ORGANIZATION01' });
     const organization2 = await createOrganization({ name: 'REPORT_CREATED_BY_ORGANIZATION02' });
-    const reportTarget = await addReport(testContext, ADMIN_USER, { name: 'REPORT_CREATED_BY_TARGET_ORGANIZATION', published: '2022-10-06T22:00:00.000Z', });
+    const reportTarget = await addReport(testContext, ADMIN_USER, { name: 'REPORT_CREATED_BY_TARGET_ORGANIZATION', published: '2022-10-06T22:00:00.000Z' });
     const reportSource1 = await addReport(testContext, ADMIN_USER, { name: 'REPORT_CREATED_BY_ORGANIZATION_01', published: '2022-10-06T22:00:00.000Z', createdBy: organization1.id });
     const reportSource2 = await addReport(testContext, ADMIN_USER, { name: 'REPORT_CREATED_BY_ORGANIZATION_02', published: '2022-10-06T22:00:00.000Z', createdBy: organization2.id });
     const merged = await mergeEntities(testContext, ADMIN_USER, reportTarget.internal_id, [reportSource1.internal_id, reportSource2.internal_id]);
@@ -1196,7 +1245,7 @@ describe('Upsert and merge entities', () => {
   it('should multiple createdBy identity merged to empty target', async () => {
     const individual1 = await createIndividual({ name: 'REPORT_CREATED_BY_INDIVIDUAL_01' });
     const organization2 = await createOrganization({ name: 'REPORT_CREATED_BY_ORGANIZATION_02' });
-    const reportTarget = await addReport(testContext, ADMIN_USER, { name: 'REPORT_CREATED_BY_TARGET_INDIVIDUAL', published: '2022-10-06T22:00:00.000Z', });
+    const reportTarget = await addReport(testContext, ADMIN_USER, { name: 'REPORT_CREATED_BY_TARGET_INDIVIDUAL', published: '2022-10-06T22:00:00.000Z' });
     const reportSource1 = await addReport(testContext, ADMIN_USER, { name: 'REPORT_CREATED_BY_INDIVIDUAL_01', published: '2022-10-06T22:00:00.000Z', createdBy: individual1.id });
     const reportSource2 = await addReport(testContext, ADMIN_USER, { name: 'REPORT_CREATED_BY_INDIVIDUAL_02', published: '2022-10-06T22:00:00.000Z', createdBy: organization2.id });
     const merged = await mergeEntities(testContext, ADMIN_USER, reportTarget.internal_id, [reportSource1.internal_id, reportSource2.internal_id]);
@@ -1229,7 +1278,7 @@ describe('Upsert and merge entities', () => {
     // Merged 3 Stix File into one
     const md5 = await createFile({
       hashes: { MD5 },
-      objectMarking: [clearMarking] /* TLP:1 */
+      objectMarking: [clearMarking], /* TLP:1 */
     });
     const sha1 = await createFile({
       hashes: { 'SHA-1': SHA1 },
@@ -1279,13 +1328,13 @@ describe('Elements impacts deletions', () => {
     const malware = await addMalware(testContext, ADMIN_USER, { name: 'MY MAL', description: 'MY MAL' });
     const indicator = await addIndicator(testContext, ADMIN_USER, { name: 'MY INDIC', pattern: '[domain-name:value = \'www.test.ru\']', pattern_type: 'stix' });
     // Create basic relations
-     
+
     const intrusionSet_uses_Malware = await createRelation(testContext, ADMIN_USER, {
       fromId: intrusionSet.internal_id,
       toId: malware.internal_id,
       relationship_type: 'uses',
     });
-     
+
     const indicator_indicated_uses = await createRelation(testContext, ADMIN_USER, {
       fromId: indicator.internal_id,
       toId: intrusionSet_uses_Malware.internal_id,
@@ -1351,7 +1400,7 @@ describe('Elements upsert behaviors', () => {
       is_family: true,
       revoked: true,
       objectMarking: [clearMarking],
-      description: 'TO DESC'
+      description: 'TO DESC',
     });
     expect(malware.confidence).toEqual(10);
     expect(malware.description).toEqual('TO DESC');
@@ -1428,6 +1477,7 @@ describe('Elements upsert behaviors', () => {
     await deleteElementById(testContext, ADMIN_USER, stixId, ENTITY_TYPE_MALWARE);
   });
 });
+
 describe('Elements deduplication behaviors', () => {
   it('should prevent update resulting in duplicate entities', async () => {
     const WHITE_TLP = { standard_id: 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9', internal_id: null };

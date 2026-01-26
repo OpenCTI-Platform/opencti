@@ -1,5 +1,4 @@
 import * as R from 'ramda';
-import { Promise as BluePromise } from 'bluebird';
 import moment, { type DurationInputArg2 } from 'moment/moment';
 import type { SortResults } from '@elastic/elasticsearch/lib/api/types';
 import { DatabaseError, UnsupportedError } from '../config/errors';
@@ -341,9 +340,7 @@ export const computeAverage = (numbers: number[]): number => {
 };
 
 export const wait = (ms: number): Promise<void> => {
-  return new BluePromise((resolve) => {
-    setTimeout(resolve, ms);
-  });
+  return new Promise((resolve) => setTimeout(() => resolve(), ms));
 };
 
 export const waitInSec = (sec: number): Promise<void> => wait(sec * 1000);

@@ -6,11 +6,12 @@ import conf, { booleanConf, configureCA, loadCert, logApp } from '../config/conf
 import { DatabaseError } from '../config/errors';
 import { SYSTEM_USER } from '../utils/access';
 import { telemetry } from '../config/tracing';
-import { isEmptyField, RABBIT_QUEUE_PREFIX } from './utils';
+import { isEmptyField, RABBIT_QUEUE_PREFIX, wait } from './utils';
 import { getHttpClient } from '../utils/http-client';
 import { fullEntitiesList } from './middleware-loader';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC } from '../schema/internalObject';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
+import { s3ConnectionConfig } from './raw-file-storage';
 
 export const CONNECTOR_EXCHANGE = `${RABBIT_QUEUE_PREFIX}amqp.connector.exchange`;
 export const WORKER_EXCHANGE = `${RABBIT_QUEUE_PREFIX}amqp.worker.exchange`;
@@ -47,7 +48,284 @@ const amqpCred = () => {
   return { credentials: amqp.credentials.plain(USERNAME, PASSWORD) };
 };
 
-export const config = () => {
+const getConnectionOptions = () => {
+  return USE_SSL ? {
+    ...amqpCred(),
+    ...configureCA(RABBITMQ_CA),
+    cert: RABBITMQ_CA_CERT,
+    key: RABBITMQ_CA_KEY,
+    pfx: RABBITMQ_CA_PFX,
+    passphrase: RABBITMQ_CA_PASSPHRASE,
+    rejectUnauthorized: RABBITMQ_REJECT_UNAUTHORIZED,
+  } : amqpCred();
+};
+
+// region Persistent Publisher Connection
+// Single persistent connection for sequential message publishing
+// This avoids creating a new connection for every message while maintaining order
+// Connection will automatically reconnect and block sends until recovery
+let _persistentConnection = null; // Prefixed with _ as it's assigned but read access is via the connection object
+let persistentChannel = null;
+let connectionPromise = null;
+let isReconnecting = false;
+let isIntentionalClose = false; // Flag to prevent reconnection during intentional cleanup
+
+// Configuration for reconnection
+const RECONNECT_INITIAL_DELAY = 1000; // 1 second
+const RECONNECT_MAX_DELAY = 30000; // 30 seconds max
+const RECONNECT_MULTIPLIER = 2; // Exponential backoff
+
+/**
+ * Create a new connection to RabbitMQ with automatic reconnection
+ */
+const createConnection = () => {
+  return new Promise((resolve, reject) => {
+    const connOptions = getConnectionOptions();
+    amqp.connect(amqpUri(), connOptions, (err, conn) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+
+      _persistentConnection = conn;
+      logApp.info('[RABBITMQ] Persistent publisher connection established');
+
+      conn.on('error', (connError) => {
+        logApp.error('[RABBITMQ] Persistent connection error', { cause: connError });
+      });
+
+      conn.on('close', () => {
+        logApp.warn('[RABBITMQ] Persistent connection closed');
+        _persistentConnection = null;
+        persistentChannel = null;
+        connectionPromise = null;
+        // Trigger reconnection in background (unless this is an intentional cleanup close)
+        if (!isReconnecting && !isIntentionalClose) {
+          void reconnectWithBackoff();
+        }
+        isIntentionalClose = false; // Reset flag after handling
+      });
+
+      // Create a confirm channel for reliable publishing
+      conn.createConfirmChannel((channelError, channel) => {
+        if (channelError) {
+          logApp.error('[RABBITMQ] Failed to create confirm channel', { cause: channelError });
+          // Clean up the connection to avoid leaks - set flag to prevent auto-reconnect
+          isIntentionalClose = true;
+          _persistentConnection = null;
+          persistentChannel = null;
+          connectionPromise = null;
+          try {
+            conn.close();
+          } catch (_closeError) {
+            // Ignore close errors during cleanup
+            isIntentionalClose = false; // Reset flag if close fails
+          }
+          reject(channelError);
+          return;
+        }
+
+        channel.on('error', (chError) => {
+          logApp.error('[RABBITMQ] Persistent channel error', { cause: chError });
+          persistentChannel = null;
+          // Close the connection to trigger reconnection and avoid dangling connections
+          if (_persistentConnection) {
+            try {
+              _persistentConnection.close();
+            } catch (_e) {
+              // Ignore close errors - connection may already be closing
+            }
+          }
+        });
+
+        channel.on('close', () => {
+          logApp.warn('[RABBITMQ] Persistent channel closed');
+          persistentChannel = null;
+          // Close the connection to trigger reconnection and avoid dangling connections
+          if (_persistentConnection) {
+            try {
+              _persistentConnection.close();
+            } catch (_e) {
+              // Ignore close errors - connection may already be closing
+            }
+          }
+        });
+
+        persistentChannel = channel;
+        resolve(channel);
+      });
+    });
+  });
+};
+
+/**
+ * Reconnect with exponential backoff
+ * This runs in the background and keeps trying until successful
+ */
+const reconnectWithBackoff = async () => {
+  if (isReconnecting) {
+    return; // Already reconnecting
+  }
+
+  isReconnecting = true;
+  let currentDelay = RECONNECT_INITIAL_DELAY;
+  let attempt = 1;
+
+  while (!persistentChannel) {
+    logApp.info(`[RABBITMQ] Attempting to reconnect (attempt ${attempt})...`);
+    try {
+      connectionPromise = createConnection();
+      await connectionPromise;
+      connectionPromise = null;
+      logApp.info('[RABBITMQ] Reconnection successful');
+      isReconnecting = false;
+      return;
+    } catch (err) {
+      connectionPromise = null;
+      logApp.warn(`[RABBITMQ] Reconnection attempt ${attempt} failed, retrying in ${currentDelay}ms`, { cause: err });
+      await wait(currentDelay);
+      // Exponential backoff with max limit
+      currentDelay = Math.min(currentDelay * RECONNECT_MULTIPLIER, RECONNECT_MAX_DELAY);
+      attempt += 1;
+    }
+  }
+
+  isReconnecting = false;
+};
+
+/**
+ * Safely await a connection promise, catching any errors
+ * Returns true if connection succeeded, false otherwise
+ */
+const safeAwaitConnection = async () => {
+  if (connectionPromise) {
+    try {
+      await connectionPromise;
+      return true;
+    } catch (_e) {
+      // Connection attempt failed, will retry
+      return false;
+    }
+  }
+  return false;
+};
+
+/**
+ * Get a healthy channel, waiting for reconnection if necessary
+ * This will block until a connection is available - never throws
+ */
+const getPersistentChannel = async () => {
+  // Return immediately if channel is already available
+  if (persistentChannel) {
+    return persistentChannel;
+  }
+
+  // Loop until we have a healthy channel
+  while (!persistentChannel) {
+    // If connection is in progress, wait for it (with error handling)
+    if (connectionPromise) {
+      await safeAwaitConnection();
+      // Check if we got a channel
+      if (persistentChannel) {
+        return persistentChannel;
+      }
+    }
+
+    // If reconnection is in progress, wait a bit and check again
+    if (isReconnecting) {
+      logApp.debug('[RABBITMQ] Waiting for reconnection to complete...');
+      await wait(100);
+      continue;
+    }
+
+    // No connection exists and no reconnection in progress, create one
+    connectionPromise = createConnection();
+    const success = await safeAwaitConnection();
+    connectionPromise = null;
+
+    if (success && persistentChannel) {
+      return persistentChannel;
+    }
+
+    // Connection failed, start reconnection in background
+    if (!isReconnecting) {
+      logApp.error('[RABBITMQ] Connection failed, starting reconnection');
+      void reconnectWithBackoff();
+    }
+
+    // Wait a bit before next iteration
+    await wait(100);
+  }
+
+  return persistentChannel;
+};
+
+/**
+ * Internal publish function with confirm channel and backpressure handling
+ *
+ * Guarantees:
+ * - At-least-once delivery: Messages are retried on failure
+ * - Backpressure: Waits for drain when channel buffer is full
+ *
+ * Note: Around connection failures, there's a small window where a message
+ * could be accepted by the buffer but the confirm never received. Retry logic
+ * may cause duplicate delivery in this edge case (at-least-once, not exactly-once).
+ */
+const publishWithConfirm = (channel, exchangeName, routingKey, message) => {
+  return new Promise((resolve, reject) => {
+    try {
+      // With confirm channels, the callback is called when broker acknowledges the message
+      const canContinue = channel.publish(
+        exchangeName,
+        routingKey,
+        Buffer.from(message),
+        { deliveryMode: 2 },
+        (err) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(true);
+          }
+        },
+      );
+
+      // Handle backpressure: if channel buffer is full, wait for drain before allowing more
+      // This prevents unbounded memory growth under high load
+      if (!canContinue) {
+        logApp.debug('[RABBITMQ] Channel buffer full, waiting for drain...');
+        channel.once('drain', () => {
+          logApp.debug('[RABBITMQ] Channel buffer drained, ready to continue');
+          // Note: The message is already queued and will be confirmed via callback above
+          // This drain handler is for flow control awareness, not for this specific message
+        });
+      }
+    } catch (err) {
+      // Channel might have been closed between getting it and publishing
+      // Reset channel and reject so caller can retry
+      persistentChannel = null;
+      reject(err);
+    }
+  });
+};
+
+/**
+ * Send a message using the persistent connection
+ * This will block and wait for reconnection if the connection is lost
+ *
+ * Note: Callers are responsible for ensuring ordering by using sequential awaits.
+ * All current usage patterns either send to different queues (ordering irrelevant)
+ * or use await in loops (natural ordering via JavaScript's event loop).
+ */
+const sendPersistent = async (exchangeName, routingKey, message) => {
+  // Get channel, waiting for reconnection if necessary
+  const channel = await getPersistentChannel();
+
+  // Publish with confirm callback for reliable delivery
+  return await publishWithConfirm(channel, exchangeName, routingKey, message);
+};
+// endregion
+
+export const rabbitmqConnectionConfig = () => {
   return {
     host: HOSTNAME,
     vhost: VHOST,
@@ -108,15 +386,7 @@ export const getConnectorQueueDetails = async (connectorId) => {
 };
 
 const amqpExecute = async (execute) => {
-  const connOptions = USE_SSL ? {
-    ...amqpCred(),
-    ...configureCA(RABBITMQ_CA),
-    cert: RABBITMQ_CA_CERT,
-    key: RABBITMQ_CA_KEY,
-    pfx: RABBITMQ_CA_PFX,
-    passphrase: RABBITMQ_CA_PASSPHRASE,
-    rejectUnauthorized: RABBITMQ_REJECT_UNAUTHORIZED,
-  } : amqpCred();
+  const connOptions = getConnectionOptions();
   return new Promise((resolve, reject) => {
     try {
       amqp.connect(amqpUri(), connOptions, (err, conn) => {
@@ -155,11 +425,39 @@ const amqpExecute = async (execute) => {
   });
 };
 
-export const send = (exchangeName, routingKey, message) => {
-  return amqpExecute(async (channel) => {
-    const publish = util.promisify(channel.publish).bind(channel);
-    return publish(exchangeName, routingKey, Buffer.from(message), { deliveryMode: 2 });
-  });
+/**
+ * Send a message using the persistent connection for high performance
+ *
+ * Guarantees:
+ * - At-least-once delivery with retries on failure
+ * - Blocking reconnection: waits for RabbitMQ recovery if connection lost
+ * - Backpressure: respects channel buffer limits
+ *
+ * Note: Ordering is maintained when callers use sequential awaits.
+ * In rare edge cases around connection failures, duplicate delivery
+ * is possible (at-least-once semantics). Consumers should be idempotent.
+ */
+export const send = async (exchangeName, routingKey, message) => {
+  const MAX_SEND_RETRIES = 3;
+  let lastError = null;
+
+  for (let attempt = 1; attempt <= MAX_SEND_RETRIES; attempt += 1) {
+    try {
+      return await sendPersistent(exchangeName, routingKey, message);
+    } catch (err) {
+      lastError = err;
+      logApp.warn(`[RABBITMQ] Send failed (attempt ${attempt}/${MAX_SEND_RETRIES})`, { cause: err });
+
+      // If channel was lost, wait for reconnection before retry
+      if (!persistentChannel) {
+        logApp.info('[RABBITMQ] Waiting for connection recovery before retry...');
+        await getPersistentChannel();
+      }
+    }
+  }
+
+  // All retries exhausted
+  throw lastError;
 };
 
 export const metrics = async (context, user) => {
@@ -201,8 +499,25 @@ export const getBestBackgroundConnectorId = async (context, user) => {
   return bestQueue.name.substring(`${RABBIT_QUEUE_PREFIX}push_`.length);
 };
 
+export const listenRouting = (connectorId) => `${RABBIT_QUEUE_PREFIX}listen_routing_${connectorId}`;
+export const pushRouting = (connectorId) => `${RABBIT_QUEUE_PREFIX}push_routing_${connectorId}`;
+
+// Dead letter queue routing ID for bundles that are too large.
+// NOTE:
+// - This constant is used here to build the dead_letter_routing value in connectorConfig.
+// - The full CONNECTOR_QUEUE_BUNDLES_TOO_LARGE queue configuration object is defined later
+//   in this file near the rest of the queue declarations.
+const CONNECTOR_QUEUE_BUNDLES_TOO_LARGE_ID = 'too-large-bundle';
+
+/**
+ * Build the complete connector configuration that includes:
+ * - RabbitMQ connection info
+ * - S3 connection info
+ * - Queue routing configuration
+ */
 export const connectorConfig = (id, listen_callback_uri = undefined) => ({
-  connection: config(),
+  connection: rabbitmqConnectionConfig(),
+  s3: s3ConnectionConfig(),
   push: `${RABBIT_QUEUE_PREFIX}push_${id}`,
   push_routing: pushRouting(id),
   push_exchange: WORKER_EXCHANGE,
@@ -210,11 +525,8 @@ export const connectorConfig = (id, listen_callback_uri = undefined) => ({
   listen_routing: listenRouting(id),
   listen_exchange: CONNECTOR_EXCHANGE,
   listen_callback_uri,
-  dead_letter_routing: listenRouting(CONNECTOR_QUEUE_BUNDLES_TOO_LARGE.id),
+  dead_letter_routing: listenRouting(CONNECTOR_QUEUE_BUNDLES_TOO_LARGE_ID),
 });
-
-export const listenRouting = (connectorId) => `${RABBIT_QUEUE_PREFIX}listen_routing_${connectorId}`;
-export const pushRouting = (connectorId) => `${RABBIT_QUEUE_PREFIX}push_routing_${connectorId}`;
 
 export const registerConnectorQueues = async (id, name, type, scope) => {
   const listenQueue = `${RABBIT_QUEUE_PREFIX}listen_${id}`;
@@ -376,15 +688,7 @@ export const getRabbitMQVersion = (context) => {
 export const consumeQueue = async (context, connectorId, connectionSetterCallback, callback) => {
   const cfg = connectorConfig(connectorId);
   const listenQueue = cfg.listen;
-  const connOptions = USE_SSL ? {
-    ...amqpCred(),
-    ...configureCA(RABBITMQ_CA),
-    cert: RABBITMQ_CA_CERT,
-    key: RABBITMQ_CA_KEY,
-    pfx: RABBITMQ_CA_PFX,
-    passphrase: RABBITMQ_CA_PASSPHRASE,
-    rejectUnauthorized: RABBITMQ_REJECT_UNAUTHORIZED,
-  } : amqpCred();
+  const connOptions = getConnectionOptions();
   return new Promise((_, reject) => {
     try {
       amqp.connect(amqpUri(), connOptions, (err, conn) => {

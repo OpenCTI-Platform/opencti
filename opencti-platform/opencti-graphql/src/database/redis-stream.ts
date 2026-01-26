@@ -124,7 +124,10 @@ const rawCreateStreamProcessor = <T extends BaseEvent> (
       } else {
         await processStreamResult([], callback, opts.withInternal);
       }
-      await wait(opts.bufferTime ?? 50);
+      const bufferTime = opts.bufferTime ?? 50;
+      if (bufferTime > 0) {
+        await wait(bufferTime);
+      }
     } catch (err) {
       logApp.error('Redis stream consume fail', { cause: err, provider });
       if (opts.autoReconnect) {

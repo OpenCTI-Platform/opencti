@@ -1,7 +1,5 @@
 import React, { useContext } from 'react';
 import MuiAlert from '@mui/material/Alert';
-import { useTheme } from '@mui/styles';
-import { Theme } from 'src/components/Theme';
 import { SyncLinesPaginationQuery$data, SyncLinesPaginationQuery$variables } from '@components/data/sync/__generated__/SyncLinesPaginationQuery.graphql';
 import { QueryRenderer } from '../../../relay/environment';
 import ListLines from '../../../components/list_lines/ListLines';
@@ -12,7 +10,6 @@ import useAuth, { UserContext } from '../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../components/i18n';
 import { SYNC_MANAGER } from '../../../utils/platformModulesHelper';
 import IngestionMenu from './IngestionMenu';
-import Alert from '../../../components/Alert';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import Security from '../../../utils/Security';
 import { INGESTION_SETINGESTIONS } from '../../../utils/hooks/useGranted';
@@ -26,7 +23,6 @@ import { PaginationOptions } from '../../../components/list_lines';
 const LOCAL_STORAGE_KEY = 'sync';
 
 const Sync = () => {
-  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   const { platformModuleHelpers } = useAuth();
@@ -102,23 +98,6 @@ const Sync = () => {
       <PageContainer withRightMenu>
         <Breadcrumbs
           elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('OpenCTI Streams'), current: true }]}
-        />
-        <Alert
-          content={(
-            <>
-              {t_i18n('You can configure your platform to consume OpenCTI Streams. A list of public and commercial native feeds is available in the')}{' '}
-              <a
-                href="https://filigran.notion.site/63392969969c4941905520d37dc7ad4a?v=0a5716cac77b4406825ba3db0acfaeb2"
-                target="_blank"
-                style={{ color: theme.palette.secondary.main }}
-                rel="noreferrer"
-              >
-                {t_i18n('OpenCTI ecosystem space')}
-              </a>
-              .
-            </>
-          )}
-          style={{ marginBottom: theme.spacing(2) }}
         />
         <ListLines
           sortBy={viewStorage.sortBy}

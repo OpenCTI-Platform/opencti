@@ -37,8 +37,10 @@ from enum import Enum
 from queue import Queue
 from typing import Callable, Dict, List, Optional, Union
 
+import boto3
 import pika
 import uvicorn
+from botocore.config import Config as BotoConfig
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from filigran_sseclient import SSEClient
@@ -1703,6 +1705,50 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             isNumber=True,
             default=7,
         )
+        # S3 send mode configuration
+        self.bundle_send_to_s3 = get_config_variable(
+            "CONNECTOR_SEND_TO_S3",
+            ["connector", "send_to_s3"],
+            config,
+            default=False,
+        )
+        self.bundle_send_to_s3_bucket = get_config_variable(
+            "CONNECTOR_SEND_TO_S3_BUCKET",
+            ["connector", "send_to_s3_bucket"],
+            config,
+        )
+        self.bundle_send_to_s3_folder = get_config_variable(
+            "CONNECTOR_SEND_TO_S3_FOLDER",
+            ["connector", "send_to_s3_folder"],
+            config,
+            default="connectors",
+        )
+        self.bundle_send_to_s3_retention = get_config_variable(
+            "CONNECTOR_SEND_TO_S3_RETENTION",
+            ["connector", "send_to_s3_retention"],
+            config,
+            isNumber=True,
+            default=7,
+        )
+        # Cached S3 client for reuse across uploads (lazily initialized)
+        self._s3_client = None
+        # Override S3 connection (optional - defaults to OpenCTI's S3)
+        self.s3_endpoint = get_config_variable(
+            "S3_ENDPOINT", ["s3", "endpoint"], config
+        )
+        self.s3_port = get_config_variable(
+            "S3_PORT", ["s3", "port"], config, isNumber=True
+        )
+        self.s3_access_key = get_config_variable(
+            "S3_ACCESS_KEY", ["s3", "access_key"], config
+        )
+        self.s3_secret_key = get_config_variable(
+            "S3_SECRET_KEY", ["s3", "secret_key"], config
+        )
+        self.s3_use_ssl = get_config_variable("S3_USE_SSL", ["s3", "use_ssl"], config)
+        self.s3_bucket_region = get_config_variable(
+            "S3_BUCKET_REGION", ["s3", "bucket_region"], config
+        )
         self.connect_only_contextual = get_config_variable(
             "CONNECTOR_ONLY_CONTEXTUAL",
             ["connector", "only_contextual"],
@@ -1930,6 +1976,10 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             default=self.connector_config["connection"]["pass"],
         )
 
+        # Initialize S3 config from backend, allow local overrides
+        if "s3" in self.connector_config:
+            self._init_s3_config(self.connector_config["s3"])
+
         # Start ping thread
         if not self.connect_run_and_terminate:
             is_run_and_terminate = False
@@ -1962,6 +2012,233 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
 
         # self.listen_stream = None
         self.listen_queue = None
+
+    def _init_s3_config(self, backend_s3_config: Dict) -> None:
+        """Initialize S3 config using backend values with local overrides.
+
+        Local environment variables or config file settings take precedence
+        over backend-provided values. If no local override is provided,
+        the backend value is used.
+
+        :param backend_s3_config: S3 configuration from backend registration
+        :type backend_s3_config: Dict
+        """
+        # Use local override if set, otherwise use backend value
+        # Use explicit None checks to support falsy values (0, False, empty string) as valid overrides
+        self.s3_endpoint = (
+            self.s3_endpoint
+            if self.s3_endpoint is not None
+            else backend_s3_config.get("endpoint")
+        )
+        self.s3_port = (
+            self.s3_port if self.s3_port is not None else backend_s3_config.get("port")
+        )
+        self.s3_access_key = (
+            self.s3_access_key
+            if self.s3_access_key is not None
+            else backend_s3_config.get("access_key")
+        )
+        self.s3_secret_key = (
+            self.s3_secret_key
+            if self.s3_secret_key is not None
+            else backend_s3_config.get("secret_key")
+        )
+        self.s3_use_ssl = (
+            self.s3_use_ssl
+            if self.s3_use_ssl is not None
+            else backend_s3_config.get("use_ssl")
+        )
+        self.s3_bucket_region = (
+            self.s3_bucket_region
+            if self.s3_bucket_region is not None
+            else backend_s3_config.get("bucket_region")
+        )
+        # Use OpenCTI bucket by default, unless overridden
+        if self.bundle_send_to_s3_bucket is None:
+            self.bundle_send_to_s3_bucket = backend_s3_config.get("bucket_name")
+
+    def _get_s3_client(self):
+        """Create and return an S3 client configured with current settings.
+
+        :return: Configured boto3 S3 client
+        :rtype: boto3.client
+        :raises ValueError: If required S3 configuration is missing
+        """
+        # Validate required S3 configuration
+        missing_config = []
+        if not self.s3_endpoint:
+            missing_config.append("s3_endpoint")
+        if not self.s3_port:
+            missing_config.append("s3_port")
+        if not self.s3_access_key:
+            missing_config.append("s3_access_key")
+        if not self.s3_secret_key:
+            missing_config.append("s3_secret_key")
+
+        if missing_config:
+            raise ValueError(
+                f"Missing required S3 configuration: {', '.join(missing_config)}. "
+                "Ensure S3 credentials are provided via config or OpenCTI backend."
+            )
+
+        endpoint_url = (
+            f"{'https' if self.s3_use_ssl else 'http'}://"
+            f"{self.s3_endpoint}:{self.s3_port}"
+        )
+        return boto3.client(
+            "s3",
+            endpoint_url=endpoint_url,
+            aws_access_key_id=self.s3_access_key,
+            aws_secret_access_key=self.s3_secret_key,
+            region_name=self.s3_bucket_region,
+            config=BotoConfig(signature_version="s3v4"),
+        )
+
+    def _generate_bundle_filename(self) -> str:
+        """Generate a unique filename for bundle files.
+
+        :return: Generated filename with connector name, timestamp and .json extension
+        :rtype: str
+        """
+        return (
+            self.connect_name.lower().replace(" ", "_")
+            + "-"
+            + time.strftime("%Y%m%d-%H%M%S-")
+            + str(time.time())
+            + ".json"
+        )
+
+    def _create_message_bundle(
+        self, bundle_type: str, bundle: str, entities_types: list, update: bool
+    ) -> dict:
+        """Create a message bundle structure for directory or S3 export.
+
+        :param bundle_type: Type of bundle (e.g., "DIRECTORY_BUNDLE", "S3_BUNDLE")
+        :type bundle_type: str
+        :param bundle: JSON string of the STIX bundle
+        :type bundle: str
+        :param entities_types: List of entity types in the bundle
+        :type entities_types: list
+        :param update: Whether this is an update operation
+        :type update: bool
+        :return: Message bundle dictionary
+        :rtype: dict
+        """
+        return {
+            "bundle_type": bundle_type,
+            "applicant_id": self.applicant_id,
+            "connector": {
+                "id": self.connect_id,
+                "name": self.connect_name,
+                "type": self.connect_type,
+                "scope": self.connect_scope,
+                "auto": self.connect_auto,
+                "validate_before_import": self.connect_validate_before_import,
+            },
+            "entities_types": entities_types,
+            "bundle": json.loads(bundle),
+            "update": update,
+        }
+
+    def _send_bundle_to_s3(self, bundle_content: str, bundle_file: str) -> None:
+        """Upload bundle to S3 bucket.
+
+        :param bundle_content: JSON string content of the bundle to upload
+        :type bundle_content: str
+        :param bundle_file: Filename for the bundle in S3
+        :type bundle_file: str
+        :raises Exception: If S3 upload fails
+        """
+        # Validate bucket is configured
+        if not self.bundle_send_to_s3_bucket:
+            raise ValueError(
+                "S3 bucket not configured. Set CONNECTOR_SEND_TO_S3_BUCKET or "
+                "ensure OpenCTI backend provides bucket configuration."
+            )
+
+        # Lazily create and cache the S3 client for reuse across uploads
+        if self._s3_client is None:
+            self._s3_client = self._get_s3_client()
+        s3_client = self._s3_client
+
+        # If folder is empty or "." (or "/" after stripping), upload to root of bucket
+        # Strip trailing slashes to avoid double slashes in S3 keys
+        folder = (
+            self.bundle_send_to_s3_folder.rstrip("/")
+            if self.bundle_send_to_s3_folder
+            else None
+        )
+        if folder and folder != ".":
+            key = f"{folder}/{bundle_file}"
+        else:
+            key = bundle_file
+
+        try:
+            s3_client.put_object(
+                Bucket=self.bundle_send_to_s3_bucket,
+                Key=key,
+                Body=bundle_content.encode("utf-8"),
+                ContentType="application/json",
+            )
+
+            self.connector_logger.info(
+                "Bundle uploaded to S3",
+                {"bucket": self.bundle_send_to_s3_bucket, "key": key},
+            )
+
+            # Handle retention - delete old files
+            if self.bundle_send_to_s3_retention > 0:
+                self._cleanup_old_s3_bundles(s3_client)
+        except Exception as e:
+            self.connector_logger.error(
+                "Failed to upload bundle to S3",
+                {"bucket": self.bundle_send_to_s3_bucket, "key": key, "error": str(e)},
+            )
+            raise
+
+    def _cleanup_old_s3_bundles(self, s3_client) -> None:
+        """Remove expired bundles from S3 based on retention policy.
+
+        Only deletes bundles created by this connector (matching connector name prefix)
+        to avoid deleting bundles from other connectors sharing the same folder.
+
+        :param s3_client: Configured boto3 S3 client
+        :type s3_client: boto3.client
+        """
+        # Build prefix: folder + connector name prefix
+        # Strip trailing slashes to avoid double slashes in S3 keys
+        folder = (
+            self.bundle_send_to_s3_folder.rstrip("/")
+            if self.bundle_send_to_s3_folder
+            else None
+        )
+        connector_prefix = self.connect_name.lower().replace(" ", "_") + "-"
+        if folder and folder != ".":
+            prefix = f"{folder}/{connector_prefix}"
+        else:
+            prefix = connector_prefix
+
+        cutoff_time = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(
+            days=self.bundle_send_to_s3_retention
+        )
+
+        try:
+            paginator = s3_client.get_paginator("list_objects_v2")
+            paginate_args = {"Bucket": self.bundle_send_to_s3_bucket, "Prefix": prefix}
+            for page in paginator.paginate(**paginate_args):
+                for obj in page.get("Contents", []):
+                    if obj["LastModified"] < cutoff_time:
+                        s3_client.delete_object(
+                            Bucket=self.bundle_send_to_s3_bucket, Key=obj["Key"]
+                        )
+                        self.connector_logger.debug(
+                            "Deleted expired S3 bundle",
+                            {"key": obj["Key"], "modified": str(obj["LastModified"])},
+                        )
+        except Exception as e:
+            self.connector_logger.warning(
+                "Failed to cleanup old S3 bundles", {"error": str(e)}
+            )
 
     def stop(self) -> None:
         """Stop the connector and clean up resources.
@@ -2629,6 +2906,8 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :type send_to_directory_path: str, optional
         :param send_to_directory_retention: Days to retain exported files (default: self.bundle_send_to_directory_retention)
         :type send_to_directory_retention: int, optional
+        :param send_to_s3: Whether to upload bundle to S3 (default: self.bundle_send_to_s3)
+        :type send_to_s3: bool, optional
 
         :return: List of processed bundle chunks
         :rtype: list
@@ -2657,6 +2936,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         bundle_send_to_directory_retention = kwargs.get(
             "send_to_directory_retention", self.bundle_send_to_directory_retention
         )
+        bundle_send_to_s3 = kwargs.get("send_to_s3", self.bundle_send_to_s3)
 
         # In case of enrichment ingestion, ensure the sharing if needed
         if self.enrichment_shared_organizations is not None:
@@ -2739,31 +3019,13 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                     "also_queuing": bundle_send_to_queue,
                 },
             )
-            bundle_file = (
-                self.connect_name.lower().replace(" ", "_")
-                + "-"
-                + time.strftime("%Y%m%d-%H%M%S-")
-                + str(time.time())
-                + ".json"
-            )
+            bundle_file = self._generate_bundle_filename()
             write_file = os.path.join(
                 bundle_send_to_directory_path, bundle_file + ".tmp"
             )
-            message_bundle = {
-                "bundle_type": "DIRECTORY_BUNDLE",
-                "applicant_id": self.applicant_id,
-                "connector": {
-                    "id": self.connect_id,
-                    "name": self.connect_name,
-                    "type": self.connect_type,
-                    "scope": self.connect_scope,
-                    "auto": self.connect_auto,
-                    "validate_before_import": self.connect_validate_before_import,
-                },
-                "entities_types": entities_types,
-                "bundle": json.loads(bundle),
-                "update": update,
-            }
+            message_bundle = self._create_message_bundle(
+                "DIRECTORY_BUNDLE", bundle, entities_types, update
+            )
             # Maintains the list of files under control
             if bundle_send_to_directory_retention > 0:  # If 0, disable the auto remove
                 current_time = time.time()
@@ -2784,6 +3046,23 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             # Rename the file after full write
             final_write_file = os.path.join(bundle_send_to_directory_path, bundle_file)
             os.rename(write_file, final_write_file)
+
+        # If S3 setup, upload the bundle to the target S3 bucket
+        if bundle_send_to_s3 and self.bundle_send_to_s3_bucket is not None:
+            self.connector_logger.info(
+                "The connector sending bundle to S3",
+                {
+                    "connector": self.connect_name,
+                    "bucket": self.bundle_send_to_s3_bucket,
+                    "folder": self.bundle_send_to_s3_folder,
+                    "also_queuing": bundle_send_to_queue,
+                },
+            )
+            bundle_file = self._generate_bundle_filename()
+            message_bundle = self._create_message_bundle(
+                "S3_BUNDLE", bundle, entities_types, update
+            )
+            self._send_bundle_to_s3(json.dumps(message_bundle), bundle_file)
 
         stix2_splitter = OpenCTIStix2Splitter()
         (expectations_number, _, bundles) = (
