@@ -10,6 +10,7 @@ import IngestionMenu from './IngestionMenu';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import Security from '../../../utils/Security';
 import { INGESTION_SETINGESTIONS } from '../../../utils/hooks/useGranted';
+import IngestionHistoryDrawer from './ingestion/IngestionHistoryDrawer';
 
 const LOCAL_STORAGE_KEY = 'ingestionTaxii';
 
@@ -42,7 +43,12 @@ const IngestionTaxiiCollections = () => {
     },
     id: {
       label: 'Push Collection URI',
-      width: '65%',
+      width: '45%',
+      isSortable: false,
+    },
+    last_execution_date: {
+      label: 'Last push',
+      width: '20%',
       isSortable: false,
     },
     ingestion_running: {
@@ -51,6 +57,20 @@ const IngestionTaxiiCollections = () => {
       isSortable: false,
     },
   };
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+  const [displayHistory, setDisplayHistory] = React.useState(false);
+  const [selectedIngestionId, setSelectedIngestionId] = React.useState(null);
+
+  const handleOpenHistory = (id) => {
+    setSelectedIngestionId(id);
+    setDisplayHistory(true);
+  };
+
+  const handleCloseHistory = () => {
+    setDisplayHistory(false);
+    setSelectedIngestionId(null);
+  };
+
   return (
     <div className={classes.container} data-testid="taxii-push-page">
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('TAXII push'), current: true }]} />
@@ -81,10 +101,16 @@ const IngestionTaxiiCollections = () => {
               refetchPaginationOptions={{ count: 200, ...paginationOptions }}
               dataColumns={dataColumns}
               initialLoading={props === null}
+              onOpenHistory={handleOpenHistory}
             />
           )}
         />
       </ListLines>
+      <IngestionHistoryDrawer
+        open={displayHistory}
+        onClose={handleCloseHistory}
+        ingestionId={selectedIngestionId}
+      />
     </div>
   );
 };

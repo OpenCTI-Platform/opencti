@@ -497,6 +497,7 @@
   "Last event id": "Идентификатор последнего события",
   "Last execution": "Последнее выполнение",
   "Last execution date": "Дата последнего исполнения",
+  "Last execution status": "Состояние последнего выполнения",
   "Last ingestion run": "Последний прогон",
   "Last modification date": "Дата последнего изменения",
   "Last modification since": "Последнее изменение с момента",

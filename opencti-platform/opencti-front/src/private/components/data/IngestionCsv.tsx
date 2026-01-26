@@ -19,6 +19,7 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { isNotEmptyField } from '../../../utils/utils';
 import GradientButton from '../../../components/GradientButton';
+import IngestionHistoryDrawer from './ingestion/IngestionHistoryDrawer';
 
 const LOCAL_STORAGE_KEY = 'ingestionCsvs';
 
@@ -55,6 +56,19 @@ const IngestionCsv = () => {
       symbol: '',
     },
   });
+
+  const [displayHistory, setDisplayHistory] = React.useState<boolean>(false);
+  const [selectedIngestionId, setSelectedIngestionId] = React.useState<string | null>(null);
+
+  const handleOpenHistory = (ingestionId: string) => {
+    setSelectedIngestionId(ingestionId);
+    setDisplayHistory(true);
+  };
+
+  const handleCloseHistory = () => {
+    setDisplayHistory(false);
+    setSelectedIngestionId(null);
+  };
 
   const renderLines = () => {
     const { searchTerm, sortBy, orderAsc, numberOfElements } = viewStorage;
@@ -150,6 +164,7 @@ const IngestionCsv = () => {
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               setNumberOfElements={helpers.handleSetNumberOfElements}
+              onOpenHistory={handleOpenHistory}
             />
           </React.Suspense>
         )}
@@ -172,6 +187,11 @@ const IngestionCsv = () => {
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('CSV feeds'), current: true }]} />
       <IngestionMenu />
       {renderLines()}
+      <IngestionHistoryDrawer
+        open={displayHistory}
+        onClose={handleCloseHistory}
+        ingestionId={selectedIngestionId}
+      />
     </div>
   );
 };

@@ -15,6 +15,7 @@ import inject18n from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import Security from '../../../../utils/Security';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
+import IngestionLastRun from '@components/data/ingestion/IngestionLastRun';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -110,11 +111,13 @@ class IngestionRssLineLineComponent extends Component {
                   status={!!node.ingestion_running}
                 />
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.last_execution_date.width }}
-              >
-                {nsdt(node.last_execution_date) || '-'}
+              <div className={classes.bodyItem} style={{ width: dataColumns.last_execution_date.width }}>
+                <IngestionLastRun
+                  ingestion_id={node.id}
+                  last_execution_date={node.last_execution_date}
+                  last_execution_status={node.last_execution_status}
+                  onOpenHistory={this.props.onOpenHistory}
+                />
               </div>
               <div
                 className={classes.bodyItem}
@@ -137,6 +140,7 @@ IngestionRssLineLineComponent.propTypes = {
   me: PropTypes.object,
   classes: PropTypes.object,
   fd: PropTypes.func,
+  onOpenHistory: PropTypes.func,
 };
 
 const IngestionRssLineFragment = createFragmentContainer(
@@ -150,6 +154,7 @@ const IngestionRssLineFragment = createFragmentContainer(
         ingestion_running
         current_state_date
         last_execution_date
+        last_execution_status
       }
     `,
   },
@@ -164,11 +169,7 @@ class IngestionRssDummyComponent extends Component {
   render() {
     const { classes, dataColumns } = this.props;
     return (
-      <ListItem
-        classes={{ root: classes.item }}
-        divider={true}
-        secondaryAction={<MoreVert classes={classes.itemIconDisabled} />}
-      >
+      <ListItem classes={{ root: classes.item }} divider={true} secondaryAction={<MoreVert classes={classes.itemIconDisabled} />}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Skeleton
             animation="wave"
@@ -180,10 +181,7 @@ class IngestionRssDummyComponent extends Component {
         <ListItemText
           primary={(
             <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
                 <Skeleton
                   animation="wave"
                   variant="rectangular"

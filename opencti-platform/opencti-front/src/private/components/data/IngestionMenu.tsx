@@ -11,12 +11,12 @@ const IngestionMenu = () => {
       label: 'OpenCTI Streams',
     },
     {
-      path: '/dashboard/data/ingestion/taxii',
-      label: 'TAXII Feeds',
-    },
-    {
       path: '/dashboard/data/ingestion/collection',
       label: 'TAXII Push',
+    },
+    {
+      path: '/dashboard/data/ingestion/taxii',
+      label: 'TAXII Feeds',
     },
     {
       path: '/dashboard/data/ingestion/rss',

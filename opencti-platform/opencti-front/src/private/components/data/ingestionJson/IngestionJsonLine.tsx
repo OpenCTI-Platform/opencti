@@ -18,6 +18,7 @@ import type { Theme } from '../../../../components/Theme';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
+import IngestionLastRun from '@components/data/ingestion/IngestionLastRun';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -43,11 +44,12 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-interface IngestionJsonLineProps {
+export interface IngestionJsonLineProps {
   node: IngestionJsonLine_node$key;
   dataColumns: DataColumns;
   onLabelClick: HandleAddFilter;
   paginationOptions?: IngestionJsonLinesPaginationQuery$variables;
+  onOpenHistory: (id: string) => void;
 }
 
 const ingestionJsonLineFragment = graphql`
@@ -58,6 +60,7 @@ const ingestionJsonLineFragment = graphql`
     connector_id
     ingestion_running
     last_execution_date
+    last_execution_status
   }
 `;
 
@@ -65,9 +68,10 @@ export const IngestionJsonLineComponent: FunctionComponent<IngestionJsonLineProp
   dataColumns,
   node,
   paginationOptions,
+  onOpenHistory,
 }) => {
   const classes = useStyles();
-  const { t_i18n, fldt } = useFormatter();
+  const { t_i18n } = useFormatter();
   const data = useFragment(ingestionJsonLineFragment, node);
   return (
     <ListItem
@@ -115,7 +119,12 @@ export const IngestionJsonLineComponent: FunctionComponent<IngestionJsonLineProp
               className={classes.bodyItem}
               style={{ width: dataColumns.connector.width }}
             >
-              {fldt(data.last_execution_date) || '-'}
+              <IngestionLastRun
+                ingestion_id={data.id}
+                last_execution_date={data.last_execution_date}
+                last_execution_status={data.last_execution_status}
+                onOpenHistory={onOpenHistory}
+              />
             </div>
             <div
               className={classes.bodyItem}

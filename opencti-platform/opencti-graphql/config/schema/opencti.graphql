@@ -2447,6 +2447,24 @@ type MarkingDefinitionConnection {
   pageInfo: PageInfo!
   edges: [MarkingDefinitionEdge!]!
 }
+type IngestionEntry {
+  timestamp: DateTime!
+  status: String!
+  messages: [String!]!
+  count: Int
+}
+
+interface Ingestion {
+  id: ID!
+  entity_type: String!
+  name: String!
+  description: String
+  ingestion_running: Boolean
+  last_execution_date: DateTime
+  last_execution_status: String
+  ingestionLogs: [IngestionEntry]
+}
+
 type MarkingDefinitionEdge {
   cursor: String!
   node: MarkingDefinition!

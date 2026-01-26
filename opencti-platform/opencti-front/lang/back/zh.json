@@ -497,6 +497,7 @@
   "Last event id": "最后事件 ID",
   "Last execution": "最后执行",
   "Last execution date": "最后执行日期",
+  "Last execution status": "最后执行状态",
   "Last ingestion run": "最后一次摄入运行",
   "Last modification date": "最后修改日期",
   "Last modification since": "最后修改时间",
