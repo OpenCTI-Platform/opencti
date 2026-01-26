@@ -28,7 +28,7 @@ import { FileLine_file$data } from '../../common/files/__generated__/FileLine_fi
 import { scopesConn } from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
-import { KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import UploadImport from '../../../../components/UploadImport';
 import Card from '../../../../components/common/card/Card';
@@ -85,7 +85,7 @@ const ExternalReferenceFileImportViewerBase: FunctionComponent<
 > = ({ externalReference, disableImport, relay, connectorsImport }) => {
   const { t_i18n } = useFormatter();
   const [fileToImport, setFileToImport] = useState<
-  FileLine_file$data | null | undefined
+    FileLine_file$data | null | undefined
   >(null);
 
   const [selectedConnector, setSelectedConnector] = useState<Connector | null>(null);
@@ -167,7 +167,7 @@ const ExternalReferenceFileImportViewerBase: FunctionComponent<
         <Card
           title={t_i18n('Uploaded files')}
           action={(
-            <Security needs={[KNOWLEDGE_KNUPLOAD]}>
+            <Security needs={[KNOWLEDGE_KNUPLOAD]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}>
               <UploadImport
                 size="small"
                 fontSize="small"
