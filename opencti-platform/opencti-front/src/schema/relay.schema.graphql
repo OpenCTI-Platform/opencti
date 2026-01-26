@@ -10306,6 +10306,7 @@ type Mutation {
   autoRegisterOpenCTI(input: AutoRegisterInput!): Success!
   contactUsXtmHub: Success!
   metricPatch(id: ID!, input: PatchMetricInput!): BasicObject
+  singleSignOnRunMigration(input: SingleSignMigrationInput!): [SingleSignOnMigrationResult]
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -15236,4 +15237,127 @@ type Metric {
 input PatchMetricInput {
   name: String!
   value: Float!
+}
+
+type SingleSignOn implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  metrics: [Metric]
+  created_at: DateTime!
+  updated_at: DateTime!
+  name: String!
+  identifier: String!
+  label: String!
+  description: String
+  enabled: Boolean!
+  strategy: StrategyType!
+  organizations_management: OrganizationsManagement
+  groups_management: GroupsManagement
+  configuration: [ConfigurationType!]
+}
+
+type OrganizationsManagement {
+  organizations_path: [String!]
+  organizations_mapping: [String!]!
+  organizations_scope: String
+  read_userinfo: Boolean
+  token_reference: String
+}
+
+type GroupsManagement {
+  group_attributes: [String!]
+  group_attribute: String
+  groups_path: [String!]
+  groups_mapping: [String!]
+  read_userinfo: Boolean
+  token_reference: String
+  groups_scope: String
+}
+
+type ConfigurationType {
+  key: String!
+  value: String!
+  type: String!
+}
+
+enum StrategyType {
+  LocalStrategy
+  ClientCertStrategy
+  HeaderStrategy
+  LdapStrategy
+  OpenIDConnectStrategy
+  SamlStrategy
+}
+
+enum SingleSignOnOrdering {
+  name
+  enabled
+  strategy
+  _score
+}
+
+type SingleSignOnEdge {
+  cursor: String!
+  node: SingleSignOn!
+}
+
+type SingleSignOnConnection {
+  pageInfo: PageInfo!
+  edges: [SingleSignOnEdge!]!
+}
+
+input OrganizationsManagementInput {
+  organizations_path: [String!]
+  organizations_mapping: [String!]
+  organizations_default: [String!]
+  organizations_scope: String
+  read_userinfo: Boolean
+  token_reference: String
+}
+
+input GroupsManagementInput {
+  group_attributes: [String!]
+  group_attribute: String
+  groups_path: [String!]
+  groups_mapping: [String!]
+  groups_scope: String
+  read_userinfo: Boolean
+  token_reference: String
+}
+
+input ConfigurationTypeInput {
+  key: String!
+  value: String!
+  type: String!
+}
+
+input SingleSignOnAddInput {
+  name: String!
+  identifier: String!
+  description: String
+  enabled: Boolean!
+  strategy: StrategyType!
+  organizations_management: OrganizationsManagementInput
+  groups_management: GroupsManagementInput
+  configuration: [ConfigurationTypeInput!]
+  label: String
+}
+
+type SingleSignOnMigrationResult {
+  id: ID!
+  name: String!
+  identifier: String!
+  label: String
+  description: String
+  enabled: Boolean!
+  strategy: StrategyType!
+  organizations_management: OrganizationsManagement
+  groups_management: GroupsManagement
+  configuration: [ConfigurationType!]
+}
+
+input SingleSignMigrationInput {
+  dry_run: Boolean!
 }
