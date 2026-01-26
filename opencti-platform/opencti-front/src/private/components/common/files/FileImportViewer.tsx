@@ -8,7 +8,7 @@ import { TEN_SECONDS } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
 import { FileImportViewer_entity$data } from './__generated__/FileImportViewer_entity.graphql';
 import { FileLine_file$data } from './__generated__/FileLine_file.graphql';
-import { KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import UploadImport from '../../../../components/UploadImport';
 import Card from '../../../../components/common/card/Card';
@@ -54,7 +54,7 @@ const FileImportViewerComponent: FunctionComponent<
         padding="horizontal"
         title={t_i18n('Uploaded files')}
         action={(
-          <Security needs={[KNOWLEDGE_KNUPLOAD]}>
+          <Security needs={[KNOWLEDGE_KNUPLOAD]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}>
             <UploadImport
               entityId={id}
               size="small"

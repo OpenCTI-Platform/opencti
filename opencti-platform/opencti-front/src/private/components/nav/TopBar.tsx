@@ -296,7 +296,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                     </IconButton>
                   </Tooltip>
                 </>
-              </Security >
+              </Security>
             )}
             <IconButton
               aria-owns={menuOpen.open ? 'menu-appbar' : undefined}
@@ -331,14 +331,14 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                 {t_i18n('Logout')}
               </MenuItem>
             </Menu>
-          </Stack >
-        </div >
-      </Toolbar >
+          </Stack>
+        </div>
+      </Toolbar>
       <FeedbackCreation
         openDrawer={openDrawer}
         handleCloseDrawer={handleCloseDrawer}
       />
-    </AppBar >
+    </AppBar>
   );
 };
 
