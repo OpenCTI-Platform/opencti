@@ -27,7 +27,7 @@ const ImportFilesOptions = ({
   const { t_i18n } = useFormatter();
   const { me: owner, settings } = useAuth();
   const showAllMembersLine = !settings.platform_organization?.id;
-  const { importMode, entityId, files } = useImportFilesContext();
+  const { importMode, entityId, files, isUserHasImportInDraftOverride } = useImportFilesContext();
   const isWorkbenchEnabled = files.length === 1;
 
   return (
@@ -64,6 +64,7 @@ const ImportFilesOptions = ({
                 variant="standard"
                 name="validationMode"
                 containerstyle={{ marginTop: 16, width: '100%', marginRight: 10 }}
+                disabled={isUserHasImportInDraftOverride}
                 label={(
                   <>
                     {t_i18n('Validation mode')}

@@ -29,6 +29,7 @@ import { environment } from '../../../../../relay/environment';
 import StixCoreObjectsField from '../../../common/form/StixCoreObjectsField';
 import useGranted, { INGESTION, MODULES } from '../../../../../utils/hooks/useGranted';
 import Card from '../../../../../components/common/card/Card';
+import { useImportFilesContext } from '@components/common/files/import_files/ImportFilesContext';
 
 // Styles
 const useStyles = makeStyles<Theme>(() => ({
@@ -141,6 +142,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
   const [pollingTimeout, setPollingTimeout] = useState(false);
   const isConnectorReader = useGranted([MODULES]);
   const isGrantedIngestion = useGranted([INGESTION]);
+  const { isUserHasImportInDraftOverride } = useImportFilesContext();
 
   const data = usePreloadedQuery(formViewQuery, queryRef);
   const { form } = data;
@@ -168,8 +170,8 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
   const validationSchema = convertFormSchemaToYupSchema(schema, t_i18n);
   const initialValues: FormInitialValues = {};
 
-  // Initialize isDraft based on schema settings
-  const [isDraft, setIsDraft] = useState(schema.isDraftByDefault || false);
+  // Initialize isDraft based on schema settings or import context override
+  const [isDraft, setIsDraft] = useState(isUserHasImportInDraftOverride || schema.isDraftByDefault || false);
 
   // Initialize values for main entity fields
   const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
@@ -572,7 +574,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                     }
                     if (schema.mainEntityMultiple && schema.mainEntityFieldMode === 'multiple') {
                       return (
-                      // Multi mode - field groups with add/remove
+                        // Multi mode - field groups with add/remove
                         <FieldArray name="mainEntityGroups">
                           {({ remove, push }) => (
                             <>
@@ -678,7 +680,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                 {schema.additionalEntities && schema.additionalEntities.length > 0 && (
                   <>
                     {schema.additionalEntities.map((additionalEntity) => {
-                    // Find fields for this additional entity
+                      // Find fields for this additional entity
                       const entityFields = schema.fields.filter((field) => field.attributeMapping.entity === additionalEntity.id);
                       return (
                         <div key={additionalEntity.id} className={classes.section}>
@@ -699,7 +701,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                               );
                             }
                             if (additionalEntity.multiple && additionalEntity.fieldMode === 'parsed') {
-                            // Parsed mode - single text field to parse
+                              // Parsed mode - single text field to parse
                               const fieldName = `additional_${additionalEntity.id}_parsed`;
                               let helperText;
                               if (additionalEntity.entityType === 'Indicator' && additionalEntity.autoConvertToStixPattern) {
@@ -766,7 +768,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                               const groupsFieldName = `additional_${additionalEntity.id}_groups`;
                               const minAmount = additionalEntity.minAmount ?? 0;
                               return (
-                              // Multi mode - field groups with add/remove
+                                // Multi mode - field groups with add/remove
                                 <FieldArray name={groupsFieldName}>
                                   {({ remove, push }) => (
                                     <>
@@ -833,7 +835,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                               );
                             }
                             return (
-                            // Single entity mode
+                              // Single entity mode
                               entityFields.map((field) => (
                                 <FormFieldRenderer
                                   key={`${additionalEntity.id}_${field.name}`}
@@ -906,7 +908,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                     <Checkbox
                       checked={isDraft}
                       onChange={(e) => setIsDraft(e.target.checked)}
-                      disabled={isSubmitting || (schema.isDraftByDefault === true && schema.allowDraftOverride === false)}
+                      disabled={isSubmitting || isUserHasImportInDraftOverride || (schema.isDraftByDefault === true && schema.allowDraftOverride === false)}
                     />
                   )}
                   label={t_i18n('Create as draft')}
