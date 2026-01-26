@@ -29,7 +29,6 @@ interface StixCyberObservableEditionProps {
   handleClose?: () => void;
 }
 
-// New inner component that receives the data
 interface StixCyberObservableEditionContentProps {
   stixCyberObservable: StixCyberObservableEditionContainerQuery$data['stixCyberObservable'];
   open: boolean;
