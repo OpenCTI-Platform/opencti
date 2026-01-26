@@ -69,7 +69,7 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
             except (UnroutableError, NackError):
                 retry_count = retry_count + 1
                 self.logger.info(
-                    "Unable to send bundle, retrying...", {"retry_count": ++retry_count}
+                    "Unable to send bundle, retrying...", {"retry_count": retry_count}
                 )
                 time.sleep(10)
 
