@@ -218,6 +218,7 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
       width: FINTEL_TEMPLATE_SIDEBAR_WIDTH,
       padding: `${theme.spacing(2)} 0`,
       paddingTop: `calc(${theme.spacing(2)} +  ${settingsMessagesBannerHeight}px)`,
+      zIndex: theme.zIndex.appBar - 1,
     },
   };
 

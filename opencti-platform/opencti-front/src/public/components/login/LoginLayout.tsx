@@ -27,6 +27,7 @@ const LogoBaseline = () => {
         position: 'absolute',
         bottom: theme.spacing(3),
         left: theme.spacing(3),
+        zIndex: 2,
       }}
     />
   );
@@ -68,17 +69,18 @@ const LoginLayout = ({ settings, children }: LoginLayoutProps) => {
     minWidth: 500,
     overflow: 'hidden',
     background: theme.palette.designSystem.background.main,
+    boxShadow: '8px 0px 9px 0px #0000000F',
+    zIndex: 2,
   };
 
   const background = theme.palette.mode === 'dark'
-    ? theme.palette.designSystem.gradient.background
-    : 'linear-gradient(100.35deg, #EAEAED 0%, #FEFEFF 100%)';
+    ? 'linear-gradient(100deg, #050A14 0%, #0C1728 100%);'
+    : 'linear-gradient(100deg, #EAEAED 0%, #FEFEFF 100%)';
 
   const asideSx: SxProps = {
     background,
     position: 'relative',
     overflow: 'hidden',
-    boxShadow: '8px 0px 9px 0px #0000000F inset',
   };
 
   return (

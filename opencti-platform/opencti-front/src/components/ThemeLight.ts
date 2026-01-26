@@ -14,7 +14,7 @@ const THEME_LIGHT_DEFAULT_PRIMARY = '#0015a8';
 const THEME_LIGHT_DEFAULT_SECONDARY = '#00BD94';
 const THEME_LIGHT_DEFAULT_ACCENT = '#dfdfdf';
 const THEME_LIGHT_DEFAULT_TEXT = '#18191B';
-const THEME_LIGHT_DEFAULT_PAPER = '#ffffff';
+export const THEME_LIGHT_DEFAULT_PAPER = '#ffffff';
 const THEME_LIGHT_DEFAULT_NAV = '#ffffff';
 
 const getAppBodyGradientEndColor = (background: string | null): string => {
