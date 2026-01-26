@@ -1735,7 +1735,7 @@ export const elFindByIds = async <T extends BasicStoreBase> (
   } = opts;
   const idsArray = Array.isArray(ids) ? ids : [ids];
   const types = (Array.isArray(type) || isEmptyField(type)) ? type : [type] as string[];
-  const processIds = R.filter((id) => isNotEmptyField(id), idsArray);
+  const processIds = idsArray.filter((id) => isNotEmptyField(id));
   if (processIds.length === 0) {
     return toMap ? {} as Record<string, T> : [] as T[];
   }
@@ -2933,7 +2933,10 @@ const buildSearchResult = <T extends BasicStoreBase>(
   return elements;
 };
 
-const tagFiltersForPostFiltering = (filters: FilterGroup | undefined | null) => {
+const tagFiltersForPostFiltering = (
+  filters: FilterGroup | undefined | null,
+  noRegardingOfFilterIdsCheck?: boolean,
+) => {
   const taggedFilters: (Filter & { postFilteringTag: string })[] = filters
     ? extractFiltersFromGroup(filters, [INSTANCE_REGARDING_OF, INSTANCE_DYNAMIC_REGARDING_OF])
         .filter((filter) => isEmptyField(filter.operator) || filter.operator === 'eq')
@@ -2951,7 +2954,7 @@ const tagFiltersForPostFiltering = (filters: FilterGroup | undefined | null) => 
         const taggedFilter = taggedFilters[i];
         postFilters.push({
           tag: taggedFilter.postFilteringTag,
-          postFilter: await buildRegardingOfFilter<T>(context, user, elementsIds, taggedFilter),
+          postFilter: await buildRegardingOfFilter<T>(context, user, elementsIds, taggedFilter, noRegardingOfFilterIdsCheck),
         });
       }
       return (element: T, tagsToIgnore: Set<string>) =>
@@ -2998,7 +3001,7 @@ export const elPaginate = async <T extends BasicStoreBase>(
     noRegardingOfFilterIdsCheck = false,
   } = options;
   // tagFiltersForPostFiltering have side effect on options.filters, it must be done before elQueryBodyBuilder
-  const createPostFilter = tagFiltersForPostFiltering(options.filters);
+  const createPostFilter = tagFiltersForPostFiltering(options.filters, noRegardingOfFilterIdsCheck);
   const body = await elQueryBodyBuilder(context, user, options);
   if (body.size > ES_MAX_PAGINATION && !bypassSizeLimit) {
     logApp.info('[SEARCH] Pagination limited to max result config', { size: body.size, max: ES_MAX_PAGINATION });
@@ -3021,7 +3024,7 @@ export const elPaginate = async <T extends BasicStoreBase>(
     const { hits: { hits, total: { value: globalCount } } } = await elRawSearch(context, user, types !== null ? types : 'Any', query);
     const elements = await elConvertHits<T>(hits);
     let finalElements = elements;
-    if (!noRegardingOfFilterIdsCheck && finalElements.length > 0 && createPostFilter) {
+    if (finalElements.length > 0 && createPostFilter) {
       // Since filters contains filters requiring post filtering (regardingOf, dynamicRegardingOf), a post-security filtering is needed
       const postFilter = await createPostFilter<T>(context, user, elements.map(({ id }) => id));
       finalElements = elements.filter((element, i) => {
@@ -3558,6 +3561,7 @@ const buildRegardingOfFilter = async <T extends BasicStoreBase> (
   user: AuthUser,
   elementIds: string[],
   filter: Filter,
+  noRegardingOfFilterIdsCheck?: boolean,
 ) => {
   // We need to ensure elements are filtered according to denormalization rights.
   const targetValidatedIds = new Set();
@@ -3609,7 +3613,10 @@ const buildRegardingOfFilter = async <T extends BasicStoreBase> (
       relationshipIndices = READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED;
     }
   }
-  const relationships = await elList<BasicStoreRelation>(context, user, relationshipIndices, paginateArgs);
+  const userListingRelationships = noRegardingOfFilterIdsCheck
+    ? SYSTEM_USER // relationships are listed by a user with all the rights to fetch all the relationships among relationshipIndices (relationships inferred or not)
+    : user;
+  const relationships = await elList<BasicStoreRelation>(context, userListingRelationships, relationshipIndices, paginateArgs);
   // compute side ids
   const addTypeSide = (sideId: string, sideType: string) => {
     targetValidatedIds.add(sideId);

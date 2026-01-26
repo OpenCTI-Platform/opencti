@@ -63,6 +63,7 @@ import { executionContext, REDACTED_USER } from '../utils/access';
 import { getNotifiers } from '../modules/notifier/notifier-domain';
 import { PROVIDERS } from '../config/providers-configuration';
 import { RELATION_HAS_CAPABILITY_IN_DRAFT } from '../schema/internalRelationship';
+import { loadCreator } from '../database/members';
 
 const userResolvers = {
   Query: {
@@ -117,11 +118,11 @@ const userResolvers = {
     default_dashboards: (current, _, context) => findDefaultDashboards(context, context.user, current),
     default_dashboard: (current, _, context) => findWorskpaceById(context, context.user, current.default_dashboard),
     draftContext: (current, _, context) => findDraftById(context, context.user, current.draft_context),
-    effective_confidence_level: (current, args, context) => getUserEffectiveConfidenceLevel(current, context),
+    effective_confidence_level: (current, _, context) => getUserEffectiveConfidenceLevel(current, context),
     personal_notifiers: (current, _, context) => getNotifiers(context, context.user, current.personal_notifiers),
   },
   UserSession: {
-    user: (session, _, context) => context.batch.creatorBatchLoader.load(session.user_id),
+    user: (session, _, context) => loadCreator(context, context.user, session.user_id),
   },
   Role: {
     editContext: (role) => fetchEditContext(role.id),
