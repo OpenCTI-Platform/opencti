@@ -1,30 +1,5 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import * as R from 'ramda';
-import { ascend, map, path, pathOr, pipe, sortWith, union } from 'ramda';
-import { Link } from 'react-router-dom';
-import { graphql } from 'react-relay';
-import withTheme from '@mui/styles/withTheme';
-import withStyles from '@mui/styles/withStyles';
-import Toolbar from '@mui/material/Toolbar';
-import MuiSwitch from '@mui/material/Switch';
-import Typography from '@mui/material/Typography';
-import Tooltip from '@mui/material/Tooltip';
-import List from '@mui/material/List';
-import Radio from '@mui/material/Radio';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
-import ListItem from '@mui/material/ListItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import Table from '@mui/material/Table';
-import TableHead from '@mui/material/TableHead';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableRow from '@mui/material/TableRow';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
 import {
   AddOutlined,
   AutoFixHighOutlined,
@@ -33,7 +8,6 @@ import {
   CenterFocusStrong,
   CheckCircleOutlined,
   ClearOutlined,
-  CloseOutlined,
   ContentCopyOutlined,
   DeleteOutlined,
   DeleteSweepOutlined,
@@ -46,38 +20,60 @@ import {
   TransformOutlined,
   UnpublishedOutlined,
 } from '@mui/icons-material';
-import { BankMinus, BankPlus, CloudRefreshOutline, LabelOutline } from 'mdi-material-ui';
-import Autocomplete from '@mui/material/Autocomplete';
-import Drawer from '@mui/material/Drawer';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@common/button/Button';
-import IconButton from '@common/button/IconButton';
-import Slide from '@mui/material/Slide';
-import Chip from '@mui/material/Chip';
-import DialogTitle from '@mui/material/DialogTitle';
-import Alert from '@mui/material/Alert';
-import TextField from '@mui/material/TextField';
-import Grid from '@mui/material/Grid';
-import Avatar from '@mui/material/Avatar';
 import { FormControlLabel, Switch } from '@mui/material';
+import Alert from '@mui/material/Alert';
+import Autocomplete from '@mui/material/Autocomplete';
+import Avatar from '@mui/material/Avatar';
 import Checkbox from '@mui/material/Checkbox';
+import Chip from '@mui/material/Chip';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import FormControl from '@mui/material/FormControl';
+import Grid from '@mui/material/Grid';
+import InputLabel from '@mui/material/InputLabel';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import MenuItem from '@mui/material/MenuItem';
+import Radio from '@mui/material/Radio';
+import Select from '@mui/material/Select';
+import Slide from '@mui/material/Slide';
+import MuiSwitch from '@mui/material/Switch';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import TextField from '@mui/material/TextField';
+import Toolbar from '@mui/material/Toolbar';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
+import withStyles from '@mui/styles/withStyles';
+import withTheme from '@mui/styles/withTheme';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
-import UserEmailSend from '../settings/users/UserEmailSend';
-import { objectParticipantFieldMembersSearchQuery } from '../common/form/ObjectParticipantField';
-import { objectAssigneeFieldMembersSearchQuery } from '../common/form/ObjectAssigneeField';
-import { vocabularyQuery } from '../common/form/OpenVocabField';
-import PromoteDrawer from './drawers/PromoteDrawer';
-import TasksFilterValueContainer from '../../../components/TasksFilterValueContainer';
-import inject18n from '../../../components/i18n';
-import { truncate } from '../../../utils/String';
-import { commitMutation, fetchQuery, MESSAGING$ } from '../../../relay/environment';
+import { BankMinus, BankPlus, CloudRefreshOutline, LabelOutline } from 'mdi-material-ui';
+import * as PropTypes from 'prop-types';
+import * as R from 'ramda';
+import { ascend, map, path, pathOr, pipe, sortWith, union } from 'ramda';
+import React, { Component } from 'react';
+import { graphql } from 'react-relay';
+import { Link } from 'react-router-dom';
 import ItemIcon from '../../../components/ItemIcon';
-import { objectMarkingFieldAllowedMarkingsQuery } from '../common/form/ObjectMarkingField';
-import { identitySearchIdentitiesSearchQuery } from '../common/identities/IdentitySearch';
-import { labelsSearchQuery } from '../settings/LabelsQuery';
+import ItemMarkings from '../../../components/ItemMarkings';
+import TasksFilterValueContainer from '../../../components/TasksFilterValueContainer';
+import FormButtonContainer from '../../../components/common/form/FormButtonContainer';
+import inject18n from '../../../components/i18n';
+import { commitMutation, fetchQuery, MESSAGING$ } from '../../../relay/environment';
+import { hexToRGB } from '../../../utils/Colors';
 import Security from '../../../utils/Security';
+import { truncate } from '../../../utils/String';
+import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
+import { getEntityTypeTwoFirstLevelsFilterValues, removeIdAndIncorrectKeysFromFilterGroupObject, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
+import { UserContext } from '../../../utils/hooks/useAuth';
 import {
   BYPASS,
   EXPLORE_EXUPDATE_EXDELETE,
@@ -89,16 +85,20 @@ import {
   KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
   SETTINGS_SETACCESSES,
 } from '../../../utils/hooks/useGranted';
-import { UserContext } from '../../../utils/hooks/useAuth';
-import { statusFieldStatusesSearchQuery } from '../common/form/StatusField';
-import { hexToRGB } from '../../../utils/Colors';
 import { externalReferencesQueriesSearchQuery } from '../analyses/external_references/ExternalReferencesQueries';
-import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainObjectCreation';
-import ItemMarkings from '../../../components/ItemMarkings';
-import { getEntityTypeTwoFirstLevelsFilterValues, removeIdAndIncorrectKeysFromFilterGroupObject, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
-import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
+import Drawer from '../common/drawer/Drawer';
 import EETooltip from '../common/entreprise_edition/EETooltip';
+import { objectAssigneeFieldMembersSearchQuery } from '../common/form/ObjectAssigneeField';
+import { objectMarkingFieldAllowedMarkingsQuery } from '../common/form/ObjectMarkingField';
+import { objectParticipantFieldMembersSearchQuery } from '../common/form/ObjectParticipantField';
+import { vocabularyQuery } from '../common/form/OpenVocabField';
+import { statusFieldStatusesSearchQuery } from '../common/form/StatusField';
+import { identitySearchIdentitiesSearchQuery } from '../common/identities/IdentitySearch';
+import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainObjectCreation';
 import { killChainPhasesSearchQuery } from '../settings/KillChainPhases';
+import { labelsSearchQuery } from '../settings/LabelsQuery';
+import UserEmailSend from '../settings/users/UserEmailSend';
+import PromoteDrawer from './drawers/PromoteDrawer';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -2773,24 +2773,11 @@ class DataTableToolBar extends Component {
                 </DialogActions>
               </Dialog>
               <Drawer
+                title={t('Update entities')}
                 open={this.state.displayUpdate}
-                anchor="right"
-                elevation={1}
-                sx={{ zIndex: 1202 }}
-                classes={{ paper: classes.drawerPaper }}
                 onClose={this.handleCloseUpdate.bind(this)}
               >
-                <div className={classes.header}>
-                  <IconButton
-                    aria-label="Close"
-                    className={classes.closeButton}
-                    onClick={this.handleCloseUpdate.bind(this)}
-                  >
-                    <CloseOutlined fontSize="small" color="primary" />
-                  </IconButton>
-                  <Typography variant="h6">{t('Update entities')}</Typography>
-                </div>
-                <div className={classes.container} style={{ marginTop: 20 }}>
+                <div>
                   {Array(actionsInputs.length)
                     .fill(0)
                     .map((item, i) => (
@@ -2848,7 +2835,7 @@ class DataTableToolBar extends Component {
                       <AddOutlined fontSize="small" />
                     </IconButton>
                   </div>
-                  <div className={classes.buttons}>
+                  <FormButtonContainer>
                     <Button
                       disabled={!this.areStepValid()}
                       onClick={this.handleLaunchUpdate.bind(this)}
@@ -2856,28 +2843,15 @@ class DataTableToolBar extends Component {
                     >
                       {t('Update')}
                     </Button>
-                  </div>
+                  </FormButtonContainer>
                 </div>
               </Drawer>
               <Drawer
+                title={t('Merge entities')}
                 open={this.state.displayMerge}
-                anchor="right"
-                elevation={1}
-                sx={{ zIndex: 1202 }}
-                classes={{ paper: classes.drawerPaper }}
                 onClose={this.handleCloseMerge.bind(this)}
               >
-                <div className={classes.header}>
-                  <IconButton
-                    aria-label="Close"
-                    className={classes.closeButton}
-                    onClick={this.handleCloseMerge.bind(this)}
-                  >
-                    <CloseOutlined fontSize="small" color="primary" />
-                  </IconButton>
-                  <Typography variant="h6">{t('Merge entities')}</Typography>
-                </div>
-                <div className={classes.container}>
+                <div>
                   <Typography
                     variant="h4"
                     gutterBottom={true}
@@ -3006,37 +2980,21 @@ class DataTableToolBar extends Component {
                       </Alert>
                     </>
                   )}
-                  <div className={classes.buttons}>
+                  <FormButtonContainer>
                     <Button
-                      variant="contained"
-                      color="secondary"
                       onClick={this.handleLaunchMerge.bind(this)}
-                      classes={{ root: classes.button }}
                     >
                       {t('Merge')}
                     </Button>
-                  </div>
+                  </FormButtonContainer>
                 </div>
               </Drawer>
               <Drawer
+                title={t('Entity enrichment')}
                 open={this.state.displayEnrichment}
-                anchor="right"
-                elevation={1}
-                sx={{ zIndex: 1202 }}
-                classes={{ paper: classes.drawerPaper }}
                 onClose={this.handleCloseEnrichment.bind(this)}
               >
-                <div className={classes.header}>
-                  <IconButton
-                    aria-label="Close"
-                    className={classes.closeButton}
-                    onClick={this.handleCloseEnrichment.bind(this)}
-                  >
-                    <CloseOutlined fontSize="small" color="primary" />
-                  </IconButton>
-                  <Typography variant="h6">{t('Entity enrichment')}</Typography>
-                </div>
-                <div className={classes.container}>
+                <div>
                   <Typography
                     variant="h4"
                     gutterBottom={true}
@@ -3075,20 +3033,17 @@ class DataTableToolBar extends Component {
                       </ListItem>
                     ))}
                   </List>
-                  <div className={classes.buttons}>
+                  <FormButtonContainer>
                     <Button
-                      variant="contained"
                       disabled={
                         this.state.enrichConnectors.length === 0
                         || this.state.enrichSelected.length === 0
                       }
-                      color="secondary"
                       onClick={this.handleLaunchEnrichment.bind(this)}
-                      classes={{ root: classes.button }}
                     >
                       {t('Enrich')}
                     </Button>
-                  </div>
+                  </FormButtonContainer>
                 </div>
               </Drawer>
               <PromoteDrawer
@@ -3101,24 +3056,11 @@ class DataTableToolBar extends Component {
                 togglePromoteToContainer={this.togglePromoteToContainer.bind(this)}
               />
               <Drawer
+                title={t('Rule entity rescan')}
                 open={this.state.displayRescan}
-                anchor="right"
-                elevation={1}
-                sx={{ zIndex: 1202 }}
-                classes={{ paper: classes.drawerPaper }}
                 onClose={this.handleCloseRescan.bind(this)}
               >
-                <div className={classes.header}>
-                  <IconButton
-                    aria-label="Close"
-                    className={classes.closeButton}
-                    onClick={this.handleCloseRescan.bind(this)}
-                  >
-                    <CloseOutlined fontSize="small" color="primary" />
-                  </IconButton>
-                  <Typography variant="h6">{t('Rule entity rescan')}</Typography>
-                </div>
-                <div className={classes.container}>
+                <div>
                   <Typography
                     variant="h4"
                     gutterBottom={true}
@@ -3131,16 +3073,13 @@ class DataTableToolBar extends Component {
                       'Element will be rescan with all compatible activated rules',
                     )}
                   </Alert>
-                  <div className={classes.buttons}>
+                  <FormButtonContainer>
                     <Button
-                      variant="contained"
-                      color="secondary"
                       onClick={this.handleLaunchRescan.bind(this)}
-                      classes={{ root: classes.button }}
                     >
                       {t('Rescan')}
                     </Button>
-                  </div>
+                  </FormButtonContainer>
                 </div>
               </Drawer>
               <Dialog

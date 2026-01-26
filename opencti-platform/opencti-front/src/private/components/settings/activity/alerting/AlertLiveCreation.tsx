@@ -4,14 +4,12 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import Drawer from '@mui/material/Drawer';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import * as Yup from 'yup';
-import DrawerHeader from '@common/drawer/DrawerHeader';
 import MarkdownField from '../../../../../components/fields/MarkdownField';
 import FilterIconButton from '../../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../../components/i18n';
@@ -29,25 +27,13 @@ import Filters from '../../../common/lists/Filters';
 import { TriggersLinesPaginationQuery$variables } from '../../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
 import { AlertLiveCreationActivityMutation, AlertLiveCreationActivityMutation$data } from './__generated__/AlertLiveCreationActivityMutation.graphql';
 import FormButtonContainer from '../../../../../components/common/form/FormButtonContainer';
+import Drawer from '../../../common/drawer/Drawer';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
+const useStyles = makeStyles<Theme>(() => ({
   dialogActions: {
     padding: '0 17px 20px 0',
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
   },
 }));
 
@@ -211,54 +197,43 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
   const renderClassic = () => (
     <div>
       <Drawer
-        disableRestoreFocus={true}
+        title={t_i18n('Create a live activity trigger')}
         open={open}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
       >
-        <DrawerHeader
-          title={t_i18n('Create a live activity trigger')}
-          onClose={handleClose}
-        />
-
-        <div className={classes.container}>
-          <Formik<TriggerActivityLiveAddInput>
-            initialValues={liveInitialValues}
-            validationSchema={liveActivityTriggerValidation(t_i18n)}
-            onSubmit={onLiveSubmit}
-            onReset={onReset}
-          >
-            {({
-              submitForm,
-              handleReset,
-              isSubmitting,
-              setFieldValue,
-              values,
-            }) => (
-              <Form>
-                {liveFields(setFieldValue, values)}
-                <FormButtonContainer>
-                  <Button
-                    variant="secondary"
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                  >
-                    {t_i18n('Cancel')}
-                  </Button>
-                  <Button
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                  >
-                    {t_i18n('Create')}
-                  </Button>
-                </FormButtonContainer>
-              </Form>
-            )}
-          </Formik>
-        </div>
+        <Formik<TriggerActivityLiveAddInput>
+          initialValues={liveInitialValues}
+          validationSchema={liveActivityTriggerValidation(t_i18n)}
+          onSubmit={onLiveSubmit}
+          onReset={onReset}
+        >
+          {({
+            submitForm,
+            handleReset,
+            isSubmitting,
+            setFieldValue,
+            values,
+          }) => (
+            <Form>
+              {liveFields(setFieldValue, values)}
+              <FormButtonContainer>
+                <Button
+                  variant="secondary"
+                  onClick={handleReset}
+                  disabled={isSubmitting}
+                >
+                  {t_i18n('Cancel')}
+                </Button>
+                <Button
+                  onClick={submitForm}
+                  disabled={isSubmitting}
+                >
+                  {t_i18n('Create')}
+                </Button>
+              </FormButtonContainer>
+            </Form>
+          )}
+        </Formik>
       </Drawer>
     </div>
   );

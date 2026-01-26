@@ -196,14 +196,8 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
           onClose={handleClose}
         />
 
-        {
-          /**
-          * opencti-drawer-container classname is used to handle in ThemeDark, ThemeLight
-          * when overriding specific components such as Select in drawer
-          */
-        }
         <div
-          className={`${classes.container} opencti-drawer-container`}
+          className={classes.container}
           style={{
             ...containerStyle,
             backgroundColor: theme.palette.background.drawer,
