@@ -16,6 +16,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 import Card from '../../../../components/common/card/Card';
 import BookmarkToggle from '../../../../components/common/bookmark/BookmarkToggle';
+import { getFileUri } from '../../../../utils/utils';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -111,7 +112,7 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
         variant="h4"
         sx={{
           margin: 0,
-          color: theme.palette.text.secondary,
+          color: theme.palette.text.light,
           whiteSpace: 'nowrap',
         }}
       >
@@ -134,25 +135,44 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
 
   return (
     <Card to={cardLink}>
-      <CardHeader
-        title={renderCardTitle(cardData)}
-        subheader={t_i18n(
-          'Last modified on',
-          { values: { date: fld(cardData.modified) } },
-        )}
-        sx={{
-          padding: 0,
-          mb: 2,
-          '.MuiCardHeader-content': {
-            minWidth: 0,
-          },
-          '.MuiCardHeader-subheader': {
-            fontSize: 12,
-            color: theme.palette.text.secondary,
-          },
-        }}
-      />
       <CardContent sx={{ p: 0 }}>
+        <Stack
+          flexWrap="nowrap"
+          overflow="hidden"
+          direction="row"
+          gap={1}
+          mb={2}
+        >
+          <div style={{ minWidth: 0 }}>
+            {renderCardTitle(cardData)}
+            <Typography
+              variant="body1"
+              sx={{ color: theme.palette.text.light,
+                lineHeight: '21px',
+                fontSize: '12px',
+              }}
+            >
+              {t_i18n(
+                'Last modified on',
+                { values: { date: fld(cardData.modified) } },
+              )}
+            </Typography>
+          </div>
+          {cardData.avatar && (
+            <div>
+              <img
+                style={{
+                  height: 37,
+                  maxWidth: 100,
+                  borderRadius: 4,
+                }}
+                src={getFileUri(cardData.avatar.id)}
+                alt={cardData.avatar.name}
+              />
+            </div>
+          )}
+        </Stack>
+
         <div className={classes.description}>
           <MarkdownDisplay
             content={cardData.description}
