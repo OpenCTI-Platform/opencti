@@ -64,7 +64,7 @@ export const SINGLE_SIGN_ON_DELETE = gql`
     }
 `;
 
-describe.skip('Single Sign On', () => {
+describe('Single Sign On', () => {
   let createdSingleSignOn1Id: string;
   let createdSingleSignOn2Id: string;
   const createdSingleSighOns: string[] = [];

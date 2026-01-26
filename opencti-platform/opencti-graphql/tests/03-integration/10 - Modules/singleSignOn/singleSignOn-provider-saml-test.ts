@@ -4,7 +4,7 @@ import type { BasicStoreEntitySingleSignOn } from '../../../../src/modules/singl
 import { type GroupsManagement, type OrganizationsManagement, StrategyType } from '../../../../src/generated/graphql';
 import { buildSAMLOptions, computeSamlGroupAndOrg, computeSamlUserInfo } from '../../../../src/modules/singleSignOn/singleSignOn-provider-saml';
 
-describe.skip('SAML Single sign on Provider coverage tests', () => {
+describe('SAML Single sign on Provider coverage tests', () => {
   describe('SAML configuration coverage', () => {
     it('should build correct options for SAML', async () => {
       const samlEntity: Partial<BasicStoreEntitySingleSignOn> = {
