@@ -279,7 +279,6 @@ const AIInsights = ({
             <Button
               color="ai"
               variant="tertiary"
-              size="small"
               startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" />}
             >
               {t_i18n('XTM AI')}
