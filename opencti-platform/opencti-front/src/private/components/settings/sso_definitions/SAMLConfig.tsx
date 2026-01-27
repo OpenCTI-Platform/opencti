@@ -13,6 +13,30 @@ interface Props {
 }
 const SAMLConfig = ({ updateField }: Props) => {
   const { t_i18n } = useFormatter();
+  const { values } = useFormikContext<SSODefinitionFormValues>();
+
+  const [commitCheck, isLoading] = useMutation<SAMLConfigSingleSignOnUrlCheckMutation>(singleSignOnUrlCheckMutation);
+
+  const testCallbackUrl = () => {
+    const url = values.callbackUrl;
+    if (!url) {
+      MESSAGING$.notifyError(t_i18n('URL is empty'));
+      return;
+    }
+    commitCheck({
+      variables: { url },
+      onCompleted: (response: SAMLConfigSingleSignOnUrlCheckMutation$data) => {
+        if (response?.singleSignOnUrlCheck?.success) {
+          MESSAGING$.notifySuccess(response.singleSignOnUrlCheck.message);
+        } else {
+          MESSAGING$.notifyError(response?.singleSignOnUrlCheck?.message);
+        }
+      },
+      onError: (error) => {
+        MESSAGING$.notifyError(error.message);
+      },
+    });
+  };
 
   return (
     <>
@@ -26,16 +50,35 @@ const SAMLConfig = ({ updateField }: Props) => {
         fullWidth
         style={{ marginTop: 10 }}
       />
-      <Field
-        component={TextField}
-        variant="standard"
-        name="callbackUrl"
-        label={t_i18n('SAML SSO URL')}
-        onSubmit={updateField}
-        fullWidth
-        required
-        style={{ marginTop: 10 }}
-      />
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 16,
+        marginTop: 10,
+      }}
+      >
+        <Field
+          component={TextField}
+          variant="standard"
+          name="callbackUrl"
+          label={t_i18n('SAML SSO URL')}
+          onSubmit={updateField}
+          fullWidth
+          required
+        />
+        <Tooltip title={t_i18n('Test URL')}>
+          <span>
+            <Button
+              variant="secondary"
+              onClick={testCallbackUrl}
+              disabled={isLoading}
+              style={{ whiteSpace: 'nowrap' }}
+            >
+              {t_i18n('Test')}
+            </Button>
+          </span>
+        </Tooltip>
+      </div>
       <Field
         id="filled-multiline-flexible"
         component={TextField}

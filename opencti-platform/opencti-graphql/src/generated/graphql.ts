@@ -15601,6 +15601,7 @@ export type Mutation = {
   singleSignOnDelete?: Maybe<Scalars['ID']['output']>;
   singleSignOnFieldPatch?: Maybe<SingleSignOn>;
   singleSignOnRunMigration?: Maybe<Array<Maybe<SingleSignOnMigrationResult>>>;
+  singleSignOnUrlCheck?: Maybe<UrlCheckResult>;
   statusTemplateAdd: StatusTemplate;
   statusTemplateContextClean: StatusTemplate;
   statusTemplateContextPatch: StatusTemplate;
@@ -17580,6 +17581,11 @@ export type MutationSingleSignOnFieldPatchArgs = {
 
 export type MutationSingleSignOnRunMigrationArgs = {
   input: SingleSignMigrationInput;
+};
+
+
+export type MutationSingleSignOnUrlCheckArgs = {
+  url: Scalars['String']['input'];
 };
 
 
@@ -33617,6 +33623,13 @@ export type UrlAddInput = {
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type UrlCheckResult = {
+  __typename?: 'UrlCheckResult';
+  message?: Maybe<Scalars['String']['output']>;
+  statusCode?: Maybe<Scalars['Int']['output']>;
+  success: Scalars['Boolean']['output'];
+};
+
 export type User = BasicObject & InternalObject & {
   __typename?: 'User';
   account_lock_after_date?: Maybe<Scalars['DateTime']['output']>;
@@ -37567,6 +37580,7 @@ export type ResolversTypes = ResolversObject<{
   Upload: ResolverTypeWrapper<Scalars['Upload']['output']>;
   Url: ResolverTypeWrapper<Omit<Url, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   UrlAddInput: UrlAddInput;
+  UrlCheckResult: ResolverTypeWrapper<UrlCheckResult>;
   User: ResolverTypeWrapper<Omit<User, 'administrated_organizations' | 'capabilities' | 'capabilitiesInDraft' | 'editContext' | 'effective_confidence_level' | 'groups' | 'objectAssignedOrganization' | 'objectOrganization' | 'personal_notifiers' | 'roles'> & { administrated_organizations: Array<ResolversTypes['Organization']>, capabilities: Array<Maybe<ResolversTypes['Capability']>>, capabilitiesInDraft: Array<Maybe<ResolversTypes['Capability']>>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, effective_confidence_level?: Maybe<ResolversTypes['EffectiveConfidenceLevel']>, groups?: Maybe<ResolversTypes['GroupConnection']>, objectAssignedOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, personal_notifiers?: Maybe<Array<ResolversTypes['Notifier']>>, roles: Array<ResolversTypes['Role']> }>;
   UserAccount: ResolverTypeWrapper<Omit<UserAccount, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   UserAccountAddInput: UserAccountAddInput;
@@ -38480,6 +38494,7 @@ export type ResolversParentTypes = ResolversObject<{
   Upload: Scalars['Upload']['output'];
   Url: Omit<Url, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   UrlAddInput: UrlAddInput;
+  UrlCheckResult: UrlCheckResult;
   User: Omit<User, 'administrated_organizations' | 'capabilities' | 'capabilitiesInDraft' | 'editContext' | 'effective_confidence_level' | 'groups' | 'objectAssignedOrganization' | 'objectOrganization' | 'personal_notifiers' | 'roles'> & { administrated_organizations: Array<ResolversParentTypes['Organization']>, capabilities: Array<Maybe<ResolversParentTypes['Capability']>>, capabilitiesInDraft: Array<Maybe<ResolversParentTypes['Capability']>>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, effective_confidence_level?: Maybe<ResolversParentTypes['EffectiveConfidenceLevel']>, groups?: Maybe<ResolversParentTypes['GroupConnection']>, objectAssignedOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, personal_notifiers?: Maybe<Array<ResolversParentTypes['Notifier']>>, roles: Array<ResolversParentTypes['Role']> };
   UserAccount: Omit<UserAccount, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   UserAccountAddInput: UserAccountAddInput;
@@ -44084,6 +44099,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   singleSignOnDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationSingleSignOnDeleteArgs, 'id'>>;
   singleSignOnFieldPatch?: Resolver<Maybe<ResolversTypes['SingleSignOn']>, ParentType, ContextType, RequireFields<MutationSingleSignOnFieldPatchArgs, 'id' | 'input'>>;
   singleSignOnRunMigration?: Resolver<Maybe<Array<Maybe<ResolversTypes['SingleSignOnMigrationResult']>>>, ParentType, ContextType, RequireFields<MutationSingleSignOnRunMigrationArgs, 'input'>>;
+  singleSignOnUrlCheck?: Resolver<Maybe<ResolversTypes['UrlCheckResult']>, ParentType, ContextType, RequireFields<MutationSingleSignOnUrlCheckArgs, 'url'>>;
   statusTemplateAdd?: Resolver<ResolversTypes['StatusTemplate'], ParentType, ContextType, RequireFields<MutationStatusTemplateAddArgs, 'input'>>;
   statusTemplateContextClean?: Resolver<ResolversTypes['StatusTemplate'], ParentType, ContextType, RequireFields<MutationStatusTemplateContextCleanArgs, 'id'>>;
   statusTemplateContextPatch?: Resolver<ResolversTypes['StatusTemplate'], ParentType, ContextType, RequireFields<MutationStatusTemplateContextPatchArgs, 'id' | 'input'>>;
@@ -48536,6 +48552,12 @@ export type UrlResolvers<ContextType = any, ParentType extends ResolversParentTy
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type UrlCheckResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['UrlCheckResult'] = ResolversParentTypes['UrlCheckResult']> = ResolversObject<{
+  message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  statusCode?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+}>;
+
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
   account_lock_after_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   account_status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -49873,6 +49895,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   TypeAttribute?: TypeAttributeResolvers<ContextType>;
   Upload?: GraphQLScalarType;
   Url?: UrlResolvers<ContextType>;
+  UrlCheckResult?: UrlCheckResultResolvers<ContextType>;
   User?: UserResolvers<ContextType>;
   UserAccount?: UserAccountResolvers<ContextType>;
   UserAgent?: UserAgentResolvers<ContextType>;

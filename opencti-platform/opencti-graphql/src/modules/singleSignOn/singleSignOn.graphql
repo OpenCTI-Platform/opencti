@@ -63,6 +63,12 @@ enum SingleSignOnOrdering {
   _score
 }
 
+type UrlCheckResult {
+  success: Boolean!
+  message: String
+  statusCode: Int
+}
+
 type SingleSignOnEdge {
   cursor: String!
   node: SingleSignOn!
@@ -148,4 +154,5 @@ type Mutation {
   singleSignOnFieldPatch(id: ID!, input: [EditInput!]!): SingleSignOn @auth(for: [SETTINGS_SETAUTH])
   singleSignOnDelete(id: ID!): ID @auth(for: [SETTINGS_SETAUTH])
   singleSignOnRunMigration(input: SingleSignMigrationInput!): [SingleSignOnMigrationResult] @auth(for: [BYPASS])
+  singleSignOnUrlCheck(url: String!): UrlCheckResult @auth(for: [SETTINGS_SETAUTH])
 }
