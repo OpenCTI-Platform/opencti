@@ -6,11 +6,17 @@ import { last } from 'ramda';
 import { APP_BASE_PATH } from '../relay/environment';
 import { isNotEmptyField } from './utils';
 
-// the relative date values must be: 'now' OR 'now' followed by -/+ then a number then a letter among [smhHdwMy] and eventually a / followed by a letter among [smhHdwMy]
+// the relative date values must be:
+// 'now'
+// OR 'now' followed by -/+ then a number then a letter among [smhHdwMy] and eventually a / followed by a letter among [smhHdwMy]
 export const RELATIVE_DATE_REGEX = /^now([-+]\d+[smhHdwMy](\/[smhHdwMy])?)?$/;
 
-export const truncate = (str, limit, truncateSpaces = true) => {
-  if (str === undefined || str === null || str.length <= limit) {
+export const truncate = <S extends string | undefined | null>(
+  str: S,
+  limit?: number,
+  truncateSpaces = true,
+) => {
+  if (str === undefined || str === null || (limit && str.length <= limit)) {
     return str;
   }
   const trimmedStr = str.substring(0, limit);
@@ -23,7 +29,7 @@ export const truncate = (str, limit, truncateSpaces = true) => {
   )}...`;
 };
 
-export const adaptFieldValue = (value) => {
+export const adaptFieldValue = (value?: unknown) => {
   if (Array.isArray(value)) {
     return value;
   }
@@ -33,9 +39,9 @@ export const adaptFieldValue = (value) => {
   return value.toString();
 };
 
-export const pascalize = (s) => s.replace(/(\w)(\w*)/g, (g0, g1, g2) => g1.toUpperCase() + g2.toLowerCase());
+export const pascalize = (s: string) => s.replace(/(\w)(\w*)/g, (g0, g1, g2) => g1.toUpperCase() + g2.toLowerCase());
 
-export const convertFromStixType = (s) => {
+export const convertFromStixType = (s?: string) => {
   if (!s) {
     return s;
   }
@@ -55,7 +61,7 @@ export const convertFromStixType = (s) => {
   return type;
 };
 
-export const convertToStixType = (type) => {
+export const convertToStixType = (type?: string) => {
   if (!type) {
     return type;
   }
@@ -74,7 +80,7 @@ export const convertToStixType = (type) => {
   return type.toLowerCase();
 };
 
-export const isValidStixBundle = (bundle) => {
+export const isValidStixBundle = (bundle: string) => {
   try {
     const data = JSON.parse(bundle);
     return !!(data.objects && data.objects.length > 0);
@@ -83,34 +89,46 @@ export const isValidStixBundle = (bundle) => {
   }
 };
 
-export const toB64 = (str) => Base64.encodeURI(str);
+export const toB64 = (str: string) => Base64.encodeURI(str);
 
-export const toBase64 = (str) => Base64.encode(str);
+export const toBase64 = (str: string) => Base64.encode(str);
 
-export const fromB64 = (str) => Base64.decode(str);
+export const fromB64 = (str: string) => Base64.decode(str);
 
-export const fromBase64 = (str) => Base64.encode(str);
+export const fromBase64 = (str: string) => Base64.encode(str);
 
-export const uniqWithByFields = R.curry((fields, data) => R.uniqWith(R.allPass(R.map(R.eqProps)(fields)))(data));
+const attributeComparator = (fields: string[]) => (a: Record<string, object>, b: Record<string, object>) => fields.every((f) => a[f] === b[f]);
 
-export const computeDuplicates = (fields, data) => R.groupWith(R.allPass(R.map(R.eqProps)(fields)), data);
+export const uniqWithByFields = R.curry((fields: string[], data: Record<string, object>[]) => {
+  R.uniqWith(attributeComparator(fields))(data);
+});
 
-export const capitalizeFirstLetter = (str) => str.charAt(0).toUpperCase() + str.slice(1);
+export const computeDuplicates = (fields: string[], data: Record<string, object>[]) => {
+  R.groupWith(attributeComparator(fields), data);
+};
 
-export const capitalizeWords = (str) => str.split(' ').map(capitalizeFirstLetter).join(' ');
+export const capitalizeFirstLetter = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
-export const toCamelCase = (str) => {
+export const capitalizeWords = (str: string) => str.split(' ').map(capitalizeFirstLetter).join(' ');
+
+export const toCamelCase = (str: string) => {
   return str.replace(/[^a-zA-Z0-9 ]/g, '').replace(/(?:^\w|[A-Z]|\b\w)/g, (word, i) => {
     return i === 0 ? word.toLowerCase() : word.toUpperCase();
   }).replace(/\s+/g, '');
 };
 
-export const renderObservableValue = (observable) => {
+export const renderObservableValue = (
+  observable: {
+    entity_type: string;
+    observable_value: string;
+    countries?: { edges: { node: { x_opencti_aliases: string[]; name: string } }[] };
+  },
+) => {
   switch (observable.entity_type) {
     case 'IPv4-Addr':
     case 'IPv6-Addr':
-      if ((observable.countries?.edges ?? []).length > 0) {
-        const country = R.head(observable.countries.edges).node;
+      if (observable.countries && (observable.countries.edges ?? []).length > 0) {
+        const country = observable.countries.edges[0].node;
         const flag = R.head(
           (country.x_opencti_aliases ?? []).filter((n) => n.length === 2),
         );
@@ -139,18 +157,20 @@ export const renderObservableValue = (observable) => {
   }
 };
 
-export const emptyFilled = (str) => (isNotEmptyField(str) ? str : '-');
+export const emptyFilled = <S extends string | number | null | undefined>(str: S) => {
+  return isNotEmptyField(str) ? str : '-';
+};
 
 /**
  * @param str {string}
  * @returns {string[]}
  */
-export const splitMultilines = (str) => (str ?? '')
+export const splitMultilines = (str?: string) => (str ?? '')
   .split(/\r?\n/)
   .filter((v) => !!v)
   .map((s) => s.trim());
 
-export const maskString = (value) => (value ? '•'.repeat(value.length) : '');
+export const maskString = (value?: string) => (value ? '•'.repeat(value.length) : '');
 
 /**
  * Add zero-width spaces every 10 characters in a string.
@@ -160,7 +180,7 @@ export const maskString = (value) => (value ? '•'.repeat(value.length) : '');
  * @param value String to make wrappable.
  * @returns {string} Same string but wrappable.
  */
-export const stringWithZeroWidthSpace = (value) => {
+export const stringWithZeroWidthSpace = (value: string) => {
   return (value.match(/.{1,10}/g) ?? []).join('​');
 };
 
@@ -171,7 +191,8 @@ export const stringWithZeroWidthSpace = (value) => {
  * @param stringDate String
  * @returns {boolean} If the string is in a correct date format.
  */
-export const isValidDate = (stringDate) => {
+export const isValidDate = (stringDate: string | null | undefined) => {
+  if (!stringDate) return undefined;
   const dateParsed = Date.parse(stringDate);
   if (!dateParsed) return false;
   const dateInstance = new Date(dateParsed);
@@ -187,7 +208,7 @@ export const isValidDate = (stringDate) => {
  * @param {string[]}
  * @returns {boolean} If the array is translatable in a relative date interval phrase
  */
-export const isDateIntervalTranslatable = (filterValues) => {
+export const isDateIntervalTranslatable = (filterValues: string[]) => {
   return filterValues.length === 2
     && filterValues[1] === 'now'
     && filterValues[0].match(RELATIVE_DATE_REGEX)
@@ -201,11 +222,11 @@ export const isDateIntervalTranslatable = (filterValues) => {
  * @param {string[]}
  * @returns {string} Translation in a relative date interval phrase
  */
-export const translateDateInterval = (filterValues, t_i18n) => {
+export const translateDateInterval = (filterValues: string[], t_i18n: (s: string) => string) => {
   if (!isDateIntervalTranslatable(filterValues)) {
     throw Error('The interval of value is not translatable in a relative date interval phrase.');
   }
-  const relativeUnitMapInPlural = {
+  const relativeUnitMapInPlural: Record<string, string> = {
     s: t_i18n('seconds'),
     m: t_i18n('minutes'),
     H: t_i18n('hours'),
@@ -215,7 +236,7 @@ export const translateDateInterval = (filterValues, t_i18n) => {
     M: t_i18n('months'),
     y: t_i18n('years'),
   };
-  const relativeUnitMapInSingular = {
+  const relativeUnitMapInSingular: Record<string, string> = {
     s: t_i18n('second'),
     m: t_i18n('minute'),
     H: t_i18n('hour'),
@@ -241,7 +262,7 @@ export const translateDateInterval = (filterValues, t_i18n) => {
  * @param {string|undefined} value The entity type to translate
  * @returns {string} Translation in a translatable string
  */
-export const displayEntityTypeForTranslation = (value) => {
+export const displayEntityTypeForTranslation = (value?: string) => {
   if (!value) return undefined;
   return value.toString()[0] === value.toString()[0].toUpperCase()
     ? `entity_${value.toString()}`
@@ -254,9 +275,9 @@ export const displayEntityTypeForTranslation = (value) => {
  * @returns {*[]}
  * @param text
  */
-export const extractUrlsFromText = (text) => {
+export const extractUrlsFromText = (text: string) => {
   const extractUrlsregex = /\b(?:https?:\/\/|www\.)\S+\b/gm;
-  const matches = [...text.matchAll(extractUrlsregex)];
+  const matches = Array.from(text.matchAll(extractUrlsregex));
   const parts = [];
   let lastIndex = 0;
 
