@@ -307,7 +307,7 @@ const StixDomainObjectHeader = (props) => {
   // Remove CRUD button in Draft context without the minimal right access "canEdit"
   const draftContext = useDraftContext();
   const currentDraftAccessRight = useGetCurrentUserAccessRight(draftContext?.currentUserAccessRight);
-  const canEdit = !draftContext || currentDraftAccessRight.canEdit;
+  const canEdit = currentAccessRight.canEdit && (!draftContext || currentDraftAccessRight.canEdit);
 
   const openAliasesCreate = false;
   const [openAlias, setOpenAlias] = useState(false);
