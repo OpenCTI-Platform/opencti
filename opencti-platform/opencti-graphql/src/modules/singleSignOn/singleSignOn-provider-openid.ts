@@ -1,17 +1,61 @@
 import { ConfigurationError } from '../../config/errors';
-import { logApp } from '../../config/conf';
+import { getPlatformHttpProxyAgent, logApp } from '../../config/conf';
+import { custom as OpenIDCustom, Issuer as OpenIDIssuer, Strategy as OpenIDStrategy } from 'openid-client';
+import { enrichWithRemoteCredentials } from '../../config/credentials';
 import * as R from 'ramda';
 import { addUserLoginCount } from '../../manager/telemetryManager';
+import { isNotEmptyField } from '../../database/utils';
 import { jwtDecode } from 'jwt-decode';
-import { convertKeyValueToJsConfiguration, genConfigMapper, providerLoginHandler } from './singleSignOn-providers';
-import { AuthType, EnvStrategyType } from '../../config/providers-configuration';
+import { convertKeyValueToJsConfiguration, genPairConfigMapper, providerLoginHandler } from './singleSignOn-providers';
+import { AuthType, EnvStrategyType } from './providers-configuration';
 import { logAuthInfo } from './singleSignOn-domain';
-import { registerAuthenticationProvider } from '../../config/providers-initialization';
-import type { BasicStoreEntitySingleSignOn } from './singleSignOn-types';
-// @ts-expect-error no idea wht types are not visible
-import { Strategy, type VerifyFunction, type StrategyOptions } from 'openid-client/passport';
-import * as client from 'openid-client';
-import type passport from 'passport';
+import { registerAuthenticationProvider } from './providers-initialization';
+import type { BasicStoreEntitySingleSignOn, GroupsManagement, OrganizationsManagement } from './singleSignOn-types';
+
+export const computeOpenIdUserInfo = (ssoConfig: any, user_attribute_obj: any) => {
+  const nameAttribute = ssoConfig.name_attribute ?? 'name';
+  const emailAttribute = ssoConfig.email_attribute ?? 'email';
+  const firstnameAttribute = ssoConfig.firstname_attribute ?? 'given_name';
+  const lastnameAttribute = ssoConfig.lastname_attribute ?? 'family_name';
+
+  const name = user_attribute_obj[nameAttribute];
+  const email = user_attribute_obj[emailAttribute];
+  const firstname = user_attribute_obj[firstnameAttribute];
+  const lastname = user_attribute_obj[lastnameAttribute];
+
+  return { email, name, firstname, lastname };
+};
+
+export const computeOpenIdOrganizationsMapping = (orgsManagement: OrganizationsManagement, decodedUser: any, userinfo: any, orgaDefault: string[]) => {
+  const readUserinfo = orgsManagement?.read_userinfo || false;
+  const orgasMapping = orgsManagement?.organizations_mapping || [];
+  const orgaPath = orgsManagement?.organizations_path || ['organizations'];
+  const availableOrgas = R.flatten(orgaPath.map((path) => {
+    const userClaims = (readUserinfo) ? userinfo : decodedUser;
+    const value = R.path(path.split('.'), userClaims) || [];
+    return Array.isArray(value) ? value : [value];
+  }));
+  const orgasMapper = genPairConfigMapper(orgasMapping);
+  return [...orgaDefault, ...availableOrgas.map((a) => orgasMapper[a]).filter((r) => isNotEmptyField(r))];
+};
+
+export const computeOpenIdGroupsMapping = (groupManagement: GroupsManagement, decodedUser: any, userinfo: any) => {
+  const readUserinfo = groupManagement?.read_userinfo || false;
+  const groupsPath = groupManagement?.groups_path || ['groups'];
+  const groupsMapping = groupManagement?.groups_mapping || [];
+
+  if (!readUserinfo) {
+    logAuthInfo('Groups mapping on decoded token', EnvStrategyType.STRATEGY_OPENID, { decoded: decodedUser });
+  }
+  logAuthInfo(`Groups mapping readUserinfo:${readUserinfo}`, EnvStrategyType.STRATEGY_OPENID, { decodedUser, userinfo, groupsPath, groupsMapping });
+  const availableGroups = R.flatten(groupsPath.map((path) => {
+    const userClaims = (readUserinfo) ? userinfo : decodedUser;
+    const value = R.path(path.split('.'), userClaims) || [];
+    return Array.isArray(value) ? value : [value];
+  }));
+  const groupsMapper = genPairConfigMapper(groupsMapping);
+  return availableGroups.map((a) => groupsMapper[a]).filter((r) => isNotEmptyField(r));
+};
 
 // (ssoEntity: BasicStoreEntitySingleSignOn)
 export const registerOpenIdStrategy = async (ssoEntity: BasicStoreEntitySingleSignOn) => {
@@ -35,6 +79,7 @@ export const registerOpenIdStrategy = async (ssoEntity: BasicStoreEntitySingleSi
     if (!issuerConfiguration) {
       throw ConfigurationError('issuer is mandatory for OpenID', { id: ssoEntity.id, name: ssoEntity.name, identifier: ssoEntity.identifier });
     }
+    const issuer = ssoConfig['issuer'];
 
     const clientSecretConfiguration = ssoEntity.configuration.find((configuration) => configuration.key === 'client_secret');
     if (!clientSecretConfiguration) {
@@ -42,55 +87,96 @@ export const registerOpenIdStrategy = async (ssoEntity: BasicStoreEntitySingleSi
     }
 
     logAuthInfo(`OpenIDConnectStrategy found in database providerRef:${providerRef}`, EnvStrategyType.STRATEGY_OPENID);
-
-    const callbackURL = URL.parse(ssoConfig.redirect_uris[0]);
-    const server = URL.parse(ssoConfig.issuer); // Authorization server's Issuer Identifier URL
-
-    if (server && callbackURL) {
-      const clientId: string = ssoConfig.client_id;
-      const clientSecret: string = ssoConfig.client_secret;
-
-      const config = await client.discovery(server, clientId, { clientSecret });
-
-      const defaultScopes = ssoConfig.default_scopes ?? ['openid', 'email', 'profile'];
-      const openIdScopeList = [...defaultScopes];
-      const groupsScope = ssoEntity.groups_management?.groups_scope;
-      if (groupsScope) {
-        openIdScopeList.push(groupsScope);
-      }
-      const organizationsScope = ssoEntity.organizations_management?.organizations_scope;
-      if (organizationsScope) {
-        openIdScopeList.push(organizationsScope);
-      }
-      const openIdScope = R.uniq(openIdScopeList).join(' ');
-
-      const options: StrategyOptions = {
-        config,
-        scope: openIdScope,
-        callbackURL,
-        passReqToCallback: true,
-      };
-
-      const openidLoginCallback: VerifyFunction = (tokens: client.TokenEndpointResponse & client.TokenEndpointResponseHelpers, verified: passport.AuthenticateCallback) => {
-        const accessToken = tokens['access_token'];
-        const idToken = tokens['id_token'];
-        let decodedUser;
-        if (idToken) {
-          decodedUser = jwtDecode(idToken);
+    // Here we use directly the config and not the mapped one.
+    // All config of openid lib use snake case.
+    const openIdClient = ssoConfig.use_proxy ? getPlatformHttpProxyAgent(issuer) : undefined;
+    OpenIDCustom.setHttpOptionsDefaults({ timeout: 0, agent: openIdClient });
+    enrichWithRemoteCredentials(`providers:${providerRef}`, ssoConfig).then((clientConfig) => {
+      OpenIDIssuer.discover(issuer).then((issuer) => {
+        const { Client } = issuer;
+        const client = new Client(clientConfig);
+        // region scopes generation
+        const defaultScopes = ssoConfig.default_scopes ?? ['openid', 'email', 'profile'];
+        const openIdScopes = [...defaultScopes];
+        const groupsScope = ssoConfig.groups_management?.groups_scope;
+        if (groupsScope) {
+          openIdScopes.push(groupsScope);
         }
+        const organizationsScope = ssoConfig.organizations_management?.organizations_scope;
+        if (organizationsScope) {
+          openIdScopes.push(organizationsScope);
+        }
+        // endregion
+        const openIdScope = R.uniq(openIdScopes).join(' ');
+        const options = {
+          logout_remote: ssoConfig.logout_remote, client, passReqToCallback: true,
+          params: {
+            scope: openIdScope, ...(ssoConfig.audience && { audience: ssoConfig.audience }),
+          },
+        };
+        const openIDStrategy = new OpenIDStrategy(options, (_, tokenset, userinfo, done) => {
+          logAuthInfo('Successfully logged', EnvStrategyType.STRATEGY_OPENID, { userinfo });
+          // TODO usefull or not ? const accessToken = tokenset['access_token'];
+          const idToken = tokenset['id_token'];
+          let decodedUser;
+          if (idToken) {
+            decodedUser = jwtDecode(idToken);
+          }
 
-        const claims = tokens.claims();
-        logApp.info('OPENID 2: INFO', { claims, accessToken, tokens, dec: decodedUser });
+          addUserLoginCount();
+          const isGroupMapping = (isNotEmptyField(ssoEntity?.groups_management) && isNotEmptyField(ssoEntity?.groups_management?.groups_mapping));
+          logAuthInfo('Groups management configuration', EnvStrategyType.STRATEGY_OPENID, { groupsManagement: ssoEntity?.groups_management });
+          let mappedGroups: string[] = [];
+          if (isGroupMapping && ssoEntity.groups_management) {
+            mappedGroups = computeOpenIdGroupsMapping(ssoEntity.groups_management, decodedUser, userinfo);
+          }
+          const groupsToAssociate = R.uniq(mappedGroups);
+          // endregion
+          // region organizations mapping
+          const isOrgaMapping = isNotEmptyField(ssoConfig.organizations_default) || isNotEmptyField(ssoEntity.organizations_management);
+          const orgsManagement = ssoEntity.organizations_management;
+          const orgaDefault = ssoConfig.organizations_default ?? [];
+          const organizationsToAssociate = isOrgaMapping && orgsManagement ? computeOpenIdOrganizationsMapping(orgsManagement, decodedUser, userinfo, orgaDefault) : [];
+          // endregion
+          if (!isGroupMapping || groupsToAssociate.length > 0) {
+            const get_user_attributes_from_id_token = ssoConfig.get_user_attributes_from_id_token ?? false;
+            const user_attribute_obj = get_user_attributes_from_id_token && idToken ? jwtDecode(idToken) : userinfo;
+            const userInfo = computeOpenIdUserInfo(ssoConfig, user_attribute_obj);
 
-        logAuthInfo('Successfully logged', EnvStrategyType.STRATEGY_OPENID, { userinfo: tokens.claims() });
-        addUserLoginCount();
-        providerLoginHandler({ email, name, firstname, lastname }, verified, {});
-      };
-
-      const openIdStrategy = new Strategy(options, openidLoginCallback);
-      const providerConfig = { name: providerName, type: AuthType.AUTH_SSO, strategy: EnvStrategyType.STRATEGY_OPENID, provider: providerRef };
-      registerAuthenticationProvider(providerRef, openIdStrategy, providerConfig);
-    }
+            const opts = {
+              providerGroups: groupsToAssociate,
+              providerOrganizations: organizationsToAssociate,
+              autoCreateGroup: ssoConfig.auto_create_group ?? false,
+            };
+            providerLoginHandler(userInfo, done, opts);
+          } else {
+            done({ message: 'Restricted access, ask your administrator' });
+          }
+        });
+        /* TODO openIDStrategy.logout_remote = options.logout_remote;
+        logAuthInfo('logout remote options', EnvStrategyType.STRATEGY_OPENID, options);
+        openIDStrategy.logout = (_, callback) => {
+          const isSpecificUri = isNotEmptyField(ssoConfig.logout_callback_url);
+          const endpointUri = issuer.end_session_endpoint ? issuer.end_session_endpoint : `${ssoConfig.issuer}/oidc/logout`;
+          logAuthInfo(`logout configuration, isSpecificUri:${isSpecificUri},
+           issuer.end_session_endpoint:${issuer.end_session_endpoint}, final endpointUri: ${endpointUri}`, EnvStrategyType.STRATEGY_OPENID);
+          if (isSpecificUri) {
+            const logoutUri = `${endpointUri}?post_logout_redirect_uri=${ssoConfig.logout_callback_url}`;
+            callback(null, logoutUri);
+          } else {
+            callback(null, endpointUri);
+          }
+        };
+        */
+        const providerConfig = { name: providerName, type: AuthType.AUTH_SSO, strategy: EnvStrategyType.STRATEGY_OPENID, provider: providerRef };
+        registerAuthenticationProvider(providerRef, openIDStrategy, providerConfig);
+      }).catch((err) => {
+        logApp.error('[SSO OPENID] Error initializing authentication provider', {
+          cause: err,
+          provider: providerRef,
+        });
+      });
+    }).catch((reason) => logApp.error('[SSO OPENID] Error when enrich with remote credentials', { cause: reason }));
   } else {
     throw ConfigurationError('SSO configuration is empty', { id: ssoEntity.id, name: ssoEntity.name, identifier: ssoEntity.identifier, strategy: ssoEntity.strategy });
   }
