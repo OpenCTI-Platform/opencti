@@ -1,6 +1,5 @@
 import { ReactNode, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { Stack } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -96,34 +95,6 @@ const StixCoreObjectSharingList = ({ data, disabled, inContainer, children }: St
     >
       {children}
     </TagsOverflow>
-  );
-
-  // return (
-  //   <>
-  //     {objectOrganization?.map((organization) => (
-  //       <Tag
-  //         key={organization.id}
-  //         label={organization.name}
-  //         onDelete={() => removeOrganization(organization.id)}
-  //         disabled={fullyDisabled || disabledOrgs.includes(organization.id)}
-  //         icon={<AccountBalanceOutlined fontSize="small" />}
-  //       />
-  //     ))}
-  //   </>
-  // );
-
-  return (
-    <Stack direction="row" gap={1}>
-      {objectOrganization?.map((organization) => (
-        <Tag
-          key={organization.id}
-          label={organization.name}
-          onDelete={() => removeOrganization(organization.id)}
-          disabled={fullyDisabled || disabledOrgs.includes(organization.id)}
-          icon={<AccountBalanceOutlined fontSize="small" />}
-        />
-      ))}
-    </Stack>
   );
 };
 

@@ -42,7 +42,6 @@ export function useTagsOverflowDetection({
     const checkOverflow = () => {
       const containerWidth = visibleContainer.offsetWidth;
 
-      // Early exit if container has no width yet
       if (containerWidth === 0) {
         return;
       }
@@ -62,7 +61,8 @@ export function useTagsOverflowDetection({
       ) as HTMLElement;
       const overflowWidth = overflowIndicator ? overflowIndicator.offsetWidth : 0;
 
-      // Get the trailing content (button) width
+      // Get the trailing content width (corresponds to the elements that are part of
+      // the container to overflow
       const trailingElement = measureContainer.querySelector(
         '[data-trailing-content]',
       ) as HTMLElement;
@@ -72,13 +72,11 @@ export function useTagsOverflowDetection({
       let count = 0;
       const gapWidth = gapPx;
 
-      // Start with trailing content width (if present)
       const baseWidth = trailingWidth + (trailingWidth > 0 ? gapWidth : 0);
 
       for (let i = 0; i < tagElements.length; i++) {
         const tagWidth = tagElements[i].offsetWidth;
 
-        // Skip if tag hasn't rendered yet
         if (tagWidth === 0) {
           continue;
         }
@@ -111,7 +109,6 @@ export function useTagsOverflowDetection({
     // Use setTimeout to ensure DOM is fully rendered before measuring
     const timeoutId = setTimeout(checkOverflow, 0);
 
-    // Observe container resize
     const resizeObserver = new ResizeObserver(() => {
       checkOverflow();
     });

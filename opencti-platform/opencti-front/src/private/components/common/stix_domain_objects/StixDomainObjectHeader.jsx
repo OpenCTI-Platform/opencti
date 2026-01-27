@@ -477,7 +477,7 @@ const StixDomainObjectHeader = (props) => {
 
   return (
     <React.Suspense fallback={<span />}>
-      <Stack gap={1} sx={{ marginBottom: 3 }}>
+      <Stack gap={1} sx={{ marginBottom: 1 }}>
         <Stack
           direction="row"
           justifyContent="space-between"

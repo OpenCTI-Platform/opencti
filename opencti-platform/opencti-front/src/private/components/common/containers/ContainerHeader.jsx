@@ -65,6 +65,9 @@ export const containerHeaderObjectsQuery = graphql`
         x_opencti_order
         x_opencti_color
       }
+      objectOrganization {
+        id
+      }
       objects(all: true) {
         edges {
           types
@@ -432,6 +435,8 @@ const containerHeaderEditAuthorizedMembersMutation = graphql`
   }
 `;
 
+const TAGS_HEIGHT = 25;
+
 const ContainerHeader = (props) => {
   const {
     container,
@@ -497,7 +502,7 @@ const ContainerHeader = (props) => {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: theme.spacing(3),
+    marginBottom: theme.spacing(1),
   };
   const overrideContainerStyle = knowledge || currentMode === 'graph' || currentMode === 'correlation';
   if (overrideContainerStyle) {
@@ -505,7 +510,7 @@ const ContainerHeader = (props) => {
     containerStyle = {
       position: 'absolute',
       display: 'flex',
-      top: 200 + bannerHeightNumber + settingsMessagesBannerHeight,
+      top: 190 + bannerHeightNumber + settingsMessagesBannerHeight,
       right: 24,
     };
   }
@@ -530,6 +535,7 @@ const ContainerHeader = (props) => {
       ],
     },
   };
+
   const isAuthorizedMembersEnabled = !disableAuthorizedMembers;
   const currentAccessRight = useGetCurrentUserAccessRight(container.currentUserAccessRight);
   const enableManageAuthorizedMembers = currentAccessRight.canManage && isAuthorizedMembersEnabled;
@@ -812,6 +818,7 @@ const ContainerHeader = (props) => {
             alignContent="center"
             justifyContent="space-between"
             gap={3}
+            sx={{ height: TAGS_HEIGHT }}
           >
             <Stack
               direction="row"
