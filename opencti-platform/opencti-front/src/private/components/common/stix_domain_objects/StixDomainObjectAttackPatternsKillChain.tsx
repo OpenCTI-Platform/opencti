@@ -269,14 +269,14 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   const matrixInLineViewButton = (
     <Tooltip title={t_i18n('Matrix in line view')} key="matrix-in-line">
       <ToggleButton value="matrix-in-line" aria-label="matrix-in-line" onClick={() => handleChangeView('matrix-in-line')}>
-        <FiligranIcon icon={ListViewIcon} size="small" color={currentView === 'matrix-in-line' ? 'secondary' : 'primary'} />
+        <FiligranIcon icon={ListViewIcon} size="small" />
       </ToggleButton>
     </Tooltip>
   );
   const killChainViewButton = (
     <Tooltip title={t_i18n('Kill chain view')} key="list">
       <ToggleButton value="list" aria-label="list" onClick={() => handleChangeView('list')}>
-        <FiligranIcon icon={SublistViewIcon} size="small" color={currentView === 'list' ? 'secondary' : 'primary'} />
+        <FiligranIcon icon={SublistViewIcon} size="small" />
       </ToggleButton>
     </Tooltip>
   );
