@@ -128,7 +128,7 @@ const Message = () => {
       case 'nlq':
         return (
           <Alert
-            icon={<FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" />}
+            icon={<FiligranIcon icon={LogoXtmOneIcon} size="small" />}
             style={{ backgroundColor: theme.palette.ai.background, color: theme.palette.ai.light }}
             onClose={() => handleCloseMessage()}
           >

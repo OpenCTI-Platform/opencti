@@ -6,7 +6,7 @@ export const getColorDefinitions = (theme: Theme): Record<ButtonColorKey, ColorD
   return {
     default: {
       main: theme.palette.primary.main ?? '',
-      hover: theme.palette.primary.dark ?? '',
+      hover: theme.palette.primary.main ?? '',
       focus: theme.palette.text.primary ?? '',
       text: theme.palette.primary.contrastText ?? '',
       border: theme.palette.primary.main ?? '',
@@ -20,7 +20,7 @@ export const getColorDefinitions = (theme: Theme): Record<ButtonColorKey, ColorD
     },
     ai: {
       main: theme.palette.ai?.main ?? '#B286FF',
-      hover: theme.palette?.ai?.dark ?? '#5E1AD5',
+      hover: theme.palette?.ai?.main ?? '#5E1AD5',
       focus: theme.palette?.ai?.main ?? '#B286FF',
       text: theme.palette.ai?.contrastText ?? '#000000',
       border: theme.palette?.ai?.light ?? '#D6C2FA',

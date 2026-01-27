@@ -143,15 +143,15 @@ const AiInsightButton = ({ onlyIcon = false, floating = false, onClick }: AiInsi
           onClick={onClick}
           className={floating ? classes.chipFloating : classes.chip}
         >
-          <FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" />
+          <FiligranIcon icon={LogoXtmOneIcon} size="small" />
         </IconButton>
       ) : (
         <Button
           variant="tertiary"
           size="small"
           onClick={onClick}
-          color="ai"
-          startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" />}
+          intent="ai"
+          startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" />}
         >
           {t_i18n('AI Insights')}
         </Button>
@@ -279,8 +279,7 @@ const AIInsights = ({
             <Button
               color="ai"
               variant="tertiary"
-              size="small"
-              startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" />}
+              startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" />}
             >
               {t_i18n('XTM AI')}
             </Button>

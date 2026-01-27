@@ -84,7 +84,7 @@ const ViewSwitchingButtons: FunctionComponent<ViewSwitchingButtonsProps> = ({
             onClick={() => handleChangeView('lines')}
             aria-label="lines"
           >
-            <FiligranIcon icon={ListViewIcon} color="primary" size="small" />
+            <FiligranIcon icon={ListViewIcon} size="small" />
           </ToggleButton>
         </Tooltip>
       )}
@@ -94,7 +94,7 @@ const ViewSwitchingButtons: FunctionComponent<ViewSwitchingButtonsProps> = ({
             value="subEntityLines"
             aria-label="subEntityLines"
           >
-            <FiligranIcon icon={SublistViewIcon} color="secondary" size="small" />
+            <FiligranIcon icon={SublistViewIcon} size="small" />
           </ToggleButton>
         </Tooltip>
       )}

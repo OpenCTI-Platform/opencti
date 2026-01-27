@@ -35,8 +35,6 @@ const useStyles = makeStyles((theme) => ({
   },
   searchRootInDrawer: {
     borderRadius: 4,
-    padding: '0 10px 0 10px',
-    height: 30,
     width: '100%',
     minWidth: 100,
   },
@@ -88,6 +86,10 @@ export function GradientBorderTextField({
           borderRadius: 1,
           borderWidth: '1px',
           backgroundColor: theme.palette.background.secondary,
+          '& input': {
+            height: '19px', // textfield is computing something to make the search equal to 36px
+            boxSizing: 'content-box',
+          },
 
           '& fieldset': {
             // default mode without border color

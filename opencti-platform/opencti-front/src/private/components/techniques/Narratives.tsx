@@ -185,7 +185,7 @@ const Narratives: FunctionComponent = () => {
                     value="lines"
                     aria-label="lines"
                   >
-                    <FiligranIcon icon={ListViewIcon} color="primary" size="small" />
+                    <FiligranIcon icon={ListViewIcon} size="small" />
                   </ToggleButton>
                 </Tooltip>
               ),
@@ -195,7 +195,7 @@ const Narratives: FunctionComponent = () => {
                     value="subEntityLines"
                     aria-label="subEntityLines"
                   >
-                    <FiligranIcon icon={SublistViewIcon} color="primary" size="small" />
+                    <FiligranIcon icon={SublistViewIcon} size="small" />
                   </ToggleButton>
                 </Tooltip>
               )]}

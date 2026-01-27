@@ -80,7 +80,7 @@ export interface StixCoreObjectFileExportFormProps {
 export const renderIcon = (key: string) => {
   switch (key) {
     case 'ai':
-      return <FiligranIcon icon={LogoXtmOneIcon} size="large" color="ai" />;
+      return <FiligranIcon icon={LogoXtmOneIcon} size="large" />;
     case 'application/pdf':
       return <FilePdfBox fontSize="large" color="primary" />;
     case 'application/json':
@@ -232,18 +232,19 @@ const StixCoreObjectFileExportForm = ({
           }
         }, [values.fileToExport]);
         return (
-          <Form>
-            <Dialog
-              slotProps={{ paper: { elevation: 1 } }}
-              open={isOpen}
-              onClose={() => {
-                handleReset();
-                onClose();
-              }}
-              fullWidth={true}
-              maxWidth="md"
-              data-testid="StixCoreObjectFileExportDialog"
-            >
+
+          <Dialog
+            slotProps={{ paper: { elevation: 1 } }}
+            open={isOpen}
+            onClose={() => {
+              handleReset();
+              onClose();
+            }}
+            fullWidth={true}
+            maxWidth="md"
+            data-testid="StixCoreObjectFileExportDialog"
+          >
+            <Form>
               <DialogTitle>
                 <Typography
                   variant="h2"
@@ -458,8 +459,8 @@ const StixCoreObjectFileExportForm = ({
                   {t_i18n('Create')}
                 </Button>
               </DialogActions>
-            </Dialog>
-          </Form>
+            </Form>
+          </Dialog>
         );
       }}
     </Formik>

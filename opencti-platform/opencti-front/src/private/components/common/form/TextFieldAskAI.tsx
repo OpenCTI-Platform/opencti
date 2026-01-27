@@ -249,7 +249,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
             disabled={disabled || currentValue.length < 10}
             style={{ color: theme.palette.ai.main }}
           >
-            <FiligranIcon icon={LogoXtmOneIcon} size="small"color="ai" />
+            <FiligranIcon icon={LogoXtmOneIcon} size="small" />
           </IconButton>
         </EETooltip>
         <Menu

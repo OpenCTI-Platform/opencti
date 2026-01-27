@@ -82,7 +82,7 @@ const AskArianeButton = () => {
           gradient
           gradientVariant="ai"
           onClick={toggleChatbot}
-          startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" />}
+          startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" />}
         >
           {t_i18n('Ask Ariane')}
           <EEChip />

@@ -45,6 +45,7 @@ import NotifierField from '../form/NotifierField';
 import { deserializeFilterGroupForFrontend, findFilterFromKey, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 
 interface InstanceTriggerEditionFormValues {
   id: string;
@@ -58,22 +59,6 @@ interface InstanceTriggerEditionFormValues {
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
-  buttons: {
-    textAlign: 'right',
-  },
-  updateButton: {
-    marginLeft: theme.spacing(2),
-  },
-  deleteButton: {
-    marginLeft: theme.spacing(2),
-    backgroundColor: theme.palette.error.main,
-    borderColor: theme.palette.error.main,
-    color: theme.palette.common.white,
-    '&:hover': {
-      backgroundColor: theme.palette.error.dark,
-      borderColor: theme.palette.error.dark,
-    },
-  },
   container: {
     padding: theme.spacing(1),
   },
@@ -352,31 +337,26 @@ const StixCoreObjectQuickSubscription: FunctionComponent<
                   />
                 </div>
               )}
-              <div
-                className={classes.buttons}
-                style={{ marginTop: firstTrigger ? 20 : 40 }}
-              >
+              <FormButtonContainer>
                 <Button
                   variant="secondary"
+                  intent="destructive"
                   onClick={
                     multipleInstanceTrigger
                       ? () => submitRemove(values.id, values.filters)
                       : () => submitDelete(values.id)
                   }
                   disabled={deleting}
-                  classes={{ root: classes.deleteButton }}
                 >
                   {multipleInstanceTrigger ? t_i18n('Remove') : t_i18n('Delete')}
                 </Button>
                 <Button
-                  // color="secondary"
                   onClick={submitForm}
                   disabled={isSubmitting}
-                  classes={{ root: classes.updateButton }}
                 >
                   {t_i18n('Update')}
                 </Button>
-              </div>
+              </FormButtonContainer>
             </Form>
           )}
         </Formik>
@@ -427,7 +407,7 @@ const StixCoreObjectQuickSubscription: FunctionComponent<
         onClose={handleClose}
       >
         <>
-          <Alert severity="info">
+          <Alert severity="info" variant="outlined">
             {t_i18n(instanceTriggerDescription)}
           </Alert>
           <div>
