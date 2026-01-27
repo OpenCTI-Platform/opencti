@@ -81,14 +81,14 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
     const sourceList = values.organizations_mapping_source;
     const targetList = values.organizations_mapping_target.flat();
 
-    return sourceList.map((source: string, index: number) => `/${source} org:${targetList[index].label}`);
+    return sourceList.map((source: string, index: number) => `${source} org:${targetList[index].label}`);
   };
 
   const getGroupsMapping = (values: SSODefinitionFormValues) => {
     const sourceList = values.groups_mapping_source;
     const targetList = values.groups_mapping_target.flat();
 
-    return sourceList.map((source: string, index: number) => `/${source} :${targetList[index].label}`);
+    return sourceList.map((source: string, index: number) => `${source}:${targetList[index].label}`);
   };
 
   const onSubmit = (

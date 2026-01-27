@@ -180,7 +180,17 @@ const SSODefinitionForm = ({
   const clientId = data?.configuration?.find((e) => e.key === 'client_id');
   const clientSecret = data?.configuration?.find((e) => e.key === 'client_secret');
   const redirectUris = data?.configuration?.find((e) => e.key === 'redirect_uris');
-
+  const getGroupAndOrgaMapping = (value: string[]) => {
+    return value.reduce((acc: { source: string[]; target: { label: string; value: string }[] }, curr: string) => {
+      const currentValue = curr.split(':');
+      return {
+        ...acc,
+        source: [...acc.source, currentValue[0]],
+        target: [...acc.target, { label: currentValue[1], value: currentValue[1] }],
+      };
+    }, { source: [], target: [] });
+  };
+  const formattedGroupMapping = getGroupAndOrgaMapping(groupsMapping);
   if (data) {
     initialValues.name = data.name;
     initialValues.identifier = data.identifier;
@@ -209,11 +219,13 @@ const SSODefinitionForm = ({
     initialValues.organizations_mapping = organizationsMapping;
     // initialValues.organizations_mapping_source = ??;
     // initialValues.organizations_mapping_target = ??;
+    initialValues.groups_mapping_source = formattedGroupMapping.source;
+    initialValues.groups_mapping_target = formattedGroupMapping.target;
     initialValues.client_id = clientId?.value ?? '';
     initialValues.client_secret = clientSecret?.value ?? '';
     initialValues.redirect_uris = redirectUris?.value ? JSON.parse(redirectUris.value) : [''];
   }
-
+  console.log('initialValues', initialValues);
   const updateField = async (field: SSOEditionFormInputKeys, value: unknown) => {
     if (onSubmitField) onSubmitField(field, value);
   };
