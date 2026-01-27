@@ -35,9 +35,9 @@ describe('Testing History search', () => {
   });
 
   it('Is history is filtered with capabilities', async () => {
-    const caseId = 'case-incident--482094e5-fd33-5e9e-884d-378bcf425fa3';
+    const caseId = 'case-incident--019839f8-3220-5fe2-b937-404fe19ef54a';
     const caseElement = await elLoadById(testContext, ADMIN_USER, caseId, { indices: [INDEX_DELETED_OBJECTS] });
-    expect(caseElement).not.toBeNull();
+    expect(caseElement).toBeDefined();
     const filters: FilterGroup = {
       mode: FilterMode.And,
       filterGroups: [],
