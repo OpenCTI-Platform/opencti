@@ -11,6 +11,7 @@ import {
 } from '../../../../src/generated/graphql';
 import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
 import { USER_PARTICIPATE, USER_SECURITY } from '../../../utils/testQuery';
+import { waitInSec } from '../../../../src/database/utils';
 
 export const SINGLE_SIGN_ON_LIST_QUERY = gql`
     query singleSignOns($first: Int) {
@@ -283,6 +284,12 @@ describe('Single Sign On', () => {
       expect(result?.data?.singleSignOnRunMigration).toBeDefined();
       const ssoConfig: SingleSignOnMigrationResult[] = result?.data?.singleSignOnRunMigration;
       expect(ssoConfig[0]?.description).toMatch(/Automatically detected from local */);
+    });
+  });
+
+  describe('need a sleep before raw tests ?', async () => {
+    it('should wait', async () => {
+      await waitInSec(60);
     });
   });
 });
