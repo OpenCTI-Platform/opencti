@@ -117,7 +117,7 @@ export const registerOpenIdStrategy = async (ssoEntity) => {
         const debugCallback = (message, meta) => logApp.info(message, meta);
         const openIDStrategy = new OpenIDStrategy(options, debugCallback, (_, tokenset, userinfo, done) => {
           logAuthInfo('Successfully logged', EnvStrategyType.STRATEGY_OPENID, { userinfo });
-          addUserLoginCount();
+
           const isGroupMapping = (isNotEmptyField(ssoEntity?.groups_management) && isNotEmptyField(ssoEntity?.groups_management.groups_mapping));
           logAuthInfo('Groups management configuration', EnvStrategyType.STRATEGY_OPENID, { groupsManagement: ssoEntity?.groups_management });
           const groupManagement = ssoEntity?.groups_management;
@@ -143,6 +143,7 @@ export const registerOpenIdStrategy = async (ssoEntity) => {
               providerOrganizations: organizationsToAssociate,
               autoCreateGroup: ssoConfig.auto_create_group ?? false,
             };
+            addUserLoginCount();
             providerLoginHandler(userInfo, done, opts);
           } else {
             done({ message: 'Restricted access, ask your administrator' });

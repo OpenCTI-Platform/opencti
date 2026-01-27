@@ -413,15 +413,14 @@ const createApp = async (app, schema) => {
         await delUserContext(user);
         res.clearCookie(OPENCTI_SESSION);
 
-        let providerCache = PROVIDERS.findIndex((conf) => conf.provider === provider);
-
+        let providerCache = PROVIDERS.find((conf) => conf.provider === provider);
+        logApp.info(`[LOGOUT] checking remote logout for ${provider}`, { providerCache });
         req.session.destroy(() => {
           const strategy = passport._strategy(provider);
           if (strategy) {
             if (providerCache.logout_remote === true) {
-              logApp.debug('[LOGOUT] Looking for logout_remote parameters: ', providerCache.logout_remote);
               if (strategy.logout) {
-                logApp.debug('[LOGOUT] requesting remote logout using authentication strategy parameters.');
+                logApp.info('[LOGOUT] requesting remote logout using authentication strategy parameters.');
                 req.user = user; // Needed for passport
                 strategy.logout(req, (error, request) => {
                   // When logout is implemented for strategy
