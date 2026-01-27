@@ -7,7 +7,7 @@ import type { AuthUser } from '../../../../src/types/user';
 import { OPENCTI_ADMIN_UUID } from '../../../../src/schema/general';
 import { SYSTEM_USER } from '../../../../src/utils/access';
 
-describe.skip('initializeAdminUser configurations verifications', () => {
+describe('initializeAdminUser configurations verifications', () => {
   let initialEmail: string;
   let initialPassword: string;
   let initialToken: string;

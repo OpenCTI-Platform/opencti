@@ -3,7 +3,7 @@ import { initAuthenticationProviders, registerLocalStrategy } from '../../../../
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { type ProviderConfiguration, PROVIDERS } from '../../../../src/modules/singleSignOn/providers-configuration';
 
-describe.skip('Single sign on Provider coverage tests', () => {
+describe('Single sign on Provider coverage tests', () => {
   describe('initialization coverage', () => {
     const clearProvider = async () => {
       for (let i = 0; i < PROVIDERS.length; i++) {
