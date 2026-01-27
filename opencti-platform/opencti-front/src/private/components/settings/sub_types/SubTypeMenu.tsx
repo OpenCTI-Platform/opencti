@@ -1,6 +1,6 @@
 import React from 'react';
 import { Tabs, Tab } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 
 interface SubTypeMenuProps {
@@ -9,6 +9,7 @@ interface SubTypeMenuProps {
 
 const SubTypeMenu = ({ entityType }: SubTypeMenuProps) => {
   const { t_i18n } = useFormatter();
+  const location = useLocation();
 
   return (
     <Tabs value={location.pathname} sx={{ paddingBottom: 3 }}>
