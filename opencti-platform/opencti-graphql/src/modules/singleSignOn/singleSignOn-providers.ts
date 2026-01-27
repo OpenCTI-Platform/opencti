@@ -1,16 +1,15 @@
 import type { AuthContext, AuthUser } from '../../types/user';
-import { type GroupsManagement, type OrganizationsManagement, type SingleSignOnAddInput, StrategyType } from '../../generated/graphql';
+import { type SingleSignOnAddInput, StrategyType } from '../../generated/graphql';
 import conf, { logApp } from '../../config/conf';
 import LocalStrategy from 'passport-local';
 import { login, loginFromProvider } from '../../domain/user';
 import { addUserLoginCount } from '../../manager/telemetryManager';
-import { findAllSingleSignOn, internalAddSingleSignOn, logAuthError, logAuthInfo, logAuthWarn } from './singleSignOn-domain';
+import { findAllSingleSignOn, internalAddSingleSignOn, logAuthError, logAuthInfo } from './singleSignOn-domain';
 import {
   AuthType,
   EnvStrategyType,
   INTERNAL_SECURITY_PROVIDER,
   isAuthenticationActivatedByIdentifier,
-  isStrategyActivated,
   LOCAL_STRATEGY_IDENTIFIER,
   type ProviderConfiguration,
 } from './providers-configuration';
