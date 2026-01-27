@@ -7,7 +7,7 @@ import StixDomainObjectsExports from '@components/common/stix_domain_objects/Sti
 import StixCoreRelationshipsExports from '@components/common/stix_core_relationships/StixCoreRelationshipsExports';
 import StixCoreObjectsExports from '@components/common/stix_core_objects/StixCoreObjectsExports';
 import StixCyberObservablesExports from '@components/observations/stix_cyber_observables/StixCyberObservablesExports';
-import { ToggleButtonGroup } from '@mui/material';
+import { Stack, ToggleButtonGroup } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';
 import FilterIconButton from '../FilterIconButton';
@@ -164,7 +164,11 @@ const DataTableFilters = ({
               }
             }}
           >
-            {additionalHeaderButtons && [...additionalHeaderButtons]}
+            { additionalHeaderButtons && (
+              <Stack direction="row" spacing={1}>
+                {additionalHeaderButtons}
+              </Stack>
+            )}
 
             {!exportDisabled && (
               <ToggleButton value="export" aria-label="export">
