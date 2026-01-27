@@ -13,6 +13,7 @@ import TextField from '../../../../components/TextField';
 import { getAdvancedConfigFromData } from '@components/settings/sso_definitions/utils/getConfigAndAdvancedConfigFromData';
 import SAMLConfig from '@components/settings/sso_definitions/SAMLConfig';
 import OpenIDConfig from '@components/settings/sso_definitions/OpenIDConfig';
+import LDAPConfig from '@components/settings/sso_definitions/LDAPConfig';
 import { ConfigurationTypeInput } from '@components/settings/sso_definitions/__generated__/SSODefinitionCreationMutation.graphql';
 import Button from '@common/button/Button';
 import SSODefinitionGroupForm from '@components/settings/sso_definitions/SSODefinitionGroupForm';
@@ -54,6 +55,7 @@ export interface SSODefinitionFormValues {
     type: string;
   }[];
   groups_path: string[];
+  group_attribute: string;
   group_attributes: string[];
   groups_attributes: string[];
   groups_mapping: string[];
@@ -63,6 +65,15 @@ export interface SSODefinitionFormValues {
   client_id: string;
   client_secret: string;
   redirect_uris: string[];
+  // LDAP
+  url: string;
+  bindDN: string;
+  bindCredentials: string;
+  searchBase: string;
+  searchFilter: string;
+  groupSearchBase: string;
+  groupSearchFilter: string;
+  allow_self_signed: boolean;
 }
 export type SSOEditionFormInputKeys = keyof SSODefinitionFormValues;
 
@@ -88,6 +99,19 @@ const validationSchemaConfiguration = (selectedStrategy: string, t_i18n: (s: str
         client_id: Yup.string().required(t_i18n('This field is required')),
         client_secret: Yup.string().required(t_i18n('This field is required')),
         redirect_uris: Yup.array().of(Yup.string().required(t_i18n('This field is required'))),
+      });
+    }
+    case 'LDAP': {
+      return Yup.object().shape({
+        ...base,
+        url: Yup.string().required(t_i18n('This field is required')),
+        bindDN: Yup.string().required(t_i18n('This field is required')),
+        bindCredentials: Yup.string().required(t_i18n('This field is required')),
+        searchBase: Yup.string().required(t_i18n('This field is required')),
+        searchFilter: Yup.string().required(t_i18n('This field is required')),
+        groupSearchBase: Yup.string().required(t_i18n('This field is required')),
+        groupSearchFilter: Yup.string().required(t_i18n('This field is required')),
+        allow_self_signed: Yup.boolean().required(t_i18n('This field is required')),
       });
     }
     default: return undefined;
@@ -133,6 +157,7 @@ const SSODefinitionForm = ({
     entryPoint: '',
     advancedConfigurations: [],
     groups_path: [],
+    group_attribute: '',
     group_attributes: [],
     groups_attributes: [],
     groups_mapping: [],
@@ -143,6 +168,15 @@ const SSODefinitionForm = ({
     client_id: '',
     client_secret: '',
     redirect_uris: [''],
+    // LDAP
+    url: '',
+    bindDN: '',
+    bindCredentials: '',
+    searchBase: '',
+    searchFilter: '',
+    groupSearchBase: '',
+    groupSearchFilter: '',
+    allow_self_signed: false,
   };
 
   const privateField = data?.configuration?.find((e) => e.key === 'privateKey');
@@ -161,6 +195,7 @@ const SSODefinitionForm = ({
   const entryPointField = data?.configuration?.find((e) => e.key === 'entryPoint');
   const advancedConfigurations = getAdvancedConfigFromData((data?.configuration ?? []) as ConfigurationTypeInput[], selectedStrategy ?? '');
 
+  const groupAttribute = data?.groups_management?.group_attribute;
   const groupAttributes = Array.from(data?.groups_management?.group_attributes ?? []);
   const groupsAttributes = Array.from(data?.groups_management?.groups_attributes ?? []);
   const groupsPath = Array.from(data?.groups_management?.groups_path ?? []);
@@ -172,6 +207,15 @@ const SSODefinitionForm = ({
   const clientId = data?.configuration?.find((e) => e.key === 'client_id');
   const clientSecret = data?.configuration?.find((e) => e.key === 'client_secret');
   const redirectUris = data?.configuration?.find((e) => e.key === 'redirect_uris');
+
+  const url = data?.configuration?.find((e) => e.key === 'url');
+  const bindDN = data?.configuration?.find((e) => e.key === 'bindDN');
+  const bindCredentials = data?.configuration?.find((e) => e.key === 'bindCredentials');
+  const searchBase = data?.configuration?.find((e) => e.key === 'searchBase');
+  const searchFilter = data?.configuration?.find((e) => e.key === 'searchFilter');
+  const groupSearchBase = data?.configuration?.find((e) => e.key === 'groupSearchBase');
+  const groupSearchFilter = data?.configuration?.find((e) => e.key === 'groupSearchFilter');
+  const allow_self_signed = data?.configuration?.find((e) => e.key === 'allow_self_signed');
 
   if (data) {
     initialValues.name = data.name;
@@ -193,8 +237,9 @@ const SSODefinitionForm = ({
     initialValues.forceReauthentication = forceReauthenticationField ? forceReauthenticationField?.value === 'true' : false;
     // initialValues.enableDebugMode = enableDebugModeField ? enableDebugModeField?.value === 'true' : false;
     initialValues.advancedConfigurations = advancedConfigurations ?? [];
-    initialValues.groups_attributes = groupsAttributes;
+    initialValues.group_attribute = groupAttribute ?? '';
     initialValues.group_attributes = groupAttributes;
+    initialValues.groups_attributes = groupsAttributes;
     initialValues.groups_path = groupsPath;
     initialValues.groups_mapping = groupsMapping;
     initialValues.organizations_path = organizationsPath;
@@ -203,6 +248,15 @@ const SSODefinitionForm = ({
     initialValues.client_id = clientId?.value ?? '';
     initialValues.client_secret = clientSecret?.value ?? '';
     initialValues.redirect_uris = redirectUris?.value ? JSON.parse(redirectUris.value) : [''];
+
+    initialValues.url = url?.value ?? '';
+    initialValues.bindDN = bindDN?.value ?? '';
+    initialValues.bindCredentials = bindCredentials?.value ?? '';
+    initialValues.searchBase = searchBase?.value ?? '';
+    initialValues.searchFilter = searchFilter?.value ?? '';
+    initialValues.groupSearchBase = groupSearchBase?.value ?? '';
+    initialValues.groupSearchFilter = groupSearchFilter?.value ?? '';
+    initialValues.allow_self_signed = allow_self_signed ? allow_self_signed?.value === 'true' : false;
   }
   const updateField = async (field: SSOEditionFormInputKeys, value: unknown) => {
     if (onSubmitField) onSubmitField(field, value);
@@ -260,17 +314,9 @@ const SSODefinitionForm = ({
                 label={t_i18n(`Enable ${selectedStrategy} authentication`)}
                 containerstyle={{ marginLeft: 2, marginTop: 20 }}
               />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="label"
-                onSubmit={updateField}
-                label={t_i18n('Login Button Name')}
-                fullWidth
-                style={{ marginTop: 10 }}
-              />
               {selectedStrategy === 'SAML' && <SAMLConfig updateField={updateField} />}
               {selectedStrategy === 'OpenID' && <OpenIDConfig updateField={updateField} />}
+              {selectedStrategy === 'LDAP' && <LDAPConfig updateField={updateField} />}
             </>
           )}
           {currentTab === 1 && <SSODefinitionGroupForm updateField={updateField} selectedStrategy={selectedStrategy} />}

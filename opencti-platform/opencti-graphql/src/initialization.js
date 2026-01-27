@@ -3,7 +3,6 @@ import { v4 as uuidv4 } from 'uuid';
 import semver from 'semver';
 import { ENABLED_FEATURE_FLAGS, logApp, PLATFORM_VERSION } from './config/conf';
 import { elUpdateIndicesMappings, ES_INIT_MAPPING_MIGRATION, ES_IS_INIT_MIGRATION, initializeSchema, searchEngineInit } from './database/engine';
-import { initializeAdminUser, initializeEnvAuthenticationProviders } from './config/providers-initialization';
 import { storageInit, initializeBucket } from './database/raw-file-storage';
 import { enforceQueuesConsistency, initializeInternalQueues, rabbitMQIsAlive } from './database/rabbitmq';
 import { initDefaultNotifiers } from './modules/notifier/notifier-domain';
@@ -26,6 +25,7 @@ import { loadEntityMetricsConfiguration } from './modules/metrics/metrics-utils'
 import { initializeStreamStack } from './database/stream/stream-handler';
 import { initAuthenticationProviders } from './modules/singleSignOn/singleSignOn-providers';
 import { isEnterpriseEdition } from './enterprise-edition/ee';
+import { initializeAdminUser, initializeEnvAuthenticationProviders } from './modules/singleSignOn/providers-initialization';
 
 // region Platform constants
 const PLATFORM_LOCK_ID = 'platform_init_lock';

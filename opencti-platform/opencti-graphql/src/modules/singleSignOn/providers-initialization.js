@@ -4,17 +4,16 @@ import GitHub from 'github-api';
 import FacebookStrategy from 'passport-facebook';
 import GithubStrategy from 'passport-github';
 import LocalStrategy from 'passport-local';
-import LdapStrategy from 'passport-ldapauth';
 import { custom as OpenIDCustom, Issuer as OpenIDIssuer, Strategy as OpenIDStrategy } from 'openid-client';
 import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
 import validator from 'validator';
-import { findById, HEADERS_AUTHENTICATORS, initAdmin, login, userDelete } from '../domain/user';
-import conf, { getPlatformHttpProxyAgent, logApp, NODE_INSTANCE_ID } from './conf';
-import { AuthenticationFailure, ConfigurationError } from './errors';
-import { isEmptyField, isNotEmptyField } from '../database/utils';
-import { DEFAULT_INVALID_CONF_VALUE, SYSTEM_USER } from '../utils/access';
-import { OPENCTI_ADMIN_UUID } from '../schema/general';
-import { addUserLoginCount } from '../manager/telemetryManager';
+import { findById, HEADERS_AUTHENTICATORS, initAdmin, login, userDelete } from '../../domain/user';
+import conf, { getPlatformHttpProxyAgent, logApp, NODE_INSTANCE_ID } from '../../config/conf';
+import { AuthenticationFailure, ConfigurationError } from '../../config/errors';
+import { isEmptyField, isNotEmptyField } from '../../database/utils';
+import { DEFAULT_INVALID_CONF_VALUE, SYSTEM_USER } from '../../utils/access';
+import { OPENCTI_ADMIN_UUID } from '../../schema/general';
+import { addUserLoginCount } from '../../manager/telemetryManager';
 import {
   AuthType,
   INTERNAL_SECURITY_PROVIDER,
@@ -23,17 +22,18 @@ import {
   isAuthenticationProviderMigrated,
   LOCAL_STRATEGY_IDENTIFIER,
   isAuthenticationActivatedByIdentifier,
+  getProvidersFromEnvironment,
 } from './providers-configuration';
-import { genConfigMapper, providerLoginHandler } from '../modules/singleSignOn/singleSignOn-providers';
-import { getEntityFromCache } from '../database/cache';
-import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
-import { logAuthInfo, runSingleSignOnRunMigration } from '../modules/singleSignOn/singleSignOn-domain';
+import { genPairConfigMapper, providerLoginHandler } from './singleSignOn-providers';
+import { getEntityFromCache } from '../../database/cache';
+import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
+import { logAuthInfo, runSingleSignOnRunMigration } from './singleSignOn-domain';
 
 export const MIGRATED_STRATEGY = [
   EnvStrategyType.STRATEGY_LOCAL,
   EnvStrategyType.STRATEGY_SAML,
   EnvStrategyType.STRATEGY_OPENID,
-  // EnvStrategyType.STRATEGY_LDAP,
+  EnvStrategyType.STRATEGY_LDAP,
   // EnvStrategyType.STRATEGY_CERT,
   // EnvStrategyType.STRATEGY_HEADER,
 ];
@@ -158,7 +158,7 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
   const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
   logApp.info('[ENV-PROVIDER] Settings auth_strategy_migrated', { auth_migrated: settings?.auth_strategy_migrated });
 
-  const confProviders = conf.get('providers');
+  const confProviders = getProvidersFromEnvironment();
   let willLocalBeInDatabase = false;
   let shouldRunSSOMigration = false;
 
@@ -185,76 +185,18 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
         }
         if (strategy === EnvStrategyType.STRATEGY_LDAP) {
           const providerRef = identifier || 'ldapauth';
-          logApp.info(`[ENV-PROVIDER][LDAP] LDAPStrategy found in configuration providerRef:${providerRef}`);
-          const allowSelfSigned = mappedConfig.allow_self_signed || mappedConfig.allow_self_signed === 'true';
-          // Force bindCredentials to be a String
-          mappedConfig.bindCredentials = `${mappedConfig.bindCredentials}`;
-          const tlsConfig = R.assoc('tlsOptions', { rejectUnauthorized: !allowSelfSigned }, mappedConfig);
-          const ldapOptions = { server: tlsConfig };
-          const ldapStrategy = new LdapStrategy(ldapOptions, (user, done) => {
-            logApp.info('[ENV-PROVIDER][LDAP] Successfully logged', { user });
-            addUserLoginCount();
-            const userMail = mappedConfig.mail_attribute ? user[mappedConfig.mail_attribute] : user.mail;
-            const userName = mappedConfig.account_attribute ? user[mappedConfig.account_attribute] : user.givenName;
-            const firstname = user[mappedConfig.firstname_attribute] || '';
-            const lastname = user[mappedConfig.lastname_attribute] || '';
-            const isGroupBaseAccess = (isNotEmptyField(mappedConfig.groups_management) && isNotEmptyField(mappedConfig.groups_management?.groups_mapping));
-            // region groups mapping
-            const computeGroupsMapping = () => {
-              const groupsMapping = mappedConfig.groups_management?.groups_mapping || [];
-              const userGroups = (user._groups || [])
-                .map((g) => g[mappedConfig.groups_management?.group_attribute || 'cn'])
-                .filter((g) => isNotEmptyField(g));
-              const groupsMapper = genConfigMapper(groupsMapping);
-              return userGroups.map((a) => groupsMapper[a]).filter((r) => isNotEmptyField(r));
-            };
-            const groupsToAssociate = R.uniq(computeGroupsMapping());
-            // endregion
-            // region organizations mapping
-            const isOrgaMapping = isNotEmptyField(mappedConfig.organizations_default) || isNotEmptyField(mappedConfig.organizations_management);
-            const computeOrganizationsMapping = () => {
-              const orgaDefault = mappedConfig.organizations_default ?? [];
-              const orgasMapping = mappedConfig.organizations_management?.organizations_mapping || [];
-              const orgaPath = mappedConfig.organizations_management?.organizations_path || ['organizations'];
-
-              const availableOrgas = R.flatten(
-                orgaPath.map((path) => {
-                  const value = R.path(path.split('.'), user) || [];
-                  return Array.isArray(value) ? value : [value];
-                }),
-              );
-              const orgasMapper = genConfigMapper(orgasMapping);
-              return [...orgaDefault, ...availableOrgas.map((a) => orgasMapper[a]).filter((r) => isNotEmptyField(r))];
-            };
-            const organizationsToAssociate = isOrgaMapping ? computeOrganizationsMapping() : [];
-            // endregion
-            if (!userMail) {
-              logApp.warn('[ENV-PROVIDER]LDAP Configuration error, cant map mail and username', {
-                user,
-                userMail,
-                userName,
-              });
-              done({ message: 'Configuration error, ask your administrator' });
-            } else if (!isGroupBaseAccess || groupsToAssociate.length > 0) {
-              logApp.info(`[ENV-PROVIDER][LDAP] Connecting/creating account with ${userMail} [name=${userName}]`);
-              const userInfo = { email: userMail, name: userName, firstname, lastname };
-              const opts = {
-                providerGroups: groupsToAssociate,
-                providerOrganizations: organizationsToAssociate,
-                autoCreateGroup: mappedConfig.auto_create_group ?? false,
-              };
-              providerLoginHandler(userInfo, done, opts);
-            } else {
-              done({ message: 'Restricted access, ask your administrator' });
-            }
-          });
-          passport.use(providerRef, ldapStrategy);
-          PROVIDERS.push({ name: providerName, type: AuthType.AUTH_FORM, strategy, provider: providerRef });
+          logApp.info(`[ENV-PROVIDER][LDAP] LdapStrategy found in configuration providerRef:${providerRef}`);
+          if (isAuthenticationProviderMigrated(settings, providerRef)) {
+            logApp.info(`[ENV-PROVIDER][LDAP] ${providerRef} migrated, skipping old configuration`);
+          } else {
+            logApp.info(`[ENV-PROVIDER][LDAP] ${providerRef} is about to be converted to database configuration.`);
+            shouldRunSSOMigration = true;
+          }
         }
         // SSO Strategies
         if (strategy === EnvStrategyType.STRATEGY_SAML) {
           const providerRef = identifier || 'saml';
-          logApp.debug(`[ENV-PROVIDER][SAML] SAMLStrategy found in configuration providerRef:${providerRef}`);
+          logApp.info(`[ENV-PROVIDER][SAML] SamlStrategy found in configuration providerRef:${providerRef}`);
           if (isAuthenticationProviderMigrated(settings, providerRef)) {
             logApp.info(`[ENV-PROVIDER][SAML] ${providerRef} already in database, skipping old configuration`);
           } else {
@@ -264,6 +206,7 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
         }
         if (strategy === EnvStrategyType.STRATEGY_OPENID) {
           const providerRef = identifier || 'oic';
+          logApp.info(`[ENV-PROVIDER][OPENID] OpenIDConnectStrategy found in configuration providerRef:${providerRef}`);
           if (isAuthenticationProviderMigrated(settings, providerRef)) {
             logApp.info(`[ENV-PROVIDER][OPENID] ${providerRef} already in database, skipping old configuration`);
           } else {
@@ -426,7 +369,7 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
               const groupsMapping = mappedConfig.groups_management?.groups_mapping || [];
               const groupsSplitter = mappedConfig.groups_management?.groups_splitter || ',';
               const availableGroups = (req.header(mappedConfig.groups_management?.groups_header) ?? '').split(groupsSplitter);
-              const groupsMapper = genConfigMapper(groupsMapping);
+              const groupsMapper = genPairConfigMapper(groupsMapping);
               return availableGroups.map((a) => groupsMapper[a]).filter((r) => isNotEmptyField(r));
             };
             const mappedGroups = isGroupMapping ? computeGroupsMapping() : [];
@@ -437,7 +380,7 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
               const orgasMapping = mappedConfig.organizations_management?.organizations_mapping || [];
               const orgasSplitter = mappedConfig.organizations_management?.organizations_splitter || ',';
               const availableOrgas = (req.header(mappedConfig.organizations_management?.organizations_header) ?? '').split(orgasSplitter);
-              const orgasMapper = genConfigMapper(orgasMapping);
+              const orgasMapper = genPairConfigMapper(orgasMapping);
               return [...orgaDefault, ...availableOrgas.map((a) => orgasMapper[a]).filter((r) => isNotEmptyField(r))];
             };
             const organizationsToAssociate = isOrgaMapping ? computeOrganizationsMapping() : [];

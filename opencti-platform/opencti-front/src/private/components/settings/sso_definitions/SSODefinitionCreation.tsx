@@ -40,9 +40,9 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
       options={[
         'Create SAML',
         'Create OpenID',
+        'Create LDAP',
         // 'Create Header',
         // 'Create ClientCert',
-        // 'Create Ldap',
         // 'Create LocalAuth',
       ]}
       onOptionClick={(option) => {
@@ -55,16 +55,16 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
             setSelectedStrategy('OpenID');
             break;
           }
+          case 'Create LDAP': {
+            setSelectedStrategy('LDAP');
+            break;
+          }
           // case 'Create Header': {
           //   setSelectedStrategy('Header');
           //   break;
           // }
           // case 'Create ClientCert': {
           //   setSelectedStrategy('ClientCert');
-          //   break;
-          // }
-          // case 'Create Ldap': {
-          //   setSelectedStrategy('Ldap');
           //   break;
           // }
           // case 'Create LocalAuth': {
@@ -99,6 +99,7 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
 
     const groups_management = {
       groups_path: values.groups_path || null,
+      group_attribute: values.group_attribute || null,
       group_attributes: values.group_attributes || null,
       groups_attributes: values.groups_attributes || null,
       groups_mapping: values.groups_mapping.filter((v) => v && v.trim() !== ''),

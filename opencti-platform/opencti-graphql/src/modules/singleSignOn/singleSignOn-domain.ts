@@ -13,7 +13,7 @@ import nconf from 'nconf';
 import { parseSingleSignOnRunConfiguration } from './singleSignOn-migration';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import { unregisterStrategy } from './singleSignOn-providers';
-import { EnvStrategyType } from '../../config/providers-configuration';
+import { EnvStrategyType } from './providers-configuration';
 
 // Protected sensitive config var env to lock
 export const AUTHENTICATION_CONFIG_LOCKED = nconf.get('app:sso_authentication_locked') ?? 'false';

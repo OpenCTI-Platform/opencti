@@ -19,6 +19,7 @@ interface OrganizationsManagement {
 
 interface GroupsManagement {
   group_attributes?: string[];
+  group_attribute?: string;
   groups_path?: string[];
   groups_mapping: string[];
   read_userinfo?: boolean;

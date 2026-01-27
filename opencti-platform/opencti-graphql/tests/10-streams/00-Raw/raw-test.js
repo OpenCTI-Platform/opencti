@@ -3,7 +3,7 @@ import * as R from 'ramda';
 import { FIVE_MINUTES } from '../../utils/testQuery';
 import { checkStreamData, checkStreamGenericContent, fetchStreamEvents } from '../../utils/testStream';
 import { logApp, PORT } from '../../../src/config/conf';
-import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from '../../../src/database/utils';
+import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, waitInSec } from '../../../src/database/utils';
 import { writeTestDataToFile } from '../../utils/testOutput';
 import { doTotal, RAW_EVENTS_SIZE, testCreatedCounter, testDeletedCounter, testMergedCounter, testUpdatedCounter } from '../../utils/syncCountHelper';
 
@@ -22,6 +22,9 @@ describe('Raw streams tests', () => {
     'Should stream correctly formatted',
     async () => {
       const startTime = new Date().getTime();
+
+      await waitInSec(60);
+
       // Read all events from the beginning.
       const events = await fetchStreamEvents(`http://localhost:${PORT}/stream`, { from: '0' });
       logApp.info(`[TEST][TIME] time to fetch event: ${new Date().getTime() - startTime}`);

@@ -6,10 +6,55 @@ import * as R from 'ramda';
 import { addUserLoginCount } from '../../manager/telemetryManager';
 import { isNotEmptyField } from '../../database/utils';
 import { jwtDecode } from 'jwt-decode';
-import { convertKeyValueToJsConfiguration, genConfigMapper, providerLoginHandler } from './singleSignOn-providers';
-import { AuthType, EnvStrategyType } from '../../config/providers-configuration';
+import { convertKeyValueToJsConfiguration, genPairConfigMapper, providerLoginHandler } from './singleSignOn-providers';
+import { AuthType, EnvStrategyType } from './providers-configuration';
 import { logAuthInfo } from './singleSignOn-domain';
-import { registerAuthenticationProvider } from '../../config/providers-initialization';
+import { registerAuthenticationProvider } from './providers-initialization';
+
+export const computeOpenIdUserInfo = (ssoConfig, user_attribute_obj) => {
+  const nameAttribute = ssoConfig.name_attribute ?? 'name';
+  const emailAttribute = ssoConfig.email_attribute ?? 'email';
+  const firstnameAttribute = ssoConfig.firstname_attribute ?? 'given_name';
+  const lastnameAttribute = ssoConfig.lastname_attribute ?? 'family_name';
+
+  const name = user_attribute_obj[nameAttribute];
+  const email = user_attribute_obj[emailAttribute];
+  const firstname = user_attribute_obj[firstnameAttribute];
+  const lastname = user_attribute_obj[lastnameAttribute];
+
+  return { email, name, firstname, lastname };
+};
+
+export const computeOpenIdOrganizationsMapping = (orgsManagement, decodedUser, userinfo, orgaDefault) => {
+  const readUserinfo = orgsManagement?.read_userinfo || false;
+  const orgasMapping = orgsManagement?.organizations_mapping || [];
+  const orgaPath = orgsManagement?.organizations_path || ['organizations'];
+  const availableOrgas = R.flatten(orgaPath.map((path) => {
+    const userClaims = (readUserinfo) ? userinfo : decodedUser;
+    const value = R.path(path.split('.'), userClaims) || [];
+    return Array.isArray(value) ? value : [value];
+  }));
+  const orgasMapper = genPairConfigMapper(orgasMapping);
+  return [...orgaDefault, ...availableOrgas.map((a) => orgasMapper[a]).filter((r) => isNotEmptyField(r))];
+};
+
+export const computeOpenIdGroupsMapping = (groupManagement, decodedUser, userinfo) => {
+  const readUserinfo = groupManagement?.read_userinfo || false;
+  const groupsPath = groupManagement?.groups_path || ['groups'];
+  const groupsMapping = groupManagement?.groups_mapping || [];
+
+  if (!readUserinfo) {
+    logAuthInfo('Groups mapping on decoded token', EnvStrategyType.STRATEGY_OPENID, { decoded: decodedUser });
+  }
+  logAuthInfo(`Groups mapping readUserinfo:${readUserinfo}`, EnvStrategyType.STRATEGY_OPENID, { decodedUser, userinfo, groupsPath, groupsMapping });
+  const availableGroups = R.flatten(groupsPath.map((path) => {
+    const userClaims = (readUserinfo) ? userinfo : decodedUser;
+    const value = R.path(path.split('.'), userClaims) || [];
+    return Array.isArray(value) ? value : [value];
+  }));
+  const groupsMapper = genPairConfigMapper(groupsMapping);
+  return availableGroups.map((a) => groupsMapper[a]).filter((r) => isNotEmptyField(r));
+};
 
 // (ssoEntity: BasicStoreEntitySingleSignOn)
 export const registerOpenIdStrategy = async (ssoEntity) => {
@@ -76,66 +121,28 @@ export const registerOpenIdStrategy = async (ssoEntity) => {
           logAuthInfo('Groups management configuration', EnvStrategyType.STRATEGY_OPENID, { groupsManagement: ssoEntity?.groups_management });
           const groupManagement = ssoEntity?.groups_management;
           // region groups mapping
-          const computeGroupsMapping = () => {
-            const readUserinfo = groupManagement?.read_userinfo || false;
-            const token = groupManagement?.token_reference || 'access_token';
-            const groupsPath = groupManagement?.groups_path || ['groups'];
-            const groupsMapping = groupManagement?.groups_mapping || [];
-            const decodedUser = jwtDecode(tokenset[token]);
-            if (!readUserinfo) {
-              logAuthInfo(`Groups mapping on decoded ${token}`, EnvStrategyType.STRATEGY_OPENID, { decoded: decodedUser });
-            }
-            logAuthInfo(`Groups mapping readUserinfo:${readUserinfo}, token:${token}, groupsPath:${groupsPath}, groupsMapping:${groupsMapping}`, EnvStrategyType.STRATEGY_OPENID, { decoded: decodedUser });
-            const availableGroups = R.flatten(groupsPath.map((path) => {
-              const userClaims = (readUserinfo) ? userinfo : decodedUser;
-              const value = R.path(path.split('.'), userClaims) || [];
-              return Array.isArray(value) ? value : [value];
-            }));
-            const groupsMapper = genConfigMapper(groupsMapping);
-            return availableGroups.map((a) => groupsMapper[a]).filter((r) => isNotEmptyField(r));
-          };
-          const mappedGroups = isGroupMapping ? computeGroupsMapping() : [];
+          const token = groupManagement?.token_reference || 'access_token';
+          const decodedUser = jwtDecode(tokenset[token]);
+          const mappedGroups = isGroupMapping ? computeOpenIdGroupsMapping(groupManagement, decodedUser, userinfo) : [];
           const groupsToAssociate = R.uniq(mappedGroups);
           // endregion
           // region organizations mapping
           const isOrgaMapping = isNotEmptyField(ssoConfig.organizations_default) || isNotEmptyField(ssoEntity.organizations_management);
           const orgsManagement = ssoEntity.organizations_management;
-          const computeOrganizationsMapping = () => {
-            const orgaDefault = ssoConfig.organizations_default ?? [];
-            const readUserinfo = orgsManagement?.read_userinfo || false;
-            const orgasMapping = orgsManagement?.organizations_mapping || [];
-            const token = orgsManagement?.token_reference || 'access_token';
-            const orgaPath = orgsManagement?.organizations_path || ['organizations'];
-            const decodedUser = jwtDecode(tokenset[token]);
-            const availableOrgas = R.flatten(orgaPath.map((path) => {
-              const userClaims = (readUserinfo) ? userinfo : decodedUser;
-              const value = R.path(path.split('.'), userClaims) || [];
-              return Array.isArray(value) ? value : [value];
-            }));
-            const orgasMapper = genConfigMapper(orgasMapping);
-            return [...orgaDefault, ...availableOrgas.map((a) => orgasMapper[a]).filter((r) => isNotEmptyField(r))];
-          };
-          const organizationsToAssociate = isOrgaMapping ? computeOrganizationsMapping() : [];
+          const orgaDefault = ssoConfig.organizations_default ?? [];
+          const organizationsToAssociate = isOrgaMapping ? computeOpenIdOrganizationsMapping(orgsManagement, decodedUser, userinfo, orgaDefault) : [];
           // endregion
           if (!isGroupMapping || groupsToAssociate.length > 0) {
-            const nameAttribute = ssoConfig.name_attribute ?? 'name';
-            const emailAttribute = ssoConfig.email_attribute ?? 'email';
-            const firstnameAttribute = ssoConfig.firstname_attribute ?? 'given_name';
-            const lastnameAttribute = ssoConfig.lastname_attribute ?? 'family_name';
             const get_user_attributes_from_id_token = ssoConfig.get_user_attributes_from_id_token ?? false;
-
             const user_attribute_obj = get_user_attributes_from_id_token ? jwtDecode(tokenset.id_token) : userinfo;
+            const userInfo = computeOpenIdUserInfo(ssoConfig, user_attribute_obj);
 
-            const name = user_attribute_obj[nameAttribute];
-            const email = user_attribute_obj[emailAttribute];
-            const firstname = user_attribute_obj[firstnameAttribute];
-            const lastname = user_attribute_obj[lastnameAttribute];
             const opts = {
               providerGroups: groupsToAssociate,
               providerOrganizations: organizationsToAssociate,
               autoCreateGroup: ssoConfig.auto_create_group ?? false,
             };
-            providerLoginHandler({ email, name, firstname, lastname }, done, opts);
+            providerLoginHandler(userInfo, done, opts);
           } else {
             done({ message: 'Restricted access, ask your administrator' });
           }

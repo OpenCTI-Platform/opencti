@@ -1,11 +1,11 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { initializeAdminUser } from '../../../src/config/providers-initialization';
-import conf from '../../../src/config/conf';
-import { SYSTEM_USER } from '../../../src/utils/access';
-import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
-import { findById } from '../../../src/domain/user';
-import type { AuthUser } from '../../../src/types/user';
+import { findById } from '../../../../src/domain/user';
 import { v4 as uuid } from 'uuid';
+import { initializeAdminUser } from '../../../../src/modules/singleSignOn/providers-initialization';
+import conf from '../../../../src/config/conf';
+import type { AuthUser } from '../../../../src/types/user';
+import { OPENCTI_ADMIN_UUID } from '../../../../src/schema/general';
+import { SYSTEM_USER } from '../../../../src/utils/access';
 
 describe('initializeAdminUser configurations verifications', () => {
   let initialEmail: string;

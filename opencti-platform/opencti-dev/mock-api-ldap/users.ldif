@@ -1,0 +1,44 @@
+# 1. Define the Root Structure
+dn: dc=mokapi,dc=io
+objectClass: top
+objectClass: domain
+dc: mokapi
+
+dn: ou=people,dc=mokapi,dc=io
+objectClass: top
+objectClass: organizationalUnit
+ou: people
+
+dn: ou=groups,dc=mokapi,dc=io
+objectClass: top
+objectClass: organizationalUnit
+ou: groups
+
+# 2. Define the Groups
+dn: cn=Developers,ou=groups,dc=mokapi,dc=io
+objectClass: top
+objectClass: groupOfNames
+cn: Developers
+member: uid=bmiller,ou=people,dc=mokapi,dc=io
+
+dn: cn=Admins,ou=groups,dc=mokapi,dc=io
+objectClass: top
+objectClass: groupOfNames
+cn: Admins
+member: uid=bmiller,ou=people,dc=mokapi,dc=io
+
+dn: uid=awilliams,ou=people,dc=mokapi,dc=io
+cn: Alice Williams
+uid: awilliams
+mail: alice@alice.com
+givenName: Alice
+userPassword: alice
+
+dn: uid=bmiller,ou=people,dc=mokapi,dc=io
+cn: Bob Miller
+uid: bmiller
+mail: bob@bob.com
+givenName: Bob
+userPassword: bob
+memberOf: cn=Developers,ou=groups,dc=mokapi,dc=io
+memberOf: cn=Admins,ou=groups,dc=mokapi,dc=io

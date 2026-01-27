@@ -23,7 +23,7 @@ import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
-import { EnvStrategyType, isStrategyActivated } from '../config/providers-configuration';
+import { EnvStrategyType, isStrategyActivated } from '../modules/singleSignOn/providers-configuration';
 
 const MIN_20 = 20 * 60 * 1000;
 const REQ_TIMEOUT = conf.get('app:request_timeout');

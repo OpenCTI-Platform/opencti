@@ -24,6 +24,17 @@ const openIDConfigKeys = [
   'issuer',
 ];
 
+const ldapConfigKeys = [
+  'url',
+  'bindDN',
+  'bindCredentials',
+  'searchBase',
+  'searchFilter',
+  'groupSearchBase',
+  'groupSearchFilter',
+  'allow_self_signed',
+];
+
 type configType = ReadonlyArray<{
   key: string;
   value: string;
@@ -36,6 +47,8 @@ export const getSSOConfigList = (strategy: string) => {
     case 'SamlStrategy': return samlConfigKeys;
     case 'OpenID':
     case 'OpenIDConnectStrategy': return openIDConfigKeys;
+    case 'LDAP':
+    case 'LdapStrategy': return ldapConfigKeys;
     default: return [];
   }
 };

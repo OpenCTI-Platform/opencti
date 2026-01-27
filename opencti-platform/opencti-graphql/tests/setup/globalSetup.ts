@@ -10,7 +10,6 @@ import { wait } from '../../src/database/utils';
 import { createRedisClient, initializeRedisClients } from '../../src/database/redis';
 import { logApp, environment } from '../../src/config/conf';
 import cacheManager from '../../src/manager/cacheManager';
-import { initializeAdminUser } from '../../src/config/providers-initialization';
 import { initDefaultNotifiers } from '../../src/modules/notifier/notifier-domain';
 import { initializeInternalQueues } from '../../src/database/rabbitmq';
 import { executionContext } from '../../src/utils/access';
@@ -21,6 +20,7 @@ import { initExclusionListCache } from '../../src/database/exclusionListCache';
 import { initLockFork } from '../../src/lock/master-lock';
 import { ADMIN_USER, createTestUsers, isPlatformAlive, testContext } from '../utils/testQuery';
 import { initializeStreamStack } from '../../src/database/stream/stream-handler';
+import { initializeAdminUser } from '../../src/modules/singleSignOn/providers-initialization';
 
 /**
  * This is run once before all tests (for setup) and after all (for teardown).

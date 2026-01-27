@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import {
   type ConfigurationTypeInput,
   type EditInput,
@@ -9,8 +8,9 @@ import {
   type SingleSignOnAddInput,
   type SingleSignOnMigrationResult,
   StrategyType,
-} from '../../../src/generated/graphql';
-import { USER_PARTICIPATE, USER_SECURITY } from '../../utils/testQuery';
+} from '../../../../src/generated/graphql';
+import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
+import { USER_PARTICIPATE, USER_SECURITY } from '../../../utils/testQuery';
 
 export const SINGLE_SIGN_ON_LIST_QUERY = gql`
     query singleSignOns($first: Int) {

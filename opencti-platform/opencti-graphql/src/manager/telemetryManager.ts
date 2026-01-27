@@ -25,8 +25,8 @@ import { redisClearTelemetry, redisGetTelemetry, redisSetTelemetryAdd } from '..
 import type { AuthUser } from '../types/user';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../modules/securityCoverage/securityCoverage-types';
-import { isStrategyActivated, EnvStrategyType } from '../config/providers-configuration';
 import { findRolesWithCapabilityInDraft } from '../domain/user';
+import { EnvStrategyType, isStrategyActivated } from '../modules/singleSignOn/providers-configuration';
 
 const TELEMETRY_MANAGER_KEY = conf.get('telemetry_manager:lock_key');
 const TELEMETRY_CONSOLE_DEBUG = conf.get('telemetry_manager:console_debug') ?? false;
