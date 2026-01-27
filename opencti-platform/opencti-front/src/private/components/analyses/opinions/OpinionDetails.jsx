@@ -3,10 +3,10 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
 import inject18n from '../../../../components/i18n';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import Card from '../../../../components/common/card/Card';
+import Label from '../../../../components/common/label/Label';
 
 const styles = (theme) => ({
   paper: {
@@ -18,34 +18,27 @@ const styles = (theme) => ({
 
 class OpinionDetailsComponent extends Component {
   render() {
-    const { t, classes, opinion } = this.props;
+    const { t, opinion } = this.props;
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true}>
-          {t('Entity details')}
-        </Typography>
-        <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
-          <Typography variant="h3" gutterBottom={true}>
+        <Card title={t('Entity details')}>
+          <Label>
             {t('Opinion')}
-          </Typography>
+          </Label>
           <MarkdownDisplay
             content={opinion.opinion}
             remarkGfmPlugin={true}
             commonmark={true}
           />
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
+          <Label sx={{ mt: 2 }}>
             {t('Explanation')}
-          </Typography>
+          </Label>
           <MarkdownDisplay
             content={opinion.explanation}
             remarkGfmPlugin={true}
             commonmark={true}
           />
-        </Paper>
+        </Card>
       </div>
     );
   }
