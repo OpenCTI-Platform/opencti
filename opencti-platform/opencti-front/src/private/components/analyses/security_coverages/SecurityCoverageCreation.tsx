@@ -240,7 +240,7 @@ interface SecurityCoverageFormValues {
   coverage_information: { coverage_name: string; coverage_score: number | string }[];
   periodicity?: string;
   duration?: string;
-  type_affinity: 'ENDPOINT' | 'CLOUD' | 'WEB' | 'TABLE-TOP';
+  type_affinity: 'ENDPOINT';
   platforms_affinity: string[];
 }
 
