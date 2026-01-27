@@ -1809,6 +1809,7 @@ type ElFindByIdsOpts = {
   type?: string | string[] | null;
   relCount?: boolean | null;
   includeDeletedInDraft?: boolean | null;
+  historyFiltering?: boolean;
 };
 
 // elFindByIds is not defined to use ordering or sorting (ordering is forced by creation date)
@@ -1870,7 +1871,7 @@ export const elFindByIds = async <T extends BasicStoreBase>(
       };
       mustTerms.push(shouldType);
     }
-    const restrictionOptions = { includeAuthorities: true }; // By default include authorized through capabilities
+    const restrictionOptions = { includeAuthorities: true, historyFiltering: opts.historyFiltering }; // By default include authorized through capabilities
     // If an admin ask for a specific element, there is no need to ask him to explicitly extends his visibility to doing it.
     const markingRestrictions = await buildDataRestrictions(context, user, restrictionOptions);
     mustTerms.push(...markingRestrictions.must);
