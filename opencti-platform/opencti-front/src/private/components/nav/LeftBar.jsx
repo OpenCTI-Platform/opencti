@@ -92,6 +92,7 @@ import useGranted, {
   SETTINGS_FILEINDEXING,
   SETTINGS_SECURITYACTIVITY,
   SETTINGS_SETACCESSES,
+  SETTINGS_SETAUTH,
   SETTINGS_SETCASETEMPLATES,
   SETTINGS_SETCUSTOMIZATION,
   SETTINGS_SETKILLCHAINPHASES,
@@ -245,7 +246,7 @@ const LeftBarComponent = ({ queryRef }) => {
   const isGrantedToIngestion = useGranted([MODULES, INGESTION, INGESTION_SETINGESTIONS]);
   const isOrganizationAdmin = useGranted([VIRTUAL_ORGANIZATION_ADMIN]);
   const isGrantedToCustomization = useGranted([SETTINGS_SETCUSTOMIZATION]);
-  const isGrantedToSecurity = useGranted([SETTINGS_SETMARKINGS, SETTINGS_SETACCESSES]);
+  const isGrantedToSecurity = useGranted([SETTINGS_SETMARKINGS, SETTINGS_SETACCESSES, SETTINGS_SETAUTH]);
   const isGrantedToAudit = useGranted([SETTINGS_SECURITYACTIVITY]);
   const isGrantedToExplore = useGranted([EXPLORE]);
   const hasXtmHubAccess = useGranted([SETTINGS_SETMANAGEXTMHUB]);
@@ -732,6 +733,7 @@ const LeftBarComponent = ({ queryRef }) => {
           VIRTUAL_ORGANIZATION_ADMIN,
           SETTINGS_SETPARAMETERS,
           SETTINGS_SETACCESSES,
+          SETTINGS_SETAUTH,
           SETTINGS_SETMARKINGS,
           SETTINGS_SETCUSTOMIZATION,
           SETTINGS_SETLABELS,
