@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material';
+import { Box, Dialog, DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material';
 import { FormikConfig, FormikErrors, useFormik } from 'formik';
 import { AssociatedEntityOption } from '@components/common/form/AssociatedEntityField';
 import ImportFilesUploader from '@components/common/files/import_files/ImportFilesUploader';
@@ -39,6 +39,7 @@ import { KNOWLEDGE_KNASKIMPORT } from '../../../../../utils/hooks/useGranted';
 import Security from '../../../../../utils/Security';
 import { FieldOption } from '../../../../../utils/field';
 import IconButton from '../../../../../components/common/button/IconButton';
+import Button from '../../../../../components/common/button/Button';
 
 export const CSV_MAPPER_NAME = '[FILE] CSV Mapper import';
 
@@ -487,7 +488,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
         },
       }}
     >
-      <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2 }}>
         <Typography variant="h5">{t_i18n('Import data')}</Typography>
         <IconButton
           aria-label="Close"
@@ -529,10 +530,13 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
           />
         )}
       </DialogContent>
-      <DialogActions>
+      <DialogActions sx={{ p: 2 }}>
         {/* Close dialog */}
         {(!uploadStatus || uploadStatus === 'success') && (
-          <Button onClick={() => handleClose()}>
+          <Button
+            onClick={() => handleClose()}
+            variant="secondary"
+          >
             {uploadStatus === 'success' ? t_i18n('Close') : t_i18n('Cancel')}
           </Button>
         )}

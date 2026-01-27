@@ -19,7 +19,7 @@ export const renderCardTitle = (entity: EntityCard) => {
     ? country.x_opencti_aliases.find((a) => a?.length === 2) : null;
 
   return (
-    <Stack direction="row">
+    <Stack direction="row" gap={1}>
       <Typography
         variant="h3"
         sx={{
