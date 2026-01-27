@@ -3,7 +3,7 @@ import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-r
 import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { ListItemButton } from '@mui/material';
+import { ListItemButton, Stack } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
 import { DraftChip } from '../draft/DraftChip';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -384,16 +384,16 @@ const StixDomainObjectNestedEntitiesLines = ({
                 </ListItemIcon>
                 <ListItemText
                   primary={(
-                    <div>
+                    <Stack direction="row">
                       <div
-                        style={{ ...bodyItemStyle, width: '20%' }}
+                        style={{ ...bodyItemStyle, width: '20%', height: '100%' }}
                       >
                         <ItemEntityType
                           entityType={node.relationship_type}
                         />
                       </div>
                       <div
-                        style={{ ...bodyItemStyle, width: '20%' }}
+                        style={{ ...bodyItemStyle, width: '20%', height: '100%' }}
                       >
                         <ItemEntityType
                           entityType={stixCoreObject.entity_type ?? '-'}
@@ -401,17 +401,17 @@ const StixDomainObjectNestedEntitiesLines = ({
                         />
                       </div>
                       <div
-                        style={{ ...bodyItemStyle, width: '40%' }}
+                        style={{ ...bodyItemStyle, width: '40%', paddingTop: '2px', marginLeft: '16px' }}
                       >
                         {getMainRepresentative(stixCoreObject)}
                         {stixCoreObject.draftVersion && (<DraftChip />)}
                       </div>
                       <div
-                        style={bodyItemStyle}
+                        style={{ ...bodyItemStyle, paddingTop: '2px' }}
                       >
                         {fsd(node.start_time)}
                       </div>
-                    </div>
+                    </Stack>
                   )}
                 />
               </ListItemButton>

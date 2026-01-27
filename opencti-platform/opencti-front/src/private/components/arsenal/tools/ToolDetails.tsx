@@ -1,15 +1,11 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
 import Grid from '@mui/material/Grid';
 import Tooltip from '@mui/material/Tooltip';
 import { ToolDetails_tool$key } from '@components/arsenal/tools/__generated__/ToolDetails_tool.graphql';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
-import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import StixCoreObjectKillChainPhasesView from '../../common/stix_core_objects/StixCoreObjectKillChainPhasesView';
-import { truncate } from '../../../../utils/String';
+import { truncate, capitalizeFirstLetter } from '../../../../utils/String';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import Card from '../../../../components/common/card/Card';
@@ -65,22 +61,9 @@ const ToolDetails: FunctionComponent<ToolDetailsProps> = ({ tools }) => {
             <Label>
               {t_i18n('Tool types')}
             </Label>
-            {(tool.tool_types && tool.tool_types.length > 0) ? (
-              <List>
-                {tool.tool_types.map((tool_type) => (
-                  <ListItem key={tool_type} dense={true} divider={true}>
-                    <ListItemText
-                      primary={(
-                        <ItemOpenVocab
-                          type="tool_types_ov"
-                          value={tool_type}
-                        />
-                      )}
-                    />
-                  </ListItem>
-                ))}
-              </List>
-            ) : ('-')}
+            <FieldOrEmpty source={tool.tool_types}>
+              {tool.tool_types && tool.tool_types?.length > 0 && (tool.tool_types.map((type) => type && capitalizeFirstLetter(type)).join(', '))}
+            </FieldOrEmpty>
             <StixCoreObjectKillChainPhasesView killChainPhases={tool.killChainPhases ?? []} />
           </Grid>
         </Grid>
