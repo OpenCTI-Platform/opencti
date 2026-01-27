@@ -151,23 +151,25 @@ const ItemMarkings = ({
     >
       <Stack direction="row" gap={1} flexWrap="wrap">
         {markings.slice(0, limit).map((markingDefinition) => (
-          <ChipMarking
+          <Badge
             key={markingDefinition.id}
-            markingDefinition={markingDefinition}
-            onClick={onClick}
-            disableTooltip
-          />
+            variant={markings.length > limit ? 'dot' : 'standard'}
+            color="primary"
+            sx={{
+              '& .MuiBadge-badge': {
+                right: 6,
+                top: 2,
+              },
+            }}
+          >
+            <ChipMarking
+              markingDefinition={markingDefinition}
+              onClick={onClick}
+              disableTooltip
+            />
+          </Badge>
         ))}
-        <Badge
-          variant={markings.length > limit ? 'dot' : 'standard'}
-          color="primary"
-          sx={{
-            '& .MuiBadge-badge': {
-              right: 9,
-              top: 2,
-            },
-          }}
-        />
+
       </Stack>
     </Tooltip>
   );
