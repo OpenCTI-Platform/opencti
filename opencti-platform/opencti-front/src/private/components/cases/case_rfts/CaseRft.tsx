@@ -1,9 +1,6 @@
 import Grid from '@mui/material/Grid';
 import React, { useRef } from 'react';
 import { useFragment } from 'react-relay';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
-import { useTheme } from '@mui/material/styles';
 import { convertMarkings } from '../../../../utils/edition';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
@@ -24,6 +21,7 @@ import { CaseTasksLineDummy } from '../tasks/CaseTasksLine';
 import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import Card from '../../../../components/common/card/Card';
 
 interface CaseRftProps {
   caseRftData: CaseUtils_case$key;
@@ -31,7 +29,6 @@ interface CaseRftProps {
 }
 
 const CaseRft: React.FC<CaseRftProps> = ({ caseRftData, enableReferences }) => {
-  const theme = useTheme();
   const { t_i18n } = useFormatter();
   const ref = useRef(null);
   const caseRft = useFragment(caseFragment, caseRftData);
@@ -96,39 +93,23 @@ const CaseRft: React.FC<CaseRftProps> = ({ caseRftData, enableReferences }) => {
                     {queryRef && (
                       <React.Suspense
                         fallback={(
-                          <div style={{ height: '100%' }}>
-                            <Typography
-                              variant="h4"
-                              gutterBottom={true}
-                              style={{ marginBottom: 10 }}
+                          <Card title={t_i18n('Tasks')}>
+                            <ListLines
+                              helpers={helpers}
+                              sortBy={sortBy}
+                              orderAsc={orderAsc}
+                              handleSort={helpers.handleSort}
+                              dataColumns={tasksDataColumns}
+                              inline={true}
+                              secondaryAction={true}
                             >
-                              {t_i18n('Tasks')}
-                            </Typography>
-                            <Paper
-                              style={{
-                                marginTop: theme.spacing(1),
-                                padding: 0,
-                                borderRadius: 4,
-                              }}
-                              variant="outlined"
-                            >
-                              <ListLines
-                                helpers={helpers}
-                                sortBy={sortBy}
-                                orderAsc={orderAsc}
-                                handleSort={helpers.handleSort}
-                                dataColumns={tasksDataColumns}
-                                inline={true}
-                                secondaryAction={true}
-                              >
-                                {Array(20)
-                                  .fill(0)
-                                  .map((_, idx) => (
-                                    <CaseTasksLineDummy key={idx} />
-                                  ))}
-                              </ListLines>
-                            </Paper>
-                          </div>
+                              {Array(20)
+                                .fill(0)
+                                .map((_, idx) => (
+                                  <CaseTasksLineDummy key={idx} />
+                                ))}
+                            </ListLines>
+                          </Card>
                         )}
                       >
                         <CaseTasksLines
