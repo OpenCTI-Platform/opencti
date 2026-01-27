@@ -242,7 +242,7 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
         )}
 
         <StixDomainObjectCreation
-          display={true}
+          display={false}
           inputValue=""
           speeddial={true}
           open={openCreateEntity}
@@ -258,7 +258,7 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
           paginationOptions={searchPaginationOptions}
         />
         <StixCyberObservableCreation
-          display={true}
+          display={false}
           contextual={true}
           inputValue=""
           paginationKey="Pagination_stixCoreObjects"
