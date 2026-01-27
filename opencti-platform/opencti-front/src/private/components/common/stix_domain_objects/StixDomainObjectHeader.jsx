@@ -63,7 +63,6 @@ import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
 import Tag from '@common/tag/Tag';
 import TagsOverflow from '../../../../components/common/tag/TagsOverflow';
-import { OverflowContainer } from '../../../../components/common/tag/OverflowContainer';
 
 export const stixDomainObjectMutation = graphql`
   mutation StixDomainObjectHeaderFieldMutation(
@@ -481,6 +480,8 @@ const StixDomainObjectHeader = (props) => {
     || (enableEnricher && isKnowledgeEnricher)
     || isKnowledgeDeleter;
 
+  const title = getMainRepresentative(stixDomainObject);
+
   return (
     <React.Suspense fallback={<span />}>
       <Stack gap={1}>
@@ -503,7 +504,7 @@ const StixDomainObjectHeader = (props) => {
                 overflow: 'hidden',
               }}
             >
-              <Tooltip title={getMainRepresentative(stixDomainObject)}>
+              <Tooltip title={title}>
                 <span>
                   <TitleMainEntity
                     preserveCase
@@ -513,7 +514,7 @@ const StixDomainObjectHeader = (props) => {
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    {getMainRepresentative(stixDomainObject)}
+                    {title}
                   </TitleMainEntity>
                 </span>
               </Tooltip>
@@ -572,6 +573,7 @@ const StixDomainObjectHeader = (props) => {
             )}
             {enableQuickSubscription && (
               <StixCoreObjectQuickSubscription
+                title={title}
                 instanceId={stixDomainObject.id}
                 instanceName={getMainRepresentative(stixDomainObject)}
                 paginationOptions={triggersPaginationOptions}

@@ -9,7 +9,6 @@ import { StixCoreObjectSharingListDeleteMutation } from './__generated__/StixCor
 import { StixCoreObjectSharingListFragment$key } from './__generated__/StixCoreObjectSharingListFragment.graphql';
 import Tag from '@common/tag/Tag';
 import { AccountBalanceOutlined } from '@mui/icons-material';
-import { Stack } from '@mui/material';
 import TagsOverflow from '@common/tag/TagsOverflow';
 
 const objectOrganizationFragment = graphql`

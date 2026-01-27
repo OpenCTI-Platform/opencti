@@ -721,6 +721,7 @@ const ContainerHeader = (props) => {
               instanceName={getMainRepresentative(container)}
               paginationOptions={triggersPaginationOptions}
               triggerData={triggerData}
+              title={getMainRepresentative(container)}
             />
           )}
           {enableEnricher && (
