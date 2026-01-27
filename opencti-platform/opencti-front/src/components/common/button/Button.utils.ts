@@ -25,6 +25,13 @@ export const getColorDefinitions = (theme: Theme): Record<ButtonColorKey, ColorD
       text: theme.palette.ai?.contrastText ?? '#000000',
       border: theme.palette?.ai?.light ?? '#D6C2FA',
     },
+    ee: {
+      main: theme.palette.ee?.main ?? '',
+      hover: theme.palette?.ee?.main ?? '',
+      focus: theme.palette?.ee?.main ?? '',
+      text: theme.palette.ee?.contrastText ?? '',
+      border: theme.palette?.ee?.lightBackground ?? '',
+    },
     primary: {
       main: theme.palette.primary.main ?? '',
       hover: theme.palette.primary.dark ?? '',

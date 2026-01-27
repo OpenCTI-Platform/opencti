@@ -1,5 +1,5 @@
 export type ButtonSize = 'default' | 'small';
-export type ButtonIntent = 'default' | 'destructive' | 'ai';
+export type ButtonIntent = 'default' | 'destructive' | 'ai' | 'ee';
 export type GradientVariant = 'default' | 'ai' | 'disabled';
 
 export type MuiColor

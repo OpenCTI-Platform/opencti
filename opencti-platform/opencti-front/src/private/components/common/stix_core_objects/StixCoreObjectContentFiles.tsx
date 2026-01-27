@@ -258,7 +258,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
                 size="small"
                 aria-label={t_i18n('Add a file')}
               >
-                <AddOutlined />
+                <AddOutlined fontSize="small" />
               </IconButton>
             </Stack>
           </Security>

@@ -1,5 +1,5 @@
 import Tooltip from '@mui/material/Tooltip';
-import { IconButton, List, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
+import { List, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
 import moment from 'moment/moment';
 import { MoreVert, SendOutlined } from '@mui/icons-material';
 import React, { Fragment, MouseEvent, useState } from 'react';
@@ -26,6 +26,7 @@ import Security from '../../../../utils/Security';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import EETooltip from '../entreprise_edition/EETooltip';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
+import IconButton from '../../../../components/common/button/IconButton';
 
 const renderIcon = (mimeType: string) => {
   switch (mimeType) {
@@ -153,7 +154,7 @@ const StixCoreObjectContentFilesList = ({
                               aria-label="disseminate"
                               disabled={!isEnterpriseEdition}
                             >
-                              <SendOutlined />
+                              <SendOutlined fontSize="small" />
                             </IconButton>
                           </EETooltip>
                         </>
@@ -165,7 +166,7 @@ const StixCoreObjectContentFilesList = ({
                       color="primary"
                       size="small"
                     >
-                      <MoreVert />
+                      <MoreVert fontSize="small" />
                     </IconButton>
                   </>
                 )}
@@ -189,7 +190,12 @@ const StixCoreObjectContentFilesList = ({
                     }}
                     primary={file.name}
                     secondary={(
-                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <div style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'start',
+                      }}
+                      >
                         <span style={{ paddingBottom: theme.spacing(0.5) }}>
                           {fld(file.lastModified ?? moment())}
                         </span>

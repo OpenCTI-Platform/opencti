@@ -41,7 +41,7 @@ interface BaseButtonProps extends Omit<MuiButtonProps, 'variant' | 'color' | 'si
 }
 
 type RestrictedIntentButtonProps = BaseButtonProps & {
-  intent: 'ai';
+  intent: 'ai' | 'ee';
   variant?: Exclude<ButtonVariant, 'primary'>;
 };
 

@@ -168,7 +168,7 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({
             size="small"
             variant="tertiary"
           >
-            <CloudUploadOutlined />
+            <CloudUploadOutlined fontSize="small" />
           </IconButton>
         </Tooltip>
       )}
