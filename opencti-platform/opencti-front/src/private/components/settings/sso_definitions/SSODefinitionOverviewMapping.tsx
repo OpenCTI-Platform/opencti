@@ -14,7 +14,6 @@ import { SSODefinitionOverviewMappingFragment$key } from '@components/settings/s
 import ItemBoolean from '../../../../components/ItemBoolean';
 import Tooltip from '@mui/material/Tooltip';
 import AccessesMenu from '@components/settings/AccessesMenu';
-import { CheckCircleOutlined, CloseOutlined } from '@mui/icons-material';
 import { EMPTY_VALUE } from '../../../../utils/String';
 
 export const ssoDefinitionOverviewMappingFragment = graphql`
@@ -238,9 +237,9 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
 
             <Grid size={{ xs: 12, md: 6 }} sx={{ display: 'flex', alignItems: 'center' }}>
               {valueIsTrue
-                ? <CheckCircleOutlined fontSize="small" color="success" />
+                ? <ItemBoolean label="True" status={true} />
                 : valueIsFalse
-                  ? <CloseOutlined fontSize="small" color="error" />
+                  ? <ItemBoolean label="False" status={false} />
                   : row.value ? renderValue(row.value) : EMPTY_VALUE}
             </Grid>
 
