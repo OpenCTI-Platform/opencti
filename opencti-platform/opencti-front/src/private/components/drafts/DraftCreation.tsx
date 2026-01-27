@@ -137,6 +137,7 @@ const DraftCreationForm: React.FC<DraftFormProps> = ({ updater, onCompleted, onR
               component={TextField}
               name="name"
               label={t_i18n('Name')}
+              required={mandatoryAttributes.includes('name')}
               fullWidth
               data-testid="draft-creation-form-name-input"
             />
