@@ -43,7 +43,6 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
         // 'Create Header',
         // 'Create ClientCert',
         // 'Create Ldap',
-        // 'Create LocalAuth',
       ]}
       onOptionClick={(option) => {
         switch (option) {
@@ -78,6 +77,20 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
     />
   );
 
+  const getOrganizationsMapping = (values: SSODefinitionFormValues) => {
+    const sourceList = values.organizations_mapping_source;
+    const targetList = values.organizations_mapping_target.flat();
+
+    return sourceList.map((source: string, index: number) => `/${source} org:${targetList[index].label}`);
+  };
+
+  const getGroupsMapping = (values: SSODefinitionFormValues) => {
+    const sourceList = values.groups_mapping_source;
+    const targetList = values.groups_mapping_target.flat();
+
+    return sourceList.map((source: string, index: number) => `/${source} :${targetList[index].label}`);
+  };
+
   const onSubmit = (
     values: SSODefinitionFormValues,
     { setSubmitting, resetForm }: { setSubmitting: (flag: boolean) => void; resetForm: () => void },
@@ -97,19 +110,19 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
 
     const strategyEnum = getStrategyConfigEnum(selectedStrategy);
 
+    const groupsMapping = getGroupsMapping(values);
     const groups_management = {
+      group_attributes: values.group_attributes ?? null,
       groups_path: values.groups_path || null,
-      group_attributes: values.group_attributes || null,
       groups_attributes: values.groups_attributes || null,
-      groups_mapping: values.groups_mapping.filter((v) => v && v.trim() !== ''),
+      groups_mapping: groupsMapping,
       read_userinfo: values.read_userinfo,
     };
 
+    const organizationsMapping = getOrganizationsMapping(values);
     const organizations_management = {
-      organizations_path: values.organizations_path || null,
-      organizations_mapping: values.organizations_mapping.filter(
-        (v) => v && v.trim() !== '',
-      ),
+      organizations_path: values.organizations_path ?? null,
+      organizations_mapping: organizationsMapping ?? null,
     };
 
     const finalValues = {

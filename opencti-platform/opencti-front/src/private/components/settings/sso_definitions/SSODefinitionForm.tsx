@@ -57,8 +57,12 @@ export interface SSODefinitionFormValues {
   group_attributes: string[];
   groups_attributes: string[];
   groups_mapping: string[];
+  groups_mapping_source: string[];
+  groups_mapping_target: { label: string; value: string }[];
   organizations_path: string[];
   organizations_mapping: string[];
+  organizations_mapping_source: string[];
+  organizations_mapping_target: { label: string; value: string }[];
   read_userinfo: boolean;
   client_id: string;
   client_secret: string;
@@ -139,6 +143,10 @@ const SSODefinitionForm = ({
     read_userinfo: false,
     organizations_path: [],
     organizations_mapping: [],
+    organizations_mapping_source: [],
+    organizations_mapping_target: [],
+    groups_mapping_source: [],
+    groups_mapping_target: [],
     // OpenID
     client_id: '',
     client_secret: '',
@@ -199,11 +207,13 @@ const SSODefinitionForm = ({
     initialValues.groups_mapping = groupsMapping;
     initialValues.organizations_path = organizationsPath;
     initialValues.organizations_mapping = organizationsMapping;
-
+    // initialValues.organizations_mapping_source = ??;
+    // initialValues.organizations_mapping_target = ??;
     initialValues.client_id = clientId?.value ?? '';
     initialValues.client_secret = clientSecret?.value ?? '';
     initialValues.redirect_uris = redirectUris?.value ? JSON.parse(redirectUris.value) : [''];
   }
+
   const updateField = async (field: SSOEditionFormInputKeys, value: unknown) => {
     if (onSubmitField) onSubmitField(field, value);
   };
