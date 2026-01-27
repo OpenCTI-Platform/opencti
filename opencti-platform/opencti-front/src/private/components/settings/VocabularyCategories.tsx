@@ -7,6 +7,7 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import DataTableWithoutFragment from '../../../components/dataGrid/DataTableWithoutFragment';
+import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 import { ShortTextOutlined } from '@mui/icons-material';
 import SearchInput from '../../../components/SearchInput';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
@@ -36,7 +37,7 @@ const VocabularyCategories = () => {
     if (sortBy !== sortByVocabularyCategory || orderAsc !== orderAscVocabularyCategory) {
       handleSort(sortBy, orderAsc);
     }
-  }, [sortBy, orderAsc, sortByVocabularyCategory, orderAscVocabularyCategory, handleSort]);
+  }, [sortBy, orderAsc, sortByVocabularyCategory, orderAscVocabularyCategory]);
 
   const onSort = (field: string, order: boolean) => {
     handleSort(field, order);
@@ -59,7 +60,7 @@ const VocabularyCategories = () => {
       id: 'description',
       percentWidth: 60,
       isSortable: false,
-      render: (data: { category: VocabularyDefinition }) => (data.category.description ? t_i18n(data.category.description) : ''),
+      render: (data: { category: VocabularyDefinition }) => defaultRender(data.category.description),
     },
   };
 
