@@ -343,9 +343,10 @@ const TasksList = ({ data, options }) => {
                         {task.actions
                           && R.map(
                             (action) => (
-                              <div
+                              <Stack
                                 key={task.actions.indexOf(action)}
-                                style={{ display: 'flex', gap: 8 }}
+                                direction="row"
+                                gap={1}
                               >
                                 <Tag
                                   label={action.type}
@@ -373,7 +374,7 @@ const TasksList = ({ data, options }) => {
                                     )}
                                   />
                                 )}
-                              </div>
+                              </Stack>
                             ),
                             task.actions,
                           )}
