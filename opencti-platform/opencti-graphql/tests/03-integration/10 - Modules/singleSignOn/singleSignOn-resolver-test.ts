@@ -11,7 +11,6 @@ import {
 } from '../../../../src/generated/graphql';
 import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
 import { USER_PARTICIPATE, USER_SECURITY } from '../../../utils/testQuery';
-import { waitInSec } from '../../../../src/database/utils';
 
 export const SINGLE_SIGN_ON_LIST_QUERY = gql`
     query singleSignOns($first: Int) {
@@ -239,7 +238,7 @@ describe('Single Sign On', () => {
       expect(result?.data?.singleSignOnFieldPatch?.groups_management.groups_mapping).toStrictEqual(['/Connector:Connectors']);
     });
   });
-  describe.skip('Delete', () => {
+  describe('Delete', () => {
     it('should not delete single sign on without SETAUTH capa', async () => {
       await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
         query: SINGLE_SIGN_ON_DELETE,
@@ -284,12 +283,6 @@ describe('Single Sign On', () => {
       expect(result?.data?.singleSignOnRunMigration).toBeDefined();
       const ssoConfig: SingleSignOnMigrationResult[] = result?.data?.singleSignOnRunMigration;
       expect(ssoConfig[0]?.description).toMatch(/Automatically detected from local */);
-    });
-  });
-
-  describe('need a sleep before raw tests ?', async () => {
-    it('should wait', async () => {
-      await waitInSec(60);
     });
   });
 });
