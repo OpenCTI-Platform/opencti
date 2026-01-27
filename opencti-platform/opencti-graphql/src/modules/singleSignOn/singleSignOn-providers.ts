@@ -1,9 +1,9 @@
-import { type GroupsManagement, type OrganizationsManagement, type SingleSignOnAddInput, StrategyType } from '../../generated/graphql';
+import { type SingleSignOnAddInput, StrategyType } from '../../generated/graphql';
 import conf, { logApp } from '../../config/conf';
 import LocalStrategy from 'passport-local';
 import { login } from '../../domain/user';
 import { addUserLoginCount } from '../../manager/telemetryManager';
-import { findAllSingleSignOn, internalAddSingleSignOn, logAuthError, logAuthInfo, logAuthWarn } from './singleSignOn-domain';
+import { findAllSingleSignOn, internalAddSingleSignOn, logAuthError, logAuthInfo } from './singleSignOn-domain';
 import {
   AuthType,
   EnvStrategyType,
