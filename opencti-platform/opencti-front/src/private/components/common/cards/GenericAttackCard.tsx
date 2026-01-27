@@ -142,8 +142,9 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
           direction="row"
           gap={1}
           mb={2}
+          width="100%"
         >
-          <div style={{ minWidth: 0 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
             {renderCardTitle(cardData)}
             <Typography
               variant="body1"
