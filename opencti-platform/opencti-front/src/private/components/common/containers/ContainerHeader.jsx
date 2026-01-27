@@ -17,12 +17,10 @@ import StixCoreObjectFileExportButton from '../stix_core_objects/StixCoreObjectF
 import StixCoreObjectsSuggestions from '../stix_core_objects/StixCoreObjectsSuggestions';
 import { DraftChip } from '../draft/DraftChip';
 import { stixCoreObjectQuickSubscriptionContentQuery } from '../stix_core_objects/stixCoreObjectTriggersUtils';
-import StixCoreObjectSubscribers from '../stix_core_objects/StixCoreObjectSubscribers';
 import FormAuthorizedMembersDialog from '../form/FormAuthorizedMembersDialog';
 import ExportButtons from '../../../../components/ExportButtons';
 import Security from '../../../../utils/Security';
 import { useFormatter } from '../../../../components/i18n';
-import { truncate } from '../../../../utils/String';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
 import useGranted, {
@@ -507,7 +505,7 @@ const ContainerHeader = (props) => {
     containerStyle = {
       position: 'absolute',
       display: 'flex',
-      top: 166 + bannerHeightNumber + settingsMessagesBannerHeight,
+      top: 200 + bannerHeightNumber + settingsMessagesBannerHeight,
       right: 24,
     };
   }
@@ -565,233 +563,289 @@ const ContainerHeader = (props) => {
 
   return (
     <div style={containerStyle}>
-      <React.Suspense fallback={<span />}>
-        {!knowledge && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Tooltip title={title}>
-              <TitleMainEntity>
-                {truncate(title, 80)}
-              </TitleMainEntity>
-            </Tooltip>
-            {container.draftVersion && (
-              <DraftChip />
-            )}
-          </div>
-        )}
-        {knowledge && (
-          <div>
-            <ExportButtons
-              domElementId="container"
-              name={t_i18n('Report representation')}
-              pixelRatio={currentMode === 'graph' ? 1 : 2}
-              adjust={adjust}
-              containerId={container.id}
-              investigationAddFromContainer={investigationAddFromContainer}
-            />
-          </div>
-        )}
-        {modes && (
-          <div id="container-view-buttons">
-            <ToggleButtonGroup size="small" exclusive={true} style={{ marginLeft: theme.spacing(2) }}>
-              {modes.includes('graph') && (
-                <Tooltip title={t_i18n('Graph view')}>
-                  <ToggleButton
-                    value="graph"
-                    component={Link}
-                    to={`${link}/graph`}
-                    selected={currentMode === 'graph'}
-                  >
-                    <VectorPolygon
-                      fontSize="small"
-                      color={currentMode === 'graph' ? 'primary' : 'inherit'}
-                    />
-                  </ToggleButton>
-                </Tooltip>
-              )}
-              {modes.includes('timeline') && (
-                <Tooltip title={t_i18n('TimeLine view')}>
-                  <ToggleButton
-                    value="timeline"
-                    component={Link}
-                    to={`${link}/timeline`}
-                    selected={currentMode === 'timeline'}
-                  >
-                    <ChartTimeline
-                      fontSize="small"
-                      color={currentMode === 'timeline' ? 'primary' : 'inherit'}
-                    />
-                  </ToggleButton>
-                </Tooltip>
-              )}
-              {modes.includes('correlation') && (
-                <Tooltip title={t_i18n('Correlation view')}>
-                  <ToggleButton
-                    value="correlation"
-                    component={Link}
-                    to={`${link}/correlation`}
-                    selected={currentMode === 'correlation'}
-                  >
-                    <VectorLink
-                      fontSize="small"
-                      color={
-                        currentMode === 'correlation' ? 'primary' : 'inherit'
-                      }
-                    />
-                  </ToggleButton>
-                </Tooltip>
-              )}
-              {modes.includes('matrix') && (
-                <Tooltip title={t_i18n('Tactics matrix view')}>
-                  <ToggleButton
-                    value="matrix"
-                    component={Link}
-                    to={`${link}/matrix`}
-                    selected={currentMode === 'matrix'}
-                  >
-                    <ViewColumnOutlined
-                      fontSize="small"
-                      color={currentMode === 'matrix' ? 'primary' : 'inherit'}
-                    />
-                  </ToggleButton>
-                </Tooltip>
-              )}
-            </ToggleButtonGroup>
-          </div>
-        )}
-        <Stack direction="row" gap={1}>
-          {!knowledge && (
-            <StixCoreObjectBackgroundTasks
-              id={container.id}
-              actionsFilter={['SHARE', 'UNSHARE', 'SHARE_MULTIPLE', 'UNSHARE_MULTIPLE']}
-            />
-          )}
-          {enableQuickSubscription && (
-            <StixCoreObjectSubscribers triggerData={triggerData} />
-          )}
-          {displaySharing && (
-            <>
-              <StixCoreObjectSharingList data={container} inContainer={true} />
-              <StixCoreObjectSharing
-                elementId={container.id}
-                open={openSharing}
-                variant="header"
-                disabled={isSharingDisabled}
-                handleClose={displaySharingButton ? undefined : handleCloseSharing}
-                inContainer={true}
-              />
-            </>
-          )}
-          {displayAuthorizedMembers && (
-            <FormAuthorizedMembersDialog
-              id={container.id}
-              owner={container.creators?.[0]}
-              authorizedMembers={authorizedMembersToOptions(
-                container.authorized_members,
-              )}
-              mutation={containerHeaderEditAuthorizedMembersMutation}
-              open={openAccessRestriction}
-              handleClose={displayAuthorizedMembersButton ? undefined : handleCloseAccessRestriction}
-              canDeactivate={true}
-            />
-          )}
-          {!knowledge && (
-            <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
-              <StixCoreObjectFileExport
-                scoId={container.id}
-                scoName={container.name}
-                scoEntityType={container.entity_type}
-                redirectToContentTab={!!redirectToContent}
-                OpenFormComponent={StixCoreObjectFileExportButton}
-                onExportCompleted={handleExportCompleted}
-              />
-            </Security>
-          )}
-          {enableSuggestions && (
-            <StixCoreObjectsSuggestions
-              containerId={container.id}
-              currentMode={currentMode}
-              onApplied={onApplied}
-              containerHeaderObjectsQuery={containerHeaderObjectsQuery}
-              container={container}
-            />
-          )}
-          {enableQuickSubscription && (
-            <StixCoreObjectQuickSubscription
-              instanceId={container.id}
-              instanceName={getMainRepresentative(container)}
-              paginationOptions={triggersPaginationOptions}
-              triggerData={triggerData}
-              title={getMainRepresentative(container)}
-            />
-          )}
-          {enableEnricher && (
-            <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
-              <StixCoreObjectEnrichment
-                stixCoreObjectId={container.id}
-              />
-            </Security>
-          )}
-          {displayEnrollPlaybook
-            && (
-              <StixCoreObjectEnrollPlaybook
-                stixCoreObjectId={container.id}
-                open={openEnrollPlaybook}
-                handleClose={displayEnrollPlaybookButton ? undefined : handleCloseEnrollPlaybook}
-              />
-            )
-          }
-          {displayPopoverMenu && (
-            <>
-              <PopoverMenu>
-                {({ closeMenu }) => (
-                  <Box>
-                    {displaySharing && !displaySharingButton && (
-                      <StixCoreObjectMenuItemUnderEE
-                        setOpen={setOpenSharing}
-                        title={t_i18n('Share with an organization')}
-                        isDisabled={isSharingDisabled}
-                        handleCloseMenu={closeMenu}
-                        needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}
-                      />
-                    )}
-                    {displayAuthorizedMembers && !displayAuthorizedMembersButton && (
-                      <StixCoreObjectMenuItemUnderEE
-                        setOpen={setOpenAccessRestriction}
-                        title={t_i18n('Manage access restriction')}
-                        handleCloseMenu={closeMenu}
-                        isDisabled={!enableManageAuthorizedMembers}
-                        needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
-                      />
-                    )}
-                    {displayEnrollPlaybook && !displayEnrollPlaybookButton && (
-                      <StixCoreObjectMenuItemUnderEE
-                        title={t_i18n('Enroll in playbook')}
-                        setOpen={setOpenEnrollPlaybook}
-                        handleCloseMenu={closeMenu}
-                        needs={[AUTOMATION]}
-                        matchAll
-                      />
-                    )}
-                    {canDelete && (
-                      <MenuItem onClick={() => {
-                        handleOpenDelete();
-                        closeMenu();
+      <Stack flex={1} gap={1} sx={{ width: '100%' }}>
+        <React.Suspense fallback={<span />}>
+          <Stack
+            id="fdfds"
+            direction="row"
+            justifyContent="space-between"
+            flex={1}
+          >
+            {!knowledge && (
+              <Stack
+                sx={{
+                  minWidth: 0,
+                  overflow: 'hidden',
+                  flex: 1,
+                }}
+              >
+                <Tooltip title={title}>
+                  <span>
+                    <TitleMainEntity
+                      preserveCase
+                      sx={{
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
                       }}
+                    >
+                      {title}
+                    </TitleMainEntity>
+                  </span>
+                </Tooltip>
+              </Stack>
+            )}
+
+            {knowledge && (
+              <ExportButtons
+                domElementId="container"
+                name={t_i18n('Report representation')}
+                pixelRatio={currentMode === 'graph' ? 1 : 2}
+                adjust={adjust}
+                containerId={container.id}
+                investigationAddFromContainer={investigationAddFromContainer}
+              />
+            )}
+
+            {modes && (
+              <div id="container-view-buttons">
+                <ToggleButtonGroup size="small" exclusive={true} style={{ marginLeft: theme.spacing(2) }}>
+                  {modes.includes('graph') && (
+                    <Tooltip title={t_i18n('Graph view')}>
+                      <ToggleButton
+                        value="graph"
+                        component={Link}
+                        to={`${link}/graph`}
+                        selected={currentMode === 'graph'}
                       >
-                        {t_i18n('Delete')}
-                      </MenuItem>
-                    )}
-                  </Box>
-                )}
-              </PopoverMenu>
-              {DeleteComponent && (
-                <DeleteComponent isOpen={openDelete} onClose={handleCloseDelete} />
+                        <VectorPolygon
+                          fontSize="small"
+                          color={currentMode === 'graph' ? 'primary' : 'inherit'}
+                        />
+                      </ToggleButton>
+                    </Tooltip>
+                  )}
+                  {modes.includes('timeline') && (
+                    <Tooltip title={t_i18n('TimeLine view')}>
+                      <ToggleButton
+                        value="timeline"
+                        component={Link}
+                        to={`${link}/timeline`}
+                        selected={currentMode === 'timeline'}
+                      >
+                        <ChartTimeline
+                          fontSize="small"
+                          color={currentMode === 'timeline' ? 'primary' : 'inherit'}
+                        />
+                      </ToggleButton>
+                    </Tooltip>
+                  )}
+                  {modes.includes('correlation') && (
+                    <Tooltip title={t_i18n('Correlation view')}>
+                      <ToggleButton
+                        value="correlation"
+                        component={Link}
+                        to={`${link}/correlation`}
+                        selected={currentMode === 'correlation'}
+                      >
+                        <VectorLink
+                          fontSize="small"
+                          color={
+                            currentMode === 'correlation' ? 'primary' : 'inherit'
+                          }
+                        />
+                      </ToggleButton>
+                    </Tooltip>
+                  )}
+                  {modes.includes('matrix') && (
+                    <Tooltip title={t_i18n('Tactics matrix view')}>
+                      <ToggleButton
+                        value="matrix"
+                        component={Link}
+                        to={`${link}/matrix`}
+                        selected={currentMode === 'matrix'}
+                      >
+                        <ViewColumnOutlined
+                          fontSize="small"
+                          color={currentMode === 'matrix' ? 'primary' : 'inherit'}
+                        />
+                      </ToggleButton>
+                    </Tooltip>
+                  )}
+                </ToggleButtonGroup>
+              </div>
+            )}
+
+            <Stack direction="row" gap={1}>
+              {!knowledge && (
+                <StixCoreObjectBackgroundTasks
+                  id={container.id}
+                  actionsFilter={['SHARE', 'UNSHARE', 'SHARE_MULTIPLE', 'UNSHARE_MULTIPLE']}
+                />
               )}
-            </>
-          )}
-          {EditComponent}
-        </Stack>
-      </React.Suspense>
+              {displaySharing && (
+                <>
+                  <StixCoreObjectSharing
+                    elementId={container.id}
+                    open={openSharing}
+                    variant="header"
+                    disabled={isSharingDisabled}
+                    handleClose={displaySharingButton ? undefined : handleCloseSharing}
+                    inContainer={true}
+                  />
+                </>
+              )}
+              {displayAuthorizedMembers && (
+                <FormAuthorizedMembersDialog
+                  id={container.id}
+                  owner={container.creators?.[0]}
+                  authorizedMembers={authorizedMembersToOptions(
+                    container.authorized_members,
+                  )}
+                  mutation={containerHeaderEditAuthorizedMembersMutation}
+                  open={openAccessRestriction}
+                  handleClose={displayAuthorizedMembersButton ? undefined : handleCloseAccessRestriction}
+                  canDeactivate={true}
+                />
+              )}
+              {!knowledge && (
+                <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
+                  <StixCoreObjectFileExport
+                    scoId={container.id}
+                    scoName={container.name}
+                    scoEntityType={container.entity_type}
+                    redirectToContentTab={!!redirectToContent}
+                    OpenFormComponent={StixCoreObjectFileExportButton}
+                    onExportCompleted={handleExportCompleted}
+                  />
+                </Security>
+              )}
+              {enableSuggestions && (
+                <StixCoreObjectsSuggestions
+                  containerId={container.id}
+                  currentMode={currentMode}
+                  onApplied={onApplied}
+                  containerHeaderObjectsQuery={containerHeaderObjectsQuery}
+                  container={container}
+                />
+              )}
+              {enableQuickSubscription && (
+                <StixCoreObjectQuickSubscription
+                  instanceId={container.id}
+                  instanceName={getMainRepresentative(container)}
+                  paginationOptions={triggersPaginationOptions}
+                  triggerData={triggerData}
+                  title={getMainRepresentative(container)}
+                />
+              )}
+              {enableEnricher && (
+                <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+                  <StixCoreObjectEnrichment
+                    stixCoreObjectId={container.id}
+                  />
+                </Security>
+              )}
+              {displayEnrollPlaybook
+                && (
+                  <StixCoreObjectEnrollPlaybook
+                    stixCoreObjectId={container.id}
+                    open={openEnrollPlaybook}
+                    handleClose={displayEnrollPlaybookButton ? undefined : handleCloseEnrollPlaybook}
+                  />
+                )
+              }
+              {displayPopoverMenu && (
+                <>
+                  <PopoverMenu>
+                    {({ closeMenu }) => (
+                      <Box>
+                        {displaySharing && !displaySharingButton && (
+                          <StixCoreObjectMenuItemUnderEE
+                            setOpen={setOpenSharing}
+                            title={t_i18n('Share with an organization')}
+                            isDisabled={isSharingDisabled}
+                            handleCloseMenu={closeMenu}
+                            needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}
+                          />
+                        )}
+                        {displayAuthorizedMembers && !displayAuthorizedMembersButton && (
+                          <StixCoreObjectMenuItemUnderEE
+                            setOpen={setOpenAccessRestriction}
+                            title={t_i18n('Manage access restriction')}
+                            handleCloseMenu={closeMenu}
+                            isDisabled={!enableManageAuthorizedMembers}
+                            needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
+                          />
+                        )}
+                        {displayEnrollPlaybook && !displayEnrollPlaybookButton && (
+                          <StixCoreObjectMenuItemUnderEE
+                            title={t_i18n('Enroll in playbook')}
+                            setOpen={setOpenEnrollPlaybook}
+                            handleCloseMenu={closeMenu}
+                            needs={[AUTOMATION]}
+                            matchAll
+                          />
+                        )}
+                        {canDelete && (
+                          <MenuItem onClick={() => {
+                            handleOpenDelete();
+                            closeMenu();
+                          }}
+                          >
+                            {t_i18n('Delete')}
+                          </MenuItem>
+                        )}
+                      </Box>
+                    )}
+                  </PopoverMenu>
+                  {DeleteComponent && (
+                    <DeleteComponent isOpen={openDelete} onClose={handleCloseDelete} />
+                  )}
+                </>
+              )}
+              {EditComponent}
+            </Stack>
+          </Stack>
+
+          <Stack
+            direction="row"
+            alignContent="center"
+            justifyContent="space-between"
+            gap={3}
+          >
+            <Stack
+              direction="row"
+              gap={1}
+              sx={{
+                flex: '1 1 50%',
+                minWidth: 0,
+                maxWidth: '50%',
+                overflow: 'hidden',
+              }}
+            >
+              {container.draftVersion && (
+                <DraftChip />
+              )}
+            </Stack>
+
+            <Stack
+              direction="row"
+              alignItems="center"
+              sx={{
+                flex: 1,
+                minWidth: 0,
+                maxWidth: '50%',
+              }}
+            >
+              {
+                !knowledge && displaySharing && (
+                  <StixCoreObjectSharingList data={container} inContainer={true} />
+                )
+              }
+            </Stack>
+          </Stack>
+        </React.Suspense>
+      </Stack>
     </div>
   );
 };

@@ -501,7 +501,7 @@ const StixCoreObjectQuickSubscription: FunctionComponent<
 
     return (
       <Drawer
-        title={t_i18n('Update subscription')}
+        title={t_i18n('Manage subscription')}
         open={open}
         onClose={handleClose}
       >
