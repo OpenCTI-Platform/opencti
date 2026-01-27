@@ -186,7 +186,6 @@ const ExclusionLists = () => {
       isSortable: true,
       render: (node: ExclusionListsLine_node$data) => (
         <ItemBoolean
-          variant="inList"
           label={node.enabled ? t_i18n('Yes') : t_i18n('No')}
           status={node.enabled}
         />

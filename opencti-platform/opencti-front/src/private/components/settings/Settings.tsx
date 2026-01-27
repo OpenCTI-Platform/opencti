@@ -45,6 +45,20 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import Card from '../../../components/common/card/Card';
 
+const AI_TYPE_MAP: Record<string, string> = {
+  mistralai: 'MistralAI',
+  openai: 'OpenAI',
+  azureopenai: 'AzureOpenAI',
+};
+
+const formatAIType = (type: string | null | undefined): string => {
+  if (!type) return '';
+  const parts = type.split(' ');
+  const lastPart = parts[parts.length - 1].toLowerCase();
+  parts[parts.length - 1] = AI_TYPE_MAP[lastPart] ?? parts[parts.length - 1];
+  return parts.join(' ');
+};
+
 const settingsQuery = graphql`
   query SettingsQuery {
     settings {
@@ -213,6 +227,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
   // generate AI Powered label and tooltip
   let aiPoweredLabel;
   let aiPoweredTooltip;
+  const formattedAIType = formatAIType(settings.platform_ai_type);
   if (!isEnterpriseEditionValid) {
     aiPoweredLabel = t_i18n('Disabled');
     aiPoweredTooltip = t_i18n('You should activate EE to use this feature');
@@ -220,10 +235,10 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
     aiPoweredLabel = t_i18n('Disabled');
     aiPoweredTooltip = t_i18n('AI is not enabled');
   } else if (settings.platform_ai_has_token) {
-    aiPoweredLabel = settings.platform_ai_type;
-    aiPoweredTooltip = `${settings.platform_ai_type} - ${settings.platform_ai_model}`;
+    aiPoweredLabel = formattedAIType;
+    aiPoweredTooltip = `${formattedAIType} - ${settings.platform_ai_model}`;
   } else {
-    aiPoweredLabel = `${settings.platform_ai_type} - ${t_i18n('Missing token')}`;
+    aiPoweredLabel = `${formattedAIType} - ${t_i18n('Missing token')}`;
     aiPoweredTooltip = t_i18n('The token is missing in your platform configuration, please ask your Filigran representative to provide you with it or with on-premise deployment instructions. Your can open a support ticket to do so.');
   };
 
@@ -392,7 +407,6 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                 <ListItem divider={true}>
                   <ListItemText primary={t_i18n('Organization')} />
                   <ItemBoolean
-                    variant="large"
                     neutralLabel={settings.platform_enterprise_edition.license_customer}
                     status={null}
                   />
@@ -400,15 +414,14 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                 <ListItem divider={true}>
                   <ListItemText primary={t_i18n('Creator')} />
                   <ItemBoolean
-                    variant="large"
                     neutralLabel={settings.platform_enterprise_edition.license_creator}
                     status={null}
+                    labelTextTransform="none"
                   />
                 </ListItem>
                 <ListItem divider={true}>
                   <ListItemText primary={t_i18n('Scope')} />
                   <ItemBoolean
-                    variant="large"
                     neutralLabel={settings.platform_enterprise_edition.license_global ? t_i18n('Global') : t_i18n('Current instance')}
                     status={null}
                   />
@@ -442,7 +455,6 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                 <ListItem divider={true}>
                   <ListItemText primary={t_i18n('Start date')} />
                   <ItemBoolean
-                    variant="xlarge"
                     label={fldt(settings.platform_enterprise_edition.license_start_date)}
                     status={!settings.platform_enterprise_edition.license_expired}
                   />
@@ -450,7 +462,6 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                 <ListItem divider={true}>
                   <ListItemText primary={t_i18n('Expiration date')} />
                   <ItemBoolean
-                    variant="xlarge"
                     label={fldt(settings.platform_enterprise_edition.license_expiration_date)}
                     status={!settings.platform_enterprise_edition.license_expired}
                   />
@@ -458,9 +469,9 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                 <ListItem divider={!settings.platform_enterprise_edition.license_expiration_prevention}>
                   <ListItemText primary={t_i18n('License type')} />
                   <ItemBoolean
-                    variant="large"
                     neutralLabel={settings.platform_enterprise_edition.license_type}
                     status={null}
+                    labelTextTransform="uppercase"
                   />
                 </ListItem>
               </List>
@@ -610,7 +621,6 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     <ListItem divider={true}>
                       <ListItemText primary={t_i18n('Version')} />
                       <ItemBoolean
-                        variant="large"
                         neutralLabel={version}
                         status={null}
                       />
@@ -618,7 +628,6 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     <ListItem divider={true}>
                       <ListItemText primary={t_i18n('Edition')} />
                       <ItemBoolean
-                        variant="large"
                         neutralLabel={
                           isEnterpriseEditionValid
                             ? t_i18n('Enterprise')
@@ -632,7 +641,6 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                         primary={t_i18n('Architecture mode')}
                       />
                       <ItemBoolean
-                        variant="large"
                         neutralLabel={
                           settings.platform_cluster.instances_number > 1
                             ? t_i18n('Cluster')
@@ -646,7 +654,6 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                         primary={t_i18n('Number of node(s)')}
                       />
                       <ItemBoolean
-                        variant="large"
                         neutralLabel={`${settings.platform_cluster.instances_number}`}
                         status={null}
                       />
@@ -661,10 +668,10 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                         )}
                       />
                       <ItemBoolean
-                        variant="large"
                         label={aiPoweredLabel}
                         status={isEnterpriseEditionValid && settings.platform_ai_enabled && settings.platform_ai_has_token}
                         tooltip={aiPoweredTooltip}
+                        labelTextTransform="none"
                       />
                     </ListItem>
                     <ListItem divider={true}>
@@ -730,7 +737,6 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                   <ListItem key={module.id} divider={true}>
                     <ListItemText primary={t_i18n(module.id)} />
                     <ItemBoolean
-                      variant="large"
                       label={module.enable ? t_i18n('Enabled') : t_i18n('Disabled')}
                       status={status}
                     />
@@ -741,7 +747,6 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                 <ListItem key={dep.name} divider={true}>
                   <ListItemText primary={t_i18n(dep.name)} />
                   <ItemBoolean
-                    variant="large"
                     neutralLabel={dep.version}
                     status={null}
                   />

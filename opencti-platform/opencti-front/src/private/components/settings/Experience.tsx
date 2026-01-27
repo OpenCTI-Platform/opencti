@@ -218,7 +218,6 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                 <ListItem divider={true}>
                   <ListItemText primary={t_i18n('Organization')} />
                   <ItemBoolean
-                    variant="xlarge"
                     neutralLabel={settings.platform_enterprise_edition.license_customer}
                     status={null}
                   />
@@ -226,7 +225,6 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                 <ListItem divider={true}>
                   <ListItemText primary={t_i18n('Scope')} />
                   <ItemBoolean
-                    variant="xlarge"
                     neutralLabel={settings.platform_enterprise_edition.license_global ? t_i18n('Global') : t_i18n('Current instance')}
                     status={null}
                   />
@@ -248,7 +246,6 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                 <ListItem divider={true}>
                   <ListItemText primary={t_i18n('Start date')} />
                   <ItemBoolean
-                    variant="xlarge"
                     label={fldt(settings.platform_enterprise_edition.license_start_date)}
                     status={!settings.platform_enterprise_edition.license_expired}
                   />
@@ -256,7 +253,6 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                 <ListItem divider={true}>
                   <ListItemText primary={t_i18n('Expiration date')} />
                   <ItemBoolean
-                    variant="xlarge"
                     label={fldt(settings.platform_enterprise_edition.license_expiration_date)}
                     status={!settings.platform_enterprise_edition.license_expired}
                   />
@@ -264,7 +260,6 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                 <ListItem divider={!settings.platform_enterprise_edition.license_expiration_prevention}>
                   <ListItemText primary={t_i18n('License type')} />
                   <ItemBoolean
-                    variant="xlarge"
                     neutralLabel={settings.platform_enterprise_edition.license_type}
                     status={null}
                   />

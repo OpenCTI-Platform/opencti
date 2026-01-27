@@ -452,7 +452,6 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                               secondary={provider.strategy}
                             />
                             <ItemBoolean
-                              variant="inList"
                               label={t_i18n('Enabled')}
                               status={true}
                             />

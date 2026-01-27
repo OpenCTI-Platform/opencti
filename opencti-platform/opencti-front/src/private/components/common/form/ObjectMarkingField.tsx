@@ -259,7 +259,7 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
     <>
       <Field
         component={AutocompleteField}
-        applyLabelTextTransform={false}
+        preserveCase
         style={style}
         name={name}
         required={required}

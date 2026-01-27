@@ -79,7 +79,6 @@ const DecayRules = () => {
         isSortable: false,
         render: (node: DecayRulesLine_node$data) => (
           <ItemBoolean
-            variant="inList"
             label={node.active ? t_i18n('Yes') : t_i18n('No')}
             status={node.active}
           />

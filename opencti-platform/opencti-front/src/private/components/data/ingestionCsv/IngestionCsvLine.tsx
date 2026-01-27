@@ -119,7 +119,6 @@ export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps>
             </Cell>
             <Cell width={dataColumns.ingestion_running.width} withTooltip={false}>
               <ItemBoolean
-                variant="inList"
                 label={data.ingestion_running ? t_i18n('Active') : t_i18n('Inactive')}
                 status={!!data.ingestion_running}
               />

@@ -152,7 +152,6 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
   const renderMandatory = (mandatory: boolean) => {
     return (
       <ItemBoolean
-        variant="large"
         label={mandatory ? t_i18n('True') : t_i18n('False')}
         status={mandatory}
       />

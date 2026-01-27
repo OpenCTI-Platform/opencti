@@ -259,7 +259,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                     )
                   }
 
-                  { ee.license_type === 'nfr' && <ItemBoolean variant="large" label="EE DEV LICENSE" status={false} /> }
+                  { ee.license_type === 'nfr' && <ItemBoolean label="EE DEV LICENSE" status={false} /> }
                   <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
                     <UploadImport
                       variant="icon"

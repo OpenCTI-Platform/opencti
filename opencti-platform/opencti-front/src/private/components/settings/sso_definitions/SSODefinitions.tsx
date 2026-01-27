@@ -127,7 +127,6 @@ const SSODefinitions = () => {
       percentWidth: 25,
       render: (node: { strategy: string }) => (
         <ItemBoolean
-          variant="large"
           neutralLabel={node.strategy}
           status={null}
         />
@@ -150,7 +149,6 @@ const SSODefinitions = () => {
       percentWidth: 25,
       render: (node: { label: string; identifier: string }) => (
         <ItemBoolean
-          variant="large"
           neutralLabel={node.label || node.identifier}
           status={null}
         />

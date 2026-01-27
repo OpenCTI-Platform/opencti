@@ -1,9 +1,9 @@
 import { CloseOutlined } from '@mui/icons-material';
 import { Chip, ChipProps, SxProps, Theme, Tooltip, alpha, lighten, useTheme } from '@mui/material';
-import React, { CSSProperties } from 'react';
+import React, { CSSProperties, ReactElement } from 'react';
 
 interface TagProps extends Omit<ChipProps, 'color'> {
-  label: string;
+  label?: string | ReactElement;
   color?: string;
   onClick?: (e: React.MouseEvent) => void;
   onDelete?: (e: React.MouseEvent) => void;
@@ -11,7 +11,7 @@ interface TagProps extends Omit<ChipProps, 'color'> {
   icon?: React.ReactElement;
   tooltipTitle?: string;
   disableTooltip?: boolean;
-  applyLabelTextTransform?: boolean;
+  labelTextTransform?: 'capitalize' | 'uppercase' | 'lowercase' | 'none';
 }
 
 const Tag = ({
@@ -23,7 +23,7 @@ const Tag = ({
   icon,
   tooltipTitle,
   disableTooltip = false,
-  applyLabelTextTransform = true,
+  labelTextTransform = 'capitalize',
   sx,
   ...chipProps
 }: TagProps) => {
@@ -50,7 +50,7 @@ const Tag = ({
     fontWeight: 400,
     paddingLeft: '8px',
     cursor: onClick ? 'pointer' : 'default',
-    textTransform: 'capitalize',
+    textTransform: labelTextTransform,
   };
 
   const sxStyles: SxProps<Theme> = {
@@ -67,7 +67,10 @@ const Tag = ({
       display: 'block',
       paddingLeft: icon ? '8px' : '4px',
       paddingRight: onDelete ? '4px' : '12px',
-      textTransform: applyLabelTextTransform ? 'inherit' : 'none',
+      textTransform: labelTextTransform,
+      '&::first-letter': {
+        textTransform: labelTextTransform,
+      },
     },
     ...(icon && {
       '& .MuiChip-icon': {
@@ -111,7 +114,10 @@ const Tag = ({
       slotProps={{
         tooltip: {
           sx: {
-            textTransform: applyLabelTextTransform ? 'inherit' : 'none',
+            textTransform: labelTextTransform,
+            '&::first-letter': {
+              textTransform: labelTextTransform,
+            },
           },
         },
       }}

@@ -25,7 +25,7 @@ export type AutocompleteFieldProps<
     required?: boolean;
     endAdornment?: ReactNode;
     textfieldprops?: TextFieldProps;
-    applyLabelTextTransform?: boolean;
+    preserveCase?: boolean;
     onFocus?: (name: string) => void;
     onChange?: (name: string, value: AutocompleteValue<Value, M, DC, FSolo>) => void;
     onInternalChange?: (name: string, value: AutocompleteValue<Value, M, DC, FSolo>) => void;
@@ -55,7 +55,7 @@ const AutocompleteField = <
     renderOption,
     isOptionEqualToValue,
     textfieldprops,
-    applyLabelTextTransform,
+    preserveCase,
     getOptionLabel,
     endAdornment,
     disabled,
@@ -140,7 +140,7 @@ const AutocompleteField = <
             return (
               <Tag
                 {...getTagProps({ index })}
-                applyLabelTextTransform={applyLabelTextTransform}
+                labelTextTransform={preserveCase ? 'none' : 'capitalize'}
                 key={value}
                 label={label}
               />
