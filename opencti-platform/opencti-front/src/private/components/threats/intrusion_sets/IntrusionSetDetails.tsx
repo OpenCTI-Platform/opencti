@@ -1,11 +1,6 @@
 import React from 'react';
 import { graphql, createFragmentContainer } from 'react-relay';
 import Grid from '@mui/material/Grid';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import { BullseyeArrow, ArmFlexOutline } from 'mdi-material-ui';
-import ListItemText from '@mui/material/ListItemText';
 import { IntrusionSetDetails_intrusionSet$data } from '@components/threats/intrusion_sets/__generated__/IntrusionSetDetails_intrusionSet.graphql';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
@@ -15,6 +10,7 @@ import ImageCarousel, { ImagesData } from '../../../../components/ImageCarousel'
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
+import { capitalizeFirstLetter } from 'src/utils/String';
 
 type IntrusionSetDetailsProps = {
   intrusionSet: IntrusionSetDetails_intrusionSet$data;
@@ -99,30 +95,7 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
               {t_i18n('Goals')}
             </Label>
             <FieldOrEmpty source={intrusionSet.goals}>
-              {intrusionSet.goals && (
-                <List>
-                  {intrusionSet.goals.map((goal) => (
-                    <ListItem key={goal} dense divider>
-                      <ListItemIcon>
-                        <BullseyeArrow />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={(
-                          <pre style={{
-                            display: 'inline-block',
-                            margin: 0,
-                            paddingTop: '7px',
-                            paddingBottom: '4px',
-                          }}
-                          >
-                            {goal}
-                          </pre>
-                        )}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              )}
+              {intrusionSet.goals && intrusionSet.goals?.length > 0 && (intrusionSet.goals.map((goal) => goal && capitalizeFirstLetter(goal)).join(', '))}
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
@@ -130,31 +103,7 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
               {t_i18n('Secondary motivations')}
             </Label>
             <FieldOrEmpty source={intrusionSet.secondary_motivations}>
-              {intrusionSet.secondary_motivations && (
-                <List>
-                  {intrusionSet.secondary_motivations.map(
-                    (secondaryMotivation) => (
-                      <ListItem
-                        key={secondaryMotivation}
-                        dense
-                        divider
-                      >
-                        <ListItemIcon>
-                          <ArmFlexOutline />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={(
-                            <ItemOpenVocab
-                              type="attack-motivation-ov"
-                              value={secondaryMotivation}
-                            />
-                          )}
-                        />
-                      </ListItem>
-                    ),
-                  )}
-                </List>
-              )}
+              {intrusionSet.secondary_motivations && intrusionSet.secondary_motivations?.length > 0 && (intrusionSet.secondary_motivations.map((sm) => sm && capitalizeFirstLetter(sm)).join(', '))}
             </FieldOrEmpty>
           </Grid>
         </Grid>
