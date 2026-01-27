@@ -36,12 +36,11 @@ import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { ModuleHelper } from '../../../../utils/platformModulesHelper';
 import { insertNode } from '../../../../utils/store';
-import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
-import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
 import StixCoreRelationshipCreationForm from './StixCoreRelationshipCreationForm';
 import {
   type StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery as StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQueryType,
 } from './__generated__/StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery.graphql';
+import StixCoreRelationshipCreationHeaderButtons from './StixCoreRelationshipCreationHeaderButtons';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -544,7 +543,6 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(targetEntitiesProps.length !== 0);
-  const [openCreateObservable, setOpenCreateObservable] = useState(false);
   const [step, setStep] = useState(targetEntitiesProps.length === 0 ? 0 : 1);
   const [targetEntities, setTargetEntities] = useState(targetEntitiesProps);
   useEffect(() => {
@@ -570,14 +568,6 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     if (storageSortBy && (storageSortBy !== sortBy)) setSortBy(storageSortBy);
     if (storageOrderAsc !== undefined && (storageOrderAsc !== orderAsc)) setOrderAsc(storageOrderAsc);
   }, [storageOrderAsc, storageSortBy]);
-
-  const handleOpenCreateObservable = () => {
-    setOpenCreateObservable(true);
-  };
-
-  const handleCloseCreateObservable = () => {
-    setOpenCreateObservable(false);
-  };
 
   const handleClose = () => {
     setOpen(false);
@@ -743,51 +733,6 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
   const [tableRootRef, setTableRootRef] = useState<HTMLDivElement | null>(null);
 
   const renderSelectEntity = (entity_type: string, name = '') => {
-    const buttons = [(
-      <BulkRelationDialogContainer
-        targetObjectTypes={[...targetStixDomainObjectTypes, ...targetStixCyberObservableTypes]}
-        paginationOptions={searchPaginationOptions}
-        paginationKey="Pagination_stixCoreObjects"
-        key="BulkRelationDialogContainer"
-        stixDomainObjectId={entityId}
-        stixDomainObjectName={name}
-        stixDomainObjectType={entity_type}
-        defaultRelationshipType={allowedRelationshipTypes?.[0]}
-        selectedEntities={targetEntities}
-        onBulkCreate={handleClose}
-      />
-    )];
-    if (!isOnlySCOs) {
-      buttons.push((
-        <StixDomainObjectCreation
-          display={open}
-          inputValue={searchTerm}
-          paginationKey="Pagination_stixCoreObjects"
-          paginationOptions={searchPaginationOptions}
-          speeddial={false}
-          open={undefined}
-          handleClose={undefined}
-          onCompleted={undefined}
-          creationCallback={undefined}
-          confidence={undefined}
-          defaultCreatedBy={undefined}
-          isFromBulkRelation={undefined}
-          defaultMarkingDefinitions={undefined}
-          stixDomainObjectTypes={actualTypeFilterValues}
-          controlledDialStyles={{ marginLeft: '8px' }}
-        />
-      ));
-    }
-    if (!isOnlySDOs) {
-      buttons.push((
-        <Button
-          onClick={handleOpenCreateObservable}
-          style={{ marginLeft: '8px' }}
-        >
-          {t_i18n('Create an observable')}
-        </Button>
-      ));
-    }
     return (
       <div
         style={{
@@ -818,7 +763,28 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
                       preloadedPaginationProps={preloadedPaginationProps}
                       entityTypes={virtualEntityTypes}
                       availableEntityTypes={virtualEntityTypes}
-                      additionalHeaderButtons={buttons}
+                      additionalHeaderButtons={[(
+                        <BulkRelationDialogContainer
+                          targetObjectTypes={[...targetStixDomainObjectTypes, ...targetStixCyberObservableTypes]}
+                          paginationOptions={searchPaginationOptions}
+                          paginationKey="Pagination_stixCoreObjects"
+                          key="BulkRelationDialogContainer"
+                          stixDomainObjectId={entityId}
+                          stixDomainObjectName={name}
+                          stixDomainObjectType={entity_type}
+                          defaultRelationshipType={allowedRelationshipTypes?.[0]}
+                          selectedEntities={targetEntities}
+                          onBulkCreate={handleClose}
+                        />
+                      ), (
+                        <StixCoreRelationshipCreationHeaderButtons
+                          key="headerButton"
+                          showSDOs={!isOnlySDOs}
+                          showSCOs={!isOnlySCOs}
+                          actualTypeFilterValues={actualTypeFilterValues}
+                          searchPaginationOptions={searchPaginationOptions}
+                        />
+                      )]}
                     />
                   </div>
                 )}
@@ -900,29 +866,6 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     );
   };
 
-  const header = (
-    <div
-      style={{
-        width: '100%',
-        display: 'flex',
-        justifyContent: 'end',
-      }}
-    >
-      <StixCyberObservableCreation
-        display={open}
-        contextual={true}
-        inputValue={searchTerm}
-        paginationKey="Pagination_stixCoreObjects"
-        paginationOptions={searchPaginationOptions}
-        speeddial={true}
-        open={openCreateObservable}
-        handleClose={handleCloseCreateObservable}
-        type={undefined}
-        defaultCreatedBy={undefined}
-      />
-    </div>
-  );
-
   return (
     <>
       {variant === 'inLine' && (
@@ -939,7 +882,6 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
         onClose={handleClose}
         title={t_i18n('Create a relationship')}
         ref={containerRef}
-        header={step === 0 ? header : <></>}
       >
         <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
           <QueryRenderer
