@@ -502,17 +502,16 @@ export const opinionsMetrics: ObjectAttribute<any> = {
 
 // IDS
 
-export const xOpenctiStixIds: IdAttribute = {
+export const xOpenctiStixIds: TextAttribute = {
   name: 'x_opencti_stix_ids',
   label: 'STIX IDs',
   type: 'string',
-  format: 'id',
+  format: 'short', // No ID as self contains internal id of the elements
   mandatoryType: 'no',
   editDefault: false,
   multiple: true,
   upsert: true,
   isFilterable: false,
-  entityTypes: [ABSTRACT_BASIC_OBJECT, ABSTRACT_BASIC_RELATIONSHIP],
 };
 
 // ALIASES

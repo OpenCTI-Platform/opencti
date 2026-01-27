@@ -5,7 +5,7 @@ import type { Change } from '../../../src/types/event';
 import { generateMessageFromChanges } from '../../../src/database/data-changes';
 
 describe('generateUpdatePatchMessage tests', () => {
-  it('should generate message for simple field update', async () => {
+  it('should generate message for simple field update', () => {
     const changes: Change[] = [
       {
         field: ENTITY_TYPE_MALWARE + '--description',
@@ -17,10 +17,10 @@ describe('generateUpdatePatchMessage tests', () => {
         ],
       },
     ];
-    const message = await generateMessageFromChanges({}, changes);
+    const message = generateMessageFromChanges({}, changes);
     expect(message).toEqual('replaces `updated` in `Description`');
   });
-  it('should generate message for simple field update if no previous value', async () => {
+  it('should generate message for simple field update if no previous value', () => {
     const changes: Change[] = [
       {
         field: ENTITY_TYPE_MALWARE + '--description',
@@ -30,10 +30,10 @@ describe('generateUpdatePatchMessage tests', () => {
         changes_removed: [],
       },
     ];
-    const message = await generateMessageFromChanges({}, changes);
+    const message = generateMessageFromChanges({}, changes);
     expect(message).toEqual('replaces `initial` in `Description`');
   });
-  it('should generate message for simple field update if no value', async () => {
+  it('should generate message for simple field update if no value', () => {
     const changes: Change[] = [
       {
         field: ENTITY_TYPE_MALWARE + '--description',
@@ -45,10 +45,10 @@ describe('generateUpdatePatchMessage tests', () => {
         ],
       },
     ];
-    const message = await generateMessageFromChanges({}, changes);
+    const message = generateMessageFromChanges({}, changes);
     expect(message).toEqual('replaces `nothing` in `Description`');
   });
-  it('should generate message for simple field update with multiple values', async () => {
+  it('should generate message for simple field update with multiple values', () => {
     const changes: Change[] = [
       {
         field: ENTITY_TYPE_MALWARE + '--description',
@@ -57,10 +57,10 @@ describe('generateUpdatePatchMessage tests', () => {
         ],
       },
     ];
-    const message = await generateMessageFromChanges({}, changes);
+    const message = generateMessageFromChanges({}, changes);
     expect(message).toEqual('replaces `updated1`, `updated2`, `updated3`, ... in `Description`');
   });
-  it('should generate message for field update with multiple operations', async () => {
+  it('should generate message for field update with multiple operations', () => {
     const changes: Change[] = [
       {
         field: ENTITY_TYPE_MALWARE + '--description',
@@ -73,10 +73,10 @@ describe('generateUpdatePatchMessage tests', () => {
         changes_removed: [{ raw: 'initial name' }],
       },
     ];
-    const message = await generateMessageFromChanges({}, changes);
+    const message = generateMessageFromChanges({}, changes);
     expect(message).toEqual('replaces `updated description` in `Description` - `updated name` in `Name`');
   });
-  it('should generate message for Workflow status update', async () => {
+  it('should generate message for Workflow status update', () => {
     const changes: Change[] = [
       {
         field: ENTITY_TYPE_CONTAINER_REPORT + '--x_opencti_workflow_id',
@@ -88,7 +88,7 @@ describe('generateUpdatePatchMessage tests', () => {
       'bff2afb7-03d3-40ad-bdd0-d6977f045ddg': 'NEW',
       'bff2afb7-03d3-40ad-bdd0-d6977f045ddf': 'ANALYZED',
     };
-    const message = await generateMessageFromChanges(resolvedMap, changes);
+    const message = generateMessageFromChanges(resolvedMap, changes);
     expect(message).toEqual('replaces `ANALYZED` in `Workflow status`');
   });
 });
