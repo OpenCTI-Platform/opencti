@@ -45,9 +45,6 @@ import FormButtonContainer from '../../../../components/common/form/FormButtonCo
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
-  button: {
-    marginLeft: theme.spacing(2),
-  },
 }));
 
 const caseRftMutation = graphql`
@@ -374,14 +371,12 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
               variant="secondary"
               onClick={handleReset}
               disabled={isSubmitting}
-              classes={{ root: classes.button }}
             >
               {t_i18n('Cancel')}
             </Button>
             <Button
               onClick={submitForm}
               disabled={isSubmitting}
-              classes={{ root: classes.button }}
             >
               {t_i18n('Create')}
             </Button>
@@ -392,7 +387,6 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
                   submitForm();
                 }}
                 disabled={isSubmitting}
-                classes={{ root: classes.button }}
               >
                 {t_i18n('Create and map')}
               </Button>
