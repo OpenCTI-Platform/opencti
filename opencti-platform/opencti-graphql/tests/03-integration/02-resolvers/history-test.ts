@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { findHistory } from '../../../src/domain/log';
+import { findHistory, findById } from '../../../src/domain/log';
 import { ADMIN_USER, getAuthUser, testContext, USER_PARTICIPATE } from '../../utils/testQuery';
 import { type FilterGroup, FilterMode, LogsOrdering, OrderingMode } from '../../../src/generated/graphql';
 import { elLoadById } from '../../../src/database/engine';
@@ -50,13 +50,33 @@ describe('Testing History search', () => {
     const args = { filters, orderBy: LogsOrdering.CreatedAt, orderMode: OrderingMode.Asc };
     const logs = await findHistory(testContext, ADMIN_USER, args);
     expect(logs.edges.length).toBe(5);
-    const firstElementChanges = logs.edges[0].node.context_data.history_changes;
+    let firstElementChanges = logs.edges[0].node.context_data.history_changes;
     expect(firstElementChanges.length).toBe(2);
     expect(firstElementChanges[0].field).toBe('Case-Incident--restricted_members');
     expect(firstElementChanges[1].field).toBe('Case-Incident--authorized_members_activation_date');
+    // Try limited admin
+    const limitedAdmin = { ...ADMIN_USER, capabilities: [{ name: 'KNOWLEDGE_KNUPDATE' }] };
+    const logsLimited = await findHistory(testContext, limitedAdmin, args);
+    expect(logsLimited.edges.length).toBe(2);
+    firstElementChanges = logsLimited.edges[0].node.context_data.history_changes;
+    expect(firstElementChanges.length).toBe(1);
+    // only authorized_members_activation_date is available because not restricted for TEST only
+    expect(firstElementChanges[0].field).toBe('Case-Incident--authorized_members_activation_date');
+    const secondElementChanges = logsLimited.edges[1].node.context_data.history_changes;
+    expect(secondElementChanges.length).toBe(2);
+    expect(secondElementChanges[0].field).toBe('Case-Incident--name');
+    expect(secondElementChanges[0].changes_removed?.[0].raw).toBe('Case Incident Response With Authorized Members from entity');
+    expect(secondElementChanges[0].changes_added?.[0].raw).toBe('Case Incident Response - updated');
+    expect(secondElementChanges[1].field).toBe('Case-Incident--standard_id');
+    // Validate the dedicated log loading
+    const monoElement = await findById(testContext, limitedAdmin, logsLimited.edges[0].node.id);
+    const monoElementChanges = monoElement.context_data.history_changes;
+    expect(monoElementChanges.length).toBe(1);
+    expect(monoElementChanges[0].field).toBe('Case-Incident--authorized_members_activation_date');
+    // User do not pass restricted members
     const editor = await getAuthUser(USER_PARTICIPATE.id);
     const logsEditor = await findHistory(testContext, editor, args);
-    expect(logsEditor.edges.length).toBe(0); // restricted_members event filtered
+    expect(logsEditor.edges.length).toBe(0);
   });
 
   it('Is history batchContextDataForLog correctly resolved information', async () => {

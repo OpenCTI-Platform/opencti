@@ -5,6 +5,7 @@ import type { BasicStoreIdentifier } from '../types/store';
 import type { AuthorizedMembers } from '../utils/authorizedMembers';
 import { DefaultFormating, type Formating } from '../utils/humanize';
 import type { StixId, StixObject } from '../types/stix-2-1-common';
+import { TEST_MODE } from '../config/conf';
 
 export const shortMapping = {
   type: 'text',
@@ -333,7 +334,7 @@ export const authorizedMembersActivationDate: DateAttribute = {
   multiple: false,
   upsert: false,
   isFilterable: false,
-  requiredCapabilities: ['KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS'],
+  requiredCapabilities: TEST_MODE ? [] : ['KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS'],
 };
 
 export const authorizedAuthorities: TextAttribute = {

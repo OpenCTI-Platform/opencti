@@ -13,7 +13,7 @@ import type { BasicStoreEntity } from '../types/store';
 import { type EntityOptions, pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import type { Change } from '../types/event';
 
-interface StoreHistory extends BasicStoreEntity {
+export interface StoreHistory extends BasicStoreEntity {
   context_data: {
     message: string;
     entity_type: string;
@@ -32,7 +32,7 @@ export const findHistory = async (context: AuthContext, user: AuthUser, args: Qu
 };
 
 export const findById = async (context: AuthContext, user: AuthUser, logId: string) => {
-  return storeLoadById(context, user, logId, ENTITY_TYPE_HISTORY, { historyFiltering: true });
+  return storeLoadById<StoreHistory>(context, user, logId, ENTITY_TYPE_HISTORY, { historyFiltering: true });
 };
 
 export const findAudits = (context: AuthContext, user: AuthUser, args: QueryAuditsArgs) => {
