@@ -90,7 +90,10 @@ const ThemeLight = (
       nav: nav || THEME_LIGHT_DEFAULT_NAV,
       accent: accent || THEME_LIGHT_DEFAULT_ACCENT,
       shadow: alpha('#000000', 0.15),
-      secondary: '#FFFFFF',
+      // the only way for now to know if we should apply the paper color or not
+      secondary: paper === THEME_LIGHT_DEFAULT_PAPER
+        ? '#FFFFFF'
+        : (paper ?? '#FFFFFF'),
       drawer: '#f4f1f1',
       disabled: '#DFDFDF',
       gradient: {
@@ -417,7 +420,9 @@ const ThemeLight = (
           },
         },
         outlined: {
-          backgroundColor: '#FFFFFF',
+          backgroundColor: paper === THEME_LIGHT_DEFAULT_PAPER
+            ? '#FFFFFF'
+            : (paper ?? '#FFFFFF'),
         },
       },
     },
@@ -631,7 +636,10 @@ const ThemeLight = (
       styleOverrides: {
         root: {
           '& .MuiOutlinedInput-root': {
-            backgroundColor: '#ffffff',
+            // the only way for now to know if we should apply the paper color or not
+            backgroundColor: paper === THEME_LIGHT_DEFAULT_PAPER
+              ? '#FFFFFF'
+              : (paper ?? '#FFFFFF'),
             '& fieldset': {
               borderColor: 'transparent',
             },
