@@ -3306,6 +3306,7 @@ class OpenCTIStix2:
         """
         processing_count = 0
         worker_logger = self.opencti.logger_class("worker")
+        error_msg = ""
         while processing_count <= MAX_PROCESSING_COUNT:
             try:
                 self.opencti.set_retry_number(processing_count)
@@ -3313,7 +3314,8 @@ class OpenCTIStix2:
                 return None
             except (RequestException, Timeout):
                 bundles_timeout_error_counter.add(1)
-                worker_logger.warning("A connection error or timeout occurred")
+                error_msg = "A connection error or timeout occurred"
+                worker_logger.warning(error_msg)
                 # Platform is under heavy load: wait for unlock & retry almost indefinitely.
                 sleep_jitter = round(random.uniform(10, 30), 2)
                 time.sleep(sleep_jitter)
@@ -3400,6 +3402,10 @@ class OpenCTIStix2:
                     ),
                 },
             )
+        item["rejection_info"] = {
+            "reject_reason": "MAX_RETRY",
+            "last_error_msg": error_msg,
+        }
         return item
 
     def import_bundle(
@@ -3427,6 +3433,7 @@ class OpenCTIStix2:
         :rtype: Tuple[list, list]
         :raises ValueError: If the bundle is not properly formatted or empty
         """
+        worker_logger = self.opencti.logger_class("worker")
         # Check if the bundle is correctly formatted
         if "type" not in stix_bundle or stix_bundle["type"] != "bundle":
             raise ValueError("JSON data type is not a STIX2 bundle")
@@ -3466,10 +3473,16 @@ class OpenCTIStix2:
                 # If item is considered too large, meaning that it has a number of refs higher than inputted objects_max_refs, do not import it
                 nb_refs = OpenCTIStix2Utils.compute_object_refs_number(item)
                 if 0 < objects_max_refs <= nb_refs:
+                    too_large_element_message = "Too large element in bundle"
+                    worker_logger.warning(too_large_element_message)
+                    item["rejection_info"] = {
+                        "reject_reason": "ELEMENT_TOO_LARGE",
+                        "objects_max_refs": objects_max_refs,
+                    }
                     self.opencti.work.report_expectation(
                         work_id,
                         {
-                            "error": "Too large element in bundle",
+                            "error": too_large_element_message,
                             "source": "Element "
                             + item["id"]
                             + " is too large and couldn't be processed",
@@ -3481,7 +3494,7 @@ class OpenCTIStix2:
                         item, update, types, work_id
                     )
                     if failed_item is not None:
-                        too_large_elements_bundles.append(item)
+                        too_large_elements_bundles.append(failed_item)
                     else:
                         imported_elements.append(
                             {"id": item["id"], "type": item["type"]}

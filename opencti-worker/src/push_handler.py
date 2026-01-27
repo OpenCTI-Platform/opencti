@@ -122,7 +122,10 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                                 except Exception as err:  # pylint: disable=broad-except
                                     self.logger.warning(str(err))
                                 for too_large_item_bundle in too_large_items_bundles:
-                                    too_large_item_bundle["original_connector_id"] = (
+                                    rejection_info = too_large_item_bundle.setdefault(
+                                        "rejection_info", {}
+                                    )
+                                    rejection_info["original_connector_id"] = (
                                         self.connector_id
                                     )
                                     self.logger.warning(
