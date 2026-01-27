@@ -6644,17 +6644,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cors@npm:2.8.5":
-  version: 2.8.5
-  resolution: "cors@npm:2.8.5"
-  dependencies:
-    object-assign: "npm:^4"
-    vary: "npm:^1"
-  checksum: 10c0/373702b7999409922da80de4a61938aabba6929aea5b6fd9096fefb9e8342f626c0ebd7507b0e8b0b311380744cc985f27edebc0a26e0ddb784b54e1085de761
-  languageName: node
-  linkType: hard
-
-"cors@npm:^2.8.5":
+"cors@npm:2.8.6, cors@npm:^2.8.5":
   version: 2.8.6
   resolution: "cors@npm:2.8.6"
   dependencies:
@@ -10770,7 +10760,7 @@ __metadata:
     compression: "npm:1.8.1"
     content-disposition: "npm:1.0.1"
     content-type: "npm:1.0.5"
-    cors: "npm:2.8.5"
+    cors: "npm:2.8.6"
     csv-parse: "npm:6.1.0"
     dataloader: "npm:2.2.3"
     ejs: "npm:4.0.1"
