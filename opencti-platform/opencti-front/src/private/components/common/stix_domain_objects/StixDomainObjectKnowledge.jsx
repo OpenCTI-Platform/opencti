@@ -115,7 +115,10 @@ class StixDomainObjectKnowledge extends Component {
                       diffValue={difference}
                       icon={(
                         <DescriptionOutlined
-                          style={{ color: theme.palette.text.secondary }}
+                          style={{
+                            color: theme.palette.text.secondary,
+                            opacity: 0.35,
+                          }}
                           fontSize="large"
                         />
                       )}
@@ -152,7 +155,10 @@ class StixDomainObjectKnowledge extends Component {
                       diffValue={difference}
                       icon={(
                         <HexagonMultipleOutline
-                          style={{ color: theme.palette.text.secondary }}
+                          style={{
+                            color: theme.palette.text.secondary,
+                            opacity: 0.35,
+                          }}
                           fontSize="large"
                         />
                       )}
@@ -188,7 +194,10 @@ class StixDomainObjectKnowledge extends Component {
                       diffValue={difference}
                       icon={(
                         <DeviceHubOutlined
-                          style={{ color: theme.palette.text.secondary }}
+                          style={{
+                            color: theme.palette.text.secondary,
+                            opacity: 0.35,
+                          }}
                           fontSize="large"
                         />
                       )}
