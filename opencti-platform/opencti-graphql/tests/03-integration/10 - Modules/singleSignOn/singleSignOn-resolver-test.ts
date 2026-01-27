@@ -64,7 +64,7 @@ export const SINGLE_SIGN_ON_DELETE = gql`
     }
 `;
 
-describe.skip('Single Sign On', () => {
+describe('Single Sign On', () => {
   let createdSingleSignOn1Id: string;
   let createdSingleSignOn2Id: string;
   const createdSingleSighOns: string[] = [];
@@ -238,7 +238,7 @@ describe.skip('Single Sign On', () => {
       expect(result?.data?.singleSignOnFieldPatch?.groups_management.groups_mapping).toStrictEqual(['/Connector:Connectors']);
     });
   });
-  describe('Delete', () => {
+  describe.skip('Delete', () => {
     it('should not delete single sign on without SETAUTH capa', async () => {
       await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
         query: SINGLE_SIGN_ON_DELETE,
