@@ -33,7 +33,7 @@ import initHttpRollingFeeds from './httpRollingFeed';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { setCookieError } from './httpUtils';
 import { getChatbotProxy } from './httpChatbotProxy';
-import { EnvStrategyType, isStrategyActivated } from '../modules/singleSignOn/providers-configuration';
+import { EnvStrategyType, isStrategyActivated, PROVIDERS } from '../modules/singleSignOn/providers-configuration';
 
 export const sanitizeReferer = (refererToSanitize) => {
   // NOTE: basePath will be configured, if the site is hosted behind a reverseProxy otherwise '/' should be accurate
@@ -412,11 +412,14 @@ const createApp = async (app, schema) => {
         });
         await delUserContext(user);
         res.clearCookie(OPENCTI_SESSION);
+
+        let providerCache = PROVIDERS.findIndex((conf) => conf.provider === provider);
+
         req.session.destroy(() => {
           const strategy = passport._strategy(provider);
           if (strategy) {
-            if (strategy.logout_remote === true) {
-              logApp.debug('[LOGOUT] Looking for logout_remote parameters: ', strategy.logout_remote);
+            if (providerCache.logout_remote === true) {
+              logApp.debug('[LOGOUT] Looking for logout_remote parameters: ', providerCache.logout_remote);
               if (strategy.logout) {
                 logApp.debug('[LOGOUT] requesting remote logout using authentication strategy parameters.');
                 req.user = user; // Needed for passport

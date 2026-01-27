@@ -319,7 +319,6 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
             const openIdScope = mappedConfig.scope ?? 'openid email profile';
             const options = {
               ...auth0OpenIDConfiguration,
-              logout_remote: mappedConfig.logout_remote,
               client,
               passReqToCallback: true,
               params: { scope: openIdScope },
@@ -331,7 +330,6 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
               const { email, name } = userinfo;
               providerLoginHandler({ email, name }, done);
             });
-            auth0Strategy.logout_remote = options.logout_remote;
 
             auth0Strategy.logout = (_, callback) => {
               const params = {
@@ -347,7 +345,7 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
               callback(null, endpointUri);
             };
             passport.use(providerRef, auth0Strategy);
-            PROVIDERS.push({ name: providerName, type: AuthType.AUTH_SSO, strategy, provider: providerRef });
+            PROVIDERS.push({ name: providerName, type: AuthType.AUTH_SSO, strategy, provider: providerRef, logout_remote: mappedConfig.logout_remote });
           }).catch((reason) => logApp.error('[ENV-PROVIDER][AUTH0] Error when enrich with remote credentials', { cause: reason }));
         }
         // CERT Strategies
