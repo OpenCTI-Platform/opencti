@@ -6,6 +6,7 @@ const DeployCustomDashboards = lazy(() => import('./DeployCustomDashboard'));
 const IngestionCsv = lazy(() => import('../data/IngestionCsv'));
 const IngestionTaxii = lazy(() => import('../data/IngestionTaxiis'));
 const IngestionCatalogConnector = lazy(() => import('../data/IngestionCatalog/IngestionCatalogConnector'));
+const IngestionSync = lazy(() => import('../data/Sync'));
 
 const Root = () => {
   return (
@@ -18,6 +19,11 @@ const Root = () => {
         <Route
           path="/deploy-csv-feed/:serviceInstanceId/:fileId"
           element={boundaryWrapper(IngestionCsv)}
+        />
+        {/* OpenCTI streams */}
+        <Route
+          path="/deploy-sync/:serviceInstanceId/:fileId"
+          element={boundaryWrapper(IngestionSync)}
         />
         {/* Query param: ?openConfig=true to auto-open deployment dialog */}
         <Route
