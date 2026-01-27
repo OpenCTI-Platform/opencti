@@ -3651,12 +3651,17 @@ type CreateEntityRawOpts = PatchAttributeOpts & CreateEventOpts & {
   fromRuleDeletion?: boolean;
   bypassValidation?: boolean;
 };
-const cleanEntityForIdsCollision = (input, type, target, foundEntities) => {
+const cleanEntityForIdsCollision = (
+  input: Record<string, any>,
+  type: string,
+  target: Record<string, any>,
+  foundEntities: Record<string, any>[],
+) => {
   // We can upsert element except the aliases that are part of other entities
   const aliasField = resolveAliasesField(type).name;
   const concurrentAliases = foundEntities.flatMap((c) => [...(c[aliasField] ?? []), c.name]);
   const normedAliases = new Set(concurrentAliases.map((c) => normalizeName(c)));
-  const filteredAliases = (input[aliasField] ?? []).filter((i) => !normedAliases.has(normalizeName(i)));
+  const filteredAliases = (input[aliasField] ?? []).filter((i: any) => !normedAliases.has(normalizeName(i)));
   // We need also to filter eventual STIX IDs present in other entities
   const concurrentStixIds = foundEntities.flatMap((c) => [...(c.x_opencti_stix_ids ?? []), c.standard_id]);
   const normedStixIds = new Set(concurrentStixIds);
@@ -3908,11 +3913,17 @@ const internalCreateEntityRaw = async (
   }
 };
 
-const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
+const createEntityRaw = async (
+  context: AuthContext,
+  user: AuthUser,
+  rawInput: Record<string, any>,
+  type: string,
+  opts: CreateEntityRawOpts = {},
+) => {
   try {
     // Await is mandatory here to correctly catch the promise exception.
     return await internalCreateEntityRaw(context, user, rawInput, type, opts);
-  } catch (e) {
+  } catch (e: any) {
     // In case of insufficient confidence level, don't reject and continue to upsert
     // as upsert have a complex strategy about confidence that doesn't reject everything
     if (rawInput.update !== false && e?.extensions?.data?.doc_code === INSUFFICIENT_CONFIDENCE_LEVEL) {
