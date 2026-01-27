@@ -3129,13 +3129,11 @@ const WorkbenchFileContentComponent = ({
                 return props.markingDefinitions.edges.length > 0
                   ? (
                       <ItemBoolean
-                        variant="inList"
                         status={true}
                         label={t_i18n('Yes')}
                       />
                     ) : (
                       <ItemBoolean
-                        variant="inList"
                         status={false}
                         label={t_i18n('No')}
                       />
@@ -3143,7 +3141,6 @@ const WorkbenchFileContentComponent = ({
               }
               return (
                 <ItemBoolean
-                  variant="inList"
                   status={undefined}
                   label={t_i18n('Pending')}
                 />
@@ -3174,13 +3171,11 @@ const WorkbenchFileContentComponent = ({
               return props.stixDomainObjects.edges.length > 0
                 ? (
                     <ItemBoolean
-                      variant="inList"
                       status={true}
                       label={t_i18n('Yes')}
                     />
                   ) : (
                     <ItemBoolean
-                      variant="inList"
                       status={false}
                       label={t_i18n('No')}
                     />
@@ -3188,7 +3183,6 @@ const WorkbenchFileContentComponent = ({
             }
             return (
               <ItemBoolean
-                variant="inList"
                 status={undefined}
                 label={t_i18n('Pending')}
               />
@@ -3345,7 +3339,6 @@ const WorkbenchFileContentComponent = ({
                           objectExistenceItem(object, type)
                         ) : (
                           <ItemBoolean
-                            variant="inList"
                             status={null}
                             label={t_i18n('Not applicable')}
                           />
@@ -3561,13 +3554,11 @@ const WorkbenchFileContentComponent = ({
                                 return props.stixCyberObservables.edges.length
                                   > 0 ? (
                                       <ItemBoolean
-                                        variant="inList"
                                         status={true}
                                         label={t_i18n('Yes')}
                                       />
                                     ) : (
                                       <ItemBoolean
-                                        variant="inList"
                                         status={false}
                                         label={t_i18n('No')}
                                       />
@@ -3575,7 +3566,6 @@ const WorkbenchFileContentComponent = ({
                               }
                               return (
                                 <ItemBoolean
-                                  variant="inList"
                                   status={undefined}
                                   label={t_i18n('Pending')}
                                 />
@@ -3584,7 +3574,6 @@ const WorkbenchFileContentComponent = ({
                           />
                         ) : (
                           <ItemBoolean
-                            variant="inList"
                             status={null}
                             label={t_i18n('Not applicable')}
                           />
@@ -4104,13 +4093,11 @@ const WorkbenchFileContentComponent = ({
                                 return props.stixDomainObjects.edges.length
                                   > 0 ? (
                                       <ItemBoolean
-                                        variant="inList"
                                         status={true}
                                         label={t_i18n('Yes')}
                                       />
                                     ) : (
                                       <ItemBoolean
-                                        variant="inList"
                                         status={false}
                                         label={t_i18n('No')}
                                       />
@@ -4118,7 +4105,6 @@ const WorkbenchFileContentComponent = ({
                               }
                               return (
                                 <ItemBoolean
-                                  variant="inList"
                                   status={undefined}
                                   label={t_i18n('Pending')}
                                 />
@@ -4127,7 +4113,6 @@ const WorkbenchFileContentComponent = ({
                           />
                         ) : (
                           <ItemBoolean
-                            variant="inList"
                             status={null}
                             label={t_i18n('Not applicable')}
                           />

@@ -45,7 +45,6 @@ const ConnectorStatusChip: React.FC<ConnectorStatusChipProps> = ({ connector }) 
     <ItemBoolean
       status={itemBooleanStatus}
       label={getTranslatedLabel(label)}
-      variant="inList"
     />
   );
 };

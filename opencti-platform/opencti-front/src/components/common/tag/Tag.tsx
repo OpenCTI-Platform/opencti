@@ -1,9 +1,9 @@
 import { CloseOutlined } from '@mui/icons-material';
 import { Chip, ChipProps, SxProps, Theme, Tooltip, alpha, lighten, useTheme } from '@mui/material';
-import React, { CSSProperties } from 'react';
+import React, { CSSProperties, ReactElement } from 'react';
 
 interface TagProps extends Omit<ChipProps, 'color'> {
-  label: string;
+  label?: string | ReactElement;
   color?: string;
   onClick?: (e: React.MouseEvent) => void;
   onDelete?: (e: React.MouseEvent) => void;

@@ -440,7 +440,6 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                               <ItemBoolean
                                 label={connector.is_managed ? 'TRUE' : 'FALSE'}
                                 status={connector.is_managed}
-                                variant="inList"
                               />
                             </div>
                           </div>

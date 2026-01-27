@@ -109,7 +109,6 @@ export const FormLineComponent: FunctionComponent<FormLineComponentProps> = ({
               </div>
               <div className={classes.bodyItem} style={{ width: dataColumns.active.width }}>
                 <ItemBoolean
-                  variant="inList"
                   label={data.active ? t_i18n('Active') : t_i18n('Inactive')}
                   status={!!data.active}
                 />

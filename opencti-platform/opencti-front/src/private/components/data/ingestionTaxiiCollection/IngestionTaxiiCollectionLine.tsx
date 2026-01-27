@@ -106,7 +106,6 @@ export const IngestionTaxiiCollectionLineLineComponent: FunctionComponent<Ingest
               style={{ width: dataColumns.ingestion_running.width }}
             >
               <ItemBoolean
-                variant="inList"
                 label={data.ingestion_running ? t_i18n('Active') : t_i18n('Inactive')}
                 status={!!data.ingestion_running}
               />

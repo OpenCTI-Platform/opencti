@@ -70,7 +70,6 @@ const SettingsMessages = ({
       render: (data) => {
         return (
           <ItemBoolean
-            variant="inList"
             label={data.activated ? t_i18n('Enabled') : t_i18n('Disabled')}
             status={data.activated}
           />
@@ -84,7 +83,6 @@ const SettingsMessages = ({
       render: (data) => {
         return (
           <ItemBoolean
-            variant="inList"
             label={data.dismissible ? t_i18n('Yes') : t_i18n('No')}
             status={data.dismissible}
           />

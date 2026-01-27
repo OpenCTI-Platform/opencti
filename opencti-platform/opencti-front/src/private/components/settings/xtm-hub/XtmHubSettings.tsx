@@ -4,13 +4,13 @@ import { List, ListItem, ListItemText, Typography } from '@mui/material';
 import XtmHubTab from '@components/settings/xtm-hub/XtmHubTab';
 import { useFormatter } from '../../../../components/i18n';
 import { XtmHubSettingsQuery } from './__generated__/XtmHubSettingsQuery.graphql';
-import ItemBoolean from '../../../../components/ItemBoolean';
 import useGranted, { SETTINGS_SETMANAGEXTMHUB } from '../../../../utils/hooks/useGranted';
 import Button from '@common/button/Button';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import Card from '../../../../components/common/card/Card';
+import ItemBoolean from '../../../../components/ItemBoolean';
 
 export const xtmHubSettingsQuery = graphql`
   query XtmHubSettingsQuery {
@@ -83,7 +83,6 @@ const XtmHubSettingsComponent = () => {
             <ListItem divider={true}>
               <ListItemText primary={t_i18n('Registration status')} />
               <ItemBoolean
-                variant="xlarge"
                 label={t_i18n('Registered')}
                 status={true}
               />
@@ -91,7 +90,6 @@ const XtmHubSettingsComponent = () => {
             <ListItem divider={true}>
               <ListItemText primary={t_i18n('Registration date')} />
               <ItemBoolean
-                variant="xlarge"
                 neutralLabel={fd(xtmHubSettings.xtm_hub_registration_date)}
                 status={null}
               />
@@ -99,7 +97,6 @@ const XtmHubSettingsComponent = () => {
             <ListItem divider={true}>
               <ListItemText primary={t_i18n('Registered by')} />
               <ItemBoolean
-                variant="xlarge"
                 neutralLabel={xtmHubSettings.xtm_hub_registration_user_name}
                 status={null}
               />
@@ -111,7 +108,6 @@ const XtmHubSettingsComponent = () => {
             <ListItem divider={true}>
               <ListItemText primary={t_i18n('Registration status')} />
               <ItemBoolean
-                variant="xlarge"
                 label={t_i18n('Connectivity lost')}
                 status={false}
               />
@@ -119,7 +115,6 @@ const XtmHubSettingsComponent = () => {
             <ListItem divider={true}>
               <ListItemText primary={t_i18n('Last successful check')} />
               <ItemBoolean
-                variant="xlarge"
                 neutralLabel={fd(xtmHubSettings.xtm_hub_last_connectivity_check)}
                 status={null}
               />
