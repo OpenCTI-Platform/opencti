@@ -106,9 +106,9 @@ export const registerSAMLStrategy = async (ssoEntity: BasicStoreEntitySingleSign
   logAuthInfo('Configuring SAML', EnvStrategyType.STRATEGY_SAML, { id: ssoEntity.id, identifier: ssoEntity.identifier, providerRef });
   const providerName = ssoEntity?.label || ssoEntity?.identifier || ssoEntity.id;
   const samlOptions: PassportSamlConfig = await buildSAMLOptions(ssoEntity);
+  const ssoConfiguration: any = convertKeyValueToJsConfiguration(ssoEntity);
 
   const samlLoginCallback: VerifyWithoutRequest = (profile, done) => {
-    const ssoConfiguration: any = convertKeyValueToJsConfiguration(ssoEntity);
     const groupsManagement = ssoEntity.groups_management;
     const orgsManagement = ssoEntity.organizations_management;
 
@@ -139,8 +139,13 @@ export const registerSAMLStrategy = async (ssoEntity: BasicStoreEntitySingleSign
   };
   samlOptions.name = ssoEntity.identifier || 'saml';
   const samlStrategy = new SamlStrategy(samlOptions, samlLoginCallback, samlLogoutCallback);
-  // TODO samlStrategy.logout_remote = samlOptions.logout_remote;
-  const providerConfig: ProviderConfiguration = { name: providerName, type: AuthType.AUTH_SSO, strategy: EnvStrategyType.STRATEGY_SAML, provider: providerRef };
+  const providerConfig: ProviderConfiguration = {
+    name: providerName,
+    type: AuthType.AUTH_SSO,
+    strategy: EnvStrategyType.STRATEGY_SAML,
+    provider: providerRef,
+    logout_remote: ssoConfiguration.logout_remote,
+  };
   registerAuthenticationProvider(providerRef, samlStrategy, providerConfig);
   logAuthInfo('Passport SAML configured', EnvStrategyType.STRATEGY_SAML, { id: ssoEntity.id, identifier: ssoEntity.identifier, providerRef });
 };

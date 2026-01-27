@@ -23,7 +23,7 @@ describe('Raw streams tests', () => {
     async () => {
       const startTime = new Date().getTime();
 
-      await waitInSec(60);
+      await waitInSec(10);
 
       // Read all events from the beginning.
       const events = await fetchStreamEvents(`http://localhost:${PORT}/stream`, { from: '0' });

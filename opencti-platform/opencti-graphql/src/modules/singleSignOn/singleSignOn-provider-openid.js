@@ -108,7 +108,8 @@ export const registerOpenIdStrategy = async (ssoEntity) => {
         // endregion
         const openIdScope = R.uniq(openIdScopes).join(' ');
         const options = {
-          logout_remote: ssoConfig.logout_remote, client, passReqToCallback: true,
+          client,
+          passReqToCallback: true,
           params: {
             scope: openIdScope, ...(ssoConfig.audience && { audience: ssoConfig.audience }),
           },
@@ -147,7 +148,6 @@ export const registerOpenIdStrategy = async (ssoEntity) => {
             done({ message: 'Restricted access, ask your administrator' });
           }
         });
-        openIDStrategy.logout_remote = options.logout_remote;
         logAuthInfo('logout remote options', EnvStrategyType.STRATEGY_OPENID, options);
         openIDStrategy.logout = (_, callback) => {
           const isSpecificUri = isNotEmptyField(ssoConfig.logout_callback_url);
@@ -160,7 +160,13 @@ export const registerOpenIdStrategy = async (ssoEntity) => {
             callback(null, endpointUri);
           }
         };
-        const providerConfig = { name: providerName, type: AuthType.AUTH_SSO, strategy: EnvStrategyType.STRATEGY_OPENID, provider: providerRef };
+        const providerConfig = {
+          name: providerName,
+          type: AuthType.AUTH_SSO,
+          strategy: EnvStrategyType.STRATEGY_OPENID,
+          provider: providerRef,
+          logout_remote: ssoConfig.logout_remote,
+        };
         registerAuthenticationProvider(providerRef, openIDStrategy, providerConfig);
       }).catch((err) => {
         logApp.error('[SSO OPENID] Error initializing authentication provider', {

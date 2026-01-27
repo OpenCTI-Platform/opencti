@@ -55,6 +55,7 @@ export interface ProviderConfiguration {
   provider: string;
   reqLoginHandler?: () => void;
   logout_uri?: string;
+  logout_remote?: boolean;
 }
 export const PROVIDERS: ProviderConfiguration[] = [];
 
