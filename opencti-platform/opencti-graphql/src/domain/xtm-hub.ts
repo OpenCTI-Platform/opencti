@@ -180,7 +180,7 @@ const handleLostConnectivityEmail = async (context: AuthContext, settings: Basic
   return attributeUpdates;
 };
 
-export const contactUsXtmHub = async (context: AuthContext, user: AuthUser): Promise<{ success: boolean }> => {
+export const contactUsXtmHub = async (context: AuthContext, user: AuthUser, message: string): Promise<{ success: boolean }> => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
 
   if (!settings.xtm_hub_token) {
@@ -193,6 +193,5 @@ export const contactUsXtmHub = async (context: AuthContext, user: AuthUser): Pro
     platformToken: settings.xtm_hub_token,
   };
 
-  const response = await xtmHubClient.contactUs(platformInformation);
-  return response;
+  return xtmHubClient.contactUs(platformInformation, message); ;
 };

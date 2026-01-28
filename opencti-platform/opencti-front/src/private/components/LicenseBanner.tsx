@@ -13,16 +13,28 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
+import * as Yup from 'yup';
+import { Field, Form, Formik } from 'formik';
+import TextField from '../../components/TextField';
+import { FormikConfig } from 'formik/dist/types';
 
 export const LICENSE_OPTION_TRIAL = 'trial';
 
 const contactUsXtmHubMutation = graphql`
-  mutation LicenseBannerContactUsMutation {
-    contactUsXtmHub {
+  mutation LicenseBannerContactUsMutation($message: String!) {
+    contactUsXtmHub(message: $message) {
       success
     }
   }
 `;
+
+interface ContactUsInput {
+  message: string;
+}
+
+const contactUsValidation = (t_i18n: (s: string) => string) => Yup.object().shape({
+  message: Yup.string().required(t_i18n('This field is required')),
+});
 
 interface BannerInfo {
   message: React.ReactNode;
@@ -73,18 +85,32 @@ const LicenseBanner = () => {
   const { t_i18n } = useFormatter();
   const { settings } = useContext(UserContext);
   const [showThankYouDialog, setShowThankYouDialog] = useState(false);
+  const [showFormDialog, setShowFormDialog] = useState(false);
   const [commitContactUs] = useApiMutation(contactUsXtmHubMutation);
   const eeSettings = settings?.platform_enterprise_edition;
   const isEE = eeSettings?.license_enterprise;
   if (!isEE) return <></>;
 
-  const bannerInfo = computeBannerInfo(eeSettings, () => {
+  const onSubmit: FormikConfig<ContactUsInput>['onSubmit'] = (values) => {
     commitContactUs({
-      variables: {},
-      onCompleted: () => setShowThankYouDialog(true),
+      variables: {
+        message: values.message,
+      },
+      onCompleted: () => {
+        setShowFormDialog(false);
+        setShowThankYouDialog(true);
+      },
     });
+  };
+
+  const bannerInfo = computeBannerInfo(eeSettings, () => {
+    setShowFormDialog(true);
   });
   if (!bannerInfo) return <></>;
+
+  const initialValues: ContactUsInput = {
+    message: t_i18n('Please contact me about the OpenCTI free trial'),
+  };
 
   return (
     <>
@@ -94,6 +120,42 @@ const LicenseBanner = () => {
         buttonText={bannerInfo.buttonText}
         onButtonClick={bannerInfo.onButtonClick}
       />
+      <Dialog
+        fullWidth={true}
+        open={showFormDialog}
+        onClose={() => setShowFormDialog(false)}
+      >
+        <DialogTitle>{t_i18n('Thank you!')}</DialogTitle>
+        <Formik<ContactUsInput>
+          initialValues={initialValues}
+          validationSchema={contactUsValidation(t_i18n)}
+          onSubmit={onSubmit}
+        >
+          {({ submitForm, isSubmitting }) => (
+            <Form>
+              <DialogContent>
+                <Field
+                  component={TextField}
+                  name="message"
+                  variant="standard"
+                  multiline={true}
+                  label={t_i18n('Your message')}
+                  fullWidth={true}
+                  minRows={5}
+                />
+              </DialogContent>
+              <DialogActions>
+                <Button disabled={isSubmitting} onClick={() => setShowFormDialog(false)}>
+                  {t_i18n('Cancel')}
+                </Button>
+                <Button onClick={submitForm} disabled={isSubmitting} color="secondary">
+                  {t_i18n('Validate')}
+                </Button>
+              </DialogActions>
+            </Form>
+          )}
+        </Formik>
+      </Dialog>
       <Dialog open={showThankYouDialog} onClose={() => setShowThankYouDialog(false)}>
         <DialogTitle>{t_i18n('Thank you!')}</DialogTitle>
         <DialogContent>

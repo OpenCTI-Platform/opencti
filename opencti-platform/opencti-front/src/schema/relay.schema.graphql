@@ -10466,7 +10466,7 @@ type Mutation {
   formImport(file: Upload!): Form
   checkXTMHubConnectivity: CheckXTMHubConnectivityResponse!
   autoRegisterOpenCTI(input: AutoRegisterInput!): Success!
-  contactUsXtmHub: Success!
+  contactUsXtmHub(message: String!): Success!
   metricPatch(id: ID!, input: PatchMetricInput!): BasicObject
   singleSignOnRunMigration(input: SingleSignMigrationInput!): [SingleSignOnMigrationResult]
 }
