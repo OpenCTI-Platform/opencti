@@ -1,4 +1,4 @@
-import HeaderLayout from '@common/header/HeaderLayout';
+import HeaderMainEntityLayout from '@common/header/HeaderMainEntityLayout';
 import { ViewColumnOutlined } from '@mui/icons-material';
 import { Box, Stack } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
@@ -569,7 +569,7 @@ const ContainerHeader = (props) => {
     <div style={containerStyle}>
       <Stack flex={1} gap={1} sx={{ width: '100%' }}>
         <React.Suspense fallback={<span />}>
-          <HeaderLayout
+          <HeaderMainEntityLayout
             title={title}
             hideTitle={knowledge}
             titleRight={(

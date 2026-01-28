@@ -1,6 +1,6 @@
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
-import HeaderLayout from '@common/header/HeaderLayout';
+import HeaderMainEntityLayout from '@common/header/HeaderMainEntityLayout';
 import Tag from '@common/tag/Tag';
 import { Add, Close, Delete } from '@mui/icons-material';
 import { Box, DialogTitle } from '@mui/material';
@@ -476,7 +476,7 @@ const StixDomainObjectHeader = (props) => {
 
   return (
     <React.Suspense fallback={<span />}>
-      <HeaderLayout
+      <HeaderMainEntityLayout
         title={title}
         titleRight={
           typeof onViewAs === 'function' && (

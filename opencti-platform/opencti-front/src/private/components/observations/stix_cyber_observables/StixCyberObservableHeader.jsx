@@ -1,4 +1,4 @@
-import HeaderLayout from '@common/header/HeaderLayout';
+import HeaderMainEntityLayout from '@common/header/HeaderMainEntityLayout';
 import Box from '@mui/material/Box';
 import MenuItem from '@mui/material/MenuItem';
 import { useState } from 'react';
@@ -35,7 +35,7 @@ const StixCyberObservableHeaderComponent = ({ stixCyberObservable, DeleteCompone
   const handleCloseDelete = () => setOpenDelete(false);
 
   return (
-    <HeaderLayout
+    <HeaderMainEntityLayout
       title={stixCyberObservable.observable_value}
       rightActions={(
         <>

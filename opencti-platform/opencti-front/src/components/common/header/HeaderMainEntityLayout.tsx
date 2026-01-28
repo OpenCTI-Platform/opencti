@@ -2,7 +2,7 @@ import Stack from '@mui/material/Stack';
 import TitleMainEntity from '../typography/TitleMainEntity';
 import { Tooltip } from '@mui/material';
 
-interface HeaderLayoutProps {
+interface HeaderMainEntityLayoutProps {
   title: string;
   hideTitle?: boolean;
   titleRight?: React.ReactNode;
@@ -13,14 +13,14 @@ interface HeaderLayoutProps {
 
 const TAGS_HEIGHT = 25;
 
-const HeaderLayout = ({
+const HeaderMainEntityLayout = ({
   title,
   hideTitle = false,
   titleRight,
   rightActions,
   leftTags,
   rightTags,
-}: HeaderLayoutProps) => {
+}: HeaderMainEntityLayoutProps) => {
   return (
     <Stack gap={1} sx={{ marginBottom: 1 }}>
       {/* Title + TitleRight on left + Actions on right */}
@@ -113,4 +113,4 @@ const HeaderLayout = ({
   );
 };
 
-export default HeaderLayout;
+export default HeaderMainEntityLayout;
