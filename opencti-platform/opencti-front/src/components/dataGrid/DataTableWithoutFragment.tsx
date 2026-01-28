@@ -21,6 +21,7 @@ type OCTIDataTableProps = Pick<DataTableProps, 'dataColumns'
   | 'pageSize'
   | 'hideHeaders'
   | 'onLineClick'
+  | 'onSort'
   | 'isLocalStorageEnabled'
   | 'variant'> & {
     data: unknown;
