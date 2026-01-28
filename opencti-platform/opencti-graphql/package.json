@@ -101,7 +101,7 @@
     "compression": "1.8.1",
     "content-disposition": "1.0.1",
     "content-type": "1.0.5",
-    "cors": "2.8.5",
+    "cors": "2.8.6",
     "csv-parse": "6.1.0",
     "dataloader": "2.2.3",
     "ejs": "4.0.1",
