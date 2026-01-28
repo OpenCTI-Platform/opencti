@@ -75,8 +75,6 @@ const DELETE_PLAYBOOK = gql`
   }
 `;
 
-// TODO : find a way to mock EE
-
 describe('Playbook resolver standard behavior', () => {
   let playbookId = '';
   const playbookName = 'Playbook1';

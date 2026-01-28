@@ -59,8 +59,6 @@ const REPORT_STIX_DOMAIN_ENTITIES = gql`
 
 const importOpts: string[] = [API_URI, ADMIN_API_TOKEN, './tests/data/organization-sharing/20241003_Report_to_test_orga_sharing_full.json'];
 
-// TODO : find a way to mock EE
-
 describe('oganization-sharing-test', () => {
   describe('Database provision', () => {
     it('Should import creation succeed', async () => {

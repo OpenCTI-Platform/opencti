@@ -42,7 +42,7 @@ import { convertFiltersToQueryOptions } from '../../utils/filtering/filtering-re
 import { elPaginate } from '../../database/engine';
 import { stixLoadByFilters, stixLoadById } from '../../database/middleware';
 import { convertRelationRefsFilterKeys } from '../../utils/filtering/filtering-utils';
-import { isEnterpriseEdition } from '../../enterprise-edition/ee';
+import { isEnterpriseEdition, isEnterpriseEditionFromSettings } from '../../enterprise-edition/ee';
 import { listenPirEvents } from './listenPirEventsUtils';
 import { isValidEventType } from './playbookManagerUtils';
 import { playbookExecutor } from './playbookExecutor';
@@ -394,9 +394,11 @@ const initPlaybookManager = () => {
       }, CRON_SCHEDULE_TIME);
     },
     status: (settings?: BasicStoreSettings) => {
+      const isEnterpriseEdition = settings ? isEnterpriseEditionFromSettings(settings) : false;
+
       return {
         id: 'PLAYBOOK_MANAGER',
-        enable: settings?.valid_enterprise_edition === true && booleanConf('playbook_manager:enabled', false),
+        enable: isEnterpriseEdition && booleanConf('playbook_manager:enabled', false),
         running,
       };
     },

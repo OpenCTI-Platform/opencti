@@ -9,8 +9,6 @@ import { addDisseminationCount, fetchTelemetryData, TELEMETRY_GAUGE_DISSEMINATIO
 import { redisClearTelemetry, redisGetTelemetry, redisSetTelemetryAdd } from '../../../src/database/redis';
 import { waitInSec } from '../../../src/database/utils';
 
-// TODO : find a way to mock EE
-
 describe('Telemetry manager test coverage', () => {
   test('Verify that metrics get collected from both elastic and redis', async () => {
     // GIVEN a configured telemetry
