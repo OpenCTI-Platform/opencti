@@ -1594,7 +1594,6 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   metrics_definition: [MetricDefinition!]
   view_all_users: Boolean
   editContext: [EditUserContext!]
-  auth_strategy_migrated: [String!]
   xtm_hub_token: String
   xtm_hub_registration_user_id: String
   xtm_hub_registration_user_name: ID
@@ -15480,7 +15479,7 @@ type SingleSignOn implements InternalObject & BasicObject {
   updated_at: DateTime!
   name: String!
   identifier: String!
-  label: String!
+  label: String
   description: String
   enabled: Boolean!
   strategy: StrategyType!
@@ -15547,7 +15546,6 @@ type SingleSignOnConnection {
 input OrganizationsManagementInput {
   organizations_path: [String!]
   organizations_mapping: [String!]
-  organizations_default: [String!]
   organizations_scope: String
   read_userinfo: Boolean
   token_reference: String
