@@ -7,7 +7,7 @@ import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
-import { BUS_TOPICS, logApp } from '../../config/conf';
+import { booleanConf, BUS_TOPICS, logApp } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import nconf from 'nconf';
 import { parseSingleSignOnRunConfiguration } from './singleSignOn-migration';
@@ -15,8 +15,10 @@ import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import { unregisterStrategy } from './singleSignOn-providers';
 import { EnvStrategyType } from './providers-configuration';
 
-// Protected sensitive config var env to lock
-export const AUTHENTICATION_CONFIG_LOCKED = nconf.get('app:sso_authentication_locked') ?? 'false';
+const IS_AUTHENTICATION_EDITION_LOCKED = booleanConf('app:authentication:edition_locked', false);
+export const isAuthenticationEditionLocked = () => {
+  return IS_AUTHENTICATION_EDITION_LOCKED;
+};
 
 const toEnv = (newStrategyType: StrategyType) => {
   switch (newStrategyType) {
@@ -35,8 +37,8 @@ const toEnv = (newStrategyType: StrategyType) => {
   }
 };
 
-export const isAuthenticationEditionLocked = () => {
-  if (AUTHENTICATION_CONFIG_LOCKED) {
+export const checkAuthenticationEditionLocked = () => {
+  if (isAuthenticationEditionLocked()) {
     throw UnsupportedError('Protected sensitive configuration is locked by environment variable');
   }
 };
@@ -98,14 +100,14 @@ export const internalAddSingleSignOn = async (context: AuthContext, user: AuthUs
 
 export const addSingleSignOn = async (context: AuthContext, user: AuthUser, input: SingleSignOnAddInput) => {
   await checkSSOAllowed(context);
-  isAuthenticationEditionLocked();
+  checkAuthenticationEditionLocked();
   // Call here the function to check that all mandatory field are in the input
   return await internalAddSingleSignOn(context, user, input, false);
 };
 
 export const fieldPatchSingleSignOn = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {
   await checkSSOAllowed(context);
-  isAuthenticationEditionLocked();
+  checkAuthenticationEditionLocked();
   const singleSignOnEntityBeforeUpdate = await findSingleSignOnById(context, user, id);
 
   if (!singleSignOnEntityBeforeUpdate) {
@@ -129,7 +131,7 @@ export const fieldPatchSingleSignOn = async (context: AuthContext, user: AuthUse
 
 export const deleteSingleSignOn = async (context: AuthContext, user: AuthUser, id: string) => {
   await checkSSOAllowed(context);
-  isAuthenticationEditionLocked();
+  checkAuthenticationEditionLocked();
   const singleSignOn = await findSingleSignOnById(context, user, id);
 
   if (!singleSignOn) {
@@ -164,4 +166,9 @@ export const runSingleSignOnRunMigration = async (context: AuthContext, user: Au
 export const findAllSingleSignOn = async (context: AuthContext, user: AuthUser): Promise<BasicStoreEntitySingleSignOn[]> => {
   await checkSSOAllowed(context);
   return fullEntitiesList(context, user, [ENTITY_TYPE_SINGLE_SIGN_ON]);
+};
+
+export const getAllIdentifiers = async (context: AuthContext, user: AuthUser) => {
+  const allSso = await findAllSingleSignOn(context, user);
+  return allSso ? allSso.map((sso) => sso.identifier) : [];
 };

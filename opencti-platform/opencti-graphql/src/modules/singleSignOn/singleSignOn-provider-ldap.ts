@@ -1,7 +1,7 @@
 import type { BasicStoreEntitySingleSignOn } from './singleSignOn-types';
 import { logAuthInfo, logAuthWarn } from './singleSignOn-domain';
-import { AuthType, EnvStrategyType, type ProviderConfiguration } from './providers-configuration';
-import { convertKeyValueToJsConfiguration, genPairConfigMapper, providerLoginHandler, type ProviderUserInfo } from './singleSignOn-providers';
+import { AuthType, EnvStrategyType, genConfigMapper, type ProviderConfiguration, providerLoginHandler, type ProviderUserInfo } from './providers-configuration';
+import { convertKeyValueToJsConfiguration } from './singleSignOn-providers';
 import * as R from 'ramda';
 import LdapStrategy, { type VerifyCallback, type VerifyDoneCallback } from 'passport-ldapauth';
 import { addUserLoginCount } from '../../manager/telemetryManager';
@@ -34,7 +34,7 @@ export const computeLdapGroups = (ssoEntity: BasicStoreEntitySingleSignOn, ldapP
     .map((g: any) => g[groupAttribute])
     .filter((g: any) => isNotEmptyField(g));
 
-  const groupsMapper = genPairConfigMapper(groupsMapping);
+  const groupsMapper = genConfigMapper(groupsMapping);
   logAuthInfo('Computing groups - groupsMapper', EnvStrategyType.STRATEGY_LDAP, { groupsMapper, userGroups });
   const groups: string[] = userGroups.map((a: any) => groupsMapper[a]).filter((r: any) => isNotEmptyField(r));
   return R.uniq(groups);
@@ -51,7 +51,7 @@ export const computeLdapOrganizations = (ssoEntity: BasicStoreEntitySingleSignOn
       return Array.isArray(value) ? value : [value];
     }),
   );
-  const orgasMapper = genPairConfigMapper(orgasMapping);
+  const orgasMapper = genConfigMapper(orgasMapping);
   return [...orgaDefault, ...availableOrgas.map((a) => orgasMapper[a]).filter((r) => isNotEmptyField(r))];
 };
 

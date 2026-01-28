@@ -11,15 +11,14 @@ import {
 import { logApp } from '../../config/conf';
 import { now } from 'moment';
 import { nowTime } from '../../utils/format';
-import { internalAddSingleSignOn } from './singleSignOn-domain';
+import { getAllIdentifiers, internalAddSingleSignOn } from './singleSignOn-domain';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { v4 as uuid } from 'uuid';
-import { EnvStrategyType, isAuthenticationProviderMigrated, LOCAL_STRATEGY_IDENTIFIER } from './providers-configuration';
-import { configRemapping, MIGRATED_STRATEGY } from './providers-initialization';
+import { EnvStrategyType, isAuthenticationProviderMigrated, LOCAL_STRATEGY_IDENTIFIER, MIGRATED_STRATEGY } from './providers-configuration';
+import { configRemapping } from './providers-initialization';
 import { getEntityFromCache } from '../../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import type { BasicStoreSettings } from '../../types/settings';
-import { settingsEditField } from '../../domain/settings';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES } from '../../utils/access';
 import { AuthRequired } from '../../config/errors';
 
@@ -422,10 +421,13 @@ export const parseSingleSignOnRunConfiguration = async (context: AuthContext, us
     const authenticationStrategies: SingleSignOnMigrationResult[] = [];
     const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
     const migratedIdentifier: string[] = [];
+    const identifiersInDb = await getAllIdentifiers(context, user);
+
     for (let i = 0; i < authenticationStrategiesInput.length; i++) {
       const currentAuthProvider = authenticationStrategiesInput[i];
       const identifier = currentAuthProvider.identifier;
-      if (identifier && !isAuthenticationProviderMigrated(settings, identifier)) {
+
+      if (identifier && !isAuthenticationProviderMigrated(identifiersInDb, identifier)) {
         logApp.info(`[SSO CONVERSION] creating new configuration for ${identifier}`);
         const created = await internalAddSingleSignOn(context, user, currentAuthProvider, true);
         const queryResult: SingleSignOnMigrationResult = {
@@ -441,23 +443,9 @@ export const parseSingleSignOnRunConfiguration = async (context: AuthContext, us
         migratedIdentifier.push(identifier);
         authenticationStrategies.push(queryResult);
       } else {
-        logApp.info(`[SSO CONVERSION] skipping ${currentAuthProvider.strategy} - ${identifier} as it's already in database.`, { auth_strategy_migrated: settings?.auth_strategy_migrated });
+        logApp.info(`[SSO CONVERSION] skipping ${currentAuthProvider.strategy} - ${identifier} as it's already in database.`);
       }
     }
-
-    if (migratedIdentifier.length > 0) {
-      let newList: string[];
-      if (settings.auth_strategy_migrated) {
-        newList = migratedIdentifier.concat(settings.auth_strategy_migrated);
-      } else {
-        newList = migratedIdentifier;
-      }
-      logApp.info('[SSO CONVERSION] New list of migrated identifier saved in settings', { newList });
-      await settingsEditField(context, user, settings.id, [
-        { key: 'auth_strategy_migrated', value: newList },
-      ]);
-    }
-
     return authenticationStrategies;
   }
 };
