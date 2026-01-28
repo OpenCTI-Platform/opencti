@@ -1,18 +1,21 @@
-import React, { Component } from 'react';
+import { CheckCircle, WorkOutline } from '@mui/icons-material';
+import ListItemButton from '@mui/material/ListItemButton';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableRow from '@mui/material/TableRow';
+import Typography from '@mui/material/Typography';
+import withStyles from '@mui/styles/withStyles';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
+import { Component } from 'react';
 import { createPaginationContainer, graphql } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
-import List from '@mui/material/List';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import { CheckCircle, WorkOutline } from '@mui/icons-material';
-import { ListItemButton } from '@mui/material';
-import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
-import { commitMutation } from '../../../../relay/environment';
 import ItemMarkings from '../../../../components/ItemMarkings';
+import { commitMutation } from '../../../../relay/environment';
 import { deleteNode, insertNode } from '../../../../utils/store';
+import { truncate } from '../../../../utils/String';
 
 const styles = (theme) => ({
   avatar: {
@@ -122,43 +125,58 @@ class AddNotesLinesContainer extends Component {
       (n) => n.node.id,
       stixCoreObjectOrStixCoreRelationshipNotes,
     );
+
     return (
-      <List>
-        {data.notes.edges.map((noteNode) => {
-          const note = noteNode.node;
-          const alreadyAdded = entityNotesIds.includes(note.id);
-          const noteId = note.external_id ? `(${note.external_id})` : '';
-          return (
-            <ListItemButton
-              key={note.id}
-              classes={{ root: classes.menuItem }}
-              divider={true}
-              onClick={this.toggleNote.bind(this, note)}
-            >
-              <ListItemIcon>
-                {alreadyAdded ? (
-                  <CheckCircle classes={{ root: classes.icon }} />
-                ) : (
-                  <WorkOutline />
-                )}
-              </ListItemIcon>
-              <ListItemText
-                primary={`${note.attribute_abstract} ${noteId}`}
-                secondary={truncate(note.content, 120)}
-              />
-              <div style={{ marginRight: 50 }}>
-                {note.createdBy?.name ?? '-'}
-              </div>
-              <div style={{ marginRight: 50 }}>
-                <ItemMarkings
-                  variant="inList"
-                  markingDefinitions={note.objectMarking ?? []}
-                />
-              </div>
-            </ListItemButton>
-          );
-        })}
-      </List>
+      <TableContainer>
+        <Table
+          sx={{
+            '& .MuiTableRow-root:first-of-type td': {
+              borderTop: 'none',
+            },
+          }}
+        >
+          <TableBody>
+            {data.notes.edges.map((noteNode) => {
+              const note = noteNode.node;
+              const alreadyAdded = entityNotesIds.includes(note.id);
+              const noteId = note.external_id ? `(${note.external_id})` : '';
+              return (
+                <TableRow
+                  key={note.id}
+                  component={ListItemButton}
+                  classes={{ root: classes.menuItem }}
+                  onClick={this.toggleNote.bind(this, note)}
+                >
+                  <TableCell sx={{ width: 48, paddingY: 1, paddingX: 2 }}>
+                    {alreadyAdded ? (
+                      <CheckCircle classes={{ root: classes.icon }} />
+                    ) : (
+                      <WorkOutline sx={{ marginTop: 0.5 }} />
+                    )}
+                  </TableCell>
+                  <TableCell sx={{ paddingY: 1, paddingX: 2 }}>
+                    <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                      {`${note.attribute_abstract} ${noteId}`}
+                    </Typography>
+                    <Typography variant="body1">
+                      {truncate(note.content, 120)}
+                    </Typography>
+                  </TableCell>
+                  <TableCell sx={{ paddingY: 1, paddingX: 2, whiteSpace: 'nowrap' }}>
+                    {note.createdBy?.name ?? '-'}
+                  </TableCell>
+                  <TableCell sx={{ paddingY: 1, paddingX: 2 }}>
+                    <ItemMarkings
+                      variant="inList"
+                      markingDefinitions={note.objectMarking ?? []}
+                    />
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </TableContainer>
     );
   }
 }
