@@ -15,7 +15,6 @@ import {
   settingsCleanContext,
   settingsEditContext,
   settingsEditField,
-  isAuthenticationLocked,
 } from '../domain/settings';
 import { fetchEditContext } from '../database/redis';
 import { subscribeToInstanceEvents, subscribeToPlatformSettingsEvents } from '../graphql/subscriptionWrapper';
@@ -29,6 +28,7 @@ import { isRequestAccessEnabled } from '../modules/requestAccess/requestAccess-d
 import { CguStatus, PlatformType } from '../generated/graphql';
 import { getEntityMetricsConfiguration } from '../modules/metrics/metrics-utils';
 import { ALLOW_EMAIL_REWRITE, smtpConfiguredEmail } from '../database/smtp';
+import { isAuthenticationEditionLocked } from '../modules/singleSignOn/singleSignOn-domain';
 
 const settingsResolvers = {
   Query: {
@@ -66,7 +66,7 @@ const settingsResolvers = {
     platform_ai_enabled: (settings) => settings.platform_ai_enabled ?? true,
     filigran_chatbot_ai_cgu_status: (settings) => settings.filigran_chatbot_ai_cgu_status ?? CguStatus.Pending,
     metrics_definition: () => getEntityMetricsConfiguration(),
-    is_authentication_locked: () => isAuthenticationLocked(),
+    is_authentication_locked: () => isAuthenticationEditionLocked(),
   },
   AppInfo: {
     memory: getMemoryStatistics(),

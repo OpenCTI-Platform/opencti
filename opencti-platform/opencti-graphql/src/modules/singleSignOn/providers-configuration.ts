@@ -1,8 +1,13 @@
-import type { BasicStoreSettings } from '../../types/settings';
-import conf from '../../config/conf';
+import conf, { booleanConf, logApp } from '../../config/conf';
+import { loginFromProvider } from '../../domain/user';
+import * as R from 'ramda';
 
 export const INTERNAL_SECURITY_PROVIDER = '__internal_security_local_provider__';
 export const LOCAL_STRATEGY_IDENTIFIER = 'local';
+
+export const isAuthenticationForcedFromEnv = () => {
+  return booleanConf('app:authentication:force_env', false);
+};
 
 export const getProvidersFromEnvironment = () => {
   return conf.get('providers');
@@ -27,6 +32,15 @@ export enum EnvStrategyType {
   STRATEGY_AUTH0 = 'Auth0Strategy',
 }
 
+export const MIGRATED_STRATEGY = [
+  EnvStrategyType.STRATEGY_LOCAL,
+  EnvStrategyType.STRATEGY_SAML,
+  EnvStrategyType.STRATEGY_OPENID,
+  EnvStrategyType.STRATEGY_LDAP,
+  // EnvStrategyType.STRATEGY_CERT,
+  // EnvStrategyType.STRATEGY_HEADER,
+];
+
 export interface ProviderConfiguration {
   name: string;
   type: AuthType;
@@ -36,15 +50,42 @@ export interface ProviderConfiguration {
   reqLoginHandler?: () => void;
   logout_uri?: string;
 }
-
 export const PROVIDERS: ProviderConfiguration[] = [];
+
+export interface ProviderUserInfo {
+  email: string;
+  name: string;
+  firstname?: string;
+  lastname?: string;
+  provider_metadata?: any;
+}
+
+export const providerLoginHandler = (userInfo: ProviderUserInfo, done: any, opts = {}) => {
+  loginFromProvider(userInfo, opts)
+    .then((user: any) => {
+      logApp.info('[SSO] providerLoginHandler user:', user);
+      done(null, user);
+    })
+    .catch((err: any) => {
+      logApp.info('[SSO] providerLoginHandler error:', err);
+      done(err);
+    });
+};
+
+export const genConfigMapper = (elements: string[]) => {
+  return R.mergeAll(
+    elements.map((r) => {
+      const data = r.split(':');
+      if (data.length !== 2) return {};
+      const [remote, octi] = data;
+      return { [remote]: octi };
+    }),
+  );
+};
 
 export const isStrategyActivated = (strategy: EnvStrategyType) => PROVIDERS.map((p) => p.strategy).includes(strategy);
 export const isAuthenticationActivatedByIdentifier = (identifier: string) => PROVIDERS.some((p) => p.provider === identifier);
 
-export const isAuthenticationProviderMigrated = (settings: BasicStoreSettings, authIdentifier: string) => {
-  if (!settings || !settings?.auth_strategy_migrated) {
-    return false;
-  }
-  return settings.auth_strategy_migrated.some((strategyIdentifier) => strategyIdentifier === authIdentifier);
+export const isAuthenticationProviderMigrated = (migratedIdentifiers: string[], authIdentifier: string) => {
+  return migratedIdentifiers.some((strategyIdentifier) => strategyIdentifier === authIdentifier);
 };

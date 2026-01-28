@@ -1,42 +1,36 @@
-import * as R from 'ramda';
-import passport from 'passport/lib';
-import GitHub from 'github-api';
-import FacebookStrategy from 'passport-facebook';
-import GithubStrategy from 'passport-github';
-import LocalStrategy from 'passport-local';
-import { custom as OpenIDCustom, Issuer as OpenIDIssuer, Strategy as OpenIDStrategy } from 'openid-client';
-import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
-import validator from 'validator';
-import { findById, HEADERS_AUTHENTICATORS, initAdmin, login, userDelete } from '../../domain/user';
-import conf, { getPlatformHttpProxyAgent, logApp, NODE_INSTANCE_ID } from '../../config/conf';
-import { AuthenticationFailure, ConfigurationError } from '../../config/errors';
-import { isEmptyField, isNotEmptyField } from '../../database/utils';
-import { DEFAULT_INVALID_CONF_VALUE, SYSTEM_USER } from '../../utils/access';
-import { OPENCTI_ADMIN_UUID } from '../../schema/general';
-import { addUserLoginCount } from '../../manager/telemetryManager';
+import { NODE_INSTANCE_ID } from '../../config/conf';
 import {
-  AuthType,
-  INTERNAL_SECURITY_PROVIDER,
-  PROVIDERS,
   EnvStrategyType,
   isAuthenticationProviderMigrated,
   LOCAL_STRATEGY_IDENTIFIER,
   isAuthenticationActivatedByIdentifier,
   getProvidersFromEnvironment,
+  isAuthenticationForcedFromEnv,
+  genConfigMapper,
+  providerLoginHandler,
 } from './providers-configuration';
-import { genPairConfigMapper, providerLoginHandler } from './singleSignOn-providers';
-import { getEntityFromCache } from '../../database/cache';
-import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
-import { logAuthInfo, runSingleSignOnRunMigration } from './singleSignOn-domain';
-
-export const MIGRATED_STRATEGY = [
-  EnvStrategyType.STRATEGY_LOCAL,
-  EnvStrategyType.STRATEGY_SAML,
-  EnvStrategyType.STRATEGY_OPENID,
-  EnvStrategyType.STRATEGY_LDAP,
-  // EnvStrategyType.STRATEGY_CERT,
-  // EnvStrategyType.STRATEGY_HEADER,
-];
+import { getAllIdentifiers, logAuthInfo, runSingleSignOnRunMigration } from './singleSignOn-domain';
+import * as R from 'ramda';
+import passport from 'passport/lib';
+import GitHub from 'github-api';
+import { jwtDecode } from 'jwt-decode';
+import FacebookStrategy from 'passport-facebook';
+import GithubStrategy from 'passport-github';
+import LocalStrategy from 'passport-local';
+import LdapStrategy from 'passport-ldapauth';
+import { Strategy as SamlStrategy } from '@node-saml/passport-saml';
+import { custom as OpenIDCustom, Issuer as OpenIDIssuer, Strategy as OpenIDStrategy } from 'openid-client';
+import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
+import validator from 'validator';
+import conf, { getPlatformHttpProxyAgent, logApp } from '../../config/conf';
+import { AuthenticationFailure, ConfigurationError } from '../../config/errors';
+import { AuthType, INTERNAL_SECURITY_PROVIDER, PROVIDERS } from './providers-configuration';
+import { DEFAULT_INVALID_CONF_VALUE, SYSTEM_USER } from '../../utils/access';
+import { OPENCTI_ADMIN_UUID } from '../../schema/general';
+import { findById, HEADERS_AUTHENTICATORS, initAdmin, login, userDelete } from '../../domain/user';
+import { isEmptyField, isNotEmptyField } from '../../database/utils';
+import { addUserLoginCount } from '../../manager/telemetryManager';
+import { enrichWithRemoteCredentials } from '../../config/credentials';
 
 // (providerRef: string)
 export const unregisterAuthenticationProvider = (providerRef) => {
@@ -155,8 +149,8 @@ export const configRemapping = (config) => {
 };
 
 export const initializeEnvAuthenticationProviders = async (context, user) => {
-  const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
-  logApp.info('[ENV-PROVIDER] Settings auth_strategy_migrated', { auth_migrated: settings?.auth_strategy_migrated });
+  const isForcedEnv = isAuthenticationForcedFromEnv();
+  const existingIdentifiers = await getAllIdentifiers(context, user);
 
   const confProviders = getProvidersFromEnvironment();
   let willLocalBeInDatabase = false;
@@ -174,44 +168,319 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
         // FORM Strategies
         if (strategy === EnvStrategyType.STRATEGY_LOCAL) {
           logApp.debug('[ENV-PROVIDER][LOCAL] LocalStrategy found in configuration');
-          if (isAuthenticationProviderMigrated(settings, LOCAL_STRATEGY_IDENTIFIER)) {
-            logApp.info('[ENV-PROVIDER][LOCAL] LocalStrategy already in database, skipping old configuration');
-            willLocalBeInDatabase = true;
+          if (isForcedEnv) {
+            // region backward compatibility
+            const localStrategy = new LocalStrategy({}, (username, password, done) => {
+              return login(username, password)
+                .then((info) => {
+                  logApp.info('[ENV-PROVIDER][LOCAL] Successfully logged', { username });
+                  addUserLoginCount();
+                  return done(null, info);
+                })
+                .catch((err) => {
+                  done(err);
+                });
+            });
+            passport.use('local', localStrategy);
+            PROVIDERS.push({ name: providerName, type: AuthType.AUTH_FORM, strategy, provider: 'local' });
+            // end region backward compatibility
           } else {
-            logApp.info('[ENV-PROVIDER][LOCAL] LocalStrategy is about to be converted to database configuration.');
-            willLocalBeInDatabase = true;
-            shouldRunSSOMigration = true;
+            if (isAuthenticationProviderMigrated(existingIdentifiers, LOCAL_STRATEGY_IDENTIFIER)) {
+              logApp.info('[ENV-PROVIDER][LOCAL] LocalStrategy already in database, skipping old configuration');
+              willLocalBeInDatabase = true;
+            } else {
+              logApp.info('[ENV-PROVIDER][LOCAL] LocalStrategy is about to be converted to database configuration.');
+              willLocalBeInDatabase = true;
+              shouldRunSSOMigration = true;
+            }
           }
         }
         if (strategy === EnvStrategyType.STRATEGY_LDAP) {
-          const providerRef = identifier || 'ldapauth';
-          logApp.info(`[ENV-PROVIDER][LDAP] LdapStrategy found in configuration providerRef:${providerRef}`);
-          if (isAuthenticationProviderMigrated(settings, providerRef)) {
-            logApp.info(`[ENV-PROVIDER][LDAP] ${providerRef} migrated, skipping old configuration`);
+          if (isForcedEnv) {
+            // region backward compatibility
+            const providerRef = identifier || 'ldapauth';
+            const allowSelfSigned = mappedConfig.allow_self_signed || mappedConfig.allow_self_signed === 'true';
+            // Force bindCredentials to be a String
+            mappedConfig.bindCredentials = `${mappedConfig.bindCredentials}`;
+            const tlsConfig = R.assoc('tlsOptions', { rejectUnauthorized: !allowSelfSigned }, mappedConfig);
+            const ldapOptions = { server: tlsConfig };
+            const ldapStrategy = new LdapStrategy(ldapOptions, (user, done) => {
+              logApp.info('[LDAP] Successfully logged', { user });
+              addUserLoginCount();
+              const userMail = mappedConfig.mail_attribute ? user[mappedConfig.mail_attribute] : user.mail;
+              const userName = mappedConfig.account_attribute ? user[mappedConfig.account_attribute] : user.givenName;
+              const firstname = user[mappedConfig.firstname_attribute] || '';
+              const lastname = user[mappedConfig.lastname_attribute] || '';
+              const isGroupBaseAccess = (isNotEmptyField(mappedConfig.groups_management) && isNotEmptyField(mappedConfig.groups_management?.groups_mapping));
+              // region groups mapping
+              const computeGroupsMapping = () => {
+                const groupsMapping = mappedConfig.groups_management?.groups_mapping || [];
+                const userGroups = (user._groups || [])
+                  .map((g) => g[mappedConfig.groups_management?.group_attribute || 'cn'])
+                  .filter((g) => isNotEmptyField(g));
+                const groupsMapper = genConfigMapper(groupsMapping);
+                return userGroups.map((a) => groupsMapper[a]).filter((r) => isNotEmptyField(r));
+              };
+              const groupsToAssociate = R.uniq(computeGroupsMapping());
+              // endregion
+              // region organizations mapping
+              const isOrgaMapping = isNotEmptyField(mappedConfig.organizations_default) || isNotEmptyField(mappedConfig.organizations_management);
+              const computeOrganizationsMapping = () => {
+                const orgaDefault = mappedConfig.organizations_default ?? [];
+                const orgasMapping = mappedConfig.organizations_management?.organizations_mapping || [];
+                const orgaPath = mappedConfig.organizations_management?.organizations_path || ['organizations'];
+
+                const availableOrgas = R.flatten(
+                  orgaPath.map((path) => {
+                    const value = R.path(path.split('.'), user) || [];
+                    return Array.isArray(value) ? value : [value];
+                  }),
+                );
+                const orgasMapper = genConfigMapper(orgasMapping);
+                return [...orgaDefault, ...availableOrgas.map((a) => orgasMapper[a]).filter((r) => isNotEmptyField(r))];
+              };
+              const organizationsToAssociate = isOrgaMapping ? computeOrganizationsMapping() : [];
+              // endregion
+              if (!userMail) {
+                logApp.warn('LDAP Configuration error, cant map mail and username', { user, userMail, userName });
+                done({ message: 'Configuration error, ask your administrator' });
+              } else if (!isGroupBaseAccess || groupsToAssociate.length > 0) {
+                logApp.info(`[LDAP] Connecting/creating account with ${userMail} [name=${userName}]`);
+                const userInfo = { email: userMail, name: userName, firstname, lastname };
+                const opts = {
+                  providerGroups: groupsToAssociate,
+                  providerOrganizations: organizationsToAssociate,
+                  autoCreateGroup: mappedConfig.auto_create_group ?? false,
+                };
+                providerLoginHandler(userInfo, done, opts);
+              } else {
+                done({ message: 'Restricted access, ask your administrator' });
+              }
+            });
+            passport.use(providerRef, ldapStrategy);
+            PROVIDERS.push({ name: providerName, type: AuthType.AUTH_FORM, strategy, provider: providerRef });
+            // end region backward compatibility
           } else {
-            logApp.info(`[ENV-PROVIDER][LDAP] ${providerRef} is about to be converted to database configuration.`);
-            shouldRunSSOMigration = true;
+            const providerRef = identifier || 'ldapauth';
+            logApp.info(`[ENV-PROVIDER][LDAP] LdapStrategy found in configuration providerRef:${providerRef}`);
+            if (isAuthenticationProviderMigrated(existingIdentifiers, providerRef)) {
+              logApp.info(`[ENV-PROVIDER][LDAP] ${providerRef} migrated, skipping old configuration`);
+            } else {
+              logApp.info(`[ENV-PROVIDER][LDAP] ${providerRef} is about to be converted to database configuration.`);
+              shouldRunSSOMigration = true;
+            }
           }
         }
         // SSO Strategies
         if (strategy === EnvStrategyType.STRATEGY_SAML) {
-          const providerRef = identifier || 'saml';
-          logApp.info(`[ENV-PROVIDER][SAML] SamlStrategy found in configuration providerRef:${providerRef}`);
-          if (isAuthenticationProviderMigrated(settings, providerRef)) {
-            logApp.info(`[ENV-PROVIDER][SAML] ${providerRef} already in database, skipping old configuration`);
+          if (isForcedEnv) {
+            // region backward compatibility
+            const providerRef = identifier || 'saml';
+            const samlOptions = { ...mappedConfig };
+            const samlStrategy = new SamlStrategy(samlOptions, (profile, done) => {
+              logApp.info('[SAML] Successfully logged', { profile });
+              addUserLoginCount();
+              const { nameID, nameIDFormat } = profile;
+              const samlAttributes = profile.attributes ? profile.attributes : profile;
+              const roleAttributes = mappedConfig.roles_management?.role_attributes || ['roles'];
+              const groupAttributes = mappedConfig.groups_management?.group_attributes || ['groups'];
+              const userEmail = samlAttributes[mappedConfig.mail_attribute] || nameID;
+              if (mappedConfig.mail_attribute && !samlAttributes[mappedConfig.mail_attribute]) {
+                logApp.info(`[SAML] custom mail_attribute "${mappedConfig.mail_attribute}" in configuration but the custom field is not present SAML server response.`);
+              }
+              const userName = samlAttributes[mappedConfig.account_attribute] || '';
+              const firstname = samlAttributes[mappedConfig.firstname_attribute] || '';
+              const lastname = samlAttributes[mappedConfig.lastname_attribute] || '';
+              const isGroupBaseAccess = (isNotEmptyField(mappedConfig.groups_management) && isNotEmptyField(mappedConfig.groups_management?.groups_mapping));
+              logApp.info('[SAML] Groups management configuration', { groupsManagement: mappedConfig.groups_management });
+              // region roles mapping
+              const computeRolesMapping = () => {
+                const attrRoles = roleAttributes.map((a) => (Array.isArray(samlAttributes[a]) ? samlAttributes[a] : [samlAttributes[a]]));
+                const samlRoles = R.flatten(attrRoles).filter((v) => isNotEmptyField(v));
+                const rolesMapping = mappedConfig.roles_management?.roles_mapping || [];
+                const rolesMapper = genConfigMapper(rolesMapping);
+                return samlRoles.map((a) => rolesMapper[a]).filter((r) => isNotEmptyField(r));
+              };
+              // endregion
+              // region groups mapping
+              const computeGroupsMapping = () => {
+                const attrGroups = groupAttributes.map((a) => (Array.isArray(samlAttributes[a]) ? samlAttributes[a] : [samlAttributes[a]]));
+                const samlGroups = R.flatten(attrGroups).filter((v) => isNotEmptyField(v));
+                const groupsMapping = mappedConfig.groups_management?.groups_mapping || [];
+                const groupsMapper = genConfigMapper(groupsMapping);
+                return samlGroups.map((a) => groupsMapper[a]).filter((r) => isNotEmptyField(r));
+              };
+              const groupsToAssociate = R.uniq(computeGroupsMapping().concat(computeRolesMapping()));
+              // endregion
+              // region organizations mapping
+              const isOrgaMapping = isNotEmptyField(mappedConfig.organizations_default) || isNotEmptyField(mappedConfig.organizations_management);
+              const computeOrganizationsMapping = () => {
+                const orgaDefault = mappedConfig.organizations_default ?? [];
+                const orgasMapping = mappedConfig.organizations_management?.organizations_mapping || [];
+                const orgaPath = mappedConfig.organizations_management?.organizations_path || ['organizations'];
+                const samlOrgas = R.path(orgaPath, profile) || [];
+                const availableOrgas = Array.isArray(samlOrgas) ? samlOrgas : [samlOrgas];
+                const orgasMapper = genConfigMapper(orgasMapping);
+                return [...orgaDefault, ...availableOrgas.map((a) => orgasMapper[a]).filter((r) => isNotEmptyField(r))];
+              };
+              const organizationsToAssociate = isOrgaMapping ? computeOrganizationsMapping() : [];
+              // endregion
+              logApp.info('[SAML] Login handler', { isGroupBaseAccess, groupsToAssociate });
+              if (!isGroupBaseAccess || groupsToAssociate.length > 0) {
+                const opts = {
+                  providerGroups: groupsToAssociate,
+                  providerOrganizations: organizationsToAssociate,
+                  autoCreateGroup: mappedConfig.auto_create_group ?? false,
+                };
+                providerLoginHandler({ email: userEmail, name: userName, firstname, lastname, provider_metadata: { nameID, nameIDFormat } }, done, opts);
+              } else {
+                done({ message: 'Restricted access, ask your administrator' });
+              }
+            }, (profile) => {
+              // SAML Logout function
+              logApp.info(`[SAML] Logout done for ${profile}`);
+            });
+            samlStrategy.logout_remote = samlOptions.logout_remote;
+            passport.use(providerRef, samlStrategy);
+            PROVIDERS.push({ name: providerName, type: AuthType.AUTH_SSO, strategy, provider: providerRef });
+            // end region backward compatibility
           } else {
-            logApp.info(`[ENV-PROVIDER][SAML] ${providerRef} is about to be converted to database configuration.`);
-            shouldRunSSOMigration = true;
+            const providerRef = identifier || 'saml';
+            logApp.info(`[ENV-PROVIDER][SAML] SamlStrategy found in configuration providerRef:${providerRef}`);
+            if (isAuthenticationProviderMigrated(existingIdentifiers, providerRef)) {
+              logApp.info(`[ENV-PROVIDER][SAML] ${providerRef} already in database, skipping old configuration`);
+            } else {
+              logApp.info(`[ENV-PROVIDER][SAML] ${providerRef} is about to be converted to database configuration.`);
+              shouldRunSSOMigration = true;
+            }
           }
         }
         if (strategy === EnvStrategyType.STRATEGY_OPENID) {
-          const providerRef = identifier || 'oic';
-          logApp.info(`[ENV-PROVIDER][OPENID] OpenIDConnectStrategy found in configuration providerRef:${providerRef}`);
-          if (isAuthenticationProviderMigrated(settings, providerRef)) {
-            logApp.info(`[ENV-PROVIDER][OPENID] ${providerRef} already in database, skipping old configuration`);
+          if (isForcedEnv) {
+            // region backward compatibility
+            const providerRef = identifier || 'oic';
+            // Here we use directly the config and not the mapped one.
+            // All config of openid lib use snake case.
+            const openIdClient = config.use_proxy ? getPlatformHttpProxyAgent(config.issuer) : undefined;
+            OpenIDCustom.setHttpOptionsDefaults({ timeout: 0, agent: openIdClient });
+            enrichWithRemoteCredentials(`providers:${providerIdent}`, config).then((clientConfig) => {
+              OpenIDIssuer.discover(config.issuer).then((issuer) => {
+                const { Client } = issuer;
+                const client = new Client(clientConfig);
+                // region scopes generation
+                const defaultScopes = mappedConfig.default_scopes ?? ['openid', 'email', 'profile'];
+                const openIdScopes = [...defaultScopes];
+                const groupsScope = mappedConfig.groups_management?.groups_scope;
+                if (groupsScope) {
+                  openIdScopes.push(groupsScope);
+                }
+                const organizationsScope = mappedConfig.organizations_management?.organizations_scope;
+                if (organizationsScope) {
+                  openIdScopes.push(organizationsScope);
+                }
+                // endregion
+                const openIdScope = R.uniq(openIdScopes).join(' ');
+                const options = { logout_remote: mappedConfig.logout_remote, client, passReqToCallback: true,
+                  params: { scope: openIdScope, ...(mappedConfig.audience && { audience: mappedConfig.audience }),
+                  } };
+                const debugCallback = (message, meta) => logApp.info(message, meta);
+                const openIDStrategy = new OpenIDStrategy(options, debugCallback, (_, tokenset, userinfo, done) => {
+                  logApp.info('[OPENID] Successfully logged', { userinfo });
+                  addUserLoginCount();
+                  const isGroupMapping = (isNotEmptyField(mappedConfig.groups_management) && isNotEmptyField(mappedConfig.groups_management?.groups_mapping));
+                  logApp.info('[OPENID] Groups management configuration', { groupsManagement: mappedConfig.groups_management });
+                  // region groups mapping
+                  const computeGroupsMapping = () => {
+                    const readUserinfo = mappedConfig.groups_management?.read_userinfo || false;
+                    const token = mappedConfig.groups_management?.token_reference || 'access_token';
+                    const groupsPath = mappedConfig.groups_management?.groups_path || ['groups'];
+                    const groupsMapping = mappedConfig.groups_management?.groups_mapping || [];
+                    const decodedUser = jwtDecode(tokenset[token]);
+                    if (!readUserinfo) {
+                      logApp.info(`[OPENID] Groups mapping on decoded ${token}`, { decoded: decodedUser });
+                    }
+                    const availableGroups = R.flatten(groupsPath.map((path) => {
+                      const userClaims = (readUserinfo) ? userinfo : decodedUser;
+                      const value = R.path(path.split('.'), userClaims) || [];
+                      return Array.isArray(value) ? value : [value];
+                    }));
+                    const groupsMapper = genConfigMapper(groupsMapping);
+                    return availableGroups.map((a) => groupsMapper[a]).filter((r) => isNotEmptyField(r));
+                  };
+                  const mappedGroups = isGroupMapping ? computeGroupsMapping() : [];
+                  const groupsToAssociate = R.uniq(mappedGroups);
+                  // endregion
+                  // region organizations mapping
+                  const isOrgaMapping = isNotEmptyField(mappedConfig.organizations_default) || isNotEmptyField(mappedConfig.organizations_management);
+                  const computeOrganizationsMapping = () => {
+                    const orgaDefault = mappedConfig.organizations_default ?? [];
+                    const readUserinfo = mappedConfig.organizations_management?.read_userinfo || false;
+                    const orgasMapping = mappedConfig.organizations_management?.organizations_mapping || [];
+                    const token = mappedConfig.organizations_management?.token_reference || 'access_token';
+                    const orgaPath = mappedConfig.organizations_management?.organizations_path || ['organizations'];
+                    const decodedUser = jwtDecode(tokenset[token]);
+                    const availableOrgas = R.flatten(orgaPath.map((path) => {
+                      const userClaims = (readUserinfo) ? userinfo : decodedUser;
+                      const value = R.path(path.split('.'), userClaims) || [];
+                      return Array.isArray(value) ? value : [value];
+                    }));
+                    const orgasMapper = genConfigMapper(orgasMapping);
+                    return [...orgaDefault, ...availableOrgas.map((a) => orgasMapper[a]).filter((r) => isNotEmptyField(r))];
+                  };
+                  const organizationsToAssociate = isOrgaMapping ? computeOrganizationsMapping() : [];
+                  // endregion
+                  if (!isGroupMapping || groupsToAssociate.length > 0) {
+                    const nameAttribute = mappedConfig.name_attribute ?? 'name';
+                    const emailAttribute = mappedConfig.email_attribute ?? 'email';
+                    const firstnameAttribute = mappedConfig.firstname_attribute ?? 'given_name';
+                    const lastnameAttribute = mappedConfig.lastname_attribute ?? 'family_name';
+                    const get_user_attributes_from_id_token = mappedConfig.get_user_attributes_from_id_token ?? false;
+
+                    const user_attribute_obj = get_user_attributes_from_id_token ? jwtDecode(tokenset.id_token) : userinfo;
+
+                    const name = user_attribute_obj[nameAttribute];
+                    const email = user_attribute_obj[emailAttribute];
+                    const firstname = user_attribute_obj[firstnameAttribute];
+                    const lastname = user_attribute_obj[lastnameAttribute];
+                    const opts = {
+                      providerGroups: groupsToAssociate,
+                      providerOrganizations: organizationsToAssociate,
+                      autoCreateGroup: mappedConfig.auto_create_group ?? false,
+                    };
+                    providerLoginHandler({ email, name, firstname, lastname }, done, opts);
+                  } else {
+                    done({ message: 'Restricted access, ask your administrator' });
+                  }
+                });
+                openIDStrategy.logout_remote = options.logout_remote;
+                logApp.debug('[OPENID] logout remote options', options);
+                openIDStrategy.logout = (_, callback) => {
+                  const isSpecificUri = isNotEmptyField(config.logout_callback_url);
+                  const endpointUri = issuer.end_session_endpoint ? issuer.end_session_endpoint : `${config.issuer}/oidc/logout`;
+                  logApp.debug(`[OPENID] logout configuration, isSpecificUri:${isSpecificUri}, issuer.end_session_endpoint:${issuer.end_session_endpoint}, final endpointUri: ${endpointUri}`);
+                  if (isSpecificUri) {
+                    const logoutUri = `${endpointUri}?post_logout_redirect_uri=${config.logout_callback_url}`;
+                    callback(null, logoutUri);
+                  } else {
+                    callback(null, endpointUri);
+                  }
+                };
+                passport.use(providerRef, openIDStrategy);
+                PROVIDERS.push({ name: providerName, type: AuthType.AUTH_SSO, strategy, provider: providerRef });
+              }).catch((err) => {
+                logApp.error('[OPENID] Error initializing authentication provider', { cause: err, provider: providerRef });
+              });
+            }).catch((reason) => logApp.error('[OPENID] Error when enrich with remote credentials', { cause: reason }));
+            // end region backward compatibility
           } else {
-            logApp.info(`[ENV-PROVIDER][OPENID] ${providerRef} is about to be converted to database configuration.`);
-            shouldRunSSOMigration = true;
+            const providerRef = identifier || 'oic';
+            logApp.info(`[ENV-PROVIDER][OPENID] OpenIDConnectStrategy found in configuration providerRef:${providerRef}`);
+            if (isAuthenticationProviderMigrated(existingIdentifiers, providerRef)) {
+              logApp.info(`[ENV-PROVIDER][OPENID] ${providerRef} already in database, skipping old configuration`);
+            } else {
+              logApp.info(`[ENV-PROVIDER][OPENID] ${providerRef} is about to be converted to database configuration.`);
+              shouldRunSSOMigration = true;
+            }
           }
         }
         if (strategy === EnvStrategyType.STRATEGY_FACEBOOK) {
@@ -369,7 +638,7 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
               const groupsMapping = mappedConfig.groups_management?.groups_mapping || [];
               const groupsSplitter = mappedConfig.groups_management?.groups_splitter || ',';
               const availableGroups = (req.header(mappedConfig.groups_management?.groups_header) ?? '').split(groupsSplitter);
-              const groupsMapper = genPairConfigMapper(groupsMapping);
+              const groupsMapper = genConfigMapper(groupsMapping);
               return availableGroups.map((a) => groupsMapper[a]).filter((r) => isNotEmptyField(r));
             };
             const mappedGroups = isGroupMapping ? computeGroupsMapping() : [];
@@ -380,7 +649,7 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
               const orgasMapping = mappedConfig.organizations_management?.organizations_mapping || [];
               const orgasSplitter = mappedConfig.organizations_management?.organizations_splitter || ',';
               const availableOrgas = (req.header(mappedConfig.organizations_management?.organizations_header) ?? '').split(orgasSplitter);
-              const orgasMapper = genPairConfigMapper(orgasMapping);
+              const orgasMapper = genConfigMapper(orgasMapping);
               return [...orgaDefault, ...availableOrgas.map((a) => orgasMapper[a]).filter((r) => isNotEmptyField(r))];
             };
             const organizationsToAssociate = isOrgaMapping ? computeOrganizationsMapping() : [];
@@ -448,7 +717,7 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
   } else {
     logApp.info('[ENV-PROVIDER] No provider in environment.');
   }
-  if (shouldRunSSOMigration) {
+  if (shouldRunSSOMigration && !isForcedEnv) {
     await runSingleSignOnRunMigration(context, user, { dry_run: false });
   }
   logApp.info('[ENV-PROVIDER] End of reading environment');

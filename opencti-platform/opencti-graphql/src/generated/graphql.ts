@@ -20487,7 +20487,6 @@ export type OrganizationsManagement = {
 };
 
 export type OrganizationsManagementInput = {
-  organizations_default?: InputMaybe<Array<Scalars['String']['input']>>;
   organizations_header?: InputMaybe<Scalars['String']['input']>;
   organizations_mapping?: InputMaybe<Array<Scalars['String']['input']>>;
   organizations_path?: InputMaybe<Array<Scalars['String']['input']>>;
@@ -27801,7 +27800,6 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   __typename?: 'Settings';
   activity_listeners?: Maybe<Array<Member>>;
   analytics_google_analytics_v4?: Maybe<Scalars['String']['output']>;
-  auth_strategy_migrated?: Maybe<Array<Scalars['String']['output']>>;
   created_at: Scalars['DateTime']['output'];
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
@@ -27940,7 +27938,7 @@ export type SingleSignOn = BasicObject & InternalObject & {
   groups_management?: Maybe<GroupsManagement>;
   id: Scalars['ID']['output'];
   identifier: Scalars['String']['output'];
-  label: Scalars['String']['output'];
+  label?: Maybe<Scalars['String']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   organizations_management?: Maybe<OrganizationsManagement>;
@@ -46649,7 +46647,6 @@ export type SessionDetailResolvers<ContextType = any, ParentType extends Resolve
 export type SettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['Settings'] = ResolversParentTypes['Settings']> = ResolversObject<{
   activity_listeners?: Resolver<Maybe<Array<ResolversTypes['Member']>>, ParentType, ContextType>;
   analytics_google_analytics_v4?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  auth_strategy_migrated?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -46753,7 +46750,7 @@ export type SingleSignOnResolvers<ContextType = any, ParentType extends Resolver
   groups_management?: Resolver<Maybe<ResolversTypes['GroupsManagement']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   identifier?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  label?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   organizations_management?: Resolver<Maybe<ResolversTypes['OrganizationsManagement']>, ParentType, ContextType>;

@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { initAuthenticationProviders, registerLocalStrategy } from '../../../../src/modules/singleSignOn/singleSignOn-providers';
+import { initEnterpriseAuthenticationProviders, registerLocalStrategy } from '../../../../src/modules/singleSignOn/singleSignOn-providers';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { type ProviderConfiguration, PROVIDERS } from '../../../../src/modules/singleSignOn/providers-configuration';
 
@@ -33,7 +33,7 @@ describe('Single sign on Provider coverage tests', () => {
       expect(PROVIDERS).toStrictEqual([]);
 
       // WHEN initialization is done
-      await initAuthenticationProviders(testContext, ADMIN_USER);
+      await initEnterpriseAuthenticationProviders(testContext, ADMIN_USER);
 
       // THEN local strategy is configured and enabled
       expect(PROVIDERS).toStrictEqual([
