@@ -3,20 +3,18 @@ import passport from 'passport/lib';
 import GitHub from 'github-api';
 import FacebookStrategy from 'passport-facebook';
 import GithubStrategy from 'passport-github';
-import LocalStrategy from 'passport-local';
 import { custom as OpenIDCustom, Issuer as OpenIDIssuer, Strategy as OpenIDStrategy } from 'openid-client';
 import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
 import validator from 'validator';
-import { findById, HEADERS_AUTHENTICATORS, initAdmin, login, userDelete } from '../../domain/user';
+import { findById, HEADERS_AUTHENTICATORS, initAdmin, userDelete } from '../../domain/user';
 import conf, { getPlatformHttpProxyAgent, logApp, NODE_INSTANCE_ID } from '../../config/conf';
-import { AuthenticationFailure, ConfigurationError } from '../../config/errors';
+import { ConfigurationError } from '../../config/errors';
 import { isEmptyField, isNotEmptyField } from '../../database/utils';
 import { DEFAULT_INVALID_CONF_VALUE, SYSTEM_USER } from '../../utils/access';
 import { OPENCTI_ADMIN_UUID } from '../../schema/general';
 import { addUserLoginCount } from '../../manager/telemetryManager';
 import {
   AuthType,
-  INTERNAL_SECURITY_PROVIDER,
   PROVIDERS,
   EnvStrategyType,
   isAuthenticationProviderMigrated,
@@ -419,7 +417,11 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
     logApp.info('[ENV-PROVIDER] No provider in environment.');
   }
   if (shouldRunSSOMigration) {
-    await runSingleSignOnRunMigration(context, user, { dry_run: false });
+    try {
+      await runSingleSignOnRunMigration(context, user, { dry_run: false });
+    } catch (error) {
+      logApp.error('Fail to convert authentication from env to database ', { cause: error });
+    }
   }
   logApp.info('[ENV-PROVIDER] End of reading environment');
 };
