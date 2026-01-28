@@ -191,7 +191,7 @@ import {
   topRelationsList,
 } from './middleware-loader';
 import { checkRelationConsistency, isRelationConsistent } from '../utils/modelConsistency';
-import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from './cache';
+import { getEntitiesListFromCache, getEntityFromCache } from './cache';
 import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from '../domain/backgroundTask-common';
 import { ENTITY_TYPE_VOCABULARY, vocabularyDefinitions } from '../modules/vocabulary/vocabulary-types';
 import { getVocabulariesCategories, getVocabularyCategoryForField, isEntityFieldAnOpenVocabulary, updateElasticVocabularyValue } from '../modules/vocabulary/vocabulary-utils';
@@ -202,17 +202,8 @@ import { validateInputCreation, validateInputUpdate } from '../schema/schema-val
 import { telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
 import { buildUpdatePatchForUpsert, generateInputsForUpsert } from '../utils/upsert-utils';
-import { generateCreateMessage, generateRestoreMessage, generateUpdatePatchMessage, getKeyName, getKeyValuesFromPatchElements } from './generate-message';
-import {
-  authorizedMembers,
-  authorizedMembersActivationDate,
-  confidence,
-  creators as creatorsAttribute,
-  iAliasedIds,
-  iAttributes,
-  modified,
-  updatedAt,
-} from '../schema/attribute-definition';
+import { buildChanges, generateCreateMessage, generateRestoreMessage } from './data-changes';
+import { authorizedMembers, authorizedMembersActivationDate, confidence, iAliasedIds, iAttributes, modified, updatedAt } from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { FilterMode, FilterOperator, Version } from '../generated/graphql';
 import { getMandatoryAttributesForSetting } from '../modules/entitySetting/entitySetting-attributeUtils';
@@ -1992,7 +1983,7 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
             previous,
           });
         } else {
-          updatedInputs.push({ ...input, previous });
+          updatedInputs.push({ ...ins, previous });
         }
       }
       // endregion
@@ -2020,142 +2011,6 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
     impactedInputs, // All inputs that need to be re-indexed. (so without meta relationships)
     updatedInstance: mergeInstanceWithInputs(instance, impactedInputs),
   };
-};
-
-export const generateUpdateMessage = async (context, user, entityType, inputs) => {
-  const isWorkflowChange = inputs.filter((i) => i.key === X_WORKFLOW_ID).length > 0;
-  const platformStatuses = isWorkflowChange ? await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS) : [];
-  const resolvedInputs = inputs.map((i) => {
-    if (i.key === X_WORKFLOW_ID) {
-      // workflow_id is not a relation but message must contain the name and not the internal id
-      const workflowId = R.head(i.value);
-      const workflowStatus = workflowId ? platformStatuses.find((p) => p.id === workflowId) : workflowId;
-      return ({
-        ...i,
-        value: [workflowStatus ? workflowStatus.name : null],
-      });
-    }
-    return i;
-  });
-
-  const inputsByOperations = R.groupBy((m) => m.operation ?? UPDATE_OPERATION_REPLACE, resolvedInputs);
-  const patchElements = Object.entries(inputsByOperations);
-  if (patchElements.length === 0) {
-    throw UnsupportedError('Generating update message with empty inputs fail');
-  }
-
-  const authorizedMembersIds = getKeyValuesFromPatchElements(patchElements, authorizedMembers.name).map(({ id }) => id);
-  let members = [];
-  if (authorizedMembersIds.length > 0) {
-    members = await internalFindByIds(context, SYSTEM_USER, authorizedMembersIds, {
-      baseData: true,
-      baseFields: ['internal_id', 'name'],
-    });
-  }
-
-  const creatorsIds = getKeyValuesFromPatchElements(patchElements, creatorsAttribute.name);
-  let creators = [];
-  if (creatorsIds.length > 0 && !(creatorsIds.length === 1 && creatorsIds.includes(user.id))) {
-    // get creators only if it's not the current user (which will be 'itself')
-    const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
-    creators = creatorsIds.map((id) => platformUsers.get(id));
-  }
-  return generateUpdatePatchMessage(patchElements, entityType, { members, creators });
-};
-
-const buildAttribute = async (context, user, key, array) => {
-  const results = await Promise.all(array.map(async (item) => {
-    if (!item) {
-      return item;
-    }
-    if (typeof item === 'object') {
-      if (item?.entity_type !== undefined) {
-        return extractEntityRepresentativeName(item, 250);
-      } else {
-        return item?.toString();
-      }
-    } else if (typeof item === 'string' && key === creatorsAttribute.name) {
-      const users = await getEntitiesMapFromCache(context, user, ENTITY_TYPE_USER);
-      const creator = users.get(item);
-      if (creator) {
-        return extractEntityRepresentativeName(creator, 250);
-      }
-    }
-    return item;
-  }));
-  return results.filter((item) => item !== null && item !== undefined);
-};
-
-export const buildChanges = async (context, user, entityType, inputs) => {
-  const changes = [];
-  for (const input of inputs) {
-    const { key, previous, value, operation } = input;
-    if (!key) continue;
-    const field = getKeyName(entityType, key);
-    const attributeDefinition = schemaAttributesDefinition.getAttribute(entityType, key);
-    const relationsRefDefinition = schemaRelationsRefDefinition.getRelationRef(entityType, key);
-    let isMultiple = false;
-    if (attributeDefinition) {
-      isMultiple = schemaAttributesDefinition.isMultipleAttribute(entityType, (attributeDefinition?.name ?? ''));
-    } else if (relationsRefDefinition) {
-      isMultiple = relationsRefDefinition.multiple;
-    }
-
-    const previousArrayFull = Array.isArray(previous) ? previous : [previous];
-    const valueArrayFull = Array.isArray(value) ? value : [value];
-    const previousArray = await buildAttribute(context, user, key, previousArrayFull);
-    const valueArray = await buildAttribute(context, user, key, valueArrayFull);
-
-    if (isMultiple) {
-      let added = [];
-      let removed = [];
-      let newValues = [];
-      if (operation === UPDATE_OPERATION_ADD) {
-        added = valueArray.filter((valueItem) => !previousArray.find((previousItem) => JSON.stringify(previousItem) === JSON.stringify(valueItem)));
-        newValues = previousArray.concat(valueArray);
-      } else if (operation === UPDATE_OPERATION_REMOVE) {
-        removed = valueArray;
-        newValues = previousArray.filter((valueItem) => !valueArray.find((previousItem) => JSON.stringify(previousItem) === JSON.stringify(valueItem)));
-      } else {
-        // UPDATE_OPERATION_REPLACE or no operation is the same
-        removed = previousArray.filter((previousItem) => !valueArray.find((valueItem) => JSON.stringify(previousItem) === JSON.stringify(valueItem)));
-        added = valueArray.filter((valueItem) => !previousArray.find((previousItem) => JSON.stringify(previousItem) === JSON.stringify(valueItem)));
-        newValues = valueArray;
-      }
-
-      if (added.length > 0 || removed.length > 0) {
-        changes.push({
-          field,
-          previous: previousArray,
-          new: newValues,
-          added,
-          removed,
-        });
-      }
-    } else if (isMultiple === false) {
-      const isStatusChange = inputs.filter((i) => i.key === X_WORKFLOW_ID).length > 0;
-      const platformStatuses = isStatusChange ? await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS) : [];
-      const resolvedValue = (array) => {
-        if (field === 'Workflow status') {
-          // we want the status name and not its internal id
-          const statusId = array[0];
-          const status = statusId ? platformStatuses.find((p) => p.id === statusId) : statusId;
-          return status ? [status.name] : null;
-        }
-        return array;
-      };
-
-      changes.push({
-        field,
-        previous: resolvedValue(previousArray),
-        new: resolvedValue(valueArray),
-      });
-    } else {
-      // This should not happen so better at least log at info level to be able to debug.
-      logApp.info('Changes cannot be computed', { inputs, entityType });
-    }
-  }
-  return changes;
 };
 
 const resolveRefsForInputs = async (context, user, type, updateInputs) => {
@@ -2515,7 +2370,6 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     }
     // Only push event in stream if modifications really happens
     if (updatedInputs.length > 0) {
-      const message = await generateUpdateMessage(context, user, updatedInstance.entity_type, updatedInputs);
       const changes = await buildChanges(context, user, updatedInstance.entity_type, updatedInputs);
       const isContainCommitReferences = opts.references && opts.references.length > 0;
       const commit = isContainCommitReferences ? {
@@ -2529,7 +2383,6 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
         user,
         initial,
         updatedInstance,
-        message,
         changes,
         {
           ...opts,
@@ -3077,14 +2930,13 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
         // Generate the new version of the from
         instance[key] = [...(instance[key] ?? []), targetElement];
       }
-      const message = await generateUpdateMessage(context, user, instance.entity_type, inputs);
       const changes = await buildChanges(context, user, instance.entity_type, inputs);
       const isContainCommitReferences = opts.references && opts.references.length > 0;
       const commit = isContainCommitReferences ? {
         message: opts.commitMessage,
         external_references: references.map((ref) => convertExternalReferenceToStix(ref)),
       } : undefined;
-      event = await storeUpdateEvent(context, user, previous, instance, message, changes, { ...opts, commit });
+      event = await storeUpdateEvent(context, user, previous, instance, changes, { ...opts, commit });
       dataRel.element.from = instance; // dynamically update the from to have an up to date relation
     } else {
       const createdRelation = { ...resolvedInput, ...dataRel.element };
@@ -3151,18 +3003,6 @@ export const createInferredRelation = async (context, input, ruleContent, opts =
   logApp.info('Create inferred relation', inputRelation);
   return createRelationRaw(context, RULE_MANAGER_USER, inputRelation, args);
 };
-/* v8 ignore next */
-export const createRelations = async (context, user, inputs, opts = {}) => {
-  const createdRelations = [];
-  // Relations cannot be created in parallel. (Concurrent indexing on same key)
-  // Could be improved by grouping and indexing in one shot.
-  for (let i = 0; i < inputs.length; i += 1) {
-    const relation = await createRelation(context, user, inputs[i], opts);
-    createdRelations.push(relation);
-  }
-  return createdRelations;
-};
-// endregion
 
 // region mutation entity
 export const getExistingEntities = async (context, user, input, type) => {
@@ -3561,7 +3401,7 @@ export const internalDeleteElementById = async (context, user, id, type, opts = 
         // Generate the new version of the from
         instance[key] = withoutElementDeleted;
       }
-      const message = await generateUpdateMessage(context, user, instance.entity_type, inputs);
+      const changes = await buildChanges(context, user, instance.entity_type, inputs);
       const isContainCommitReferences = opts.references && opts.references.length > 0;
       const commit = isContainCommitReferences ? {
         message: opts.commitMessage,
@@ -3569,7 +3409,7 @@ export const internalDeleteElementById = async (context, user, id, type, opts = 
       } : undefined;
       await elDeleteElements(context, user, [element]);
       // Publish event in the stream
-      const eventPromise = storeUpdateEvent(context, user, previous, instance, message, [], { ...opts, commit });
+      const eventPromise = storeUpdateEvent(context, user, previous, instance, changes, { ...opts, commit });
       const taskPromise = createContainerSharingTask(context, ACTION_TYPE_UNSHARE, element);
       const [, updateEvent] = await Promise.all([taskPromise, eventPromise]);
       event = updateEvent;

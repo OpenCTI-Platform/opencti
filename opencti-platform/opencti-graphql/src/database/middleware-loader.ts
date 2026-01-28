@@ -64,7 +64,7 @@ export interface ListFilter<T extends BasicStoreCommon> {
   after?: string | undefined | null;
   orderBy?: any;
   baseData?: boolean;
-  orderMode?: InputMaybe<OrderingMode>;
+  orderMode?: InputMaybe<OrderingMode> | OrderingMode;
   filters?: FilterGroupWithNested | null;
   noFiltersChecking?: boolean;
   noRegardingOfFilterIdsCheck?: boolean;
@@ -89,6 +89,7 @@ interface EntityFilters<T extends BasicStoreCommon> extends ListFilter<T> {
 export interface EntityOptions<T extends BasicStoreCommon> extends EntityFilters<T> {
   ids?: Array<string>;
   indices?: Array<string>;
+  historyFiltering?: boolean;
   includeAuthorities?: boolean | null;
   withInferences?: boolean;
   includeDeletedInDraft?: boolean | null;
@@ -564,7 +565,7 @@ export const internalFindByIds = async <T extends BasicStoreObject>(
 export const internalFindByIdsMapped = async <T extends BasicStoreObject>(
   context: AuthContext,
   user: AuthUser,
-  ids: string[],
+  ids: string[] | string,
   args?: {
     type?: string | string[];
     baseData?: boolean;

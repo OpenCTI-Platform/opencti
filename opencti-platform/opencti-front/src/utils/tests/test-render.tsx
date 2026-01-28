@@ -39,6 +39,9 @@ export const createMockUserContext = (options?: CreateUserContextOptions): UserC
   } = options ?? {};
 
   return {
+    locale: 'en-us',
+    tz: 'UTC',
+    unitSystem: 'Metric',
     me: (me ?? {
       name: 'admin',
       user_email: 'admin@opencti.io',

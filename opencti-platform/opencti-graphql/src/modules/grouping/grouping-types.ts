@@ -8,6 +8,7 @@ export const ENTITY_TYPE_CONTAINER_GROUPING = 'Grouping';
 
 export interface BasicStoreEntityGrouping extends BasicStoreEntity {
   name: string;
+  entity_type: typeof ENTITY_TYPE_CONTAINER_GROUPING;
   description: string;
   content: string;
   content_mapping: string;

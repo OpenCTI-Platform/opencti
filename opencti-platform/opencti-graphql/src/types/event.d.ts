@@ -53,12 +53,15 @@ interface StreamDataEvent extends BaseEvent {
   noHistory?: boolean;
 }
 
+export interface ChangeValue {
+  raw: string;
+  translated?: string;
+}
+
 interface Change {
   field: string;
-  previous?: Array<string>;
-  new?: Array<string>;
-  added?: Array<string>;
-  removed?: Array<string>;
+  changes_added?: Array<ChangeValue>;
+  changes_removed?: Array<ChangeValue>;
 }
 
 interface UpdateEvent extends StreamDataEvent {
