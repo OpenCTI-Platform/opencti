@@ -3,7 +3,8 @@ import moment from 'moment/moment';
 import { INTERNAL_USERS, isBypassUser, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT } from './access';
 import { logApp } from '../config/conf';
 import { storeFileConverter, uploadToStorage } from '../database/file-storage';
-import { computeDateFromEventId, utcDate } from './format';
+import path from 'path';
+import { computeDateFromEventId, truncate, utcDate } from './format';
 import { isEmptyField, isNotEmptyField, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REPLACE } from '../database/utils';
 import { hasSameSourceAlreadyUpdateThisScore, INDICATOR_DEFAULT_SCORE } from '../modules/indicator/indicator-utils';
 import { creators as creatorsAttribute, iAttributes, xOpenctiStixIds } from '../schema/attribute-definition';
@@ -16,6 +17,8 @@ import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA } from '../schema/stixDomainObject'
 import { externalReferences, objectLabel, RELATION_CREATED_BY, RELATION_GRANTED_TO } from '../schema/stixRefRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { FunctionalError } from '../config/errors';
+import { getDraftContext } from './draftContext';
+import { getDraftFilePrefix } from '../database/draft-utils';
 
 const ALIGN_OLDEST = 'oldest';
 const ALIGN_NEWEST = 'newest';
@@ -179,17 +182,97 @@ export const buildUpdatePatchForUpsert = (user, resolvedElement, type, basePatch
   return updatePatch;
 };
 
-const generateFileInputsForUpsert = async (context, user, resolvedElement, updatePatch) => {
-  // If file directly attached
-  if (!isEmptyField(updatePatch.file)) {
-    const path = `import/${resolvedElement.entity_type}/${resolvedElement.internal_id}`;
-    const { upload: file } = await uploadToStorage(context, user, path, updatePatch.file, { entity: resolvedElement });
-    const convertedFile = storeFileConverter(user, file);
-    // The impact in the database is the completion of the files
-    const fileImpact = { key: 'x_opencti_files', value: [...(resolvedElement.x_opencti_files ?? []), convertedFile] };
-    return [fileImpact];
+const generateFileInputsForUpsert = async (context, user, resolvedElement, updatePatch, confidenceForUpsert) => {
+  const { isConfidenceMatch } = confidenceForUpsert;
+  const inputs = [];
+
+  // Collect all files to upload (both plural 'files' and singular 'file' for backward compatibility)
+  const filesToUpload = [];
+  if (!isEmptyField(updatePatch.files) && Array.isArray(updatePatch.files)) {
+    const filesMarkings = updatePatch.filesMarkings || [];
+    for (let i = 0; i < updatePatch.files.length; i += 1) {
+      const fileInput = updatePatch.files[i];
+      // Use snake_case to match storage API parameter naming
+      const file_markings = filesMarkings[i] || updatePatch.objectMarking?.map(({ id }) => id);
+      filesToUpload.push({ file: fileInput, markings: file_markings });
+    }
   }
-  return [];
+  // Handle single file upload (backward compatibility)
+  if (!isEmptyField(updatePatch.file)) {
+    const file_markings = isNotEmptyField(updatePatch.fileMarkings) ? updatePatch.fileMarkings : updatePatch.objectMarking?.map(({ id }) => id);
+    filesToUpload.push({ file: updatePatch.file, markings: file_markings });
+  }
+
+  if (filesToUpload.length === 0) {
+    return inputs;
+  }
+
+  // Build a map of existing files by their full ID (path) for conflict detection
+  const existingFiles = resolvedElement.x_opencti_files ?? [];
+  const existingFilesById = new Map(existingFiles.map((f) => [f.id, f]));
+
+  const filePath = `import/${resolvedElement.entity_type}/${resolvedElement.internal_id}`;
+  const uploadedFiles = [];
+
+  // Handle draft context - files in draft have a prefix added to their path
+  const draftContext = getDraftContext(context, user);
+
+  for (let i = 0; i < filesToUpload.length; i += 1) {
+    const { file: fileInput, markings: file_markings } = filesToUpload[i];
+    const { filename } = await fileInput;
+    // Build the exact same key that file-storage.ts uses (truncated + lowercased)
+    const truncatedFileName = `${truncate(path.parse(filename).name, 200, false)}${truncate(path.parse(filename).ext, 10, false)}`;
+    let fileKey = `${filePath}/${truncatedFileName.toLowerCase()}`;
+    // In draft context, files are stored with a prefix - match that for conflict detection
+    if (draftContext) {
+      const draftPrefix = getDraftFilePrefix(draftContext);
+      fileKey = `${draftPrefix}${fileKey}`;
+    }
+
+    // Check if file already exists on this entity by matching the full file ID
+    const existingFile = existingFilesById.get(fileKey);
+    const fileAlreadyExistsOnEntity = isNotEmptyField(existingFile);
+
+    // Apply confidence-based conflict resolution:
+    // - If file doesn't exist on entity: always add (like filling empty fields)
+    // - If file exists on entity: only replace if confidence matches (isConfidenceMatch)
+    if (fileAlreadyExistsOnEntity && !isConfidenceMatch) {
+      // File exists but confidence is lower - skip this file
+      logApp.info('Skipping file upsert due to insufficient confidence', { filename, entity_id: resolvedElement.internal_id });
+      continue;
+    }
+
+    // Upload the file
+    // NOTE: We do not generate external_reference_id in metadata here because the corresponding
+    // External-Reference entity and relationship are not created in this upsert flow.
+    // This differs from entity creation path where external references are auto-created.
+    const { upload: uploadedFile, untouched } = await uploadToStorage(context, user, filePath, fileInput, {
+      entity: resolvedElement,
+      file_markings,
+    });
+
+    if (untouched && fileAlreadyExistsOnEntity) {
+      // File version is same or older, AND file is already associated with entity - skip
+      // Note: If untouched but file NOT on entity, we still add the reference (handles data inconsistencies)
+      continue;
+    }
+
+    const convertedFile = storeFileConverter(user, uploadedFile);
+    uploadedFiles.push(convertedFile);
+  }
+
+  // Build the x_opencti_files update
+  if (uploadedFiles.length > 0) {
+    // Build the new files list: existing files (minus any being replaced) + newly uploaded files
+    const uploadedFileIds = new Set(uploadedFiles.map((f) => f.id));
+    const filteredExistingFiles = existingFiles.filter((f) => !uploadedFileIds.has(f.id));
+    const newFilesList = [...filteredExistingFiles, ...uploadedFiles];
+
+    const fileImpact = { key: 'x_opencti_files', value: newFilesList, operation: UPDATE_OPERATION_REPLACE };
+    inputs.push(fileImpact);
+  }
+
+  return inputs;
 };
 
 const mergeUpsertOperations = (upsertKey, elementCurrentValue, upsertOperations) => {
@@ -412,8 +495,9 @@ const generateRefsInputsForUpsert = (context, user, resolvedElement, _type, upda
 
 export const generateInputsForUpsert = async (context, user, resolvedElement, type, updatePatch, confidenceForUpsert, validEnterpriseEdition) => {
   const inputs = []; // All inputs impacted by modifications (+inner)
-  // if file in updatePatch, we need to upload it and update x_opencti_files
-  const fileInputs = await generateFileInputsForUpsert(context, user, resolvedElement, updatePatch);
+  // if file(s) in updatePatch, we need to upload them and update x_opencti_files
+  // Files follow the same confidence-based conflict resolution as other fields
+  const fileInputs = await generateFileInputsForUpsert(context, user, resolvedElement, updatePatch, confidenceForUpsert);
   inputs.push(...fileInputs);
   // -- Upsert attributes
   const attributesInputs = generateAttributesInputsForUpsert(context, user, resolvedElement, type, updatePatch, confidenceForUpsert);
