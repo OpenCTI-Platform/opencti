@@ -119,7 +119,7 @@ describe('generateUpdatePatchMessage tests', () => {
     expect(human).toEqual('Restricted');
     let measure: Measurement = { measure: 10, date_seen: '' };
     human = humanizeRawValue({}, height as AttributeDefinition, { raw: JSON.stringify(measure) }, DefaultFormating);
-    expect(human).toEqual('10.00 (m) at Invalid DateTime');
+    expect(human).toEqual('10.00 (m) at Invalid date');
     measure = { measure: 20, date_seen: '2026-01-28T12:27:18Z' };
     human = humanizeRawValue({}, height as AttributeDefinition, { raw: JSON.stringify(measure) }, DefaultFormating);
     expect(human).toEqual('20.00 (m) at January 28 2026, 12:27:18 PM');
@@ -128,7 +128,7 @@ describe('generateUpdatePatchMessage tests', () => {
     expect(human).toEqual('Restricted');
     measure = { measure: 10, date_seen: '' };
     human = humanizeRawValue({}, weight as AttributeDefinition, { raw: JSON.stringify(measure) }, DefaultFormating);
-    expect(human).toEqual('10.00 (kg) at Invalid DateTime');
+    expect(human).toEqual('10.00 (kg) at Invalid date');
     measure = { measure: 20, date_seen: '2026-01-28T12:27:18Z' };
     human = humanizeRawValue({}, weight as AttributeDefinition, { raw: JSON.stringify(measure) }, DefaultFormating);
     expect(human).toEqual('20.00 (kg) at January 28 2026, 12:27:18 PM');
