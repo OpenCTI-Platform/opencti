@@ -8,7 +8,7 @@ ARG BASE_IMAGE_FIPS=filigran/python-nodejs-fips:latest
 
 FROM ${BASE_IMAGE_ALPINE} AS base-alpine
 ENV EXTRA_NODE_OPTIONS=""
-ENV EXTRA_PACKAGES="python3 python3-dev g++"
+ENV EXTRA_PACKAGES="python3 python3-dev"
 
 FROM ${BASE_IMAGE_FIPS} AS base-fips
 ENV EXTRA_NODE_OPTIONS="--force-fips "
