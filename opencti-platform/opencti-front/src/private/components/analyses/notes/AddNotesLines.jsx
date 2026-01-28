@@ -17,13 +17,10 @@ import { commitMutation } from '../../../../relay/environment';
 import { deleteNode, insertNode } from '../../../../utils/store';
 import { truncate } from '../../../../utils/String';
 
-const styles = (theme) => ({
+const styles = () => ({
   avatar: {
     width: 24,
     height: 24,
-  },
-  icon: {
-    color: theme.palette.primary.main,
   },
 });
 
@@ -149,7 +146,10 @@ class AddNotesLinesContainer extends Component {
                 >
                   <TableCell sx={{ width: 48, paddingY: 1, paddingX: 2 }}>
                     {alreadyAdded ? (
-                      <CheckCircle classes={{ root: classes.icon }} />
+                      <CheckCircle
+                        color="primary"
+                        sx={{ marginTop: 0.5 }}
+                      />
                     ) : (
                       <WorkOutline sx={{ marginTop: 0.5 }} />
                     )}
