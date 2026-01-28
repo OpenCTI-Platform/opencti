@@ -165,3 +165,49 @@ export const findAllSingleSignOn = async (context: AuthContext, user: AuthUser):
   await checkSSOAllowed(context);
   return fullEntitiesList(context, user, [ENTITY_TYPE_SINGLE_SIGN_ON]);
 };
+
+export const checkSingleSignOnUrl = async (url: string) => {
+  try {
+    new URL(url);
+  } catch {
+    return {
+      success: false,
+      message: 'Invalid URL format',
+      statusCode: null,
+    };
+  }
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+    const response = await fetch(url as unknown as URL, {
+      method: 'HEAD',
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    if (response.ok) {
+      return {
+        success: true,
+        message: 'URL is reachable',
+        statusCode: response.status,
+      };
+    }
+
+    return {
+      success: false,
+      message: `URL returned error status: ${response.status}`,
+      statusCode: response.status,
+    };
+  } catch (error: any) {
+    if (error.name === 'AbortError') {
+      return {
+        success: false,
+        message: 'Connection timeout',
+      };
+    }
+    return {
+      success: false,
+      message: `Unable to reach URL: ${error.message}`,
+    };
+  }
+};

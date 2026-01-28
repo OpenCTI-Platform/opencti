@@ -1,5 +1,13 @@
 import type { Resolvers } from '../../generated/graphql';
-import { findSingleSignOnById, findSingleSignOnPaginated, addSingleSignOn, fieldPatchSingleSignOn, deleteSingleSignOn, runSingleSignOnRunMigration } from './singleSignOn-domain';
+import {
+  findSingleSignOnById,
+  findSingleSignOnPaginated,
+  addSingleSignOn,
+  fieldPatchSingleSignOn,
+  deleteSingleSignOn,
+  runSingleSignOnRunMigration,
+  checkSingleSignOnUrl,
+} from './singleSignOn-domain';
 
 const singleSignOnResolver: Resolvers = {
   Query: {
@@ -19,6 +27,7 @@ const singleSignOnResolver: Resolvers = {
     singleSignOnRunMigration: (_, { input }, context) => {
       return runSingleSignOnRunMigration(context, context.user, input);
     },
+    singleSignOnUrlCheck: (_, { url }) => checkSingleSignOnUrl(url),
   },
 };
 
