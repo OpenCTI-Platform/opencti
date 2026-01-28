@@ -14,8 +14,8 @@ import ThreatActorIndividualLocation from './ThreatActorIndividualLocation';
 import ThreatActorIndividualDetailsChips from './ThreatActorIndividualDetailsChips';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
-import { capitalizeFirstLetter } from 'src/utils/String';
 import Tag from '@common/tag/Tag';
+import TextList from '../../../../components/TextList';
 
 const ThreatActorIndividualDetailsFragment = graphql`
   fragment ThreatActorIndividualDetails_ThreatActorIndividual on ThreatActorIndividual
@@ -184,33 +184,33 @@ const ThreatActorIndividualDetails: FunctionComponent<
           <Label>
             {t_i18n('Roles')}
           </Label>
-          <FieldOrEmpty source={data.roles}>
-            {data.roles && data.roles?.length > 0 && (data.roles.map((role) => role && capitalizeFirstLetter(role)).join(', '))}
-          </FieldOrEmpty>
+          <TextList
+            list={data.roles}
+          />
         </Grid>
         <Grid item xs={4}>
           <Label>
             {t_i18n('Goals')}
           </Label>
-          <FieldOrEmpty source={data.goals}>
-            {data.goals && data.goals?.length > 0 && (data.goals.map((goal) => goal && capitalizeFirstLetter(goal)).join(', '))}
-          </FieldOrEmpty>
+          <TextList
+            list={data.goals}
+          />
         </Grid>
         <Grid item xs={4}>
           <Label>
             {t_i18n('Secondary motivations')}
           </Label>
-          <FieldOrEmpty source={data.secondary_motivations}>
-            {data.secondary_motivations && data.secondary_motivations?.length > 0 && (data.secondary_motivations.map((sm) => sm && capitalizeFirstLetter(sm)).join(', '))}
-          </FieldOrEmpty>
+          <TextList
+            list={data.secondary_motivations}
+          />
         </Grid>
         <Grid item xs={4}>
           <Label>
             {t_i18n('Personal motivations')}
           </Label>
-          <FieldOrEmpty source={data.personal_motivations}>
-            {data.personal_motivations && data.personal_motivations?.length > 0 && (data.personal_motivations.map((pm) => pm && capitalizeFirstLetter(pm)).join(', '))}
-          </FieldOrEmpty>
+          <TextList
+            list={data.personal_motivations}
+          />
         </Grid>
       </Grid>
     </Card>
