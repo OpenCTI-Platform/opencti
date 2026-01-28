@@ -1,6 +1,6 @@
 import { useFormatter } from '../../../../components/i18n';
 import * as Yup from 'yup';
-import { Field, Form, Formik } from 'formik';
+import { Field, FieldArray, Form, Formik } from 'formik';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -18,6 +18,11 @@ import { ConfigurationTypeInput } from '@components/settings/sso_definitions/__g
 import Button from '@common/button/Button';
 import SSODefinitionGroupForm from '@components/settings/sso_definitions/SSODefinitionGroupForm';
 import SSODefinitionOrganizationForm from '@components/settings/sso_definitions/SSODefinitionOrganizationForm';
+import Typography from '@mui/material/Typography';
+import IconButton from '@common/button/IconButton';
+import { Add, Delete } from '@mui/icons-material';
+import SelectField from 'src/components/fields/SelectField';
+import MenuItem from '@mui/material/MenuItem';
 
 interface SSODefinitionFormProps {
   onCancel: () => void;
@@ -106,7 +111,6 @@ const validationSchemaConfiguration = (selectedStrategy: string, t_i18n: (s: str
         ...base,
         url: Yup.string().required(t_i18n('This field is required')),
         bindDN: Yup.string().required(t_i18n('This field is required')),
-        bindCredentials: Yup.string().required(t_i18n('This field is required')),
         searchBase: Yup.string().required(t_i18n('This field is required')),
         searchFilter: Yup.string().required(t_i18n('This field is required')),
         groupSearchBase: Yup.string().required(t_i18n('This field is required')),
@@ -317,6 +321,84 @@ const SSODefinitionForm = ({
               {selectedStrategy === 'SAML' && <SAMLConfig updateField={updateField} />}
               {selectedStrategy === 'OpenID' && <OpenIDConfig updateField={updateField} />}
               {selectedStrategy === 'LDAP' && <LDAPConfig updateField={updateField} />}
+              <FieldArray name="advancedConfigurations">
+                {({ push, remove, form }) => (
+                  <>
+                    <div style={{ display: 'flex', alignItems: 'center', marginTop: 20 }}>
+                      <Typography variant="h2">{t_i18n('Add more fields')}</Typography>
+                      <IconButton
+                        color="primary"
+                        aria-label="Add"
+                        size="default"
+                        style={{ marginBottom: 12 }}
+                        onClick={() => push({ key: '', value: '', type: 'string' })}
+                      >
+                        <Add fontSize="small" color="primary" />
+                      </IconButton>
+                    </div>
+                    {form.values.advancedConfigurations
+                      && form.values.advancedConfigurations.map(
+                        (
+                          conf: { key: string; value: string; type: string },
+                          index: number,
+                        ) => (
+                          <div
+                            key={index}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-around',
+                              marginBottom: 8,
+                            }}
+                          >
+                            <Field
+                              component={TextField}
+                              variant="standard"
+                              onSubmit={() => updateField('advancedConfigurations', form.values.advancedConfigurations)}
+                              name={`advancedConfigurations[${index}].key`}
+                              label={t_i18n('Key (in passport)')}
+                              containerstyle={{ width: '20%' }}
+                            />
+                            <Field
+                              component={TextField}
+                              variant="standard"
+                              onSubmit={() => updateField('advancedConfigurations', form.values.advancedConfigurations)}
+                              name={`advancedConfigurations[${index}].value`}
+                              label={t_i18n('Value (in IDP)')}
+                              containerstyle={{ width: '20%' }}
+                            />
+                            <Field
+                              component={SelectField}
+                              variant="standard"
+                              onSubmit={() => updateField('advancedConfigurations', form.values.advancedConfigurations)}
+                              name={`advancedConfigurations[${index}].type`}
+                              label={t_i18n('Field type')}
+                              containerstyle={{ width: '20%' }}
+                            >
+                              <MenuItem value="string">String</MenuItem>
+                              <MenuItem value="number">Number</MenuItem>
+                              <MenuItem value="boolean">Boolean</MenuItem>
+                              <MenuItem value="array">Array</MenuItem>
+                            </Field>
+                            <IconButton
+                              color="primary"
+                              aria-label={t_i18n('Delete')}
+                              style={{ marginTop: 10 }}
+                              onClick={() => {
+                                const advancedConfigurations = [...form.values.advancedConfigurations];
+                                advancedConfigurations.splice(index, 1);
+                                remove(index);
+                                updateField('advancedConfigurations', advancedConfigurations);
+                              }}
+                            >
+                              <Delete fontSize="small" />
+                            </IconButton>
+                          </div>
+                        ),
+                      )}
+                  </>
+                )}
+              </FieldArray>
             </>
           )}
           {currentTab === 1 && <SSODefinitionGroupForm updateField={updateField} selectedStrategy={selectedStrategy} />}
