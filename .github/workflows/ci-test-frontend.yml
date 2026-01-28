@@ -45,7 +45,6 @@ jobs:
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v5
       with:
-        token: ${{ secrets.CODECOV_TOKEN }}
         files: ${{ github.workspace }}/opencti-platform/opencti-front/coverage/unit/coverage-final.json
         flags: opencti-front
         fail_ci_if_error: false
