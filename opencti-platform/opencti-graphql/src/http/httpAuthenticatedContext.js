@@ -58,7 +58,7 @@ export const createAuthenticatedContext = async (req, res, contextName) => {
       }
       executeContext.user = userWithOrigin(req, user);
       // If full sync needs to be done : used only by bypass user (worker)
-      executeContext.synchronizedUpsert = user.origin.synchronized_upsert === true || (req.headers['synchronized-upsert'] === 'true' && isBypassUser(user));
+      executeContext.synchronizedUpsert = user.origin?.synchronized_upsert === true || (req.headers['synchronized-upsert'] === 'true' && isBypassUser(user));
       executeContext.user_otp_validated = true;
       executeContext.user_with_session = isNotEmptyField(req.session?.user);
       if (executeContext.user_with_session) {
