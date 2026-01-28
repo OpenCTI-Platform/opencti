@@ -3423,60 +3423,60 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@otplib/core@npm:13.1.1":
-  version: 13.1.1
-  resolution: "@otplib/core@npm:13.1.1"
-  checksum: 10c0/96f3b0beca1a355ae2e51027ea2979f4cf020e59e5c126773ad8e06e8a2dbe29c5f9857023cb654c1a77720a88cf7905929bf07c65734ddd02beb584c74bc4fe
+"@otplib/core@npm:13.2.0":
+  version: 13.2.0
+  resolution: "@otplib/core@npm:13.2.0"
+  checksum: 10c0/889cf3343f3b80f2af0ce6b6d799db2e345dcb2d1deec7d7fd578ac362344aa51601b2dd16e12597959b8b6a799a6ca4384b33f8e6fd602ccea8fb9c45f4ad1f
   languageName: node
   linkType: hard
 
-"@otplib/hotp@npm:13.1.1":
-  version: 13.1.1
-  resolution: "@otplib/hotp@npm:13.1.1"
+"@otplib/hotp@npm:13.2.0":
+  version: 13.2.0
+  resolution: "@otplib/hotp@npm:13.2.0"
   dependencies:
-    "@otplib/core": "npm:13.1.1"
-    "@otplib/uri": "npm:13.1.1"
-  checksum: 10c0/8599b518310e9c327c6ef29429561942550436119a2dc29327d8cbb97faf5af420234561936ffe3056fb09d8106eca1ac4d6f11402ae531350e68c728336fca0
+    "@otplib/core": "npm:13.2.0"
+    "@otplib/uri": "npm:13.2.0"
+  checksum: 10c0/8e8cbcee4b90b8c0e7e243d89088c8f6e5bf65e19bc2b6d35785dbd10928ee2f31c4c2fde79dcc7c7ac5d2973c67bf35c68812bf70de2091a943d7d2dbdac11e
   languageName: node
   linkType: hard
 
-"@otplib/plugin-base32-scure@npm:13.1.1":
-  version: 13.1.1
-  resolution: "@otplib/plugin-base32-scure@npm:13.1.1"
+"@otplib/plugin-base32-scure@npm:13.2.0":
+  version: 13.2.0
+  resolution: "@otplib/plugin-base32-scure@npm:13.2.0"
   dependencies:
-    "@otplib/core": "npm:13.1.1"
+    "@otplib/core": "npm:13.2.0"
     "@scure/base": "npm:^2.0.0"
-  checksum: 10c0/cbf34778389d788475823b80219d12f70bb85dc238ec7a166914a5ed0a7e25381817ea7e418a0c09afbd0e67e2d41495f2150b55f71c410680e6a55a9636fb16
+  checksum: 10c0/6c754a012767e2d28584e5eb66f6a0291b29a6668b5440ef6a090b2bd21b1969e8ad9509e142e4fef63ddad5cadab816d2cf322efdd42f796bc7d0cc1a6b9513
   languageName: node
   linkType: hard
 
-"@otplib/plugin-crypto-noble@npm:13.1.1":
-  version: 13.1.1
-  resolution: "@otplib/plugin-crypto-noble@npm:13.1.1"
+"@otplib/plugin-crypto-noble@npm:13.2.0":
+  version: 13.2.0
+  resolution: "@otplib/plugin-crypto-noble@npm:13.2.0"
   dependencies:
     "@noble/hashes": "npm:^2.0.1"
-    "@otplib/core": "npm:13.1.1"
-  checksum: 10c0/0870f3e04d313e8fff5e967e8d6089f7357c164d550c0b374c40d2913372fa73a086477550b6e101202987533643e347508b9efab41b836601caaecb06143a3e
+    "@otplib/core": "npm:13.2.0"
+  checksum: 10c0/383fb0d5d331bfd19208fdc5d4ea222becae98b786b0035846e83d03c0579b987318237f2e2fe7673a1fb7f836e4f6c7488b12e7dd34cb1e51ca373e29aebd34
   languageName: node
   linkType: hard
 
-"@otplib/totp@npm:13.1.1":
-  version: 13.1.1
-  resolution: "@otplib/totp@npm:13.1.1"
+"@otplib/totp@npm:13.2.0":
+  version: 13.2.0
+  resolution: "@otplib/totp@npm:13.2.0"
   dependencies:
-    "@otplib/core": "npm:13.1.1"
-    "@otplib/hotp": "npm:13.1.1"
-    "@otplib/uri": "npm:13.1.1"
-  checksum: 10c0/2b514f23025bad8a6cc29cf834d2a2d4ba3ab12f03f03a56f27c3b1f5e2b817129e950e324dae92adbe14e68eea2f27298e3338d48631a0dca0ee97b5c740877
+    "@otplib/core": "npm:13.2.0"
+    "@otplib/hotp": "npm:13.2.0"
+    "@otplib/uri": "npm:13.2.0"
+  checksum: 10c0/ab41ac1619907a5a218c9fa7cf84346c20f4fafb37117465e5d67bbdd432d2ebe553e8458ca6d27ff17295c166a2bd242f6a898d48fc617ee74d6842374b548c
   languageName: node
   linkType: hard
 
-"@otplib/uri@npm:13.1.1":
-  version: 13.1.1
-  resolution: "@otplib/uri@npm:13.1.1"
+"@otplib/uri@npm:13.2.0":
+  version: 13.2.0
+  resolution: "@otplib/uri@npm:13.2.0"
   dependencies:
-    "@otplib/core": "npm:13.1.1"
-  checksum: 10c0/79011ef8a75ab8a808a1cfab7ed21e2f3bace8ff88c796e5323b85878eb727d8ac38473fd071148395faa0e10993e0af8ccf713ab29c6b5c7524b77ca7207308
+    "@otplib/core": "npm:13.2.0"
+  checksum: 10c0/c52c096263e9d891ff9d361b5eb3d67fe458802370148a82523ff260438acb4c87748289311e0e4f667ef4be138438a97259a8ef81fe8ac334302eab0c1e75c5
   languageName: node
   linkType: hard
 
@@ -10814,7 +10814,7 @@ __metadata:
     openai: "npm:4.104.0"
     openid-client: "npm:5.7.1"
     opentelemetry-node-metrics: "npm:3.0.0"
-    otplib: "npm:13.1.1"
+    otplib: "npm:13.2.0"
     passport: "npm:0.7.0"
     passport-facebook: "npm:3.0.0"
     passport-github: "npm:1.1.0"
@@ -10898,17 +10898,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"otplib@npm:13.1.1":
-  version: 13.1.1
-  resolution: "otplib@npm:13.1.1"
+"otplib@npm:13.2.0":
+  version: 13.2.0
+  resolution: "otplib@npm:13.2.0"
   dependencies:
-    "@otplib/core": "npm:13.1.1"
-    "@otplib/hotp": "npm:13.1.1"
-    "@otplib/plugin-base32-scure": "npm:13.1.1"
-    "@otplib/plugin-crypto-noble": "npm:13.1.1"
-    "@otplib/totp": "npm:13.1.1"
-    "@otplib/uri": "npm:13.1.1"
-  checksum: 10c0/700c9abe37de1573b4b4bad354f41eedee1c40cbeee4999a2efc3d8f1966e2260c60fda0b8851ded71499ebb7a7a069167e3226bbed2cd0dd6fa62dbc16f4275
+    "@otplib/core": "npm:13.2.0"
+    "@otplib/hotp": "npm:13.2.0"
+    "@otplib/plugin-base32-scure": "npm:13.2.0"
+    "@otplib/plugin-crypto-noble": "npm:13.2.0"
+    "@otplib/totp": "npm:13.2.0"
+    "@otplib/uri": "npm:13.2.0"
+  checksum: 10c0/ca3d03592e47b36e6b6fc031317e3bc962f22f72280bb0822489fb8a913260fb57b7275d0c19928a913975a08a94e2091cdcbddc0c9d4198c07db1bea392ef79
   languageName: node
   linkType: hard
 
