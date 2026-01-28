@@ -1,8 +1,9 @@
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
+import HeaderLayout from '@common/header/HeaderLayout';
 import Tag from '@common/tag/Tag';
 import { Add, Close, Delete } from '@mui/icons-material';
-import { Box, DialogTitle, Stack } from '@mui/material';
+import { Box, DialogTitle } from '@mui/material';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -13,7 +14,6 @@ import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
-import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/styles';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
@@ -25,7 +25,6 @@ import PopoverMenu from '../../../../components/PopoverMenu';
 import TextField from '../../../../components/TextField';
 import Transition from '../../../../components/Transition';
 import TagsOverflow from '../../../../components/common/tag/TagsOverflow';
-import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import { resolveLink } from '../../../../utils/Entity';
@@ -477,74 +476,35 @@ const StixDomainObjectHeader = (props) => {
 
   return (
     <React.Suspense fallback={<span />}>
-      <Stack gap={1} sx={{ marginBottom: 1 }}>
-        <Stack
-          direction="row"
-          justifyContent="space-between"
-          gap={3}
-        >
-          <Stack
-            direction="row"
-            sx={{
-              flex: 1,
-              minWidth: 0,
-            }}
-            gap={1}
-          >
-            <Stack
-              sx={{
-                minWidth: 0,
-                overflow: 'hidden',
-              }}
-            >
-              <Tooltip title={title}>
-                <span>
-                  <TitleMainEntity
-                    preserveCase
-                    sx={{
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {title}
-                  </TitleMainEntity>
-                </span>
-              </Tooltip>
-            </Stack>
-
-            {typeof onViewAs === 'function' && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(0.5) }}>
-                <InputLabel>
-                  {t_i18n('Display as')}
-                </InputLabel>
-                <FormControl
+      <HeaderLayout
+        title={title}
+        titleRight={
+          typeof onViewAs === 'function' && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(0.5) }}>
+              <InputLabel>
+                {t_i18n('Display as')}
+              </InputLabel>
+              <FormControl variant="outlined">
+                <Select
+                  size="small"
+                  name="view-as"
+                  value={viewAs}
+                  onChange={onViewAs}
+                  inputProps={{
+                    name: 'view-as',
+                    id: 'view-as',
+                  }}
                   variant="outlined"
                 >
-                  <Select
-                    size="small"
-                    name="view-as"
-                    value={viewAs}
-                    onChange={onViewAs}
-                    inputProps={{
-                      name: 'view-as',
-                      id: 'view-as',
-                    }}
-                    variant="outlined"
-                  >
-                    <MenuItem value="knowledge">{t_i18n('Knowledge entity')}</MenuItem>
-                    <MenuItem value="author">{t_i18n('Author')}</MenuItem>
-                  </Select>
-                </FormControl>
-              </div>
-            )}
-          </Stack>
-
-          <Stack
-            direction="row"
-            alignItems="center"
-            gap={1}
-          >
+                  <MenuItem value="knowledge">{t_i18n('Knowledge entity')}</MenuItem>
+                  <MenuItem value="author">{t_i18n('Author')}</MenuItem>
+                </Select>
+              </FormControl>
+            </div>
+          )
+        }
+        rightActions={(
+          <>
             {disableSharing !== true && (
               <StixCoreObjectSharing
                 elementId={stixDomainObject.id}
@@ -656,25 +616,10 @@ const StixDomainObjectHeader = (props) => {
             {RelateComponent}
             {EditComponent}
             <DeleteComponent isOpen={openDelete} onClose={handleCloseDelete} />
-          </Stack>
-        </Stack>
-
-        <Stack
-          direction="row"
-          alignContent="center"
-          justifyContent="space-between"
-          gap={3}
-        >
-          <Stack
-            direction="row"
-            gap={1}
-            sx={{
-              flex: '1 1 50%',
-              minWidth: 0,
-              maxWidth: '50%',
-              overflow: 'hidden',
-            }}
-          >
+          </>
+        )}
+        leftTags={(
+          <>
             {stixDomainObject.draftVersion && (
               <DraftChip />
             )}
@@ -715,23 +660,14 @@ const StixDomainObjectHeader = (props) => {
                 </Button>
               </TagsOverflow>
             )}
-          </Stack>
-
-          <Stack
-            direction="row"
-            alignItems="center"
-            sx={{
-              flex: 1,
-              minWidth: 0,
-              maxWidth: '50%',
-            }}
-          >
-            {disableSharing !== true && (
-              <StixCoreObjectSharingList data={stixDomainObject} />
-            )}
-          </Stack>
-        </Stack>
-      </Stack>
+          </>
+        )}
+        rightTags={
+          disableSharing !== true && (
+            <StixCoreObjectSharingList data={stixDomainObject} />
+          )
+        }
+      />
 
       {!noAliases && (
         <Dialog
