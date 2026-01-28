@@ -17,8 +17,6 @@ import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA } from '../schema/stixDomainObject'
 import { externalReferences, objectLabel, RELATION_CREATED_BY, RELATION_GRANTED_TO } from '../schema/stixRefRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { FunctionalError } from '../config/errors';
-import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
-import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 
 const ALIGN_OLDEST = 'oldest';
 const ALIGN_NEWEST = 'newest';
@@ -206,10 +204,6 @@ const generateFileInputsForUpsert = async (context, user, resolvedElement, updat
     return inputs;
   }
 
-  // Get entity setting for external reference metadata
-  const entitySetting = await getEntitySettingFromCache(context, resolvedElement.entity_type);
-  const isAutoExternal = entitySetting?.platform_entity_files_ref;
-
   // Build a map of existing files by their full ID (path) for conflict detection
   const existingFiles = resolvedElement.x_opencti_files ?? [];
   const existingFilesById = new Map(existingFiles.map((f) => [f.id, f]));
@@ -237,14 +231,13 @@ const generateFileInputsForUpsert = async (context, user, resolvedElement, updat
       continue;
     }
 
-    // Generate metadata for external reference if needed (for consistency with direct creation path)
-    const meta = isAutoExternal ? { external_reference_id: generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, { url: `/storage/get/${fileKey}` }) } : {};
-
     // Upload the file
+    // NOTE: We do not generate external_reference_id in metadata here because the corresponding
+    // External-Reference entity and relationship are not created in this upsert flow.
+    // This differs from entity creation path where external references are auto-created.
     const { upload: uploadedFile, untouched } = await uploadToStorage(context, user, filePath, fileInput, {
       entity: resolvedElement,
       file_markings,
-      meta,
     });
 
     if (untouched) {
