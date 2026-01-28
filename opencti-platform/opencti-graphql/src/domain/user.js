@@ -133,7 +133,7 @@ const roleUsersCacheRefresh = async (context, user, roleId) => {
   await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, users, user);
 };
 
-export const userWithOrigin = (req, user) => {
+export const userWithOrigin = (req, user, originHeaders = {}) => {
   // /!\ This metadata information is used in different ways
   // - In audit logs to identify the user
   // - In stream message to also identifier the user
@@ -155,6 +155,7 @@ export const userWithOrigin = (req, user) => {
     applicant_id: req?.headers['opencti-applicant-id'],
     call_retry_number: req?.headers['opencti-retry-number'],
     playbook_id: req?.headers['opencti-playbook-id'],
+    ...originHeaders,
   };
   return { ...user, origin };
 };
@@ -1641,6 +1642,7 @@ export const authenticateUserByTokenOrUserId = async (context, req, tokenOrId) =
   if (platformUsers.has(tokenOrId)) {
     let authenticatedUser = platformUsers.get(tokenOrId);
     const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+    const synchronizedUpsert = req.headers['synchronized-upsert'] === 'true' && isBypassUser(authenticatedUser);
     const applicantId = req.headers['opencti-applicant-id'];
     if (applicantId && isBypassUser(authenticatedUser)) {
       authenticatedUser = platformUsers.get(applicantId) || INTERNAL_USERS[applicantId];
@@ -1649,7 +1651,7 @@ export const authenticateUserByTokenOrUserId = async (context, req, tokenOrId) =
       }
     }
     validateUser(authenticatedUser, settings);
-    return userWithOrigin(req, authenticatedUser);
+    return userWithOrigin(req, authenticatedUser, { synchronized_upsert: synchronizedUpsert });
   }
   throw FunctionalError(`Cant identify with ${tokenOrId}`);
 };
