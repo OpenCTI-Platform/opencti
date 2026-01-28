@@ -62,9 +62,6 @@ jobs:
           ./scripts/ci/wait-for-url-200.sh http://localhost:4300/health?health_access_key=cihealthkey 180 10
           ./scripts/ci/wait-for-url-200.sh http://localhost:4400/health?health_access_key=cihealthkey 180 10
 
-    - name: Create coverage directory
-      run: mkdir -p ${{ github.workspace }}/opencti-platform/opencti-graphql/coverage
-
     - name: Start api test (aka yarn test:ci-integration-sync)
       run: |
         docker run --network runner-docker-network \
