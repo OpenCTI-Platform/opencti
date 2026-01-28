@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vitest';
 import '../../../src/modules/index';
 import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import type { Change } from '../../../src/types/event';
-import { generateMessageFromChanges } from '../../../src/database/data-changes';
+import { generateMessageFromChanges, humanizeRawValue } from '../../../src/database/data-changes';
+import { type AttributeDefinition, authorizedMembers, authorizedMembersActivationDate, revoked } from '../../../src/schema/attribute-definition';
+import { DefaultFormating } from '../../../src/utils/humanize';
+import { height, type Measurement, weight } from '../../../src/modules/threatActorIndividual/threatActorIndividual';
+import { workflowId } from '../../../src/modules/attributes/stixDomainObject-registrationAttributes';
 
 describe('generateUpdatePatchMessage tests', () => {
   it('should generate message for simple field update', () => {
@@ -90,5 +94,69 @@ describe('generateUpdatePatchMessage tests', () => {
     };
     const message = generateMessageFromChanges(resolvedMap, changes);
     expect(message).toEqual('replaces `ANALYZED` in `Workflow status`');
+  });
+  it('should humanize authorizedMembers correctly handled', () => {
+    let human = humanizeRawValue({}, authorizedMembers as AttributeDefinition, { raw: '-' }, DefaultFormating);
+    expect(human).toEqual('Restricted');
+    human = humanizeRawValue(
+      { '88ec0c6a-13ce-5e39-b486-354fe4a7084f': 'Julien' },
+      authorizedMembers as AttributeDefinition,
+      { raw: '{"id":"88ec0c6a-13ce-5e39-b486-354fe4a7084f","access_right":"admin"}' },
+      DefaultFormating,
+    );
+    expect(human).toEqual('Julien (admin)');
+    human = humanizeRawValue(
+      { 'c0171b19-4ec4-492f-ba44-b223642523ca': 'Filigran', '5f6d506d-dd03-438e-b137-245933538f02': 'Administrator' },
+      authorizedMembers as AttributeDefinition,
+      { raw: '{"id":"c0171b19-4ec4-492f-ba44-b223642523ca","access_right":"view","groups_restriction_ids":["5f6d506d-dd03-438e-b137-245933538f02"]}' },
+      DefaultFormating,
+    );
+    expect(human).toEqual('Filigran x [Administrator] (view)');
+  });
+  it('should humanize weight and height correctly handled', () => {
+    // Height
+    let human = humanizeRawValue({}, height as AttributeDefinition, { raw: '-' }, DefaultFormating);
+    expect(human).toEqual('Restricted');
+    let measure: Measurement = { measure: 10, date_seen: '' };
+    human = humanizeRawValue({}, height as AttributeDefinition, { raw: JSON.stringify(measure) }, DefaultFormating);
+    expect(human).toEqual('10.00 (m) at Invalid DateTime');
+    measure = { measure: 20, date_seen: '2026-01-28T12:27:18Z' };
+    human = humanizeRawValue({}, height as AttributeDefinition, { raw: JSON.stringify(measure) }, DefaultFormating);
+    expect(human).toEqual('20.00 (m) at January 28 2026, 12:27:18 PM');
+    // Weight
+    human = humanizeRawValue({}, weight as AttributeDefinition, { raw: '-' }, DefaultFormating);
+    expect(human).toEqual('Restricted');
+    measure = { measure: 10, date_seen: '' };
+    human = humanizeRawValue({}, weight as AttributeDefinition, { raw: JSON.stringify(measure) }, DefaultFormating);
+    expect(human).toEqual('10.00 (kg) at Invalid DateTime');
+    measure = { measure: 20, date_seen: '2026-01-28T12:27:18Z' };
+    human = humanizeRawValue({}, weight as AttributeDefinition, { raw: JSON.stringify(measure) }, DefaultFormating);
+    expect(human).toEqual('20.00 (kg) at January 28 2026, 12:27:18 PM');
+  });
+  it('should humanize workflow correctly handled', () => {
+    let human = humanizeRawValue({}, workflowId as AttributeDefinition, { raw: '-' }, DefaultFormating);
+    expect(human).toEqual('Untranslated');
+    human = humanizeRawValue({
+      '5f6d506d-dd03-438e-b137-245933538f02': 'NEW',
+    }, workflowId as AttributeDefinition, { raw: '5f6d506d-dd03-438e-b137-245933538f02' }, DefaultFormating);
+    expect(human).toEqual('NEW');
+  });
+  it('should humanize standard attribute handled', () => {
+    // Fake
+    const fakeAttribute = { name: 'test', type: 'fake' } as unknown as AttributeDefinition;
+    let human = humanizeRawValue({}, fakeAttribute, { raw: 'true' }, DefaultFormating);
+    expect(human).toEqual('Untranslated');
+    // Boolean
+    human = humanizeRawValue({}, revoked, { raw: 'true' }, DefaultFormating);
+    expect(human).toEqual('Yes');
+    human = humanizeRawValue({}, revoked, { raw: '-' }, DefaultFormating);
+    expect(human).toEqual('No');
+    // Date
+    human = humanizeRawValue({}, authorizedMembersActivationDate, { raw: '-' }, DefaultFormating);
+    expect(human).toEqual('Invalid date');
+    human = humanizeRawValue({}, authorizedMembersActivationDate, { raw: '2026-01-28T12:27:18Z' }, DefaultFormating);
+    expect(human).toEqual('January 28 2026, 12:27:18 PM');
+    human = humanizeRawValue({}, authorizedMembersActivationDate, { raw: '2026-01-28T12:27:18Z' }, { ...DefaultFormating, date_format: 'MMM' });
+    expect(human).toEqual('Jan');
   });
 });

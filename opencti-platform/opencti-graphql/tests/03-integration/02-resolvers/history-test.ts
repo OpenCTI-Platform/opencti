@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { findHistory, findById } from '../../../src/domain/log';
 import { ADMIN_USER, getAuthUser, testContext, USER_PARTICIPATE } from '../../utils/testQuery';
-import { type FilterGroup, FilterMode, LogsOrdering, OrderingMode } from '../../../src/generated/graphql';
+import { type FilterGroup, FilterMode, LogsOrdering, OrderingMode, type QueryLogsArgs } from '../../../src/generated/graphql';
 import { elLoadById } from '../../../src/database/engine';
 import { INDEX_DELETED_OBJECTS } from '../../../src/database/utils';
 import { batchContextDataForLog } from '../../../src/database/data-changes';
@@ -77,6 +77,14 @@ describe('Testing History search', () => {
     const editor = await getAuthUser(USER_PARTICIPATE.id);
     const logsEditor = await findHistory(testContext, editor, args);
     expect(logsEditor.edges.length).toBe(0);
+  });
+
+  it('Is history is searchable by keyword', async () => {
+    const args: QueryLogsArgs = { orderBy: LogsOrdering.CreatedAt, orderMode: OrderingMode.Asc };
+    let logs = await findHistory(testContext, ADMIN_USER, { search: 'Administrative-Area', ...args });
+    logs = await findHistory(testContext, ADMIN_USER, { search: '"TO DESC UPPER"', ...args });
+    console.log(JSON.stringify(logs, null, 2));
+    expect(logs.edges.length).toBe(2);
   });
 
   it('Is history batchContextDataForLog correctly resolved information', async () => {
