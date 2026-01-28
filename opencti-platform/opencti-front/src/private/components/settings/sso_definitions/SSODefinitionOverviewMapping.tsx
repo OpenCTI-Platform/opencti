@@ -262,13 +262,13 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
     <div style={{ paddingRight: '200px' }}>
       <AccessesMenu />
       <Grid size={{ xs: 12 }}>
-        <Card title="SSO Mapping">
+        <Card>
           <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
             <Tabs
               value={currentTab}
               onChange={(event, value) => setCurrentTab(value)}
             >
-              <Tab label={t_i18n('SSO Configuration')} />
+              <Tab label={t_i18n('SSO configuration')} sx={{ textTransform: 'none' }} />
               <Tab label={t_i18n('Groups configuration')} />
               <Tab label={t_i18n('Organizations configuration')} />
             </Tabs>
