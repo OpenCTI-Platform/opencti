@@ -1,44 +1,31 @@
-import { AddOutlined, ContentPasteGoOutlined } from '@mui/icons-material';
 import Button from '@common/button/Button';
+import Drawer from '@components/common/drawer/Drawer';
+import { AddOutlined, ContentPasteGoOutlined } from '@mui/icons-material';
+import { GridTypeMap } from '@mui/material';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Tooltip from '@mui/material/Tooltip';
-import makeStyles from '@mui/styles/makeStyles';
 import { Form, Formik } from 'formik';
-import React, { FunctionComponent, MutableRefObject, useState } from 'react';
+import { FunctionComponent, MutableRefObject, useState } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
-import { GridTypeMap } from '@mui/material';
-import Drawer from '@components/common/drawer/Drawer';
+import IconButton from '../../../../components/common/button/IconButton';
+import Card from '../../../../components/common/card/Card';
+import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 import { useFormatter } from '../../../../components/i18n';
-import type { Theme } from '../../../../components/Theme';
+import ListLines from '../../../../components/list_lines/ListLines';
+import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { handleErrorInForm } from '../../../../relay/environment';
+import { FieldOption } from '../../../../utils/field';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import CaseTemplateField from '../../common/form/CaseTemplateField';
-import CaseTaskCreation from './CaseTaskCreation';
 import { caseSetTemplateQuery, generateConnectionId } from '../CaseUtils';
-import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import ListLines from '../../../../components/list_lines/ListLines';
-import { CaseTasksLine } from './CaseTasksLine';
-import { tasksDataColumns } from './TasksLine';
 import { CaseTasksLines_data$key } from './__generated__/CaseTasksLines_data.graphql';
 import { CaseTasksLinesQuery, CaseTasksLinesQuery$variables } from './__generated__/CaseTasksLinesQuery.graphql';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { FieldOption } from '../../../../utils/field';
-import Card from '../../../../components/common/card/Card';
-import IconButton from '../../../../components/common/button/IconButton';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-}));
+import CaseTaskCreation from './CaseTaskCreation';
+import { CaseTasksLine } from './CaseTasksLine';
+import { tasksDataColumns } from './TasksLine';
 
 export const caseTasksLinesQuery = graphql`
   query CaseTasksLinesQuery(
@@ -108,7 +95,6 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
   containerRef,
   enableReferences,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
   const [openCaseTemplate, setOpenCaseTemplate] = useState(false);
@@ -166,7 +152,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
                   onChange={setFieldValue}
                   label="Case templates"
                 />
-                <div className={classes.buttons}>
+                <FormButtonContainer>
                   <Button
                     variant="secondary"
                     onClick={() => {
@@ -174,18 +160,16 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
                       setOpenCaseTemplate(false);
                     }}
                     disabled={isSubmitting}
-                    classes={{ root: classes.button }}
                   >
                     {t_i18n('Cancel')}
                   </Button>
                   <Button
                     onClick={submitForm}
                     disabled={isSubmitting}
-                    classes={{ root: classes.button }}
                   >
                     {t_i18n('Apply')}
                   </Button>
-                </div>
+                </FormButtonContainer>
               </Form>
             )}
           </Formik>
@@ -206,7 +190,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
       <Card
         title={t_i18n('Tasks')}
         action={(
-          <div>
+          <>
             <Tooltip title={t_i18n('Add a task to this container')}>
               <IconButton
                 aria-label="Add"
@@ -223,7 +207,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
                 <ContentPasteGoOutlined fontSize="small" />
               </IconButton>
             </Tooltip>
-          </div>
+          </>
         )}
       >
         <ListLines

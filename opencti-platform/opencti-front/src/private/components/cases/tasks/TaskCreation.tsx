@@ -1,39 +1,26 @@
 import Button from '@common/button/Button';
-import makeStyles from '@mui/styles/makeStyles';
+import { TasksLinesPaginationQuery$variables } from '@components/cases/__generated__/TasksLinesPaginationQuery.graphql';
+import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
-import React, { FunctionComponent } from 'react';
+import { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import * as Yup from 'yup';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
-import { TasksLinesPaginationQuery$variables } from '@components/cases/__generated__/TasksLinesPaginationQuery.graphql';
+import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
+import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
-import type { Theme } from '../../../../components/Theme';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import { insertNode } from '../../../../utils/store';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import { TaskCreationMutation, TaskCreationMutation$variables } from './__generated__/TaskCreationMutation.graphql';
-import { insertNode } from '../../../../utils/store';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-}));
 
 const taskAddMutation = graphql`
   mutation TaskCreationMutation($input: TaskAddInput!) {
@@ -83,7 +70,6 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
   inputValue,
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(
     TASK_TYPE,
@@ -198,23 +184,21 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
             rows="4"
             style={fieldSpacingContainerStyle}
           />
-          <div className={classes.buttons}>
+          <FormButtonContainer>
             <Button
               onClick={handleReset}
               disabled={isSubmitting}
               variant="secondary"
-              classes={{ root: classes.button }}
             >
               {t_i18n('Cancel')}
             </Button>
             <Button
               onClick={submitForm}
               disabled={isSubmitting}
-              classes={{ root: classes.button }}
             >
               {t_i18n('Create')}
             </Button>
-          </div>
+          </FormButtonContainer>
         </Form>
       )}
     </Formik>

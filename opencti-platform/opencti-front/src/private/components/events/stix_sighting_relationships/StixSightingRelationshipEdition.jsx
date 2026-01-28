@@ -1,37 +1,10 @@
 import React from 'react';
-import Drawer from '@mui/material/Drawer';
-import makeStyles from '@mui/styles/makeStyles';
-import { graphql } from 'react-relay';
+import { graphql, usePreloadedQuery } from 'react-relay';
 import StixSightingRelationshipEditionOverview, { stixSightingRelationshipEditionOverviewQuery } from './StixSightingRelationshipEditionOverview';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
-  drawerPaperInGraph: {
-    minHeight: '100vh',
-    width: '30%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
-}));
+import Drawer from '@components/common/drawer/Drawer';
+import { useFormatter } from '../../../../components/i18n';
 
 export const stixSightingRelationshipEditionDeleteMutation = graphql`
   mutation StixSightingRelationshipEditionDeleteMutation($id: ID!) {
@@ -41,18 +14,90 @@ export const stixSightingRelationshipEditionDeleteMutation = graphql`
   }
 `;
 
-const StixSightingRelationshipEdition = ({ stixSightingRelationshipId, open, handleClose, inferred, noStoreUpdate, inGraph }) => {
-  const classes = useStyles();
+const stixSightingRelationshipEditContextQuery = graphql`
+  query StixSightingRelationshipEditionEditContextQuery($id: String!) {
+    stixSightingRelationship(id: $id) {
+      id
+      editContext {
+        name
+        focusOn
+      }
+    }
+  }
+`;
+
+const StixSightingRelationshipEditionWithContext = ({
+  stixSightingRelationshipId,
+  open,
+  handleClose,
+  inferred,
+  noStoreUpdate,
+  inGraph,
+}) => {
+  const editContextQueryRef = useQueryLoading(stixSightingRelationshipEditContextQuery, { id: stixSightingRelationshipId });
+
+  if (!editContextQueryRef) {
+    return null;
+  }
+
+  return (
+    <React.Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
+      <StixSightingRelationshipEditionWithContextContent
+        editContextQueryRef={editContextQueryRef}
+        stixSightingRelationshipId={stixSightingRelationshipId}
+        open={open}
+        handleClose={handleClose}
+        inferred={inferred}
+        noStoreUpdate={noStoreUpdate}
+        inGraph={inGraph}
+      />
+    </React.Suspense>
+  );
+};
+
+const StixSightingRelationshipEditionWithContextContent = ({
+  editContextQueryRef,
+  stixSightingRelationshipId,
+  open,
+  handleClose,
+  inferred,
+  noStoreUpdate,
+  inGraph,
+}) => {
+  const data = usePreloadedQuery(stixSightingRelationshipEditContextQuery, editContextQueryRef);
+  const editContext = data.stixSightingRelationship?.editContext;
+
+  return (
+    <StixSightingRelationshipEdition
+      stixSightingRelationshipId={stixSightingRelationshipId}
+      open={open}
+      handleClose={handleClose}
+      inferred={inferred}
+      noStoreUpdate={noStoreUpdate}
+      inGraph={inGraph}
+      editContext={editContext}
+    />
+  );
+};
+
+const StixSightingRelationshipEdition = ({
+  stixSightingRelationshipId,
+  open,
+  handleClose,
+  inferred,
+  noStoreUpdate,
+  inGraph,
+  editContext,
+}) => {
+  const { t_i18n } = useFormatter();
   const queryRef = useQueryLoading(stixSightingRelationshipEditionOverviewQuery, { id: stixSightingRelationshipId });
 
   const renderInGraph = () => {
     return (
       <Drawer
+        title={t_i18n('Update a sighting')}
+        context={editContext}
         open={open}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaperInGraph }}
         onClose={handleClose}
       >
         {queryRef ? (
@@ -74,11 +119,9 @@ const StixSightingRelationshipEdition = ({ stixSightingRelationshipId, open, han
   const renderClassic = () => {
     return (
       <Drawer
+        title={t_i18n('Update a sighting')}
+        context={editContext}
         open={open}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
       >
         {queryRef ? (
@@ -104,4 +147,4 @@ const StixSightingRelationshipEdition = ({ stixSightingRelationshipId, open, han
   return renderClassic();
 };
 
-export default StixSightingRelationshipEdition;
+export default StixSightingRelationshipEditionWithContext;

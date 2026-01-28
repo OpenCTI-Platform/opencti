@@ -1,7 +1,4 @@
 import Button from '@common/button/Button';
-import DrawerHeader from '@common/drawer/DrawerHeader';
-import Drawer from '@mui/material/Drawer';
-import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import { useState } from 'react';
@@ -19,24 +16,7 @@ import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import FormButtonContainer from '@common/form/FormButtonContainer';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
-}));
+import Drawer from '@components/common/drawer/Drawer';
 
 const artifactMutation = graphql`
   mutation ArtifactCreationMutation(
@@ -66,7 +46,6 @@ const artifactValidation = (t) => Yup.object().shape({
 const ArtifactCreation = ({
   paginationOptions,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
   const [commit] = useApiMutation(
@@ -126,88 +105,79 @@ const ArtifactCreation = ({
         onOpen={handleOpen}
       />
       <Drawer
+        title={t_i18n('Create an artifact')}
         open={open}
-        anchor="right"
-        sx={{ zIndex: 1202 }}
-        elevation={1}
-        classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
       >
-        <DrawerHeader
-          title={t_i18n('Create an artifact')}
-          onClose={handleClose}
-        />
-        <div className={classes.container}>
-          <Formik
-            initialValues={{
-              x_opencti_description: '',
-              file: '',
-              createdBy: '',
-              objectMarking: [],
-              objectLabel: [],
-            }}
-            validationSchema={artifactValidation(t_i18n)}
-            onSubmit={onSubmit}
-            onReset={onReset}
-          >
-            {({
-              submitForm,
-              handleReset,
-              isSubmitting,
-              setFieldValue,
-              values,
-              errors,
-            }) => (
-              <Form>
-                <CustomFileUploader
-                  setFieldValue={setFieldValue}
-                  formikErrors={errors}
-                  noMargin
-                  required
-                />
-                <Field
-                  component={MarkdownField}
-                  name="x_opencti_description"
-                  label={t_i18n('Description')}
-                  fullWidth={true}
-                  multiline={true}
-                  rows="4"
-                  style={{ marginTop: 20 }}
-                />
-                <CreatedByField
-                  name="createdBy"
-                  style={fieldSpacingContainerStyle}
-                  setFieldValue={setFieldValue}
-                />
-                <ObjectLabelField
-                  name="objectLabel"
-                  style={fieldSpacingContainerStyle}
-                  setFieldValue={setFieldValue}
-                  values={values.objectLabel}
-                />
-                <ObjectMarkingField
-                  name="objectMarking"
-                  style={fieldSpacingContainerStyle}
-                />
-                <FormButtonContainer>
-                  <Button
-                    variant="secondary"
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                  >
-                    {t_i18n('Cancel')}
-                  </Button>
-                  <Button
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                  >
-                    {t_i18n('Create')}
-                  </Button>
-                </FormButtonContainer>
-              </Form>
-            )}
-          </Formik>
-        </div>
+        <Formik
+          initialValues={{
+            x_opencti_description: '',
+            file: '',
+            createdBy: '',
+            objectMarking: [],
+            objectLabel: [],
+          }}
+          validationSchema={artifactValidation(t_i18n)}
+          onSubmit={onSubmit}
+          onReset={onReset}
+        >
+          {({
+            submitForm,
+            handleReset,
+            isSubmitting,
+            setFieldValue,
+            values,
+            errors,
+          }) => (
+            <Form>
+              <CustomFileUploader
+                setFieldValue={setFieldValue}
+                formikErrors={errors}
+                noMargin
+                required
+              />
+              <Field
+                component={MarkdownField}
+                name="x_opencti_description"
+                label={t_i18n('Description')}
+                fullWidth={true}
+                multiline={true}
+                rows="4"
+                style={{ marginTop: 20 }}
+              />
+              <CreatedByField
+                name="createdBy"
+                style={fieldSpacingContainerStyle}
+                setFieldValue={setFieldValue}
+              />
+              <ObjectLabelField
+                name="objectLabel"
+                style={fieldSpacingContainerStyle}
+                setFieldValue={setFieldValue}
+                values={values.objectLabel}
+              />
+              <ObjectMarkingField
+                name="objectMarking"
+                style={fieldSpacingContainerStyle}
+              />
+              <FormButtonContainer>
+                <Button
+                  variant="secondary"
+                  onClick={handleReset}
+                  disabled={isSubmitting}
+                >
+                  {t_i18n('Cancel')}
+                </Button>
+                <Button
+                  onClick={submitForm}
+                  disabled={isSubmitting}
+                >
+                  {t_i18n('Create')}
+                </Button>
+              </FormButtonContainer>
+            </Form>
+          )}
+        </Formik>
       </Drawer>
     </>
   );

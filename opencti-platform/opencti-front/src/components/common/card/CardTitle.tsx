@@ -44,7 +44,9 @@ const CardTitle = ({
       <Typography variant="h5" sx={titleSx}>
         {children}
       </Typography>
-      {action}
+      <Stack direction="row" gap={1}>
+        {action}
+      </Stack>
     </Stack>
   );
 };
