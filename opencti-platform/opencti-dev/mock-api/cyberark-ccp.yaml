@@ -1,0 +1,59 @@
+openapi: 3.0.0
+info:
+  title: CyberArk CCP Mock
+  description: Central Credential Provider mock
+  version: 1.0.0
+servers:
+  - url: /
+paths:
+  /AIMWebService/api/Accounts:
+    get:
+      summary: Get a secret
+      operationId: getAccount
+      parameters:
+        - name: AppID
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: Safe
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: Object
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success, get the secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Content:
+                    type: string
+                    description: Le mot de passe
+                  Name:
+                    type: string
+                  Safe:
+                    type: string
+                  Address:
+                    type: string
+                  UserName:
+                    type: string
+                  PolicyID:
+                    type: string
+              example:
+                Content: "cDbSgNN7kxW1Kig8wBFPJzgiw2EgiTrA8Ch"
+                Name: "OpenID_DB_Prod"
+                Safe: "Safe_Production"
+                Folder: "Root"
+                Address: "10.0.0.15"
+                UserName: "openid_sys"
+                PolicyID: "openid-database"
+                PasswordChangeInProcess: "False"
+                CreationMethod: "PVWA"

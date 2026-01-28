@@ -179,9 +179,9 @@ services:
     image: mokapi/mokapi:latest
     profiles: [ ldap ]
     container_name: opencti-dev-mokapi
-    command: mokapi --providers-file-filename /share/ldap.yaml
+    command: mokapi --providers.file.directory=/share
     volumes:
-      - "./mock-api-ldap:/share"
+      - "./mock-api:/share"
     ports:
       - "80:80"
       - "389:389"

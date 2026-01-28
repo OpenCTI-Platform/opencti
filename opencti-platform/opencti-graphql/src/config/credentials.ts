@@ -32,7 +32,8 @@ export const enrichWithRemoteCredentials = async (prefix: string, baseConfigurat
         if (result.status === 200 && isNotEmptyField(result.data.Content)) {
           const defaultSplitter = conf.get(`${prefix}:credentials_provider:${provider}:default_splitter`) ?? ':';
           const contentValues = result.data.Content.split(defaultSplitter);
-          const fields = conf.get(`${prefix}:credentials_provider:field_targets`);
+          const fields = conf.get(`${prefix}:credentials_provider:${provider}:field_targets`)
+            || conf.get(`${prefix}:credentials_provider:field_targets`);
           for (let index = 0; index < fields.length; index += 1) {
             const field = fields[index];
             secretResult[field] = contentValues[index];
@@ -43,9 +44,10 @@ export const enrichWithRemoteCredentials = async (prefix: string, baseConfigurat
       } catch (e: any) {
         logApp.error('[OPENCTI] Remote credentials data fail to fetch, fallback', { cause: e, provider, source: prefix });
       }
+    } else {
+      // No compatible provider available
+      logApp.error('[OPENCTI] Remote credentials provider is not supported, fallback', { provider, source: prefix });
     }
-    // No compatible provider available
-    logApp.error('[OPENCTI] Remote credentials provider is not supported, fallback', { provider, source: prefix });
   }
   return baseConfiguration;
 };
