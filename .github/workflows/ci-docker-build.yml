@@ -83,6 +83,8 @@ jobs:
     - name: Build and push ${{ inputs.is_fips == true && 'FIPS' || '' }}
       uses: docker/build-push-action@v6
       if: inputs.is_publish_to_registry == true
+      env:
+        DOCKER_BUILD_RECORD_UPLOAD: false
       with:
         context: opencti-platform
         file: opencti-platform/Dockerfile_featurebranch
@@ -95,6 +97,8 @@ jobs:
     - name: Build and export as tar ${{ inputs.is_fips == true && ' FIPS' || '' }}
       uses: docker/build-push-action@v6
       if: inputs.is_publish_to_registry == false
+      env:
+        DOCKER_BUILD_RECORD_UPLOAD: false
       with:
         context: opencti-platform
         file: opencti-platform/Dockerfile_featurebranch
@@ -177,7 +181,7 @@ jobs:
         labels: ${{ steps.meta.outputs.labels }}
 
     - name: Upload worker docker image artifact
-      if: inputs.is_publish_to_registry == false
+      if: ${{ inputs.is_publish_to_registry == false }}
       uses: actions/upload-artifact@v6
       with:
         name: docker-image-opencti-worker
