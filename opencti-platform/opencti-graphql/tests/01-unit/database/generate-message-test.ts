@@ -3,10 +3,11 @@ import '../../../src/modules/index';
 import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import type { Change } from '../../../src/types/event';
 import { generateMessageFromChanges, humanizeRawValue } from '../../../src/database/data-changes';
-import { type AttributeDefinition, authorizedMembers, authorizedMembersActivationDate, revoked } from '../../../src/schema/attribute-definition';
+import { type AttributeDefinition, authorizedMembers, authorizedMembersActivationDate, revoked, xOpenctiAliases } from '../../../src/schema/attribute-definition';
 import { DefaultFormating } from '../../../src/utils/humanize';
 import { height, type Measurement, weight } from '../../../src/modules/threatActorIndividual/threatActorIndividual';
 import { workflowId } from '../../../src/modules/attributes/stixDomainObject-registrationAttributes';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 
 describe('generateUpdatePatchMessage tests', () => {
   it('should generate message for simple field update', () => {
@@ -23,6 +24,28 @@ describe('generateUpdatePatchMessage tests', () => {
     ];
     const message = generateMessageFromChanges({}, changes);
     expect(message).toEqual('replaces `updated` in `Description`');
+  });
+  it('should generate message fail for unexisting attribute', () => {
+    const changes: Change[] = [
+      {
+        field: ENTITY_TYPE_MALWARE + '--alias',
+        changes_added: [{ raw: 'alias1' }],
+        changes_removed: [{ raw: 'alias2' }],
+      },
+    ];
+    const gen = () => generateMessageFromChanges({}, changes);
+    expect(gen).toThrow();
+  });
+  it('should generate message for multi values field update', () => {
+    const changes: Change[] = [
+      {
+        field: ENTITY_TYPE_IDENTITY_ORGANIZATION + '--' + xOpenctiAliases.name,
+        changes_added: [{ raw: 'alias1' }],
+        changes_removed: [{ raw: 'alias2' }],
+      },
+    ];
+    const message = generateMessageFromChanges({}, changes);
+    expect(message).toEqual('add `alias1` in `X_Aliases` | removes `alias2` in `X_Aliases`');
   });
   it('should generate message for simple field update if no previous value', () => {
     const changes: Change[] = [
@@ -156,6 +179,8 @@ describe('generateUpdatePatchMessage tests', () => {
     expect(human).toEqual('Invalid date');
     human = humanizeRawValue({}, authorizedMembersActivationDate, { raw: '2026-01-28T12:27:18Z' }, DefaultFormating);
     expect(human).toEqual('January 28 2026, 12:27:18 PM');
+    human = humanizeRawValue({}, authorizedMembersActivationDate, { raw: '1970-01-01T00:00:00.000Z' }, DefaultFormating);
+    expect(human).toEqual('');
     human = humanizeRawValue({}, authorizedMembersActivationDate, { raw: '2026-01-28T12:27:18Z' }, { ...DefaultFormating, date_format: 'MMM' });
     expect(human).toEqual('Jan');
   });
