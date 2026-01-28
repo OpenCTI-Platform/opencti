@@ -18,7 +18,7 @@ const LDAPConfig = ({ updateField }: LDAPConfigProps) => {
         component={TextField}
         variant="standard"
         name="url"
-        label={t_i18n('URL')}
+        label="URL"
         onSubmit={updateField}
         required
         fullWidth
@@ -28,7 +28,7 @@ const LDAPConfig = ({ updateField }: LDAPConfigProps) => {
         component={TextField}
         variant="standard"
         name="bindDN"
-        label={t_i18n('Bind DN')}
+        label="Bind DN"
         onSubmit={updateField}
         required
         fullWidth
@@ -38,7 +38,7 @@ const LDAPConfig = ({ updateField }: LDAPConfigProps) => {
         component={TextField}
         variant="standard"
         name="bindCredentials"
-        label={t_i18n('Bind credentials')}
+        label="Bind credentials"
         onSubmit={updateField}
         fullWidth
         style={{ marginTop: 20 }}
@@ -47,7 +47,7 @@ const LDAPConfig = ({ updateField }: LDAPConfigProps) => {
         component={TextField}
         variant="standard"
         name="searchBase"
-        label={t_i18n('Search base')}
+        label="Search base"
         onSubmit={updateField}
         required
         fullWidth
@@ -57,7 +57,7 @@ const LDAPConfig = ({ updateField }: LDAPConfigProps) => {
         component={TextField}
         variant="standard"
         name="searchFilter"
-        label={t_i18n('Search filter')}
+        label="Search filter"
         onSubmit={updateField}
         required
         fullWidth
@@ -67,7 +67,7 @@ const LDAPConfig = ({ updateField }: LDAPConfigProps) => {
         component={TextField}
         variant="standard"
         name="groupSearchBase"
-        label={t_i18n('Group search base')}
+        label="Group search base"
         onSubmit={updateField}
         required
         fullWidth
@@ -77,7 +77,7 @@ const LDAPConfig = ({ updateField }: LDAPConfigProps) => {
         component={TextField}
         variant="standard"
         name="groupSearchFilter"
-        label={t_i18n('Group search filter')}
+        label="Group search filter"
         onSubmit={updateField}
         required
         fullWidth

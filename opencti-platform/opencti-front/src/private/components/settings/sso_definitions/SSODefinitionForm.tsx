@@ -35,11 +35,19 @@ interface SSODefinitionFormProps {
   data?: SSODefinitionEditionFragment$data;
   isOpen?: boolean;
 }
+
 export interface SSODefinitionFormValues {
   name: string;
   identifier: string;
   label: string;
   enabled: boolean;
+  // SAML - OPENID - LDAP
+  advancedConfigurations: {
+    key: string;
+    value: string;
+    type: string;
+  }[];
+  // SAML
   privateKey: string;
   issuer: string;
   idpCert: string;
@@ -54,19 +62,22 @@ export interface SSODefinitionFormValues {
   forceReauthentication: boolean;
   enableDebugMode: boolean;
   entryPoint: string;
-  advancedConfigurations: {
-    key: string;
-    value: string;
-    type: string;
-  }[];
+  // Groups
   groups_path: string[];
+  groups_scope: string;
   group_attribute: string;
   group_attributes: string[];
   groups_attributes: string[];
   groups_mapping: string[];
+  groups_token_reference: string;
+  groups_read_userinfo: boolean;
+  // Organizations
   organizations_path: string[];
+  organizations_scope: string;
   organizations_mapping: string[];
-  read_userinfo: boolean;
+  organizations_token_reference: string;
+  organizations_read_userinfo: boolean;
+  // OpenID
   client_id: string;
   client_secret: string;
   redirect_uris: string[];
@@ -144,6 +155,8 @@ const SSODefinitionForm = ({
     identifier: '',
     label: '',
     enabled: true,
+    // SAML - OPENID - LDAP
+    advancedConfigurations: [],
     // SAML
     privateKey: '',
     issuer: '',
@@ -159,15 +172,21 @@ const SSODefinitionForm = ({
     forceReauthentication: false,
     enableDebugMode: false,
     entryPoint: '',
-    advancedConfigurations: [],
-    groups_path: [],
+    // Groups
+    groups_path: ['groups'],
+    groups_scope: '',
     group_attribute: '',
     group_attributes: [],
     groups_attributes: [],
     groups_mapping: [],
-    read_userinfo: false,
-    organizations_path: [],
+    groups_token_reference: 'access_token',
+    groups_read_userinfo: false,
+    // Organizations
+    organizations_path: ['organizations'],
+    organizations_scope: '',
     organizations_mapping: [],
+    organizations_token_reference: 'access_token',
+    organizations_read_userinfo: false,
     // OpenID
     client_id: '',
     client_secret: '',
@@ -203,10 +222,16 @@ const SSODefinitionForm = ({
   const groupAttributes = Array.from(data?.groups_management?.group_attributes ?? []);
   const groupsAttributes = Array.from(data?.groups_management?.groups_attributes ?? []);
   const groupsPath = Array.from(data?.groups_management?.groups_path ?? []);
+  const groupsScope = data?.groups_management?.groups_scope ?? '';
   const groupsMapping = Array.from(data?.groups_management?.groups_mapping ?? []);
+  const groupsTokenReference = data?.groups_management?.token_reference;
+  const groupsReadUserInfo = data?.groups_management?.read_userinfo;
 
   const organizationsPath = Array.from(data?.organizations_management?.organizations_path ?? []);
+  const organizationsScope = data?.organizations_management?.organizations_scope ?? '';
   const organizationsMapping = Array.from(data?.organizations_management?.organizations_mapping ?? []);
+  const organizationsTokenReference = data?.organizations_management?.token_reference;
+  const organizationsReadUserInfo = data?.organizations_management?.read_userinfo;
 
   const clientId = data?.configuration?.find((e) => e.key === 'client_id');
   const clientSecret = data?.configuration?.find((e) => e.key === 'client_secret');
@@ -241,13 +266,21 @@ const SSODefinitionForm = ({
     initialValues.forceReauthentication = forceReauthenticationField ? forceReauthenticationField?.value === 'true' : false;
     // initialValues.enableDebugMode = enableDebugModeField ? enableDebugModeField?.value === 'true' : false;
     initialValues.advancedConfigurations = advancedConfigurations ?? [];
+
     initialValues.group_attribute = groupAttribute ?? '';
     initialValues.group_attributes = groupAttributes;
     initialValues.groups_attributes = groupsAttributes;
     initialValues.groups_path = groupsPath;
+    initialValues.groups_scope = groupsScope;
     initialValues.groups_mapping = groupsMapping;
+    initialValues.groups_token_reference = groupsTokenReference ?? '';
+    initialValues.groups_read_userinfo = groupsReadUserInfo ?? false;
+
     initialValues.organizations_path = organizationsPath;
+    initialValues.organizations_scope = organizationsScope;
     initialValues.organizations_mapping = organizationsMapping;
+    initialValues.organizations_token_reference = organizationsTokenReference ?? '';
+    initialValues.organizations_read_userinfo = organizationsReadUserInfo ?? false;
 
     initialValues.client_id = clientId?.value ?? '';
     initialValues.client_secret = clientSecret?.value ?? '';
@@ -262,6 +295,7 @@ const SSODefinitionForm = ({
     initialValues.groupSearchFilter = groupSearchFilter?.value ?? '';
     initialValues.allow_self_signed = allow_self_signed ? allow_self_signed?.value === 'true' : false;
   }
+
   const updateField = async (field: SSOEditionFormInputKeys, value: unknown) => {
     if (onSubmitField) onSubmitField(field, value);
   };
@@ -317,6 +351,15 @@ const SSODefinitionForm = ({
                 onChange={updateField}
                 label={t_i18n(`Enable ${selectedStrategy} authentication`)}
                 containerstyle={{ marginLeft: 2, marginTop: 20 }}
+              />
+              <Field
+                component={TextField}
+                variant="standard"
+                name="label"
+                onSubmit={updateField}
+                label={t_i18n('Login Button Name')}
+                fullWidth
+                style={{ marginTop: 10 }}
               />
               {selectedStrategy === 'SAML' && <SAMLConfig updateField={updateField} />}
               {selectedStrategy === 'OpenID' && <OpenIDConfig updateField={updateField} />}
@@ -402,7 +445,7 @@ const SSODefinitionForm = ({
             </>
           )}
           {currentTab === 1 && <SSODefinitionGroupForm updateField={updateField} selectedStrategy={selectedStrategy} />}
-          {currentTab === 2 && <SSODefinitionOrganizationForm updateField={updateField} />}
+          {currentTab === 2 && <SSODefinitionOrganizationForm updateField={updateField} selectedStrategy={selectedStrategy} />}
           {!onSubmitField && (
             <div
               style={{

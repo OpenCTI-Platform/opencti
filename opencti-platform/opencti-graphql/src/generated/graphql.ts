@@ -20487,7 +20487,6 @@ export type OrganizationsManagement = {
 };
 
 export type OrganizationsManagementInput = {
-  organizations_default?: InputMaybe<Array<Scalars['String']['input']>>;
   organizations_header?: InputMaybe<Scalars['String']['input']>;
   organizations_mapping?: InputMaybe<Array<Scalars['String']['input']>>;
   organizations_path?: InputMaybe<Array<Scalars['String']['input']>>;
@@ -27940,7 +27939,7 @@ export type SingleSignOn = BasicObject & InternalObject & {
   groups_management?: Maybe<GroupsManagement>;
   id: Scalars['ID']['output'];
   identifier: Scalars['String']['output'];
-  label: Scalars['String']['output'];
+  label?: Maybe<Scalars['String']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   organizations_management?: Maybe<OrganizationsManagement>;
@@ -46753,7 +46752,7 @@ export type SingleSignOnResolvers<ContextType = any, ParentType extends Resolver
   groups_management?: Resolver<Maybe<ResolversTypes['GroupsManagement']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   identifier?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  label?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   organizations_management?: Resolver<Maybe<ResolversTypes['OrganizationsManagement']>, ParentType, ContextType>;

@@ -29,14 +29,19 @@ export const ssoDefinitionEditionFragment = graphql`
     organizations_management {
         organizations_path
         organizations_mapping
+        organizations_scope
+        read_userinfo
+        token_reference
     }
     groups_management {
         group_attribute
         group_attributes
         groups_attributes
         groups_path
+        groups_scope
         groups_mapping
         read_userinfo
+        token_reference
     }
     configuration {
         key
@@ -68,10 +73,24 @@ const SSODefinitionEdition = ({
     { successMessage: `${t_i18n('entity_SSO')} ${t_i18n('successfully updated')}` },
   );
 
+  const getGroupOrOrganizationManagementEditInputValue = (field: SSOEditionFormInputKeys, value: unknown, arrayValueList: string[]) => {
+    let fieldValue: string = field;
+    let inputValue = value;
+    if (field.includes('token_reference')) fieldValue = 'token_reference';
+    if (field.includes('read_userinfo')) {
+      fieldValue = 'read_userinfo';
+      inputValue = value === 'true';
+    }
+    if (arrayValueList.includes(field) && !Array.isArray(value)) {
+      return { [fieldValue]: [inputValue] };
+    }
+    return { [fieldValue]: inputValue };
+  };
+
   const onEdit = (field: SSOEditionFormInputKeys, value: unknown) => {
     const configurationKeyList = getSSOConfigList(selectedStrategy ?? '');
-    const groupManagementKeyList = ['group_attribute', 'groups_attributes', 'group_attributes', 'groups_path', 'groups_mapping'];
-    const organizationsManagementKeyList = ['organizations_path', 'organizations_mapping'];
+    const groupManagementKeyList = ['group_attribute', 'groups_attributes', 'group_attributes', 'groups_path', 'groups_scope', 'groups_mapping', 'groups_token_reference', 'groups_read_userinfo'];
+    const organizationsManagementKeyList = ['organizations_path', 'organizations_mapping', 'organizations_scope', 'organizations_token_reference', 'organizations_read_userinfo'];
 
     const input: { key: string; value: unknown[] } = { key: field, value: [value] };
 
@@ -91,18 +110,24 @@ const SSODefinitionEdition = ({
     }
 
     if (groupManagementKeyList.includes(field)) {
+      const arrayValueList = ['groups_path', 'group_attributes', 'groups_attributes', 'groups_mapping'];
       input.key = 'groups_management';
+
+      const inputValue = getGroupOrOrganizationManagementEditInputValue(field, value, arrayValueList);
       input.value = [{
         ...sso.groups_management,
-        [field]: Array.isArray(value) ? value : [value],
+        ...inputValue,
       }];
     }
 
     if (organizationsManagementKeyList.includes(field)) {
+      const arrayValueList = ['organizations_path', 'organizations_mapping'];
       input.key = 'organizations_management';
+
+      const inputValue = getGroupOrOrganizationManagementEditInputValue(field, value, arrayValueList);
       input.value = [{
         ...sso.organizations_management,
-        [field]: Array.isArray(value) ? value : [value],
+        ...inputValue,
       }];
     }
 
