@@ -4,4 +4,6 @@ export * from './workflow-definition';
 export * from './workflow-engine';
 export * from './workflow-instance';
 export * from './workflow-factory';
+export * from './workflow-domain';
 export * from './workflow-actions';
+export * from './workflow-conditions';

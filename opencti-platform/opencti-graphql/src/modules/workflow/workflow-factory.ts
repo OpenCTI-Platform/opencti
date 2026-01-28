@@ -1,5 +1,6 @@
 import type { ActionConfig, ConditionConfig, WorkflowSchema } from './workflow-schema';
 import { ActionRegistry } from './workflow-actions';
+import { ConditionRegistry } from './workflow-conditions';
 import type { ConditionValidator, Context, SideEffect } from './workflow-types';
 import { WorkflowDefinition } from './workflow-definition';
 import { WorkflowInstance } from './workflow-instance';
@@ -21,7 +22,21 @@ export class WorkflowFactory {
     if (!configs || configs.length === 0) return [];
 
     return configs.map((config) => {
+      // 1. Check if it's a named condition from registry
+      if (config.type) {
+        const conditionFn = ConditionRegistry[config.type];
+        if (!conditionFn) {
+          // eslint-disable-next-line no-console
+          console.warn(`Condition type '${config.type}' not found in registry.`);
+          return () => true; // Default to true if not found to avoid blocking
+        }
+        return (ctx: TContext) => conditionFn(ctx, config.params);
+      }
+
+      // 2. Otherwise it's a field comparison
       return (ctx: TContext) => {
+        if (!config.field || !config.operator) return true;
+
         const actualValue = this.getNestedValue(ctx, config.field);
 
         switch (config.operator) {
@@ -107,7 +122,7 @@ export class WorkflowFactory {
     schema: WorkflowSchema | undefined,
     defaultDefinition: WorkflowDefinition<TContext> | undefined,
     currentState: string,
-    context: TContext
+    context: TContext,
   ): WorkflowInstance<TContext> {
     let definition = defaultDefinition;
 

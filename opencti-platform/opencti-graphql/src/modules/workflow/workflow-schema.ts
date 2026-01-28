@@ -11,9 +11,11 @@ export interface ActionConfig {
  * Serialized configuration for a guard condition.
  */
 export interface ConditionConfig {
-  field: string;
-  operator: 'eq' | 'neq' | 'gt' | 'lt' | 'gte' | 'lte' | 'contains';
-  value: any;
+  type?: string; // For named registry conditions
+  params?: any; // Params for named conditions
+  field?: string; // For direct field comparison
+  operator?: 'eq' | 'neq' | 'gt' | 'lt' | 'gte' | 'lte' | 'contains';
+  value?: any;
 }
 
 /**
