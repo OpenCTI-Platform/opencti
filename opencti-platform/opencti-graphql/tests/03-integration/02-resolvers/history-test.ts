@@ -6,6 +6,7 @@ import { elLoadById } from '../../../src/database/engine';
 import { INDEX_DELETED_OBJECTS } from '../../../src/database/utils';
 import { batchContextDataForLog } from '../../../src/database/data-changes';
 import type { BasicConnection } from '../../../src/types/store';
+import { logApp } from '../../../src/config/conf';
 
 describe('Testing History search', () => {
   it('Is history is searchable', async () => {
@@ -136,7 +137,8 @@ describe('Testing History search', () => {
   it('Is Audit is searchable', async () => {
     const args: QueryAuditsArgs = { first: 5, types: ['Activity'], orderBy: LogsOrdering.Timestamp, orderMode: OrderingMode.Asc };
     const audits = await findAudits(testContext, ADMIN_USER, args) as BasicConnection<any>;
-    expect(audits.edges.length).toBe(0);
+    logApp.info('[TEST] Is Audit is searchable >>>>>>', JSON.stringify(audits, null, 2));
+    expect(audits.edges.length).toBe(5);
   });
 
   it('Is Audit + history is searchable', async () => {
@@ -154,7 +156,6 @@ describe('Testing History search', () => {
     };
     const args: QueryAuditsArgs = { filters, types: ['History', 'Activity'], orderBy: LogsOrdering.Timestamp, orderMode: OrderingMode.Asc };
     const audits = await findAudits(testContext, ADMIN_USER, args) as BasicConnection<any>;
-    console.log(JSON.stringify(audits, null, 2));
     expect(audits.edges.length).toBe(3);
   });
 
