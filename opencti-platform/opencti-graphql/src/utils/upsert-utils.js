@@ -251,8 +251,9 @@ const generateFileInputsForUpsert = async (context, user, resolvedElement, updat
       file_markings,
     });
 
-    if (untouched) {
-      // File version is same or older, skip
+    if (untouched && fileAlreadyExistsOnEntity) {
+      // File version is same or older, AND file is already associated with entity - skip
+      // Note: If untouched but file NOT on entity, we still add the reference (handles data inconsistencies)
       continue;
     }
 
