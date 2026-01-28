@@ -6,7 +6,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import { validateAndFormatSchemaAttribute } from '../../schema/schema-validator';
-import { availableSettings, getAttributesConfiguration, getAvailableSettings, getDefaultValues } from './entitySetting-utils';
+import { availableSettings, getAttributesConfiguration, getAvailableSettings, getDefaultValues } from '../../utils/entitySetting-utils';
 import { telemetry } from '../../config/tracing';
 import { INPUT_MARKINGS } from '../../schema/general';
 import type { EditInput } from '../../generated/graphql';

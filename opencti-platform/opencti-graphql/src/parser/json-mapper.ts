@@ -43,7 +43,7 @@ import { BundleBuilder } from './bundle-creator';
 import { handleInnerType } from '../domain/stixDomainObject';
 import { createStixPatternSync } from '../python/pythonBridge';
 import { logApp } from '../config/conf';
-import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
+import { getEntitySettingFromCache } from '../utils/entitySetting-utils';
 import type { AuthContext, AuthUser } from '../types/user';
 import { fromRef, toRef } from '../schema/stixRefRelationship';
 import { safeRender } from '../utils/safeEjs';

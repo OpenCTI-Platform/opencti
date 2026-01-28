@@ -2,7 +2,7 @@ import type { AuthContext, AuthUser } from '../../../types/user';
 import type { BasicStoreEntityCsvMapper, CsvMapperParsed, CsvMapperRepresentation, CsvMapperResolved } from './csvMapper-types';
 import { CsvMapperRepresentationType } from './csvMapper-types';
 import { isEmptyField, isNotEmptyField } from '../../../database/utils';
-import { fillDefaultValues, getEntitySettingFromCache } from '../../entitySetting/entitySetting-utils';
+import { fillDefaultValues, getEntitySettingFromCache } from '../../../utils/entitySetting-utils';
 import { FunctionalError } from '../../../config/errors';
 import { schemaRelationsRefDefinition } from '../../../schema/schema-relationsRef';
 import { INTERNAL_REFS } from '../../../domain/attribute-utils';
@@ -133,7 +133,7 @@ export const validateCsvMapper = async (context: AuthContext, user: AuthUser, ma
 
     // Validate required attributes
     const entitySetting = await getEntitySettingFromCache(context, representation.target.entity_type);
-    const defaultValues = fillDefaultValues(user, {}, entitySetting);
+    const defaultValues = fillDefaultValues(context, user, {}, entitySetting);
     const attributesDefs = [
       ...schemaAttributesDefinition.getAttributes(representation.target.entity_type).values(),
     ].map((def) => ({

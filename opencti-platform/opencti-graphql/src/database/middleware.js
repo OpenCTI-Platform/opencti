@@ -196,7 +196,7 @@ import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from '../domai
 import { ENTITY_TYPE_VOCABULARY, vocabularyDefinitions } from '../modules/vocabulary/vocabulary-types';
 import { getVocabulariesCategories, getVocabularyCategoryForField, isEntityFieldAnOpenVocabulary, updateElasticVocabularyValue } from '../modules/vocabulary/vocabulary-utils';
 import { depsKeysRegister, isDateAttribute, isMultipleAttribute, isNumericAttribute, isObjectAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
-import { fillDefaultValues, getAttributesConfiguration, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
+import { fillDefaultValues, getAttributesConfiguration, getEntitySettingFromCache } from '../utils/entitySetting-utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
 import { telemetry } from '../config/tracing';
@@ -3021,7 +3021,7 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
     }
     if (!existingRelationship) {
       // We do not use default values on upsert.
-      resolvedInput = fillDefaultValues(user, resolvedInput, entitySetting);
+      resolvedInput = fillDefaultValues(context, user, resolvedInput, entitySetting);
       resolvedInput = await inputResolveRefs(context, user, resolvedInput, relationshipType, entitySetting);
     }
     await validateEntityAndRelationCreation(context, user, resolvedInput, relationshipType, entitySetting, opts);
@@ -3263,7 +3263,7 @@ const internalCreateEntityRaw = async (context, user, rawInput, type, opts = {})
     existingEntities.push(...R.uniqBy((e) => e.internal_id, [...existingByIds, ...existingByHashed]));
     // region - Pre-Check
     if (existingEntities.length === 0) { // We do not use default values on upsert.
-      resolvedInput = fillDefaultValues(user, resolvedInput, entitySetting);
+      resolvedInput = fillDefaultValues(context, user, resolvedInput, entitySetting);
       resolvedInput = await inputResolveRefs(context, user, resolvedInput, type, entitySetting);
     }
     await validateEntityAndRelationCreation(context, user, resolvedInput, type, entitySetting, opts);

@@ -1,7 +1,7 @@
 import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntityEntitySetting } from './entitySetting-types';
-import { defaultScale, type EntitySettingSchemaAttribute, getAttributesConfiguration } from './entitySetting-utils';
+import { defaultScale, type EntitySettingSchemaAttribute, getAttributesConfiguration } from '../../utils/entitySetting-utils';
 import { telemetry } from '../../config/tracing';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
