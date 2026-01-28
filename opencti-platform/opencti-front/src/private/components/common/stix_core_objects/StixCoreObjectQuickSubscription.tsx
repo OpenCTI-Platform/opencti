@@ -187,7 +187,6 @@ const StixCoreObjectQuickSubscription: FunctionComponent<
   };
 
   const onSubmitUpdate: FormikConfig<InstanceTriggerEditionFormValues>['onSubmit'] = (values, { setSubmitting }) => {
-    console.log('---- values', values);
     const finalValues = [
       {
         key: 'name',

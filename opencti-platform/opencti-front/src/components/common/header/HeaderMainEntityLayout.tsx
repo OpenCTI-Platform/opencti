@@ -1,3 +1,4 @@
+import React, { ReactNode } from 'react';
 import Stack from '@mui/material/Stack';
 import TitleMainEntity from '../typography/TitleMainEntity';
 import { Tooltip } from '@mui/material';
@@ -5,10 +6,10 @@ import { Tooltip } from '@mui/material';
 interface HeaderMainEntityLayoutProps {
   title: string;
   hideTitle?: boolean;
-  titleRight?: React.ReactNode;
-  rightActions?: React.ReactNode;
-  leftTags?: React.ReactNode;
-  rightTags?: React.ReactNode;
+  titleRight?: ReactNode;
+  rightActions?: ReactNode;
+  leftTags?: ReactNode;
+  rightTags?: ReactNode;
 }
 
 const TAGS_HEIGHT = 25;
@@ -21,6 +22,10 @@ const HeaderMainEntityLayout = ({
   leftTags,
   rightTags,
 }: HeaderMainEntityLayoutProps) => {
+  const hasLeftTags = Boolean(leftTags);
+  const hasRightTags = Boolean(rightTags);
+  const hasBothTags = hasLeftTags && hasRightTags;
+
   return (
     <Stack gap={1} sx={{ marginBottom: 1 }}>
       {/* Title + TitleRight on left + Actions on right */}
@@ -88,9 +93,9 @@ const HeaderMainEntityLayout = ({
           direction="row"
           gap={1}
           sx={{
-            flex: '1 1 50%',
+            flex: 1,
             minWidth: 0,
-            maxWidth: '50%',
+            maxWidth: hasBothTags ? '50%' : '100%',
             overflow: 'hidden',
           }}
         >
@@ -103,7 +108,7 @@ const HeaderMainEntityLayout = ({
           sx={{
             flex: 1,
             minWidth: 0,
-            maxWidth: '50%',
+            maxWidth: hasBothTags ? '50%' : '100%',
           }}
         >
           {rightTags}
