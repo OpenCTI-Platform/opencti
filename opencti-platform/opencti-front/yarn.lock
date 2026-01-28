@@ -1690,18 +1690,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@filigran/chatbot@npm:1.1.0":
-  version: 1.1.0
-  resolution: "@filigran/chatbot@npm:1.1.0"
+"@filigran/chatbot@npm:1.1.2":
+  version: 1.1.2
+  resolution: "@filigran/chatbot@npm:1.1.2"
   dependencies:
     "@microsoft/fetch-event-source": "npm:2.0.1"
     "@ts-stack/markdown": "npm:1.5.0"
     device-detector-js: "npm:3.0.3"
-    lodash: "npm:4.17.21"
+    lodash: "npm:4.17.23"
     solid-element: "npm:1.9.1"
-    solid-js: "npm:1.9.10"
+    solid-js: "npm:1.9.11"
     uuid: "npm:13.0.0"
-  checksum: 10c0/3f808a7a24d0758b61693eb4e2d88be9cfdce557dd4dd8202ad460610fbc8251219e33ecce17cbcf9b370efafc25d93a728a7514e7a0b7da073af0a0a714b69c
+  checksum: 10c0/7211a53b73de63b205bfbcdb9b2e16e08ebfdcd5047a49a142c117afd4c33635f24ff29adc640f330d1ae0066a4a33b684ae70d0b7e3c8db4c194fbbec5ad9e0
   languageName: node
   linkType: hard
 
@@ -10775,14 +10775,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:4.17.21":
-  version: 4.17.21
-  resolution: "lodash@npm:4.17.21"
-  checksum: 10c0/d8cbea072bb08655bb4c989da418994b073a608dffa608b09ac04b43a791b12aeae7cd7ad919aa4c925f33b48490b5cfe6c1f71d827956071dae2e7bb3a6b74c
-  languageName: node
-  linkType: hard
-
-"lodash@npm:^4.0.1, lodash@npm:^4.17.15, lodash@npm:^4.17.20, lodash@npm:^4.17.21, lodash@npm:^4.17.4":
+"lodash@npm:4.17.23, lodash@npm:^4.0.1, lodash@npm:^4.17.15, lodash@npm:^4.17.20, lodash@npm:^4.17.21, lodash@npm:^4.17.4":
   version: 4.17.23
   resolution: "lodash@npm:4.17.23"
   checksum: 10c0/1264a90469f5bb95d4739c43eb6277d15b6d9e186df4ac68c3620443160fc669e2f14c11e7d8b2ccf078b81d06147c01a8ccced9aab9f9f63d50dcf8cace6bf6
@@ -12235,7 +12228,7 @@ __metadata:
     "@ckeditor/ckeditor5-react": "npm:9.5.0"
     "@eslint/js": "npm:9.39.2"
     "@faker-js/faker": "npm:10.2.0"
-    "@filigran/chatbot": "npm:1.1.0"
+    "@filigran/chatbot": "npm:1.1.2"
     "@fontsource/geologica": "npm:5.2.8"
     "@fontsource/ibm-plex-sans": "npm:5.2.8"
     "@graphiql/toolkit": "npm:0.11.3"
@@ -14155,19 +14148,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"seroval-plugins@npm:~1.3.0":
-  version: 1.3.3
-  resolution: "seroval-plugins@npm:1.3.3"
+"seroval-plugins@npm:~1.5.0":
+  version: 1.5.0
+  resolution: "seroval-plugins@npm:1.5.0"
   peerDependencies:
     seroval: ^1.0
-  checksum: 10c0/cb6d0119ddf26241d62b78cf924a701bfde2d1a4f8fed924f0076b1edde5f8c6f3e38d8c71975010ba58e94804619c9aed59cb3985774ce7a725aa882dc021f1
+  checksum: 10c0/a70636d35e0644e37efad37963e6d41ae9e4a02fbf1b57c89dbe4d62122908039e8a0fda1720b8a56aea93741735b2028ada6d3d50c1d40bbb67661f0de92042
   languageName: node
   linkType: hard
 
-"seroval@npm:~1.3.0":
-  version: 1.3.2
-  resolution: "seroval@npm:1.3.2"
-  checksum: 10c0/19e74825643786d22e5c58054bd28065238de0156545afba82f9a7d3ee70ea4f0249b427f317bc6bf983849dde8e4190264728d90c84620aa163bfbc5971f1bc
+"seroval@npm:~1.5.0":
+  version: 1.5.0
+  resolution: "seroval@npm:1.5.0"
+  checksum: 10c0/aff16b14a7145388555cefd4ebd41759024ee1c2c064080fd8d4fabea4b7c89d103155cd98f5109523b8878e577da73cc6cd8abf98965f2d1f0ba19dc38317ab
   languageName: node
   linkType: hard
 
@@ -14375,14 +14368,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"solid-js@npm:1.9.10":
-  version: 1.9.10
-  resolution: "solid-js@npm:1.9.10"
+"solid-js@npm:1.9.11":
+  version: 1.9.11
+  resolution: "solid-js@npm:1.9.11"
   dependencies:
     csstype: "npm:^3.1.0"
-    seroval: "npm:~1.3.0"
-    seroval-plugins: "npm:~1.3.0"
-  checksum: 10c0/ec397466b29ac36af79dfb8363ccdd79bdf77f8a12f16c740ab714c5b23207bc3961cd1171f488cf37b5d59baf28098db96e73a0c49a644e1b147f237f507357
+    seroval: "npm:~1.5.0"
+    seroval-plugins: "npm:~1.5.0"
+  checksum: 10c0/78b55d47b11a9f65410f78d3bd604b96540557b396681c08df02ad5cad800b2ea9ddbfceab832055b5fbddd3072d925cefda25616d8f380e70292a264ceb8854
   languageName: node
   linkType: hard
 
