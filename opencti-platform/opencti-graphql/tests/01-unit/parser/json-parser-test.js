@@ -6,12 +6,12 @@ import { trino_data, trino_mapper } from './json-mapper-trino';
 import { misp_data, misp_mapper } from './json-mapper-misp';
 import { STIX_EXT_OCTI_SCO } from '../../../src/types/stix-2-1-extensions';
 
-const buildMaps = (stixBundle) => {
+const buildMaps = (objects) => {
   const mapById = new Map();
   const mapByType = new Map();
   const mapByFromAndTo = new Map();
-  for (let index = 0; index < stixBundle.objects.length; index += 1) {
-    const element = stixBundle.objects[index];
+  for (let index = 0; index < objects.length; index += 1) {
+    const element = objects[index];
     mapById.set(element.id, element);
     if (element.type === 'relationship') {
       mapByFromAndTo.set(`${element.source_ref}-${element.target_ref}`, element);
@@ -29,9 +29,9 @@ const buildMaps = (stixBundle) => {
 
 describe('JSON mapper testing', () => {
   it('should cisa correctly parsed', async () => {
-    const stixBundle = await jsonMappingExecution(testContext, ADMIN_USER, cisa_data, cisa_mapper);
-    const { mapById, mapByType, mapByFromAndTo } = buildMaps(stixBundle);
-    expect(stixBundle.objects.length).toBe(3556);
+    const objects = await jsonMappingExecution(testContext, ADMIN_USER, cisa_data, cisa_mapper);
+    const { mapById, mapByType, mapByFromAndTo } = buildMaps(objects);
+    expect(objects.length).toBe(3556);
     expect(mapByType.get('marking-definition').length).toBe(1);
     expect(mapByType.get('identity').length).toBe(1);
     expect(mapByType.get('software').length).toBe(528);
@@ -52,8 +52,8 @@ describe('JSON mapper testing', () => {
     expect(relationship).not.toBeNull();
   });
   it('should trino correctly parsed', async () => {
-    const stixBundle = await jsonMappingExecution(testContext, ADMIN_USER, trino_data, trino_mapper);
-    const { mapById, mapByType } = buildMaps(stixBundle);
+    const objects = await jsonMappingExecution(testContext, ADMIN_USER, trino_data, trino_mapper);
+    const { mapById, mapByType } = buildMaps(objects);
     expect(mapByType.get('identity').length).toBe(40);
     // Test organization binding
     const organization = mapById.get('identity--c8b81eb7-706a-5ec5-a0a0-804064556134');
@@ -61,8 +61,8 @@ describe('JSON mapper testing', () => {
     expect(organization.identity_class).toBe('organization');
   });
   it('should misp correctly parsed', async () => {
-    const stixBundle = await jsonMappingExecution(testContext, ADMIN_USER, misp_data, misp_mapper, { externalUri: 'http://localhost' });
-    const { mapById, mapByType } = buildMaps(stixBundle);
+    const objects = await jsonMappingExecution(testContext, ADMIN_USER, misp_data, misp_mapper, { externalUri: 'http://localhost' });
+    const { mapById, mapByType } = buildMaps(objects);
     expect(mapByType.get('marking-definition').length).toBe(1);
     expect(mapByType.get('location').length).toBe(1);
     expect(mapByType.get('identity').length).toBe(1);

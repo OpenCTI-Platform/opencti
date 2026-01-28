@@ -52,8 +52,7 @@ export const jsonMapperTest = async (context: AuthContext, user: AuthUser, confi
   const jsonMapperParsed = parseJsonMapper(parsedConfiguration);
   const { createReadStream } = await fileUpload;
   const data: string = await streamConverter(createReadStream());
-  const stixBundle = await jsonMappingExecution(context, user, data, jsonMapperParsed);
-  const allObjects = stixBundle.objects;
+  const allObjects = await jsonMappingExecution(context, user, data, jsonMapperParsed);
   return {
     objects: JSON.stringify(allObjects.slice(0, 50), null, 2), // Max 50 records to display
     nbRelationships: allObjects.filter((object) => object.type === 'relationship').length,
