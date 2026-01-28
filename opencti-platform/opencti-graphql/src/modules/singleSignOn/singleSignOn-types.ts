@@ -10,20 +10,22 @@ export interface ConfigurationType {
   type: string;
 }
 
-interface OrganizationsManagement {
+export interface OrganizationsManagement {
   organizations_path?: string[];
   organizations_mapping: string[];
   token_reference?: string;
   read_userinfo?: boolean;
+  organizations_scope?: string[];
 }
 
-interface GroupsManagement {
+export interface GroupsManagement {
   group_attributes?: string[];
   group_attribute?: string;
   groups_path?: string[];
   groups_mapping: string[];
   read_userinfo?: boolean;
   token_reference?: string;
+  groups_scope?: string[];
 }
 
 export interface BasicStoreEntitySingleSignOn extends BasicStoreEntity {

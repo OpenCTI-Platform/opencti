@@ -10,8 +10,9 @@ import { convertKeyValueToJsConfiguration, genPairConfigMapper, providerLoginHan
 import { AuthType, EnvStrategyType } from './providers-configuration';
 import { logAuthInfo } from './singleSignOn-domain';
 import { registerAuthenticationProvider } from './providers-initialization';
+import type { BasicStoreEntitySingleSignOn, GroupsManagement, OrganizationsManagement } from './singleSignOn-types';
 
-export const computeOpenIdUserInfo = (ssoConfig, user_attribute_obj) => {
+export const computeOpenIdUserInfo = (ssoConfig: any, user_attribute_obj: any) => {
   const nameAttribute = ssoConfig.name_attribute ?? 'name';
   const emailAttribute = ssoConfig.email_attribute ?? 'email';
   const firstnameAttribute = ssoConfig.firstname_attribute ?? 'given_name';
@@ -25,7 +26,7 @@ export const computeOpenIdUserInfo = (ssoConfig, user_attribute_obj) => {
   return { email, name, firstname, lastname };
 };
 
-export const computeOpenIdOrganizationsMapping = (orgsManagement, decodedUser, userinfo, orgaDefault) => {
+export const computeOpenIdOrganizationsMapping = (orgsManagement: OrganizationsManagement, decodedUser: any, userinfo: any, orgaDefault: string[]) => {
   const readUserinfo = orgsManagement?.read_userinfo || false;
   const orgasMapping = orgsManagement?.organizations_mapping || [];
   const orgaPath = orgsManagement?.organizations_path || ['organizations'];
@@ -38,7 +39,7 @@ export const computeOpenIdOrganizationsMapping = (orgsManagement, decodedUser, u
   return [...orgaDefault, ...availableOrgas.map((a) => orgasMapper[a]).filter((r) => isNotEmptyField(r))];
 };
 
-export const computeOpenIdGroupsMapping = (groupManagement, decodedUser, userinfo) => {
+export const computeOpenIdGroupsMapping = (groupManagement: GroupsManagement, decodedUser: any, userinfo: any) => {
   const readUserinfo = groupManagement?.read_userinfo || false;
   const groupsPath = groupManagement?.groups_path || ['groups'];
   const groupsMapping = groupManagement?.groups_mapping || [];
@@ -57,7 +58,7 @@ export const computeOpenIdGroupsMapping = (groupManagement, decodedUser, userinf
 };
 
 // (ssoEntity: BasicStoreEntitySingleSignOn)
-export const registerOpenIdStrategy = async (ssoEntity) => {
+export const registerOpenIdStrategy = async (ssoEntity: BasicStoreEntitySingleSignOn) => {
   const providerRef = ssoEntity.identifier || 'oic';
   const ssoConfig = convertKeyValueToJsConfiguration(ssoEntity);
   const providerName = ssoConfig?.label || providerRef;
@@ -113,28 +114,33 @@ export const registerOpenIdStrategy = async (ssoEntity) => {
             scope: openIdScope, ...(ssoConfig.audience && { audience: ssoConfig.audience }),
           },
         };
-        const debugCallback = (message, meta) => logApp.info(message, meta);
-        const openIDStrategy = new OpenIDStrategy(options, debugCallback, (_, tokenset, userinfo, done) => {
+        const openIDStrategy = new OpenIDStrategy(options, (_, tokenset, userinfo, done) => {
           logAuthInfo('Successfully logged', EnvStrategyType.STRATEGY_OPENID, { userinfo });
+          // TODO usefull or not ? const accessToken = tokenset['access_token'];
+          const idToken = tokenset['id_token'];
+          let decodedUser;
+          if (idToken) {
+            decodedUser = jwtDecode(idToken);
+          }
+
           addUserLoginCount();
-          const isGroupMapping = (isNotEmptyField(ssoEntity?.groups_management) && isNotEmptyField(ssoEntity?.groups_management.groups_mapping));
+          const isGroupMapping = (isNotEmptyField(ssoEntity?.groups_management) && isNotEmptyField(ssoEntity?.groups_management?.groups_mapping));
           logAuthInfo('Groups management configuration', EnvStrategyType.STRATEGY_OPENID, { groupsManagement: ssoEntity?.groups_management });
-          const groupManagement = ssoEntity?.groups_management;
-          // region groups mapping
-          const token = groupManagement?.token_reference || 'access_token';
-          const decodedUser = jwtDecode(tokenset[token]);
-          const mappedGroups = isGroupMapping ? computeOpenIdGroupsMapping(groupManagement, decodedUser, userinfo) : [];
+          let mappedGroups: string[] = [];
+          if (isGroupMapping && ssoEntity.groups_management) {
+            mappedGroups = computeOpenIdGroupsMapping(ssoEntity.groups_management, decodedUser, userinfo);
+          }
           const groupsToAssociate = R.uniq(mappedGroups);
           // endregion
           // region organizations mapping
           const isOrgaMapping = isNotEmptyField(ssoConfig.organizations_default) || isNotEmptyField(ssoEntity.organizations_management);
           const orgsManagement = ssoEntity.organizations_management;
           const orgaDefault = ssoConfig.organizations_default ?? [];
-          const organizationsToAssociate = isOrgaMapping ? computeOpenIdOrganizationsMapping(orgsManagement, decodedUser, userinfo, orgaDefault) : [];
+          const organizationsToAssociate = isOrgaMapping && orgsManagement ? computeOpenIdOrganizationsMapping(orgsManagement, decodedUser, userinfo, orgaDefault) : [];
           // endregion
           if (!isGroupMapping || groupsToAssociate.length > 0) {
             const get_user_attributes_from_id_token = ssoConfig.get_user_attributes_from_id_token ?? false;
-            const user_attribute_obj = get_user_attributes_from_id_token ? jwtDecode(tokenset.id_token) : userinfo;
+            const user_attribute_obj = get_user_attributes_from_id_token && idToken ? jwtDecode(idToken) : userinfo;
             const userInfo = computeOpenIdUserInfo(ssoConfig, user_attribute_obj);
 
             const opts = {
@@ -147,12 +153,13 @@ export const registerOpenIdStrategy = async (ssoEntity) => {
             done({ message: 'Restricted access, ask your administrator' });
           }
         });
-        openIDStrategy.logout_remote = options.logout_remote;
+        /* TODO openIDStrategy.logout_remote = options.logout_remote;
         logAuthInfo('logout remote options', EnvStrategyType.STRATEGY_OPENID, options);
         openIDStrategy.logout = (_, callback) => {
           const isSpecificUri = isNotEmptyField(ssoConfig.logout_callback_url);
           const endpointUri = issuer.end_session_endpoint ? issuer.end_session_endpoint : `${ssoConfig.issuer}/oidc/logout`;
-          logAuthInfo(`logout configuration, isSpecificUri:${isSpecificUri}, issuer.end_session_endpoint:${issuer.end_session_endpoint}, final endpointUri: ${endpointUri}`, EnvStrategyType.STRATEGY_OPENID);
+          logAuthInfo(`logout configuration, isSpecificUri:${isSpecificUri},
+           issuer.end_session_endpoint:${issuer.end_session_endpoint}, final endpointUri: ${endpointUri}`, EnvStrategyType.STRATEGY_OPENID);
           if (isSpecificUri) {
             const logoutUri = `${endpointUri}?post_logout_redirect_uri=${ssoConfig.logout_callback_url}`;
             callback(null, logoutUri);
@@ -160,6 +167,7 @@ export const registerOpenIdStrategy = async (ssoEntity) => {
             callback(null, endpointUri);
           }
         };
+        */
         const providerConfig = { name: providerName, type: AuthType.AUTH_SSO, strategy: EnvStrategyType.STRATEGY_OPENID, provider: providerRef };
         registerAuthenticationProvider(providerRef, openIDStrategy, providerConfig);
       }).catch((err) => {
