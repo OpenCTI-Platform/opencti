@@ -178,7 +178,6 @@ const SSODefinitionForm = ({
     groupSearchBase: '',
     groupSearchFilter: '',
     allow_self_signed: false,
-    // CERT
   };
 
   const privateField = data?.configuration?.find((e) => e.key === 'privateKey');
