@@ -17,6 +17,8 @@ import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA } from '../schema/stixDomainObject'
 import { externalReferences, objectLabel, RELATION_CREATED_BY, RELATION_GRANTED_TO } from '../schema/stixRefRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { FunctionalError } from '../config/errors';
+import { getDraftContext } from './draftContext';
+import { getDraftFilePrefix } from '../database/draft-utils';
 
 const ALIGN_OLDEST = 'oldest';
 const ALIGN_NEWEST = 'newest';
@@ -190,8 +192,9 @@ const generateFileInputsForUpsert = async (context, user, resolvedElement, updat
     const filesMarkings = updatePatch.filesMarkings || [];
     for (let i = 0; i < updatePatch.files.length; i += 1) {
       const fileInput = updatePatch.files[i];
-      const fileMarking = filesMarkings[i] || updatePatch.objectMarking?.map(({ id }) => id);
-      filesToUpload.push({ file: fileInput, markings: fileMarking });
+      // Use snake_case to match storage API parameter naming
+      const file_markings = filesMarkings[i] || updatePatch.objectMarking?.map(({ id }) => id);
+      filesToUpload.push({ file: fileInput, markings: file_markings });
     }
   }
   // Handle single file upload (backward compatibility)
@@ -211,12 +214,20 @@ const generateFileInputsForUpsert = async (context, user, resolvedElement, updat
   const filePath = `import/${resolvedElement.entity_type}/${resolvedElement.internal_id}`;
   const uploadedFiles = [];
 
+  // Handle draft context - files in draft have a prefix added to their path
+  const draftContext = getDraftContext(context, user);
+
   for (let i = 0; i < filesToUpload.length; i += 1) {
     const { file: fileInput, markings: file_markings } = filesToUpload[i];
     const { filename } = await fileInput;
     // Build the exact same key that file-storage.ts uses (truncated + lowercased)
     const truncatedFileName = `${truncate(path.parse(filename).name, 200, false)}${truncate(path.parse(filename).ext, 10, false)}`;
-    const fileKey = `${filePath}/${truncatedFileName.toLowerCase()}`;
+    let fileKey = `${filePath}/${truncatedFileName.toLowerCase()}`;
+    // In draft context, files are stored with a prefix - match that for conflict detection
+    if (draftContext) {
+      const draftPrefix = getDraftFilePrefix(draftContext);
+      fileKey = `${draftPrefix}${fileKey}`;
+    }
 
     // Check if file already exists on this entity by matching the full file ID
     const existingFile = existingFilesById.get(fileKey);
