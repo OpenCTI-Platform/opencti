@@ -1,55 +1,55 @@
-import React, { FunctionComponent, useCallback, useEffect, useState } from 'react';
-import { createRefetchContainer, graphql, RelayRefetchProp } from 'react-relay';
-import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
+import ConnectorPopover from '@components/data/connectors/ConnectorPopover';
+import ConnectorStatusChip from '@components/data/connectors/ConnectorStatusChip';
+import UpdateIcon from '@mui/icons-material/Update';
+import { ListItemButton } from '@mui/material';
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
-import { interval } from 'rxjs';
-import Tooltip from '@mui/material/Tooltip';
-import { InformationOutline } from 'mdi-material-ui';
-import { useTheme } from '@mui/styles';
-import { Link } from 'react-router-dom';
+import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import { ListItemButton } from '@mui/material';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Alert from '@mui/material/Alert';
-import UpdateIcon from '@mui/icons-material/Update';
-import Tabs from '@mui/material/Tabs';
+import Paper from '@mui/material/Paper';
 import Tab from '@mui/material/Tab';
-import ConnectorPopover from '@components/data/connectors/ConnectorPopover';
-import ConnectorStatusChip from '@components/data/connectors/ConnectorStatusChip';
-import Filters from '../../common/lists/Filters';
-import ItemBoolean from '../../../../components/ItemBoolean';
+import Tabs from '@mui/material/Tabs';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
+import { useTheme } from '@mui/styles';
+import { InformationOutline } from 'mdi-material-ui';
+import React, { FunctionComponent, useCallback, useEffect, useMemo, useState } from 'react';
+import { createRefetchContainer, graphql, RelayRefetchProp } from 'react-relay';
+import { Link } from 'react-router-dom';
+import { interval } from 'rxjs';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import FilterIconButton from '../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../components/i18n';
+import ItemBoolean from '../../../../components/ItemBoolean';
+import ItemCopy from '../../../../components/ItemCopy';
+import ItemIcon from '../../../../components/ItemIcon';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
+import type { Theme } from '../../../../components/Theme';
+import { MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import {
-  useGetConnectorAvailableFilterKeys,
-  useGetConnectorFilterEntityTypes,
+  computeConnectorStatus,
   getConnectorOnlyContextualStatus,
   getConnectorTriggerStatus,
-  computeConnectorStatus,
+  useGetConnectorAvailableFilterKeys,
+  useGetConnectorFilterEntityTypes,
 } from '../../../../utils/Connector';
 import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
-import { FIVE_SECONDS, formatUptime } from '../../../../utils/Time';
-import Security from '../../../../utils/Security';
-import useGranted, { MODULES_MODMANAGE, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
-import { MESSAGING$, QueryRenderer } from '../../../../relay/environment';
-import ConnectorWorks, { connectorWorksQuery } from './ConnectorWorks';
-import FilterIconButton from '../../../../components/FilterIconButton';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
-import ItemCopy from '../../../../components/ItemCopy';
-import ItemIcon from '../../../../components/ItemIcon';
-import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import type { Theme } from '../../../../components/Theme';
+import useGranted, { MODULES_MODMANAGE, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import Security from '../../../../utils/Security';
+import { FIVE_SECONDS, formatUptime } from '../../../../utils/Time';
+import Filters from '../../common/lists/Filters';
 import { Connector_connector$data } from './__generated__/Connector_connector.graphql';
-import { ConnectorUpdateTriggerMutation, EditInput } from './__generated__/ConnectorUpdateTriggerMutation.graphql';
 import { ConnectorUpdateStatusMutation } from './__generated__/ConnectorUpdateStatusMutation.graphql';
+import { ConnectorUpdateTriggerMutation, EditInput } from './__generated__/ConnectorUpdateTriggerMutation.graphql';
 import { ConnectorWorksQuery$data, ConnectorWorksQuery$variables } from './__generated__/ConnectorWorksQuery.graphql';
+import ConnectorWorks, { connectorWorksQuery } from './ConnectorWorks';
 
 // Type extension for organization node with authorized_authorities
 interface OrganizationNodeWithAuthorities {
@@ -265,7 +265,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
   };
 
   // Component for Overview content (without ConnectorWorks)
-  const ConnectorOverview = () => (
+  const connectorOverviewContent = useMemo(() => (
     <>
       <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
         <Grid item xs={6}>
@@ -362,8 +362,9 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                     />
                   </Box>
                   {filters && (
-                    <Box sx={{ overflow: 'hidden' }}>
+                    <Box sx={{ overflow: 'hidden' }} key="filter-icon-button-container">
                       <FilterIconButton
+                        key="connector-filter-icon-button"
                         filters={filters}
                         helpers={helpers}
                         styleNumber={2}
@@ -625,7 +626,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                   {t_i18n('Next run')}
                 </Typography>
                 {connector.connector_info && (
-                // eslint-disable-next-line no-nested-ternary
+                  // eslint-disable-next-line no-nested-ternary
                   connector.connector_info.run_and_terminate ? (
                     <Typography variant="body1" gutterBottom={true}>
                       {t_i18n('External schedule')}
@@ -690,10 +691,27 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
         </Grid>
       </Grid>
     </>
-  );
+  ), [
+    connector,
+    connectorFiltersEnabled,
+    connectorOnlyContextualStatus,
+    connectorTriggerStatus,
+    connectorAvailableFilterKeys,
+    connectorFiltersScope,
+    filters,
+    helpers,
+    filtersSearchContext,
+    userHasSettingsCapability,
+    connectorStateConverted,
+    checkLastRunExistingInState,
+    checkLastRunIsNumber,
+    lastRunConverted,
+    theme,
+    t_i18n,
+    nsdt,
+  ]);
 
-  // Component for Logs content
-  const ConnectorLogs = () => {
+  const connectorLogsContent = useMemo(() => {
     // calculating the full viewport height minus some space for elements above
     const logsContainerHeight = 'calc(100vh - 280px)';
     return (
@@ -714,7 +732,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
         </pre>
       </Box>
     );
-  };
+  }, [connector.manager_connector_logs, theme, t_i18n]);
 
   return (
     <>
@@ -794,16 +812,16 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
           <Box>
             {tabValue === 0 && (
               <>
-                <ConnectorOverview />
+                {connectorOverviewContent}
                 <ConnectorWorksSection connectorId={connector.id} />
               </>
             )}
-            {tabValue === 1 && <ConnectorLogs />}
+            {tabValue === 1 && connectorLogsContent}
           </Box>
         </>
       ) : (
         <>
-          <ConnectorOverview />
+          {connectorOverviewContent}
           <ConnectorWorksSection connectorId={connector.id} />
         </>
       )}
