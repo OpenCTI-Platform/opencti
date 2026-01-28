@@ -593,16 +593,16 @@ export const isServiceAccountUser = (user: AuthUser): boolean => {
   return user.user_service_account === true;
 };
 
-export const isUserHasCapability = (user: AuthUser, capability: string): boolean => {
+export const isUserHasCapability = (user: AuthUser, capability: string, options?: { forceCapabilityInDraft?: boolean }): boolean => {
   const isInDraftContext = !!user.draft_context;
   const isIncludedInCapabilities = (user.capabilities || []).some((s) => capability !== BYPASS && s.name.includes(capability));
   const isIncludedInDraftCapabilities = (user.capabilitiesInDraft || []).some((s) => s.name.includes(capability));
-
-  return isBypassUser(user) || isIncludedInCapabilities || (isInDraftContext && isIncludedInDraftCapabilities);
+  const checkCapabilitiesInDraft = !!options?.forceCapabilityInDraft || isInDraftContext;
+  return isBypassUser(user) || isIncludedInCapabilities || (checkCapabilitiesInDraft && isIncludedInDraftCapabilities);
 };
 
-export const isUserHasCapabilities = (user: AuthUser, capabilities: string[] = []) => {
-  return capabilities.every((capability) => isUserHasCapability(user, capability));
+export const isUserHasCapabilities = (user: AuthUser, capabilities: string[] = [], options?: { forceCapabilityInDraft?: boolean }) => {
+  return capabilities.every((capability) => isUserHasCapability(user, capability, options));
 };
 
 export const isOnlyOrgaAdmin = (user: AuthUser) => {
