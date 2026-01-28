@@ -38,7 +38,7 @@ jobs:
           -v ${{ github.workspace }}:/home/workspace \
           nikolaik/python-nodejs:python3.11-nodejs22 \
           sh -c "set -eux
-           apt-get update --allow-insecure-repositories --allow-unauthenticated && apt-get install -y g++ make python3 python3-dev
+           apt-get update --allow-insecure-repositories --allow-unauthenticated && apt-get install -y g++ make python3 python3-dev git
            cd /home/workspace/opencti-platform/opencti-front
            yarn install
            yarn build
@@ -87,7 +87,7 @@ jobs:
           -v ${{ github.workspace }}:/home/workspace \
           nikolaik/python-nodejs:python3.11-nodejs22-alpine \
           sh -c "set -eux
-           apk update && apk upgrade && apk --no-cache add g++ make python3 python3-dev
+           apk update && apk upgrade && apk --no-cache add g++ make python3 python3-dev git
            cd /home/workspace/opencti-platform/opencti-front
            yarn install
            yarn build
