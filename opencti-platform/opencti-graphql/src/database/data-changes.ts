@@ -89,7 +89,7 @@ const resolveAttribute = (field: string) => {
   return attributeDefinition || relationsRefDefinition;
 };
 
-const humanizeRawValue = (resolvedMap: Record<string, string>,
+export const humanizeRawValue = (resolvedMap: Record<string, string>,
   attribute: AttributeDefinition, v: ChangeValue, format: Formating = DefaultFormating): string => {
   const targetValue = v.raw;
   if (attribute.type === 'date') {
@@ -102,7 +102,7 @@ const humanizeRawValue = (resolvedMap: Record<string, string>,
     return v.raw; // vocab / enum
   }
   if (attribute.type === 'boolean') {
-    return v.raw === 'true' ? 'Yes' : 'No';
+    return v.raw.toLowerCase() === 'true' ? 'Yes' : 'No';
   }
   if (attribute.type === 'numeric') {
     return v.raw;

@@ -52,12 +52,12 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-
 import type { NestedObjectAttribute } from '../../schema/attribute-definition';
 import { DefaultFormating, humanizeDate, humanizeHeight, humanizeWeight } from '../../utils/humanize';
 
-type Measurement = {
+export type Measurement = {
   measure: number;
   date_seen: string;
 };
 
-const weight: NestedObjectAttribute<Measurement> = {
+export const weight: NestedObjectAttribute<Measurement> = {
   name: 'weight',
   label: 'Weight',
   type: 'object',
@@ -76,7 +76,7 @@ const weight: NestedObjectAttribute<Measurement> = {
   ],
 };
 
-const height: NestedObjectAttribute<Measurement> = {
+export const height: NestedObjectAttribute<Measurement> = {
   name: 'height',
   label: 'Height',
   type: 'object',
