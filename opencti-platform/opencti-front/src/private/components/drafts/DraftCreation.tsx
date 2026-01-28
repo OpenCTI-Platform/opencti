@@ -17,6 +17,9 @@ import { useFormatter } from '../../../components/i18n';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useAuth from '../../../utils/hooks/useAuth';
 import FormButtonContainer from '@common/form/FormButtonContainer';
+import useDefaultValues from '../../../utils/hooks/useDefaultValues';
+import useGranted, { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../utils/hooks/useGranted';
+import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../utils/hooks/useEntitySettings';
 
 export const draftCreationMutation = graphql`
     mutation DraftCreationMutation($input: DraftWorkspaceAddInput!) {
@@ -40,6 +43,8 @@ export const draftCreationMutation = graphql`
     }
 `;
 
+const DRAFTWORKPACE_TYPE = 'DraftWorkspace';
+
 interface DraftFormProps {
   updater: (
     store: RecordSourceSelectorProxy,
@@ -51,31 +56,41 @@ interface DraftFormProps {
 
 interface DraftAddInput {
   name: string;
-  authorizedMembers?: AuthorizedMembersFieldValue;
+  authorized_members?: AuthorizedMembersFieldValue;
 }
 
 const DraftCreationForm: React.FC<DraftFormProps> = ({ updater, onCompleted, onReset }) => {
   const { t_i18n } = useFormatter();
   const { me: owner, settings } = useAuth();
+  const { mandatoryAttributes } = useIsMandatoryAttribute(DRAFTWORKPACE_TYPE);
   const showAllMembersLine = !settings.platform_organization?.id;
+  const canEditAuthorizedMembers = useGranted([KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]);
+
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().trim().min(2, t_i18n('Name must be at least 2 characters')),
+    authorized_members: Yup.array().nullable(),
+  }, mandatoryAttributes);
+  const draftWorkspaceValidator = useDynamicSchemaCreationValidation(
+    mandatoryAttributes,
+    basicShape,
+  );
+
   const [commitCreationMutation] = useApiMutation<DraftCreationMutation>(draftCreationMutation);
-  const draftValidation = () => Yup.object().shape({
-    name: Yup.string().trim().min(2, t_i18n('Name must be at least 2 characters')).required(t_i18n('This field is required')),
-  });
+
   const onSubmit: FormikConfig<DraftAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
     const input: DraftCreationMutation$variables['input'] = {
       name: values.name,
-      authorized_members: !values.authorizedMembers
-        ? null
-        : values.authorizedMembers
-            .filter((v) => v.accessRight !== 'none')
-            .map((member) => ({
-              id: member.value,
-              access_right: member.accessRight,
-              groups_restriction_ids: member.groupsRestriction?.length > 0
-                ? member.groupsRestriction.map((group) => group.value)
-                : undefined,
-            })),
+      authorized_members: !values.authorized_members ? null : (
+        values.authorized_members
+          .filter((v) => v.accessRight !== 'none')
+          .map((member) => ({
+            id: member.value,
+            access_right: member.accessRight,
+            groups_restriction_ids: member.groupsRestriction?.length > 0
+              ? member.groupsRestriction.map((group) => group.value)
+              : undefined,
+          }))
+      ),
     };
     commitCreationMutation({
       variables: {
@@ -100,10 +115,18 @@ const DraftCreationForm: React.FC<DraftFormProps> = ({ updater, onCompleted, onR
     });
   };
 
+  const initialValues = useDefaultValues<DraftAddInput>(DRAFTWORKPACE_TYPE, {
+    name: '',
+    authorized_members: undefined,
+  });
+  if (!canEditAuthorizedMembers) {
+    delete initialValues.authorized_members;
+  }
+
   return (
     <Formik<DraftAddInput>
-      initialValues={{ name: '' }}
-      validationSchema={draftValidation}
+      initialValues={initialValues}
+      validationSchema={draftWorkspaceValidator}
       onSubmit={onSubmit}
       onReset={onReset}
     >
@@ -114,11 +137,12 @@ const DraftCreationForm: React.FC<DraftFormProps> = ({ updater, onCompleted, onR
               component={TextField}
               name="name"
               label={t_i18n('Name')}
+              required={mandatoryAttributes.includes('name')}
               fullWidth
               data-testid="draft-creation-form-name-input"
             />
             <Field
-              name="authorizedMembers"
+              name="authorized_members"
               component={AuthorizedMembersField}
               owner={owner}
               showAllMembersLine={showAllMembersLine}

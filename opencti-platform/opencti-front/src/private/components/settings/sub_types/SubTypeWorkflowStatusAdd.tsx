@@ -33,7 +33,7 @@ const subTypeWorkflowStatusAddCreationMutation = graphql`
   ) {
     subTypeEdit(id: $id) {
       statusAdd(input: $input) {
-        ...SubTypeWorkflow_subType
+        ...SubTypeWorkflowDrawer_subType
       }
     }
   }

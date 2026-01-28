@@ -5,8 +5,8 @@ import { InformationOutline } from 'mdi-material-ui';
 import { Tooltip } from '@mui/material';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import SubTypeWorkflow, { subTypeWorkflowEditionQuery } from './SubTypeWorkflow';
-import { SubTypeWorkflowEditionQuery } from './__generated__/SubTypeWorkflowEditionQuery.graphql';
+import SubTypeWorkflowDrawer, { subTypeWorkflowDrawerEditionQuery } from './SubTypeWorkflowDrawer';
+import { SubTypeWorkflowDrawerEditionQuery } from './__generated__/SubTypeWorkflowDrawerEditionQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 
 interface SubTypeStatusPopoverProps {
@@ -15,8 +15,8 @@ interface SubTypeStatusPopoverProps {
 }
 
 const SubTypeStatusPopover: FunctionComponent<SubTypeStatusPopoverProps> = ({ subTypeId, scope }) => {
-  const queryRef = useQueryLoading<SubTypeWorkflowEditionQuery>(
-    subTypeWorkflowEditionQuery,
+  const queryRef = useQueryLoading<SubTypeWorkflowDrawerEditionQuery>(
+    subTypeWorkflowDrawerEditionQuery,
     { id: subTypeId },
   );
   const { t_i18n } = useFormatter();
@@ -49,7 +49,7 @@ const SubTypeStatusPopover: FunctionComponent<SubTypeStatusPopoverProps> = ({ su
         <React.Suspense
           fallback={<Loader variant={LoaderVariant.inElement} />}
         >
-          <SubTypeWorkflow
+          <SubTypeWorkflowDrawer
             scope={scope}
             queryRef={queryRef}
             handleClose={handleCloseUpdate}

@@ -25,7 +25,7 @@ const statusEditFieldPatchMutation = graphql`
   ) {
     subTypeEdit(id: $id) {
       statusFieldPatch(statusId: $statusId, input: $input) {
-        ...SubTypeWorkflow_subType
+        ...SubTypeWorkflowDrawer_subType
       }
     }
   }
@@ -79,14 +79,13 @@ const SubTypeWorkflowStatusEdit: FunctionComponent<StatusEditionProps> = ({
   const { t_i18n } = useFormatter();
 
   const initialValues: StatusEditForm = {
-    template: data.template
-      ? {
-          label: data.template.name,
-          value: data.template.id,
-          color: data.template.color,
-
-        }
-      : null,
+    template: data.template ? (
+      {
+        label: data.template.name,
+        value: data.template.id,
+        color: data.template.color,
+      }
+    ) : null,
     order: String(data.order) || '',
   };
 

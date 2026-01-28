@@ -10,7 +10,7 @@ export const entitiesCounter = {
   CourseOfAction: 1,
   Credential: 1,
   DecayRule: 4,
-  EntitySetting: 45,
+  EntitySetting: 46,
   ExternalReference: 7,
   Group: TESTING_GROUPS.length + 3,
   Incident: 1,
