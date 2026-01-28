@@ -1,19 +1,16 @@
-import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import * as Yup from 'yup';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-import DrawerHeader from '../../../../components/common/drawer/DrawerHeader';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { useFormatter } from '../../../../components/i18n';
-import { SubscriptionAvatars, SubscriptionFocus } from '../../../../components/Subscription';
+import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
-import type { Theme } from '../../../../components/Theme';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useDynamicSchemaEditionValidation, useIsEnforceReference, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
@@ -30,14 +27,6 @@ import {
   StixSightingRelationshipEditionOverview_stixSightingRelationship$key,
 } from './__generated__/StixSightingRelationshipEditionOverview_stixSightingRelationship.graphql';
 import { StixSightingRelationshipEditionOverviewQuery } from './__generated__/StixSightingRelationshipEditionOverviewQuery.graphql';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>(() => ({
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
-}));
 
 const StixSightingRelationshipEditionOverviewFragment = graphql`
   fragment StixSightingRelationshipEditionOverview_stixSightingRelationship on StixSightingRelationship {
@@ -180,7 +169,6 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
   noStoreUpdate,
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const enableReferences = useIsEnforceReference(STIX_SIGHTING_TYPE);
 
   const { editContext } = stixSightingRelationship;
@@ -257,169 +245,159 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
   };
 
   return (
-    <>
-      <DrawerHeader
-        title={t_i18n('Update a sighting')}
-        endContent={<SubscriptionAvatars context={editContext} />}
-        onClose={handleClose}
-      />
-
-      <div className={classes.container}>
-        <Formik
-          enableReinitialize={true}
-          initialValues={initialValues}
-          validationSchema={stixSightingRelationshipValidator}
-          validateOnChange={true}
-          validateOnBlur={true}
-          onSubmit={onSubmit}
-        >
-          {({ submitForm, isSubmitting, setFieldValue, values, isValid, dirty }) => (
-            <Form>
-              <AlertConfidenceForEntity entity={stixSightingRelationship} />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="attribute_count"
-                label={t_i18n('Count')}
-                required={(mandatoryAttributes.includes('attribute_count'))}
-                fullWidth={true}
-                onFocus={editor.changeFocus}
-                onSubmit={editor.changeField}
-                helperText={
-                  <SubscriptionFocus context={editContext} fieldName="attribute_count" />
-                }
-                disabled={inferred}
-              />
-              <ConfidenceField
-                variant="edit"
-                onFocus={editor.changeFocus}
-                onSubmit={editor.changeField}
-                editContext={editContext}
-                containerStyle={fieldSpacingContainerStyle}
-                disabled={inferred}
-                entityType={STIX_SIGHTING_TYPE}
-              />
-              <Field
-                component={DateTimePickerField}
-                name="first_seen"
-                onFocus={editor.changeFocus}
-                onChange={editor.changeField}
-                textFieldProps={{
-                  label: t_i18n('First seen'),
-                  required: (mandatoryAttributes.includes('first_seen')),
-                  variant: 'standard',
-                  fullWidth: true,
-                  style: { marginTop: 20 },
-                  helperText: (
-                    <SubscriptionFocus context={editContext} fieldName="first_seen" />
-                  ),
-                }}
-                disabled={inferred}
-              />
-              <Field
-                component={DateTimePickerField}
-                name="last_seen"
-                onFocus={editor.changeFocus}
-                onChange={editor.changeField}
-                textFieldProps={{
-                  label: t_i18n('Last seen'),
-                  required: (mandatoryAttributes.includes('last_seen')),
-                  variant: 'standard',
-                  fullWidth: true,
-                  style: { marginTop: 20 },
-                  helperText: (
-                    <SubscriptionFocus context={editContext} fieldName="last_seen" />
-                  ),
-                }}
-                disabled={inferred}
-              />
-              <Field
-                component={MarkdownField}
-                name="description"
-                label={t_i18n('Description')}
-                required={(mandatoryAttributes.includes('description'))}
-                fullWidth={true}
-                multiline={true}
-                rows={4}
-                style={{ marginTop: 20 }}
-                onFocus={editor.changeFocus}
-                onSubmit={editor.changeField}
-                helperText={
-                  <SubscriptionFocus context={editContext} fieldName="description" />
-                }
-                disabled={inferred}
-              />
-              {stixSightingRelationship.workflowEnabled && (
-                <StatusField
-                  name="x_opencti_workflow_id"
-                  type="stix-sighting-relationship"
-                  onFocus={editor.changeFocus}
-                  onChange={editor.changeField}
-                  setFieldValue={setFieldValue}
-                  style={{ marginTop: 20 }}
-                  helpertext={
-                    <SubscriptionFocus context={editContext} fieldName="x_opencti_workflow_id" />
-                  }
-                />
-              )}
-              <CreatedByField
-                name="createdBy"
-                required={(mandatoryAttributes.includes('createdBy'))}
-                style={fieldSpacingContainerStyle}
-                setFieldValue={setFieldValue}
-                helpertext={
-                  <SubscriptionFocus context={editContext} fieldName="createdBy" />
-                }
-                disabled={inferred}
-                onChange={editor.changeCreated}
-              />
-              <ObjectMarkingField
-                name="objectMarking"
-                required={(mandatoryAttributes.includes('objectMarking'))}
-                style={fieldSpacingContainerStyle}
-                helpertext={
-                  <SubscriptionFocus context={editContext} fieldname="objectMarking" />
-                }
-                disabled={inferred}
-                setFieldValue={setFieldValue}
-                onChange={editor.changeMarking}
-              />
-              <Field
-                component={SwitchField}
-                type="checkbox"
-                name="x_opencti_negative"
-                label={t_i18n('False positive')}
-                containerstyle={{ marginTop: 20 }}
-                onChange={editor.changeField}
-                helperText={
-                  <SubscriptionFocus context={editContext} fieldName="x_opencti_negative" />
-                }
-                disabled={inferred}
-              />
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                width: '100%',
-              }}
-              >
-                {enableReferences && (
-                  <CommitMessage
-                    submitForm={submitForm}
-                    disabled={isSubmitting || !isValid || !dirty}
-                    setFieldValue={setFieldValue}
-                    open={false}
-                    values={values.references}
-                    id={stixSightingRelationship.id}
-                    noStoreUpdate={noStoreUpdate}
-                  />
-                )}
-              </div>
-            </Form>
+    <Formik
+      enableReinitialize={true}
+      initialValues={initialValues}
+      validationSchema={stixSightingRelationshipValidator}
+      validateOnChange={true}
+      validateOnBlur={true}
+      onSubmit={onSubmit}
+    >
+      {({ submitForm, isSubmitting, setFieldValue, values, isValid, dirty }) => (
+        <Form>
+          <AlertConfidenceForEntity entity={stixSightingRelationship} />
+          <Field
+            component={TextField}
+            variant="standard"
+            name="attribute_count"
+            label={t_i18n('Count')}
+            required={(mandatoryAttributes.includes('attribute_count'))}
+            fullWidth={true}
+            onFocus={editor.changeFocus}
+            onSubmit={editor.changeField}
+            helperText={
+              <SubscriptionFocus context={editContext} fieldName="attribute_count" />
+            }
+            disabled={inferred}
+          />
+          <ConfidenceField
+            variant="edit"
+            onFocus={editor.changeFocus}
+            onSubmit={editor.changeField}
+            editContext={editContext}
+            containerStyle={fieldSpacingContainerStyle}
+            disabled={inferred}
+            entityType={STIX_SIGHTING_TYPE}
+          />
+          <Field
+            component={DateTimePickerField}
+            name="first_seen"
+            onFocus={editor.changeFocus}
+            onChange={editor.changeField}
+            textFieldProps={{
+              label: t_i18n('First seen'),
+              required: (mandatoryAttributes.includes('first_seen')),
+              variant: 'standard',
+              fullWidth: true,
+              style: { marginTop: 20 },
+              helperText: (
+                <SubscriptionFocus context={editContext} fieldName="first_seen" />
+              ),
+            }}
+            disabled={inferred}
+          />
+          <Field
+            component={DateTimePickerField}
+            name="last_seen"
+            onFocus={editor.changeFocus}
+            onChange={editor.changeField}
+            textFieldProps={{
+              label: t_i18n('Last seen'),
+              required: (mandatoryAttributes.includes('last_seen')),
+              variant: 'standard',
+              fullWidth: true,
+              style: { marginTop: 20 },
+              helperText: (
+                <SubscriptionFocus context={editContext} fieldName="last_seen" />
+              ),
+            }}
+            disabled={inferred}
+          />
+          <Field
+            component={MarkdownField}
+            name="description"
+            label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
+            fullWidth={true}
+            multiline={true}
+            rows={4}
+            style={{ marginTop: 20 }}
+            onFocus={editor.changeFocus}
+            onSubmit={editor.changeField}
+            helperText={
+              <SubscriptionFocus context={editContext} fieldName="description" />
+            }
+            disabled={inferred}
+          />
+          {stixSightingRelationship.workflowEnabled && (
+            <StatusField
+              name="x_opencti_workflow_id"
+              type="stix-sighting-relationship"
+              onFocus={editor.changeFocus}
+              onChange={editor.changeField}
+              setFieldValue={setFieldValue}
+              style={{ marginTop: 20 }}
+              helpertext={
+                <SubscriptionFocus context={editContext} fieldName="x_opencti_workflow_id" />
+              }
+            />
           )}
-        </Formik>
-      </div>
-    </>
+          <CreatedByField
+            name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+            helpertext={
+              <SubscriptionFocus context={editContext} fieldName="createdBy" />
+            }
+            disabled={inferred}
+            onChange={editor.changeCreated}
+          />
+          <ObjectMarkingField
+            name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
+            style={fieldSpacingContainerStyle}
+            helpertext={
+              <SubscriptionFocus context={editContext} fieldname="objectMarking" />
+            }
+            disabled={inferred}
+            setFieldValue={setFieldValue}
+            onChange={editor.changeMarking}
+          />
+          <Field
+            component={SwitchField}
+            type="checkbox"
+            name="x_opencti_negative"
+            label={t_i18n('False positive')}
+            containerstyle={{ marginTop: 20 }}
+            onChange={editor.changeField}
+            helperText={
+              <SubscriptionFocus context={editContext} fieldName="x_opencti_negative" />
+            }
+            disabled={inferred}
+          />
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            width: '100%',
+          }}
+          >
+            {enableReferences && (
+              <CommitMessage
+                submitForm={submitForm}
+                disabled={isSubmitting || !isValid || !dirty}
+                setFieldValue={setFieldValue}
+                open={false}
+                values={values.references}
+                id={stixSightingRelationship.id}
+                noStoreUpdate={noStoreUpdate}
+              />
+            )}
+          </div>
+        </Form>
+      )}
+    </Formik>
   );
 };
 
