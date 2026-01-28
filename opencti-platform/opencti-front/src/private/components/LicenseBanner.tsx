@@ -17,7 +17,7 @@ import Button from '@mui/material/Button';
 export const LICENSE_OPTION_TRIAL = 'trial';
 
 const contactUsXtmHubMutation = graphql`
-  mutation LicenceBannerContactUsMutation {
+  mutation LicenseBannerContactUsMutation {
     contactUsXtmHub {
       success
     }
@@ -69,7 +69,7 @@ const computeBannerInfo = (eeSettings: RootSettings$data['platform_enterprise_ed
   return undefined;
 };
 
-const LicenceBanner = () => {
+const LicenseBanner = () => {
   const { t_i18n } = useFormatter();
   const { settings } = useContext(UserContext);
   const [showThankYouDialog, setShowThankYouDialog] = useState(false);
@@ -111,4 +111,4 @@ const LicenceBanner = () => {
   );
 };
 
-export default LicenceBanner;
+export default LicenseBanner;
