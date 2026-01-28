@@ -709,7 +709,11 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
     logApp.info('[ENV-PROVIDER] No provider in environment.');
   }
   if (shouldRunSSOMigration && !isForcedEnv) {
-    await runSingleSignOnRunMigration(context, user, { dry_run: false });
+    try {
+      await runSingleSignOnRunMigration(context, user, { dry_run: false });
+    } catch (error) {
+      logApp.error('Fail to convert authentication from env to database ', { cause: error });
+    }
   }
   logApp.info('[ENV-PROVIDER] End of reading environment');
 };
