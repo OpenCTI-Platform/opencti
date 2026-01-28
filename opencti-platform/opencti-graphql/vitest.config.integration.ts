@@ -16,6 +16,7 @@ export const buildIntegrationTestConfig = (include: string[]) => defineConfig({
       include: ['src/**'],
       exclude: ['src/generated/**', 'src/migrations/**', 'src/stixpattern/**', 'src/python/**'],
       reporter: ['text', 'json', 'html'],
+      clean: false,
     },
     poolOptions: {
       forks: {
