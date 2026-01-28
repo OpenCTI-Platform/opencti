@@ -40,7 +40,6 @@ const LDAPConfig = ({ updateField }: LDAPConfigProps) => {
         name="bindCredentials"
         label={t_i18n('Bind credentials')}
         onSubmit={updateField}
-        required
         fullWidth
         style={{ marginTop: 20 }}
       />

@@ -9,7 +9,7 @@ type SingleSignOn implements InternalObject & BasicObject {
   # SingleSignOn
   name: String!
   identifier: String!
-  label: String!
+  label: String
   description: String
   enabled: Boolean!
   strategy: StrategyType!
@@ -88,7 +88,6 @@ type Query {
 input OrganizationsManagementInput {
   organizations_path: [String!]
   organizations_mapping: [String!]
-  organizations_default: [String!]
   organizations_scope: String
   read_userinfo: Boolean
   token_reference: String

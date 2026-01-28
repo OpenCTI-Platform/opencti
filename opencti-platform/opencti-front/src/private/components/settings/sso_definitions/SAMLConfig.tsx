@@ -1,14 +1,12 @@
 import React from 'react';
-import { Field, FieldArray } from 'formik';
+import { Field } from 'formik';
 import { useFormatter } from '../../../../components/i18n';
 import SelectField from '../../../../components/fields/SelectField';
 import MenuItem from '@mui/material/MenuItem';
-import { Add, Delete } from '@mui/icons-material';
 import Typography from '@mui/material/Typography';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { SSODefinitionFormValues } from '@components/settings/sso_definitions/SSODefinitionForm';
 import TextField from '../../../../components/TextField';
-import IconButton from '@common/button/IconButton';
 
 interface Props {
   updateField: (field: keyof SSODefinitionFormValues, value: unknown) => void;
@@ -166,86 +164,6 @@ const SAMLConfig = ({ updateField }: Props) => {
       {/*  onChange={updateField} */}
       {/*  containerstyle={{ marginLeft: 2 }} */}
       {/* /> */}
-      <FieldArray name="advancedConfigurations">
-        {({ push, remove, form }) => (
-          <>
-            <div style={{ display: 'flex', alignItems: 'center', marginTop: 20 }}>
-              <Typography variant="h2">{t_i18n('Add more fields')}</Typography>
-              <IconButton
-                color="primary"
-                aria-label="Add"
-                size="default"
-                style={{ marginBottom: 12 }}
-                onClick={() =>
-                  push({ key: '', value: '', type: 'String' })
-                }
-              >
-                <Add fontSize="small" color="primary" />
-              </IconButton>
-            </div>
-            {form.values.advancedConfigurations
-              && form.values.advancedConfigurations.map(
-                (
-                  conf: { key: string; value: string; type: string },
-                  index: number,
-                ) => (
-                  <div
-                    key={index}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-around',
-                      marginBottom: 8,
-                    }}
-                  >
-                    <Field
-                      component={TextField}
-                      variant="standard"
-                      onSubmit={() => updateField('advancedConfigurations', form.values.advancedConfigurations)}
-                      name={`advancedConfigurations[${index}].key`}
-                      label={t_i18n('Key (in passport)')}
-                      containerstyle={{ width: '20%' }}
-                    />
-                    <Field
-                      component={TextField}
-                      variant="standard"
-                      onSubmit={() => updateField('advancedConfigurations', form.values.advancedConfigurations)}
-                      name={`advancedConfigurations[${index}].value`}
-                      label={t_i18n('Value (in IDP)')}
-                      containerstyle={{ width: '20%' }}
-                    />
-                    <Field
-                      component={SelectField}
-                      variant="standard"
-                      onSubmit={() => updateField('advancedConfigurations', form.values.advancedConfigurations)}
-                      name={`advancedConfigurations[${index}].type`}
-                      label={t_i18n('Field type')}
-                      containerstyle={{ width: '20%' }}
-                    >
-                      <MenuItem value="Boolean">Boolean</MenuItem>
-                      <MenuItem value="Integer">Integer</MenuItem>
-                      <MenuItem value="String">String</MenuItem>
-                      <MenuItem value="Array">Array</MenuItem>
-                    </Field>
-                    <IconButton
-                      color="primary"
-                      aria-label={t_i18n('Delete')}
-                      style={{ marginTop: 10 }}
-                      onClick={() => {
-                        const advancedConfigurations = [...form.values.advancedConfigurations];
-                        advancedConfigurations.splice(index, 1);
-                        remove(index);
-                        updateField('advancedConfigurations', advancedConfigurations);
-                      }}
-                    >
-                      <Delete fontSize="small" />
-                    </IconButton>
-                  </div>
-                ),
-              )}
-          </>
-        )}
-      </FieldArray>
     </>
   );
 };
