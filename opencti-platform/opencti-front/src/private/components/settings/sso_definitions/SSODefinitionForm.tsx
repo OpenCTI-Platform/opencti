@@ -23,6 +23,7 @@ import IconButton from '@common/button/IconButton';
 import { Add, Delete } from '@mui/icons-material';
 import SelectField from 'src/components/fields/SelectField';
 import MenuItem from '@mui/material/MenuItem';
+import CertConfig from '@components/settings/sso_definitions/CertConfig';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 
@@ -217,6 +218,7 @@ const SSODefinitionForm = ({
     groupSearchBase: '',
     groupSearchFilter: '',
     allow_self_signed: false,
+    // CERT
   };
 
   const getSourceAndTargetFromMapping = (groupMapping: string[]) => {
