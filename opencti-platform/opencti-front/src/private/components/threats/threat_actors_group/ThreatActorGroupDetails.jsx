@@ -9,10 +9,10 @@ import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import ImageCarousel from '../../../../components/ImageCarousel';
 import ThreatActorGroupLocation from './ThreatActorGroupLocation';
-import { capitalizeFirstLetter } from '../../../../utils/String';
 import Card from '@common/card/Card';
 import Label from '../../../../components/common/label/Label';
 import Tag from '../../../../components/common/tag/Tag';
+import TextList from '../../../../components/TextList';
 
 class ThreatActorGroupDetailsComponent extends Component {
   render() {
@@ -118,25 +118,25 @@ class ThreatActorGroupDetailsComponent extends Component {
             <Label>
               {t('Roles')}
             </Label>
-            <FieldOrEmpty source={threatActorGroup.roles}>
-              {threatActorGroup.roles && threatActorGroup.roles?.length > 0 && (threatActorGroup.roles.map((role) => role && capitalizeFirstLetter(role)).join(', '))}
-            </FieldOrEmpty>
+            <TextList
+              list={threatActorGroup.roles}
+            />
           </Grid>
           <Grid item xs={4}>
             <Label>
               {t('Goals')}
             </Label>
-            <FieldOrEmpty source={threatActorGroup.goals}>
-              {threatActorGroup.goals && threatActorGroup.goals?.length > 0 && (threatActorGroup.goals.map((goal) => goal && capitalizeFirstLetter(goal)).join(', '))}
-            </FieldOrEmpty>
+            <TextList
+              list={threatActorGroup.goals}
+            />
           </Grid>
           <Grid item xs={4}>
             <Label>
               {t('Secondary motivations')}
             </Label>
-            <FieldOrEmpty source={threatActorGroup.secondary_motivations}>
-              {threatActorGroup.secondary_motivations && threatActorGroup.secondary_motivations?.length > 0 && (threatActorGroup.secondary_motivations.map((sm) => sm && capitalizeFirstLetter(sm)).join(', '))}
-            </FieldOrEmpty>
+            <TextList
+              list={threatActorGroup.secondary_motivations}
+            />
           </Grid>
         </Grid>
       </Card>

@@ -5,11 +5,12 @@ import Tooltip from '@mui/material/Tooltip';
 import { ToolDetails_tool$key } from '@components/arsenal/tools/__generated__/ToolDetails_tool.graphql';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import StixCoreObjectKillChainPhasesView from '../../common/stix_core_objects/StixCoreObjectKillChainPhasesView';
-import { truncate, capitalizeFirstLetter } from '../../../../utils/String';
+import { truncate } from '../../../../utils/String';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
+import TextList from '../../../../components/TextList';
 
 const ToolDetailsFragment = graphql`
  fragment ToolDetails_tool on Tool {
@@ -61,9 +62,9 @@ const ToolDetails: FunctionComponent<ToolDetailsProps> = ({ tools }) => {
             <Label>
               {t_i18n('Tool types')}
             </Label>
-            <FieldOrEmpty source={tool.tool_types}>
-              {tool.tool_types && tool.tool_types?.length > 0 && (tool.tool_types.map((type) => type && capitalizeFirstLetter(type)).join(', '))}
-            </FieldOrEmpty>
+            <TextList
+              list={tool.tool_types}
+            />
             <StixCoreObjectKillChainPhasesView killChainPhases={tool.killChainPhases ?? []} />
           </Grid>
         </Grid>

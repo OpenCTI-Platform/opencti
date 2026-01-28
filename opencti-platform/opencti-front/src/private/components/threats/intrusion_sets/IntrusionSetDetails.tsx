@@ -8,9 +8,9 @@ import IntrusionSetLocations from './IntrusionSetLocations';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import ImageCarousel, { ImagesData } from '../../../../components/ImageCarousel';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import TextList from '../../../../components/TextList';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
-import { capitalizeFirstLetter } from 'src/utils/String';
 
 type IntrusionSetDetailsProps = {
   intrusionSet: IntrusionSetDetails_intrusionSet$data;
@@ -94,17 +94,17 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
             <Label>
               {t_i18n('Goals')}
             </Label>
-            <FieldOrEmpty source={intrusionSet.goals}>
-              {intrusionSet.goals && intrusionSet.goals?.length > 0 && (intrusionSet.goals.map((goal) => goal && capitalizeFirstLetter(goal)).join(', '))}
-            </FieldOrEmpty>
+            <TextList
+              list={intrusionSet.goals}
+            />
           </Grid>
           <Grid item xs={6}>
             <Label>
               {t_i18n('Secondary motivations')}
             </Label>
-            <FieldOrEmpty source={intrusionSet.secondary_motivations}>
-              {intrusionSet.secondary_motivations && intrusionSet.secondary_motivations?.length > 0 && (intrusionSet.secondary_motivations.map((sm) => sm && capitalizeFirstLetter(sm)).join(', '))}
-            </FieldOrEmpty>
+            <TextList
+              list={intrusionSet.secondary_motivations}
+            />
           </Grid>
         </Grid>
       </Card>
