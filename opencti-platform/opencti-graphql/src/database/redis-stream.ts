@@ -75,13 +75,18 @@ const processStreamResult = async (results: Array<any>, callback: any, withInter
 };
 const rawFetchStreamInfo = async (streamName = LIVE_STREAM_NAME) => {
   const redisStreamName = convertStreamName(streamName);
-  const res: any = await getClientBase().xinfo('STREAM', redisStreamName);
-  const info: any = R.fromPairs(R.splitEvery(2, res) as any);
-  const firstId = info['first-entry'][0];
-  const firstEventDate = utcDate(parseInt(firstId.split('-')[0], 10)).toISOString();
-  const lastId = info['last-entry'][0];
-  const lastEventDate = utcDate(parseInt(lastId.split('-')[0], 10)).toISOString();
-  return { lastEventId: lastId, firstEventId: firstId, firstEventDate, lastEventDate, streamSize: info.length };
+  const streamExists = await getClientBase().exists(redisStreamName);
+  if (streamExists === 1) {
+    const res: any = await getClientBase().xinfo('STREAM', redisStreamName);
+    const info: any = R.fromPairs(R.splitEvery(2, res) as any);
+    const firstId = info['first-entry'][0];
+    const firstEventDate = utcDate(parseInt(firstId.split('-')[0], 10)).toISOString();
+    const lastId = info['last-entry'][0];
+    const lastEventDate = utcDate(parseInt(lastId.split('-')[0], 10)).toISOString();
+    return { lastEventId: lastId, firstEventId: firstId, firstEventDate, lastEventDate, streamSize: info.length };
+  } else {
+    return { lastEventId: '0-0', firstEventId: '0-0', firstEventDate: '', lastEventDate: '', streamSize: 0 };
+  }
 };
 
 const STREAM_BATCH_TIME = 5000;
