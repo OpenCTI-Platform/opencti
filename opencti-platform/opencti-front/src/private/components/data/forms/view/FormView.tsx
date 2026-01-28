@@ -142,7 +142,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
   const [pollingTimeout, setPollingTimeout] = useState(false);
   const isConnectorReader = useGranted([MODULES]);
   const isGrantedIngestion = useGranted([INGESTION]);
-  const { isUserHasImportInDraftOverride } = useImportFilesContext();
+  const { isForcedImportToDraft } = useImportFilesContext();
 
   const data = usePreloadedQuery(formViewQuery, queryRef);
   const { form } = data;
@@ -171,7 +171,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
   const initialValues: FormInitialValues = {};
 
   // Initialize isDraft based on schema settings or import context override
-  const [isDraft, setIsDraft] = useState(isUserHasImportInDraftOverride || schema.isDraftByDefault || false);
+  const [isDraft, setIsDraft] = useState(isForcedImportToDraft || schema.isDraftByDefault || false);
 
   // Initialize values for main entity fields
   const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
@@ -908,7 +908,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                     <Checkbox
                       checked={isDraft}
                       onChange={(e) => setIsDraft(e.target.checked)}
-                      disabled={isSubmitting || isUserHasImportInDraftOverride || (schema.isDraftByDefault === true && schema.allowDraftOverride === false)}
+                      disabled={isSubmitting || isForcedImportToDraft || (schema.isDraftByDefault === true && schema.allowDraftOverride === false)}
                     />
                   )}
                   label={t_i18n('Create as draft')}

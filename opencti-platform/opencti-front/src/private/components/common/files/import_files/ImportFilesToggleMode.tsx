@@ -14,7 +14,7 @@ const CARD_HEIGHT = 300;
 const ImportFilesToggleMode = () => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const { setActiveStep, importMode, setImportMode, entityId, isUserHasImportInDraftOverride } = useImportFilesContext();
+  const { setActiveStep, importMode, setImportMode, entityId, isForcedImportToDraft } = useImportFilesContext();
 
   const modes: { mode: ImportMode; title: string; description: string; icon: React.ReactElement }[] = [
     {
@@ -25,7 +25,7 @@ const ImportFilesToggleMode = () => {
     },
   ];
 
-  if (!isUserHasImportInDraftOverride) {
+  if (!isForcedImportToDraft) {
     modes.unshift({
       mode: 'auto',
       title: t_i18n('Direct/Automatic Import'),

@@ -179,7 +179,7 @@ type ImportFilesContextProps = InitialValues & {
   inDraftContext: boolean;
   guessMimeType: (fileId: string) => Promise<string | null>;
   queryRef: PreloadedQuery<ImportFilesContextQuery>;
-  isUserHasImportInDraftOverride: boolean;
+  isForcedImportToDraft: boolean;
 };
 
 const ImportFilesContext = createContext<ImportFilesContextProps | undefined>(undefined);
@@ -217,7 +217,9 @@ export const ImportFilesProvider = ({ children, initialValue }: {
     setImportMode(initialImportMode);
   }, [initialValue.activeStep, initialValue.importMode]);
 
-  const isUserHasImportInDraftOverride = useGranted(['KNOWLEDGE_KNASKIMPORT'], false, { capabilitiesInDraft: ['KNOWLEDGE_KNASKIMPORT'] });
+  const isUserHasImport = useGranted(['KNOWLEDGE_KNASKIMPORT']);
+  const isUserHasImportInDraftOverride = isUserHasImport ? false : useGranted([], false, { capabilitiesInDraft: ['KNOWLEDGE_KNASKIMPORT'] });
+  const isForcedImportToDraft = isUserHasImport ? false : isUserHasImportInDraftOverride;
 
   return queryRef && (
     <React.Suspense>
@@ -238,7 +240,7 @@ export const ImportFilesProvider = ({ children, initialValue }: {
           selectedFormId,
           setSelectedFormId,
           inDraftContext: !!draftContext?.id,
-          isUserHasImportInDraftOverride,
+          isForcedImportToDraft,
           guessMimeType,
           queryRef,
         }}
