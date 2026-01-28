@@ -61,7 +61,7 @@ export class StateMachine<TContext extends Context = Context> {
     const transition = this.definition.getTransition(this.currentState, event);
 
     if (!transition) {
-      const reason = `No transition found from state '${this.currentState}' on event '${event}'`;
+      const reason = `No transition found from state '${this.currentState}' for event '${event}'`;
       // eslint-disable-next-line no-console
       console.warn(reason);
       return { success: false, reason };
