@@ -2836,7 +2836,9 @@ class OpenCTIStix2:
         rule_id = self.opencti.get_attribute_in_extension("opencti_rule", item)
         if rule_id is None:
             rule_id = item["opencti_rule"]
-        self.opencti.stix_core_object.rule_apply(element_id=item["id"], rule_id=rule_id)
+        self.opencti.stix_core_object.rule_apply_async(
+            element_id=item["id"], rule_id=rule_id
+        )
 
     def rule_clear(self, item):
         """Clear a rule from an item.
