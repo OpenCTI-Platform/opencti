@@ -9,7 +9,7 @@ type SingleSignOn implements InternalObject & BasicObject {
   # SingleSignOn
   name: String!
   identifier: String!
-  label: String!
+  label: String
   description: String
   enabled: Boolean!
   strategy: StrategyType!
