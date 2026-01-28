@@ -72,7 +72,7 @@ export const internalAddSingleSignOn = async (context: AuthContext, user: AuthUs
   // if input est local et que local deja dans en db on ajoute pas
   const strategies = await findAllSingleSignOn(context, user);
   const hasLocalStrategy = strategies.some((s) => s.strategy === StrategyType.LocalStrategy);
-  if (hasLocalStrategy) {
+  if (hasLocalStrategy && input.strategy === StrategyType.LocalStrategy) {
     throw FunctionalError('Local Strategy already exists in database');
   }
   const created: BasicStoreEntitySingleSignOn = await createEntity(
