@@ -3101,6 +3101,16 @@ interface StixDomainObject {
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
+  fintelTemplates: [FintelTemplate!]
+  filesFromTemplate(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
   # Technical
   creators: [Creator!]
   toStix(version: Version): String
@@ -3275,6 +3285,16 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
+  fintelTemplates: [FintelTemplate!]
+  filesFromTemplate(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
   # AttackPattern
   name: String!
   description: String
@@ -3517,6 +3537,16 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
+  fintelTemplates: [FintelTemplate!]
+  filesFromTemplate(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
   # Campaign
   name: String!
   description: String
@@ -3705,6 +3735,16 @@ interface Container {
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
   avatar: OpenCtiFile
+  fintelTemplates: [FintelTemplate!]
+  filesFromTemplate(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
   # Container
   authorized_members: [MemberAccess!]
   authorized_members_activation_date: DateTime
@@ -3729,16 +3769,6 @@ interface Container {
     types: [String]
     viaTypes: [String]
   ): ContainerConnection
-  filesFromTemplate(
-    first: Int
-    prefixMimeType: String
-    after: ID
-    orderBy: FileOrdering
-    orderMode: OrderingMode
-    search: String
-    filters: FilterGroup
-  ): FileConnection
-  fintelTemplates: [FintelTemplate!]
   # Technical
   creators: [Creator!]
   workflowEnabled: Boolean
@@ -3868,6 +3898,16 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
+  fintelTemplates: [FintelTemplate!]
+  filesFromTemplate(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
   # Container
   authorized_members: [MemberAccess!]
   authorized_members_activation_date: DateTime
@@ -3918,16 +3958,6 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     search: String
     filters: FilterGroup
   ): FileConnection
-  filesFromTemplate(
-    first: Int
-    prefixMimeType: String
-    after: ID
-    orderBy: FileOrdering
-    orderMode: OrderingMode
-    search: String
-    filters: FilterGroup
-  ): FileConnection
-  fintelTemplates: [FintelTemplate!]
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -4110,6 +4140,16 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
+  fintelTemplates: [FintelTemplate!]
+  filesFromTemplate(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
   # Container
   authorized_members: [MemberAccess!]
   authorized_members_activation_date: DateTime
@@ -4159,16 +4199,6 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
     search: String
     filters: FilterGroup
   ): FileConnection
-  filesFromTemplate(
-    first: Int
-    prefixMimeType: String
-    after: ID
-    orderBy: FileOrdering
-    orderMode: OrderingMode
-    search: String
-    filters: FilterGroup
-  ): FileConnection
-  fintelTemplates: [FintelTemplate!]
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -4328,6 +4358,16 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
+  fintelTemplates: [FintelTemplate!]
+  filesFromTemplate(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
   # Container
   authorized_members: [MemberAccess!]
   authorized_members_activation_date: DateTime
@@ -4376,16 +4416,6 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     search: String
     filters: FilterGroup
   ): FileConnection
-  filesFromTemplate(
-    first: Int
-    prefixMimeType: String
-    after: ID
-    orderBy: FileOrdering
-    orderMode: OrderingMode
-    search: String
-    filters: FilterGroup
-  ): FileConnection
-  fintelTemplates: [FintelTemplate!]
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -4564,6 +4594,16 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
   avatar: OpenCtiFile
+  fintelTemplates: [FintelTemplate!]
+  filesFromTemplate(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
   # Container
   authorized_members: [MemberAccess!]
   authorized_members_activation_date: DateTime
@@ -4617,16 +4657,6 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     search: String
     filters: FilterGroup
   ): FileConnection
-  filesFromTemplate(
-    first: Int
-    prefixMimeType: String
-    after: ID
-    orderBy: FileOrdering
-    orderMode: OrderingMode
-    search: String
-    filters: FilterGroup
-  ): FileConnection
-  fintelTemplates: [FintelTemplate!]
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -4793,6 +4823,16 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
+  fintelTemplates: [FintelTemplate!]
+  filesFromTemplate(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
   # CourseOfAction
   name: String!
   description: String
@@ -4979,6 +5019,16 @@ interface Identity {
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
   avatar: OpenCtiFile
+  fintelTemplates: [FintelTemplate!]
+  filesFromTemplate(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
   # Identity
   identity_class: String!
   name: String!
@@ -5163,6 +5213,16 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
+  fintelTemplates: [FintelTemplate!]
+  filesFromTemplate(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
   # Identity
   identity_class: String!
   name: String!
@@ -5357,6 +5417,16 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
+  fintelTemplates: [FintelTemplate!]
+  filesFromTemplate(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
   # Identity
   identity_class: String!
   name: String!
@@ -5546,6 +5616,16 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
+  fintelTemplates: [FintelTemplate!]
+  filesFromTemplate(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
   # Identity
   identity_class: String!
   name: String!
@@ -5744,6 +5824,16 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
+  fintelTemplates: [FintelTemplate!]
+  filesFromTemplate(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
   # Infrastructure
   name: String!
   aliases: [String]
@@ -5934,6 +6024,16 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
+  fintelTemplates: [FintelTemplate!]
+  filesFromTemplate(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
   # IntrusionSet
   name: String!
   description: String
@@ -6127,6 +6227,16 @@ interface Location {
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
   avatar: OpenCtiFile
+  fintelTemplates: [FintelTemplate!]
+  filesFromTemplate(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
   # Location
   name: String!
   description: String
@@ -6312,6 +6422,16 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
+  fintelTemplates: [FintelTemplate!]
+  filesFromTemplate(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
   # Location
   name: String!
   description: String
@@ -6504,6 +6624,16 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
+  fintelTemplates: [FintelTemplate!]
+  filesFromTemplate(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
   # Location
   name: String!
   description: String
@@ -6690,6 +6820,16 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
+  fintelTemplates: [FintelTemplate!]
+  filesFromTemplate(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
   # Location
   name: String!
   description: String
@@ -6875,6 +7015,16 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
+  fintelTemplates: [FintelTemplate!]
+  filesFromTemplate(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
   # Location
   name: String!
   description: String
@@ -7073,6 +7223,16 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
+  fintelTemplates: [FintelTemplate!]
+  filesFromTemplate(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
   # Malware
   name: String!
   description: String
@@ -7277,6 +7437,16 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
+  fintelTemplates: [FintelTemplate!]
+  filesFromTemplate(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
   # ThreatActorGroup
   name: String!
   description: String
@@ -7433,6 +7603,16 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
+  fintelTemplates: [FintelTemplate!]
+  filesFromTemplate(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
   # ThreatActorGroup
   name: String!
   description: String
@@ -7636,6 +7816,16 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
+  fintelTemplates: [FintelTemplate!]
+  filesFromTemplate(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
   # Tool
   name: String!
   description: String
@@ -7825,6 +8015,16 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
+  fintelTemplates: [FintelTemplate!]
+  filesFromTemplate(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
   # Vulnerability
   name: String!
   description: String
@@ -8116,6 +8316,16 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
   avatar: OpenCtiFile
+  fintelTemplates: [FintelTemplate!]
+  filesFromTemplate(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
   # Incident
   name: String!
   description: String

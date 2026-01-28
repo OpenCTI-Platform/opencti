@@ -99,6 +99,16 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
     objectAssignee: [Assignee!]
     objectParticipant: [Participant!]
     avatar: OpenCtiFile
+    fintelTemplates: [FintelTemplate!]
+    filesFromTemplate(
+        first: Int
+        prefixMimeType: String
+        after: ID
+        orderBy: FileOrdering
+        orderMode: OrderingMode
+        search: String
+        filters: FilterGroup
+    ): FileConnection
     # Narrative
     name: String!
     description: String
