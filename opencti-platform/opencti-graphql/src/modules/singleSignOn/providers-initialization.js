@@ -3,20 +3,18 @@ import passport from 'passport/lib';
 import GitHub from 'github-api';
 import FacebookStrategy from 'passport-facebook';
 import GithubStrategy from 'passport-github';
-import LocalStrategy from 'passport-local';
 import { custom as OpenIDCustom, Issuer as OpenIDIssuer, Strategy as OpenIDStrategy } from 'openid-client';
 import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
 import validator from 'validator';
-import { findById, HEADERS_AUTHENTICATORS, initAdmin, login, userDelete } from '../../domain/user';
+import { findById, HEADERS_AUTHENTICATORS, initAdmin, userDelete } from '../../domain/user';
 import conf, { getPlatformHttpProxyAgent, logApp, NODE_INSTANCE_ID } from '../../config/conf';
-import { AuthenticationFailure, ConfigurationError } from '../../config/errors';
+import { ConfigurationError } from '../../config/errors';
 import { isEmptyField, isNotEmptyField } from '../../database/utils';
 import { DEFAULT_INVALID_CONF_VALUE, SYSTEM_USER } from '../../utils/access';
 import { OPENCTI_ADMIN_UUID } from '../../schema/general';
 import { addUserLoginCount } from '../../manager/telemetryManager';
 import {
   AuthType,
-  INTERNAL_SECURITY_PROVIDER,
   PROVIDERS,
   EnvStrategyType,
   isAuthenticationProviderMigrated,
@@ -159,7 +157,6 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
   logApp.info('[ENV-PROVIDER] Settings auth_strategy_migrated', { auth_migrated: settings?.auth_strategy_migrated });
 
   const confProviders = getProvidersFromEnvironment();
-  let willLocalBeInDatabase = false;
   let shouldRunSSOMigration = false;
 
   if (confProviders) {
@@ -176,10 +173,8 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
           logApp.debug('[ENV-PROVIDER][LOCAL] LocalStrategy found in configuration');
           if (isAuthenticationProviderMigrated(settings, LOCAL_STRATEGY_IDENTIFIER)) {
             logApp.info('[ENV-PROVIDER][LOCAL] LocalStrategy already in database, skipping old configuration');
-            willLocalBeInDatabase = true;
           } else {
             logApp.info('[ENV-PROVIDER][LOCAL] LocalStrategy is about to be converted to database configuration.');
-            willLocalBeInDatabase = true;
             shouldRunSSOMigration = true;
           }
         }
@@ -416,33 +411,6 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
           PROVIDERS.push(headerProvider);
           HEADERS_AUTHENTICATORS.push(headerProvider);
         }
-      }
-
-      // In case of disable local strategy, setup protected fallback for the admin user
-      const hasLocal = PROVIDERS.find((p) => p.strategy === EnvStrategyType.STRATEGY_LOCAL);
-      if (!hasLocal && !willLocalBeInDatabase) {
-        logApp.info('[ENV-PROVIDER][FALLBACK] No local strategy, adding the fallback one');
-        const adminLocalStrategy = new LocalStrategy({}, (username, password, done) => {
-          const adminEmail = conf.get('app:admin:email');
-          if (username !== adminEmail) {
-            return done(AuthenticationFailure());
-          }
-          return login(username, password)
-            .then((info) => {
-              addUserLoginCount();
-              return done(null, info);
-            })
-            .catch((err) => {
-              done(err);
-            });
-        });
-        passport.use(LOCAL_STRATEGY_IDENTIFIER, adminLocalStrategy);
-        PROVIDERS.push({
-          name: INTERNAL_SECURITY_PROVIDER,
-          type: AuthType.AUTH_FORM,
-          strategy,
-          provider: LOCAL_STRATEGY_IDENTIFIER,
-        });
       }
     }
   } else {
