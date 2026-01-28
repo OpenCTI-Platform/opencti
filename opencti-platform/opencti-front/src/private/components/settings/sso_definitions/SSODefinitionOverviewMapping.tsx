@@ -1,6 +1,5 @@
 import { Grid2 as Grid } from '@mui/material';
 import React, { useState } from 'react';
-import Card from '@common/card/Card';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -262,20 +261,17 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
     <div style={{ paddingRight: '200px' }}>
       <AccessesMenu />
       <Grid size={{ xs: 12 }}>
-        <Card>
-          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <Tabs
-              value={currentTab}
-              onChange={(event, value) => setCurrentTab(value)}
-            >
-              <Tab label={t_i18n('SSO configuration')} sx={{ textTransform: 'none' }} />
-              <Tab label={t_i18n('Groups configuration')} />
-              <Tab label={t_i18n('Organizations configuration')} />
-            </Tabs>
-          </Box>
-
-          {renderRows(rowsByTab[currentTab])}
-        </Card>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <Tabs
+            value={currentTab}
+            onChange={(event, value) => setCurrentTab(value)}
+          >
+            <Tab label={t_i18n('SSO configuration')} sx={{ textTransform: 'none' }} />
+            <Tab label={t_i18n('Groups configuration')} />
+            <Tab label={t_i18n('Organizations configuration')} />
+          </Tabs>
+        </Box>
+        {renderRows(rowsByTab[currentTab])}
       </Grid>
     </div>
   );
