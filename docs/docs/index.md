@@ -80,7 +80,7 @@ Below, you will find external resources which may be useful along your OpenCTI j
 
 <div class="grid" markdown>
 
-[**:material-package-variant-closed:{ .middle } OpenCTI Ecosystem**](https://filigran.notion.site/OpenCTI-Ecosystem-868329e9fb734fca89692b2ed6087e76)<br />
+[**:material-package-variant-closed:{ .middle } XTM Hub Integrations Library**](https://hub.filigran.io/cybersecurity-solutions/open-cti-integrations)<br />
 List of available connectors and integrations to expand platform usage.
 
 [**:material-school-outline:{ .middle } Training Courses**](https://academy.filigran.io)<br />
