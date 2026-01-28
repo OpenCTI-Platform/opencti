@@ -1,3 +1,4 @@
+/* eslint-disable no-bitwise */
 import invert from 'invert-color';
 
 export const stringToColour = (str, reversed = false) => {
@@ -27,6 +28,7 @@ export const stringToColour = (str, reversed = false) => {
   }
   return colour;
 };
+/* eslint-enable no-bitwise */
 
 export const itemColor = (type, dark = false, reversed = false) => {
   switch (type) {
@@ -283,9 +285,6 @@ export const itemColor = (type, dark = false, reversed = false) => {
     case 'Payment-Card':
     case 'Media-Content':
     case 'Persona':
-    case 'IMEI':
-    case 'IMSI':
-    case 'ICCID':
       if (dark) {
         return '#84ffff';
       }
