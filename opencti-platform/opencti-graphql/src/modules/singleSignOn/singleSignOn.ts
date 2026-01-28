@@ -5,6 +5,7 @@ import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import convertSingleSignOnToStix from './singleSignOn-converter';
 import { isFeatureEnabled } from '../../config/conf';
 import { StrategyType } from '../../generated/graphql';
+import { draftChange, refreshedAt } from '../../schema/attribute-definition';
 
 const StrategyTypeList = Object.values(StrategyType);
 
@@ -32,6 +33,8 @@ const SINGLE_SIGN_ON_DEFINITION: ModuleDefinition<StoreEntitySingleSignOn, StixS
     { name: 'organizations_management', label: 'Organizations management', mandatoryType: 'no', type: 'object', format: 'flat', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'groups_management', label: 'Groups management', mandatoryType: 'no', type: 'object', format: 'flat', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'configuration', label: 'SSO Configuration', mandatoryType: 'no', type: 'object', format: 'flat', editDefault: false, multiple: true, upsert: false, isFilterable: false },
+    { ...draftChange, isFilterable: false },
+    { ...refreshedAt, isFilterable: false },
   ],
   relations: [],
   representative: (stix: StixSingleSignOn) => {
