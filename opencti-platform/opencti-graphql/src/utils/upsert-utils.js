@@ -244,7 +244,7 @@ const generateFileInputsForUpsert = async (context, user, resolvedElement, updat
     const { upload: uploadedFile, untouched } = await uploadToStorage(context, user, filePath, fileInput, {
       entity: resolvedElement,
       file_markings,
-      meta
+      meta,
     });
 
     if (untouched) {
