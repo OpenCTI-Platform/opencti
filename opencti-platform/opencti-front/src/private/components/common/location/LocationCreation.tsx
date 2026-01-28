@@ -237,7 +237,7 @@ const LocationCreation: FunctionComponent<LocationCreationFormProps> = ({
           color="secondary"
           aria-label="Add"
         >
-          Create Location
+          {t_i18n('Create Location')}
         </Button>
         <Dialog open={open} onClose={handleClose} slotProps={{ paper: { elevation: 1 } }}>
           <DialogTitle>{t_i18n('Add a location')}</DialogTitle>
