@@ -183,9 +183,9 @@ services:
     volumes:
       - "./mock-api:/share"
     ports:
-      - "80:80"
+      - "8090:80"
       - "389:389"
-      - "8080:8080"
+      - "9080:8080"
 
 volumes:
   esdata:
