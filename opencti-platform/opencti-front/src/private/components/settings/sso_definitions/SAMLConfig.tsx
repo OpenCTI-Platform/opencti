@@ -1,5 +1,5 @@
 import React from 'react';
-import { Field } from 'formik';
+import {Field, useFormikContext} from 'formik';
 import { useFormatter } from '../../../../components/i18n';
 import SelectField from '../../../../components/fields/SelectField';
 import MenuItem from '@mui/material/MenuItem';
@@ -7,6 +7,9 @@ import Typography from '@mui/material/Typography';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { SSODefinitionFormValues } from '@components/settings/sso_definitions/SSODefinitionForm';
 import TextField from '../../../../components/TextField';
+import Tooltip from '@mui/material/Tooltip';
+import Button from '@common/button/Button';
+import { useUrlCheck } from '@components/settings/sso_definitions/utils/useTestCallBackUrl';
 
 interface Props {
   updateField: (field: keyof SSODefinitionFormValues, value: unknown) => void;
@@ -14,29 +17,7 @@ interface Props {
 const SAMLConfig = ({ updateField }: Props) => {
   const { t_i18n } = useFormatter();
   const { values } = useFormikContext<SSODefinitionFormValues>();
-
-  const [commitCheck, isLoading] = useMutation<SAMLConfigSingleSignOnUrlCheckMutation>(singleSignOnUrlCheckMutation);
-
-  const testCallbackUrl = () => {
-    const url = values.callbackUrl;
-    if (!url) {
-      MESSAGING$.notifyError(t_i18n('URL is empty'));
-      return;
-    }
-    commitCheck({
-      variables: { url },
-      onCompleted: (response: SAMLConfigSingleSignOnUrlCheckMutation$data) => {
-        if (response?.singleSignOnUrlCheck?.success) {
-          MESSAGING$.notifySuccess(response.singleSignOnUrlCheck.message);
-        } else {
-          MESSAGING$.notifyError(response?.singleSignOnUrlCheck?.message);
-        }
-      },
-      onError: (error) => {
-        MESSAGING$.notifyError(error.message);
-      },
-    });
-  };
+  const { checkUrl, isLoading } = useUrlCheck();
 
   return (
     <>
@@ -70,7 +51,7 @@ const SAMLConfig = ({ updateField }: Props) => {
           <span>
             <Button
               variant="secondary"
-              onClick={testCallbackUrl}
+              onClick={() => checkUrl(values.callbackUrl)}
               disabled={isLoading}
               style={{ whiteSpace: 'nowrap' }}
             >
