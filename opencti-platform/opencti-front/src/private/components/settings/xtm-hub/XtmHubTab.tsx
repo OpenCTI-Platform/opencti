@@ -12,7 +12,7 @@ import ProcessInstructions from './ProcessInstructions';
 import ProcessLoader from './ProcessLoader';
 import ProcessDialog from './ProcessDialog';
 import type { Theme } from '../../../../components/Theme';
-import { LICENSE_OPTION_TRIAL } from '@components/LicenceBanner';
+import { LICENSE_OPTION_TRIAL } from '@components/LicenseBanner';
 
 enum ProcessSteps {
   INSTRUCTIONS = 'INSTRUCTIONS',

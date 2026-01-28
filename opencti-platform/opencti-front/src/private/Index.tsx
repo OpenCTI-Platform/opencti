@@ -5,7 +5,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { useTheme } from '@mui/styles';
 import { boundaryWrapper, NoMatch } from '@components/Error';
 import PlatformCriticalAlertDialog from '@components/settings/platform_alerts/PlatformCriticalAlertDialog';
-import LicenceBanner from '@components/LicenceBanner';
+import LicenseBanner from '@components/LicenseBanner';
 import StartTrialBanner from '@components/xtm_hub/StartTrialBanner';
 import TopBar from './components/nav/TopBar';
 import LeftBar from './components/nav/LeftBar';
@@ -85,7 +85,7 @@ const Index = ({ settings }: IndexProps) => {
   return (
     <>
       <SystemBanners settings={settings} />
-      <LicenceBanner />
+      <LicenseBanner />
       <StartTrialBanner />
       {(settings.platform_session_idle_timeout ?? 0) > 0 && <TimeoutLock />}
       <SettingsMessagesBanner />
