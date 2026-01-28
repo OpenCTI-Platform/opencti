@@ -114,10 +114,17 @@ describe('Migration of SSO environment test coverage', () => {
             want_assertions_signed: true,
             organizations_default: ['OpenCTI'],
             decryption_pvk: '-----BEGIN PRIVATE KEY-----\\nMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\n/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+A\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nGLQ9wsHH5tQkNr581fConN+uq1iWNxtEz8mOc+Xa2BSuAhl3nX++t5BWs7zeBQP9\\njjfMi8aOQuv7/7lgCAY9oX7OnjF0Zk42AW2oJMC/h/OUvU9wTsyN7lOsyvCLSHoQ\\n77lV3ZvL2Uj6mB+FsjcrT/mD3wKBgQDJiTUGC0LjAJXnw6ncnbm3uxXwENwV4Slp\\narnhMJo7pokw3tHUbbDmmKmMXxtpDsJkHioCLqcL72cuZWPqCCKC4HmH1s+hdUov\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nQQQQQQQQQQQQQQQQQQQQQQQQ\\n-----END PRIVATE KEY-----',
-            requested_authn_context: true,
+            disable_requested_authn_context: true,
             audience: 'MyAudience',
             account_attribute: 'MyAccount',
             pi: 3.14159,
+            auto_create_group: false,
+            firstname_attribute: 'theFirstname',
+            lastname_attribute: 'theLastName',
+            mail_attribute: 'TheMail',
+            private_key: 'MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM',
+            signature_algorithm: 'sha256',
+            want_authn_response_signed: false,
           },
         },
       };
@@ -136,14 +143,21 @@ describe('Migration of SSO environment test coverage', () => {
         { key: 'callbackUrl', type: 'string', value: 'http://localhost:2000/auth/saml/callback' },
         { key: 'idpCert', type: 'string', value: 'totallyFakeCert3' },
         { key: 'acceptedClockSkewMs', type: 'number', value: '5' },
-        { key: 'pi', type: 'number', value: '3.14159' }, // couldn't find a saml float attribute but better to know if it works in theory
         { key: 'xmlSignatureTransforms', type: 'array', value: '["http://www.w3.org/2000/09/xmldsig#enveloped-signature","http://www.w3.org/2001/10/xml-exc-c14n#"]' },
         { key: 'wantAssertionsSigned', type: 'boolean', value: 'true' },
         { key: 'organizations_default', type: 'array', value: '["OpenCTI"]' },
-        { key: 'decryptionPvk', type: 'string', value: '-----BEGIN PRIVATE KEY-----\\nMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\n/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+A\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nGLQ9wsHH5tQkNr581fConN+uq1iWNxtEz8mOc+Xa2BSuAhl3nX++t5BWs7zeBQP9\\nGLQ9wsHH5tQkNr581fConN+uq1iWNxtEz8mOc+Xa2BSuAhl3nX++t5BWs7zeBQP9\\nGLQ9wsHH5tQkNr581fConN+uq1iWNxtEz8mOc+Xa2BSuAhl3nX++t5BWs7zeBQP9\\nGLQ9wsHH5tQkNr581fConN+uq1iWNxtEz8mOc+Xa2BSuAhl3nX++t5BWs7zeBQP9\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nQQQQQQQQQQQQQQQQQQQQQQQQ\\n-----END PRIVATE KEY-----' },
+        { key: 'decryptionPvk', type: 'string', value: '-----BEGIN PRIVATE KEY-----\\nMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\n/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+A\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nGLQ9wsHH5tQkNr581fConN+uq1iWNxtEz8mOc+Xa2BSuAhl3nX++t5BWs7zeBQP9\\njjfMi8aOQuv7/7lgCAY9oX7OnjF0Zk42AW2oJMC/h/OUvU9wTsyN7lOsyvCLSHoQ\\n77lV3ZvL2Uj6mB+FsjcrT/mD3wKBgQDJiTUGC0LjAJXnw6ncnbm3uxXwENwV4Slp\\narnhMJo7pokw3tHUbbDmmKmMXxtpDsJkHioCLqcL72cuZWPqCCKC4HmH1s+hdUov\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nQQQQQQQQQQQQQQQQQQQQQQQQ\\n-----END PRIVATE KEY-----' },
         { key: 'disableRequestedAuthnContext', type: 'boolean', value: 'true' },
         { key: 'audience', type: 'string', value: 'MyAudience' },
         { key: 'account_attribute', type: 'string', value: 'MyAccount' },
+        { key: 'pi', type: 'number', value: '3.14159' }, // couldn't find a saml float attribute but better to know if it works in theory
+        { key: 'auto_create_group', type: 'boolean', value: 'false' },
+        { key: 'firstname_attribute', type: 'string', value: 'theFirstname' },
+        { key: 'lastname_attribute', type: 'string', value: 'theLastName' },
+        { key: 'mail_attribute', type: 'string', value: 'TheMail' },
+        { key: 'privateKey', type: 'string', value: 'MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM' },
+        { key: 'signatureAlgorithm', type: 'string', value: 'sha256' },
+        { key: 'wantAuthnResponseSigned', type: 'boolean', value: 'false' },
       ]);
     });
 
@@ -215,6 +229,45 @@ describe('Migration of SSO environment test coverage', () => {
       expect(groupManagementEmptyConfiguration.groups_management).toStrictEqual({
         group_attributes: ['groups'],
         groups_mapping: [],
+      });
+    });
+
+    it('should SAML with organization mapping in configuration works', async () => {
+      const configuration = {
+        saml_org: {
+          identifier: 'saml_org',
+          strategy: 'SamlStrategy',
+          config: {
+            label: 'My test SAML with Orgs',
+            issuer: 'openctisaml_orgs',
+            entry_point: 'http://localhost:8888/realms/master/protocol/saml',
+            saml_callback_url: 'http://localhost:3000/auth/saml_org/callback',
+            cert: 'totallyFakeCertGroups',
+            organizations_management: {
+              organizations_path: ['theOrg'],
+              organizations_mapping: ['orgA:OCTIA', 'orgB:OCTIB'],
+            },
+          },
+        },
+      };
+
+      const result = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
+
+      const orgMappingSAMLConfiguration = result[0];
+      expect(orgMappingSAMLConfiguration.strategy).toBe('SamlStrategy');
+      expect(orgMappingSAMLConfiguration.name).toMatch(/My test SAML with Orgs-*/);
+      expect(orgMappingSAMLConfiguration.label).toBe('My test SAML with Orgs');
+      expect(orgMappingSAMLConfiguration.enabled).toBeTruthy();
+      expect(orgMappingSAMLConfiguration.configuration).toStrictEqual([
+        { key: 'issuer', type: 'string', value: 'openctisaml_orgs' },
+        { key: 'entryPoint', type: 'string', value: 'http://localhost:8888/realms/master/protocol/saml' },
+        { key: 'callbackUrl', type: 'string', value: 'http://localhost:3000/auth/saml_org/callback' },
+        { key: 'idpCert', type: 'string', value: 'totallyFakeCertGroups' },
+      ]);
+
+      expect(orgMappingSAMLConfiguration.organizations_management).toStrictEqual({
+        organizations_path: ['theOrg'],
+        organizations_mapping: ['orgA:OCTIA', 'orgB:OCTIB'],
       });
     });
 

@@ -419,6 +419,7 @@ export const parseSingleSignOnRunConfiguration = async (context: AuthContext, us
 
     for (let i = 0; i < authenticationStrategiesInput.length; i++) {
       const currentAuthProvider = authenticationStrategiesInput[i];
+      try {
       const identifier = currentAuthProvider.identifier;
 
       if (identifier && !isAuthenticationProviderMigrated(identifiersInDb, identifier)) {
@@ -436,7 +437,10 @@ export const parseSingleSignOnRunConfiguration = async (context: AuthContext, us
         };
         authenticationStrategies.push(queryResult);
       } else {
-        logApp.info(`[SSO CONVERSION] skipping ${currentAuthProvider.strategy} - ${identifier} as it's already in database.`);
+        logApp.info(`[SSO CONVERSION] skipping ${currentAuthProvider.strategy} - ${identifier} as it's already in database.`, { auth_strategy_migrated: settings?.auth_strategy_migrated });
+      }
+} catch (error) {
+        logApp.error(`[SSO CONVERSION] Error when trying to convert ${currentAuthProvider.identifier}`, { cause: error });
       }
     }
     return authenticationStrategies;
