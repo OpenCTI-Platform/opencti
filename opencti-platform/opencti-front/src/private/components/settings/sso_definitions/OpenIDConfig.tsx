@@ -1,11 +1,14 @@
 import React from 'react';
-import { Field, FieldArray } from 'formik';
+import { Field, FieldArray, useFormikContext } from 'formik';
 import IconButton from '@common/button/IconButton';
 import { useFormatter } from '../../../../components/i18n';
 import { Add, Delete } from '@mui/icons-material';
 import Typography from '@mui/material/Typography';
 import { SSODefinitionFormValues } from '@components/settings/sso_definitions/SSODefinitionForm';
 import TextField from '../../../../components/TextField';
+import Button from '@common/button/Button';
+import Tooltip from '@mui/material/Tooltip';
+import { useUrlCheck } from '@components/settings/sso_definitions/utils/useTestCallBackUrl';
 
 interface OpenIDConfigProps {
   updateField: (field: keyof SSODefinitionFormValues, value: unknown) => void;
@@ -13,6 +16,8 @@ interface OpenIDConfigProps {
 
 const OpenIDConfig = ({ updateField }: OpenIDConfigProps) => {
   const { t_i18n } = useFormatter();
+  const { values } = useFormikContext<SSODefinitionFormValues>();
+  const { checkUrl, isLoading } = useUrlCheck();
 
   return (
     <>
@@ -73,7 +78,7 @@ const OpenIDConfig = ({ updateField }: OpenIDConfigProps) => {
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'space-between',
+                  gap: 16,
                   marginTop: 10,
                 }}
               >
@@ -86,6 +91,18 @@ const OpenIDConfig = ({ updateField }: OpenIDConfigProps) => {
                   label={t_i18n('Redirect url value')}
                   fullWidth
                 />
+                <Tooltip title={t_i18n('Test URL')}>
+                  <span>
+                    <Button
+                      variant="secondary"
+                      onClick={() => checkUrl(values.callbackUrl)}
+                      disabled={isLoading}
+                      style={{ whiteSpace: 'nowrap' }}
+                    >
+                      {t_i18n('Test')}
+                    </Button>
+                  </span>
+                </Tooltip>
                 {index !== 0 && (
                   <IconButton
                     size="default"
