@@ -97,7 +97,7 @@ class ThreatActorIndividualLocationsComponent extends Component {
                     component={Link}
                     to={`${link}/${location.id}`}
                   >
-                    <ListItemIcon>
+                    <ListItemIcon sx={{ minWidth: 32 }}>
                       {flag ? (
                         <img
                           style={{ width: 20 }}

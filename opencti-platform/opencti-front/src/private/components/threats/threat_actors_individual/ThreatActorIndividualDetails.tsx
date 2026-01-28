@@ -1,17 +1,9 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
-import Chip from '@mui/material/Chip';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import { BullseyeArrow, ArmFlexOutline, DramaMasks } from 'mdi-material-ui';
-import ListItemText from '@mui/material/ListItemText';
-import makeStyles from '@mui/styles/makeStyles';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
-import type { Theme } from '../../../../components/Theme';
 import {
   ThreatActorIndividualDetails_ThreatActorIndividual$data,
   ThreatActorIndividualDetails_ThreatActorIndividual$key,
@@ -22,25 +14,8 @@ import ThreatActorIndividualLocation from './ThreatActorIndividualLocation';
 import ThreatActorIndividualDetailsChips from './ThreatActorIndividualDetailsChips';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  chip: {
-    fontSize: 12,
-    lineHeight: '12px',
-    backgroundColor: theme.palette.background.accent,
-    borderRadius: 4,
-    textTransform: 'uppercase',
-    margin: '0 5px 5px 0',
-  },
-  smallPre: {
-    display: 'inline-block',
-    margin: 0,
-    paddingTop: '7px',
-    paddingBottom: '4px',
-  },
-}));
+import Tag from '@common/tag/Tag';
+import TextList from '../../../../components/common/text/TextList';
 
 const ThreatActorIndividualDetailsFragment = graphql`
   fragment ThreatActorIndividualDetails_ThreatActorIndividual on ThreatActorIndividual
@@ -101,7 +76,6 @@ interface ThreatActorIndividualDetailsProps {
 const ThreatActorIndividualDetails: FunctionComponent<
   ThreatActorIndividualDetailsProps
 > = ({ threatActorIndividualData }) => {
-  const classes = useStyles();
   const { t_i18n, fldt } = useFormatter();
   const data: ThreatActorIndividualDetails_ThreatActorIndividual$data = useFragment(
     ThreatActorIndividualDetailsFragment,
@@ -130,10 +104,9 @@ const ThreatActorIndividualDetails: FunctionComponent<
                 {t_i18n('Threat actor types')}
               </Label>
               <FieldOrEmpty source={data.threat_actor_types}>
-                {data.threat_actor_types?.map((threatActorIndividualType) => (
-                  <Chip
+                {data.threat_actor_types?.map((threatActorIndividualType) => threatActorIndividualType && (
+                  <Tag
                     key={threatActorIndividualType}
-                    classes={{ root: classes.chip }}
                     label={threatActorIndividualType}
                   />
                 ))}
@@ -211,111 +184,33 @@ const ThreatActorIndividualDetails: FunctionComponent<
           <Label>
             {t_i18n('Roles')}
           </Label>
-          <FieldOrEmpty source={data.roles}>
-            {data.roles && (
-              <List>
-                {data.roles.map((role) => (
-                  <ListItem key={role} dense={true} divider={true}>
-                    <ListItemIcon>
-                      <DramaMasks />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={(
-                        <ItemOpenVocab
-                          type="threat-actor-individual-role-ov"
-                          value={role}
-                          small
-                        />
-                      )}
-                    />
-                  </ListItem>
-                ))}
-              </List>
-            )}
-          </FieldOrEmpty>
+          <TextList
+            list={data.roles}
+          />
         </Grid>
         <Grid item xs={4}>
           <Label>
             {t_i18n('Goals')}
           </Label>
-          <FieldOrEmpty source={data.goals}>
-            {data.goals && (
-              <List>
-                {data.goals.map((goal) => (
-                  <ListItem key={goal} dense={true} divider={true}>
-                    <ListItemIcon>
-                      <BullseyeArrow />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={<pre className={classes.smallPre}>{goal}</pre>}
-                    />
-                  </ListItem>
-                ))}
-              </List>
-            )}
-          </FieldOrEmpty>
+          <TextList
+            list={data.goals}
+          />
         </Grid>
         <Grid item xs={4}>
           <Label>
             {t_i18n('Secondary motivations')}
           </Label>
-          <FieldOrEmpty source={data.secondary_motivations}>
-            {data.secondary_motivations && (
-              <List>
-                {data.secondary_motivations.map((secondaryMotivation) => (
-                  <ListItem
-                    key={secondaryMotivation}
-                    dense={true}
-                    divider={true}
-                  >
-                    <ListItemIcon>
-                      <ArmFlexOutline />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={(
-                        <ItemOpenVocab
-                          type="attack-motivation-ov"
-                          value={secondaryMotivation}
-                          small
-                        />
-                      )}
-                    />
-                  </ListItem>
-                ))}
-              </List>
-            )}
-          </FieldOrEmpty>
+          <TextList
+            list={data.secondary_motivations}
+          />
         </Grid>
         <Grid item xs={4}>
           <Label>
             {t_i18n('Personal motivations')}
           </Label>
-          <FieldOrEmpty source={data.personal_motivations}>
-            {data.personal_motivations && (
-              <List>
-                {data.personal_motivations.map((personalMotivation) => (
-                  <ListItem
-                    key={personalMotivation}
-                    dense={true}
-                    divider={true}
-                  >
-                    <ListItemIcon>
-                      <ArmFlexOutline />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={(
-                        <ItemOpenVocab
-                          type="attack-motivation-ov"
-                          value={personalMotivation}
-                          small
-                        />
-                      )}
-                    />
-                  </ListItem>
-                ))}
-              </List>
-            )}
-          </FieldOrEmpty>
+          <TextList
+            list={data.personal_motivations}
+          />
         </Grid>
       </Grid>
     </Card>

@@ -21,15 +21,6 @@ const useStyles = makeStyles<Theme>(() => ({
   smallIcon: {
     margin: '5px 0 0 10px',
   },
-  pre: {
-    marginTop: '7px',
-  },
-  smallPre: {
-    margin: 0,
-    paddingTop: '7px',
-    paddingBottom: '4px',
-    textWrap: 'nowrap',
-  },
 }));
 
 interface ItemOpenVocabProps {
@@ -50,28 +41,28 @@ const ItemOpenVocab: FunctionComponent<ItemOpenVocabProps> = ({
   const classes = useStyles();
   const { t_i18n } = useFormatter();
 
+  let tag = (
+    <Tag label={value || t_i18n('Unknown')} />
+  );
+
   if (displayMode === 'chip') {
-    let chip = (
-      <Tag label={value || t_i18n('Unknown')} />
-    );
     if (type === 'case_severity_ov' || type === 'incident_severity_ov') {
-      chip = <ItemSeverity label={value || t_i18n('Unknown')} severity={value} />;
+      tag = <ItemSeverity label={value || t_i18n('Unknown')} severity={value} />;
     } else if (type === 'case_priority_ov') {
-      chip = <ItemPriority label={value || t_i18n('Unknown')} priority={value} />;
+      tag = <ItemPriority label={value || t_i18n('Unknown')} priority={value} />;
     }
     return hideEmpty ? (
-      chip
+      tag
     ) : (
-      <span>{chip}</span>
+      <span>{tag}</span>
     );
   }
 
-  const preClass = small ? classes.smallPre : classes.pre;
   const iconClass = small ? classes.smallIcon : classes.icon;
 
   return (
     <span className={classes.container}>
-      <pre className={preClass}>{value || t_i18n('Unknown')}</pre>
+      {tag}
       {hideEmpty ? '' : (
         <InformationOutline
           className={iconClass}
