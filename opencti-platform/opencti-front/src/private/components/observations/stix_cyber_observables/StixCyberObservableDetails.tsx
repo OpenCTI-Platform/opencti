@@ -285,15 +285,6 @@ const stixCyberObservableDetailsFragment = graphql`
       comment
       created
     }
-    ... on IMEI {
-      value
-    }
-    ... on ICCID {
-      value
-    }
-    ... on IMSI {
-    value
-    }
     ...StixCyberObservableIndicators_stixCyberObservable
   }
 `;
