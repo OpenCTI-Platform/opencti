@@ -417,6 +417,8 @@ class User:
             user. This may not impact effective confidence depending on group
             membership.
         :type user_confidence_level: Dict
+        :param user_service_account: Service Account or user account
+        :type user_service_account: bool, Optional
         :param customAttributes: Custom attributes to return for the user
         :type customAttributes: str, optional
         :param include_token: Defaults to False. Whether to include the API
@@ -442,6 +444,7 @@ class User:
         monochrome_labels = kwargs.get("monochrome_labels", False)
         groups = kwargs.get("groups", None)
         user_confidence_level = kwargs.get("user_confidence_level", None)
+        user_service_account = kwargs.get("user_service_account", False)
         custom_attributes = kwargs.get("customAttributes", None)
         user_service_account = kwargs.get("user_service_account", False)
         include_token = kwargs.get("include_token", False)
