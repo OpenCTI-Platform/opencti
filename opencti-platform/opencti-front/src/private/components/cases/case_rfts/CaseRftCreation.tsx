@@ -1,26 +1,34 @@
 import Button from '@common/button/Button';
-import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
-import makeStyles from '@mui/styles/makeStyles';
-import { Field, Form, Formik } from 'formik';
-import { FormikConfig } from 'formik/dist/types';
-import React, { FunctionComponent, useState } from 'react';
-import { graphql } from 'react-relay';
-import { RecordSourceSelectorProxy } from 'relay-runtime';
-import * as Yup from 'yup';
-import { useNavigate } from 'react-router-dom';
-import { handleErrorInForm } from 'src/relay/environment';
 import { CaseRftsLinesCasesPaginationQuery$variables } from '@components/cases/__generated__/CaseRftsLinesCasesPaginationQuery.graphql';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import Typography from '@mui/material/Typography';
+import { Field, Form, Formik } from 'formik';
+import { FormikConfig } from 'formik/dist/types';
+import { FunctionComponent, useState } from 'react';
+import { graphql } from 'react-relay';
+import { useNavigate } from 'react-router-dom';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { handleErrorInForm } from 'src/relay/environment';
+import * as Yup from 'yup';
+import { Accordion, AccordionSummary } from '../../../../components/Accordion';
+import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
+import RichTextField from '../../../../components/fields/RichTextField';
+import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
-import type { Theme } from '../../../../components/Theme';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import useGranted, { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
+import Security from '../../../../utils/Security';
 import { insertNode } from '../../../../utils/store';
+import CustomFileUploader from '../../common/files/CustomFileUploader';
 import CaseTemplateField from '../../common/form/CaseTemplateField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -28,24 +36,9 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
+import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { CaseRftAddInput, CaseRftCreationCaseMutation } from './__generated__/CaseRftCreationCaseMutation.graphql';
-import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import RichTextField from '../../../../components/fields/RichTextField';
-import ObjectParticipantField from '../../common/form/ObjectParticipantField';
-import CustomFileUploader from '../../common/files/CustomFileUploader';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import Security from '../../../../utils/Security';
-import useGranted, { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
-import { Accordion, AccordionSummary } from '../../../../components/Accordion';
-import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-}));
 
 const caseRftMutation = graphql`
   mutation CaseRftCreationCaseMutation($input: CaseRftAddInput!) {
@@ -114,7 +107,6 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
   defaultMarkingDefinitions,
   inputValue,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [mapAfter, setMapAfter] = useState<boolean>(false);
