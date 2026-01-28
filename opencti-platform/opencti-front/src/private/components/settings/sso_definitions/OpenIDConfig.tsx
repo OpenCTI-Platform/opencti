@@ -2,8 +2,6 @@ import React from 'react';
 import { Field, FieldArray } from 'formik';
 import IconButton from '@common/button/IconButton';
 import { useFormatter } from '../../../../components/i18n';
-import SelectField from '../../../../components/fields/SelectField';
-import MenuItem from '@mui/material/MenuItem';
 import { Add, Delete } from '@mui/icons-material';
 import Typography from '@mui/material/Typography';
 import { SSODefinitionFormValues } from '@components/settings/sso_definitions/SSODefinitionForm';

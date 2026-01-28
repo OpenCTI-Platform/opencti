@@ -1,14 +1,12 @@
 import React from 'react';
-import { Field, FieldArray } from 'formik';
+import { Field } from 'formik';
 import { useFormatter } from '../../../../components/i18n';
 import SelectField from '../../../../components/fields/SelectField';
 import MenuItem from '@mui/material/MenuItem';
-import { Add, Delete } from '@mui/icons-material';
 import Typography from '@mui/material/Typography';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { SSODefinitionFormValues } from '@components/settings/sso_definitions/SSODefinitionForm';
 import TextField from '../../../../components/TextField';
-import IconButton from '@common/button/IconButton';
 
 interface Props {
   updateField: (field: keyof SSODefinitionFormValues, value: unknown) => void;
