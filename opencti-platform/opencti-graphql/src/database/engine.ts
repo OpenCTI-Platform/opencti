@@ -1703,7 +1703,7 @@ const findElementsDuplicateIds = (elements: BasicStoreBase[]): string[] => {
 export const specialElasticCharsEscape = (query: string) => {
   return query.replace(/([/+|\-*()^~={}[\]:?!"\\])/g, '\\$1');
 };
-type ElFindByIdsOpts = {
+export type ElFindByIdsOpts = {
   indices?: string[] | string | null;
   baseData?: boolean | null;
   baseFields?: string[];
@@ -3048,7 +3048,7 @@ export const elPaginate = async <T extends BasicStoreBase>(
     throw DatabaseError('Fail to execute engine pagination', { cause: err, root_cause, query, queryArguments: options });
   }
 };
-type RepaginateOpts<T extends BasicStoreBase> = PaginateOpts & {
+export type RepaginateOpts<T extends BasicStoreBase> = PaginateOpts & {
   maxSize?: number;
   logForMigration?: boolean;
   callback?: (elements: T[], globalCount: number) => Promise<boolean | undefined>;
@@ -3172,7 +3172,7 @@ export const elCount = async (
   logApp.debug('[SEARCH] elCount', { query });
   return elRawCount(query);
 };
-type HistogramCountOpts = QueryBodyBuilderOpts & {
+export type HistogramCountOpts = QueryBodyBuilderOpts & {
   interval?: string;
   field?: string;
 };
@@ -3328,7 +3328,7 @@ const buildAggregationRelationFilters = async (
     },
   };
 };
-type AggregationRelationsCount = {
+export type AggregationRelationsCount = {
   types?: string[];
   field?: string;
   searchOptions?: QueryBodyBuilderOpts;

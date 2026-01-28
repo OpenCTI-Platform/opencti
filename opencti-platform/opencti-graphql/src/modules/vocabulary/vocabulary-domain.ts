@@ -3,7 +3,7 @@ import { createEntity, deleteElementById, updateAttribute } from '../../database
 import type { EditInput, QueryVocabulariesArgs, VocabularyAddInput } from '../../generated/graphql';
 import { FilterMode } from '../../generated/graphql';
 import { countAllThings, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY } from './vocabulary-types';
+import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY, type StoreEntityVocabulary } from './vocabulary-types';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { elRawUpdateByQuery } from '../../database/engine';
@@ -137,7 +137,7 @@ export const editVocabulary = async (context: AuthContext, user: AuthUser, id: s
       }
     }
   }
-  const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_VOCABULARY, input, props);
+  const { element } = await updateAttribute<StoreEntityVocabulary>(context, user, id, ENTITY_TYPE_VOCABULARY, input, props);
   await notify(BUS_TOPICS[ENTITY_TYPE_VOCABULARY].EDIT_TOPIC, element, user);
   return element;
 };

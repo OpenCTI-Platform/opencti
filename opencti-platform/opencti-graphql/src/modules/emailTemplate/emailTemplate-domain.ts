@@ -61,7 +61,7 @@ export const fieldPatchEmailTemplate = async (context: AuthContext, user: AuthUs
   if (!emailTemplate) {
     throw FunctionalError(`Email template ${emailTemplateId} cannot be found`);
   }
-  const { element } = await updateAttribute(context, user, emailTemplateId, ENTITY_TYPE_EMAIL_TEMPLATE, input);
+  const { element } = await updateAttribute<StoreEntityEmailTemplate>(context, user, emailTemplateId, ENTITY_TYPE_EMAIL_TEMPLATE, input);
   await publishUserAction({
     user,
     event_type: 'mutation',
