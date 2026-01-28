@@ -18,6 +18,7 @@ import { ConfigurationTypeInput } from '@components/settings/sso_definitions/__g
 import Button from '@common/button/Button';
 import SSODefinitionGroupForm from '@components/settings/sso_definitions/SSODefinitionGroupForm';
 import SSODefinitionOrganizationForm from '@components/settings/sso_definitions/SSODefinitionOrganizationForm';
+import CertConfig from '@components/settings/sso_definitions/CertConfig';
 
 interface SSODefinitionFormProps {
   onCancel: () => void;
@@ -177,6 +178,7 @@ const SSODefinitionForm = ({
     groupSearchBase: '',
     groupSearchFilter: '',
     allow_self_signed: false,
+    // CERT
   };
 
   const privateField = data?.configuration?.find((e) => e.key === 'privateKey');
@@ -278,8 +280,8 @@ const SSODefinitionForm = ({
               onChange={(event, value) => handleChangeTab(value)}
             >
               <Tab label={t_i18n('SSO Configuration')} />
-              <Tab label={t_i18n('Groups configuration')} />
-              <Tab label={t_i18n('Organizations configuration')} />
+              <Tab label={t_i18n('Groups configuration')} disabled={selectedStrategy === 'ClientCert'} />
+              <Tab label={t_i18n('Organizations configuration')} disabled={selectedStrategy === 'ClientCert'} />
             </Tabs>
           </Box>
           {currentTab === 0 && (
@@ -317,6 +319,7 @@ const SSODefinitionForm = ({
               {selectedStrategy === 'SAML' && <SAMLConfig updateField={updateField} />}
               {selectedStrategy === 'OpenID' && <OpenIDConfig updateField={updateField} />}
               {selectedStrategy === 'LDAP' && <LDAPConfig updateField={updateField} />}
+              {selectedStrategy === 'ClientCert' && <CertConfig updateField={updateField} />}
             </>
           )}
           {currentTab === 1 && <SSODefinitionGroupForm updateField={updateField} selectedStrategy={selectedStrategy} />}
