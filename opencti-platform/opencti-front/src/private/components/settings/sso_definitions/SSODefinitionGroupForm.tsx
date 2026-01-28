@@ -6,6 +6,8 @@ import IconButton from '@common/button/IconButton';
 import { Add, Delete } from '@mui/icons-material';
 import { SSODefinitionFormValues } from '@components/settings/sso_definitions/SSODefinitionForm';
 import { useFormatter } from 'src/components/i18n';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import SwitchField from '../../../../components/fields/SwitchField';
 
 type SSODefinitionGroupFormProps = {
   updateField: (field: keyof SSODefinitionFormValues, value: unknown) => void;
@@ -30,9 +32,8 @@ const SSODefinitionGroupForm = ({ updateField, selectedStrategy }: SSODefinition
         name={name}
         onSubmit={updateField}
         label={t_i18n('Attribute in token')}
-        containerstyle={{ marginTop: 12 }}
+        style={fieldSpacingContainerStyle}
         fullWidth
-        sx={{ marginTop: '20px' }}
       />
     );
   };
@@ -41,16 +42,35 @@ const SSODefinitionGroupForm = ({ updateField, selectedStrategy }: SSODefinition
     <>
       {getGroupAttributeKeyName()}
       {selectedStrategy === 'OpenID' && (
-        <Field
-          sx={{ marginTop: '20px' }}
-          component={TextField}
-          variant="standard"
-          name="groups_path"
-          onSubmit={updateField}
-          label={t_i18n('Group path')}
-          containerstyle={{ marginTop: 12 }}
-          fullWidth
-        />
+        <>
+          <Field
+            component={TextField}
+            variant="standard"
+            name="groups_path"
+            onSubmit={updateField}
+            label={t_i18n('Group path')}
+            style={fieldSpacingContainerStyle}
+            fullWidth
+          />
+          <Field
+            component={TextField}
+            variant="standard"
+            name="groups_scope"
+            onSubmit={updateField}
+            label={t_i18n('Group scope')}
+            style={fieldSpacingContainerStyle}
+            fullWidth
+          />
+          <Field
+            component={TextField}
+            variant="standard"
+            name="groups_token_reference"
+            onSubmit={updateField}
+            label={t_i18n('Access token')}
+            style={fieldSpacingContainerStyle}
+            fullWidth
+          />
+        </>
       )}
       <FieldArray name="groups_mapping">
         {({ push, remove, form }) => (
@@ -86,7 +106,7 @@ const SSODefinitionGroupForm = ({ updateField, selectedStrategy }: SSODefinition
                       name={`groups_mapping[${index}]`}
                       label={t_i18n('Group mapping value')}
                       fullWidth
-                      style={{ marginTop: 20 }}
+                      style={fieldSpacingContainerStyle}
                     />
                     {/* <div */}
                     {/*  style={{ */}
@@ -103,10 +123,10 @@ const SSODefinitionGroupForm = ({ updateField, selectedStrategy }: SSODefinition
                     {/*  /> */}
                     {/* </div> */}
                     <IconButton
-                      size="default"
+
                       color="primary"
                       aria-label={t_i18n('Delete')}
-                      style={{ marginTop: 10 }}
+                      style={{ marginTop: 30, marginLeft: 50 }}
                       onClick={() => {
                         const groupsMapping = [...form.values.groups_mapping];
                         groupsMapping.splice(index, 1);
@@ -130,14 +150,15 @@ const SSODefinitionGroupForm = ({ updateField, selectedStrategy }: SSODefinition
           </>
         )}
       </FieldArray>
-      {/* <Field */}
-      {/*  component={SwitchField} */}
-      {/*  variant="standard" */}
-      {/*  type="checkbox" */}
-      {/*  name="read_userinfo" */}
-      {/*  label={t_i18n('Automatically add users to default groups')} */}
-      {/*  containerstyle={{ marginLeft: 2, marginTop: 30 }} */}
-      {/* /> */}
+      <Field
+        component={SwitchField}
+        variant="standard"
+        type="checkbox"
+        name="groups_read_userinfo"
+        onChange={updateField}
+        label={t_i18n('Automatically add users to default groups')}
+        containerstyle={{ marginLeft: 2, marginTop: 30 }}
+      />
     </>
   );
 };

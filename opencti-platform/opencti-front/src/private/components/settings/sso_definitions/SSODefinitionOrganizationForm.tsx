@@ -6,26 +6,50 @@ import { Add, Delete } from '@mui/icons-material';
 import React from 'react';
 import { SSODefinitionFormValues } from '@components/settings/sso_definitions/SSODefinitionForm';
 import { useFormatter } from 'src/components/i18n';
+import { fieldSpacingContainerStyle } from 'src/utils/field';
+import SwitchField from 'src/components/fields/SwitchField';
 
 type SSODefinitionOrganizationFormProps = {
   updateField: (field: keyof SSODefinitionFormValues, value: unknown) => void;
+  selectedStrategy: string | null;
 };
 
-const SSODefinitionOrganizationForm = ({ updateField }: SSODefinitionOrganizationFormProps) => {
+const SSODefinitionOrganizationForm = ({ updateField, selectedStrategy }: SSODefinitionOrganizationFormProps) => {
   const { t_i18n } = useFormatter();
 
   return (
     <>
-      <div style={{ marginTop: 20 }}>
-        <Field
-          component={TextField}
-          variant="standard"
-          name="organizations_path"
-          onSubmit={updateField}
-          label={t_i18n('Attribute/path in token')}
-          fullWidth
-        />
-      </div>
+      <Field
+        component={TextField}
+        variant="standard"
+        name="organizations_path"
+        onSubmit={updateField}
+        label={t_i18n('Path in token')}
+        style={fieldSpacingContainerStyle}
+        fullWidth
+      />
+      {selectedStrategy === 'OpenID' && (
+        <>
+          <Field
+            component={TextField}
+            variant="standard"
+            name="organizations_scope"
+            onSubmit={updateField}
+            label={t_i18n('Organizations scope')}
+            style={fieldSpacingContainerStyle}
+            fullWidth
+          />
+          <Field
+            component={TextField}
+            variant="standard"
+            name="organizations_token_reference"
+            onSubmit={updateField}
+            label={t_i18n('Access token')}
+            style={fieldSpacingContainerStyle}
+            fullWidth
+          />
+        </>
+      )}
       <FieldArray name="organizations_mapping">
         {({ push, remove, form }) => (
           <>
@@ -54,7 +78,8 @@ const SSODefinitionOrganizationForm = ({ updateField }: SSODefinitionOrganizatio
                     key={index}
                     style={{
                       display: 'flex',
-                      alignItems: 'flex-start',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
                       marginBottom: 8,
                     }}
                   >
@@ -65,7 +90,7 @@ const SSODefinitionOrganizationForm = ({ updateField }: SSODefinitionOrganizatio
                       label={t_i18n('Value organizations mappings')}
                       onSubmit={() => updateField('organizations_mapping', form.values.organizations_mapping)}
                       fullWidth
-                      style={{ marginTop: 20 }}
+                      style={fieldSpacingContainerStyle}
                     />
                     {/* <div */}
                     {/*  style={{ flexBasis: '70%', maxWidth: '70%' }} */}
@@ -98,6 +123,15 @@ const SSODefinitionOrganizationForm = ({ updateField }: SSODefinitionOrganizatio
           </>
         )}
       </FieldArray>
+      <Field
+        component={SwitchField}
+        variant="standard"
+        type="checkbox"
+        name="organizations_read_userinfo"
+        onChange={updateField}
+        label={t_i18n('Automatically add users to default groups')}
+        containerstyle={{ marginLeft: 2, marginTop: 30 }}
+      />
     </>
   );
 };
