@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { findHistory, findById } from '../../../src/domain/log';
+import { findHistory, findById, findAudits } from '../../../src/domain/log';
 import { ADMIN_USER, getAuthUser, testContext, USER_PARTICIPATE } from '../../utils/testQuery';
-import { type FilterGroup, FilterMode, LogsOrdering, OrderingMode, type QueryLogsArgs } from '../../../src/generated/graphql';
+import { type FilterGroup, FilterMode, LogsOrdering, OrderingMode, type QueryAuditsArgs, type QueryLogsArgs } from '../../../src/generated/graphql';
 import { elLoadById } from '../../../src/database/engine';
 import { INDEX_DELETED_OBJECTS } from '../../../src/database/utils';
 import { batchContextDataForLog } from '../../../src/database/data-changes';
+import type { BasicConnection } from '../../../src/types/store';
 
 describe('Testing History search', () => {
   it('Is history is searchable', async () => {
@@ -108,5 +109,78 @@ describe('Testing History search', () => {
     const batchResolvedLogs = await batchContextDataForLog(testContext, ADMIN_USER, logs.edges.map((l) => ({ log: l.node })));
     expect(batchResolvedLogs.length).toBe(3);
     expect(batchResolvedLogs[0].message).toBe('add `TLP:TEST` in `Markings` | removes `TLP:CLEAR` in `Markings`');
+  });
+
+  it('Is history batchContextDataForLog resolved for old changes format', async () => {
+    const log = {
+      context_data: {
+        message: 'Message previously generated',
+        changes: [
+          { field: 'Markings', new: [], previous: [], added: ['TLP:CLEAR'], removed: ['TLP:TEST'] },
+          { field: 'Description', new: ['Description'], previous: ['Old description'], added: [], removed: [] },
+        ],
+      },
+    };
+    const batchResolvedLogs = await batchContextDataForLog(testContext, ADMIN_USER, [{ log }]);
+    expect(batchResolvedLogs.length).toBe(1);
+    expect(batchResolvedLogs[0].message).toBe('Message previously generated');
+    expect(batchResolvedLogs[0].changes.length).toBe(2);
+    expect(batchResolvedLogs[0].changes[0].field).toBe('Markings');
+    expect(batchResolvedLogs[0].changes[0].changes_added).toEqual(['TLP:CLEAR']);
+    expect(batchResolvedLogs[0].changes[0].changes_removed).toEqual(['TLP:TEST']);
+    expect(batchResolvedLogs[0].changes[1].field).toBe('Description');
+    expect(batchResolvedLogs[0].changes[1].changes_added).toEqual(['Description']);
+    expect(batchResolvedLogs[0].changes[1].changes_removed).toEqual(['Old description']);
+  });
+
+  it('Is Audit is searchable', async () => {
+    const args: QueryAuditsArgs = { first: 5, types: ['Activity'], orderBy: LogsOrdering.Timestamp, orderMode: OrderingMode.Asc };
+    const audits = await findAudits(testContext, ADMIN_USER, args) as BasicConnection<any>;
+    expect(audits.edges.length).toBe(0);
+  });
+
+  it('Is Audit + history is searchable', async () => {
+    const malwareId = 'malware--284e60cb-6b78-5ca5-a81c-b84b6bc12c02';
+    const malware = await elLoadById(testContext, ADMIN_USER, malwareId, { indices: [INDEX_DELETED_OBJECTS] });
+    expect(malware).not.toBeNull();
+    const filters: FilterGroup = {
+      mode: FilterMode.And,
+      filterGroups: [],
+      filters: [
+        { key: ['contextEntityId'], values: [malware?.internal_id] },
+        { key: ['event_type'], values: ['mutation', 'create', 'update', 'delete', 'merge'] },
+        { key: ['event_scope'], values: ['update'] },
+      ],
+    };
+    const args: QueryAuditsArgs = { filters, types: ['History', 'Activity'], orderBy: LogsOrdering.Timestamp, orderMode: OrderingMode.Asc };
+    const audits = await findAudits(testContext, ADMIN_USER, args) as BasicConnection<any>;
+    console.log(JSON.stringify(audits, null, 2));
+    expect(audits.edges.length).toBe(3);
+  });
+
+  it('Is audit is filtered with capabilities', async () => {
+    const caseId = 'case-incident--019839f8-3220-5fe2-b937-404fe19ef54a';
+    const caseElement = await elLoadById(testContext, ADMIN_USER, caseId, { indices: [INDEX_DELETED_OBJECTS] });
+    expect(caseElement).toBeDefined();
+    const filters: FilterGroup = {
+      mode: FilterMode.And,
+      filterGroups: [],
+      filters: [
+        { key: ['contextEntityId'], values: [caseElement?.internal_id] },
+        { key: ['event_type'], values: ['mutation', 'create', 'update', 'delete', 'merge'] },
+        { key: ['event_scope'], values: ['update'] },
+      ],
+    };
+    const args: QueryAuditsArgs = { filters, types: ['History', 'Activity'], orderBy: LogsOrdering.Timestamp, orderMode: OrderingMode.Asc };
+    const logs = await findAudits(testContext, ADMIN_USER, args) as BasicConnection<any>;
+    expect(logs.edges.length).toBe(5);
+    const firstElementChanges = logs.edges[0].node.context_data.history_changes;
+    expect(firstElementChanges.length).toBe(2);
+    expect(firstElementChanges[0].field).toBe('Case-Incident--restricted_members');
+    expect(firstElementChanges[1].field).toBe('Case-Incident--authorized_members_activation_date');
+    // Try limited admin
+    const limitedAdmin = { ...ADMIN_USER, capabilities: [{ name: 'KNOWLEDGE_KNUPDATE' }] };
+    const logsLimited = await findAudits(testContext, limitedAdmin, args) as BasicConnection<any>;
+    expect(logsLimited.edges.length).toBe(2);
   });
 });

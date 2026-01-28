@@ -1673,18 +1673,27 @@ export const elRebuildRelation = (concept: { internal_id: string; base_type: str
   return concept;
 };
 
-function setPropertyByPath(obj: Record<string, any>, path: string, value: any) {
-  const parts = path.split('.');
-  let current = obj;
-  for (let i = 0; i < parts.length - 1; i += 1) {
-    const part = parts[i];
-    if (!current[part] || typeof current[part] !== 'object') {
-      current[part] = {};
+const processInnerHits = (data: Record<string, any>, innerHits: any, internalId: string) => {
+  Object.keys(innerHits).forEach((innerHitKey) => {
+    const nestedHits = innerHits[innerHitKey];
+    if (nestedHits?.hits?.hits) {
+      if (nestedHits?.hits?.hits.length === INNER_HITS_WINDOWS_SIZE) {
+        logApp.warn('Inner hits limitation reached', { id: internalId, key: innerHitKey });
+      }
+      const matchedDocs = nestedHits.hits.hits.map((h: any) => h._source);
+      const paths = innerHitKey.split('.');
+      let current = data;
+      for (let i = 0; i < paths.length - 1; i += 1) {
+        const path = paths[i];
+        if (!current[path]) {
+          current[path] = {};
+        }
+        current = current[path];
+      }
+      current[paths[paths.length - 1]] = matchedDocs;
     }
-    current = current[part];
-  }
-  current[parts[parts.length - 1]] = value;
-}
+  });
+};
 
 const elDataConverter = <T>(esHit: any): T => {
   const elementData = esHit._source;
@@ -1699,16 +1708,7 @@ const elDataConverter = <T>(esHit: any): T => {
   };
   // Inner elements mapping
   if (esHit.inner_hits) {
-    Object.keys(esHit.inner_hits).forEach((innerHitKey) => {
-      const nestedHits = esHit.inner_hits[innerHitKey];
-      if (nestedHits?.hits?.hits) {
-        if (nestedHits?.hits?.hits.length === INNER_HITS_WINDOWS_SIZE) {
-          logApp.warn('Inner hits limitation reached', { id: elementData.internal_id, key: innerHitKey });
-        }
-        const matchedDocs = nestedHits.hits.hits.map((h: any) => h._source);
-        setPropertyByPath(elementData, innerHitKey, matchedDocs);
-      }
-    });
+    processInnerHits(data, esHit.inner_hits, elementData.internal_id);
   }
   // Rule inference mapping
   const ruleInferences = [];
@@ -2721,7 +2721,8 @@ const buildSubQueryForFilterGroup = (
         bool: {
           should: localMustFilters,
           minimum_should_match: mode === 'or' ? 1 : localMustFilters.length,
-        } }
+        },
+      }
     : null;
   return { subQuery: currentSubQuery, postFiltersTags: localPostFilterTags, resultSaltCount: localSaltCount };
 };
@@ -3103,7 +3104,7 @@ const tagFiltersForPostFiltering = (
     : [];
 
   if (taggedFilters.length > 0) {
-    return async <T extends BasicStoreBase> (context: AuthContext, user: AuthUser, elementsIds: string[]) => {
+    return async <T extends BasicStoreBase>(context: AuthContext, user: AuthUser, elementsIds: string[]) => {
       const postFilters: { tag: string; postFilter: (element: T) => boolean }[] = [];
       for (let i = 0; i < taggedFilters.length; i++) {
         const taggedFilter = taggedFilters[i];
