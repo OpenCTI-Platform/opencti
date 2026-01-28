@@ -12,7 +12,7 @@ import ThreatActorGroupLocation from './ThreatActorGroupLocation';
 import Card from '@common/card/Card';
 import Label from '../../../../components/common/label/Label';
 import Tag from '../../../../components/common/tag/Tag';
-import TextList from '../../../../components/TextList';
+import TextList from '../../../../components/common/text/TextList';
 
 class ThreatActorGroupDetailsComponent extends Component {
   render() {

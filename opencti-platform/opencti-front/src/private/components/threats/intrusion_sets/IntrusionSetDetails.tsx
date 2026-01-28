@@ -8,7 +8,7 @@ import IntrusionSetLocations from './IntrusionSetLocations';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import ImageCarousel, { ImagesData } from '../../../../components/ImageCarousel';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
-import TextList from '../../../../components/TextList';
+import TextList from '../../../../components/common/text/TextList';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
 

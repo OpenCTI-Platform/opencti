@@ -15,7 +15,7 @@ import ThreatActorIndividualDetailsChips from './ThreatActorIndividualDetailsChi
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
 import Tag from '@common/tag/Tag';
-import TextList from '../../../../components/TextList';
+import TextList from '../../../../components/common/text/TextList';
 
 const ThreatActorIndividualDetailsFragment = graphql`
   fragment ThreatActorIndividualDetails_ThreatActorIndividual on ThreatActorIndividual

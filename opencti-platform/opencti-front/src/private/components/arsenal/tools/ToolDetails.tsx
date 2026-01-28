@@ -10,7 +10,7 @@ import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
-import TextList from '../../../../components/TextList';
+import TextList from '../../../../components/common/text/TextList';
 
 const ToolDetailsFragment = graphql`
  fragment ToolDetails_tool on Tool {
