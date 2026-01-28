@@ -113,6 +113,11 @@ describe('Migration of SSO environment test coverage', () => {
             xmlSignatureTransforms: ['http://www.w3.org/2000/09/xmldsig#enveloped-signature', 'http://www.w3.org/2001/10/xml-exc-c14n#'],
             want_assertions_signed: true,
             organizations_default: ['OpenCTI'],
+            decryption_pvk: '-----BEGIN PRIVATE KEY-----\\nMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\n/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+A\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nGLQ9wsHH5tQkNr581fConN+uq1iWNxtEz8mOc+Xa2BSuAhl3nX++t5BWs7zeBQP9\\njjfMi8aOQuv7/7lgCAY9oX7OnjF0Zk42AW2oJMC/h/OUvU9wTsyN7lOsyvCLSHoQ\\n77lV3ZvL2Uj6mB+FsjcrT/mD3wKBgQDJiTUGC0LjAJXnw6ncnbm3uxXwENwV4Slp\\narnhMJo7pokw3tHUbbDmmKmMXxtpDsJkHioCLqcL72cuZWPqCCKC4HmH1s+hdUov\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nQQQQQQQQQQQQQQQQQQQQQQQQ\\n-----END PRIVATE KEY-----',
+            requested_authn_context: true,
+            audience: 'MyAudience',
+            account_attribute: 'MyAccount',
+            pi: 3.14159,
           },
         },
       };
@@ -131,9 +136,14 @@ describe('Migration of SSO environment test coverage', () => {
         { key: 'callbackUrl', type: 'string', value: 'http://localhost:2000/auth/saml/callback' },
         { key: 'idpCert', type: 'string', value: 'totallyFakeCert3' },
         { key: 'acceptedClockSkewMs', type: 'number', value: '5' },
+        { key: 'pi', type: 'number', value: '3.14159' }, // couldn't find a saml float attribute but better to know if it works in theory
         { key: 'xmlSignatureTransforms', type: 'array', value: '["http://www.w3.org/2000/09/xmldsig#enveloped-signature","http://www.w3.org/2001/10/xml-exc-c14n#"]' },
         { key: 'wantAssertionsSigned', type: 'boolean', value: 'true' },
         { key: 'organizations_default', type: 'array', value: '["OpenCTI"]' },
+        { key: 'decryptionPvk', type: 'string', value: '-----BEGIN PRIVATE KEY-----\\nMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\n/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+A\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nGLQ9wsHH5tQkNr581fConN+uq1iWNxtEz8mOc+Xa2BSuAhl3nX++t5BWs7zeBQP9\\njjfMi8aOQuv7/7lgCAY9oX7OnjF0Zk42AW2oJMC/h/OUvU9wTsyN7lOsyvCLSHoQ\\n77lV3ZvL2Uj6mB+FsjcrT/mD3wKBgQDJiTUGC0LjAJXnw6ncnbm3uxXwENwV4Slp\\narnhMJo7pokw3tHUbbDmmKmMXxtpDsJkHioCLqcL72cuZWPqCCKC4HmH1s+hdUov\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nQQQQQQQQQQQQQQQQQQQQQQQQ\\n-----END PRIVATE KEY-----' },
+        { key: 'disableRequestedAuthnContext', type: 'boolean', value: 'true' },
+        { key: 'audience', type: 'string', value: 'MyAudience' },
+        { key: 'account_attribute', type: 'string', value: 'MyAccount' },
       ]);
     });
 
