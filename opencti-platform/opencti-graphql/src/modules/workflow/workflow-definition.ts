@@ -1,12 +1,4 @@
-import type {
-  ConditionValidator,
-  Context,
-  Event,
-  SideEffect,
-  State,
-  StateDefinition,
-  Transition,
-} from './workflow-types';
+import type { ConditionValidator, Context, Event, SideEffect, State, StateDefinition, Transition } from './workflow-types';
 
 /**
  * Represents a stateless definition of a workflow graph.
@@ -31,6 +23,13 @@ export class WorkflowDefinition<TContext extends Context = Context> {
   addState(name: State, definition?: Omit<StateDefinition<TContext>, 'name'>) {
     this.states.set(name, { name, ...definition });
     return this;
+  }
+
+  /**
+   * Checks if a state exists in the definition.
+   */
+  hasState(name: State): boolean {
+    return this.states.has(name);
   }
 
   /**
