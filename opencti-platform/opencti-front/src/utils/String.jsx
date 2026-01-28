@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import React from 'react';
+import purify from 'dompurify';
 import { Base64 } from 'js-base64';
 import Tooltip from '@mui/material/Tooltip';
 import { last } from 'ramda';
@@ -283,4 +283,28 @@ export const extractUrlsFromText = (text) => {
   }
 
   return parts;
+};
+
+/**
+ * Transform a potential unsecure html string into a secure one.
+ *
+ * @param data String to sanitize.
+ * @param escapeHtml If we want to keep html tags without removing them.
+ * @returns Sanitized string.
+ */
+export const sanitize = (data, escapeHtml = false) => {
+  const toSanitize = escapeHtml
+    ? data.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    : data;
+  return purify.sanitize(toSanitize);
+};
+
+/**
+ * Check if a string is xss safe.
+ *
+ * @param data Determine is a string is xss safe or not.
+ * @returns True if the string is safe.
+ */
+export const isStringSafe = (data) => {
+  return data === purify.sanitize(data);
 };
