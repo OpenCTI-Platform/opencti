@@ -14,6 +14,7 @@ import IndividualCreation from '../../entities/individuals/IndividualCreation';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import IconButton from '../../../../components/common/button/IconButton';
+import { Stack } from '@mui/material';
 
 interface AddIndividualsThreatActorIndividualComponentProps {
   threatActorIndividual: ThreatActorIndividualDetails_ThreatActorIndividual$data;
@@ -53,16 +54,11 @@ const AddIndividualsThreatActorIndividualComponent: FunctionComponent<
         open={open}
         onClose={handleClose}
         title={t_i18n('Add individual')}
-        header={(
-          <div
-            style={{
-              marginLeft: 'auto',
-              marginRight: '20px',
-              display: 'flex',
-              flexWrap: 'wrap',
-              justifyContent: 'flex-end',
-              alignItems: 'flex-end',
-            }}
+      >
+        <Stack gap={2}>
+          <Stack
+            direction="row"
+            justifyContent="space-between"
           >
             <SearchInput
               variant="inDrawer"
@@ -72,13 +68,12 @@ const AddIndividualsThreatActorIndividualComponent: FunctionComponent<
             <IndividualCreation
               paginationOptions={paginationOptions}
             />
-          </div>
-        )}
-      >
-        <AddIndividualsThreatActorIndividualLines
-          threatActorIndividual={threatActorIndividual}
-          fragmentKey={data}
-        />
+          </Stack>
+          <AddIndividualsThreatActorIndividualLines
+            threatActorIndividual={threatActorIndividual}
+            fragmentKey={data}
+          />
+        </Stack>
       </Drawer>
     </div>
   );

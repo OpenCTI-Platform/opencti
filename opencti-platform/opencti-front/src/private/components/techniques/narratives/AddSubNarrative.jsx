@@ -9,6 +9,7 @@ import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
 import AddSubNarrativesLines, { addSubNarrativesLinesQuery } from './AddSubNarrativesLines';
 import NarrativeCreation from './NarrativeCreation';
+import { Stack } from '@mui/material';
 
 class AddSubNarrative extends Component {
   constructor(props) {
@@ -46,8 +47,12 @@ class AddSubNarrative extends Component {
           open={this.state.open}
           onClose={this.handleClose.bind(this)}
           title={t('Add subnarratives')}
-          header={(
-            <>
+        >
+          <Stack gap={2}>
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+            >
               <SearchInput
                 variant="inDrawer"
                 onSubmit={this.handleSearch.bind(this)}
@@ -58,25 +63,24 @@ class AddSubNarrative extends Component {
                 inputValue={this.state.search}
                 paginationOptions={paginationOptions}
               />
-            </>
-          )}
-        >
-          <QueryRenderer
-            query={addSubNarrativesLinesQuery}
-            variables={{
-              search: this.state.search,
-              count: 20,
-            }}
-            render={({ props }) => {
-              return (
-                <AddSubNarrativesLines
-                  narrative={narrative}
-                  narrativeSubNarratives={narrativeSubNarratives}
-                  data={props}
-                />
-              );
-            }}
-          />
+            </Stack>
+            <QueryRenderer
+              query={addSubNarrativesLinesQuery}
+              variables={{
+                search: this.state.search,
+                count: 20,
+              }}
+              render={({ props }) => {
+                return (
+                  <AddSubNarrativesLines
+                    narrative={narrative}
+                    narrativeSubNarratives={narrativeSubNarratives}
+                    data={props}
+                  />
+                );
+              }}
+            />
+          </Stack>
         </Drawer>
       </div>
     );

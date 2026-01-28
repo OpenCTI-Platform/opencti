@@ -6,6 +6,7 @@ import SearchInput from '../../../../components/SearchInput';
 import StixCyberObservableNestedEntitiesTable from './StixCyberObservableNestedEntitiesTable';
 import { useFormatter } from '../../../../components/i18n';
 import Card from '../../../../components/common/card/Card';
+import { Stack } from '@mui/material';
 
 interface StixCyberObservableNestedEntitiesProps {
   entityId: string;
@@ -38,7 +39,7 @@ const StixCyberObservableNestedEntities: React.FC<StixCyberObservableNestedEntit
       <Card
         title={t_i18n('Nested objects')}
         action={(
-          <div>
+          <Stack direction="row" gap={1}>
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <StixNestedRefRelationshipCreationFromEntityContainer
                 paginationOptions={paginationOptions}
@@ -54,7 +55,7 @@ const StixCyberObservableNestedEntities: React.FC<StixCyberObservableNestedEntit
                 keyword={searchTerm}
               />
             )}
-          </div>
+          </Stack>
         )}
       >
         <StixCyberObservableNestedEntitiesTable

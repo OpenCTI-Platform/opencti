@@ -11,6 +11,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import LocationCreation from '../../common/location/LocationCreation';
 import AddLocationsThreatActorGroupLines, { addLocationsThreatActorGroupLinesQuery } from './AddLocationsThreatActorGroupLines';
 import { insertNode } from '../../../../utils/store';
+import { Stack } from '@mui/material';
 
 const styles = () => ({
   search: {
@@ -38,7 +39,7 @@ class AddLocationsThreatActorGroup extends Component {
   }
 
   render() {
-    const { t, classes, threatActorGroup, threatActorGroupLocations } = this.props;
+    const { t, threatActorGroup, threatActorGroupLocations } = this.props;
     const paginationOptions = {
       search: this.state.search,
     };
@@ -61,39 +62,40 @@ class AddLocationsThreatActorGroup extends Component {
           open={this.state.open}
           onClose={this.handleClose.bind(this)}
           title={t('Add locations')}
-          header={(
-            <div className={classes.search}>
+        >
+          <Stack gap={2}>
+            <Stack gap={1} direction="row" justifyContent="space-between">
               <SearchInput
                 variant="inDrawer"
                 onSubmit={this.handleSearch.bind(this)}
               />
-            </div>
-          )}
-        >
-          <QueryRenderer
-            query={addLocationsThreatActorGroupLinesQuery}
-            variables={{
-              search: this.state.search,
-              count: 100,
-            }}
-            render={({ props }) => {
-              return (
-                <AddLocationsThreatActorGroupLines
-                  threatActorGroup={threatActorGroup}
-                  threatActorGroupLocations={threatActorGroupLocations}
-                  data={props}
-                />
-              );
-            }}
-          />
+              <LocationCreation
+                display={this.state.open}
+                contextual={true}
+                inputValue={this.state.search}
+                paginationOptions={paginationOptions}
+                updater={updater}
+              />
+            </Stack>
+            <QueryRenderer
+              query={addLocationsThreatActorGroupLinesQuery}
+              variables={{
+                search: this.state.search,
+                count: 100,
+              }}
+              render={({ props }) => {
+                return (
+                  <AddLocationsThreatActorGroupLines
+                    threatActorGroup={threatActorGroup}
+                    threatActorGroupLocations={threatActorGroupLocations}
+                    data={props}
+                  />
+                );
+              }}
+            />
+          </Stack>
         </Drawer>
-        <LocationCreation
-          display={this.state.open}
-          contextual={true}
-          inputValue={this.state.search}
-          paginationOptions={paginationOptions}
-          updater={updater}
-        />
+
       </>
     );
   }

@@ -14,6 +14,7 @@ import StixCyberObservableCreation from '../../observations/stix_cyber_observabl
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import IconButton from '../../../../components/common/button/IconButton';
+import { Stack } from '@mui/material';
 
 interface AddPersonaThreatActorIndividualComponentProps {
   threatActorIndividual: ThreatActorIndividualDetails_ThreatActorIndividual$data;
@@ -53,16 +54,11 @@ const AddPersonaThreatActorIndividualComponent: FunctionComponent<
         open={open}
         onClose={handleClose}
         title={t_i18n('Add persona')}
-        header={(
-          <div
-            style={{
-              marginLeft: 'auto',
-              marginRight: '20px',
-              display: 'flex',
-              flexWrap: 'wrap',
-              justifyContent: 'flex-end',
-              alignItems: 'flex-end',
-            }}
+      >
+        <Stack gap={2}>
+          <Stack
+            direction="row"
+            justifyContent="space-between"
           >
             <SearchInput
               variant="inDrawer"
@@ -81,13 +77,12 @@ const AddPersonaThreatActorIndividualComponent: FunctionComponent<
               inputValue=""
               defaultCreatedBy={undefined}
             />
-          </div>
-        )}
-      >
-        <AddPersonasThreatActorIndividualLines
-          threatActorIndividual={threatActorIndividual}
-          fragmentKey={data}
-        />
+          </Stack>
+          <AddPersonasThreatActorIndividualLines
+            threatActorIndividual={threatActorIndividual}
+            fragmentKey={data}
+          />
+        </Stack>
       </Drawer>
     </div>
   );

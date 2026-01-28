@@ -15,6 +15,7 @@ import StixCoreRelationshipCreationFromEntity from '../../common/stix_core_relat
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import SearchInput from '../../../../components/SearchInput';
+import { Stack } from '@mui/material';
 
 const styles = (theme) => ({
   paper: {
@@ -212,7 +213,7 @@ class StixCyberObservableEntities extends Component {
         <Card
           title={t('Relations')}
           action={(
-            <div>
+            <Stack direction="row" gap={1}>
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <StixCoreRelationshipCreationFromEntity
                   paginationOptions={paginationOptions}
@@ -231,7 +232,7 @@ class StixCyberObservableEntities extends Component {
                 onSubmit={this.handleSearch.bind(this)}
                 keyword={searchTerm}
               />
-            </div>
+            </Stack>
           )}
         >
           <List style={{ marginTop: -10 }}>
