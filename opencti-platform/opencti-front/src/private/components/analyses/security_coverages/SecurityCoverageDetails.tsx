@@ -101,7 +101,7 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
                 {t_i18n('Exposure validation')}
               </Button>
             )}
-            <Paper variant="outlined" style={{ padding: 20, marginTop: 10 }}>
+            <Paper variant="outlined" sx={{ padding: 2 }}>
               <SecurityCoverageInformation coverage_information={data.coverage_information ?? []} variant="details" />
             </Paper>
           </Grid>

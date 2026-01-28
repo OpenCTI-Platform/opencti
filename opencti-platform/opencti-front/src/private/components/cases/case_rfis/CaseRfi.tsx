@@ -1,9 +1,6 @@
 import Grid from '@mui/material/Grid';
 import React, { useRef } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
-import { useTheme } from '@mui/material/styles';
 import { convertMarkings } from '../../../../utils/edition';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
@@ -23,6 +20,7 @@ import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 import { CaseRfi_caseRfi$key } from './__generated__/CaseRfi_caseRfi.graphql';
+import Card from '../../../../components/common/card/Card';
 
 const caseRfiFragment = graphql`
   fragment CaseRfi_caseRfi on CaseRfi {
@@ -110,7 +108,6 @@ interface CaseRfiProps {
 
 const CaseRfi: React.FC<CaseRfiProps> = ({ caseRfiData, enableReferences }) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme();
   const ref = useRef(null);
   const caseRfi = useFragment(caseRfiFragment, caseRfiData);
   const overviewLayoutCustomization = useOverviewLayoutCustomization(caseRfi.entity_type);
@@ -177,39 +174,23 @@ const CaseRfi: React.FC<CaseRfiProps> = ({ caseRfiData, enableReferences }) => {
                     {queryRef && (
                       <React.Suspense
                         fallback={(
-                          <div style={{ height: '100%' }}>
-                            <Typography
-                              variant="h4"
-                              gutterBottom={true}
-                              style={{ marginBottom: 10 }}
+                          <Card title={t_i18n('Tasks')}>
+                            <ListLines
+                              helpers={helpers}
+                              sortBy={sortBy}
+                              orderAsc={orderAsc}
+                              handleSort={helpers.handleSort}
+                              dataColumns={tasksDataColumns}
+                              inline={true}
+                              secondaryAction={true}
                             >
-                              {t_i18n('Tasks')}
-                            </Typography>
-                            <Paper
-                              style={{
-                                marginTop: theme.spacing(1),
-                                padding: 0,
-                                borderRadius: 4,
-                              }}
-                              variant="outlined"
-                            >
-                              <ListLines
-                                helpers={helpers}
-                                sortBy={sortBy}
-                                orderAsc={orderAsc}
-                                handleSort={helpers.handleSort}
-                                dataColumns={tasksDataColumns}
-                                inline={true}
-                                secondaryAction={true}
-                              >
-                                {Array(20)
-                                  .fill(0)
-                                  .map((_, idx) => (
-                                    <CaseTasksLineDummy key={idx} />
-                                  ))}
-                              </ListLines>
-                            </Paper>
-                          </div>
+                              {Array(20)
+                                .fill(0)
+                                .map((_, idx) => (
+                                  <CaseTasksLineDummy key={idx} />
+                                ))}
+                            </ListLines>
+                          </Card>
                         )}
                       >
                         <CaseTasksLines
