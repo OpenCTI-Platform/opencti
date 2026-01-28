@@ -20,6 +20,7 @@ interface UserOrigin {
   applicant_id?: string;
   playbook_id?: string;
   referer?: string;
+  synchronized_upsert?: boolean;
   user_metadata?: object;
 }
 
@@ -68,5 +69,6 @@ interface AuthContext {
   user_otp_validated?: boolean;
   user_with_session?: boolean;
   req?: Express.Request;
+  synchronizedUpsert?: boolean;
   blocked_for_lts_validation?: boolean;
 }
