@@ -48,7 +48,7 @@ const SSODefinitionGroupForm = ({ updateField, selectedStrategy }: SSODefinition
             variant="standard"
             name="groups_path"
             onSubmit={updateField}
-            label={t_i18n('Group path')}
+            label="Group path"
             style={fieldSpacingContainerStyle}
             fullWidth
           />
@@ -57,7 +57,7 @@ const SSODefinitionGroupForm = ({ updateField, selectedStrategy }: SSODefinition
             variant="standard"
             name="groups_scope"
             onSubmit={updateField}
-            label={t_i18n('Group scope')}
+            label="Group scope"
             style={fieldSpacingContainerStyle}
             fullWidth
           />
@@ -66,7 +66,7 @@ const SSODefinitionGroupForm = ({ updateField, selectedStrategy }: SSODefinition
             variant="standard"
             name="groups_token_reference"
             onSubmit={updateField}
-            label={t_i18n('Access token')}
+            label="Access token"
             style={fieldSpacingContainerStyle}
             fullWidth
           />

@@ -35,7 +35,7 @@ const SSODefinitionOrganizationForm = ({ updateField, selectedStrategy }: SSODef
             variant="standard"
             name="organizations_scope"
             onSubmit={updateField}
-            label={t_i18n('Organizations scope')}
+            label="Organizations scope"
             style={fieldSpacingContainerStyle}
             fullWidth
           />
@@ -44,7 +44,7 @@ const SSODefinitionOrganizationForm = ({ updateField, selectedStrategy }: SSODef
             variant="standard"
             name="organizations_token_reference"
             onSubmit={updateField}
-            label={t_i18n('Access token')}
+            label="Access token"
             style={fieldSpacingContainerStyle}
             fullWidth
           />
