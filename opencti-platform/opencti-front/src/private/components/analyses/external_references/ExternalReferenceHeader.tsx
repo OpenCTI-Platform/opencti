@@ -45,6 +45,7 @@ const ExternalReferenceHeaderComponent = ({
     setOpenEnrollPlaybook(false);
   };
   const displayEnrollPlaybook = enableEnrollPlaybook;
+  const displayPopoverMenu = canDelete || (enableEnrollPlaybook && !displayEnrollPlaybook);
 
   return (
     <div
@@ -75,30 +76,32 @@ const ExternalReferenceHeaderComponent = ({
               />
             )
           }
-          <PopoverMenu>
-            {({ closeMenu }) => (
-              <Box>
-                {displayEnrollPlaybook && (
-                  <StixCoreObjectMenuItemUnderEE
-                    title={t_i18n('Enroll in playbook')}
-                    setOpen={setOpenEnrollPlaybook}
-                    handleCloseMenu={closeMenu}
-                    needs={[AUTOMATION]}
-                    matchAll
-                  />
-                )}
-                {canDelete && (
-                  <MenuItem onClick={() => {
-                    handleOpenDelete();
-                    closeMenu();
-                  }}
-                  >
-                    {t_i18n('Delete')}
-                  </MenuItem>
-                )}
-              </Box>
-            )}
-          </PopoverMenu>
+          {displayPopoverMenu && (
+            <PopoverMenu>
+              {({ closeMenu }) => (
+                <Box>
+                  {displayEnrollPlaybook && (
+                    <StixCoreObjectMenuItemUnderEE
+                      title={t_i18n('Enroll in playbook')}
+                      setOpen={setOpenEnrollPlaybook}
+                      handleCloseMenu={closeMenu}
+                      needs={[AUTOMATION]}
+                      matchAll
+                    />
+                  )}
+                  {canDelete && (
+                    <MenuItem onClick={() => {
+                      handleOpenDelete();
+                      closeMenu();
+                    }}
+                    >
+                      {t_i18n('Delete')}
+                    </MenuItem>
+                  )}
+                </Box>
+              )}
+            </PopoverMenu>
+          )}
           {EditComponent}
           <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
             <ExternalReferenceDeletion id={externalReference.id} isOpen={openDelete} handleClose={handleCloseDelete} />
