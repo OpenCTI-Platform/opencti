@@ -2,7 +2,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { StrategyType } from '../../generated/graphql';
 import conf, { logApp } from '../../config/conf';
 import LocalStrategy from 'passport-local';
-import { login, loginFromProvider } from '../../domain/user';
+import { login } from '../../domain/user';
 import { addUserLoginCount } from '../../manager/telemetryManager';
 import { findAllSingleSignOn, logAuthError, logAuthInfo, logAuthWarn } from './singleSignOn-domain';
 import {
@@ -17,7 +17,6 @@ import {
 import type { BasicStoreEntitySingleSignOn } from './singleSignOn-types';
 import { AuthenticationFailure, ConfigurationError } from '../../config/errors';
 import { isNotEmptyField } from '../../database/utils';
-import * as R from 'ramda';
 import { registerAuthenticationProvider, unregisterAuthenticationProvider } from './providers-initialization';
 import { registerSAMLStrategy } from './singleSignOn-provider-saml';
 import { registerLDAPStrategy } from './singleSignOn-provider-ldap';
