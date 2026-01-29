@@ -153,7 +153,7 @@ const DataTableFilters = ({
             value={currentView || 'lines'}
             exclusive={true}
             sx={hasToggleGroup
-              ? { marginLeft: 1, gap: 1 }
+              ? { marginLeft: 1 }
               : undefined
             }
             onChange={(_, value) => {
