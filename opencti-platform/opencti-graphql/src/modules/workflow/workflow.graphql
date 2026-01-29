@@ -69,5 +69,6 @@ extend type Query {
 
 extend type Mutation {
     workflowDefinitionSet(entityType: String!, definition: String!): EntitySetting @auth(for: [SETTINGS_SETCUSTOMIZATION])
+    workflowDefinitionDelete(entityType: String!): EntitySetting @auth(for: [SETTINGS_SETCUSTOMIZATION])
     triggerWorkflowEvent(entityId: String!, eventName: String!): WorkflowTriggerResult! @auth(for: [KNOWLEDGE_KNUPDATE])
 }

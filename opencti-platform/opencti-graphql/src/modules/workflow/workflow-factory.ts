@@ -78,7 +78,7 @@ export class WorkflowFactory {
           // Fire and forget
           Promise.resolve(actionFn(ctx, config.params)).catch((err: any) =>
             // eslint-disable-next-line no-console
-            console.error(`Async action '${config.type}' failed`, err)
+            console.error(`Async action '${config.type}' failed`, err),
           );
         } else {
           // Await completion

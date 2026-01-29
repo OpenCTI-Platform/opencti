@@ -15870,6 +15870,7 @@ export type Mutation = {
   workAdd: Work;
   workDelete?: Maybe<Scalars['Boolean']['output']>;
   workEdit?: Maybe<WorkEditMutations>;
+  workflowDefinitionDelete?: Maybe<EntitySetting>;
   workflowDefinitionSet?: Maybe<EntitySetting>;
   workspaceAdd?: Maybe<Workspace>;
   workspaceConfigurationImport: Scalars['String']['output'];
@@ -18396,6 +18397,11 @@ export type MutationWorkDeleteArgs = {
 
 export type MutationWorkEditArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationWorkflowDefinitionDeleteArgs = {
+  entityType: Scalars['String']['input'];
 };
 
 
@@ -44731,6 +44737,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   workAdd?: Resolver<ResolversTypes['Work'], ParentType, ContextType, RequireFields<MutationWorkAddArgs, 'connectorId'>>;
   workDelete?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationWorkDeleteArgs, 'connectorId'>>;
   workEdit?: Resolver<Maybe<ResolversTypes['WorkEditMutations']>, ParentType, ContextType, RequireFields<MutationWorkEditArgs, 'id'>>;
+  workflowDefinitionDelete?: Resolver<Maybe<ResolversTypes['EntitySetting']>, ParentType, ContextType, RequireFields<MutationWorkflowDefinitionDeleteArgs, 'entityType'>>;
   workflowDefinitionSet?: Resolver<Maybe<ResolversTypes['EntitySetting']>, ParentType, ContextType, RequireFields<MutationWorkflowDefinitionSetArgs, 'definition' | 'entityType'>>;
   workspaceAdd?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceAddArgs, 'input'>>;
   workspaceConfigurationImport?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationWorkspaceConfigurationImportArgs, 'file'>>;
