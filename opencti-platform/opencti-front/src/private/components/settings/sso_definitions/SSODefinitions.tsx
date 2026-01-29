@@ -13,6 +13,8 @@ import { SSODefinitionsLines_data$data } from './__generated__/SSODefinitionsLin
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import SSODefinitionCreation from '@components/settings/sso_definitions/SSODefinitionCreation';
 import ItemBoolean from '../../../../components/ItemBoolean';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
 
 const LOCAL_STORAGE_KEY = 'SSODefinitions';
 
@@ -105,6 +107,7 @@ const ssoDefinitionsLinesFragment = graphql`
 `;
 const SSODefinitions = () => {
   const { t_i18n } = useFormatter();
+  const isEnterpriseEdition = useEnterpriseEdition();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('SSO Definitions | Security | Settings'));
   const initialValues = {
@@ -175,28 +178,34 @@ const SSODefinitions = () => {
         { label: t_i18n('SSO definitions'), current: true }]}
       />
       <AccessesMenu />
-      {queryRef && (
-        <DataTable
-          dataColumns={dataColumns}
-          resolvePath={(data: SSODefinitionsLines_data$data) => data.singleSignOns?.edges?.map((e) => e?.node)}
-          storageKey={LOCAL_STORAGE_KEY}
-          initialValues={initialValues}
-          contextFilters={contextFilters}
-          lineFragment={ssoDefinitionsLineFragment}
-          preloadedPaginationProps={preloadedPaginationProps}
-          // actions={(ssoDefinition) => (
-          //   <SSODefinitionPopover
-          //     ssoDefinition={ssoDefinition}
-          //     paginationOptions={queryPaginationOptions}
-          //   />
-          // )}
-          entityTypes={['SingleSignOn']}
-          searchContextFinal={{ entityTypes: ['SingleSignOn'] }}
-          disableToolBar
-          removeSelectAll
-          disableLineSelection
-          createButton={<SSODefinitionCreation paginationOptions={queryPaginationOptions} />}
-        />
+      {!isEnterpriseEdition ? (
+        <EnterpriseEdition feature="Authentication definitions" />
+      ) : (
+        <>
+          {queryRef && (
+            <DataTable
+              dataColumns={dataColumns}
+              resolvePath={(data: SSODefinitionsLines_data$data) => data.singleSignOns?.edges?.map((e) => e?.node)}
+              storageKey={LOCAL_STORAGE_KEY}
+              initialValues={initialValues}
+              contextFilters={contextFilters}
+              lineFragment={ssoDefinitionsLineFragment}
+              preloadedPaginationProps={preloadedPaginationProps}
+              // actions={(ssoDefinition) => (
+              //   <SSODefinitionPopover
+              //     ssoDefinition={ssoDefinition}
+              //     paginationOptions={queryPaginationOptions}
+              //   />
+              // )}
+              entityTypes={['SingleSignOn']}
+              searchContextFinal={{ entityTypes: ['SingleSignOn'] }}
+              disableToolBar
+              removeSelectAll
+              disableLineSelection
+              createButton={<SSODefinitionCreation paginationOptions={queryPaginationOptions} />}
+            />
+          )}
+        </>
       )}
     </div>
   );
