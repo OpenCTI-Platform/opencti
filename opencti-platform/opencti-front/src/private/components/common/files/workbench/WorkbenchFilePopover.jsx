@@ -100,8 +100,8 @@ class WorkbenchFilePopover extends Component {
         <IconButton
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
-          style={{ marginTop: 3 }}
-          color="primary"
+          size="default"
+          variant="secondary"
         >
           <MoreVert />
         </IconButton>
