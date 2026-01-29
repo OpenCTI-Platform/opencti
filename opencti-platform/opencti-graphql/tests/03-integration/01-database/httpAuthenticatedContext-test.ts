@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { createAuthenticatedContext } from '../../../src/http/httpAuthenticatedContext';
 import { ADMIN_USER, getAuthUser, USER_EDITOR } from '../../utils/testQuery';
 import { authenticateUserByTokenOrUserId, authenticateUserFromRequest } from '../../../src/domain/user';
+import { resetCacheForEntity } from '../../../src/database/cache';
+import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 
 describe('Testing createAuthenticatedContext', () => {
   it('should create executeContext with synchronizedUpsert=true for bypass user and synchronized-upsert headers', async () => {
@@ -19,6 +21,7 @@ describe('Testing createAuthenticatedContext', () => {
         remoteAddress: '128.0.0.1',
       },
     };
+    resetCacheForEntity(ENTITY_TYPE_USER); // make sure user cache is up to date
     const executeContext = await createAuthenticatedContext(req, res, 'api-test');
     expect(executeContext).toBeDefined();
     // logs to debug failing test on CI (not locally)
