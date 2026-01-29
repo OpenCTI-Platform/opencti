@@ -235,12 +235,14 @@ const generateFileInputsForUpsert = async (context, user, resolvedElement, updat
     const existingFile = existingFilesById.get(fileKey);
     const fileAlreadyExistsOnEntity = isNotEmptyField(existingFile);
 
-    // Apply confidence-based conflict resolution:
-    // - If file doesn't exist on entity: always add (like filling empty fields)
-    // - If file exists on entity: only replace if confidence matches (isConfidenceMatch)
+    // Apply confidence-based conflict resolution for files:
+    // - NEW files (file doesn't exist on entity): ALWAYS allowed regardless of confidence level
+    //   This follows the principle that adding new data (like filling empty fields) should not require higher confidence
+    // - EXISTING files (file already exists on entity): only REPLACE if confidence matches (isConfidenceMatch)
+    //   Replacing existing data requires sufficient confidence to overwrite
     if (fileAlreadyExistsOnEntity && !isConfidenceMatch) {
-      // File exists but confidence is lower - skip this file
-      logApp.info('Skipping file upsert due to insufficient confidence', { filename, entity_id: resolvedElement.internal_id });
+      // File exists but confidence is lower - skip replacing this file
+      logApp.info('Skipping file replacement due to insufficient confidence', { filename, entity_id: resolvedElement.internal_id });
       continue;
     }
 
@@ -266,8 +268,11 @@ const generateFileInputsForUpsert = async (context, user, resolvedElement, updat
     const convertedFile = storeFileConverter(user, uploadedFile);
     // Track whether this is a new file or a replacement for proper history message
     if (fileAlreadyExistsOnEntity) {
+      logApp.info('Replacing existing file on entity', { filename, entity_id: resolvedElement.internal_id });
       replacedFiles.push(convertedFile);
     } else {
+      // New file added - this works regardless of confidence level
+      logApp.info('Adding new file to entity', { filename, entity_id: resolvedElement.internal_id });
       newFiles.push(convertedFile);
     }
   }
