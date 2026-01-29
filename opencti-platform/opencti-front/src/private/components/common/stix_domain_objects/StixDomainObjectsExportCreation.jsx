@@ -8,13 +8,12 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
 import Slide from '@mui/material/Slide';
-import { Add, InfoOutlined } from '@mui/icons-material';
+import { InfoOutlined } from '@mui/icons-material';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import MenuItem from '@mui/material/MenuItem';
 import * as Yup from 'yup';
 import Tooltip from '@mui/material/Tooltip';
-import Fab from '@mui/material/Fab';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
@@ -167,16 +166,14 @@ class StixDomainObjectsExportCreationComponent extends Component {
                 }
                 aria-label="generate-export"
               >
-                <Fab
+                <Button
                   onClick={this.handleOpen.bind(this)}
                   color="secondary"
-                  aria-label="Add"
                   className={classes.createButton}
                   disabled={!isExportPossible}
-                  data-testid="StixDomainObjectsExportCreationAddButton"
                 >
-                  <Add />
-                </Fab>
+                  {t('Generate an export')}
+                </Button>
               </Tooltip>
               <Formik
                 enableReinitialize={true}

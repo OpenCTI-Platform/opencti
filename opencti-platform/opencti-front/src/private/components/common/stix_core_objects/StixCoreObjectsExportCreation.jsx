@@ -5,14 +5,13 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
-import { Add, InfoOutlined } from '@mui/icons-material';
+import { InfoOutlined } from '@mui/icons-material';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import MenuItem from '@mui/material/MenuItem';
 import * as Yup from 'yup';
 import Tooltip from '@mui/material/Tooltip';
 import makeStyles from '@mui/styles/makeStyles';
-import Fab from '@mui/material/Fab';
 import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE } from '../files/FileManager';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import { useFormatter } from '../../../../components/i18n';
@@ -128,16 +127,14 @@ const StixCoreObjectsExportCreationComponent = ({
               }
               aria-label="generate-export"
             >
-              <Fab
+              <Button
                 onClick={() => setOpen(true)}
                 color="secondary"
-                aria-label="Add"
                 className={classes.createButton}
                 disabled={!isExportPossible}
-                data-testid="StixCoreObjectsExportCreationAddButton"
               >
-                <Add />
-              </Fab>
+                {t_i18n('Generate an export')}
+              </Button>
             </Tooltip>
             <Formik
               enableReinitialize={true}
