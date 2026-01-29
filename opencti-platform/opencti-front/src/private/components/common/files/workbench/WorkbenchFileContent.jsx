@@ -3260,8 +3260,14 @@ const WorkbenchFileContentComponent = ({
                   />
                 </ListItemIcon>
                 <ListItemText
+                  sx={{
+                    '.MuiListItemText-primary': {
+                      display: 'flex',
+                      alignItems: 'center',
+                    },
+                  }}
                   primary={(
-                    <div>
+                    <>
                       <div
                         className={classes.bodyItem}
                         style={inlineStyles.ttype}
@@ -3307,7 +3313,7 @@ const WorkbenchFileContentComponent = ({
                           />
                         )}
                       </div>
-                    </div>
+                    </>
                   )}
                 />
               </ListItem>
@@ -3437,8 +3443,14 @@ const WorkbenchFileContentComponent = ({
                   <ItemIcon type={type} />
                 </ListItemIcon>
                 <ListItemText
+                  sx={{
+                    '.MuiListItemText-primary': {
+                      display: 'flex',
+                      alignItems: 'center',
+                    },
+                  }}
                   primary={(
-                    <div>
+                    <>
                       <div
                         className={classes.bodyItem}
                         style={inlineStyles.ttype}
@@ -3542,7 +3554,7 @@ const WorkbenchFileContentComponent = ({
                           />
                         )}
                       </div>
-                    </div>
+                    </>
                   )}
                 />
               </ListItem>
@@ -3667,8 +3679,14 @@ const WorkbenchFileContentComponent = ({
                   <ItemIcon type={object.relationship_type} />
                 </ListItemIcon>
                 <ListItemText
+                  sx={{
+                    '.MuiListItemText-primary': {
+                      display: 'flex',
+                      alignItems: 'center',
+                    },
+                  }}
                   primary={(
-                    <div>
+                    <>
                       <div
                         className={classes.bodyItem}
                         style={inlineStyles.ttype}
@@ -3700,7 +3718,7 @@ const WorkbenchFileContentComponent = ({
                           limit={2}
                         />
                       </div>
-                    </div>
+                    </>
                   )}
                 />
               </ListItemButton>
@@ -3821,8 +3839,14 @@ const WorkbenchFileContentComponent = ({
                   <ItemIcon type="sighting" />
                 </ListItemIcon>
                 <ListItemText
+                  sx={{
+                    '.MuiListItemText-primary': {
+                      display: 'flex',
+                      alignItems: 'center',
+                    },
+                  }}
                   primary={(
-                    <div>
+                    <>
                       <div
                         className={classes.bodyItem}
                         style={inlineStyles.ttype}
@@ -3854,7 +3878,7 @@ const WorkbenchFileContentComponent = ({
                           limit={2}
                         />
                       </div>
-                    </div>
+                    </>
                   )}
                 />
               </ListItemButton>
@@ -3932,17 +3956,6 @@ const WorkbenchFileContentComponent = ({
             >
               <Checkbox edge="start" checked={selectAll} disableRipple={true} />
             </ListItemIcon>
-            <ListItemIcon>
-              <span
-                style={{
-                  padding: '0 8px 0 8px',
-                  fontWeight: 700,
-                  fontSize: 12,
-                }}
-              >
-                &nbsp;
-              </span>
-            </ListItemIcon>
             <ListItemText
               primary={(
                 <div>
@@ -3989,17 +4002,20 @@ const WorkbenchFileContentComponent = ({
                     disableRipple={true}
                   />
                 </ListItemIcon>
-                <ListItemIcon classes={{ root: classes.itemIcon }}>
-                  <ItemIcon type={type} />
-                </ListItemIcon>
                 <ListItemText
+                  sx={{
+                    '.MuiListItemText-primary': {
+                      display: 'flex',
+                      alignItems: 'center',
+                    },
+                  }}
                   primary={(
-                    <div>
+                    <>
                       <div
                         className={classes.bodyItem}
                         style={inlineStyles.ttype}
                       >
-                        {object.ttype}
+                        <ItemEntityType showIcon entityType={type} />
                       </div>
                       <div
                         className={classes.bodyItem}
@@ -4081,7 +4097,7 @@ const WorkbenchFileContentComponent = ({
                           />
                         )}
                       </div>
-                    </div>
+                    </>
                   )}
                 />
               </ListItem>
