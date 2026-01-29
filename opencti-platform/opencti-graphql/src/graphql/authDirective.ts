@@ -7,7 +7,6 @@ import { OPENCTI_ADMIN_UUID } from '../schema/general';
 import type { AuthContext } from '../types/user';
 import { BYPASS, SETTINGS_SET_ACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../utils/access';
 import { getDraftContext } from '../utils/draftContext';
-import { isFeatureEnabled } from '../config/conf';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 
 /**
@@ -62,7 +61,6 @@ const checkCapabilities = (capabilities: string[], userCapabilities: string[], m
 
 export const authDirectiveBuilder = (directiveName: string): AuthDirectiveBuilder => {
   const typeDirectiveArgumentMaps: TypeDirectiveArgumentMaps = {};
-  const isCapabilitiesInDraftEnabled = isFeatureEnabled('CAPABILITIES_IN_DRAFT');
 
   return {
     authDirectiveTransformer: (schema: GraphQLSchema) => mapSchema(schema, {
@@ -140,13 +138,13 @@ export const authDirectiveBuilder = (directiveName: string): AuthDirectiveBuilde
               const baseGranted = checkCapabilities(requiredCapabilitiesBase, userBaseCapabilities, !!requiredAll);
 
               // Check capabilities in Draft if provided
-              const draftGranted = isCapabilitiesInDraftEnabled && requiredCapabilitiesInDraft?.length
+              const draftGranted = requiredCapabilitiesInDraft?.length
                 ? checkCapabilities(requiredCapabilitiesInDraft, userCapabilitiesInDraft, !!requiredAll)
                 : false;
 
               // Check base and draft capabilities in draft context
               const isInDraftContext = !!getDraftContext(context, user);
-              const draftGrantedInDraftContext = isCapabilitiesInDraftEnabled && isInDraftContext
+              const draftGrantedInDraftContext = isInDraftContext
                 ? checkCapabilities(requiredCapabilitiesBase, [...userBaseCapabilities, ...userCapabilitiesInDraft], !!requiredAll)
                 : false;
 
