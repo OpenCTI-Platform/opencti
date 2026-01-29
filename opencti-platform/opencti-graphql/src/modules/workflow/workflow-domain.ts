@@ -53,8 +53,9 @@ const initializeWorkflowInstance = async (
   definitionData: any,
 ) => {
   const initialState = definitionData.initialState;
+  const entityId = entity.id || entity.internal_id;
   const instanceInput = {
-    entity_id: entity.id,
+    entity_id: entityId,
     workflow_id: entitySetting.workflow_id || 'manual',
     currentState: initialState,
     history: JSON.stringify([{
@@ -67,8 +68,8 @@ const initializeWorkflowInstance = async (
   const instance = await createEntity(context, user, instanceInput, ENTITY_TYPE_WORKFLOW_INSTANCE);
 
   await createRelation(context, user, {
-    fromId: entity.id,
-    toId: instance.id,
+    fromId: entityId,
+    toId: instance.id || instance.internal_id,
     relationship_type: RELATION_HAS_WORKFLOW,
   });
 
@@ -174,11 +175,15 @@ export const getWorkflowInstance = async (
     return null;
   }
 
-  const instanceEntity = await findWorkflowInstanceEntity(context, user, entity.id);
+  const instanceEntity = await findWorkflowInstanceEntity(context, user, entity.id || entity.internal_id);
   const currentState = instanceEntity?.currentState ?? definitionData.initialState;
 
   const allowedTransitions = await getAllowedTransitions(context, user, entityId);
+  const id = instanceEntity?.id ?? instanceEntity?.internal_id ?? `initial-${entity.id || entity.internal_id}`;
   return {
+    id,
+    internal_id: id,
+    __typename: 'WorkflowInstance',
     currentState: currentState || '',
     allowedTransitions,
   };
@@ -204,7 +209,7 @@ export const getAllowedTransitions = async (
     return [];
   }
 
-  const instanceEntity = await findWorkflowInstanceEntity(context, user, entity.id);
+  const instanceEntity = await findWorkflowInstanceEntity(context, user, entity.id || entity.internal_id);
   const currentStateId = instanceEntity?.currentState ?? definitionData.initialState;
 
   const definition = WorkflowFactory.createDefinition(definitionData);
@@ -279,7 +284,8 @@ export const triggerWorkflowEvent = async (
       context,
     };
 
-    let instanceEntity = await findWorkflowInstanceEntity(context, user, entity.id);
+    const entityIdToUse = entity.id || entity.internal_id;
+    let instanceEntity = await findWorkflowInstanceEntity(context, user, entityIdToUse);
     if (!instanceEntity) {
       instanceEntity = await initializeWorkflowInstance(context, user, entity, entitySetting, definitionData);
     }
@@ -303,7 +309,7 @@ export const triggerWorkflowEvent = async (
         timestamp: new Date().toISOString(),
         event: eventName,
       });
-      await updateAttribute(context, user, instanceEntity.id, ENTITY_TYPE_WORKFLOW_INSTANCE, [
+      await updateAttribute(context, user, instanceEntity.id || instanceEntity.internal_id, ENTITY_TYPE_WORKFLOW_INSTANCE, [
         { key: 'currentState', value: [newState] },
         { key: 'history', value: [JSON.stringify(history)] },
       ]);
