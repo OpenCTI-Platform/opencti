@@ -8,7 +8,6 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
-import type { DeleteOperationsLinesPaginationQuery$variables } from './__generated__/DeleteOperationsLinesPaginationQuery.graphql';
 import useHelper from '../../../utils/hooks/useHelper';
 import { GARBAGE_COLLECTION_MANAGER } from '../../../utils/platformModulesHelper';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
@@ -16,7 +15,7 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import { graphql } from 'react-relay';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import { TrashDeleteOperationsLines_data$data } from './__generated__/TrashDeleteOperationsLines_data.graphql';
-import { TrashDeleteOperationsLinesPaginationQuery } from './__generated__/TrashDeleteOperationsLinesPaginationQuery.graphql';
+import { TrashDeleteOperationsLinesPaginationQuery, TrashDeleteOperationsLinesPaginationQuery$variables } from './__generated__/TrashDeleteOperationsLinesPaginationQuery.graphql';
 import ItemEntityType from '../../../components/ItemEntityType';
 import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
@@ -119,7 +118,7 @@ const Trash: React.FC = () => {
     viewStorage,
     paginationOptions,
     helpers,
-  } = usePaginationLocalStorage<DeleteOperationsLinesPaginationQuery$variables>(
+  } = usePaginationLocalStorage<TrashDeleteOperationsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     initialValues,
   );

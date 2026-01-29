@@ -13,15 +13,15 @@ import { PopoverProps } from '@mui/material/Popover';
 import IconButton from '@common/button/IconButton';
 import DialogTitle from '@mui/material/DialogTitle';
 import { Link } from 'react-router-dom';
-import { DeleteOperationsLinesPaginationQuery$variables } from './all/__generated__/DeleteOperationsLinesPaginationQuery.graphql';
-import { DeleteOperationPopoverRestoreMutation, DeleteOperationPopoverRestoreMutation$data } from './all/__generated__/DeleteOperationPopoverRestoreMutation.graphql';
-import { DeleteOperationPopoverConfirmMutation } from './all/__generated__/DeleteOperationPopoverConfirmMutation.graphql';
+import { DeleteOperationPopoverRestoreMutation, DeleteOperationPopoverRestoreMutation$data } from './__generated__/DeleteOperationPopoverRestoreMutation.graphql';
+import { DeleteOperationPopoverConfirmMutation } from './__generated__/DeleteOperationPopoverConfirmMutation.graphql';
 import { useFormatter } from '../../../components/i18n';
 import Transition from '../../../components/Transition';
 import { RelayError } from '../../../relay/relayTypes';
 import { MESSAGING$ } from '../../../relay/environment';
 import { deleteNode } from '../../../utils/store';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
+import { TrashDeleteOperationsLinesPaginationQuery$variables } from '@components/trash/__generated__/TrashDeleteOperationsLinesPaginationQuery.graphql';
 
 const deleteOperationPopoverConfirmMutation = graphql`
   mutation DeleteOperationPopoverConfirmMutation($id: ID!) {
@@ -39,7 +39,7 @@ interface DeleteOperationPopoverProps {
   mainEntityId: string;
   deletedCount: number;
   disabled?: boolean;
-  paginationOptions: DeleteOperationsLinesPaginationQuery$variables;
+  paginationOptions: TrashDeleteOperationsLinesPaginationQuery$variables;
 }
 
 const DeleteOperationPopover: React.FC<DeleteOperationPopoverProps> = ({ mainEntityId, deletedCount, disabled, paginationOptions }) => {
