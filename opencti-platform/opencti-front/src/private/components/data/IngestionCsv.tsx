@@ -18,7 +18,7 @@ import Security from '../../../utils/Security';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { isNotEmptyField } from '../../../utils/utils';
-import GradientButton from '../../../components/GradientButton';
+import Button from '../../../components/common/button/Button';
 
 const LOCAL_STORAGE_KEY = 'ingestionCsvs';
 
@@ -110,15 +110,15 @@ const IngestionCsv = () => {
                 paginationOptions={paginationOptions}
               />
               {isXTMHubAccessible && isNotEmptyField(importFromHubUrl) && (
-                <GradientButton
-                  size="small"
+                <Button
+                  gradient
                   sx={{ marginLeft: 1 }}
                   href={importFromHubUrl}
                   target="_blank"
                   title={t_i18n('Import from Hub')}
                 >
                   {t_i18n('Import from Hub')}
-                </GradientButton>
+                </Button>
               )}
               <IngestionCsvCreationContainer
                 paginationOptions={paginationOptions}
