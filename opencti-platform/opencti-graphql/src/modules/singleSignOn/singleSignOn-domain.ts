@@ -1,5 +1,5 @@
 import type { AuthContext, AuthUser } from '../../types/user';
-import { type EditInput, type SingleSignMigrationInput, type SingleSignOnAddInput, StrategyType } from '../../generated/graphql';
+import { type EditInput, type SingleSignMigrationInput, type SingleSignOnAddInput, type SingleSignOnSettings, StrategyType } from '../../generated/graphql';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntitySingleSignOn, ENTITY_TYPE_SINGLE_SIGN_ON } from './singleSignOn-types';
 import { now } from '../../utils/format';
@@ -13,10 +13,7 @@ import nconf from 'nconf';
 import { parseSingleSignOnRunConfiguration } from './singleSignOn-migration';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import { unregisterStrategy } from './singleSignOn-providers';
-import { EnvStrategyType } from './providers-configuration';
-
-// Protected sensitive config var env to lock
-export const AUTHENTICATION_CONFIG_LOCKED = nconf.get('app:sso_authentication_locked') ?? 'false';
+import { EnvStrategyType, isAuthenticationEditionLocked, isAuthenticationForcedFromEnv } from './providers-configuration';
 
 const toEnv = (newStrategyType: StrategyType) => {
   switch (newStrategyType) {
@@ -35,8 +32,8 @@ const toEnv = (newStrategyType: StrategyType) => {
   }
 };
 
-export const isAuthenticationEditionLocked = () => {
-  if (AUTHENTICATION_CONFIG_LOCKED) {
+export const checkAuthenticationEditionLocked = () => {
+  if (isAuthenticationEditionLocked()) {
     throw UnsupportedError('Protected sensitive configuration is locked by environment variable');
   }
 };
@@ -98,14 +95,14 @@ export const internalAddSingleSignOn = async (context: AuthContext, user: AuthUs
 
 export const addSingleSignOn = async (context: AuthContext, user: AuthUser, input: SingleSignOnAddInput) => {
   await checkSSOAllowed(context);
-  isAuthenticationEditionLocked();
+  checkAuthenticationEditionLocked();
   // Call here the function to check that all mandatory field are in the input
-  return await internalAddSingleSignOn(context, user, input, false);
+  return await internalAddSingleSignOn(context, user, input, isAuthenticationForcedFromEnv());
 };
 
 export const fieldPatchSingleSignOn = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {
   await checkSSOAllowed(context);
-  isAuthenticationEditionLocked();
+  checkAuthenticationEditionLocked();
   const singleSignOnEntityBeforeUpdate = await findSingleSignOnById(context, user, id);
 
   if (!singleSignOnEntityBeforeUpdate) {
@@ -123,20 +120,23 @@ export const fieldPatchSingleSignOn = async (context: AuthContext, user: AuthUse
     context_data: { id, entity_type: ENTITY_TYPE_SINGLE_SIGN_ON, input },
   });
 
-  await notify(BUS_TOPICS[ENTITY_TYPE_SINGLE_SIGN_ON].EDIT_TOPIC, singleSignOnEntityAfterUpdate, user);
+  if (!isAuthenticationForcedFromEnv()) {
+    await notify(BUS_TOPICS[ENTITY_TYPE_SINGLE_SIGN_ON].EDIT_TOPIC, singleSignOnEntityAfterUpdate, user);
+  }
+
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
 };
 
 export const deleteSingleSignOn = async (context: AuthContext, user: AuthUser, id: string) => {
   await checkSSOAllowed(context);
-  isAuthenticationEditionLocked();
+  checkAuthenticationEditionLocked();
   const singleSignOn = await findSingleSignOnById(context, user, id);
 
   if (!singleSignOn) {
     throw FunctionalError(`Single sign on ${id} cannot be found`);
   }
 
-  if (singleSignOn.enabled) {
+  if (singleSignOn.enabled && !isAuthenticationForcedFromEnv()) {
     logAuthInfo('Disabling strategy', toEnv(singleSignOn.strategy), { identifier: singleSignOn.identifier });
     await unregisterStrategy(singleSignOn);
   }
@@ -164,4 +164,17 @@ export const runSingleSignOnRunMigration = async (context: AuthContext, user: Au
 export const findAllSingleSignOn = async (context: AuthContext, user: AuthUser): Promise<BasicStoreEntitySingleSignOn[]> => {
   await checkSSOAllowed(context);
   return fullEntitiesList(context, user, [ENTITY_TYPE_SINGLE_SIGN_ON]);
+};
+
+export const getAllIdentifiers = async (context: AuthContext, user: AuthUser) => {
+  const allSso = await findAllSingleSignOn(context, user);
+  return allSso ? allSso.map((sso) => sso.identifier) : [];
+};
+
+export const getSingleSignOnSettings = async () => {
+  const settings: SingleSignOnSettings = {
+    is_force_env: isAuthenticationForcedFromEnv(),
+    is_edition_locked: isAuthenticationEditionLocked(),
+  };
+  return settings;
 };

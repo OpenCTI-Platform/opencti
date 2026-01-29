@@ -6,8 +6,8 @@ import * as R from 'ramda';
 import { addUserLoginCount } from '../../manager/telemetryManager';
 import { isNotEmptyField } from '../../database/utils';
 import { jwtDecode } from 'jwt-decode';
-import { convertKeyValueToJsConfiguration, genPairConfigMapper, providerLoginHandler } from './singleSignOn-providers';
-import { AuthType, EnvStrategyType } from './providers-configuration';
+import { convertKeyValueToJsConfiguration } from './singleSignOn-providers';
+import { AuthType, EnvStrategyType, genConfigMapper, providerLoginHandler } from './providers-configuration';
 import { logAuthInfo } from './singleSignOn-domain';
 import { registerAuthenticationProvider } from './providers-initialization';
 
@@ -34,7 +34,7 @@ export const computeOpenIdOrganizationsMapping = (orgsManagement, decodedUser, u
     const value = R.path(path.split('.'), userClaims) || [];
     return Array.isArray(value) ? value : [value];
   }));
-  const orgasMapper = genPairConfigMapper(orgasMapping);
+  const orgasMapper = genConfigMapper(orgasMapping);
   return [...orgaDefault, ...availableOrgas.map((a) => orgasMapper[a]).filter((r) => isNotEmptyField(r))];
 };
 
@@ -52,7 +52,7 @@ export const computeOpenIdGroupsMapping = (groupManagement, decodedUser, userinf
     const value = R.path(path.split('.'), userClaims) || [];
     return Array.isArray(value) ? value : [value];
   }));
-  const groupsMapper = genPairConfigMapper(groupsMapping);
+  const groupsMapper = genConfigMapper(groupsMapping);
   return availableGroups.map((a) => groupsMapper[a]).filter((r) => isNotEmptyField(r));
 };
 

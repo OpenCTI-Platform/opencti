@@ -8,7 +8,6 @@
     "enabled": true,
     "enabled_ui": true,
     "enabled_dev_features": [],
-    "sso_authentication_locked": false,
     "https_cert": {
       "ca": [],
       "key": null,

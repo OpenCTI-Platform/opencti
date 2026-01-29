@@ -22476,6 +22476,7 @@ export type Query = {
   sessions?: Maybe<Array<Maybe<UserSession>>>;
   settings: Settings;
   singleSignOn?: Maybe<SingleSignOn>;
+  singleSignOnSettings?: Maybe<SingleSignOnSettings>;
   singleSignOns?: Maybe<SingleSignOnConnection>;
   status?: Maybe<Status>;
   statusTemplate?: Maybe<StatusTemplate>;
@@ -27800,7 +27801,6 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   __typename?: 'Settings';
   activity_listeners?: Maybe<Array<Member>>;
   analytics_google_analytics_v4?: Maybe<Scalars['String']['output']>;
-  auth_strategy_migrated?: Maybe<Array<Scalars['String']['output']>>;
   created_at: Scalars['DateTime']['output'];
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
@@ -27993,6 +27993,12 @@ export enum SingleSignOnOrdering {
   Name = 'name',
   Strategy = 'strategy'
 }
+
+export type SingleSignOnSettings = {
+  __typename?: 'SingleSignOnSettings';
+  is_edition_locked: Scalars['Boolean']['output'];
+  is_force_env: Scalars['Boolean']['output'];
+};
 
 export type Software = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
   __typename?: 'Software';
@@ -37372,6 +37378,7 @@ export type ResolversTypes = ResolversObject<{
   SingleSignOnEdge: ResolverTypeWrapper<Omit<SingleSignOnEdge, 'node'> & { node: ResolversTypes['SingleSignOn'] }>;
   SingleSignOnMigrationResult: ResolverTypeWrapper<SingleSignOnMigrationResult>;
   SingleSignOnOrdering: SingleSignOnOrdering;
+  SingleSignOnSettings: ResolverTypeWrapper<SingleSignOnSettings>;
   Software: ResolverTypeWrapper<Omit<Software, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'vulnerabilities' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, vulnerabilities?: Maybe<ResolversTypes['VulnerabilityConnection']>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   SoftwareAddInput: SoftwareAddInput;
   SoftwareConnection: ResolverTypeWrapper<Omit<SoftwareConnection, 'edges'> & { edges: Array<ResolversTypes['SoftwareEdge']> }>;
@@ -38320,6 +38327,7 @@ export type ResolversParentTypes = ResolversObject<{
   SingleSignOnConnection: Omit<SingleSignOnConnection, 'edges'> & { edges: Array<ResolversParentTypes['SingleSignOnEdge']> };
   SingleSignOnEdge: Omit<SingleSignOnEdge, 'node'> & { node: ResolversParentTypes['SingleSignOn'] };
   SingleSignOnMigrationResult: SingleSignOnMigrationResult;
+  SingleSignOnSettings: SingleSignOnSettings;
   Software: Omit<Software, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'vulnerabilities' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, vulnerabilities?: Maybe<ResolversParentTypes['VulnerabilityConnection']>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   SoftwareAddInput: SoftwareAddInput;
   SoftwareConnection: Omit<SoftwareConnection, 'edges'> & { edges: Array<ResolversParentTypes['SoftwareEdge']> };
@@ -45771,6 +45779,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   sessions?: Resolver<Maybe<Array<Maybe<ResolversTypes['UserSession']>>>, ParentType, ContextType>;
   settings?: Resolver<ResolversTypes['Settings'], ParentType, ContextType>;
   singleSignOn?: Resolver<Maybe<ResolversTypes['SingleSignOn']>, ParentType, ContextType, RequireFields<QuerySingleSignOnArgs, 'id'>>;
+  singleSignOnSettings?: Resolver<Maybe<ResolversTypes['SingleSignOnSettings']>, ParentType, ContextType>;
   singleSignOns?: Resolver<Maybe<ResolversTypes['SingleSignOnConnection']>, ParentType, ContextType, Partial<QuerySingleSignOnsArgs>>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType, RequireFields<QueryStatusArgs, 'id'>>;
   statusTemplate?: Resolver<Maybe<ResolversTypes['StatusTemplate']>, ParentType, ContextType, RequireFields<QueryStatusTemplateArgs, 'id'>>;
@@ -46648,7 +46657,6 @@ export type SessionDetailResolvers<ContextType = any, ParentType extends Resolve
 export type SettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['Settings'] = ResolversParentTypes['Settings']> = ResolversObject<{
   activity_listeners?: Resolver<Maybe<Array<ResolversTypes['Member']>>, ParentType, ContextType>;
   analytics_google_analytics_v4?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  auth_strategy_migrated?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -46784,6 +46792,11 @@ export type SingleSignOnMigrationResultResolvers<ContextType = any, ParentType e
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   organizations_management?: Resolver<Maybe<ResolversTypes['OrganizationsManagement']>, ParentType, ContextType>;
   strategy?: Resolver<ResolversTypes['StrategyType'], ParentType, ContextType>;
+}>;
+
+export type SingleSignOnSettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['SingleSignOnSettings'] = ResolversParentTypes['SingleSignOnSettings']> = ResolversObject<{
+  is_edition_locked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  is_force_env?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
 }>;
 
 export type SoftwareResolvers<ContextType = any, ParentType extends ResolversParentTypes['Software'] = ResolversParentTypes['Software']> = ResolversObject<{
@@ -49755,6 +49768,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   SingleSignOnConnection?: SingleSignOnConnectionResolvers<ContextType>;
   SingleSignOnEdge?: SingleSignOnEdgeResolvers<ContextType>;
   SingleSignOnMigrationResult?: SingleSignOnMigrationResultResolvers<ContextType>;
+  SingleSignOnSettings?: SingleSignOnSettingsResolvers<ContextType>;
   Software?: SoftwareResolvers<ContextType>;
   SoftwareConnection?: SoftwareConnectionResolvers<ContextType>;
   SoftwareEdge?: SoftwareEdgeResolvers<ContextType>;

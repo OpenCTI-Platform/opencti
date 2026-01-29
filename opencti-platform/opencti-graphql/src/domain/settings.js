@@ -63,10 +63,6 @@ const getStandardIdsByNames = (entityType, names) => {
   return names.map((name) => generateStandardId(entityType, { name }));
 };
 
-export const isAuthenticationLocked = () => {
-  return nconf.get('app:sso_authentication_locked', false);
-};
-
 export const getProtectedSensitiveConfig = async (context, user) => {
   return {
     enabled: booleanConf('protected_sensitive_config:enabled', false),
@@ -180,7 +176,6 @@ const ACCESS_SETTINGS_RESTRICTED_KEYS = [
   'password_policy_min_words',
   'password_policy_min_lowercase',
   'password_policy_min_uppercase',
-  'auth_strategy_migrated',
 ];
 
 const PARAMETERS_SETTINGS_RESTRICTED_KEYS = [

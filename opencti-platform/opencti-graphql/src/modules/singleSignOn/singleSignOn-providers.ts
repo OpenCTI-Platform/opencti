@@ -1,60 +1,25 @@
-import type { AuthContext, AuthUser } from '../../types/user';
 import { StrategyType } from '../../generated/graphql';
 import conf, { logApp } from '../../config/conf';
 import LocalStrategy from 'passport-local';
-import { login, loginFromProvider } from '../../domain/user';
+import { login } from '../../domain/user';
 import { addUserLoginCount } from '../../manager/telemetryManager';
-import { findAllSingleSignOn, logAuthError, logAuthInfo, logAuthWarn } from './singleSignOn-domain';
+import { logAuthError, logAuthInfo } from './singleSignOn-domain';
 import {
   AuthType,
   EnvStrategyType,
   INTERNAL_SECURITY_PROVIDER,
   isAuthenticationActivatedByIdentifier,
-  isStrategyActivated,
   LOCAL_STRATEGY_IDENTIFIER,
   type ProviderConfiguration,
 } from './providers-configuration';
 import type { BasicStoreEntitySingleSignOn } from './singleSignOn-types';
 import { AuthenticationFailure, ConfigurationError } from '../../config/errors';
 import { isNotEmptyField } from '../../database/utils';
-import * as R from 'ramda';
 import { registerAuthenticationProvider, unregisterAuthenticationProvider } from './providers-initialization';
-import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import { registerSAMLStrategy } from './singleSignOn-provider-saml';
 import { registerLDAPStrategy } from './singleSignOn-provider-ldap';
 import { GraphQLError } from 'graphql/index';
 import { registerOpenIdStrategy } from './singleSignOn-provider-openid';
-
-export interface ProviderUserInfo {
-  email: string;
-  name: string;
-  firstname?: string;
-  lastname?: string;
-  provider_metadata?: any;
-}
-
-export const providerLoginHandler = (userInfo: ProviderUserInfo, done: any, opts = {}) => {
-  loginFromProvider(userInfo, opts)
-    .then((user: any) => {
-      logApp.info('[SSO] providerLoginHandler user:', user);
-      done(null, user);
-    })
-    .catch((err: any) => {
-      logApp.info('[SSO] providerLoginHandler error:', err);
-      done(err);
-    });
-};
-
-export const genPairConfigMapper = (elements: string[]) => {
-  return R.mergeAll(
-    elements.map((r) => {
-      const data = r.split(':');
-      if (data.length !== 2) return {};
-      const [remote, octi] = data;
-      return { [remote]: octi };
-    }),
-  );
-};
 
 export const parseValueAsType = (value: string, type: string) => {
   if (type.toLowerCase() === 'number') {
@@ -216,37 +181,6 @@ export const registerStrategy = async (authenticationStrategy: BasicStoreEntityS
         undefined,
         e,
       );
-    }
-  }
-};
-
-/**
- * Called during platform initialization.
- * Read Authentication strategy in database and load them.
- * @param context
- * @param user
- */
-export const initAuthenticationProviders = async (context: AuthContext, user: AuthUser) => {
-  if (!await isEnterpriseEdition(context)) {
-    logAuthInfo('configuring default local strategy', EnvStrategyType.STRATEGY_LOCAL);
-    await registerLocalStrategy();
-  } else {
-    const providersFromDatabase = await findAllSingleSignOn(context, user);
-
-    if (providersFromDatabase.length === 0) {
-      // No configuration in database, fallback to default local strategy
-      logAuthInfo('configuring default local strategy', EnvStrategyType.STRATEGY_LOCAL);
-      await registerLocalStrategy();
-    } else {
-      for (let i = 0; i < providersFromDatabase.length; i++) {
-        await registerStrategy(providersFromDatabase[i]);
-      }
-    }
-
-    // At the end if there is no local, need to add the internal local
-    if (!isStrategyActivated(EnvStrategyType.STRATEGY_LOCAL)) {
-      logAuthWarn('No local strategy configured, adding it', EnvStrategyType.STRATEGY_LOCAL);
-      await registerLocalStrategy();
     }
   }
 };

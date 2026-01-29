@@ -1594,7 +1594,6 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   metrics_definition: [MetricDefinition!]
   view_all_users: Boolean
   editContext: [EditUserContext!]
-  auth_strategy_migrated: [String!]
   xtm_hub_token: String
   xtm_hub_registration_user_id: String
   xtm_hub_registration_user_name: ID
@@ -9438,6 +9437,7 @@ type Query {
   forms(search: String, first: Int, after: ID, orderBy: FormsOrdering, orderMode: OrderingMode, filters: FilterGroup): FormConnection
   singleSignOn(id: String!): SingleSignOn
   singleSignOns(first: Int, after: ID, orderBy: SingleSignOnOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): SingleSignOnConnection
+  singleSignOnSettings: SingleSignOnSettings
 }
 
 type Subscription {
@@ -15438,4 +15438,9 @@ type SingleSignOnMigrationResult {
 
 input SingleSignMigrationInput {
   dry_run: Boolean!
+}
+
+type SingleSignOnSettings {
+  is_force_env: Boolean!
+  is_edition_locked: Boolean!
 }
