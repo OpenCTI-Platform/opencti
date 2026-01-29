@@ -17,6 +17,7 @@ import {
 import { findById as findWorkById, worksForDraft } from '../../domain/work';
 import { getAuthorizedMembers } from '../../utils/authorizedMembers';
 import { loadCreators } from '../../database/members';
+import { getWorkflowInstance } from '../workflow/workflow-domain';
 
 const draftWorkspaceResolvers: Resolvers = {
   Query: {
@@ -41,6 +42,7 @@ const draftWorkspaceResolvers: Resolvers = {
       return worksForDraft(context, context.user, draft.id, args) as unknown as any;
     },
     validationWork: (draft, _, context) => (draft.validation_work_id ? findWorkById(context, context.user, draft.validation_work_id) as any : null),
+    workflowInstance: (draft, _, context) => getWorkflowInstance(context, context.user, draft.id),
     authorizedMembers: (workspace, _, context) => getAuthorizedMembers(context, context.user, workspace),
     currentUserAccessRight: (workspace, _, context) => getCurrentUserAccessRight(context, context.user, workspace),
   },

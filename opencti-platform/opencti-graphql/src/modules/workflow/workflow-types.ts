@@ -1,3 +1,44 @@
+export const ENTITY_TYPE_WORKFLOW_DEFINITION = 'WorkflowDefinition';
+export const ENTITY_TYPE_WORKFLOW_INSTANCE = 'WorkflowInstance';
+
+/**
+ * Serialization models for the database
+ */
+export interface WorkflowActionConfig {
+  type: string;
+  params?: string;
+  mode: 'sequential' | 'parallel';
+}
+
+export interface WorkflowConditionConfig {
+  field?: string;
+  operator?: string;
+  value?: any;
+  type?: string;
+}
+
+export interface WorkflowSerializedState {
+  name: string;
+  onEnter?: WorkflowActionConfig[];
+  onExit?: WorkflowActionConfig[];
+}
+
+export interface WorkflowSerializedTransition {
+  from: string;
+  to: string;
+  event: string;
+  actions?: WorkflowActionConfig[];
+  conditions?: WorkflowConditionConfig[];
+}
+
+export interface WorkflowDefinitionData {
+  id: string;
+  name: string;
+  initialState: string;
+  states: WorkflowSerializedState[];
+  transitions: WorkflowSerializedTransition[];
+}
+
 /**
  * Represents a status or position in the workflow graph.
  */
@@ -35,6 +76,8 @@ export type SideEffect<TContext extends Context = Context> = (
 export interface TriggerResult {
   success: boolean;
   reason?: string;
+  newState?: string;
+  status?: any;
 }
 
 /**
