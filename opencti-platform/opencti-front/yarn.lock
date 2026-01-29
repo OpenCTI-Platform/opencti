@@ -908,15 +908,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ckeditor/ckeditor5-react@npm:9.5.0":
-  version: 9.5.0
-  resolution: "@ckeditor/ckeditor5-react@npm:9.5.0"
+"@ckeditor/ckeditor5-react@npm:11.0.1":
+  version: 11.0.1
+  resolution: "@ckeditor/ckeditor5-react@npm:11.0.1"
   dependencies:
     "@ckeditor/ckeditor5-integrations-common": "npm:^2.2.2"
   peerDependencies:
-    ckeditor5: ">=42.0.0 || ^0.0.0-nightly"
+    ckeditor5: ">=46.0.0 || ^0.0.0-nightly || ^0.0.0-internal"
     react: ^16.13.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10c0/79cf0429b752efd90a9a3653803fd5658da3ffe7968eafaab96486eb6dc701524041d677f619792c31628d30b214aab41ac21c2cc17c43bb01305c4f90ff6900
+  checksum: 10c0/7e62c27508332608b085e02bb9b318d0e7e0cd68ac2d111802c75225e43ce245efe1754272afb0eb8ee819d95ebccd7438ef7fcaa222634fa2a8f87e083f2986
   languageName: node
   linkType: hard
 
@@ -12225,7 +12225,7 @@ __metadata:
   dependencies:
     "@analytics/google-analytics": "npm:1.1.0"
     "@cfworker/json-schema": "npm:4.1.1"
-    "@ckeditor/ckeditor5-react": "npm:9.5.0"
+    "@ckeditor/ckeditor5-react": "npm:11.0.1"
     "@eslint/js": "npm:9.39.2"
     "@faker-js/faker": "npm:10.2.0"
     "@filigran/chatbot": "npm:1.1.2"
