@@ -54,6 +54,7 @@ const initializeWorkflowInstance = async (
 ) => {
   const initialState = definitionData.initialState;
   const instanceInput = {
+    entity_id: entity.id,
     workflow_id: entitySetting.workflow_id || 'manual',
     currentState: initialState,
     history: JSON.stringify([{
@@ -134,6 +135,24 @@ export const setWorkflowDefinition = async (
     { key: 'workflow_id', value: [workflowDefinition.id] },
   ]);
   return element;
+};
+
+/**
+ * Delete workflow definition for an entity type.
+ */
+export const deleteWorkflowDefinition = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityType: string,
+): Promise<any> => {
+  const entitySetting = await getWorkflowConfig(context, user, entityType);
+  if (entitySetting?.workflow_id) {
+    const { element } = await updateAttribute(context, user, entitySetting.id, 'EntitySetting', [
+      { key: 'workflow_id', value: [null] },
+    ]);
+    return element;
+  }
+  return entitySetting;
 };
 
 /**

@@ -51,12 +51,35 @@ const WORKFLOW_INSTANCE_QUERY = gql`
   }
 `;
 
+const WORKFLOW_INSTANCE_NESTED_QUERY = gql`
+  query WorkflowInstanceNested($entityId: String!) {
+    draftWorkspace(id: $entityId) {
+      workflowInstance {
+        currentState
+        allowedTransitions {
+          event
+          toState
+        }
+      }
+    }
+  }
+`;
+
 const TRIGGER_WORKFLOW_EVENT_MUTATION = gql`
   mutation TriggerWorkflowEvent($entityId: String!, $eventName: String!) {
     triggerWorkflowEvent(entityId: $entityId, eventName: $eventName) {
       success
       newState
       reason
+    }
+  }
+`;
+
+const WORKFLOW_DEFINITION_DELETE_MUTATION = gql`
+  mutation WorkflowDefinitionDelete($entityType: String!) {
+    workflowDefinitionDelete(entityType: $entityType) {
+      id
+      workflow_id
     }
   }
 `;
@@ -120,6 +143,18 @@ describe('Workflow Resolver', () => {
     expect(instanceResult.data.workflowInstance.allowedTransitions[0].event).toBe('validate_event');
   });
 
+  it('should query a workflow instance via nested draftWorkspace', async () => {
+    const instanceResult = await adminQuery({
+      query: WORKFLOW_INSTANCE_NESTED_QUERY,
+      variables: {
+        entityId: draftWorkspaceId,
+      },
+    });
+    expect(instanceResult.data.draftWorkspace.workflowInstance.currentState).toBe('open');
+    expect(instanceResult.data.draftWorkspace.workflowInstance.allowedTransitions.length).toBe(1);
+    expect(instanceResult.data.draftWorkspace.workflowInstance.allowedTransitions[0].event).toBe('validate_event');
+  });
+
   it('should trigger a workflow event', async () => {
     const result = await adminQuery({
       query: TRIGGER_WORKFLOW_EVENT_MUTATION,
@@ -152,5 +187,34 @@ describe('Workflow Resolver', () => {
     });
     expect(result.data.triggerWorkflowEvent.success).toBe(false);
     expect(result.data.triggerWorkflowEvent.reason).toContain('No transition found');
+  });
+
+  it('should delete a workflow definition', async () => {
+    // 1. Delete the workflow definition
+    const deleteResult = await adminQuery({
+      query: WORKFLOW_DEFINITION_DELETE_MUTATION,
+      variables: {
+        entityType: 'DraftWorkspace',
+      },
+    });
+    expect(deleteResult.data.workflowDefinitionDelete.workflow_id).toBeNull();
+
+    // 2. Check if the definition is gone
+    const queryResult = await adminQuery({
+      query: WORKFLOW_DEFINITION_QUERY,
+      variables: {
+        entityType: 'DraftWorkspace',
+      },
+    });
+    expect(queryResult.data.workflowDefinition).toBeNull();
+
+    // 3. Check if instance now returns null
+    const instanceResult = await adminQuery({
+      query: WORKFLOW_INSTANCE_QUERY,
+      variables: {
+        entityId: draftWorkspaceId,
+      },
+    });
+    expect(instanceResult.data.workflowInstance).toBeNull();
   });
 });
