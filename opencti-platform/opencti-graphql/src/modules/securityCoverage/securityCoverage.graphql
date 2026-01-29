@@ -104,6 +104,16 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
+  fintelTemplates: [FintelTemplate!]
+  filesFromTemplate(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
   # Identity
   identity_class: String!
   name: String!

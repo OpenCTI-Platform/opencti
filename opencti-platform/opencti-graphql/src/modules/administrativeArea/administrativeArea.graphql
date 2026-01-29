@@ -98,6 +98,16 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
     objectAssignee: [Assignee!]
     objectParticipant: [Participant!]
     avatar: OpenCtiFile
+    fintelTemplates: [FintelTemplate!]
+    filesFromTemplate(
+        first: Int
+        prefixMimeType: String
+        after: ID
+        orderBy: FileOrdering
+        orderMode: OrderingMode
+        search: String
+        filters: FilterGroup
+    ): FileConnection
     # Location
     name: String!
     description: String

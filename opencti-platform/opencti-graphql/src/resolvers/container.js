@@ -9,8 +9,6 @@ import {
   containersNumberByAuthor,
   containersNumberByEntity,
   containerEditAuthorizedMembers,
-  getFilesFromTemplate,
-  getFintelTemplates,
   aiSummary,
   containersDistributionByEntity,
 } from '../domain/container';
@@ -61,8 +59,6 @@ const containerResolvers = {
     currentUserAccessRight: (container, _, context) => getUserAccessRight(context.user, container),
     objects: (container, args, context) => objects(context, context.user, container.id, args),
     relatedContainers: (container, args, context) => relatedContainers(context, context.user, container.id, args),
-    filesFromTemplate: (container, { first, prefixMimeType }, context) => getFilesFromTemplate(context, context.user, container, { first, prefixMimeType }),
-    fintelTemplates: (container, _, context) => getFintelTemplates(context, context.user, container),
   },
   // TODO Reactivate after official release of graphQL 17
   // StixObjectOrStixRelationshipRefConnection: {
