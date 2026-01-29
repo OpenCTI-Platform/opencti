@@ -128,12 +128,13 @@ const encryptValue = (rsaPublicKey: string, value: string) => {
   const rsaEncryptedAesKeyAndIvBuffer = crypto.publicEncrypt(
     {
       key: rsaPublicKey,
-      padding: crypto.constants.RSA_PKCS1_PADDING,
+      padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+      oaepHash: 'sha256',
     },
     aesKeyAndIv,
   );
 
-  const version = Buffer.from([0x01]);
+  const version = Buffer.from([0x02]);
 
   const concatenatedEncryptionBuffer = Buffer.concat([version, rsaEncryptedAesKeyAndIvBuffer, aesEncryptedValueBuffer]);
   return concatenatedEncryptionBuffer.toString('base64');
