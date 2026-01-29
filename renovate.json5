@@ -23,7 +23,9 @@
   packageRules: [
     // override for CKEditor monorepos to add ckeditor5-react
     {
-      extends: 'monorepo:ckeditor',
+      extends: [
+        'monorepo:ckeditor',
+      ],
       matchSourceUrls: [
         'https://github.com/ckeditor/ckeditor5',
         'https://github.com/ckeditor/ckeditor5-react',
