@@ -34,8 +34,6 @@ import ItemBoolean from '../../../../../components/ItemBoolean';
 import ItemIcon from '../../../../../components/ItemIcon';
 import MarkdownField from '../../../../../components/fields/MarkdownField';
 import SelectField from '../../../../../components/fields/SelectField';
-import StixItemLabels from '../../../../../components/StixItemLabels';
-import StixItemMarkings from '../../../../../components/StixItemMarkings';
 import SwitchField from '../../../../../components/fields/SwitchField';
 import TextField from '../../../../../components/TextField';
 import { APP_BASE_PATH, commitMutation, handleError, MESSAGING$, QueryRenderer } from '../../../../../relay/environment';
@@ -67,6 +65,9 @@ import DeleteDialog from '../../../../../components/DeleteDialog';
 import useDeletion from '../../../../../utils/hooks/useDeletion';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
 import TitleMainEntity from '../../../../../components/common/typography/TitleMainEntity';
+import StixCoreObjectLabels from '../../stix_core_objects/StixCoreObjectLabels';
+import ItemMarkings from '../../../../../components/ItemMarkings';
+import ItemEntityType from '../../../../../components/ItemEntityType';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -175,7 +176,6 @@ const inlineStyles = {
   ttype: {
     float: 'left',
     width: '18%',
-    height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -184,7 +184,6 @@ const inlineStyles = {
   default_value: {
     float: 'left',
     width: '30%',
-    height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -193,7 +192,6 @@ const inlineStyles = {
   labels: {
     float: 'left',
     width: '22%',
-    height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -202,7 +200,6 @@ const inlineStyles = {
   markings: {
     float: 'left',
     width: '20%',
-    height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -211,7 +208,6 @@ const inlineStyles = {
   in_platform: {
     float: 'left',
     width: '8%',
-    height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -2969,17 +2965,6 @@ const WorkbenchFileContentComponent = ({
                 disableRipple
               />
             </ListItemIcon>
-            <ListItemIcon>
-              <span
-                style={{
-                  padding: '0 8px 0 8px',
-                  fontWeight: 700,
-                  fontSize: 12,
-                }}
-              >
-                &nbsp;
-              </span>
-            </ListItemIcon>
             <ListItemText
               primary={(
                 <div>
@@ -3034,9 +3019,6 @@ const WorkbenchFileContentComponent = ({
                     disableRipple
                   />
                 </ListItemIcon>
-                <ListItemIcon classes={{ root: classes.itemIcon }}>
-                  <ItemIcon type={type} />
-                </ListItemIcon>
                 <ListItemText
                   primary={(
                     <div>
@@ -3044,7 +3026,7 @@ const WorkbenchFileContentComponent = ({
                         className={classes.bodyItem}
                         style={inlineStyles.ttype}
                       >
-                        {object.ttype}
+                        <ItemEntityType showIcon entityType={type} />
                         {secondaryType}
                       </div>
                       <div
@@ -3057,7 +3039,7 @@ const WorkbenchFileContentComponent = ({
                         className={classes.bodyItem}
                         style={inlineStyles.labels}
                       >
-                        <StixItemLabels
+                        <StixCoreObjectLabels
                           variant="inList"
                           labels={object.labels || []}
                         />
@@ -3066,10 +3048,10 @@ const WorkbenchFileContentComponent = ({
                         className={classes.bodyItem}
                         style={inlineStyles.markings}
                       >
-                        <StixItemMarkings
+                        <ItemMarkings
                           variant="inList"
                           markingDefinitions={object.markings || []}
-                          limit={2}
+                          limit={1}
                         />
                       </div>
                     </div>
@@ -3198,44 +3180,28 @@ const WorkbenchFileContentComponent = ({
           <ListItem
             classes={{ root: classes.itemHead }}
             divider={false}
-            disablePadding
             style={{ paddingTop: 0 }}
             secondaryAction={<>&nbsp;</>}
           >
-            <ListItemButton
-              classes={{ root: classes.itemHead }}
+            <ListItemIcon
+              style={{
+                minWidth: 38,
+              }}
+              onClick={handleToggleSelectAll}
             >
-              <ListItemIcon
-                style={{
-                  minWidth: 38,
-                }}
-                onClick={handleToggleSelectAll}
-              >
-                <Checkbox edge="start" checked={selectAll} disableRipple={true} />
-              </ListItemIcon>
-              <ListItemIcon>
-                <span
-                  style={{
-                    padding: '0 8px 0 8px',
-                    fontWeight: 700,
-                    fontSize: 12,
-                  }}
-                >
-                  &nbsp;
-                </span>
-              </ListItemIcon>
-              <ListItemText
-                primary={(
-                  <div>
-                    {sortHeader('ttype', 'Type', true)}
-                    {sortHeader('default_value', 'Default value', true)}
-                    {sortHeader('labels', 'Labels', false)}
-                    {sortHeader('markings', 'Marking definitions', true)}
-                    {sortHeader('in_platform', 'Already in plat.', false)}
-                  </div>
-                )}
-              />
-            </ListItemButton>
+              <Checkbox edge="start" checked={selectAll} disableRipple />
+            </ListItemIcon>
+            <ListItemText
+              primary={(
+                <div>
+                  {sortHeader('ttype', 'Type', true)}
+                  {sortHeader('default_value', 'Default value', true)}
+                  {sortHeader('labels', 'Labels', false)}
+                  {sortHeader('markings', 'Marking definitions', true)}
+                  {sortHeader('in_platform', 'Already in plat.', false)}
+                </div>
+              )}
+            />
           </ListItem>
           {sortedStixDomainObjects.map((object) => {
             let type = convertFromStixType(object.type);
@@ -3293,9 +3259,6 @@ const WorkbenchFileContentComponent = ({
                     disableRipple
                   />
                 </ListItemIcon>
-                <ListItemIcon classes={{ root: classes.itemIcon }}>
-                  <ItemIcon type={type} />
-                </ListItemIcon>
                 <ListItemText
                   primary={(
                     <div>
@@ -3303,7 +3266,7 @@ const WorkbenchFileContentComponent = ({
                         className={classes.bodyItem}
                         style={inlineStyles.ttype}
                       >
-                        {object.ttype}
+                        <ItemEntityType showIcon entityType={type} />
                         {secondaryType}
                       </div>
                       <div
@@ -3316,7 +3279,7 @@ const WorkbenchFileContentComponent = ({
                         className={classes.bodyItem}
                         style={inlineStyles.labels}
                       >
-                        <StixItemLabels
+                        <StixCoreObjectLabels
                           variant="inList"
                           labels={object.labels || []}
                         />
@@ -3325,7 +3288,7 @@ const WorkbenchFileContentComponent = ({
                         className={classes.bodyItem}
                         style={inlineStyles.markings}
                       >
-                        <StixItemMarkings
+                        <ItemMarkings
                           variant="inList"
                           markingDefinitions={object.markings || []}
                           limit={2}
@@ -3513,7 +3476,7 @@ const WorkbenchFileContentComponent = ({
                         className={classes.bodyItem}
                         style={inlineStyles.labels}
                       >
-                        <StixItemLabels
+                        <StixCoreObjectLabels
                           variant="inList"
                           labels={object.labels || []}
                         />
@@ -3522,7 +3485,7 @@ const WorkbenchFileContentComponent = ({
                         className={classes.bodyItem}
                         style={inlineStyles.markings}
                       >
-                        <StixItemMarkings
+                        <ItemMarkings
                           variant="inList"
                           markingDefinitions={object.markings || []}
                           limit={2}
@@ -3722,7 +3685,7 @@ const WorkbenchFileContentComponent = ({
                         className={classes.bodyItem}
                         style={inlineStyles.labels}
                       >
-                        <StixItemLabels
+                        <StixCoreObjectLabels
                           variant="inList"
                           labels={object.labels || []}
                         />
@@ -3731,7 +3694,7 @@ const WorkbenchFileContentComponent = ({
                         className={classes.bodyItem}
                         style={inlineStyles.markings}
                       >
-                        <StixItemMarkings
+                        <ItemMarkings
                           variant="inList"
                           markingDefinitions={object.markings || []}
                           limit={2}
@@ -3876,7 +3839,7 @@ const WorkbenchFileContentComponent = ({
                         className={classes.bodyItem}
                         style={inlineStyles.labels}
                       >
-                        <StixItemLabels
+                        <StixCoreObjectLabels
                           variant="inList"
                           labels={object.labels || []}
                         />
@@ -3885,7 +3848,7 @@ const WorkbenchFileContentComponent = ({
                         className={classes.bodyItem}
                         style={inlineStyles.markings}
                       >
-                        <StixItemMarkings
+                        <ItemMarkings
                           variant="inList"
                           markingDefinitions={object.markings || []}
                           limit={2}
@@ -4048,7 +4011,7 @@ const WorkbenchFileContentComponent = ({
                         className={classes.bodyItem}
                         style={inlineStyles.labels}
                       >
-                        <StixItemLabels
+                        <StixCoreObjectLabels
                           variant="inList"
                           labels={object.labels || []}
                         />
@@ -4057,7 +4020,7 @@ const WorkbenchFileContentComponent = ({
                         className={classes.bodyItem}
                         style={inlineStyles.markings}
                       >
-                        <StixItemMarkings
+                        <ItemMarkings
                           variant="inList"
                           markingDefinitions={object.markings || []}
                           limit={2}
@@ -4168,13 +4131,11 @@ const WorkbenchFileContentComponent = ({
           <Button
             variant="secondary"
             onClick={handleOpenConvertToDraft}
-            size="small"
           >
             {t_i18n('Convert to draft')}
           </Button>
           <Button
             onClick={handleOpenValidate}
-            size="small"
           >
             {t_i18n('Validate this workbench')}
           </Button>
