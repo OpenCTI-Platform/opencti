@@ -25,7 +25,7 @@ import { FileIndexingMonitoringQuery } from '@components/settings/file_indexing/
 import { interval } from 'rxjs';
 import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgress';
 import { FileIndexingConfigurationAndMonitoringQuery$data } from '@components/settings/file_indexing/__generated__/FileIndexingConfigurationAndMonitoringQuery.graphql';
-import { styled } from '@mui/material/styles';
+import { styled, useTheme } from '@mui/material/styles';
 import FileIndexingConfiguration from '@components/settings/file_indexing/FileIndexingConfiguration';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -98,6 +98,7 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
 }) => {
   const { n, t_i18n, fldt, b } = useFormatter();
   const classes = useStyles();
+  const theme = useTheme();
   const { indexedFilesMetrics } = usePreloadedQuery<FileIndexingMonitoringQuery>(
     fileIndexingMonitoringQuery,
     queryRef,
@@ -198,7 +199,13 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
           <Typography variant="h2" style={{ margin: 0 }}>
             {indexedFiles} / {totalFiles}
           </Typography>
-          <FolderOutlined color="primary" sx={{ fontSize: 40 }} />
+          <FolderOutlined
+            sx={{
+              fontSize: 40,
+              color: theme.palette.text.primary,
+              opacity: 0.35,
+            }}
+          />
         </Card>
       </Grid>
       <Grid item xs={3}>
@@ -213,7 +220,13 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
           <Typography variant="h2" style={{ margin: 0 }}>
             {indexedFiles ? n(volumeIndexed) : 0}
           </Typography>
-          <StorageOutlined color="primary" sx={{ fontSize: 40 }} />
+          <StorageOutlined
+            sx={{
+              fontSize: 40,
+              color: theme.palette.text.primary,
+              opacity: 0.35,
+            }}
+          />
         </Card>
       </Grid>
       <Grid item xs={4}>
