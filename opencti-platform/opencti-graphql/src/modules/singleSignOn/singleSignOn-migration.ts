@@ -16,9 +16,6 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { v4 as uuid } from 'uuid';
 import { EnvStrategyType, isAuthenticationProviderMigrated, LOCAL_STRATEGY_IDENTIFIER, MIGRATED_STRATEGY } from './providers-configuration';
 import { configRemapping } from './providers-initialization';
-import { getEntityFromCache } from '../../database/cache';
-import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
-import type { BasicStoreSettings } from '../../types/settings';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES } from '../../utils/access';
 import { AuthRequired } from '../../config/errors';
 

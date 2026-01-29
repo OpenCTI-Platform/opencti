@@ -13,7 +13,7 @@ const singleSignOnResolver: Resolvers = {
   Query: {
     singleSignOn: (_, { id }, context) => findSingleSignOnById(context, context.user, id),
     singleSignOns: (_, args, context) => findSingleSignOnPaginated(context, context.user, args),
-    singleSignOnSettings: () => getSingleSignOnSettings(),
+    singleSignOnSettings: (_, __, context) => getSingleSignOnSettings(),
   },
   Mutation: {
     singleSignOnAdd: (_, { input }, context) => {

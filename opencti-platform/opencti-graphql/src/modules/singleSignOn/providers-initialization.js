@@ -150,12 +150,8 @@ export const configRemapping = (config) => {
 
 export const initializeEnvAuthenticationProviders = async (context, user) => {
   const isForcedEnv = isAuthenticationForcedFromEnv();
-  console.log(`---- >>> isForcedEnv:${isForcedEnv}`);
   const existingIdentifiers = await getAllIdentifiers(context, user);
-
   const confProviders = getProvidersFromEnvironment();
-  console.log(`---- >>> confProviders:${confProviders}`);
-
   let shouldRunSSOMigration = false;
 
   if (confProviders) {
@@ -163,7 +159,6 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
     for (let i = 0; i < providerKeys.length; i += 1) {
       const providerIdent = providerKeys[i];
       const provider = confProviders[providerIdent];
-      console.log(`---- >>> Loop on:${providerIdent}`);
 
       const { identifier, strategy, config } = provider;
       const mappedConfig = configRemapping(config);

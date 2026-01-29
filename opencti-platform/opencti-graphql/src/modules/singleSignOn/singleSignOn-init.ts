@@ -41,19 +41,16 @@ export const initCommunityAuthenticationProviders = async () => {
 
 export const initializeAuthenticationProviders = async (context: AuthContext) => {
   const isEE = await isEnterpriseEdition(context);
-  console.log(`---- >>> IsEE:${isEE}`);
   if (isEE) {
     // Deprecated providers are env way (Google, Github, Facebook)
     // Also if force env is true, there is still providers with env (OpenId, LDAP, SAML)
     await initializeEnvAuthenticationProviders(context, SYSTEM_USER);
 
     if (!isAuthenticationForcedFromEnv()) {
-      console.log('---- >>> Not forced to env');
       // Supported providers are in database (local, openid, ldap, saml, ....)
       await initEnterpriseAuthenticationProviders(context, SYSTEM_USER);
     }
   } else {
-    console.log('---- >>> COMMU');
     await initCommunityAuthenticationProviders();
   }
 };
