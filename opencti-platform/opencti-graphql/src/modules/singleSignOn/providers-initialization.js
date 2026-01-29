@@ -152,6 +152,7 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
   const isForcedEnv = isAuthenticationForcedFromEnv();
   const existingIdentifiers = await getAllIdentifiers(context, user);
   const confProviders = getProvidersFromEnvironment();
+  let willLocalBeInDatabase = false;
   let shouldRunSSOMigration = false;
 
   if (confProviders) {
@@ -186,10 +187,11 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
           } else {
             if (isAuthenticationProviderMigrated(existingIdentifiers, LOCAL_STRATEGY_IDENTIFIER)) {
             logApp.info('[ENV-PROVIDER][LOCAL] LocalStrategy already in database, skipping old configuration');
+            willLocalBeInDatabase = true;
           } else {
             logApp.info('[ENV-PROVIDER][LOCAL] LocalStrategy is about to be converted to database configuration.');
-              shouldRunSSOMigration = true;
-            }
+              willLocalBeInDatabase = true;
+            shouldRunSSOMigration = true;}
           }
         }
         if (strategy === EnvStrategyType.STRATEGY_LDAP) {
@@ -675,6 +677,33 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
           PROVIDERS.push(headerProvider);
           HEADERS_AUTHENTICATORS.push(headerProvider);
         }
+      }
+
+      // In case of disable local strategy, setup protected fallback for the admin user
+      const hasLocal = PROVIDERS.find((p) => p.strategy === EnvStrategyType.STRATEGY_LOCAL);
+      if (!hasLocal && !willLocalBeInDatabase) {
+        logApp.info('[ENV-PROVIDER][FALLBACK] No local strategy, adding the fallback one');
+        const adminLocalStrategy = new LocalStrategy({}, (username, password, done) => {
+          const adminEmail = conf.get('app:admin:email');
+          if (username !== adminEmail) {
+            return done(AuthenticationFailure());
+          }
+          return login(username, password)
+            .then((info) => {
+              addUserLoginCount();
+              return done(null, info);
+            })
+            .catch((err) => {
+              done(err);
+            });
+        });
+        passport.use(LOCAL_STRATEGY_IDENTIFIER, adminLocalStrategy);
+        PROVIDERS.push({
+          name: INTERNAL_SECURITY_PROVIDER,
+          type: AuthType.AUTH_FORM,
+          strategy,
+          provider: LOCAL_STRATEGY_IDENTIFIER,
+        });
       }
     }
     if (isForcedEnv) {
