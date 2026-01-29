@@ -9,6 +9,7 @@ import logoFiligranGradientLight from '../../../static/images/logo_filigran_grad
 import SystemBanners from '../SystemBanners';
 import { LoginRootPublicQuery$data } from '../../__generated__/LoginRootPublicQuery.graphql';
 import LoginLogo from './LoginLogo';
+import { hasCustomColor } from '../../../utils/theme';
 
 const LogoBaseline = () => {
   const theme = useTheme<Theme>();
@@ -65,10 +66,15 @@ const LoginLayout = ({ settings, children }: LoginLayoutProps) => {
   const isEnterpriseEdition = settings.platform_enterprise_edition_license_validated;
   const isWhitemarkEnable = settings.platform_whitemark && isEnterpriseEdition;
 
+  const hasCustomBackground = hasCustomColor(theme, 'theme_background');
+  const backgroundContent = hasCustomBackground
+    ? theme.palette.background.default
+    : theme.palette.designSystem.background.main;
+
   const contentSx: SxProps = {
     minWidth: 500,
     overflow: 'hidden',
-    background: theme.palette.designSystem.background.main,
+    background: backgroundContent,
     boxShadow: '8px 0px 9px 0px #0000000F',
     zIndex: 2,
   };

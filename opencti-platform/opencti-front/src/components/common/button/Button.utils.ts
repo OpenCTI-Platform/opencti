@@ -1,8 +1,11 @@
 import type { GradientVariant, ColorDefinition, GradientColor, ButtonSize, ButtonColorKey } from './Button.types';
 import { ButtonVariant } from './Button';
 import { Theme } from '../../Theme';
+import { hasCustomColor } from '../../../utils/theme';
 
 export const getColorDefinitions = (theme: Theme): Record<ButtonColorKey, ColorDefinition> => {
+  const hasCustomBorder = hasCustomColor(theme, 'theme_primary');
+
   return {
     default: {
       main: theme.palette.primary.main ?? '',
@@ -44,7 +47,9 @@ export const getColorDefinitions = (theme: Theme): Record<ButtonColorKey, ColorD
       hover: theme.palette.primary.dark ?? '',
       focus: theme.palette.primary.light ?? '',
       text: theme.palette.primary.contrastText ?? '',
-      border: theme.palette.border.main ?? '',
+      border: hasCustomBorder
+        ? theme.palette.border.primary
+        : theme.palette.border.main ?? '',
     },
     success: {
       main: theme.palette.success.main ?? '',

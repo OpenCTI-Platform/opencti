@@ -1,6 +1,6 @@
 import { Theme } from '../components/Theme';
-import { THEME_DARK_DEFAULT_BACKGROUND, THEME_DARK_DEFAULT_PAPER } from '../components/ThemeDark';
-import { THEME_LIGHT_DEFAULT_BACKGROUND, THEME_LIGHT_DEFAULT_PAPER } from '../components/ThemeLight';
+import { THEME_DARK_DEFAULT_BACKGROUND, THEME_DARK_DEFAULT_PAPER, THEME_DARK_DEFAULT_PRIMARY } from '../components/ThemeDark';
+import { THEME_LIGHT_DEFAULT_BACKGROUND, THEME_LIGHT_DEFAULT_PAPER, THEME_LIGHT_DEFAULT_PRIMARY } from '../components/ThemeLight';
 
 type CustomThemeKey
   = | 'theme_background'
@@ -31,6 +31,12 @@ export const hasCustomColor = (theme: Theme, key: CustomThemeKey) => {
       ? THEME_DARK_DEFAULT_PAPER
       : THEME_LIGHT_DEFAULT_PAPER;
     return theme.palette.background.paper !== defaultColor;
+  }
+  if (key === 'theme_primary') {
+    const defaultColor = theme.palette.mode === 'dark'
+      ? THEME_DARK_DEFAULT_PRIMARY
+      : THEME_LIGHT_DEFAULT_PRIMARY;
+    return theme.palette.primary.main !== defaultColor;
   }
   return false;
 };
