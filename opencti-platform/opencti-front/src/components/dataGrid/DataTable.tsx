@@ -114,7 +114,7 @@ type DataTableInternalToolbarProps = Pick<DataTableProps,
   | 'removeFromDraftEnabled'
   | 'markAsReadEnabled'
   | 'entityTypes'
-  | 'deleteOperationEnabled'
+  | 'trashOperationsEnabled'
   | 'deleteDisable'
 > & {
   taskScope?: string;
@@ -132,7 +132,7 @@ const DataTableInternalToolbar = ({
   markAsReadEnabled,
   entityTypes,
   displayEditButtons,
-  deleteOperationEnabled,
+  trashOperationsEnabled,
   deleteDisable,
 }: DataTableInternalToolbarProps) => {
   const theme = useTheme<Theme>();
@@ -173,7 +173,7 @@ const DataTableInternalToolbar = ({
         removeFromDraftEnabled={removeFromDraftEnabled}
         markAsReadEnabled={markAsReadEnabled}
         displayEditButtons={displayEditButtons}
-        deleteOperationEnabled={deleteOperationEnabled}
+        trashOperationsEnabled={trashOperationsEnabled}
         deleteDisable={deleteDisable}
       />
     </div>
@@ -234,7 +234,7 @@ const DataTable = (props: OCTIDataTableProps) => {
     removeAuthMembersEnabled,
     removeFromDraftEnabled,
     markAsReadEnabled,
-    deleteOperationEnabled,
+    trashOperationsEnabled,
     deleteDisable,
   } = props;
 
@@ -291,7 +291,7 @@ const DataTable = (props: OCTIDataTableProps) => {
             removeFromDraftEnabled={removeFromDraftEnabled}
             markAsReadEnabled={markAsReadEnabled}
             displayEditButtons={hasAuthorizedMembersCanEdit}
-            deleteOperationEnabled={deleteOperationEnabled}
+            trashOperationsEnabled={trashOperationsEnabled}
             deleteDisable={deleteDisable}
           />
         )}

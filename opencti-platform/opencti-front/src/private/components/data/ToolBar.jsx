@@ -60,7 +60,7 @@ class ToolBar extends Component {
       variant,
       deleteDisable,
       mergeDisable,
-      deleteOperationEnabled,
+      trashOperationsEnabled,
       warning,
       warningMessage,
       type,
@@ -119,7 +119,7 @@ class ToolBar extends Component {
               noWarning={noWarning}
               noMarking={noMarking}
               mergeDisable={mergeDisable}
-              deleteOperationEnabled={deleteOperationEnabled}
+              trashOperationsEnabled={trashOperationsEnabled}
               handleCopy={handleCopy}
               taskScope={taskScope}
             />
@@ -150,7 +150,7 @@ ToolBar.propTypes = {
   noMarking: PropTypes.bool,
   noWarning: PropTypes.bool,
   mergeDisable: PropTypes.bool,
-  deleteOperationEnabled: PropTypes.bool,
+  trashOperationsEnabled: PropTypes.bool,
   taskScope: PropTypes.string,
 };
 
