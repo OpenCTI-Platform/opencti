@@ -1,5 +1,5 @@
 import React, { useMemo, useRef } from 'react';
-import { Typography, Paper } from '@mui/material';
+import { Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import { isEmptyField } from '../../../../utils/utils';
@@ -7,6 +7,7 @@ import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import useGraphParser from '../../../../components/graph/utils/useGraphParser';
 import SimpleGraph2D from '../../../../components/graph/SimpleGraph2D';
 import { resolveLink } from '../../../../utils/Entity';
+import Card from '../../../../components/common/card/Card';
 
 const StixCoreRelationshipInference = ({ stixRelationship, inference }) => {
   const navigate = useNavigate();
@@ -77,18 +78,13 @@ const StixCoreRelationshipInference = ({ stixRelationship, inference }) => {
   }, [stixRelationship, inference]);
 
   return (
-    <Paper
+    <Card
       sx={{
-        width: '100%',
         position: 'relative',
         height: 500,
         minHeight: 500,
-        marginTop: 1,
-        padding: '15px',
-        borderRadius: 1,
         textAlign: 'center',
       }}
-      variant="outlined"
       key={inference.rule.id}
     >
       <Typography variant="h3" gutterBottom={true}>
@@ -114,7 +110,7 @@ const StixCoreRelationshipInference = ({ stixRelationship, inference }) => {
           onLinkClick={handleLinkClick}
         />
       </div>
-    </Paper>
+    </Card>
   );
 };
 
