@@ -7,7 +7,7 @@ import TextField from '../../../../../components/TextField';
 import useDeletion from '../../../../../utils/hooks/useDeletion';
 import { useTheme } from '@mui/styles';
 import { Theme } from '../../../../../components/Theme';
-import { Accordion, AccordionDetails, AccordionSummary, Button, IconButton, Tooltip, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Button, IconButton, Menu, MenuItem, Typography } from '@mui/material';
 import { Add, DeleteOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import DeleteDialog from '../../../../../components/DeleteDialog';
 import FormButtonContainer from '@common/form/FormButtonContainer';
@@ -15,7 +15,7 @@ import { useReactFlow } from 'reactflow';
 import useAddStatus from './hooks/useAddStatus';
 import useDeleteElement from './hooks/useDeleteElement';
 import StatusTemplateField from '@components/common/form/StatusTemplateField';
-import type { Transition, Status, Action, Condition } from './utils';
+import type { Transition, Status, Action } from './utils';
 import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
 import { capitalizeFirstLetter } from '../../../../../utils/String';
 
@@ -59,7 +59,6 @@ const WorkflowFields = ({
   };
 
   const isCondition = 'operator' in value || 'field' in value;
-  const isAuthorizedMembersAction = (value as Action).type === 'updateAuthorizedMembers';
 
   return (
     <>
@@ -109,30 +108,21 @@ const WorkflowFields = ({
             )}
 
             {/* ACTION FIELDS (Authorized Members) */}
-            {isAuthorizedMembersAction && (
+            {value.type === 'updateAuthorizedMembers' && (
               <>
                 <Field
                   name={`${name}.params.authorized_members`}
                   component={AuthorizedMembersField}
-                  // containerstyle={{ marginTop: 20 }}
                   showAllMembersLine
                   canDeactivate={false}
                   enableAccesses
                   hideInfo
                 />
               </>
-              // <TextField
-              //   variant="standard"
-              //   label={t_i18n('Authorized Members (comma separated)')}
-              //   fullWidth
-              //   defaultValue={(value as Action).params?.authorized_members?.join(', ') || ''}
-              //   onChange={handleMembersChange}
-              //   helperText={t_i18n('Enter emails or IDs separated by commas')}
-              // />
             )}
 
             {/* Fallback for other types */}
-            {!isCondition && !isAuthorizedMembersAction && (
+            {!isCondition && !value?.type && (
               <Typography variant="caption">Type: {(value as any).type}</Typography>
             )}
           </div>
@@ -151,6 +141,44 @@ const WorkflowFields = ({
   );
 };
 
+export const ActionMenuButton = ({ onAddObject, setFieldValue, values, type }: any) => {
+  const { t_i18n } = useFormatter();
+
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const onClickItem = (name?: string) => {
+    onAddObject(type, name, setFieldValue, values);
+    handleClose();
+  };
+
+  return (
+    <div>
+      <IconButton
+        color="secondary"
+        aria-label="Add"
+        onClick={handleClick}
+      >
+        <Add fontSize="small" />
+      </IconButton>
+      <Menu
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+      >
+        <MenuItem onClick={() => onClickItem('updateAuthorizedMembers')}>{t_i18n('Update authorized members')}</MenuItem>
+        <MenuItem onClick={() => onClickItem('validateDraft')}>{t_i18n('Validate draft')}</MenuItem>
+      </Menu>
+    </div>
+  );
+};
+
 type WorkflowEditionFormValues = Status & Transition;
 
 const WorkflowEditionDrawer = ({ selectedElement, onClose }: WorkflowEditionDrawerProps) => {
@@ -164,6 +192,7 @@ const WorkflowEditionDrawer = ({ selectedElement, onClose }: WorkflowEditionDraw
 
   const onAddObject = (
     type: 'conditions' | 'actions' | 'onEnter' | 'onExit',
+    name: string,
     setFieldValue: FormikHelpers<WorkflowEditionFormValues>['setFieldValue'],
     values: WorkflowEditionFormValues,
   ) => {
@@ -172,10 +201,14 @@ const WorkflowEditionDrawer = ({ selectedElement, onClose }: WorkflowEditionDraw
     if (type === 'conditions') {
       newItem = { field: '', operator: 'eq', value: '' };
     } else if (type === 'actions' || type === 'onEnter' || type === 'onExit') {
-      newItem = {
-        type: 'updateAuthorizedMembers',
-        params: { authorized_members: [] },
-      };
+      if (name === 'updateAuthorizedMembers') {
+        newItem = {
+          type: name,
+          params: { authorized_members: [] },
+        };
+      } else {
+        newItem = { type: name };
+      }
     }
 
     setFieldValue(type, [...(values[type] || []), newItem]);
@@ -252,13 +285,7 @@ const WorkflowEditionDrawer = ({ selectedElement, onClose }: WorkflowEditionDraw
                     <Typography variant="h3" sx={{ m: 0 }}>
                       {t_i18n('Actions on enter')}
                     </Typography>
-                    <IconButton
-                      color="secondary"
-                      aria-label="Add"
-                      onClick={() => onAddObject('onEnter', setFieldValue, values)}
-                    >
-                      <Add fontSize="small" />
-                    </IconButton>
+                    <ActionMenuButton onAddObject={onAddObject} setFieldValue={setFieldValue} values={values} type="onEnter" />
                   </div>
                   <FieldArray
                     name="onEnter"
@@ -285,13 +312,7 @@ const WorkflowEditionDrawer = ({ selectedElement, onClose }: WorkflowEditionDraw
                     <Typography variant="h3" sx={{ m: 0 }}>
                       {t_i18n('Actions on exit')}
                     </Typography>
-                    <IconButton
-                      color="secondary"
-                      aria-label="Add"
-                      onClick={() => onAddObject('onExit', setFieldValue, values)}
-                    >
-                      <Add fontSize="small" />
-                    </IconButton>
+                    <ActionMenuButton onAddObject={onAddObject} setFieldValue={setFieldValue} values={values} type="onExit" />
                   </div>
                   <FieldArray
                     name="onExit"
@@ -321,42 +342,10 @@ const WorkflowEditionDrawer = ({ selectedElement, onClose }: WorkflowEditionDraw
                     component={TextField}
                     variant="standard"
                     name="event"
-                    label={t_i18n('Event name')}
+                    label={t_i18n('Transition name')}
                     fullWidth
                   />
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <Typography variant="h3" sx={{ m: 0 }}>
-                      {t_i18n('Actions')}
-                    </Typography>
-                    <IconButton
-                      color="secondary"
-                      aria-label="Add"
-                      onClick={() => onAddObject('actions', setFieldValue, values)}
-                    >
-                      <Add fontSize="small" />
-                    </IconButton>
-                  </div>
-                  <FieldArray
-                    name="actions"
-                    render={(arrayHelpers) => (
-                      <>
-                        {values.actions?.map((_, idx: number) => (
-                          <div
-                            key={`action-${idx}`}
-                            style={{ display: 'flex' }}
-                          >
-                            <Field
-                              component={WorkflowFields}
-                              name={`actions[${idx}]`}
-                              index={idx}
-                              prefixLabel="action_"
-                              onDelete={() => arrayHelpers.remove(idx)}
-                            />
-                          </div>
-                        ))}
-                      </>
-                    )}
-                  />
+
                   {/* Conditions */}
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     <Typography variant="h3" sx={{ m: 0 }}>
@@ -365,7 +354,7 @@ const WorkflowEditionDrawer = ({ selectedElement, onClose }: WorkflowEditionDraw
                     <IconButton
                       color="secondary"
                       aria-label="Add"
-                      onClick={() => onAddObject('conditions', setFieldValue, values)}
+                      onClick={() => onAddObject('conditions', '', setFieldValue, values)}
                     >
                       <Add fontSize="small" />
                     </IconButton>
@@ -384,6 +373,35 @@ const WorkflowEditionDrawer = ({ selectedElement, onClose }: WorkflowEditionDraw
                               name={`conditions[${idx}]`}
                               index={idx}
                               prefixLabel="condition_"
+                              onDelete={() => arrayHelpers.remove(idx)}
+                            />
+                          </div>
+                        ))}
+                      </>
+                    )}
+                  />
+
+                  {/* Actions */}
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Typography variant="h3" sx={{ m: 0 }}>
+                      {t_i18n('Actions')}
+                    </Typography>
+                    <ActionMenuButton onAddObject={onAddObject} setFieldValue={setFieldValue} values={values} type="actions" />
+                  </div>
+                  <FieldArray
+                    name="actions"
+                    render={(arrayHelpers) => (
+                      <>
+                        {values.actions?.map((_, idx: number) => (
+                          <div
+                            key={`action-${idx}`}
+                            style={{ display: 'flex' }}
+                          >
+                            <Field
+                              component={WorkflowFields}
+                              name={`actions[${idx}]`}
+                              index={idx}
+                              prefixLabel="action_"
                               onDelete={() => arrayHelpers.remove(idx)}
                             />
                           </div>

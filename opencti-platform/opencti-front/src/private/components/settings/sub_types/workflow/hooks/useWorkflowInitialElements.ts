@@ -1,85 +1,56 @@
-import { StatusTemplateFieldSearchQuery$data } from '@components/common/form/__generated__/StatusTemplateFieldSearchQuery.graphql';
 import { useMemo } from 'react';
 import { Node, Edge, MarkerType } from 'reactflow';
-import { SubTypeWorkflowDefinitionQuery$data } from '../../__generated__/SubTypeWorkflowDefinitionQuery.graphql';
+import { SubTypeWorkflowQuery$data } from '../../__generated__/SubTypeWorkflowQuery.graphql';
 import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../../../../components/Theme';
 import { authorizedMembersToOptions } from '../../../../../../utils/authorizedMembers';
+import { Connection, getNodes } from '../../../../../../utils/connection';
 
 type StatusTemplate = { [key: string]: { color: string; id: string; name: string } };
 
-// const fintelTemplateExportQuery = graphql`
-//   query useFintelTemplateExportQuery($id: ID!) {
-//     fintelTemplate(id: $id) {
-//       name
-//       toConfigurationExport
-//     }
-//   }
-// `;
+const convertEdgesToObject = <T extends { id: string }>(
+  connection: Connection<T | null | undefined>,
+): Record<string, T> => {
+  if (!connection) return {};
+  return Object.fromEntries(
+    getNodes(connection).map((node) => [node.id, node as T]),
+  );
+};
+
 export const useWorkflowInitialElements = (
-  workflowDefinition: SubTypeWorkflowDefinitionQuery$data['workflowDefinition'],
-  statusTemplatesEdges: StatusTemplateFieldSearchQuery$data['statusTemplates'],
+  workflowDefinition: SubTypeWorkflowQuery$data['workflowDefinition'],
+  statusTemplatesEdges: SubTypeWorkflowQuery$data['statusTemplates'],
+  membersEdges: SubTypeWorkflowQuery$data['members'],
 ) => {
   const theme = useTheme<Theme>();
 
   return useMemo(() => {
-    // const members = await fetchQuery(objectMembersFieldSearchQuery, {
-    //   search: '',
-    //   first: 100,
-    // })
-    //   .toPromise()
-    //   .then((data) => {
-    //     return (
-    //       (data as ObjectMembersFieldSearchQuery$data)?.members?.edges ?? []
-    //     ).reduce((acc, n) => {
-    //       acc[n?.node.id] = n?.node;
-    //       return acc;
-    //     }, {});
-    //   });
+    if (!workflowDefinition) return { initialNodes: [], initialEdges: [] };
 
-    // const parseActions = (actions) => {
-    //   // console.log('parse', { members });
+    const statusTemplates: StatusTemplate = convertEdgesToObject(statusTemplatesEdges);
+    const members = convertEdgesToObject(membersEdges);
 
-    //   return actions.map((action) => {
-    //     if (action.type === 'updateAuthorizedMembers') {
-    //       return {
-    //         ...action,
-    //         params: { authorized_members: authorizedMembersToOptions(action?.params?.authorized_members.map((am) => ({ ...am, ...members[am.id] }))) },
-    //       };
-    //     }
-    //     return action;
-    //   });
-    // };
-    // // console.log({ members });
-
-    if (!workflowDefinition || !statusTemplatesEdges?.edges?.length) return { initialNodes: [], initialEdges: [] };
-    console.log({ workflowDefinition });
-
-    const statusTemplates: StatusTemplate = (statusTemplatesEdges?.edges ?? []).reduce(
-      (acc, edge) => {
-        const node = edge?.node;
-        if (node?.id) {
-          acc[node.id] = {
-            id: node.id,
-            name: node.name,
-            color: node.color,
+    // Populate authorized members
+    const parseActions = (actions) => {
+      return actions.map((action) => {
+        if (action.type === 'updateAuthorizedMembers') {
+          return {
+            ...action,
+            params: { authorized_members: authorizedMembersToOptions(action?.params?.authorized_members.map((am) => ({ ...am, ...members[am.id] }))) },
           };
         }
-        return acc;
-      },
-      {} as StatusTemplate,
-    );
+        return action;
+      });
+    };
 
     // 1. Map states to nodes
-    const stateNodes: Node[] = workflowDefinition.states.map(({ name, onEnter, onExit }) => ({
-      id: name,
+    const stateNodes: Node[] = workflowDefinition.states.map(({ statusId, onEnter, onExit }) => ({
+      id: statusId,
       type: 'status',
       data: {
-        // onEnter: parseActions(onEnter),
-        onEnter: onEnter,
-        onExit: onExit,
-        // onExit: parseActions(onExit),
-        statusTemplate: statusTemplates[name] },
+        onEnter: parseActions(onEnter),
+        onExit: parseActions(onExit),
+        statusTemplate: statusTemplates[statusId] },
       position: { x: 0, y: 0 },
     }));
 
@@ -89,8 +60,7 @@ export const useWorkflowInitialElements = (
       type: 'transition',
       data: {
         conditions: transition.conditions,
-        actions: transition.actions,
-        // actions: parseActions(transition.actions),
+        actions: parseActions(transition.actions),
         event: transition.event,
       },
       position: { x: 0, y: 0 },

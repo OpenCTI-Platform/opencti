@@ -1,5 +1,5 @@
 import type { Node, Edge } from 'reactflow';
-import { SubTypeWorkflowDefinitionQuery$data } from '../__generated__/SubTypeWorkflowDefinitionQuery.graphql';
+import { SubTypeWorkflowQuery$data } from '../__generated__/SubTypeWorkflowQuery.graphql';
 import { AuthorizedMemberOption } from '../../../../../utils/authorizedMembers';
 
 export type Condition = { field: string; operator: string; value: string }
@@ -25,7 +25,7 @@ export type Transition = {
 
 export const NODE_SIZE = { width: 160, height: 50 };
 
-const formatActions = (actions: Action[]) => {
+const formatActions = (actions: Action[] = []) => {
   return actions.map(({ type, params }) => {
     if (type === 'updateAuthorizedMembers') {
       return {
@@ -35,16 +35,22 @@ const formatActions = (actions: Action[]) => {
           .map(({ value, accessRight }) => ({ id: value, access_right: accessRight })) },
       };
     }
+    if (type === 'validateDraft') {
+      return {
+        type,
+        mode: 'sync',
+      };
+    }
   });
 };
 
-const transformToWorkflowDefinition = (nodes: Node[], edges: Edge[], workflowDefinition: SubTypeWorkflowDefinitionQuery$data['workflowDefinition']) => {
+const transformToWorkflowDefinition = (nodes: Node[], edges: Edge[], workflowDefinition: SubTypeWorkflowQuery$data['workflowDefinition']) => {
   // 1. Extract States
   const states = nodes
     .filter((node) => node.type === 'status')
     .map(({ id, data: { onEnter = [], onExit = [] } }) => {
       return {
-        name: id,
+        statusId: id,
         onEnter: formatActions(onEnter),
         onExit: formatActions(onExit),
       };
