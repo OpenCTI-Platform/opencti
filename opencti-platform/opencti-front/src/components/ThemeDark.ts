@@ -4,7 +4,7 @@ import { fileUri } from '../relay/environment';
 import LogoText from '../static/images/logo_text_dark.svg';
 import LogoCollapsed from '../static/images/logo_dark.svg';
 import { hexToRGB } from '../utils/Colors';
-import { alpha, lighten } from '@mui/material';
+import { alpha, darken, lighten } from '@mui/material';
 
 const EE_COLOR = '#00f18d';
 
@@ -88,8 +88,14 @@ const ThemeDark = (
       nav: nav || THEME_DARK_DEFAULT_NAV,
       accent: accent || THEME_DARK_DEFAULT_ACCENT,
       shadow: 'rgba(200, 200, 200, 0.15)',
-      secondary: '#0C1524',
-      drawer: '#0f1d34',
+      // the only way for now to know if we should apply the paper color or not
+      secondary: paper === THEME_DARK_DEFAULT_PAPER
+        ? '#0C1524'
+        : (paper ?? '#0C1524'),
+      drawer: nav === THEME_DARK_DEFAULT_NAV
+        ? '#0f1d34'
+        : (darken(nav ?? '#0f1d34', 0.5)),
+
       disabled: '#363B46',
       gradient: {
         start: background || THEME_DARK_DEFAULT_BACKGROUND,
@@ -415,7 +421,9 @@ const ThemeDark = (
           },
         },
         outlined: {
-          backgroundColor: '#0C1524',
+          backgroundColor: paper === THEME_DARK_DEFAULT_PAPER
+            ? '#0C1524'
+            : (paper ?? '#0C1524'),
         },
       },
     },
@@ -626,7 +634,10 @@ const ThemeDark = (
       styleOverrides: {
         root: {
           '& .MuiOutlinedInput-root': {
-            backgroundColor: '#0C1524',
+            // the only way for now to know if we should apply the paper color or not
+            backgroundColor: paper === THEME_DARK_DEFAULT_PAPER
+              ? '#0C1524'
+              : (paper ?? '#0C1524'),
             '& fieldset': {
               borderColor: 'transparent',
             },

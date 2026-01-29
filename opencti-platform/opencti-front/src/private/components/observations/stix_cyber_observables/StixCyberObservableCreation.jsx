@@ -983,9 +983,6 @@ const StixCyberObservableCreation = ({
           open={status.open}
           onClose={localHandleClose}
           title={t_i18n('Create an observable')}
-          sx={{
-            width: '50%',
-          }}
           header={
             !isFromBulkRelation && status.type
               ? (

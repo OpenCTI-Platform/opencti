@@ -113,6 +113,8 @@ const ItemMarkings = ({
     );
   }
 
+  const hasOverflow = markings.length > limit;
+
   // return a multiple marking tags in the tooltip
   return (
     <Tooltip
@@ -150,24 +152,38 @@ const ItemMarkings = ({
       }}
     >
       <Stack direction="row" gap={1} flexWrap="wrap">
-        {markings.slice(0, limit).map((markingDefinition) => (
-          <ChipMarking
-            key={markingDefinition.id}
-            markingDefinition={markingDefinition}
-            onClick={onClick}
-            disableTooltip
-          />
-        ))}
-        <Badge
-          variant={markings.length > limit ? 'dot' : 'standard'}
-          color="primary"
-          sx={{
-            '& .MuiBadge-badge': {
-              right: 9,
-              top: 2,
-            },
-          }}
-        />
+        {markings.slice(0, limit).map((markingDefinition, index) => {
+          const isLastVisible = index === limit - 1;
+          const showBadge = hasOverflow && isLastVisible;
+
+          return showBadge ? (
+            <Badge
+              key={markingDefinition.id}
+              variant="dot"
+              color="primary"
+              sx={{
+                '& .MuiBadge-badge': {
+                  right: 6,
+                  top: 2,
+                },
+              }}
+            >
+              <ChipMarking
+                markingDefinition={markingDefinition}
+                onClick={onClick}
+                disableTooltip
+              />
+            </Badge>
+          ) : (
+            <ChipMarking
+              key={markingDefinition.id}
+              markingDefinition={markingDefinition}
+              onClick={onClick}
+              disableTooltip
+            />
+          );
+        })}
+
       </Stack>
     </Tooltip>
   );

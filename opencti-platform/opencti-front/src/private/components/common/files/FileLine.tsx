@@ -21,7 +21,7 @@ import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { PopoverProps } from '@mui/material/Popover';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
-import { ListItem, ListItemButton } from '@mui/material';
+import { ListItem, ListItemButton, Stack } from '@mui/material';
 import { getDraftModeColor } from '@components/common/draft/DraftChip';
 import { useTheme } from '@mui/styles';
 import type { OverridableStringUnion } from '@mui/types';
@@ -269,7 +269,11 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
         dense={dense}
         disablePadding
         secondaryAction={(
-          <div style={{ display: 'flex', alignItems: 'center' }}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            gap={1}
+          >
             {!isProgress && !isFail && !isOutdated && (
               <ItemMarkings
                 markingDefinitions={fileMarkings}
@@ -391,7 +395,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                 </>
               </Security>
             )}
-          </div>
+          </Stack>
         )}
       >
         <ListItemButton
