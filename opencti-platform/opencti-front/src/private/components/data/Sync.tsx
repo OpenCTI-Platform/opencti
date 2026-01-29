@@ -110,7 +110,7 @@ const Sync = () => {
               <a
                 href="https://filigran.notion.site/63392969969c4941905520d37dc7ad4a?v=0a5716cac77b4406825ba3db0acfaeb2"
                 target="_blank"
-                style={{ color: theme.palette.secondary.main }}
+                style={{ color: theme.palette.primary.main }}
                 rel="noreferrer"
               >
                 {t_i18n('OpenCTI ecosystem space')}
