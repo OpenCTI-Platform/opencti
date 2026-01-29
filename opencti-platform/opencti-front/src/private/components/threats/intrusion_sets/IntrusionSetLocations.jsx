@@ -108,18 +108,16 @@ class IntrusionSetLocationsComponent extends Component {
                     component={Link}
                     to={`${link}/${location.id}`}
                   >
-                    <ListItemIcon>
-                      <ListItemIcon>
-                        {flag ? (
-                          <img
-                            style={{ width: 20 }}
-                            src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
-                            alt={location.name}
-                          />
-                        ) : (
-                          <ItemIcon type={location.entity_type} />
-                        )}
-                      </ListItemIcon>
+                    <ListItemIcon sx={{ minWidth: 32 }}>
+                      {flag ? (
+                        <img
+                          style={{ width: 20 }}
+                          src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
+                          alt={location.name}
+                        />
+                      ) : (
+                        <ItemIcon type={location.entity_type} />
+                      )}
                     </ListItemIcon>
                     <ListItemText primary={location.name} />
                   </ListItemButton>
