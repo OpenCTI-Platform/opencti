@@ -6,7 +6,7 @@ export type ConditionFunction<TContext extends Context = Context> = (ctx: TConte
 export const ConditionRegistry: Record<string, ConditionFunction> = {
   // generic conditions examples:
   'is-admin': (ctx) => {
-    return ctx.user.capabilities?.some((c) => c?.name === BYPASS) || false;
+    return ctx.user.capabilities?.some((c: any) => c?.name === BYPASS) || false;
   },
   'has-capability': (ctx, params) => {
     const capability = params?.capability;
