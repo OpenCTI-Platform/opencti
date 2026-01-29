@@ -94,6 +94,8 @@ jobs:
         files: ${{ github.workspace }}/opencti-platform/opencti-graphql/coverage/coverage-final.json
         flags: opencti,opencti-graphql
         fail_ci_if_error: false
+        override_branch: ${{ github.head_ref || github.ref_name }}
+        override_commit: ${{ github.event.pull_request.head.sha || github.sha }}
 
     - name: Upload backend test result
       uses: actions/upload-artifact@v6
