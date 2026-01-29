@@ -36,9 +36,15 @@ const workflowResolvers = {
       return triggerWorkflowEvent(context, context.user!, entityId, eventName);
     },
   },
+  WorkflowInstance: {
+    id: (instance: any) => instance.id || instance.internal_id,
+    currentState: (instance: any) => instance.currentState,
+    allowedTransitions: (instance: any) => instance.allowedTransitions,
+  },
   DraftWorkspace: {
     workflowInstance: (draft: any, _: any, context: AuthContext) => {
-      return getWorkflowInstance(context, context.user!, draft.id);
+      const draftId = draft.id || draft.internal_id;
+      return getWorkflowInstance(context, context.user!, draftId);
     },
   },
 };
