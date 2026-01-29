@@ -44,8 +44,7 @@ const ExternalReferenceHeaderComponent = ({
   const handleCloseEnrollPlaybook = () => {
     setOpenEnrollPlaybook(false);
   };
-  const displayEnrollPlaybook = enableEnrollPlaybook;
-  const displayPopoverMenu = canDelete || (enableEnrollPlaybook && !displayEnrollPlaybook);
+  const displayPopoverMenu = canDelete || enableEnrollPlaybook;
 
   return (
     <div
@@ -67,7 +66,7 @@ const ExternalReferenceHeaderComponent = ({
       </div>
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <div style={{ display: 'flex' }}>
-          {displayEnrollPlaybook
+          {enableEnrollPlaybook
             && (
               <StixCoreObjectEnrollPlaybook
                 stixCoreObjectId={externalReference.id}
@@ -80,7 +79,7 @@ const ExternalReferenceHeaderComponent = ({
             <PopoverMenu>
               {({ closeMenu }) => (
                 <Box>
-                  {displayEnrollPlaybook && (
+                  {enableEnrollPlaybook && (
                     <StixCoreObjectMenuItemUnderEE
                       title={t_i18n('Enroll in playbook')}
                       setOpen={setOpenEnrollPlaybook}
