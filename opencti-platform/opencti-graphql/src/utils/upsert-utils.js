@@ -212,7 +212,8 @@ const generateFileInputsForUpsert = async (context, user, resolvedElement, updat
   const existingFilesById = new Map(existingFiles.map((f) => [f.id, f]));
 
   const filePath = `import/${resolvedElement.entity_type}/${resolvedElement.internal_id}`;
-  const uploadedFiles = [];
+  const newFiles = []; // Files that didn't exist on entity before
+  const replacedFiles = []; // Files that replace existing ones
 
   // Handle draft context - files in draft have a prefix added to their path
   const draftContext = getDraftContext(context, user);
@@ -252,24 +253,60 @@ const generateFileInputsForUpsert = async (context, user, resolvedElement, updat
     });
 
     if (untouched && fileAlreadyExistsOnEntity) {
-      // File version is same or older, AND file is already associated with entity - skip
-      // Note: If untouched but file NOT on entity, we still add the reference (handles data inconsistencies)
+      // File version is same or older, AND file is already associated with entity
+      // Check if markings need to be updated (confidence already validated above)
+      const existingMarkings = (existingFile.file_markings ?? []).sort();
+      const newMarkings = (file_markings ?? []).sort();
+      const markingsChanged = !R.equals(existingMarkings, newMarkings);
+
+      if (markingsChanged) {
+        // Markings changed - update the file entry with new markings
+        // Since confidence is already validated, we can update
+        const updatedFile = { ...existingFile, file_markings: newMarkings };
+        replacedFiles.push(updatedFile);
+      }
+      // If markings are the same, skip entirely
       continue;
     }
 
     const convertedFile = storeFileConverter(user, uploadedFile);
-    uploadedFiles.push(convertedFile);
+    // Track whether this is a new file or a replacement for proper history message
+    if (fileAlreadyExistsOnEntity) {
+      replacedFiles.push(convertedFile);
+    } else {
+      newFiles.push(convertedFile);
+    }
   }
 
-  // Build the x_opencti_files update
-  if (uploadedFiles.length > 0) {
-    // Build the new files list: existing files (minus any being replaced) + newly uploaded files
-    const uploadedFileIds = new Set(uploadedFiles.map((f) => f.id));
-    const filteredExistingFiles = existingFiles.filter((f) => !uploadedFileIds.has(f.id));
-    const newFilesList = [...filteredExistingFiles, ...uploadedFiles];
+  // Build the x_opencti_files updates
+  // Choose operation based on what files we're processing:
+  // - Only new files: use ADD operation (message shows "adds X in Files")
+  // - Any replaced files: use REPLACE operation (message shows "replaces X in Files")
+  const allUploadedFiles = [...newFiles, ...replacedFiles];
+  if (allUploadedFiles.length > 0) {
+    // Compute the base list with replaced files removed (they will be re-added with updated metadata)
+    const allUploadedFileIds = new Set(allUploadedFiles.map((f) => f.id));
+    const filteredExistingFiles = existingFiles.filter((f) => !allUploadedFileIds.has(f.id));
 
-    const fileImpact = { key: 'x_opencti_files', value: newFilesList, operation: UPDATE_OPERATION_REPLACE };
-    inputs.push(fileImpact);
+    if (replacedFiles.length > 0) {
+      // We have replacements - use REPLACE with the full final list
+      // Message will show "replaces filename in Files"
+      const fileImpact = {
+        key: 'x_opencti_files',
+        value: [...filteredExistingFiles, ...allUploadedFiles],
+        operation: UPDATE_OPERATION_REPLACE,
+      };
+      inputs.push(fileImpact);
+    } else {
+      // Only new files - use ADD operation with just the new files
+      // Message will show "adds filename in Files"
+      const fileImpact = {
+        key: 'x_opencti_files',
+        value: newFiles,
+        operation: UPDATE_OPERATION_ADD,
+      };
+      inputs.push(fileImpact);
+    }
   }
 
   return inputs;
