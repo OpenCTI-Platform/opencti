@@ -12,15 +12,16 @@ const WORKFLOW_INSTANCE_DEFINITION: ModuleDefinition<any, any> = {
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_WORKFLOW_INSTANCE]: [{ src: 'workflow_id' }, { src: 'currentState' }],
+      [ENTITY_TYPE_WORKFLOW_INSTANCE]: [{ src: 'entity_id' }],
     },
     resolvers: {},
   },
   converter_2_1: convertWorkflowToStix,
   attributes: [
-    { name: 'workflow_id', label: 'Workflow Definition ID', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'currentState', label: 'Current State', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
-    { name: 'history', label: 'History', type: 'string', format: 'json', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
+    { name: 'entity_id', label: 'Entity ID', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'workflow_id', label: 'Workflow Definition ID', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'currentState', label: 'Current State', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
+    { name: 'history', label: 'History', type: 'string', format: 'json', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   ],
   relations: [],
   representative: (stix: any) => {
