@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createAuthenticatedContext } from '../../../src/http/httpAuthenticatedContext';
 import { ADMIN_USER, getAuthUser, USER_EDITOR } from '../../utils/testQuery';
+import { authenticateUserByTokenOrUserId, authenticateUserFromRequest } from '../../../src/domain/user';
 
 describe('Testing createAuthenticatedContext', () => {
   it('should create executeContext with synchronizedUpsert=true for bypass user and synchronized-upsert headers', async () => {
@@ -20,6 +21,17 @@ describe('Testing createAuthenticatedContext', () => {
     };
     const executeContext = await createAuthenticatedContext(req, res, 'api-test');
     expect(executeContext).toBeDefined();
+    // logs to debug failing test on CI (not locally)
+    console.log('executeContext', { executeContext: JSON.stringify(executeContext) });
+    if (!executeContext.user) {
+      let user = await authenticateUserFromRequest(executeContext, req);
+      console.log('user after trying authenticateUserFromRequest', { user: JSON.stringify(user) });
+      if (!user) {
+        user = await authenticateUserByTokenOrUserId(executeContext, req, token);
+        console.log(`user after trying authenticateUserByTokenOrUserId with ${token}`, { user: JSON.stringify(user) });
+      }
+    }
+    // end debug logs
     expect(executeContext.user).toBeDefined();
     expect(executeContext.user?.origin).toBeDefined();
     expect(executeContext.synchronizedUpsert).toBe(true);
