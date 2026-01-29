@@ -6,16 +6,7 @@ import type { AuthContext, AuthUser } from '../../../src/types/user';
 import { addNotification, addTrigger, myNotificationsFind, triggerGet } from '../../../src/modules/notification/notification-domain';
 import type { MemberAccessInput, TriggerLiveAddInput, UserAddInput, WorkspaceAddInput } from '../../../src/generated/graphql';
 import { TriggerEventType, TriggerType } from '../../../src/generated/graphql';
-import {
-  addUser,
-  assignGroupToUser,
-  authenticateUserByTokenOrUserId,
-  findById,
-  findById as findUserById,
-  isUserTheLastAdmin,
-  userAddRelation,
-  userDelete,
-} from '../../../src/domain/user';
+import { addUser, assignGroupToUser, authenticateUserByToken, findById, findById as findUserById, isUserTheLastAdmin, userAddRelation, userDelete } from '../../../src/domain/user';
 import { addWorkspace, findById as findWorkspaceById, workspaceEditAuthorizedMembers } from '../../../src/modules/workspace/workspace-domain';
 import type { NotificationAddInput } from '../../../src/modules/notification/notification-types';
 import { getFakeAuthUser, getGroupEntity, getOrganizationEntity } from '../../utils/domainQueryHelper';
@@ -329,7 +320,7 @@ describe('Service account with platform organization coverage', async () => {
     }, header: () => {
       return undefined;
     }, socket: { remoteAddress: '::1' } };
-    const loggedInUser = await authenticateUserByTokenOrUserId(testContext, fakeReq, userCreated.api_token);
+    const loggedInUser = await authenticateUserByToken(testContext, fakeReq, userCreated.api_token);
     expect(loggedInUser).toBeDefined();
 
     await deleteElementById(testContext, authUser, userAddResult.id, ENTITY_TYPE_USER);
