@@ -16,9 +16,9 @@ import { INGESTION_SETINGESTIONS } from '../../../utils/hooks/useGranted';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import IngestionTaxiiImport from '@components/data/ingestionTaxii/IngestionTaxiiImport';
 import { isNotEmptyField } from '../../../utils/utils';
-import GradientButton from '../../../components/GradientButton';
 import { PaginationOptions } from '../../../components/list_lines';
 import { IngestionTaxiiLinesPaginationQuery } from '@components/data/ingestionTaxii/__generated__/IngestionTaxiiLinesPaginationQuery.graphql';
+import Button from '../../../components/common/button/Button';
 
 const LOCAL_STORAGE_KEY = 'ingestionTaxii';
 
@@ -124,15 +124,15 @@ const IngestionTaxii = () => {
             <>
               <IngestionTaxiiImport paginationOptions={paginationOptions} />
               {isXTMHubAccessible && isNotEmptyField(importFromHubUrl) && (
-                <GradientButton
-                  size="small"
+                <Button
+                  gradient
                   sx={{ marginLeft: 1 }}
                   href={importFromHubUrl}
                   target="_blank"
                   title={t_i18n('Import from Hub')}
                 >
                   {t_i18n('Import from Hub')}
-                </GradientButton>
+                </Button>
               )}
               <IngestionTaxiiCreation paginationOptions={paginationOptions} />
             </>
