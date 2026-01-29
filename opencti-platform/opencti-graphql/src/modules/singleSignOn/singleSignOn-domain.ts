@@ -22,6 +22,7 @@ import { parseSingleSignOnRunConfiguration } from './singleSignOn-migration';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import { unregisterStrategy } from './singleSignOn-providers';
 import { EnvStrategyType, isAuthenticationEditionLocked, isAuthenticationForcedFromEnv } from './providers-configuration';
+import { isConfigurationAdminUser } from '../../utils/access';
 
 const toEnv = (newStrategyType: StrategyType) => {
   switch (newStrategyType) {
@@ -40,9 +41,9 @@ const toEnv = (newStrategyType: StrategyType) => {
   }
 };
 
-export const checkAuthenticationEditionLocked = () => {
-  if (isAuthenticationEditionLocked()) {
-    throw UnsupportedError('Protected sensitive configuration is locked by environment variable');
+export const checkAuthenticationEditionLocked = (context: AuthContext, user: AuthUser) => {
+  if (isAuthenticationEditionLocked() && !isConfigurationAdminUser(context, user)) {
+    throw UnsupportedError('Authentication edition is locked by environment variable');
   }
 };
 
@@ -114,14 +115,14 @@ export const internalAddSingleSignOn = async (context: AuthContext, user: AuthUs
 
 export const addSingleSignOn = async (context: AuthContext, user: AuthUser, input: SingleSignOnAddInput) => {
   await checkSSOAllowed(context);
-  checkAuthenticationEditionLocked();
+  checkAuthenticationEditionLocked(context, user);
   // Call here the function to check that all mandatory field are in the input
   return await internalAddSingleSignOn(context, user, input, isAuthenticationForcedFromEnv());
 };
 
 export const fieldPatchSingleSignOn = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {
   await checkSSOAllowed(context);
-  checkAuthenticationEditionLocked();
+  checkAuthenticationEditionLocked(context, user);
   const singleSignOnEntityBeforeUpdate = await findSingleSignOnById(context, user, id);
 
   if (!singleSignOnEntityBeforeUpdate) {
@@ -148,7 +149,7 @@ export const fieldPatchSingleSignOn = async (context: AuthContext, user: AuthUse
 
 export const deleteSingleSignOn = async (context: AuthContext, user: AuthUser, id: string) => {
   await checkSSOAllowed(context);
-  checkAuthenticationEditionLocked();
+  checkAuthenticationEditionLocked(context, user);
   const singleSignOn = await findSingleSignOnById(context, user, id);
 
   if (!singleSignOn) {

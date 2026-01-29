@@ -25,7 +25,7 @@ import validator from 'validator';
 import conf, { getPlatformHttpProxyAgent, logApp } from '../../config/conf';
 import { AuthenticationFailure, ConfigurationError } from '../../config/errors';
 import { AuthType, INTERNAL_SECURITY_PROVIDER, PROVIDERS } from './providers-configuration';
-import { DEFAULT_INVALID_CONF_VALUE, SYSTEM_USER } from '../../utils/access';
+import { CONFIGURATION_ADMIN_EMAIL, DEFAULT_INVALID_CONF_VALUE, SYSTEM_USER } from '../../utils/access';
 import { OPENCTI_ADMIN_UUID } from '../../schema/general';
 import { findById, HEADERS_AUTHENTICATORS, initAdmin, login, userDelete } from '../../domain/user';
 import { isEmptyField, isNotEmptyField } from '../../database/utils';
@@ -74,7 +74,7 @@ export const initializeAdminUser = async (context) => {
       await userDelete(context, SYSTEM_USER, OPENCTI_ADMIN_UUID);
     }
   } else {
-    const adminEmail = conf.get('app:admin:email');
+    const adminEmail = CONFIGURATION_ADMIN_EMAIL;
     const adminPassword = conf.get('app:admin:password');
     const adminToken = conf.get('app:admin:token');
     if (isEmptyField(adminEmail) || isEmptyField(adminPassword) || isEmptyField(adminToken)
@@ -682,8 +682,7 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
     if (!hasLocal && isForcedEnv) {
       logApp.info('[ENV-PROVIDER][FALLBACK] No local strategy, adding the fallback one');
       const adminLocalStrategy = new LocalStrategy({}, (username, password, done) => {
-        const adminEmail = conf.get('app:admin:email');
-        if (username !== adminEmail) {
+        if (username !== CONFIGURATION_ADMIN_EMAIL) {
           return done(AuthenticationFailure());
         }
         return login(username, password)
