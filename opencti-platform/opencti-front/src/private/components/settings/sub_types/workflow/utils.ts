@@ -1,0 +1,80 @@
+import type { Node, Edge } from 'reactflow';
+
+export type Condition = { field: string; operator: string; value: string }
+  | { type: string };
+
+export type Action = {
+  type: string;
+  params: {
+    authorized_members?: string[];
+  };
+};
+
+export type Status = {
+  name: string;
+  color?: string;
+  onEnter?: Action[];
+  onExit?: Action[];
+};
+
+export type WorkflowDefinition = {
+  id: string;
+  name: string;
+  initialState: string;
+  states: { name: string }[];
+  transitions: {
+    from: string;
+    to: string;
+    event: string;
+    conditions: object[];
+  }[];
+};
+
+const colorPalette = ['#4caf50', '#2196f3', '#ff9800', '#9c27b0', '#f44336', '#3f51b5', '#00bcd4', '#8bc34a', '#ff5722', '#673ab7'];
+
+const transformToWorkflowDefinition = (nodes: Node[], edges: Edge[], workflowDefinition: WorkflowDefinition) => {
+  // 1. Extract States
+  const states = nodes
+    .filter((node) => node.type === 'status')
+    .map((node) => {
+      const { color, ...restData } = node.data;
+      return {
+        name: node.id,
+        ...restData,
+      };
+    });
+
+  // 2. Extract Transitions
+  const transitions = nodes
+    .filter((node) => node.type === 'transition')
+    .map((transitionNode) => {
+      const targetEdge = edges.find((e) => e.target === transitionNode.id);
+      const sourceEdge = edges.find((e) => e.source === transitionNode.id);
+
+      return {
+        from: targetEdge?.source || '',
+        to: sourceEdge?.target || '',
+        event: transitionNode.data.event,
+        conditions: transitionNode.data.conditions || [],
+      };
+    });
+
+  // 3. Get first status
+  // TODO improve when multiple starting branches
+  const initialState = nodes
+    .filter((node) => node.type === 'status')
+    .find((transitionNode) => !edges.find((e) => e.target === transitionNode.id));
+
+  return {
+    id: workflowDefinition.id,
+    name: workflowDefinition.name,
+    initialState: initialState?.id || workflowDefinition.initialState,
+    states,
+    transitions,
+  };
+};
+
+export {
+  colorPalette,
+  transformToWorkflowDefinition,
+};

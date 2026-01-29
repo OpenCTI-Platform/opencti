@@ -1,19 +1,20 @@
-import Card from '@common/card/Card';
-import Grid from '@mui/material/Grid2';
+import Workflow from './workflow/Workflow';
+import { ReactFlowProvider } from 'reactflow';
+import { ErrorBoundary } from '../../Error';
 
 const SubTypeWorkflow = () => {
   // TODO use workflow data from subType
   // const { subType } = useOutletContext<{ subType: SubTypeQuery['response']['subType'] }>();
   return (
-    <Grid container spacing={3}>
-
-      <Grid size={{ xs: 12 }} gap={3}>
-        <Card>
-          {/* TODO Workflow settings component */}
-          <div>Workflow settings component</div>
-        </Card>
-      </Grid>
-    </Grid>
+    // <div style={{ width: '100%', height: 'calc(100vh - 200px)' }}>
+    <ErrorBoundary>
+      <div style={{ width: '100%', height: 'calc(100vh - 250px)', marginBottom: '-50px' }}>
+        <ReactFlowProvider>
+          <Workflow />
+        </ReactFlowProvider>
+      </div>
+    </ErrorBoundary>
+    // </div>
   );
 };
 
