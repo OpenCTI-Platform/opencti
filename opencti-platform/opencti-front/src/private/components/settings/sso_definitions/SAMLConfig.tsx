@@ -1,5 +1,5 @@
 import React from 'react';
-import { Field } from 'formik';
+import { Field, useFormikContext } from 'formik';
 import { useFormatter } from '../../../../components/i18n';
 import SelectField from '../../../../components/fields/SelectField';
 import MenuItem from '@mui/material/MenuItem';
@@ -7,12 +7,17 @@ import Typography from '@mui/material/Typography';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { SSODefinitionFormValues } from '@components/settings/sso_definitions/SSODefinitionForm';
 import TextField from '../../../../components/TextField';
+import Tooltip from '@mui/material/Tooltip';
+import Button from '@common/button/Button';
+import { useUrlCheck } from '@components/settings/sso_definitions/utils/useTestCallBackUrl';
 
 interface Props {
   updateField: (field: keyof SSODefinitionFormValues, value: unknown) => void;
 }
 const SAMLConfig = ({ updateField }: Props) => {
   const { t_i18n } = useFormatter();
+  const { values } = useFormikContext<SSODefinitionFormValues>();
+  const { checkUrl, isLoading } = useUrlCheck();
 
   return (
     <>
@@ -26,16 +31,35 @@ const SAMLConfig = ({ updateField }: Props) => {
         fullWidth
         style={{ marginTop: 10 }}
       />
-      <Field
-        component={TextField}
-        variant="standard"
-        name="callbackUrl"
-        label={t_i18n('SAML SSO URL')}
-        onSubmit={updateField}
-        fullWidth
-        required
-        style={{ marginTop: 10 }}
-      />
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 16,
+        marginTop: 10,
+      }}
+      >
+        <Field
+          component={TextField}
+          variant="standard"
+          name="callbackUrl"
+          label={t_i18n('SAML SSO URL')}
+          onSubmit={updateField}
+          fullWidth
+          required
+        />
+        <Tooltip title={t_i18n('Test URL')}>
+          <span>
+            <Button
+              variant="secondary"
+              onClick={() => checkUrl(values.callbackUrl)}
+              disabled={isLoading}
+              style={{ whiteSpace: 'nowrap' }}
+            >
+              {t_i18n('Test')}
+            </Button>
+          </span>
+        </Tooltip>
+      </div>
       <Field
         id="filled-multiline-flexible"
         component={TextField}

@@ -10374,6 +10374,7 @@ type Mutation {
   singleSignOnFieldPatch(id: ID!, input: [EditInput!]!): SingleSignOn
   singleSignOnDelete(id: ID!): ID
   singleSignOnRunMigration(input: SingleSignMigrationInput!): [SingleSignOnMigrationResult]
+  singleSignOnUrlCheck(url: String!): UrlCheckResult
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -15370,6 +15371,12 @@ enum SingleSignOnOrdering {
   enabled
   strategy
   _score
+}
+
+type UrlCheckResult {
+  success: Boolean!
+  message: String
+  statusCode: Int
 }
 
 type SingleSignOnEdge {
