@@ -8,7 +8,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
-import type { DeleteOperationsLinesPaginationQuery$variables } from './all/__generated__/DeleteOperationsLinesPaginationQuery.graphql';
+import type { DeleteOperationsLinesPaginationQuery$variables } from './__generated__/DeleteOperationsLinesPaginationQuery.graphql';
 import useHelper from '../../../utils/hooks/useHelper';
 import { GARBAGE_COLLECTION_MANAGER } from '../../../utils/platformModulesHelper';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
@@ -21,7 +21,7 @@ import ItemEntityType from '../../../components/ItemEntityType';
 import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 import { TrashDeleteOperationLine_node$data } from './__generated__/TrashDeleteOperationLine_node.graphql';
-import DeleteOperationPopover from '@components/trash/all/DeleteOperationPopover';
+import DeleteOperationPopover from './DeleteOperationPopover';
 
 const DeleteOperationFragment = graphql`
   fragment TrashDeleteOperationLine_node on DeleteOperation {
