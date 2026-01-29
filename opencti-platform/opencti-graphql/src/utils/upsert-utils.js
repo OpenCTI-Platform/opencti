@@ -244,27 +244,17 @@ const generateFileInputsForUpsert = async (context, user, resolvedElement, updat
       continue;
     }
 
-    // Upload the file
-    // NOTE: We do not generate external_reference_id in metadata here because the corresponding
-    // External-Reference entity and relationship are not created in this upsert flow.
-    // This differs from entity creation path where external references are auto-created.
     const { upload: uploadedFile, untouched } = await uploadToStorage(context, user, filePath, fileInput, {
       entity: resolvedElement,
       file_markings,
     });
 
     if (untouched && fileAlreadyExistsOnEntity) {
-      // File version is same or older, AND file is already associated with entity
-      // Check if markings need to be updated (confidence already validated above)
       const existingMarkings = (existingFile.file_markings ?? []).sort();
       const newMarkings = (file_markings ?? []).sort();
       const markingsChanged = !R.equals(existingMarkings, newMarkings);
 
       if (markingsChanged) {
-        // Markings changed - update the file entry with new markings
-        // Since confidence is already validated, we can update
-        // Strip resolved INPUT_MARKINGS (objectMarking) field - it should NOT be stored in Elasticsearch
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { [INPUT_MARKINGS]: _, ...existingFileWithoutMarkings } = existingFile;
         const updatedFile = { ...existingFileWithoutMarkings, file_markings: newMarkings };
         replacedFiles.push(updatedFile);
@@ -282,43 +272,22 @@ const generateFileInputsForUpsert = async (context, user, resolvedElement, updat
     }
   }
 
-  // Build the x_opencti_files updates
-  // Choose operation based on what files we're processing:
-  // - Only new files: use ADD operation (message shows "adds X in Files")
-  // - Any replaced files: use REPLACE operation (message shows "replaces X in Files")
   const allUploadedFiles = [...newFiles, ...replacedFiles];
   if (allUploadedFiles.length > 0) {
-    // Compute the base list with replaced files removed (they will be re-added with updated metadata)
     const allUploadedFileIds = new Set(allUploadedFiles.map((f) => f.id));
-    // Filter existing files and strip resolved INPUT_MARKINGS (objectMarking) field
-    // This field is added during loading for STIX conversion but should NOT be stored in Elasticsearch
     const filteredExistingFiles = existingFiles
       .filter((f) => !allUploadedFileIds.has(f.id))
       .map((f) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { [INPUT_MARKINGS]: _, ...fileWithoutMarkings } = f;
         return fileWithoutMarkings;
       });
 
-    if (replacedFiles.length > 0) {
-      // We have replacements - use REPLACE with the full final list
-      // Message will show "replaces filename in Files"
-      const fileImpact = {
-        key: 'x_opencti_files',
-        value: [...filteredExistingFiles, ...allUploadedFiles],
-        operation: UPDATE_OPERATION_REPLACE,
-      };
-      inputs.push(fileImpact);
-    } else {
-      // Only new files - use ADD operation with just the new files
-      // Message will show "adds filename in Files"
-      const fileImpact = {
-        key: 'x_opencti_files',
-        value: newFiles,
-        operation: UPDATE_OPERATION_ADD,
-      };
-      inputs.push(fileImpact);
-    }
+    const fileImpact = {
+      key: 'x_opencti_files',
+      value: [...filteredExistingFiles, ...allUploadedFiles],
+      operation: UPDATE_OPERATION_REPLACE,
+    };
+    inputs.push(fileImpact);
   }
 
   return inputs;
