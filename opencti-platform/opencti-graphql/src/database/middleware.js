@@ -208,6 +208,7 @@ import {
   authorizedMembersActivationDate,
   confidence,
   creators as creatorsAttribute,
+  files,
   iAliasedIds,
   iAttributes,
   modified,
@@ -2060,7 +2061,17 @@ export const generateUpdateMessage = async (context, user, entityType, inputs) =
     const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
     creators = creatorsIds.map((id) => platformUsers.get(id));
   }
-  return generateUpdatePatchMessage(patchElements, entityType, { members, creators });
+
+  // Extract file_markings from x_opencti_files updates to resolve marking names
+  const fileObjects = getKeyValuesFromPatchElements(patchElements, files.name);
+  const fileMarkingIds = R.uniq(fileObjects.flatMap((f) => f?.file_markings ?? []));
+  let markings = [];
+  if (fileMarkingIds.length > 0) {
+    const markingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+    markings = fileMarkingIds.map((id) => markingsMap.get(id)).filter((m) => m);
+  }
+
+  return generateUpdatePatchMessage(patchElements, entityType, { members, creators, markings });
 };
 
 const buildAttribute = async (context, user, key, array) => {
