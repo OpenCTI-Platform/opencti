@@ -74,7 +74,6 @@ export const isDraftSupportedEntity = (element: Record<string, any>): boolean =>
   return !isInternalObject(element.entity_type) && !isInternalRelationship(element.entity_type);
 };
 
-export const FILES_UPDATE_KEY = files.name;
 type PatchValue = {
   replaced_value: any[];
   added_value: any[];
@@ -88,7 +87,7 @@ export const buildReverseUpdateFieldPatch = (rawUpdatePatch: string): InternalEd
   if (rawUpdatePatch) {
     const parsedUpdatePatch = JSON.parse(rawUpdatePatch);
     // no need for now to reverse files because draft_change is cleared.
-    const updatePatchKeys = Object.keys(parsedUpdatePatch).filter((k) => k !== FILES_UPDATE_KEY);
+    const updatePatchKeys = Object.keys(parsedUpdatePatch).filter((k) => k !== files.name);
     for (let i = 0; i < updatePatchKeys.length; i += 1) {
       const currentKey = updatePatchKeys[i];
       const currentValues = parsedUpdatePatch[currentKey];

@@ -3,13 +3,15 @@ import '../../../src/modules/index';
 import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import type { Change } from '../../../src/types/event';
 import { generateMessageFromChanges, humanizeRawValue } from '../../../src/database/data-changes';
-import { type AttributeDefinition, authorizedMembers, authorizedMembersActivationDate, revoked, xOpenctiAliases } from '../../../src/schema/attribute-definition';
+import { type AttributeDefinition, authorizedMembers, authorizedMembersActivationDate, files, revoked, xOpenctiAliases } from '../../../src/schema/attribute-definition';
 import { DefaultFormating } from '../../../src/utils/humanize';
 import { height, type Measurement, weight } from '../../../src/modules/threatActorIndividual/threatActorIndividual';
 import { workflowId } from '../../../src/modules/attributes/stixDomainObject-registrationAttributes';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
+import type { EntityFileReference } from '../../../src/modules/internal/document/document-types';
 
 describe('generateUpdatePatchMessage tests', () => {
+  // generate
   it('should generate message for simple field update', () => {
     const changes: Change[] = [
       {
@@ -24,6 +26,25 @@ describe('generateUpdatePatchMessage tests', () => {
     ];
     const message = generateMessageFromChanges({}, changes);
     expect(message).toEqual('replaces `updated` in `Description`');
+  });
+  it('should generate message for file update with markings', () => {
+    const addFile: EntityFileReference = {
+      id: 'import/Report/abc123/secret-doc.pdf',
+      name: 'secret-doc.pdf',
+      mime_type: 'application/pdf',
+      version: '2025-11-12T15:28:21.073Z',
+      file_markings: ['bff2afb7-03d3-40ad-bdd0-d6977f045ddg'],
+    };
+    const changes: Change[] = [
+      {
+        field: ENTITY_TYPE_CONTAINER_REPORT + '--' + files.name,
+        changes_removed: [],
+        changes_added: [{ raw: JSON.stringify(addFile) }],
+      },
+    ];
+    const resolvedMap = { 'bff2afb7-03d3-40ad-bdd0-d6977f045ddg': 'TLP:GREEN' };
+    const message = generateMessageFromChanges(resolvedMap, changes);
+    expect(message).toEqual('add `secret-doc.pdf (TLP:GREEN)` in `Files`');
   });
   it('should generate message fail for unexisting attribute', () => {
     const changes: Change[] = [
@@ -118,6 +139,7 @@ describe('generateUpdatePatchMessage tests', () => {
     const message = generateMessageFromChanges(resolvedMap, changes);
     expect(message).toEqual('replaces `ANALYZED` in `Workflow status`');
   });
+  // humanize
   it('should humanize authorizedMembers correctly handled', () => {
     let human = humanizeRawValue({}, authorizedMembers as AttributeDefinition, { raw: '-' }, DefaultFormating);
     expect(human).toEqual('Restricted');

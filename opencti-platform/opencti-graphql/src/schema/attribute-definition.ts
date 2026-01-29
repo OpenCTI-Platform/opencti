@@ -6,6 +6,7 @@ import type { AuthorizedMembers } from '../utils/authorizedMembers';
 import { DefaultFormating, type Formating } from '../utils/humanize';
 import type { StixId, StixObject } from '../types/stix-2-1-common';
 import { TEST_MODE } from '../config/conf';
+import type { OpenCTIFile } from '../modules/internal/document/document-types';
 
 export const shortMapping = {
   type: 'text',
@@ -70,10 +71,10 @@ export type TextAttribute = { type: 'string'; format: 'short' | 'text' } & Basic
 export type EnumAttribute = { type: 'string'; format: 'enum'; values: string[] } & BasicDefinition;
 export type VocabAttribute = { type: 'string'; format: 'vocabulary'; vocabularyCategory: string } & BasicDefinition;
 export type JsonAttribute = { type: 'string'; format: 'json'; attrRawIds?: GetRawIdsFn<string>; representative?: RepresentativeFn<string>; multiple: false; schemaDef?: Record<string, any> } & BasicDefinition;
-export type ObjectDefinition<T extends BasicStoreAttribute> = { type: 'object'; attrRawIds?: GetRawIdsFn<T>; representative?: RepresentativeFn<T> } & BasicDefinition;
+export type ObjectDefinition<T extends BasicStoreAttribute = BasicStoreAttribute> = { type: 'object'; attrRawIds?: GetRawIdsFn<T>; representative?: RepresentativeFn<T> } & BasicDefinition;
 export type FlatObjectAttribute<T extends BasicStoreAttribute> = { type: 'object'; format: 'flat' } & ObjectDefinition<T>;
 export type ObjectAttribute<T extends BasicStoreAttribute = BasicStoreAttribute> = { type: 'object'; format: 'standard' } & BasicObjectDefinition<T>;
-export type NestedObjectAttribute<T extends BasicStoreAttribute> = { type: 'object'; format: 'nested' } & BasicObjectDefinition<T>;
+export type NestedObjectAttribute<T extends BasicStoreAttribute = BasicStoreAttribute> = { type: 'object'; format: 'nested' } & BasicObjectDefinition<T>;
 export type RefAttribute = { type: 'ref'; attrRawIds?: GetRawIdsFn<string>; databaseName: string; stixName: string; isRefExistingForTypes: Checker; datable?: boolean; toTypes: string[] } & BasicDefinition;
 export type StringAttribute = IdAttribute | TextAttribute | EnumAttribute | VocabAttribute | JsonAttribute;
 export type ComplexAttribute<T extends BasicStoreAttribute = BasicStoreAttribute> = FlatObjectAttribute<T> | ObjectAttribute<T> | NestedObjectAttribute<T>;
@@ -126,7 +127,7 @@ export const draftContext: TextAttribute = {
   isFilterable: true,
 };
 
-export const draftChange: ObjectAttribute<any> = {
+export const draftChange: ObjectAttribute = {
   name: 'draft_change',
   label: 'Draft change',
   type: 'object',
@@ -143,7 +144,7 @@ export const draftChange: ObjectAttribute<any> = {
   ],
 };
 
-export const iAttributes: ObjectAttribute<any> = {
+export const iAttributes: ObjectAttribute = {
   name: 'i_attributes',
   label: 'Attributes',
   type: 'object',
@@ -228,7 +229,7 @@ export const lastEventId: TextAttribute = {
   isFilterable: false,
 };
 
-export const files: ObjectAttribute<any> = {
+export const files: ObjectAttribute<OpenCTIFile> = {
   name: 'x_opencti_files',
   label: 'Files',
   type: 'object',
@@ -249,9 +250,18 @@ export const files: ObjectAttribute<any> = {
     { name: 'order', label: 'Order in carousel', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'file_markings', label: 'Markings', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, isFilterable: true },
   ],
+  attrRawIds: async (item, _) => {
+    const { file_markings = [] } = item;
+    return file_markings.map((id) => ({ id }));
+  },
+  representative: (item, translate, _ = DefaultFormating): string => {
+    const fileMarkingsIds = item.file_markings ?? [];
+    const markings = fileMarkingsIds.map((id) => translate[id]).join(', ');
+    return item.name + (markings.length > 0 ? ' (' + markings + ')' : '');
+  },
 };
 
-export const changes: NestedObjectAttribute<any> = {
+export const changes: NestedObjectAttribute = {
   name: 'history_changes',
   label: 'Detail changes',
   type: 'object',
@@ -349,7 +359,7 @@ export const authorizedAuthorities: TextAttribute = {
   isFilterable: false,
 };
 
-export const metrics: NestedObjectAttribute<any> = {
+export const metrics: NestedObjectAttribute = {
   name: 'metrics',
   label: 'Entity metrics',
   type: 'object',
@@ -445,7 +455,7 @@ export const xOpenctiType: TextAttribute = {
   isFilterable: true,
 };
 
-export const errors: ObjectAttribute<any> = {
+export const errors: ObjectAttribute = {
   name: 'errors',
   label: 'Errors',
   type: 'object',
@@ -464,7 +474,7 @@ export const errors: ObjectAttribute<any> = {
   ],
 };
 
-export const coverageInformation: NestedObjectAttribute<any> = {
+export const coverageInformation: NestedObjectAttribute = {
   name: 'coverage_information',
   label: 'Coverage',
   type: 'object',
@@ -481,7 +491,7 @@ export const coverageInformation: NestedObjectAttribute<any> = {
   ],
 };
 
-export const opinionsMetrics: ObjectAttribute<any> = {
+export const opinionsMetrics: ObjectAttribute = {
   name: 'opinions_metrics',
   label: 'Opinion metrics',
   type: 'object',

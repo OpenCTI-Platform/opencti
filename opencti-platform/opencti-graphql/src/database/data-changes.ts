@@ -213,13 +213,16 @@ export const generateMessageFromChanges = (resolvedMap: Record<string, string>,
   return newMessage;
 };
 
-const buildTranslatedIdsMap = (translatedIds: { id: string; source?: string }[],
+export const buildTranslatedIdsMap = (translatedIds: { id: string; source?: string }[],
   resolvedMap: Record<string, string>) => {
   const translatedIdsMap: Record<string, string> = {};
   for (let index = 0; index < translatedIds.length; index += 1) {
     const { id, source } = translatedIds[index];
     const translatedId = source ?? id;
     translatedIdsMap[translatedId] = resolvedMap[translatedId] ?? 'Restricted';
+  }
+  if (isEmptyField(translatedIdsMap)) {
+    return undefined;
   }
   return JSON.stringify(translatedIdsMap);
 };

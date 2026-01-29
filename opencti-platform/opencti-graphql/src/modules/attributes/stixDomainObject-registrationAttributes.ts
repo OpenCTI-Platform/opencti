@@ -71,7 +71,7 @@ export const workflowId: IdAttribute = {
   },
 };
 
-const stixDomainObjectAttributes: Array<AttributeDefinition> = [
+const stixDomainObjectAttributes: Array<AttributeDefinition<any>> = [
   created,
   modified,
   xOpenctiModifiedAt,
