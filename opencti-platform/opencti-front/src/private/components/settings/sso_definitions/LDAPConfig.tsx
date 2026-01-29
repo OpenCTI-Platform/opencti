@@ -12,6 +12,7 @@ interface LDAPConfigProps {
 const LDAPConfig = ({ updateField }: LDAPConfigProps) => {
   const { t_i18n } = useFormatter();
 
+  // Labels are not translated because they are technical terms localised in SSO.
   return (
     <>
       <Field
