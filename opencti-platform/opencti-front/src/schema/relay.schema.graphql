@@ -9599,6 +9599,7 @@ type Query {
   forms(search: String, first: Int, after: ID, orderBy: FormsOrdering, orderMode: OrderingMode, filters: FilterGroup): FormConnection
   singleSignOn(id: String!): SingleSignOn
   singleSignOns(first: Int, after: ID, orderBy: SingleSignOnOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): SingleSignOnConnection
+  singleSignOnSettings: SingleSignOnSettings
 }
 
 type Subscription {
@@ -15599,4 +15600,9 @@ type SingleSignOnMigrationResult {
 
 input SingleSignMigrationInput {
   dry_run: Boolean!
+}
+
+type SingleSignOnSettings {
+  is_force_env: Boolean!
+  is_edition_locked: Boolean!
 }

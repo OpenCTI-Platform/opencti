@@ -1,16 +1,14 @@
-import type { AuthContext, AuthUser } from '../../types/user';
 import { StrategyType } from '../../generated/graphql';
 import conf, { logApp } from '../../config/conf';
 import LocalStrategy from 'passport-local';
 import { login } from '../../domain/user';
 import { addUserLoginCount } from '../../manager/telemetryManager';
-import { findAllSingleSignOn, logAuthError, logAuthInfo, logAuthWarn } from './singleSignOn-domain';
+import { logAuthError, logAuthInfo } from './singleSignOn-domain';
 import {
   AuthType,
   EnvStrategyType,
   INTERNAL_SECURITY_PROVIDER,
   isAuthenticationActivatedByIdentifier,
-  isStrategyActivated,
   LOCAL_STRATEGY_IDENTIFIER,
   type ProviderConfiguration,
 } from './providers-configuration';
@@ -185,35 +183,4 @@ export const registerStrategy = async (authenticationStrategy: BasicStoreEntityS
       );
     }
   }
-};
-
-/**
- * Called during platform initialization.
- * Read Authentication strategy in database and load them.
- * @param context
- * @param user
- */
-export const initEnterpriseAuthenticationProviders = async (context: AuthContext, user: AuthUser) => {
-  const providersFromDatabase = await findAllSingleSignOn(context, user);
-
-  if (providersFromDatabase.length === 0) {
-    // No configuration in database, fallback to default local strategy
-    logAuthInfo('configuring default local strategy', EnvStrategyType.STRATEGY_LOCAL);
-    await registerLocalStrategy();
-  } else {
-    for (let i = 0; i < providersFromDatabase.length; i++) {
-      await registerStrategy(providersFromDatabase[i]);
-    }
-  }
-
-  // At the end if there is no local, need to add the internal local
-  if (!isStrategyActivated(EnvStrategyType.STRATEGY_LOCAL)) {
-    logAuthWarn('No local strategy configured, adding it', EnvStrategyType.STRATEGY_LOCAL);
-    await registerLocalStrategy();
-  }
-};
-
-export const initCommunityAuthenticationProviders = async () => {
-  logAuthInfo('configuring default local strategy', EnvStrategyType.STRATEGY_LOCAL);
-  await registerLocalStrategy();
 };

@@ -1,25 +1,27 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { initEnterpriseAuthenticationProviders, registerLocalStrategy } from '../../../../src/modules/singleSignOn/singleSignOn-providers';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { registerLocalStrategy } from '../../../../src/modules/singleSignOn/singleSignOn-providers';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { type ProviderConfiguration, PROVIDERS } from '../../../../src/modules/singleSignOn/providers-configuration';
+import * as providerConfig from '../../../../src/modules/singleSignOn/providers-configuration';
+import { clearProvider } from './singleSignOn-test-utils';
+import { initEnterpriseAuthenticationProviders } from '../../../../src/modules/singleSignOn/singleSignOn-init';
+import { waitInSec } from '../../../../src/database/utils';
 
 describe('Single sign on Provider coverage tests', () => {
   describe('initialization coverage', () => {
-    const clearProvider = async () => {
-      for (let i = 0; i < PROVIDERS.length; i++) {
-        PROVIDERS.pop();
-      }
-      expect(PROVIDERS).toStrictEqual([]);
-    };
+    const PROVIDERS_SAVE: ProviderConfiguration[] = [];
 
-    let PROVIDERS_SAVE: ProviderConfiguration[];
     beforeAll(async () => {
       // Copy existing configuration and reset it for tests purpose.
-      PROVIDERS_SAVE = [...PROVIDERS];
+      for (let i = 0; i < PROVIDERS.length; i++) {
+        PROVIDERS_SAVE.push(PROVIDERS[i]);
+      }
+      expect(PROVIDERS_SAVE).toStrictEqual(PROVIDERS);
     });
 
     afterAll(async () => {
       // Reinstall initial configuration
+      await waitInSec(1);
       await clearProvider();
       for (let i = 0; i < PROVIDERS_SAVE.length; i++) {
         PROVIDERS.push(PROVIDERS_SAVE[i]);
@@ -28,9 +30,9 @@ describe('Single sign on Provider coverage tests', () => {
     });
 
     it('should an empty configuration works', async () => {
-      // GIVEN no SSO configuration at all
+      // GIVEN no SSO configuration at all - only local is register
+      vi.spyOn(providerConfig, 'isAuthenticationForcedFromEnv').mockReturnValue(false);
       await clearProvider();
-      expect(PROVIDERS).toStrictEqual([]);
 
       // WHEN initialization is done
       await initEnterpriseAuthenticationProviders(testContext, ADMIN_USER);

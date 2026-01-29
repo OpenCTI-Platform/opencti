@@ -23,10 +23,8 @@ import { initFintelTemplates } from './modules/fintelTemplate/fintelTemplate-dom
 import { lockResources } from './lock/master-lock';
 import { loadEntityMetricsConfiguration } from './modules/metrics/metrics-utils';
 import { initializeStreamStack } from './database/stream/stream-handler';
-import { initCommunityAuthenticationProviders, initEnterpriseAuthenticationProviders } from './modules/singleSignOn/singleSignOn-providers';
-import { isEnterpriseEdition } from './enterprise-edition/ee';
-import { initializeAdminUser, initializeEnvAuthenticationProviders } from './modules/singleSignOn/providers-initialization';
-import { isAuthenticationForcedFromEnv } from './modules/singleSignOn/providers-configuration';
+import { initializeAdminUser } from './modules/singleSignOn/providers-initialization';
+import { initializeAuthenticationProviders } from './modules/singleSignOn/singleSignOn-init';
 
 // region Platform constants
 const PLATFORM_LOCK_ID = 'platform_init_lock';
@@ -138,17 +136,7 @@ const platformInit = async (withMarkings = true) => {
     await initExclusionListCache();
 
     // Authentication
-    if (await isEnterpriseEdition(context)) {
-      // Deprecated providers are env way (Google, Github, Facebook)
-      await initializeEnvAuthenticationProviders(context, SYSTEM_USER);
-
-      if (!isAuthenticationForcedFromEnv()) {
-        // Supported providers are in database (local, openid, ldap, saml, ....)
-        await initEnterpriseAuthenticationProviders(context, SYSTEM_USER);
-      }
-    } else {
-      await initCommunityAuthenticationProviders();
-    }
+    await initializeAuthenticationProviders(context);
 
     // parse schema metrics conf to throw error on start if bad configured
     loadEntityMetricsConfiguration();

@@ -419,8 +419,6 @@ export const parseSingleSignOnRunConfiguration = async (context: AuthContext, us
     // When no dry run: save in database, and then convert BasicStore into display object
     logApp.info('[SSO CONVERSION] starting to write migrated SSO in database');
     const authenticationStrategies: SingleSignOnMigrationResult[] = [];
-    const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
-    const migratedIdentifier: string[] = [];
     const identifiersInDb = await getAllIdentifiers(context, user);
 
     for (let i = 0; i < authenticationStrategiesInput.length; i++) {
@@ -440,7 +438,6 @@ export const parseSingleSignOnRunConfiguration = async (context: AuthContext, us
           configuration: created.configuration,
           identifier: created.identifier,
         };
-        migratedIdentifier.push(identifier);
         authenticationStrategies.push(queryResult);
       } else {
         logApp.info(`[SSO CONVERSION] skipping ${currentAuthProvider.strategy} - ${identifier} as it's already in database.`);

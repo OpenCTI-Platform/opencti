@@ -1,10 +1,19 @@
 import type { Resolvers } from '../../generated/graphql';
-import { findSingleSignOnById, findSingleSignOnPaginated, addSingleSignOn, fieldPatchSingleSignOn, deleteSingleSignOn, runSingleSignOnRunMigration } from './singleSignOn-domain';
+import {
+  findSingleSignOnById,
+  findSingleSignOnPaginated,
+  addSingleSignOn,
+  fieldPatchSingleSignOn,
+  deleteSingleSignOn,
+  runSingleSignOnRunMigration,
+  getSingleSignOnSettings,
+} from './singleSignOn-domain';
 
 const singleSignOnResolver: Resolvers = {
   Query: {
     singleSignOn: (_, { id }, context) => findSingleSignOnById(context, context.user, id),
     singleSignOns: (_, args, context) => findSingleSignOnPaginated(context, context.user, args),
+    singleSignOnSettings: () => getSingleSignOnSettings(),
   },
   Mutation: {
     singleSignOnAdd: (_, { input }, context) => {

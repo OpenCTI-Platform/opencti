@@ -5,8 +5,14 @@ import * as R from 'ramda';
 export const INTERNAL_SECURITY_PROVIDER = '__internal_security_local_provider__';
 export const LOCAL_STRATEGY_IDENTIFIER = 'local';
 
+const IS_AUTHENTICATION_FORCE_FROM_ENV = booleanConf('app:authentication:force_env', false);
 export const isAuthenticationForcedFromEnv = () => {
-  return booleanConf('app:authentication:force_env', false);
+  return IS_AUTHENTICATION_FORCE_FROM_ENV;
+};
+
+const IS_AUTHENTICATION_EDITION_LOCKED = booleanConf('app:authentication:edition_locked', false);
+export const isAuthenticationEditionLocked = () => {
+  return IS_AUTHENTICATION_EDITION_LOCKED;
 };
 
 export const getProvidersFromEnvironment = () => {
