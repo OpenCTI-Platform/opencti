@@ -193,6 +193,7 @@ jobs:
         docker run --network runner-docker-network \
           --name api-tests \
           -p 4010:4100 \
+          -v ${{ github.workspace }}/opencti-platform/opencti-graphql/coverage:/opt/opencti/coverage \
           --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
           -e APP__BASE_URL=http://api-tests:4010/ \
           -e PYTHONUNBUFFERED=1  \
@@ -200,6 +201,16 @@ jobs:
           sh -c 'set -eux
             NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-rules-and-others --coverage
         '
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ${{ github.workspace }}/opencti-platform/opencti-graphql/coverage/coverage-final.json
+        flags: opencti,opencti-graphql
+        fail_ci_if_error: false
+        override_branch: ${{ github.head_ref || github.ref_name }}
+        override_commit: ${{ github.event.pull_request.head.sha || github.sha }}
 
     # Output all logs used during the job
     - name: Log backends (Minio, Elastic, RabbitMQ, Redis)
@@ -249,6 +260,7 @@ jobs:
     - name: Start unit and linter (aka yarn test:ci-unit)
       run: |
         docker run --name unit-and-other-tests \
+          -v ${{ github.workspace }}/opencti-platform/opencti-graphql/coverage:/opt/opencti/coverage \
           --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
           -e PYTHONUNBUFFERED=1  \
           filigran/platform:${{ github.sha }} \
@@ -257,6 +269,17 @@ jobs:
             yarn lint
             NODE_OPTIONS=--max_old_space_size=8192  yarn test:ci-unit --coverage
         '
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ${{ github.workspace }}/opencti-platform/opencti-graphql/coverage/coverage-final.json
+        flags: opencti,opencti-graphql
+        fail_ci_if_error: false
+        override_branch: ${{ github.head_ref || github.ref_name }}
+        override_commit: ${{ github.event.pull_request.head.sha || github.sha }}
+
     - name: Print resources stats
       if: always()
       continue-on-error: true
