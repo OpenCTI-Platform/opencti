@@ -15318,7 +15318,7 @@ type SingleSignOn implements InternalObject & BasicObject {
   updated_at: DateTime!
   name: String!
   identifier: String!
-  label: String!
+  label: String
   description: String
   enabled: Boolean!
   strategy: StrategyType!
@@ -15385,7 +15385,6 @@ type SingleSignOnConnection {
 input OrganizationsManagementInput {
   organizations_path: [String!]
   organizations_mapping: [String!]
-  organizations_default: [String!]
   organizations_scope: String
   read_userinfo: Boolean
   token_reference: String
