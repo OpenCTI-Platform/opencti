@@ -14,7 +14,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import React, { FunctionComponent, useEffect } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import Button from '@common/button/Button';
@@ -33,7 +32,6 @@ import ListItemText from '@mui/material/ListItemText';
 import { FileIndexingConfigurationQuery$data } from '@components/settings/file_indexing/__generated__/FileIndexingConfigurationQuery.graphql';
 import DangerZoneBlock from '@components/common/danger_zone/DangerZoneBlock';
 import { useFormatter } from '../../../../components/i18n';
-import type { Theme } from '../../../../components/Theme';
 import { handleError, MESSAGING$ } from '../../../../relay/environment';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { TEN_SECONDS } from '../../../../utils/Time';
@@ -43,17 +41,6 @@ import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
 
 const interval$ = interval(TEN_SECONDS);
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  header: {
-    textTransform: 'uppercase',
-  },
-  mimeTypeCount: {
-    color: theme.palette.primary.main,
-  },
-}));
 
 const fileIndexingMonitoringQuery = graphql`
   query FileIndexingMonitoringQuery {
@@ -97,7 +84,6 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
   refetch,
 }) => {
   const { n, t_i18n, fldt, b } = useFormatter();
-  const classes = useStyles();
   const theme = useTheme();
   const { indexedFilesMetrics } = usePreloadedQuery<FileIndexingMonitoringQuery>(
     fileIndexingMonitoringQuery,
@@ -324,18 +310,24 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
                 >
                   <ListItemText
                     primary={t_i18n('Type')}
-                    className={classes.header}
-                    style={{ width: '30%' }}
+                    style={{
+                      width: '30%',
+                      textTransform: 'uppercase',
+                    }}
                   />
                   <ListItemText
                     primary={t_i18n('Files count')}
-                    className={classes.header}
-                    style={{ width: '30%' }}
+                    style={{
+                      width: '30%',
+                      textTransform: 'uppercase',
+                    }}
                   />
                   <ListItemText
                     primary={t_i18n('Files size')}
-                    className={classes.header}
-                    style={{ width: '30%' }}
+                    style={{
+                      width: '30%',
+                      textTransform: 'uppercase',
+                    }}
                   />
                 </ListItem>
                 {metricsByMimeType.map((metrics) => (
@@ -347,18 +339,21 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
                   >
                     <ListItemText
                       primary={t_i18n(metrics.mimeType)}
-                      className={classes.mimeType}
                       style={{ width: '30%' }}
                     />
                     <ListItemText
                       primary={`${metrics.count}`}
-                      className={classes.mimeTypeCount}
-                      style={{ width: '30%' }}
+                      style={{
+                        width: '30%',
+                        color: theme.palette.primary.main,
+                      }}
                     />
                     <ListItemText
                       primary={`${b(metrics.size)}`}
-                      className={classes.mimeTypeCount}
-                      style={{ width: '30%' }}
+                      style={{
+                        width: '30%',
+                        color: theme.palette.primary.main,
+                      }}
                     />
                   </ListItem>
                 ))}
