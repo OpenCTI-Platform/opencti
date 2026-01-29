@@ -4,7 +4,7 @@ import { fileUri } from '../relay/environment';
 import LogoText from '../static/images/logo_text_dark.svg';
 import LogoCollapsed from '../static/images/logo_dark.svg';
 import { hexToRGB } from '../utils/Colors';
-import { alpha, lighten } from '@mui/material';
+import { alpha, darken, lighten } from '@mui/material';
 
 const EE_COLOR = '#00f18d';
 
@@ -92,7 +92,10 @@ const ThemeDark = (
       secondary: paper === THEME_DARK_DEFAULT_PAPER
         ? '#0C1524'
         : (paper ?? '#0C1524'),
-      drawer: '#0f1d34',
+      drawer: nav === THEME_DARK_DEFAULT_NAV
+        ? '#0f1d34'
+        : (darken(nav ?? '#0f1d34', 0.5)),
+
       disabled: '#363B46',
       gradient: {
         start: background || THEME_DARK_DEFAULT_BACKGROUND,
