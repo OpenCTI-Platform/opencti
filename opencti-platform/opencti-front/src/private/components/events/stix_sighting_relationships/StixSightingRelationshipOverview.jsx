@@ -41,6 +41,7 @@ import { stixSightingRelationshipEditionDeleteMutation } from './StixSightingRel
 import Card from '@common/card/Card';
 import { alpha } from '@mui/material';
 import Label from '../../../../components/common/label/Label';
+import CardTitle from '../../../../components/common/card/CardTitle';
 
 const styles = (theme) => ({
   container: {
@@ -500,9 +501,9 @@ class StixSightingRelationshipContainer extends Component {
           </Grid>
           {stixSightingRelationship.x_opencti_inferences !== null ? (
             <Grid item xs={12}>
-              <Label>
+              <CardTitle>
                 {t('Inference explanation')}
-              </Label>
+              </CardTitle>
               {stixSightingRelationship.x_opencti_inferences.map(
                 (inference) => (
                   <StixCoreRelationshipInference

@@ -6,7 +6,6 @@ import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
 import { createFragmentContainer, graphql } from 'react-relay';
 import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
 import { ArrowRightAlt, EditOutlined, ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
@@ -48,6 +47,7 @@ import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import withRouter from '../../../../utils/compat_router/withRouter';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
+import CardTitle from '../../../../components/common/card/CardTitle';
 
 const styles = (theme) => ({
   container: {
@@ -542,10 +542,10 @@ class StixCoreRelationshipContainer extends Component {
         <div>
           {stixCoreRelationship.x_opencti_inferences !== null && (
             <div style={{ margin: '50px 0 0 0' }}>
-              <Typography variant="h4" gutterBottom={true}>
+              <CardTitle>
                 {t('Inference explanation')} (
                 {stixCoreRelationship.x_opencti_inferences.length})
-              </Typography>
+              </CardTitle>
               {R.take(
                 expanded ? 200 : 1,
                 stixCoreRelationship.x_opencti_inferences,
