@@ -2137,7 +2137,7 @@ class DataTableToolBar extends Component {
       noWarning,
       deleteDisable,
       mergeDisable,
-      deleteOperationEnabled,
+      trashOperationsEnabled,
       removeAuthMembersEnabled,
       removeFromDraftEnabled,
       markAsReadEnabled,
@@ -2492,7 +2492,7 @@ class DataTableToolBar extends Component {
                         </Tooltip>
                       </Security>
                     )}
-                    {!deleteOperationEnabled && isShareableType && !removeAuthMembersEnabled && !removeFromDraftEnabled && !isInDraft && !isUserDatatable && (
+                    {!trashOperationsEnabled && isShareableType && !removeAuthMembersEnabled && !removeFromDraftEnabled && !isInDraft && !isUserDatatable && (
                       <>
                         <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
                           <EETooltip title={t('Share with organizations')}>
@@ -2565,7 +2565,7 @@ class DataTableToolBar extends Component {
                         </Tooltip>
                       </Security>
                     )}
-                    {deleteOperationEnabled && (
+                    {trashOperationsEnabled && (
                       <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                         <Tooltip title={warningMessage || t('Restore')}>
                           <span>
@@ -3387,7 +3387,7 @@ DataTableToolBar.propTypes = {
   warningMessage: PropTypes.string,
   rightOffset: PropTypes.number,
   mergeDisable: PropTypes.bool,
-  deleteOperationEnabled: PropTypes.bool,
+  trashOperationsEnabled: PropTypes.bool,
   removeAuthMembersEnabled: PropTypes.bool,
   removeFromDraft: PropTypes.bool,
   markAsReadEnabled: PropTypes.bool,

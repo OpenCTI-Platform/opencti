@@ -150,6 +150,8 @@ export interface DataTableProps {
   message?: string;
   isLocalStorageEnabled?: boolean;
   emptyStateMessage?: string;
+  trashOperationsEnabled?: boolean;
+  deleteDisable?: boolean;
 }
 
 export interface DataTableBodyProps {

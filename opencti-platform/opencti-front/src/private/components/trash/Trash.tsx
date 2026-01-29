@@ -1,24 +1,104 @@
 import React from 'react';
-import DeleteOperationsLines, { deleteOperationsLinesQuery } from '@components/trash/all/DeleteOperationsLines';
-import { DeleteOperationLineDummy } from '@components/trash/all/DeleteOperationLine';
-import ToolBar from '@components/data/ToolBar';
 import Box from '@mui/material/Box';
 import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
-import { DeleteOperationLine_node$data } from './all/__generated__/DeleteOperationLine_node.graphql';
-import ListLines from '../../../components/list_lines/ListLines';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
-import type { DeleteOperationsLinesPaginationQuery, DeleteOperationsLinesPaginationQuery$variables } from './all/__generated__/DeleteOperationsLinesPaginationQuery.graphql';
-import { DataColumns } from '../../../components/list_lines';
-import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useHelper from '../../../utils/hooks/useHelper';
 import { GARBAGE_COLLECTION_MANAGER } from '../../../utils/platformModulesHelper';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import DataTable from '../../../components/dataGrid/DataTable';
+import { graphql } from 'react-relay';
+import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
+import { TrashDeleteOperationsLines_data$data } from './__generated__/TrashDeleteOperationsLines_data.graphql';
+import { TrashDeleteOperationsLinesPaginationQuery, TrashDeleteOperationsLinesPaginationQuery$variables } from './__generated__/TrashDeleteOperationsLinesPaginationQuery.graphql';
+import ItemEntityType from '../../../components/ItemEntityType';
+import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
+import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
+import { TrashDeleteOperationLine_node$data } from './__generated__/TrashDeleteOperationLine_node.graphql';
+import DeleteOperationPopover from './DeleteOperationPopover';
+
+const DeleteOperationFragment = graphql`
+  fragment TrashDeleteOperationLine_node on DeleteOperation {
+    id
+    entity_type
+    main_entity_name
+    main_entity_type
+    deletedBy {
+      id
+      name
+    }
+    created_at
+    deleted_elements {
+      id
+    }
+    objectMarking {
+      id
+      definition
+      definition_type
+      x_opencti_color
+    }
+  }
+`;
+
+export const deleteOperationsLinesQuery = graphql`
+  query TrashDeleteOperationsLinesPaginationQuery(
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $orderBy: DeleteOperationOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    ...TrashDeleteOperationsLines_data
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
+  }
+`;
+
+export const deleteOperationsLinesFragment = graphql`
+  fragment TrashDeleteOperationsLines_data on Query
+  @argumentDefinitions(
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: { type: "DeleteOperationOrdering", defaultValue: created_at }
+    orderMode: { type: "OrderingMode", defaultValue: asc }
+    filters: { type: "FilterGroup" }
+  )
+  @refetchable(queryName: "DeleteOperationsLinesRefetchQuery") {
+    deleteOperations(
+      search: $search
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_deleteOperations") {
+      edges {
+        node {
+          id
+          ...TrashDeleteOperationLine_node
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
+    }
+  }
+`;
 
 const LOCAL_STORAGE_KEY = 'trash';
 
@@ -26,141 +106,99 @@ const Trash: React.FC = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Trash'));
+
+  const initialValues = {
+    searchTerm: '',
+    sortBy: 'created_at',
+    orderAsc: false,
+    openExports: false,
+    filters: emptyFilterGroup,
+  };
   const {
     viewStorage,
     paginationOptions,
-    helpers: storageHelpers,
-  } = usePaginationLocalStorage<DeleteOperationsLinesPaginationQuery$variables>(
+    helpers,
+  } = usePaginationLocalStorage<TrashDeleteOperationsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
-    {
-      searchTerm: '',
-      sortBy: 'created_at',
-      orderAsc: false,
-      openExports: false,
-      filters: emptyFilterGroup,
-    },
+    initialValues,
   );
   const {
-    numberOfElements,
     filters,
-    searchTerm,
-    sortBy,
-    orderAsc,
   } = viewStorage;
-
-  const {
-    numberOfSelectedElements,
-    handleClearSelectedElements,
-    handleToggleSelectAll,
-    onToggleEntity,
-    selectedElements,
-    deSelectedElements,
-    selectAll,
-  } = useEntityToggle<DeleteOperationLine_node$data>(LOCAL_STORAGE_KEY);
 
   const contextFilters = useBuildEntityTypeBasedFilterContext('DeleteOperation', filters);
 
   const { isRuntimeFieldEnable, isModuleEnable } = useHelper();
+  const isRuntimeSort = isRuntimeFieldEnable() ?? false;
 
-  const queryRef = useQueryLoading<DeleteOperationsLinesPaginationQuery>(
+  const queryRef = useQueryLoading<TrashDeleteOperationsLinesPaginationQuery>(
     deleteOperationsLinesQuery,
     paginationOptions,
   );
 
+  const dataColumns = {
+    main_entity_type: {
+      label: 'Type',
+      percentWidth: 12,
+      isSortable: false,
+      render: ({ main_entity_type }: TrashDeleteOperationLine_node$data) => <ItemEntityType showIcon entityType={main_entity_type} />,
+    },
+    main_entity_name: {
+      label: 'Representation',
+      percentWidth: 38,
+      isSortable: true,
+      render: (data: TrashDeleteOperationLine_node$data) => {
+        return defaultRender(getMainRepresentative(data));
+      },
+    },
+    deletedBy: {
+      label: 'Deleted by',
+      percentWidth: 20,
+      isSortable: isRuntimeSort,
+      render: ({ deletedBy }: TrashDeleteOperationLine_node$data) => deletedBy?.name ?? '-',
+    },
+    created_at: {
+      label: 'Deletion date',
+      percentWidth: 20,
+    },
+    objectMarking: {
+      percentWidth: 10,
+    },
+  };
+
+  const preloadedPaginationProps = {
+    linesQuery: deleteOperationsLinesQuery,
+    linesFragment: deleteOperationsLinesFragment,
+    queryRef,
+    nodePath: ['deleteOperations', 'pageInfo', 'globalCount'],
+    setNumberOfElements: helpers.handleSetNumberOfElements,
+  } as UsePreloadedPaginationFragment<TrashDeleteOperationsLinesPaginationQuery>;
+
   const renderLines = () => {
-    const isRuntimeSort = isRuntimeFieldEnable() ?? false;
-    const dataColumns: DataColumns = {
-      main_entity_type: {
-        label: 'Type',
-        width: '12.5%',
-        isSortable: false,
-      },
-      main_entity_name: {
-        label: 'Representation',
-        width: '37.5%',
-        isSortable: true,
-      },
-      deletedBy: {
-        label: 'Deleted by',
-        width: '21%',
-        isSortable: isRuntimeSort,
-      },
-      created_at: {
-        label: 'Deletion date',
-        width: '21%',
-        isSortable: true,
-      },
-      objectMarking: {
-        label: 'Marking',
-        isSortable: isRuntimeSort,
-        width: '8%',
-      },
-    };
     return (
       <div data-testid="trash-page">
-        <ListLines
-          helpers={storageHelpers}
-          sortBy={sortBy}
-          orderAsc={orderAsc}
-          dataColumns={dataColumns}
-          handleSort={storageHelpers.handleSort}
-          handleSearch={storageHelpers.handleSearch}
-          handleAddFilter={storageHelpers.handleAddFilter}
-          handleRemoveFilter={storageHelpers.handleRemoveFilter}
-          handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
-          handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
-          handleToggleSelectAll={handleToggleSelectAll}
-          selectAll={selectAll}
-          keyword={searchTerm}
-          filters={filters}
-          noPadding={true}
-          iconExtension={true}
-          paginationOptions={paginationOptions}
-          numberOfElements={numberOfElements}
-          secondaryAction={true}
-          entityTypes={['DeleteOperation']}
-        >
-          {queryRef && (
-            <React.Suspense
-              fallback={(
-                <>
-                  {Array(20)
-                    .fill(0)
-                    .map((_, idx) => (
-                      <DeleteOperationLineDummy
-                        key={idx}
-                        dataColumns={dataColumns}
-                      />
-                    ))}
-                </>
-              )}
-            >
-              <DeleteOperationsLines
-                queryRef={queryRef}
+        {queryRef && (
+          <DataTable
+            dataColumns={dataColumns}
+            resolvePath={(data: TrashDeleteOperationsLines_data$data) => data.deleteOperations?.edges?.map((n) => n?.node)}
+            storageKey={LOCAL_STORAGE_KEY}
+            initialValues={initialValues}
+            contextFilters={contextFilters}
+            preloadedPaginationProps={preloadedPaginationProps}
+            lineFragment={DeleteOperationFragment}
+            exportContext={{ entity_type: 'DeleteOperation' }}
+            disableNavigation
+            trashOperationsEnabled
+            deleteDisable
+            actions={(row: TrashDeleteOperationLine_node$data) => (
+              <DeleteOperationPopover
+                mainEntityId={row.id}
+                deletedCount={row.deleted_elements.length}
                 paginationOptions={paginationOptions}
-                dataColumns={dataColumns}
-                setNumberOfElements={storageHelpers.handleSetNumberOfElements}
-                selectedElements={selectedElements}
-                deSelectedElements={deSelectedElements}
-                onToggleEntity={onToggleEntity}
-                selectAll={selectAll}
               />
-            </React.Suspense>
-          )}
-        </ListLines>
-        <ToolBar
-          selectedElements={selectedElements}
-          deSelectedElements={deSelectedElements}
-          numberOfSelectedElements={numberOfSelectedElements}
-          selectAll={selectAll}
-          search={searchTerm}
-          filters={contextFilters}
-          handleClearSelectedElements={handleClearSelectedElements}
-          type="DeleteOperation"
-          deleteDisable={true}
-          deleteOperationEnabled={true}
-          mergeDisable={true}
-        />
+            )}
+          />
+        )}
       </div>
     );
   };
