@@ -152,6 +152,7 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
   const isForcedEnv = isAuthenticationForcedFromEnv();
   const existingIdentifiers = await getAllIdentifiers(context, user);
   const confProviders = getProvidersFromEnvironment();
+  let willLocalBeInDatabase = false;
   let shouldRunSSOMigration = false;
 
   if (confProviders) {
@@ -186,10 +187,11 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
           } else {
             if (isAuthenticationProviderMigrated(existingIdentifiers, LOCAL_STRATEGY_IDENTIFIER)) {
             logApp.info('[ENV-PROVIDER][LOCAL] LocalStrategy already in database, skipping old configuration');
+            willLocalBeInDatabase = true;
           } else {
             logApp.info('[ENV-PROVIDER][LOCAL] LocalStrategy is about to be converted to database configuration.');
-              shouldRunSSOMigration = true;
-            }
+              willLocalBeInDatabase = true;
+            shouldRunSSOMigration = true;}
           }
         }
         if (strategy === EnvStrategyType.STRATEGY_LDAP) {
@@ -582,7 +584,6 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
             const openIdScope = mappedConfig.scope ?? 'openid email profile';
             const options = {
               ...auth0OpenIDConfiguration,
-              logout_remote: mappedConfig.logout_remote,
               client,
               passReqToCallback: true,
               params: { scope: openIdScope },
@@ -594,7 +595,6 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
               const { email, name } = userinfo;
               providerLoginHandler({ email, name }, done);
             });
-            auth0Strategy.logout_remote = options.logout_remote;
 
             auth0Strategy.logout = (_, callback) => {
               const params = {
@@ -610,7 +610,7 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
               callback(null, endpointUri);
             };
             passport.use(providerRef, auth0Strategy);
-            PROVIDERS.push({ name: providerName, type: AuthType.AUTH_SSO, strategy, provider: providerRef });
+            PROVIDERS.push({ name: providerName, type: AuthType.AUTH_SSO, strategy, provider: providerRef, logout_remote: mappedConfig.logout_remote });
           }).catch((reason) => logApp.error('[ENV-PROVIDER][AUTH0] Error when enrich with remote credentials', { cause: reason }));
         }
         // CERT Strategies
@@ -679,6 +679,33 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
           PROVIDERS.push(headerProvider);
           HEADERS_AUTHENTICATORS.push(headerProvider);
         }
+      }
+
+      // In case of disable local strategy, setup protected fallback for the admin user
+      const hasLocal = PROVIDERS.find((p) => p.strategy === EnvStrategyType.STRATEGY_LOCAL);
+      if (!hasLocal && !willLocalBeInDatabase) {
+        logApp.info('[ENV-PROVIDER][FALLBACK] No local strategy, adding the fallback one');
+        const adminLocalStrategy = new LocalStrategy({}, (username, password, done) => {
+          const adminEmail = conf.get('app:admin:email');
+          if (username !== adminEmail) {
+            return done(AuthenticationFailure());
+          }
+          return login(username, password)
+            .then((info) => {
+              addUserLoginCount();
+              return done(null, info);
+            })
+            .catch((err) => {
+              done(err);
+            });
+        });
+        passport.use(LOCAL_STRATEGY_IDENTIFIER, adminLocalStrategy);
+        PROVIDERS.push({
+          name: INTERNAL_SECURITY_PROVIDER,
+          type: AuthType.AUTH_FORM,
+          strategy,
+          provider: LOCAL_STRATEGY_IDENTIFIER,
+        });
       }
     }
     if (isForcedEnv) {
