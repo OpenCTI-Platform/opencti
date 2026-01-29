@@ -43,7 +43,7 @@ export const renderCardTitle = (entity: EntityCard) => {
         </Tooltip>
       )}
       {entity.draftVersion && (
-        <DraftChip style={{ marginLeft: 10 }} />
+        <DraftChip />
       )}
     </Stack>
   );

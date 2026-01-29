@@ -64,7 +64,6 @@ const StixCoreObjectSubscribers: FunctionComponent<ContainerHeaderSharedProps> =
         variant="tertiary"
         style={{
           cursor: hasSetAccess ? 'pointer' : 'default',
-          marginRight: 10,
           whiteSpace: 'nowrap',
         }}
         sx={!hasSetAccess ? {

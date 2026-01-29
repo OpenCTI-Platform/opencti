@@ -1,6 +1,5 @@
-import { useState } from 'react';
+import { ReactNode, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { Stack } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -9,6 +8,7 @@ import { StixCoreObjectSharingListDeleteMutation } from './__generated__/StixCor
 import { StixCoreObjectSharingListFragment$key } from './__generated__/StixCoreObjectSharingListFragment.graphql';
 import Tag from '@common/tag/Tag';
 import { AccountBalanceOutlined } from '@mui/icons-material';
+import TagsOverflow from '@common/tag/TagsOverflow';
 
 const objectOrganizationFragment = graphql`
   fragment StixCoreObjectSharingListFragment on StixCoreObject {
@@ -35,9 +35,10 @@ interface StixCoreObjectSharingListProps {
   data: StixCoreObjectSharingListFragment$key;
   inContainer?: boolean;
   disabled?: boolean;
+  children?: ReactNode;
 }
 
-const StixCoreObjectSharingList = ({ data, disabled, inContainer }: StixCoreObjectSharingListProps) => {
+const StixCoreObjectSharingList = ({ data, disabled, inContainer, children }: StixCoreObjectSharingListProps) => {
   const draftContext = useDraftContext();
   const { t_i18n } = useFormatter();
   const disabledInDraft = !!draftContext;
@@ -58,7 +59,10 @@ const StixCoreObjectSharingList = ({ data, disabled, inContainer }: StixCoreObje
   );
   const [disabledOrgs, setDisabledOrgs] = useState<string[]>([]);
   const { objectOrganization, id } = useFragment(objectOrganizationFragment, data);
-  if (objectOrganization?.length === 0) return null;
+
+  const organizations = objectOrganization ?? [];
+
+  if (organizations.length === 0) return null;
 
   const removeOrganization = (organizationId: string) => {
     if (inContainer) {
@@ -74,21 +78,23 @@ const StixCoreObjectSharingList = ({ data, disabled, inContainer }: StixCoreObje
   };
 
   return (
-    <Stack direction="row" gap={1}>
-      {objectOrganization?.map((organization) => (
+    <TagsOverflow
+      items={objectOrganization || []}
+      getKey={(organization) => organization.id}
+      getLabel={(organization) => organization.name}
+      renderTag={(organization) => (
         <Tag
-          key={organization.id}
           label={organization.name}
+          disableTooltip
           onDelete={() => removeOrganization(organization.id)}
           disabled={fullyDisabled || disabledOrgs.includes(organization.id)}
-          sx={{
-            height: 36,
-            maxWidth: 160,
-          }}
           icon={<AccountBalanceOutlined fontSize="small" />}
         />
-      ))}
-    </Stack>
+      )}
+      direction="rtl"
+    >
+      {children}
+    </TagsOverflow>
   );
 };
 

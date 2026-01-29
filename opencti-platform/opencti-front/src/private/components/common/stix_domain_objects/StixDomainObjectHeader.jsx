@@ -1,42 +1,38 @@
-import React, { useState } from 'react';
-import { Field, Form, Formik } from 'formik';
-import { graphql, useLazyLoadQuery } from 'react-relay';
-import Chip from '@mui/material/Chip';
-import IconButton from '@common/button/IconButton';
-import Slide from '@mui/material/Slide';
-import Tooltip from '@mui/material/Tooltip';
-import { Add, Close, Delete } from '@mui/icons-material';
-import { DotsHorizontalCircleOutline } from 'mdi-material-ui';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
+import HeaderMainEntityLayout from '@common/header/HeaderMainEntityLayout';
+import Tag from '@common/tag/Tag';
+import { Add, Close, Delete } from '@mui/icons-material';
+import { Box, DialogTitle } from '@mui/material';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import { Box, DialogTitle } from '@mui/material';
-import InputLabel from '@mui/material/InputLabel';
-import FormControl from '@mui/material/FormControl';
-import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import * as R from 'ramda';
-import * as Yup from 'yup';
+import Select from '@mui/material/Select';
 import { useTheme } from '@mui/styles';
+import { Field, Form, Formik } from 'formik';
+import * as R from 'ramda';
+import React, { useState } from 'react';
+import { graphql, useLazyLoadQuery } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
-import FormAuthorizedMembersDialog from '../form/FormAuthorizedMembersDialog';
-import StixCoreObjectMenuItemUnderEE from '../stix_core_objects/StixCoreObjectMenuItemUnderEE';
-import StixCoreObjectSharingList from '../stix_core_objects/StixCoreObjectSharingList';
-import { DraftChip } from '../draft/DraftChip';
-import StixCoreObjectEnrollPlaybook from '../stix_core_objects/StixCoreObjectEnrollPlaybook';
-import StixCoreObjectFileExportButton from '../stix_core_objects/StixCoreObjectFileExportButton';
-import { stixCoreObjectQuickSubscriptionContentQuery } from '../stix_core_objects/stixCoreObjectTriggersUtils';
-import StixCoreObjectSubscribers from '../stix_core_objects/StixCoreObjectSubscribers';
-import StixCoreObjectFileExport from '../stix_core_objects/StixCoreObjectFileExport';
-import StixCoreObjectContainer from '../stix_core_objects/StixCoreObjectContainer';
-import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
+import * as Yup from 'yup';
+import PopoverMenu from '../../../../components/PopoverMenu';
 import TextField from '../../../../components/TextField';
+import Transition from '../../../../components/Transition';
+import TagsOverflow from '../../../../components/common/tag/TagsOverflow';
 import { useFormatter } from '../../../../components/i18n';
+import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
+import { resolveLink } from '../../../../utils/Entity';
 import Security from '../../../../utils/Security';
+import { authorizedMembersToOptions, CAN_USE_ENTITY_TYPES, useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
+import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import useGranted, {
   AUTOMATION,
   BYPASS,
@@ -48,19 +44,19 @@ import useGranted, {
   KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS,
   KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
 } from '../../../../utils/hooks/useGranted';
+import { DraftChip } from '../draft/DraftChip';
 import CommitMessage from '../form/CommitMessage';
-import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
-import { truncate } from '../../../../utils/String';
-import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObjectQuickSubscription';
-import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
-import Transition from '../../../../components/Transition';
+import FormAuthorizedMembersDialog from '../form/FormAuthorizedMembersDialog';
+import StixCoreObjectContainer from '../stix_core_objects/StixCoreObjectContainer';
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
-import PopoverMenu from '../../../../components/PopoverMenu';
-import { resolveLink } from '../../../../utils/Entity';
-import { authorizedMembersToOptions, CAN_USE_ENTITY_TYPES, useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
-import useDraftContext from '../../../../utils/hooks/useDraftContext';
-import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
+import StixCoreObjectEnrollPlaybook from '../stix_core_objects/StixCoreObjectEnrollPlaybook';
+import StixCoreObjectFileExport from '../stix_core_objects/StixCoreObjectFileExport';
+import StixCoreObjectFileExportButton from '../stix_core_objects/StixCoreObjectFileExportButton';
+import StixCoreObjectMenuItemUnderEE from '../stix_core_objects/StixCoreObjectMenuItemUnderEE';
+import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObjectQuickSubscription';
+import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
+import StixCoreObjectSharingList from '../stix_core_objects/StixCoreObjectSharingList';
+import { stixCoreObjectQuickSubscriptionContentQuery } from '../stix_core_objects/stixCoreObjectTriggersUtils';
 
 export const stixDomainObjectMutation = graphql`
   mutation StixDomainObjectHeaderFieldMutation(
@@ -351,8 +347,6 @@ const StixDomainObjectHeader = (props) => {
 
   const handleToggleOpenAliases = () => setOpenAliases(!openAliases);
 
-  const handleToggleCreateAlias = () => setOpenAlias(!openAlias);
-
   const handleOpenCommitCreate = () => setOpenCommitCreate(true);
 
   const handleCloseCommitCreate = () => setOpenCommitCreate(false);
@@ -478,26 +472,19 @@ const StixDomainObjectHeader = (props) => {
     || (enableEnricher && isKnowledgeEnricher)
     || isKnowledgeDeleter;
 
+  const title = getMainRepresentative(stixDomainObject);
+
   return (
     <React.Suspense fallback={<span />}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: theme.spacing(3) }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
-          <Tooltip title={getMainRepresentative(stixDomainObject)}>
-            <TitleMainEntity preserveCase>
-              {truncate(getMainRepresentative(stixDomainObject), 80)}
-            </TitleMainEntity>
-          </Tooltip>
-          {stixDomainObject.draftVersion && (
-            <DraftChip />
-          )}
-          {typeof onViewAs === 'function' && (
+      <HeaderMainEntityLayout
+        title={title}
+        titleRight={
+          typeof onViewAs === 'function' && (
             <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(0.5) }}>
               <InputLabel>
                 {t_i18n('Display as')}
               </InputLabel>
-              <FormControl
-                variant="outlined"
-              >
+              <FormControl variant="outlined">
                 <Select
                   size="small"
                   name="view-as"
@@ -514,252 +501,174 @@ const StixDomainObjectHeader = (props) => {
                 </Select>
               </FormControl>
             </div>
-          )}
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            {(!noAliases && aliases.length > 0) && (
-              <>
-                {aliases.slice(0, 5).map(
-                  (label) => label.length > 0 && (
-                    <Security
-                      needs={[KNOWLEDGE_KNUPDATE]}
-                      key={label}
-                      placeholder={(
-                        <Tooltip title={label}>
-                          <Chip
-                            sx={{
-                              marginRight: '4px',
-                              fontSize: 12,
-                              lineHeight: '12px',
-                              height: 28,
-                            }}
-                            label={truncate(label, 40)}
-                          />
-                        </Tooltip>
-                      )}
-                    >
-                      <Tooltip title={label}>
-                        <Chip
-                          sx={{
-                            marginRight: '4px',
-                            fontSize: 12,
-                            lineHeight: '12px',
-                            height: 28,
-                          }}
-                          label={truncate(label, 40)}
-                          onDelete={
-                            enableReferences
-                              ? () => handleOpenCommitDelete(label)
-                              : () => deleteAlias(label)
-                          }
-                        />
-                      </Tooltip>
-                    </Security>
-                  ),
+          )
+        }
+        rightActions={(
+          <>
+            {disableSharing !== true && (
+              <StixCoreObjectSharing
+                elementId={stixDomainObject.id}
+                open={isSharingOpen}
+                variant="header"
+                handleClose={displaySharingButton ? undefined : handleCloseSharing}
+              />
+            )}
+            <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
+              <StixCoreObjectFileExport
+                scoId={stixDomainObject.id}
+                scoEntityType={entityType}
+                OpenFormComponent={StixCoreObjectFileExportButton}
+                onExportCompleted={handleExportCompleted}
+              />
+            </Security>
+            {isKnowledgeUpdater && (
+              <StixCoreObjectContainer elementId={stixDomainObject.id} />
+            )}
+            {enableQuickSubscription && (
+              <StixCoreObjectQuickSubscription
+                title={title}
+                instanceId={stixDomainObject.id}
+                instanceName={getMainRepresentative(stixDomainObject)}
+                paginationOptions={triggersPaginationOptions}
+                triggerData={triggerData}
+              />
+            )}
+            {(enableEnricher && isKnowledgeEnricher) && (
+              <StixCoreObjectEnrichment
+                onClose={handleCloseEnrichment}
+                isOpen={isEnrichmentOpen}
+                stixCoreObjectId={stixDomainObject.id}
+              />
+            )}
+            {enableEnrollPlaybook && (
+              <StixCoreObjectEnrollPlaybook
+                open={isEnrollPlaybookOpen}
+                handleClose={displayEnrollPlaybookButton ? undefined : handleCloseEnrollPlaybook}
+                stixCoreObjectId={stixDomainObject.id}
+              />
+            )}
+            {enableManageAuthorizedMembers && (
+              <FormAuthorizedMembersDialog
+                id={stixDomainObject.id}
+                owner={stixDomainObject.creators?.[0]}
+                authorizedMembers={authorizedMembersToOptions(
+                  stixDomainObject.authorized_members,
                 )}
-              </>
+                mutation={stixDomainObjectHeaderEditAuthorizedMembersMutation}
+                open={openAccessRestriction}
+                handleClose={handleCloseAccessRestriction}
+                isCanUseEnable={CAN_USE_ENTITY_TYPES.includes(stixDomainObject.entity_type)}
+                canDeactivate={true}
+              />
             )}
-            {!noAliases && (
-              <Slide
-                direction="right"
-                in={openAlias}
-                mountOnEnter={true}
-                unmountOnExit={true}
-              >
-                <div>
-                  <Formik
-                    initialValues={{ new_alias: '' }}
-                    onSubmit={onSubmitCreateAlias}
-                    validationSchema={enableReferences && !isBypassEnforcedRef ? aliasValidation(t_i18n) : null}
-                  >
-                    {({ submitForm, isSubmitting, setFieldValue, values }) => (
-                      <Form>
-                        <Field
-                          component={TextField}
-                          variant="standard"
-                          name="new_alias"
-                          autoFocus={true}
-                          placeholder={t_i18n('New alias')}
-                          sx={{
-                            margin: '4px 15px 0 10px',
-                            float: 'left',
-                          }}
-                          onChange={handleChangeNewAlias}
-                          value={newAlias}
-                          onKeyDown={(e) => {
-                            if (e.keyCode === 13) {
-                              if (enableReferences && !openCommitCreate) {
-                                return handleOpenCommitCreate();
-                              }
-                              return submitForm();
-                            }
-                            return true;
-                          }}
-                        />
-                        {enableReferences && (
-                          <CommitMessage
-                            open={openCommitCreate}
-                            submitForm={submitForm}
-                            disabled={isSubmitting}
-                            setFieldValue={setFieldValue}
-                            values={values.references}
-                            id={stixDomainObject.id}
-                          />
-                        )}
-                      </Form>
+            {displayPopoverMenu ? (
+              <PopoverMenu>
+                {({ closeMenu }) => (
+                  <Box>
+                    {disableSharing !== true && !displaySharingButton && (
+                      <StixCoreObjectMenuItemUnderEE
+                        setOpen={setIsSharingOpen}
+                        title={t_i18n('Share with an organization')}
+                        handleCloseMenu={closeMenu}
+                        needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}
+                      />
                     )}
-                  </Formik>
-                </div>
-              </Slide>
-            )}
-            {!noAliases && (
-              <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                {aliases.length > 5 ? (
-                  <IconButton
-                    color="primary"
-                    aria-label="More"
-                    onClick={handleToggleOpenAliases}
-                    size="small"
-                  >
-                    <DotsHorizontalCircleOutline fontSize="small" />
-                  </IconButton>
-                ) : (
-                  <IconButton
-                    color="primary"
-                    aria-label="Alias"
-                    onClick={handleToggleCreateAlias}
-                    size="small"
-                  >
-                    {openAlias ? (
-                      <Close fontSize="small" />
-                    ) : (
-                      <Add fontSize="small" />
+                    {enableManageAuthorizedMembers && (
+                      <StixCoreObjectMenuItemUnderEE
+                        setOpen={setOpenAccessRestriction}
+                        title={t_i18n('Manage access restriction')}
+                        handleCloseMenu={closeMenu}
+                        isDisabled={!enableManageAuthorizedMembers}
+                        needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
+                      />
                     )}
-                  </IconButton>
+                    {(enableEnricher && isKnowledgeEnricher) && (
+                      <MenuItem onClick={() => {
+                        handleOpenEnrichment();
+                        closeMenu();
+                      }}
+                      >
+                        {t_i18n('Enrichment')}
+                      </MenuItem>
+                    )}
+                    {enableEnrollPlaybook && !displayEnrollPlaybookButton && (
+                      <StixCoreObjectMenuItemUnderEE
+                        title={t_i18n('Enroll in playbook')}
+                        setOpen={setEnrollPlaybookOpen}
+                        handleCloseMenu={closeMenu}
+                        needs={[AUTOMATION]}
+                        matchAll
+                      />
+                    )}
+                    {isKnowledgeDeleter && (
+                      <MenuItem onClick={() => {
+                        handleOpenDelete();
+                        closeMenu();
+                      }}
+                      >
+                        {t_i18n('Delete')}
+                      </MenuItem>
+                    )}
+                  </Box>
                 )}
-              </Security>
+              </PopoverMenu>
+            ) : null}
+            {RelateComponent}
+            {EditComponent}
+            <DeleteComponent isOpen={openDelete} onClose={handleCloseDelete} />
+          </>
+        )}
+        leftTags={(
+          <>
+            {stixDomainObject.draftVersion && (
+              <DraftChip />
             )}
-          </div>
-        </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          {enableQuickSubscription && (
-            <StixCoreObjectSubscribers triggerData={triggerData} />
-          )}
-          {disableSharing !== true && (
+            {!noAliases && (
+              <TagsOverflow
+                items={aliases || []}
+                getKey={(label) => label}
+                getLabel={(label) => label}
+                onTagCounterClick={handleToggleOpenAliases}
+                renderTag={(label) => (
+                  <Security
+                    needs={[KNOWLEDGE_KNUPDATE]}
+                    key={label}
+                    placeholder={<Tag label={label} />}
+                  >
+                    <Tag
+                      label={label}
+                      disableTooltip
+                      onDelete={
+                        enableReferences
+                          ? () => handleOpenCommitDelete(label)
+                          : () => deleteAlias(label)
+                      }
+                    />
+                  </Security>
+                )}
+              >
+                <Button
+                  color="primary"
+                  aria-label="Alias"
+                  onClick={handleToggleOpenAliases}
+                  size="small"
+                  variant="tertiary"
+                  startIcon={openAlias ? <Close fontSize="small" /> : <Add fontSize="small" />}
+                >
+                  {t_i18n('add alias')}
+                </Button>
+              </TagsOverflow>
+            )}
+          </>
+        )}
+        rightTags={
+          disableSharing !== true && (
             <StixCoreObjectSharingList data={stixDomainObject} />
-          )}
-          {disableSharing !== true && (
-            <StixCoreObjectSharing
-              elementId={stixDomainObject.id}
-              open={isSharingOpen}
-              variant="header"
-              handleClose={displaySharingButton ? undefined : handleCloseSharing}
-            />
-          )}
-          <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
-            <StixCoreObjectFileExport
-              scoId={stixDomainObject.id}
-              scoEntityType={entityType}
-              OpenFormComponent={StixCoreObjectFileExportButton}
-              onExportCompleted={handleExportCompleted}
-            />
-          </Security>
-          {isKnowledgeUpdater && (
-            <StixCoreObjectContainer elementId={stixDomainObject.id} />
-          )}
-          {enableQuickSubscription && (
-            <StixCoreObjectQuickSubscription
-              instanceId={stixDomainObject.id}
-              instanceName={getMainRepresentative(stixDomainObject)}
-              paginationOptions={triggersPaginationOptions}
-              triggerData={triggerData}
-            />
-          )}
-          {(enableEnricher && isKnowledgeEnricher) && (
-            <StixCoreObjectEnrichment
-              onClose={handleCloseEnrichment}
-              isOpen={isEnrichmentOpen}
-              stixCoreObjectId={stixDomainObject.id}
-            />
-          )}
-          {enableEnrollPlaybook && (
-            <StixCoreObjectEnrollPlaybook
-              open={isEnrollPlaybookOpen}
-              handleClose={displayEnrollPlaybookButton ? undefined : handleCloseEnrollPlaybook}
-              stixCoreObjectId={stixDomainObject.id}
-            />
-          )}
-          {enableManageAuthorizedMembers && (
-            <FormAuthorizedMembersDialog
-              id={stixDomainObject.id}
-              owner={stixDomainObject.creators?.[0]}
-              authorizedMembers={authorizedMembersToOptions(
-                stixDomainObject.authorized_members,
-              )}
-              mutation={stixDomainObjectHeaderEditAuthorizedMembersMutation}
-              open={openAccessRestriction}
-              handleClose={handleCloseAccessRestriction}
-              isCanUseEnable={CAN_USE_ENTITY_TYPES.includes(stixDomainObject.entity_type)}
-              canDeactivate={true}
-            />
-          )}
-          {displayPopoverMenu ? (
-            <PopoverMenu>
-              {({ closeMenu }) => (
-                <Box>
-                  {disableSharing !== true && !displaySharingButton && (
-                    <StixCoreObjectMenuItemUnderEE
-                      setOpen={setIsSharingOpen}
-                      title={t_i18n('Share with an organization')}
-                      handleCloseMenu={closeMenu}
-                      needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}
-                    />
-                  )}
-                  {enableManageAuthorizedMembers && (
-                    <StixCoreObjectMenuItemUnderEE
-                      setOpen={setOpenAccessRestriction}
-                      title={t_i18n('Manage access restriction')}
-                      handleCloseMenu={closeMenu}
-                      isDisabled={!enableManageAuthorizedMembers}
-                      needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
-                    />
-                  )}
-                  {(enableEnricher && isKnowledgeEnricher) && (
-                    <MenuItem onClick={() => {
-                      handleOpenEnrichment();
-                      closeMenu();
-                    }}
-                    >
-                      {t_i18n('Enrichment')}
-                    </MenuItem>
-                  )}
-                  {enableEnrollPlaybook && !displayEnrollPlaybookButton && (
-                    <StixCoreObjectMenuItemUnderEE
-                      title={t_i18n('Enroll in playbook')}
-                      setOpen={setEnrollPlaybookOpen}
-                      handleCloseMenu={closeMenu}
-                      needs={[AUTOMATION]}
-                      matchAll
-                    />
-                  )}
-                  {isKnowledgeDeleter && (
-                    <MenuItem onClick={() => {
-                      handleOpenDelete();
-                      closeMenu();
-                    }}
-                    >
-                      {t_i18n('Delete')}
-                    </MenuItem>
-                  )}
-                </Box>
-              )}
-            </PopoverMenu>
-          ) : null}
-          {RelateComponent}
-          {EditComponent}
-          <DeleteComponent isOpen={openDelete} onClose={handleCloseDelete} />
-        </div>
-      </div>
+          )
+        }
+      />
+
       {!noAliases && (
         <Dialog
           slotProps={{ paper: { elevation: 1 } }}
