@@ -9785,6 +9785,11 @@ type Query {
   Auth log history by provider id: internal_id for DB providers, or static id for singletons (Headers, Cert).
   """
   authLogHistoryById(id: String!): [AuthLogEntry!]!
+
+  workflowDefinition(entityType: String!): WorkflowSchema
+  workflowInstance(entityId: String!): WorkflowInstance
+  allowedNextStatuses(entityId: String!): [Status!]!
+  allowedTransitions(entityId: String!): [WorkflowTransition!]!
 }
 
 type Subscription {
@@ -10734,6 +10739,8 @@ type Mutation {
   ldapProviderAdd(input: LdapInput!): AuthenticationProvider
   ldapProviderEdit(id: ID!, input: LdapInput!): AuthenticationProvider
   ldapProviderDelete(id: ID!): ID
+  workflowDefinitionSet(entityType: String!, definition: String!): EntitySetting
+  triggerWorkflowEvent(entityId: String!, eventName: String!): WorkflowTriggerResult!
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -12916,6 +12923,8 @@ type EntitySetting implements InternalObject & BasicObject {
   overview_layout_customization: [OverviewWidgetCustomization!]
   fintelTemplates(first: Int, after: ID, orderBy: FintelTemplateOrdering, orderMode: OrderingMode, search: String): FintelTemplateConnection
   requestAccessConfiguration: RequestAccessConfiguration
+  workflow_configuration: Boolean
+  workflow_id: String
 }
 
 enum EntitySettingsOrdering {
@@ -14928,6 +14937,7 @@ type DraftWorkspace implements InternalObject & BasicObject {
   validationWork: Work
   authorizedMembers: [MemberAccess!]!
   currentUserAccessRight: String
+  workflowInstance: WorkflowInstance
 }
 
 type DraftObjectsCount {
@@ -16069,4 +16079,57 @@ type AuthenticationProviderMigrationResult {
 type AvailableSecretInfo {
   provider_name: String!
   secret_name: String!
+}
+
+type WorkflowActionConfig {
+  type: String!
+  params: String
+  mode: String!
+}
+
+type WorkflowConditionConfig {
+  field: String!
+  operator: String!
+  value: String
+}
+
+type WorkflowSerializedState {
+  name: String!
+  onEnter: [WorkflowActionConfig!]
+  onExit: [WorkflowActionConfig!]
+}
+
+type WorkflowSerializedTransition {
+  from: String!
+  to: String!
+  event: String!
+  actions: [WorkflowActionConfig!]
+  conditions: [WorkflowConditionConfig!]
+}
+
+type WorkflowSchema {
+  id: ID!
+  name: String!
+  initialState: String!
+  states: [WorkflowSerializedState!]!
+  transitions: [WorkflowSerializedTransition!]!
+}
+
+type WorkflowTriggerResult {
+  success: Boolean!
+  newState: String
+  reason: String
+  status: Status
+}
+
+type WorkflowTransition {
+  event: String!
+  toState: String!
+  toStatus: Status
+}
+
+type WorkflowInstance {
+  id: ID!
+  currentState: String!
+  allowedTransitions: [WorkflowTransition!]!
 }

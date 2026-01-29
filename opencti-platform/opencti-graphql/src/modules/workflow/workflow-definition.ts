@@ -42,7 +42,7 @@ export class WorkflowDefinition<TContext extends Context = Context> {
     options?: {
       conditions?: ConditionValidator<TContext>[];
       onTransition?: SideEffect<TContext>[];
-    }
+    },
   ) {
     // Ensure states exist
     if (!this.states.has(from)) this.addState(from);
@@ -70,10 +70,10 @@ export class WorkflowDefinition<TContext extends Context = Context> {
    */
   public getTransition(
     currentState: State,
-    event: Event
+    event: Event,
   ): Transition<TContext> | undefined {
     return this.transitions.find(
-      (t) => t.from === currentState && t.event === event
+      (t) => t.from === currentState && t.event === event,
     );
   }
 
@@ -88,7 +88,7 @@ export class WorkflowDefinition<TContext extends Context = Context> {
    * Retrieves the definition (hooks, etc.) for a specific state.
    */
   public getStateDefinition(
-    state: State
+    state: State,
   ): StateDefinition<TContext> | undefined {
     return this.states.get(state);
   }
