@@ -15,6 +15,7 @@ import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA } from '../schema/stixDomainObject';
 import { externalReferences, objectLabel, RELATION_CREATED_BY, RELATION_GRANTED_TO } from '../schema/stixRefRelationship';
+import { INPUT_MARKINGS } from '../schema/general';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { FunctionalError } from '../config/errors';
 import { getDraftContext } from './draftContext';
@@ -262,7 +263,10 @@ const generateFileInputsForUpsert = async (context, user, resolvedElement, updat
       if (markingsChanged) {
         // Markings changed - update the file entry with new markings
         // Since confidence is already validated, we can update
-        const updatedFile = { ...existingFile, file_markings: newMarkings };
+        // Strip resolved INPUT_MARKINGS (objectMarking) field - it should NOT be stored in Elasticsearch
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { [INPUT_MARKINGS]: _, ...existingFileWithoutMarkings } = existingFile;
+        const updatedFile = { ...existingFileWithoutMarkings, file_markings: newMarkings };
         replacedFiles.push(updatedFile);
       }
       // If markings are the same, skip entirely
@@ -286,7 +290,15 @@ const generateFileInputsForUpsert = async (context, user, resolvedElement, updat
   if (allUploadedFiles.length > 0) {
     // Compute the base list with replaced files removed (they will be re-added with updated metadata)
     const allUploadedFileIds = new Set(allUploadedFiles.map((f) => f.id));
-    const filteredExistingFiles = existingFiles.filter((f) => !allUploadedFileIds.has(f.id));
+    // Filter existing files and strip resolved INPUT_MARKINGS (objectMarking) field
+    // This field is added during loading for STIX conversion but should NOT be stored in Elasticsearch
+    const filteredExistingFiles = existingFiles
+      .filter((f) => !allUploadedFileIds.has(f.id))
+      .map((f) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { [INPUT_MARKINGS]: _, ...fileWithoutMarkings } = f;
+        return fileWithoutMarkings;
+      });
 
     if (replacedFiles.length > 0) {
       // We have replacements - use REPLACE with the full final list
