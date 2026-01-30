@@ -36,6 +36,8 @@ import SwitchField from '../../../../components/fields/SwitchField';
 import OpenVocabField from '@components/common/form/OpenVocabField';
 import SelectField from '../../../../components/fields/SelectField';
 import MenuItem from '@mui/material/MenuItem';
+import { useNavigate } from 'react-router-dom';
+import { SecurityCoverageCreationMutation } from '@components/analyses/security_coverages/__generated__/SecurityCoverageCreationMutation.graphql';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -283,6 +285,7 @@ const securityCoveragePreselectedEntityQuery = graphql`
 
 interface SecurityCoverageFormInnerProps extends SecurityCoverageFormProps {
   preSelectedEntity: StixCoreObjectNode | null;
+  shouldRedirect?: boolean;
 }
 
 const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormInnerProps> = ({
@@ -296,10 +299,11 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
   preSelectedEntityId,
   preSelectedEntityName,
   preSelectedEntity,
+  shouldRedirect,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const [commitMutation] = useApiMutation(securityCoverageMutation);
+  const navigate = useNavigate();
 
   // Stepper state - if we have a preselected entity, start at step 0 (choose type)
   const [activeStep, setActiveStep] = useState(0);
@@ -404,6 +408,11 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
     }
   };
 
+  const [commit] = useApiMutation<SecurityCoverageCreationMutation>(
+    securityCoverageMutation,
+    undefined,
+    { successMessage: `${t_i18n('entity_Security-Coverage')} ${t_i18n('successfully created')}` },
+  );
   const onSubmit: FormikConfig<SecurityCoverageFormValues>['onSubmit'] = (
     values,
     { setSubmitting, setErrors, resetForm },
@@ -434,7 +443,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
       confidence: values.confidence,
     };
 
-    commitMutation({
+    commit({
       variables: {
         input: finalValues,
       },
@@ -447,10 +456,13 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      onCompleted: () => {
+      onCompleted: (response) => {
         setSubmitting(false);
         resetForm();
         handleClose();
+        if (response && shouldRedirect) {
+          navigate(`/dashboard/analyses/security_coverages/${response.securityCoverageAdd?.id}`);
+        }
       },
     });
   };
@@ -863,7 +875,7 @@ export const SecurityCoverageCreationForm: FunctionComponent<SecurityCoverageFor
             return <Loader variant={LoaderVariant.inElement} />;
           }
 
-          return <SecurityCoverageCreationFormInner {...props} preSelectedEntity={queryProps.stixCoreObject} />;
+          return <SecurityCoverageCreationFormInner {...props} preSelectedEntity={queryProps.stixCoreObject} shouldRedirect={true} />;
         }}
       />
     );
