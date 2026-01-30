@@ -186,12 +186,13 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
             // end region backward compatibility
           } else {
             if (isAuthenticationProviderMigrated(existingIdentifiers, LOCAL_STRATEGY_IDENTIFIER)) {
-            logApp.info('[ENV-PROVIDER][LOCAL] LocalStrategy already in database, skipping old configuration');
-            willLocalBeInDatabase = true;
-          } else {
-            logApp.info('[ENV-PROVIDER][LOCAL] LocalStrategy is about to be converted to database configuration.');
+              logApp.info('[ENV-PROVIDER][LOCAL] LocalStrategy already in database, skipping old configuration');
               willLocalBeInDatabase = true;
-            shouldRunSSOMigration = true;}
+            } else {
+              logApp.info('[ENV-PROVIDER][LOCAL] LocalStrategy is about to be converted to database configuration.');
+              willLocalBeInDatabase = true;
+              shouldRunSSOMigration = true;
+            }
           }
         }
         if (strategy === EnvStrategyType.STRATEGY_LDAP) {
