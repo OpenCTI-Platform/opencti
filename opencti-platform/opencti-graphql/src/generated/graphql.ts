@@ -15988,6 +15988,11 @@ export type MutationCityEditArgs = {
 };
 
 
+export type MutationContactUsXtmHubArgs = {
+  message: Scalars['String']['input'];
+};
+
+
 export type MutationContainerEditArgs = {
   id: Scalars['ID']['input'];
 };
@@ -43620,7 +43625,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   checkXTMHubConnectivity?: Resolver<ResolversTypes['CheckXTMHubConnectivityResponse'], ParentType, ContextType>;
   cityAdd?: Resolver<Maybe<ResolversTypes['City']>, ParentType, ContextType, RequireFields<MutationCityAddArgs, 'input'>>;
   cityEdit?: Resolver<Maybe<ResolversTypes['CityEditMutations']>, ParentType, ContextType, RequireFields<MutationCityEditArgs, 'id'>>;
-  contactUsXtmHub?: Resolver<ResolversTypes['Success'], ParentType, ContextType>;
+  contactUsXtmHub?: Resolver<ResolversTypes['Success'], ParentType, ContextType, RequireFields<MutationContactUsXtmHubArgs, 'message'>>;
   containerEdit?: Resolver<Maybe<ResolversTypes['ContainerEditMutations']>, ParentType, ContextType, RequireFields<MutationContainerEditArgs, 'id'>>;
   countryAdd?: Resolver<Maybe<ResolversTypes['Country']>, ParentType, ContextType, RequireFields<MutationCountryAddArgs, 'input'>>;
   countryEdit?: Resolver<Maybe<ResolversTypes['CountryEditMutations']>, ParentType, ContextType, RequireFields<MutationCountryEditArgs, 'id'>>;
