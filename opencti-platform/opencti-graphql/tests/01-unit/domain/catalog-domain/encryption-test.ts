@@ -26,7 +26,7 @@ describe('Encryption functions', () => {
 
       // Verify the structure is correct
       const buffer = Buffer.from(encrypted, 'base64');
-      expect(buffer[0]).toBe(0x01); // Version byte
+      expect(buffer[0]).toBe(0x02); // Version byte
       expect(buffer.length).toBeGreaterThan(256 + 1 + 16); // RSA key + version + min AES data
     });
 
@@ -38,7 +38,7 @@ describe('Encryption functions', () => {
       expect(encrypted).not.toBe(password);
 
       const buffer = Buffer.from(encrypted, 'base64');
-      expect(buffer[0]).toBe(0x01);
+      expect(buffer[0]).toBe(0x02);
       expect(buffer.length).toBeGreaterThan(256 + 1); // Still has RSA encrypted key even for empty string
     });
 
@@ -50,7 +50,7 @@ describe('Encryption functions', () => {
       expect(encrypted).not.toBe(password);
 
       const buffer = Buffer.from(encrypted, 'base64');
-      expect(buffer[0]).toBe(0x01);
+      expect(buffer[0]).toBe(0x02);
       expect(buffer.length).toBeGreaterThan(1000); // Should be at least as long as original + overhead
     });
 
@@ -62,7 +62,7 @@ describe('Encryption functions', () => {
       expect(encrypted).not.toBe(password);
 
       const buffer = Buffer.from(encrypted, 'base64');
-      expect(buffer[0]).toBe(0x01);
+      expect(buffer[0]).toBe(0x02);
     });
 
     it('should encrypt Unicode passwords', () => {
@@ -73,7 +73,7 @@ describe('Encryption functions', () => {
       expect(encrypted).not.toBe(password);
 
       const buffer = Buffer.from(encrypted, 'base64');
-      expect(buffer[0]).toBe(0x01);
+      expect(buffer[0]).toBe(0x02);
     });
 
     it('should produce different encrypted values for the same password (due to random AES key)', () => {
@@ -87,8 +87,8 @@ describe('Encryption functions', () => {
       // Both should still be valid encrypted formats
       const buffer1 = Buffer.from(encrypted1, 'base64');
       const buffer2 = Buffer.from(encrypted2, 'base64');
-      expect(buffer1[0]).toBe(0x01);
-      expect(buffer2[0]).toBe(0x01);
+      expect(buffer1[0]).toBe(0x02);
+      expect(buffer2[0]).toBe(0x02);
     });
 
     it('should handle passwords with newlines and tabs', () => {
@@ -99,7 +99,7 @@ describe('Encryption functions', () => {
       expect(encrypted).not.toBe(password);
 
       const buffer = Buffer.from(encrypted, 'base64');
-      expect(buffer[0]).toBe(0x01);
+      expect(buffer[0]).toBe(0x02);
     });
 
     it('should throw error with invalid public key', () => {
@@ -132,7 +132,7 @@ INVALID_BASE64_CONTENT!!!
       const buffer = Buffer.from(encrypted, 'base64');
 
       // Check version byte
-      expect(buffer[0]).toBe(0x01);
+      expect(buffer[0]).toBe(0x02);
 
       // Check minimum length (version + RSA encrypted key/IV + AES encrypted data + auth tag)
       expect(buffer.length).toBeGreaterThan(256 + 1 + 16); // RSA 2048 = 256 bytes, version = 1 byte, auth tag = 16 bytes
@@ -146,7 +146,7 @@ INVALID_BASE64_CONTENT!!!
         const encrypted = processPasswordConfigurationValue(password, TEST_RSA_PUBLIC_KEY);
         const buffer = Buffer.from(encrypted, 'base64');
 
-        expect(buffer[0]).toBe(0x01); // Version byte
+        expect(buffer[0]).toBe(0x02); // Version byte
         expect(buffer.length).toBeGreaterThan(256 + 1 + 16); // Consistent minimum size
       }
     });
