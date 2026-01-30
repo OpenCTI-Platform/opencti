@@ -9,6 +9,7 @@ import ItemScore from '../../../../components/ItemScore';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
 import Tag from '../../../../components/common/tag/Tag';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 const organizationDetailsFragment = graphql`
   fragment OrganizationDetails_organization on Organization {
@@ -41,10 +42,12 @@ const OrganizationDetails: FunctionComponent<OrganizationDetailsComponentProps> 
             <Label>
               {t_i18n('Organization type')}
             </Label>
-            <Tag
-              color="#e59889"
-              label={organization.x_opencti_organization_type || t_i18n('Unknown')}
-            />
+            <FieldOrEmpty source={organization.x_opencti_organization_type}>
+              <Tag
+                color="#e59889"
+                label={organization.x_opencti_organization_type}
+              />
+            </FieldOrEmpty>
             <Label
               sx={{ mt: 2 }}
             >
