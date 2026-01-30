@@ -4,14 +4,14 @@ import { screen } from '@testing-library/react';
 import testRender from '../../../../utils/tests/test-render';
 import TokenResultView from './TokenResultView';
 
-// Mock ItemCopy since we don't need to test its internal behavior here, but we want to know it renders the token
-vi.mock('../../../../components/ItemCopy', () => {
-  return {
-    default: ({ content }: { content: string }) => <div data-testid="item-copy">{content}</div>,
-  };
-});
-
 describe('Component: TokenResultView', () => {
+  // Setup clipboard mock
+  Object.assign(navigator, {
+    clipboard: {
+      writeText: vi.fn(),
+    },
+  });
+
   const onClose = vi.fn();
   const token = 'secret-token-123';
 
@@ -25,25 +25,37 @@ describe('Component: TokenResultView', () => {
 
     expect(screen.getByText('Token generated successfully')).toBeInTheDocument();
     expect(screen.getByText(/Make sure to copy/)).toBeInTheDocument();
-    expect(screen.getByTestId('item-copy')).toHaveTextContent(token);
+    // ItemCopy renders the token
+    expect(screen.getByText(token)).toBeInTheDocument();
   });
 
-  it('should show close button and call onClose when clicked', async () => {
-    const { user } = testRender(
+  it('should focus copy button on mount', async () => {
+    testRender(
       <TokenResultView
         token={token}
         onClose={onClose}
       />,
     );
 
+    // Verify focus is on the Copy button (from ItemCopy)
+    const copyButton = screen.getByRole('button', { name: 'Copy' });
+    expect(copyButton).toBeInTheDocument();
+    expect(copyButton).toHaveFocus();
+
+    // Verify Close button exists but is not focused
     const closeButton = screen.getByRole('button', { name: 'Close' });
     expect(closeButton).toBeInTheDocument();
+    expect(closeButton).not.toHaveFocus();
+  });
 
-    // Check if it has focus (AC 3: focus moved to copy button... wait, my implementation focuses close button)
-    // My implementation: closeButtonRef.current.focus()
-    // Let's verify that
-    expect(closeButton).toHaveFocus();
-
+  it('should call onClose when close button clicked', async () => {
+    const { user } = testRender(
+      <TokenResultView
+        token={token}
+        onClose={onClose}
+      />,
+    );
+    const closeButton = screen.getByRole('button', { name: 'Close' });
     await user.click(closeButton);
     expect(onClose).toHaveBeenCalled();
   });

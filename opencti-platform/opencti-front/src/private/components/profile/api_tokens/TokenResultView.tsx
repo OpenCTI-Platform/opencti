@@ -15,16 +15,8 @@ const TokenResultView: FunctionComponent<TokenResultViewProps> = ({
   onClose,
 }) => {
   const { t_i18n } = useFormatter();
-  const closeButtonRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    // Focus the close button for accessibility since it's the main action now
-    // Or focus the copy button if possible? ItemCopy doesn't expose ref.
-    // Focusing the close button ensures the user doesn't get lost.
-    if (closeButtonRef.current) {
-      closeButtonRef.current.focus();
-    }
-  }, []);
+  // No explicit focus on Close button anymore, handled by ItemCopy focusOnMount
+  // useEffect(() => { ... }, []);
 
   return (
     <div style={{ marginTop: 20 }}>
@@ -47,13 +39,13 @@ const TokenResultView: FunctionComponent<TokenResultViewProps> = ({
       }}
       >
         <div style={{ flexGrow: 1, marginRight: 10, overflow: 'hidden' }}>
-          <ItemCopy content={token} variant="inLine" />
+          <ItemCopy content={token} variant="inLine" focusOnMount={true} />
         </div>
       </div>
 
       <div style={{ float: 'right', marginTop: 20 }}>
         <Button
-          ref={closeButtonRef}
+          // ref={closeButtonRef}
           variant="contained"
           color="primary"
           onClick={onClose}
