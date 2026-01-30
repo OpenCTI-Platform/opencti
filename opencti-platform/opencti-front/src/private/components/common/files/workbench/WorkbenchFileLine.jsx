@@ -24,6 +24,7 @@ import useAuth from '../../../../../utils/hooks/useAuth';
 import ItemMarkings from '../../../../../components/ItemMarkings';
 import DeleteDialog from '../../../../../components/DeleteDialog';
 import useDeletion from '../../../../../utils/hooks/useDeletion';
+import FieldOrEmpty from '../../../../../components/FieldOrEmpty';
 
 const styles = (theme) => ({
   itemNested: {
@@ -212,9 +213,11 @@ const WorkbenchFileLineComponent = ({ classes, file, dense, directDownload, nest
                 <div className={classes.bodyItem} style={inlineStyles.name}>
                   {file.name.replace('.json', '')}
                 </div>
-                <div className={classes.bodyItem} style={inlineStyles.creator_name}>
-                  {file.metaData.creator?.name || t_i18n('Unknown')}
-                </div>
+                <FieldOrEmpty source={file.metaData.creator?.name}>
+                  <div className={classes.bodyItem} style={inlineStyles.creator_name}>
+                    {file.metaData.creator?.name}
+                  </div>
+                </FieldOrEmpty>
                 <div className={classes.bodyItem} style={inlineStyles.labels}>
                   {file.metaData.labels_text ? file.metaData.labels_text.split(';').map((label, index) => (
                     <Chip
