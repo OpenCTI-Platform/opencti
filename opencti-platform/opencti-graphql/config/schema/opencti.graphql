@@ -1753,8 +1753,8 @@ type TokenGenerated {
 }
 
 input UserTokenAddInput {
+  name: String!
   duration: TokenDuration!
-  description: String
 }
 
 type User implements BasicObject & InternalObject {

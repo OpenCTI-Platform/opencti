@@ -31,7 +31,7 @@ describe('User Token behavior', () => {
   it('should generate a new API token', async () => {
     // 1. Generate Token
     const input = {
-      description: 'Integration Test Token',
+      name: 'Integration Test Token',
       duration: 'Runs_30', // Need to check valid duration enum values. 
       // user-domain.ts used TokenDuration enum logic.
       // Schema likely has 'Days_30' etc. 
@@ -49,7 +49,7 @@ describe('User Token behavior', () => {
       query: TOKEN_ADD_MUTATION,
       variables: {
         input: {
-          description: 'Integration Test Token',
+          name: 'Integration Test Token',
           duration: 'DAYS_30'
         }
       }

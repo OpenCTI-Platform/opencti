@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import TokenCreationDrawer from './api_tokens/TokenCreationDrawer';
 import * as PropTypes from 'prop-types';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
@@ -211,6 +212,7 @@ const ProfileOverviewComponent = (props) => {
   const objectOrganization = convertOrganizations(me);
   const [display2FA, setDisplay2FA] = useState(false);
   const hasKnowledgeAccess = useGranted([KNOWLEDGE]);
+  const [displayTokenCreation, setDisplayTokenCreation] = useState(false);
 
   const fieldNames = [
     'name',
@@ -275,6 +277,10 @@ const ProfileOverviewComponent = (props) => {
 
   return (
     <div className={classes.container}>
+      <TokenCreationDrawer
+        open={displayTokenCreation}
+        onClose={() => setDisplayTokenCreation(false)}
+      />
       <Dialog
         open={display2FA}
         slotProps={{ paper: { elevation: 1 } }}
@@ -586,14 +592,15 @@ const ProfileOverviewComponent = (props) => {
             {t('OpenCTI version')}
           </Typography>
           <pre>{about.version}</pre>
-          <Typography
-            variant="body1"
-            style={{ marginTop: 16 }}
-          >
-            {t('API Token management has been moved to the "Tokens" tab.')}
-          </Typography>
-          {isPlaygroundEnable() && (
-            <div style={{ display: 'flex', justifyContent: 'end', marginTop: 16 }}>
+          <div style={{ display: 'flex', justifyContent: 'end', marginTop: 16, gap: 10 }}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => setDisplayTokenCreation(true)}
+            >
+              {t('Generate Token')}
+            </Button>
+            {isPlaygroundEnable() && (
               <Button
                 variant="contained"
                 color="primary"
@@ -603,8 +610,8 @@ const ProfileOverviewComponent = (props) => {
               >
                 {t('Playground')}
               </Button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </Paper>
       <ProfileLocalStorage />

@@ -81,7 +81,7 @@ import { generateSecureToken } from '../../utils/security';
 import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../../database/utils';
 
 export const addUserToken = async (context: AuthContext, user: AuthUser, input: UserTokenAddInput) => {
-  const { duration, description } = input;
+  const { duration, name } = input;
   let expires_at = null;
   if (duration && duration !== TokenDuration.Unlimited) {
     const durationDays: Record<string, number> = {
@@ -102,7 +102,7 @@ export const addUserToken = async (context: AuthContext, user: AuthUser, input: 
 
   const newToken = {
     id: tokenId,
-    name: description || 'API Token',
+    name,
     hash,
     created_at: now,
     expires_at,
@@ -123,7 +123,7 @@ export const addUserToken = async (context: AuthContext, user: AuthUser, input: 
       entity_type: ENTITY_TYPE_USER,
       input: {
         duration,
-        description,
+        name,
         token_id: tokenId,
       },
     },

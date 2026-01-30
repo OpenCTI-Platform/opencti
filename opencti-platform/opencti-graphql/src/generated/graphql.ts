@@ -34152,8 +34152,8 @@ export type UserStatus = {
 };
 
 export type UserTokenAddInput = {
-  description?: InputMaybe<Scalars['String']['input']>;
   duration: TokenDuration;
+  name: Scalars['String']['input'];
 };
 
 export enum UsersOrdering {

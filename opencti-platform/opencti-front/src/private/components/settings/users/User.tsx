@@ -421,9 +421,6 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                   {t_i18n('Token')}
                 </Typography>
                 <div className="clearfix" />
-                <Typography variant="body2" style={{ padding: theme.spacing(1) }}>
-                  {t_i18n('API Token management has been moved to the "Tokens" tab.')}
-                </Typography>
               </Grid>
               {!isServiceAccount && (
                 <>
