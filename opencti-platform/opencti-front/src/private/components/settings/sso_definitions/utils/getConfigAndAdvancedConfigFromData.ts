@@ -55,7 +55,9 @@ export const getSSOConfigList = (strategy: string) => {
 
 export const getAdvancedConfigFromData = (config: configType, strategy: string): ConfigurationTypeInput[] => {
   const configKeys = getSSOConfigList(strategy);
-  return config.filter((item) => !configKeys.includes(item.key));
+  return config
+    .filter((item) => !configKeys.includes(item.key))
+    .map((item) => item.type === 'array' ? ({ ...item, value: JSON.parse(item.value).join(',') }) : item);
 };
 
 export const getConfigFromData = (config: configType, strategy: string): ConfigurationTypeInput[] => {

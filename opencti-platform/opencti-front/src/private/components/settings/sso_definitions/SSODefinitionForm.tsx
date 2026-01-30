@@ -143,6 +143,8 @@ const validationSchemaConfiguration = (selectedStrategy: string, t_i18n: (s: str
   }
 };
 
+type ConfigurationType = { key: string; value: string; type: string };
+
 const SSODefinitionForm = ({
   data,
   onCancel,
@@ -329,6 +331,10 @@ const SSODefinitionForm = ({
     if (onSubmitField) onSubmitField(field, value);
   };
 
+  const formatArrayValues = (conf: ConfigurationType[]) => {
+    return conf.map((item) => item.type === 'array' ? ({ ...item, value: JSON.stringify(item.value.split(',')) }) : item);
+  };
+
   return (
     <Formik
       enableReinitialize={!updateField}
@@ -411,7 +417,7 @@ const SSODefinitionForm = ({
                     {form.values.advancedConfigurations
                       && form.values.advancedConfigurations.map(
                         (
-                          conf: { key: string; value: string; type: string },
+                          conf: ConfigurationType,
                           index: number,
                         ) => (
                           <div
@@ -426,7 +432,10 @@ const SSODefinitionForm = ({
                             <Field
                               component={TextField}
                               variant="standard"
-                              onSubmit={() => updateField('advancedConfigurations', form.values.advancedConfigurations)}
+                              onSubmit={() => {
+                                const newValues = formatArrayValues(form.values.advancedConfigurations);
+                                updateField('advancedConfigurations', newValues);
+                              }}
                               name={`advancedConfigurations[${index}].key`}
                               label={t_i18n('Key (in passport)')}
                               containerstyle={{ width: '20%' }}
@@ -434,7 +443,10 @@ const SSODefinitionForm = ({
                             <Field
                               component={TextField}
                               variant="standard"
-                              onSubmit={() => updateField('advancedConfigurations', form.values.advancedConfigurations)}
+                              onSubmit={() => {
+                                const newValues = formatArrayValues(form.values.advancedConfigurations);
+                                updateField('advancedConfigurations', newValues);
+                              }}
                               name={`advancedConfigurations[${index}].value`}
                               label={t_i18n('Value (in IDP)')}
                               containerstyle={{ width: '20%' }}
@@ -442,7 +454,10 @@ const SSODefinitionForm = ({
                             <Field
                               component={SelectField}
                               variant="standard"
-                              onSubmit={() => updateField('advancedConfigurations', form.values.advancedConfigurations)}
+                              onSubmit={() => {
+                                const newValues = formatArrayValues(form.values.advancedConfigurations);
+                                updateField('advancedConfigurations', newValues);
+                              }}
                               name={`advancedConfigurations[${index}].type`}
                               label={t_i18n('Field type')}
                               containerstyle={{ width: '20%' }}

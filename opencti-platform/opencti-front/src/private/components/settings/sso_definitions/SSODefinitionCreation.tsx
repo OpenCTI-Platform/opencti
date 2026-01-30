@@ -88,9 +88,11 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
 
     values.advancedConfigurations.forEach((conf) => {
       if (conf.key && conf.value && conf.type) {
+        let currentValue = conf.value;
+        if (conf.type === 'array') currentValue = JSON.stringify(conf.value.split(','));
         configuration.push({
           key: conf.key,
-          value: conf.value,
+          value: currentValue,
           type: conf.type,
         });
       }
