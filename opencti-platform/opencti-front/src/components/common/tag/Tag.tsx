@@ -3,7 +3,7 @@ import { Chip, ChipProps, SxProps, Theme, Tooltip, alpha, lighten, useTheme } fr
 import React, { CSSProperties, ReactElement } from 'react';
 
 interface TagProps extends Omit<ChipProps, 'color'> {
-  label?: string | ReactElement;
+  label?: string | number | ReactElement | null;
   color?: string;
   onClick?: (e: React.MouseEvent) => void;
   onDelete?: (e: React.MouseEvent) => void;

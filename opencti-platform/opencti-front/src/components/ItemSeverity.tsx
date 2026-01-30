@@ -4,7 +4,7 @@ import Tag from '@common/tag/Tag';
 import type { Theme } from './Theme';
 
 interface ItemSeverityProps {
-  label: string;
+  label?: string | null;
   severity?: string | null;
   variant?: 'inList' | 'high';
 }
