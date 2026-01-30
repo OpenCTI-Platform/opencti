@@ -337,9 +337,8 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
               // SAML Logout function
               logApp.info(`[ENV-PROVIDER][SAML] Logout done for ${profile}`);
             });
-            samlStrategy.logout_remote = samlOptions.logout_remote;
             passport.use(providerRef, samlStrategy);
-            PROVIDERS.push({ name: providerName, type: AuthType.AUTH_SSO, strategy, provider: providerRef });
+            PROVIDERS.push({ name: providerName, type: AuthType.AUTH_SSO, strategy, provider: providerRef, logout_remote: mappedConfig.logout_remote });
             // end region backward compatibility
           } else {
             if (isAuthenticationProviderMigrated(existingIdentifiers, providerRef)) {
@@ -376,7 +375,7 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
                 }
                 // endregion
                 const openIdScope = R.uniq(openIdScopes).join(' ');
-                const options = { logout_remote: mappedConfig.logout_remote, client, passReqToCallback: true,
+                const options = { client, passReqToCallback: true,
                   params: { scope: openIdScope, ...(mappedConfig.audience && { audience: mappedConfig.audience }),
                   } };
                 const debugCallback = (message, meta) => logApp.info(message, meta);
@@ -448,7 +447,6 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
                     done({ message: 'Restricted access, ask your administrator' });
                   }
                 });
-                openIDStrategy.logout_remote = options.logout_remote;
                 logApp.debug('[ENV-PROVIDER][OPENID] logout remote options', options);
                 openIDStrategy.logout = (_, callback) => {
                   const isSpecificUri = isNotEmptyField(config.logout_callback_url);
@@ -462,7 +460,7 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
                   }
                 };
                 passport.use(providerRef, openIDStrategy);
-                PROVIDERS.push({ name: providerName, type: AuthType.AUTH_SSO, strategy, provider: providerRef });
+                PROVIDERS.push({ name: providerName, type: AuthType.AUTH_SSO, strategy, provider: providerRef, logout_remote: mappedConfig.logout_remote });
               }).catch((err) => {
                 logApp.error('[ENV-PROVIDER][OPENID] Error initializing authentication provider', { cause: err, provider: providerRef });
               });
