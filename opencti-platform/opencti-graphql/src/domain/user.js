@@ -91,6 +91,7 @@ import { doYield } from '../utils/eventloop-utils';
 import { sanitizeUser } from '../utils/templateContextSanitizer';
 import { safeRender } from '../utils/safeEjs.client';
 import { totp } from '../utils/totp';
+import { hashSHA256 } from '../utils/hash';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -1642,8 +1643,7 @@ export const authenticateUserByToken = async (context, req, token) => {
 
   // New auth: Check if token matches a hashed token (O(1) lookup)
   if (token.startsWith('flgrn_octi_tkn_')) {
-    const hashedFn = (await import('../utils/hash')).hashSHA256;
-    const hashedToken = hashedFn(token);
+    const hashedToken = hashSHA256(token);
     user = platformUsers.get(hashedToken);
 
     if (user) {
@@ -1651,12 +1651,17 @@ export const authenticateUserByToken = async (context, req, token) => {
       // Although we found the user, we need to ensure the token hasn't expired
       const userTokens = user.api_tokens || [];
       const matchingToken = userTokens.find((t) => t.hash === hashedToken);
-      if (matchingToken && matchingToken.expires_at) {
-        const now = new Date();
-        const expiresAt = new Date(matchingToken.expires_at);
-        if (now > expiresAt) {
-          throw FunctionalError('Token expired');
+      if (matchingToken) {
+        if (matchingToken.expires_at) {
+          const now = new Date();
+          const expiresAt = new Date(matchingToken.expires_at);
+          if (now >= expiresAt) {
+            throw FunctionalError('Token expired');
+          }
         }
+      } else {
+        // Token hash found in index but token object missing from user profile (Revoked/Stale)
+        user = undefined;
       }
     }
   } else {

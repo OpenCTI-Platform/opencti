@@ -142,4 +142,52 @@ describe('User Domain - Authentication', () => {
     await expect(authenticateUserByToken(context, mockReq, 'invalid-uuid'))
       .rejects.toThrowError('Cannot identify user with token');
   });
+
+  // Story 2.3 Verification
+  it('should reject token at exact expiration time (Boundary)', async () => {
+    // Current time equals expires_at
+    const boundaryTokenValue = 'flgrn_octi_tkn_boundary';
+    const boundaryHash = hashSHA256(boundaryTokenValue);
+    const boundaryUser = {
+      ...modernUser, id: 'boundary-user', api_tokens: [{
+        id: 'boundary',
+        hash: boundaryHash,
+        expires_at: new Date().toISOString(), // Expires NOW
+      }],
+    };
+
+    // Mock update
+    const usersMap = new Map();
+    usersMap.set(boundaryHash, boundaryUser);
+    vi.spyOn(Cache, 'getEntitiesMapFromCache').mockResolvedValue(usersMap);
+
+    await expect(authenticateUserByToken(context, mockReq, boundaryTokenValue))
+      .rejects.toThrowError('Token expired');
+  });
+
+  it('should reject revoked token (valid hash but removed from profile)', async () => {
+    const revokedTokenValue = 'flgrn_octi_tkn_revoked';
+    const revokedHash = hashSHA256(revokedTokenValue);
+
+    // Scenario: Token hash is in cache index (stale index?) OR just not found.
+    // If logic is "Find user by hash -> Check if token is in user.api_tokens", verify that flow.
+    // If logic is "Find user by hash -> User object is fresh", then if token is gone from user.api_tokens, it fails.
+
+    const userWithRevoked = { ...modernUser, api_tokens: [] }; // Token removed from list
+    const usersMap = new Map();
+    usersMap.set(revokedHash, userWithRevoked); // Index still points to user, but user data is updated
+    vi.spyOn(Cache, 'getEntitiesMapFromCache').mockResolvedValue(usersMap);
+
+    // Should fail because find in api_tokens returns undefined
+    // Current implementation: if (matchingToken && matchingToken.expires_at)...
+    // Wait, if matchingToken is not found, what happens?
+    // It proceeds to "if (user) return internalAuthenticateUser".
+    // This is a SECURITY ISSUE if the hash index exists but the token is gone from the list.
+    // The previous implementation loop checked `userTokens.find`.
+    // The new O(1) implementation finds the user.
+    // We must ensure that we strictly match the token in the list.
+
+    await expect(authenticateUserByToken(context, mockReq, revokedTokenValue))
+      .rejects.toThrowError('Cannot identify user with token'); // Logic check needed
+  });
 });
