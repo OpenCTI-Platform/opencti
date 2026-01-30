@@ -1,33 +1,30 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { graphql, useFragment } from 'react-relay';
+import { MoreVertOutlined } from '@mui/icons-material';
+import { ListItemButton, Stack, Typography } from '@mui/material';
+import Box from '@mui/material/Box';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { MoreVertOutlined } from '@mui/icons-material';
-import { AutoFix } from 'mdi-material-ui';
 import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
-import { ListItemButton, Stack } from '@mui/material';
-import Box from '@mui/material/Box';
-import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
-import { SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines_data$data } from './__generated__/SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines_data.graphql';
-import { SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine_node$key } from './__generated__/SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine_node.graphql';
-import { DraftChip, getDraftModeColor } from '../draft/DraftChip';
+import makeStyles from '@mui/styles/makeStyles';
+import { AutoFix } from 'mdi-material-ui';
+import { graphql, useFragment } from 'react-relay';
+import { Link } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
-import ItemConfidence from '../../../../components/ItemConfidence';
-import StixCoreRelationshipPopover from './StixCoreRelationshipPopover';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import ItemIcon from '../../../../components/ItemIcon';
-import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemEntityType from '../../../../components/ItemEntityType';
+import ItemIcon from '../../../../components/ItemIcon';
 import { DataColumns } from '../../../../components/list_lines';
 import type { Theme } from '../../../../components/Theme';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import Security from '../../../../utils/Security';
+import { DraftChip, getDraftModeColor } from '../draft/DraftChip';
+import { SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine_node$key } from './__generated__/SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine_node.graphql';
+import { SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines_data$data } from './__generated__/SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines_data.graphql';
 import {
   SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesPaginationQuery$variables,
 } from './__generated__/SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesPaginationQuery.graphql';
+import StixCoreRelationshipPopover from './StixCoreRelationshipPopover';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -636,7 +633,7 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine = ({
         component={Link}
         to={link}
       >
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <ListItemIcon sx={{ minWidth: '40px' }}>
           <ItemIcon type={data.entity_type} isReversed={isReversed} color={data.draftVersion ? draftColor : null} />
         </ListItemIcon>
         <ListItemText
@@ -664,10 +661,12 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine = ({
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                <span className={classes.bodyItemText}>
-                  {element.representative?.main}
+                <Stack direction="row" gap={0.5} alignItems="center" className={classes.bodyItemText}>
+                  <Tooltip title={element.representative?.main}>
+                    <Typography fontSize={13}>{element.representative?.main}</Typography>
+                  </Tooltip>
                   {element.draftVersion && (<DraftChip />)}
-                </span>
+                </Stack>
               </div>
               <div
                 className={classes.bodyItem}
@@ -676,24 +675,6 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine = ({
                 <span className={classes.bodyItemText}>
                   {fsd(data.created_at)}
                 </span>
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.confidence.width }}
-              >
-                <ItemConfidence
-                  confidence={data.confidence}
-                  entityType={data.entity_type}
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.markings.width }}
-              >
-                <ItemMarkings
-                  markingDefinitions={data.objectMarking ?? []}
-                  limit={1}
-                />
               </div>
             </Stack>
           )}
