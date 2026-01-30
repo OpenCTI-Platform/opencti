@@ -12,7 +12,6 @@ import { OrderMode, PaginationOptions } from '../../../components/list_lines';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { GroupsLinesPaginationQuery$data } from './groups/__generated__/GroupsLinesPaginationQuery.graphql';
-import AccessesMenu from './AccessesMenu';
 import { QueryRenderer } from '../../../relay/environment';
 
 const useStyles = makeStyles<Theme>(() => ({
@@ -168,7 +167,6 @@ const Groups = () => {
   return (
     <div className={classes.container} data-testid="groups-settings-page">
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Groups'), current: true }]} />
-      <AccessesMenu />
       {groupState.view === 'lines' ? renderLines(paginationOptions) : ''}
     </div>
   );
