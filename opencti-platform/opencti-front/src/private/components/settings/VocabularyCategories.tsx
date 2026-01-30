@@ -1,6 +1,5 @@
 import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
-import Chip from '@mui/material/Chip';
 import ListLines from '../../../components/list_lines/ListLines';
 import { useFormatter } from '../../../components/i18n';
 import LabelsVocabulariesMenu from './LabelsVocabulariesMenu';
@@ -9,6 +8,8 @@ import ListLinesContent from '../../../components/list_lines/ListLinesContent';
 import { VocabularyCategoryLine, VocabularyCategoryLineDummy } from './attributes/VocabularyCategoryLine';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import TagsOverflow from '../../../components/common/tag/TagsOverflow';
+import Tag from '@common/tag/Tag';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -16,12 +17,6 @@ const useStyles = makeStyles(() => ({
   container: {
     margin: 0,
     padding: '0 200px 50px 0',
-  },
-  label: {
-    fontSize: 12,
-    height: 20,
-    float: 'left',
-    marginRight: 7,
   },
 }));
 
@@ -44,17 +39,15 @@ const VocabularyCategories = () => {
         width: '20%',
         isSortable: false,
         render: (node: VocabularyDefinition) => (
-          <>
-            {node.entity_types.map((type) => (
-              <Chip
-                key={type}
-                classes={{ root: classes.label }}
-                variant="outlined"
-                label={t_i18n(`entity_${type}`)}
-                color="primary"
-              />
-            ))}
-          </>
+          <TagsOverflow
+            items={node.entity_types || []}
+            getKey={(vocab) => vocab}
+            getLabel={(vocab) => vocab}
+            renderTag={(vocab) => (
+              <Tag label={vocab} />
+            )}
+          />
+
         ),
       },
       description: {

@@ -36,6 +36,8 @@ import Tag from '../common/tag/Tag';
 import { resolveLink } from '../../utils/Entity';
 import { typesWithNoAnalysesTab } from '../../utils/hooks/useAttributes';
 import { useNavigate } from 'react-router-dom';
+import TagsOverflow from '../common/tag/TagsOverflow';
+import { VocabularyDefinition } from '../../utils/hooks/useVocabularyCategory';
 
 const chipStyle: CSSProperties = {
   fontSize: '12px',
@@ -368,32 +370,15 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Used in',
     percentWidth: 20,
     isSortable: false,
-    render: (data, { t_i18n }) => (
-      <>
-        {data.category.entity_types?.map((type: string) => (
-          <Tooltip key={`entity_${type}`} title={t_i18n(`entity_${type}`)}>
-            <div
-              style={{
-                float: 'left',
-                marginRight: 7,
-                overflow: 'hidden',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              <Chip
-                key={type}
-                style={{
-                  fontSize: 12,
-                  height: 20,
-                }}
-                variant="outlined"
-                label={t_i18n(`entity_${type}`)}
-                color="primary"
-              />
-            </div>
-          </Tooltip>
-        ))}
-      </>
+    render: (data: { category: VocabularyDefinition }, { t_i18n }) => (
+      <TagsOverflow
+        items={data.category.entity_types || []}
+        getKey={(entityType) => entityType}
+        getLabel={(entityType) => t_i18n(`entity_${entityType}`)}
+        renderTag={(entityType) => (
+          <Tag label={t_i18n(`entity_${entityType}`)} />
+        )}
+      />
     ),
   },
   event_types: {
