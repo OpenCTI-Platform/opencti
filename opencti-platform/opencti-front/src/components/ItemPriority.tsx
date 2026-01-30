@@ -14,6 +14,9 @@ const ItemPriority: FunctionComponent<ItemPriorityProps> = ({
   priority,
 }) => {
   const theme = useTheme<Theme>();
+  if (!priority) {
+    return <>-</>;
+  }
 
   let priorityColor = theme.palette.severity.info;
   switch (priority) {
