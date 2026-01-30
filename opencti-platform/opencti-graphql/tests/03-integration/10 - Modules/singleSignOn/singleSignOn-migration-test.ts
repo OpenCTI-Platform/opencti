@@ -5,7 +5,7 @@ import { deleteSingleSignOn } from '../../../../src/modules/singleSignOn/singleS
 import { EnvStrategyType, MIGRATED_STRATEGY } from '../../../../src/modules/singleSignOn/providers-configuration';
 
 describe('Migration of SSO environment test coverage', () => {
-  describe('Dry run of SAML migrations', () => {
+  describe('Dry run of LOCAL migrations', () => {
     it('should default configuration with only local works', async () => {
       const configuration = {
         local: {
@@ -19,7 +19,24 @@ describe('Migration of SSO environment test coverage', () => {
       expect(result[0].enabled).toBeTruthy();
       expect(result.length).toBe(1);
     });
+    it('should local disabled works', async () => {
+      const configuration = {
+        local: {
+          strategy: 'LocalStrategy',
+          config: {
+            disabled: true,
+          },
+        },
+      };
 
+      const result = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
+      expect(result[0].strategy).toBe('LocalStrategy');
+      expect(result[0].name).toMatch(/local-*/);
+      expect(result[0].enabled).toBeFalsy();
+      expect(result.length).toBe(1);
+    });
+  });
+  describe('Dry run of SAML migrations', () => {
     it('should SAML disabled configuration works', async () => {
       const configuration = {
         saml_minimal: {
