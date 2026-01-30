@@ -485,6 +485,9 @@ export const getConnectorQueueSize = async (context, user, connectorId) => {
     metricsCache.set('cached_metrics', stats);
   }
   const targetQueues = stats.queues.filter((queue) => queue.name.includes(connectorId));
+  if (targetQueues.length === 1) {
+    return targetQueues[0].messages ?? 0;
+  }
   return targetQueues.length > 0 ? targetQueues.reduce((a, b) => (a.messages ?? 0) + (b.messages ?? 0)) : 0;
 };
 export const getBestBackgroundConnectorId = async (context, user) => {
