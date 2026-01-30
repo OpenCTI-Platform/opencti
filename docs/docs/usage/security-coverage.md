@@ -57,7 +57,7 @@ from one of the compatible entities, via a connected OpenAEV instance.
 In order to enable this feature, you must first ensure the following items:
 
 * An active OpenAEV instance, [here is the dedicated documentation](https://docs.openaev.io/)
-* That same instance must be configured as an Enrichment Connector ([see the specific documentation](https://docs.openaev.io/latest/usage/xtm_suite_connector/))
+* That same instance must be configured as an Enrichment Connector ([see the specific documentation](https://docs.openaev.io/latest/usage/xtm-suite-connector/))
 
 When the above is completed, you should see OpenAEV being listed as an Enrichment Connector in **Data > Ingestion** :
 
