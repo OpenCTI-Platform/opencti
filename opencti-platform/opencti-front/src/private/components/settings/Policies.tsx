@@ -41,6 +41,7 @@ import type { Theme } from '../../../components/Theme';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { FieldOption } from '../../../utils/field';
 import Card from '../../../components/common/card/Card';
+import useHelper from '../../../utils/hooks/useHelper';
 
 const PoliciesFragment = graphql`
   fragment Policies on Settings {
@@ -136,6 +137,9 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Policies | Security | Settings'));
+
+  const { isFeatureEnable } = useHelper();
+  const isUsersVisibilityFeatureEnable = isFeatureEnable('USERS_VISIBILITY');
 
   const handleSubmitField = (name: string, value: string | string[] | FieldOption | null) => {
     policiesValidation()

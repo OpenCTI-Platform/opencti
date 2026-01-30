@@ -1,29 +1,19 @@
-import React, { FunctionComponent, useCallback, useEffect, useState } from 'react';
-import { createRefetchContainer, graphql, RelayRefetchProp } from 'react-relay';
-import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
 import ConnectorPopover from '@components/data/connectors/ConnectorPopover';
 import ConnectorStatusChip from '@components/data/connectors/ConnectorStatusChip';
 import UpdateIcon from '@mui/icons-material/Update';
-import { ListItemButton } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@common/button/Button';
-import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import { ListItemButton, Stack } from '@mui/material';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Paper from '@mui/material/Paper';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
+import Grid from '@mui/material/Grid';
 import { useTheme } from '@mui/styles';
 import { InformationOutline } from 'mdi-material-ui';
-import React, { FunctionComponent, useCallback, useEffect, useMemo, useState } from 'react';
-import { createRefetchContainer, graphql, RelayRefetchProp } from 'react-relay';
 import { Link } from 'react-router-dom';
 import { interval } from 'rxjs';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
@@ -58,6 +48,10 @@ import TitleMainEntity from '../../../../components/common/typography/TitleMainE
 import Label from '../../../../components/common/label/Label';
 import Tag from '../../../../components/common/tag/Tag';
 import ConnectorWorks, { connectorWorksQuery } from './ConnectorWorks';
+import { graphql } from 'relay-runtime';
+import { FunctionComponent, useCallback, useEffect, useMemo, useState } from 'react';
+import { ListItemButton, Stack, Typography } from '@mui/material';
+import { createRefetchContainer, RelayRefetchProp } from 'react-relay';
 
 // Type extension for organization node with authorized_authorities
 interface OrganizationNodeWithAuthorities {
@@ -596,7 +590,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                   {t_i18n('Next run')}
                 </Label>
                 {connector.connector_info && (
-                // eslint-disable-next-line no-nested-ternary
+
                   connector.connector_info.run_and_terminate ? (
                     <Typography variant="body1" gutterBottom={true}>
                       {t_i18n('External schedule')}

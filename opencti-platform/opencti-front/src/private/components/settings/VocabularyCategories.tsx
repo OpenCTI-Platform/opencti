@@ -1,13 +1,16 @@
-import React from 'react';
-import makeStyles from '@mui/styles/makeStyles';
-import ListLines from '../../../components/list_lines/ListLines';
+import React, { useEffect } from 'react';
+import { useTheme } from '@mui/material';
 import { useFormatter } from '../../../components/i18n';
 import LabelsVocabulariesMenu from './LabelsVocabulariesMenu';
 import { useVocabularyCategoryAsQuery, VocabularyDefinition } from '../../../utils/hooks/useVocabularyCategory';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import TagsOverflow from '../../../components/common/tag/TagsOverflow';
-import Tag from '@common/tag/Tag';
+import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
+import DataTableWithoutFragment from '../../../components/dataGrid/DataTableWithoutFragment';
+import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
+import { ShortTextOutlined } from '@mui/icons-material';
+import SearchInput from '../../../components/SearchInput';
+import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 
 const LOCAL_STORAGE_KEY = 'vocabulary_categories';
 
@@ -17,28 +20,6 @@ const VocabularyCategories = () => {
   const theme = useTheme();
 
   setTitle(t_i18n('Vocabularies | Taxonomies | Settings'));
-  const { categories, sortBy, orderAsc, searchTerm, handleSort, handleSearch } = useVocabularyCategoryAsQuery();
-  const renderLines = () => {
-    const dataColumns = {
-      name: {
-        label: 'Name',
-        width: '20%',
-        isSortable: true,
-        render: (node: VocabularyDefinition) => node.key,
-      },
-      entity_types: {
-        label: 'Used in',
-        width: '20%',
-        isSortable: false,
-        render: (node: VocabularyDefinition) => (
-          <TagsOverflow
-            items={node.entity_types || []}
-            getKey={(vocab) => vocab}
-            getLabel={(vocab) => vocab}
-            renderTag={(vocab) => (
-              <Tag label={vocab} />
-            )}
-          />
 
   const { categories, sortBy: sortByVocabularyCategory, orderAsc: orderAscVocabularyCategory, searchTerm, handleSearch, handleSort } = useVocabularyCategoryAsQuery();
 

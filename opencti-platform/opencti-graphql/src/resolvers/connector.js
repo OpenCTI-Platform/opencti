@@ -70,6 +70,7 @@ import { redisGetConnectorLogs } from '../database/redis';
 import pjson from '../../package.json';
 import { ConnectorPriorityGroup } from '../generated/graphql';
 import { loadCreator } from '../database/members';
+import { assessConnectorMigration } from '../domain/connector-migration';
 
 export const PLATFORM_VERSION = pjson.version;
 
