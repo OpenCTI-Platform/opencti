@@ -108,7 +108,8 @@ export const registerOpenIdStrategy = async (ssoEntity) => {
         // endregion
         const openIdScope = R.uniq(openIdScopes).join(' ');
         const options = {
-          logout_remote: ssoConfig.logout_remote, client, passReqToCallback: true,
+          client,
+          passReqToCallback: true,
           params: {
             scope: openIdScope, ...(ssoConfig.audience && { audience: ssoConfig.audience }),
           },
@@ -116,7 +117,7 @@ export const registerOpenIdStrategy = async (ssoEntity) => {
         const debugCallback = (message, meta) => logApp.info(message, meta);
         const openIDStrategy = new OpenIDStrategy(options, debugCallback, (_, tokenset, userinfo, done) => {
           logAuthInfo('Successfully logged', EnvStrategyType.STRATEGY_OPENID, { userinfo });
-          addUserLoginCount();
+
           const isGroupMapping = (isNotEmptyField(ssoEntity?.groups_management) && isNotEmptyField(ssoEntity?.groups_management.groups_mapping));
           logAuthInfo('Groups management configuration', EnvStrategyType.STRATEGY_OPENID, { groupsManagement: ssoEntity?.groups_management });
           const groupManagement = ssoEntity?.groups_management;
@@ -142,12 +143,12 @@ export const registerOpenIdStrategy = async (ssoEntity) => {
               providerOrganizations: organizationsToAssociate,
               autoCreateGroup: ssoConfig.auto_create_group ?? false,
             };
+            addUserLoginCount();
             providerLoginHandler(userInfo, done, opts);
           } else {
             done({ message: 'Restricted access, ask your administrator' });
           }
         });
-        openIDStrategy.logout_remote = options.logout_remote;
         logAuthInfo('logout remote options', EnvStrategyType.STRATEGY_OPENID, options);
         openIDStrategy.logout = (_, callback) => {
           const isSpecificUri = isNotEmptyField(ssoConfig.logout_callback_url);
@@ -160,7 +161,13 @@ export const registerOpenIdStrategy = async (ssoEntity) => {
             callback(null, endpointUri);
           }
         };
-        const providerConfig = { name: providerName, type: AuthType.AUTH_SSO, strategy: EnvStrategyType.STRATEGY_OPENID, provider: providerRef };
+        const providerConfig = {
+          name: providerName,
+          type: AuthType.AUTH_SSO,
+          strategy: EnvStrategyType.STRATEGY_OPENID,
+          provider: providerRef,
+          logout_remote: ssoConfig.logout_remote,
+        };
         registerAuthenticationProvider(providerRef, openIDStrategy, providerConfig);
       }).catch((err) => {
         logApp.error('[SSO OPENID] Error initializing authentication provider', {
