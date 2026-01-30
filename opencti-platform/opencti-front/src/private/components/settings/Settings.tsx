@@ -391,6 +391,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
               </DialogContent>
               <DialogActions>
                 <Button
+                  variant="secondary"
                   onClick={() => {
                     setOpenEEChanges(false);
                   }}
@@ -398,7 +399,6 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                   {t_i18n('Cancel')}
                 </Button>
                 <Button
-                  color="secondary"
                   onClick={() => {
                     setOpenEEChanges(false);
                     handleSubmitField('enterprise_license', '');
