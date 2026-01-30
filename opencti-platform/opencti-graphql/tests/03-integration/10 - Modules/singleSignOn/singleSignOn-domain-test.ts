@@ -42,7 +42,34 @@ describe('Single sign on Domain coverage tests', () => {
 
       // Here there is a pub/sub on redis, let's just call the same method than listener
       await onAuthenticationMessageAdd({ instance: samlEntity });
+      const cacheConfig = PROVIDERS.find((strategyProv) => strategyProv.provider === 'samlTestDomain');
+      expect(cacheConfig?.logout_remote).toBeFalsy();
       expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'samlTestDomain')).toBeTruthy();
+    });
+
+    it('should logout_remote be in SAML provider', async () => {
+      const input: SingleSignOnAddInput = {
+        name: 'Saml for test domain',
+        strategy: StrategyType.SamlStrategy,
+        identifier: 'samlTestDomainLogout',
+        enabled: true,
+        label: 'Nice SAML button',
+        configuration: [
+          { key: 'callbackUrl', value: 'http://myopencti/auth/samlTestDomainLogout/callback', type: 'string' },
+          { key: 'idpCert', value: '21341234', type: 'string' },
+          { key: 'issuer', value: 'issuer', type: 'string' },
+          { key: 'logout_remote', value: 'true', type: 'boolean' },
+        ],
+      };
+      const samlEntity = await addSingleSignOn(testContext, ADMIN_USER, input);
+      expect(samlEntity.identifier).toBe('samlTestDomainLogout');
+      expect(samlEntity.enabled).toBe(true);
+      expect(samlEntity.label).toBe('Nice SAML button');
+
+      // Here there is a pub/sub on redis, let's just call the same method than listener
+      await onAuthenticationMessageAdd({ instance: samlEntity });
+      const cacheConfig = PROVIDERS.find((strategyProv) => strategyProv.provider === 'samlTestDomainLogout');
+      expect(cacheConfig?.logout_remote).toBeTruthy();
     });
 
     it('should convert to stix', async () => {
