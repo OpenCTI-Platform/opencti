@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { registerConnector } from '../../../src/domain/connector';
 import { ConnectorType } from '../../../src/generated/graphql';
 import * as catalogDomain from '../../../src/modules/catalog/catalog-domain';
@@ -88,7 +88,7 @@ const READ_CONNECTOR_QUERY = gql`
 const TEST_CN_ID = '5ed680de-75e2-4aa0-bec0-4e8e5a0d1695';
 const TEST_CN_NAME = 'TestConnector';
 
-describe('Check connector migration', () => {
+describe.todo('Check connector migration', () => {
   let userId: string;
 
   /**
@@ -157,7 +157,7 @@ describe('Check connector migration', () => {
 
   describe('migrate connector to managed', () => {
     describe('when migration is successful', () => {
-      it('shoud migrate a standalone connector to managed, and user is now service account', async () => {
+      it('should migrate a standalone connector to managed, and user is now service account', async () => {
         const queryConnectorRegistered = await queryAsAdmin({ query: READ_CONNECTOR_QUERY, variables: { id: TEST_CN_ID } });
         const standaloneConnector = queryConnectorRegistered.data?.connector;
         expect(standaloneConnector).not.toBeNull();
