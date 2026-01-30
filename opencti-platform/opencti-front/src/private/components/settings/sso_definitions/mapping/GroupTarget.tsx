@@ -53,7 +53,7 @@ const GroupTarget = ({ index, isEditionMode, updateField }: GroupTargetProps) =>
   return (
     <TargetAutocomplete
       label={t_i18n('Groups')}
-      itemIcon="Groups"
+      itemIcon="Group"
       options={options.filter((item) => item.startsWith(value ?? ''))}
       value={value}
       fieldName={fieldName}

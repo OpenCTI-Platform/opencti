@@ -161,17 +161,17 @@ const SSODefinitionForm = ({
   const validationSchema = validationSchemaConfiguration(selectedStrategy ?? '', t_i18n);
 
   const initialValues: SSODefinitionFormValues = {
-    name: 'test',
-    identifier: 'test',
-    label: 'test',
+    name: '',
+    identifier: '',
+    label: '',
     enabled: true,
     // SAML - OPENID - LDAP
     advancedConfigurations: [],
     // SAML
-    privateKey: 'test',
-    issuer: 'test',
-    idpCert: 'test',
-    callbackUrl: 'test',
+    privateKey: '',
+    issuer: '',
+    idpCert: '',
+    callbackUrl: '',
     wantAssertionsSigned: false,
     wantAuthnResponseSigned: false,
     loginIdpDirectly: false,
@@ -181,7 +181,7 @@ const SSODefinitionForm = ({
     ssoBindingType: '',
     forceReauthentication: false,
     enableDebugMode: false,
-    entryPoint: 'test',
+    entryPoint: '',
     // Groups
     groups_path: ['groups'],
     groups_scope: '',
