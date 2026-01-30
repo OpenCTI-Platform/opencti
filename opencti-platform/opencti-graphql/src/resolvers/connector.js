@@ -70,7 +70,6 @@ import { redisGetConnectorLogs } from '../database/redis';
 import pjson from '../../package.json';
 import { ConnectorPriorityGroup } from '../generated/graphql';
 import { loadCreator } from '../database/members';
-import { assessConnectorMigration } from '../domain/connector-migration';
 
 export const PLATFORM_VERSION = pjson.version;
 
@@ -94,9 +93,6 @@ const connectorResolvers = {
     // region new managed connectors
     connectorManager: (_, { managerId }, context) => connectorManager(context, context.user, managerId),
     connectorManagers: (_, __, context) => connectorManagers(context, context.user),
-    connectorMigrationAssessment: async (_, { connectorId, containerImage, configuration }, context) => {
-      return assessConnectorMigration(context, context.user, connectorId, containerImage, configuration);
-    },
     // endregion
   },
   Connector: {
