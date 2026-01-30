@@ -414,7 +414,7 @@ const createApp = async (app, schema) => {
         res.clearCookie(OPENCTI_SESSION);
 
         let providerCache = PROVIDERS.find((conf) => conf.provider === provider);
-        logApp.info(`[LOGOUT] checking remote logout for ${provider}`, { providerCache });
+        logApp.debug(`[LOGOUT] checking remote logout for ${provider}`, { providerCache });
         req.session.destroy(() => {
           const strategy = passport._strategy(provider);
           if (strategy) {
