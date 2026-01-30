@@ -29,7 +29,7 @@ import validator from 'validator';
 import { getPlatformHttpProxyAgent, logApp } from '../../config/conf';
 import { AuthenticationFailure, ConfigurationError } from '../../config/errors';
 import { AuthType, INTERNAL_SECURITY_PROVIDER, PROVIDERS } from './providers-configuration';
-import { CONFIGURATION_ADMIN_EMAIL, DEFAULT_INVALID_CONF_VALUE, SYSTEM_USER } from '../../utils/access';
+import { DEFAULT_INVALID_CONF_VALUE, isConfigurationAdminUser, SYSTEM_USER } from '../../utils/access';
 import { OPENCTI_ADMIN_UUID } from '../../schema/general';
 import { findById, HEADERS_AUTHENTICATORS, initAdmin, login, userDelete } from '../../domain/user';
 import { isEmptyField, isNotEmptyField } from '../../database/utils';
@@ -685,7 +685,7 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
     if (!hasLocal && isForcedEnv) {
       logApp.info('[ENV-PROVIDER][FALLBACK] No local strategy, adding the fallback one');
       const adminLocalStrategy = new LocalStrategy({}, (username, password, done) => {
-        if (username !== CONFIGURATION_ADMIN_EMAIL) {
+        if (username !== getConfigurationAdminEmail()) {
           return done(AuthenticationFailure());
         }
         return login(username, password)

@@ -585,7 +585,7 @@ export const isInternalUser = (user: AuthUser): boolean => {
   return INTERNAL_USERS[user.id] !== undefined;
 };
 
-export const isConfigurationAdminUser = (context: AuthContext, user: AuthUser): boolean => {
+export const isConfigurationAdminUser = (user: AuthUser): boolean => {
   return user.user_email === getConfigurationAdminEmail();
 };
 
