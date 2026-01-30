@@ -1,6 +1,5 @@
 import React, { CSSProperties, ReactNode } from 'react';
 import Chip from '@mui/material/Chip';
-import makeStyles from '@mui/styles/makeStyles';
 import StixCoreObjectLabels from '@components/common/stix_core_objects/StixCoreObjectLabels';
 import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/styles';
@@ -47,30 +46,6 @@ const chipStyle: CSSProperties = {
   textTransform: 'uppercase',
 };
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  chipInList: {
-    fontSize: 12,
-    height: 20,
-    float: 'left',
-    width: 120,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-  },
-  chip: {
-    fontSize: 13,
-    lineHeight: '12px',
-    height: 20,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-    cursor: 'pointer',
-    '&:hover': {
-      backgroundColor: theme.palette.primary.main,
-    },
-  },
-}));
-
 export const Truncate = ({ children }: { children: ReactNode }) => (
   <div
     style={{
@@ -105,23 +80,14 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Aliases',
     percentWidth: 10,
     render: ({ aliases }) => {
-      const theme = useTheme<Theme>();
-
       return (
         <FieldOrEmpty source={aliases}>
-          <Tooltip title={aliases.join(', ')}>
-            <div
-              style={{
-                maxWidth: '100%',
-                display: 'flex',
-                gap: theme.spacing(0.5),
-              }}
-            >
-              {aliases.map((value: string) => (
-                <Chip key={value} label={value} size="small" />
-              ))}
-            </div>
-          </Tooltip>
+          <TagsOverflow
+            items={aliases}
+            getKey={(alias: string) => alias}
+            renderTag={(alias: string) => (<Tag label={alias} />)}
+          >
+          </TagsOverflow>
         </FieldOrEmpty>
       );
     },
@@ -1067,13 +1033,9 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       { response_types },
       { storageHelpers: { handleAddFilter } },
     ) => {
-      const classes = useStyles();
       return (
         <FieldOrEmpty source={response_types}>
           <Tag
-            classes={{ root: classes.chipInList }}
-            color="primary"
-            variant="outlined"
             label={response_types?.at(0)}
             onClick={(e) => {
               e.preventDefault();
@@ -1188,13 +1150,9 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       { takedown_types },
       { storageHelpers: { handleAddFilter } },
     ) => {
-      const classes = useStyles();
       return (
         <FieldOrEmpty source={takedown_types}>
           <Tag
-            classes={{ root: classes.chipInList }}
-            color="primary"
-            variant="outlined"
             label={takedown_types?.at(0)}
             onClick={(e) => {
               e.preventDefault();
@@ -1276,13 +1234,9 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       { tool_types },
       { storageHelpers: { handleAddFilter } },
     ) => {
-      const classes = useStyles();
       return (
         <FieldOrEmpty source={tool_types}>
           <Tag
-            classes={{ root: classes.chipInList }}
-            color="primary"
-            variant="outlined"
             label={tool_types?.at(0)}
             onClick={(e) => {
               e.preventDefault();
@@ -1537,13 +1491,9 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       { x_opencti_organization_type },
       { storageHelpers: { handleAddFilter } },
     ) => {
-      const classes = useStyles();
       return (
         <FieldOrEmpty source={x_opencti_organization_type}>
           <Tag
-            classes={{ root: classes.chipInList }}
-            color="primary"
-            variant="outlined"
             label={x_opencti_organization_type}
             onClick={(e) => {
               e.preventDefault();
