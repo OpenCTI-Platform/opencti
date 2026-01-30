@@ -14,7 +14,6 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
 import { Link } from 'react-router-dom';
 import { useTheme } from '@mui/styles';
-import makeStyles from '@mui/styles/makeStyles';
 import { ApexOptions } from 'apexcharts';
 import { SimplePaletteColorOptions } from '@mui/material/styles/createPalette';
 import UserConfidenceLevel from '@components/settings/users/UserConfidenceLevel';
