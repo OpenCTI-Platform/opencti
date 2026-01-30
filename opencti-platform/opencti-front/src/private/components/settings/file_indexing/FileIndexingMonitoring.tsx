@@ -143,6 +143,13 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
     handlePause();
     resetManager();
   };
+
+  const iconStyle = {
+    fontSize: 40,
+    color: theme.palette.text.primary,
+    opacity: 0.35,
+  };
+
   return (
     <Grid container={true} spacing={3}>
       <Grid item xs={6}>
@@ -167,9 +174,13 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
             variant="determinate"
           />
           {isStarted ? (
-            <SyncOutlined color="primary" sx={{ fontSize: 40 }} />
+            <SyncOutlined
+              sx={iconStyle}
+            />
           ) : (
-            <SyncDisabledOutlined color="primary" sx={{ fontSize: 40 }} />
+            <SyncDisabledOutlined
+              sx={iconStyle}
+            />
           )}
         </Card>
       </Grid>
@@ -186,11 +197,7 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
             {indexedFiles} / {totalFiles}
           </Typography>
           <FolderOutlined
-            sx={{
-              fontSize: 40,
-              color: theme.palette.text.primary,
-              opacity: 0.35,
-            }}
+            sx={iconStyle}
           />
         </Card>
       </Grid>
@@ -207,11 +214,7 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
             {indexedFiles ? n(volumeIndexed) : 0}
           </Typography>
           <StorageOutlined
-            sx={{
-              fontSize: 40,
-              color: theme.palette.text.primary,
-              opacity: 0.35,
-            }}
+            sx={iconStyle}
           />
         </Card>
       </Grid>
