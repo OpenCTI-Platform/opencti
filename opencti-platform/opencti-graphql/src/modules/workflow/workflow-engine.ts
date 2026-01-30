@@ -18,7 +18,7 @@ export class StateMachine<TContext extends Context = Context> {
   constructor(
     definition: MachineDefinition<TContext>,
     initialState: State | undefined,
-    context: TContext
+    context: TContext,
   ) {
     this.definition = definition;
     this.context = context;

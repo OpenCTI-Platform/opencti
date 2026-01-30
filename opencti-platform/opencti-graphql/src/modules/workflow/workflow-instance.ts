@@ -35,7 +35,7 @@ export class WorkflowInstance<TContext extends Context = Context> extends StateM
       success: result.success,
       reason: result.reason,
     });
-    
+
     return result;
   }
 

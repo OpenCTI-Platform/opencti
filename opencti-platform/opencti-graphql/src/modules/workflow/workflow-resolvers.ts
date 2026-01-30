@@ -6,7 +6,7 @@ import {
   getWorkflowDefinition,
   getWorkflowInstance,
   setWorkflowDefinition,
-  triggerWorkflowEvent
+  triggerWorkflowEvent,
 } from './workflow-domain';
 
 const workflowResolvers = {
@@ -26,13 +26,13 @@ const workflowResolvers = {
     },
   },
   Mutation: {
-    workflowDefinitionSet: (_: any, { entityType, definition }: { entityType: string, definition: string }, context: AuthContext) => {
+    workflowDefinitionSet: (_: any, { entityType, definition }: { entityType: string; definition: string }, context: AuthContext) => {
       return setWorkflowDefinition(context, context.user!, entityType, definition);
     },
     workflowDefinitionDelete: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
       return deleteWorkflowDefinition(context, context.user!, entityType);
     },
-    triggerWorkflowEvent: (_: any, { entityId, eventName }: { entityId: string, eventName: string }, context: AuthContext) => {
+    triggerWorkflowEvent: (_: any, { entityId, eventName }: { entityId: string; eventName: string }, context: AuthContext) => {
       return triggerWorkflowEvent(context, context.user!, entityId, eventName);
     },
   },
