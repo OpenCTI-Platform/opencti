@@ -7,7 +7,7 @@ import { isStoreRelationPir } from '../schema/internalRelationship';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import type { Change, ChangeValue } from '../types/event';
-import { type AttributeDefinition } from '../schema/attribute-definition';
+import { type AttributeDefinition, files } from '../schema/attribute-definition';
 import { DefaultFormating, type Formating, humanizeDate } from '../utils/humanize';
 import { internalFindByIdsMapped } from './middleware-loader';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -15,6 +15,7 @@ import { UnsupportedError } from '../config/errors';
 import { getEntitiesMapFromCache } from './cache';
 import { doYield } from '../utils/eventloop-utils';
 import { utcDate } from '../utils/format';
+import { INPUT_MARKINGS } from '../schema/general';
 
 export const EMPTY_VALUE = 'nothing';
 export const RESTRICTED_VALUE = 'Restricted';
@@ -237,7 +238,15 @@ const convertAttribute = async (context: AuthContext, user: AuthUser,
   }
   if (attribute.type === 'object') {
     const translatedIds = await attribute.attrRawIds?.(item, getEntitiesMapFromCache) ?? [];
-    return { raw: JSON.stringify(item), translated: buildTranslatedIdsMap(translatedIds, resolvedMap) };
+    let workItem = item;
+    // Specific cleanup for file due to aggressive loading of inner markings
+    // Introduced in [backend] fix file markings that could be undefined when building OCTI extensions (#9301)
+    // TODO rework this approach to use marking case in converter instead
+    if (attribute.name === files.name) {
+      const { [INPUT_MARKINGS]: _, ...existingFileWithoutMarkings } = item;
+      workItem = existingFileWithoutMarkings;
+    }
+    return { raw: JSON.stringify(workItem), translated: buildTranslatedIdsMap(translatedIds, resolvedMap) };
   }
   if (attribute.type === 'string' && attribute.format === 'json') {
     const translatedIds = await attribute.attrRawIds?.(item, getEntitiesMapFromCache) ?? [];
@@ -286,19 +295,17 @@ const buildAttribute = async (context: AuthContext, user: AuthUser,
 
 export const buildChanges = async (context: AuthContext, user: AuthUser,
   entityType: string, inputs: any[]) => {
-  // Build the resolution maps.
+  // Build the resolution maps converting inputs to changes to use standard resolution function
   const inputsChangesResolver = inputs.flatMap((input) => {
     const { key: field, previous: prevValues, value } = input;
     const ref = schemaRelationsRefDefinition.getRelationRef(entityType, field);
     if (ref) return []; // Ref are already available, no need to extra resolved them.
+    const attr = schemaAttributesDefinition.getAttribute(entityType, field);
+    if (!attr) throw UnsupportedError('Cant resolve attribute', { entityType, field });
     const prev = Array.isArray(prevValues) ? prevValues : [prevValues];
     const next = Array.isArray(value) ? value : [value];
-    const changes_added = [...prev, ...next]
-      .filter((i) => isNotEmptyField(i))
-      .map((item) => {
-        const data = typeof item === 'object' ? JSON.stringify(item) : item;
-        return ({ raw: data });
-      });
+    const changes_added = [...prev, ...next].filter((i) => isNotEmptyField(i))
+      .map((item) => ({ raw: attr.type === 'object' ? JSON.stringify(item) : item }));
     return { field: entityType + '--' + field, changes_added };
   });
   const resolvedMap = inputsChangesResolver.length > 0
