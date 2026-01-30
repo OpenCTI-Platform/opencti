@@ -69,12 +69,16 @@ export interface SSODefinitionFormValues {
   group_attributes: string[];
   groups_attributes: string[];
   groups_mapping: string[];
+  groups_mapping_source: string[];
+  groups_mapping_target: string[];
   groups_token_reference: string;
   groups_read_userinfo: boolean;
   // Organizations
   organizations_path: string[];
   organizations_scope: string;
   organizations_mapping: string[];
+  organizations_mapping_source: string[];
+  organizations_mapping_target: string[];
   organizations_token_reference: string;
   organizations_read_userinfo: boolean;
   // OpenID
@@ -92,6 +96,12 @@ export interface SSODefinitionFormValues {
   allow_self_signed: boolean;
 }
 export type SSOEditionFormInputKeys = keyof SSODefinitionFormValues;
+
+type GetSourceAndTargetFromMappingType = {
+  source: string[];
+  target: string[];
+  mapping: string[];
+};
 
 const validationSchemaConfiguration = (selectedStrategy: string, t_i18n: (s: string) => string) => {
   const base = {
@@ -179,12 +189,16 @@ const SSODefinitionForm = ({
     group_attributes: [],
     groups_attributes: [],
     groups_mapping: [],
+    groups_mapping_source: [],
+    groups_mapping_target: [],
     groups_token_reference: 'access_token',
     groups_read_userinfo: false,
     // Organizations
     organizations_path: ['organizations'],
     organizations_scope: '',
     organizations_mapping: [],
+    organizations_mapping_source: [],
+    organizations_mapping_target: [],
     organizations_token_reference: 'access_token',
     organizations_read_userinfo: false,
     // OpenID
@@ -200,6 +214,17 @@ const SSODefinitionForm = ({
     groupSearchBase: '',
     groupSearchFilter: '',
     allow_self_signed: false,
+  };
+
+  const getSourceAndTargetFromMapping = (groupMapping: string[]) => {
+    return groupMapping.reduce((acc: GetSourceAndTargetFromMappingType, cur: string) => {
+      const splittedValue = cur.split(':');
+      return {
+        ...acc,
+        source: [...acc.source, splittedValue[0]],
+        target: [...acc.target, splittedValue[1]],
+      };
+    }, { source: [], target: [], mapping: groupMapping });
   };
 
   const privateField = data?.configuration?.find((e) => e.key === 'privateKey');
@@ -223,13 +248,13 @@ const SSODefinitionForm = ({
   const groupsAttributes = Array.from(data?.groups_management?.groups_attributes ?? []);
   const groupsPath = Array.from(data?.groups_management?.groups_path ?? []);
   const groupsScope = data?.groups_management?.groups_scope ?? '';
-  const groupsMapping = Array.from(data?.groups_management?.groups_mapping ?? []);
   const groupsTokenReference = data?.groups_management?.token_reference;
   const groupsReadUserInfo = data?.groups_management?.read_userinfo;
+  const groupsMapping = getSourceAndTargetFromMapping(Array.from(data?.groups_management?.groups_mapping ?? []));
 
   const organizationsPath = Array.from(data?.organizations_management?.organizations_path ?? []);
   const organizationsScope = data?.organizations_management?.organizations_scope ?? '';
-  const organizationsMapping = Array.from(data?.organizations_management?.organizations_mapping ?? []);
+  const organizationsMapping = getSourceAndTargetFromMapping(Array.from(data?.organizations_management?.organizations_mapping ?? []));
   const organizationsTokenReference = data?.organizations_management?.token_reference;
   const organizationsReadUserInfo = data?.organizations_management?.read_userinfo;
 
@@ -272,13 +297,17 @@ const SSODefinitionForm = ({
     initialValues.groups_attributes = groupsAttributes;
     initialValues.groups_path = groupsPath;
     initialValues.groups_scope = groupsScope;
-    initialValues.groups_mapping = groupsMapping;
     initialValues.groups_token_reference = groupsTokenReference ?? '';
     initialValues.groups_read_userinfo = groupsReadUserInfo ?? false;
+    initialValues.groups_mapping = groupsMapping.mapping;
+    initialValues.groups_mapping_source = groupsMapping.source;
+    initialValues.groups_mapping_target = groupsMapping.target;
 
     initialValues.organizations_path = organizationsPath;
     initialValues.organizations_scope = organizationsScope;
-    initialValues.organizations_mapping = organizationsMapping;
+    initialValues.organizations_mapping = organizationsMapping.mapping;
+    initialValues.organizations_mapping_source = organizationsMapping.source;
+    initialValues.organizations_mapping_target = organizationsMapping.target;
     initialValues.organizations_token_reference = organizationsTokenReference ?? '';
     initialValues.organizations_read_userinfo = organizationsReadUserInfo ?? false;
 
@@ -444,8 +473,8 @@ const SSODefinitionForm = ({
               </FieldArray>
             </>
           )}
-          {currentTab === 1 && <SSODefinitionGroupForm updateField={updateField} selectedStrategy={selectedStrategy} />}
-          {currentTab === 2 && <SSODefinitionOrganizationForm updateField={updateField} selectedStrategy={selectedStrategy} />}
+          {currentTab === 1 && <SSODefinitionGroupForm updateField={updateField} selectedStrategy={selectedStrategy} isEditionMode={!!onSubmitField} />}
+          {currentTab === 2 && <SSODefinitionOrganizationForm updateField={updateField} selectedStrategy={selectedStrategy} isEditionMode={!!onSubmitField} />}
           {!onSubmitField && (
             <div
               style={{

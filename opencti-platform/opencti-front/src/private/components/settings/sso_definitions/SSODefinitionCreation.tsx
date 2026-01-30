@@ -7,7 +7,7 @@ import { insertNode } from '../../../../utils/store';
 import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
 import { PaginationOptions } from '../../../../components/list_lines';
 import CreateSplitControlledDial from '../../../../components/CreateSplitControlledDial';
-
+import { getGroupOrOrganizationMapping } from './utils/GroupOrOrganizationMapping';
 import useFormikToSSOConfig from './utils/useFormikToSSOConfig';
 import SSODefinitionForm, { SSODefinitionFormValues } from '@components/settings/sso_definitions/SSODefinitionForm';
 import { getStrategyConfigEnum } from '@components/settings/sso_definitions/utils/useStrategicConfig';
@@ -83,6 +83,7 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
     { setSubmitting, resetForm }: { setSubmitting: (flag: boolean) => void; resetForm: () => void },
   ) => {
     if (!formikToSSOConfig) return;
+
     const configuration = formikToSSOConfig(values);
 
     values.advancedConfigurations.forEach((conf) => {
@@ -103,7 +104,7 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
       groups_attributes: values.groups_attributes || null,
       groups_path: values.groups_path || null,
       groups_scope: values.groups_scope || null,
-      groups_mapping: values.groups_mapping.filter((v) => v && v.trim() !== ''),
+      groups_mapping: getGroupOrOrganizationMapping(values.groups_mapping_source, values.groups_mapping_target),
       token_reference: values.groups_token_reference,
       read_userinfo: values.groups_read_userinfo,
     };
@@ -113,9 +114,7 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
       organizations_path: values.organizations_path || null,
       organizations_scope: values.organizations_scope || null,
       read_userinfo: values.organizations_read_userinfo,
-      organizations_mapping: values.organizations_mapping.filter(
-        (v) => v && v.trim() !== '',
-      ),
+      organizations_mapping: getGroupOrOrganizationMapping(values.organizations_mapping_source, values.organizations_mapping_target),
     };
 
     const finalValues = {
