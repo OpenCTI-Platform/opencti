@@ -179,6 +179,7 @@ type ImportFilesContextProps = InitialValues & {
   inDraftContext: boolean;
   guessMimeType: (fileId: string) => Promise<string | null>;
   queryRef: PreloadedQuery<ImportFilesContextQuery>;
+  isForcedImportToDraft: boolean;
 };
 
 const ImportFilesContext = createContext<ImportFilesContextProps | undefined>(undefined);
@@ -187,7 +188,7 @@ export const ImportFilesProvider = ({ children, initialValue }: {
   children: ReactNode;
   initialValue: InitialValues;
 }) => {
-  const canSelectImportMode = useGranted(['KNOWLEDGE_KNASKIMPORT']); // Check capability to set connectors and validation mode
+  const canSelectImportMode = useGranted(['KNOWLEDGE_KNASKIMPORT'], false, { capabilitiesInDraft: ['KNOWLEDGE_KNASKIMPORT'] });
   const draftContext = useDraftContext();
 
   const initalActiveStep = initialValue.activeStep ?? (canSelectImportMode ? 0 : 1);
@@ -216,6 +217,10 @@ export const ImportFilesProvider = ({ children, initialValue }: {
     setImportMode(initialImportMode);
   }, [initialValue.activeStep, initialValue.importMode]);
 
+  const isUserHasImport = useGranted(['KNOWLEDGE_KNASKIMPORT']);
+  const isUserHasImportInDraftOverride = isUserHasImport ? false : useGranted([], false, { capabilitiesInDraft: ['KNOWLEDGE_KNASKIMPORT'] });
+  const isForcedImportToDraft = isUserHasImport ? false : isUserHasImportInDraftOverride;
+
   return queryRef && (
     <React.Suspense>
       <ImportFilesContext.Provider
@@ -235,6 +240,7 @@ export const ImportFilesProvider = ({ children, initialValue }: {
           selectedFormId,
           setSelectedFormId,
           inDraftContext: !!draftContext?.id,
+          isForcedImportToDraft,
           guessMimeType,
           queryRef,
         }}

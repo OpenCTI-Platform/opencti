@@ -259,8 +259,8 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                     )
                   }
 
-                  { ee.license_type === 'nfr' && <ItemBoolean label="EE DEV LICENSE" status={false} /> }
-                  <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
+                  {ee.license_type === 'nfr' && <ItemBoolean label="EE DEV LICENSE" status={false} />}
+                  <Security needs={[KNOWLEDGE_KNASKIMPORT]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}>
                     <UploadImport
                       variant="icon"
                       fontSize="medium"
