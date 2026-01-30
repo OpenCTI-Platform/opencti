@@ -32659,7 +32659,7 @@ export enum TokenDuration {
 
 export type TokenGenerated = {
   __typename?: 'TokenGenerated';
-  expires_at: Scalars['DateTime']['output'];
+  expires_at?: Maybe<Scalars['DateTime']['output']>;
   masked_token: Scalars['String']['output'];
   plaintext_token: Scalars['String']['output'];
   token_id: Scalars['String']['output'];
@@ -48159,7 +48159,7 @@ export type TimeSeriesResolvers<ContextType = any, ParentType extends ResolversP
 }>;
 
 export type TokenGeneratedResolvers<ContextType = any, ParentType extends ResolversParentTypes['TokenGenerated'] = ResolversParentTypes['TokenGenerated']> = ResolversObject<{
-  expires_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  expires_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   masked_token?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   plaintext_token?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   token_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

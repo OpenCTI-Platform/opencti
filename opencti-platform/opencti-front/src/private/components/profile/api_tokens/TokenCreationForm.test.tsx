@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, Mock } from 'vitest';
+import { describe, it, expect, vi, Mock, beforeEach } from 'vitest';
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import testRender from '../../../../utils/tests/test-render';
@@ -25,9 +25,14 @@ describe('Component: TokenCreationForm', () => {
   const onSuccess = vi.fn();
   const onClose = vi.fn();
 
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('should render form fields', () => {
     testRender(
       <TokenCreationForm
+        userId="mock-id"
         onSuccess={onSuccess}
         onClose={onClose}
       />,
@@ -40,6 +45,7 @@ describe('Component: TokenCreationForm', () => {
   it('should submit form and call onSuccess with token', async () => {
     const { user } = testRender(
       <TokenCreationForm
+        userId="mock-id"
         onSuccess={onSuccess}
         onClose={onClose}
       />,
@@ -58,6 +64,8 @@ describe('Component: TokenCreationForm', () => {
         userTokenAdd: {
           plaintext_token: 'valid-token-123',
           token_id: 'id-123',
+          expires_at: '2023-01-01T00:00:00.000Z',
+          masked_token: '***-123',
         },
       });
       return { dispose: vi.fn() };
@@ -93,6 +101,7 @@ describe('Component: TokenCreationForm', () => {
 
     const { user } = testRender(
       <TokenCreationForm
+        userId="mock-id"
         onSuccess={onSuccess}
         onClose={onClose}
       />,

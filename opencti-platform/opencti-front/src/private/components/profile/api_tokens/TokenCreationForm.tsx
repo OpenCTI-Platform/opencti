@@ -8,11 +8,12 @@ import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/fields/SelectField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { graphql } from 'react-relay';
-import { PayloadError } from 'relay-runtime';
+import { PayloadError, RecordSourceSelectorProxy } from 'relay-runtime';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import { TokenCreationFormMutation$data } from './__generated__/TokenCreationFormMutation.graphql';
 
 interface TokenCreationFormProps {
+  userId: string;
   onSuccess: (token: string) => void;
   onClose: () => void;
 }
@@ -22,11 +23,14 @@ const tokenCreationMutation = graphql`
     userTokenAdd(input: $input) {
       plaintext_token
       token_id
+      expires_at
+      masked_token
     }
   }
 `;
 
 const TokenCreationForm: FunctionComponent<TokenCreationFormProps> = ({
+  userId,
   onSuccess,
   onClose,
 }) => {
@@ -72,7 +76,28 @@ const TokenCreationForm: FunctionComponent<TokenCreationFormProps> = ({
           duration: durationInput,
         },
       },
-      updater: undefined,
+      updater: (store: RecordSourceSelectorProxy) => {
+        const payload = store.getRootField('userTokenAdd');
+        if (!payload) return;
+
+        const tokenId = payload.getValue('token_id');
+        const expiresAt = payload.getValue('expires_at');
+        const maskedToken = payload.getValue('masked_token');
+
+        const userRecord = store.get(userId);
+        if (!userRecord) return;
+
+        const apiTokens = userRecord.getLinkedRecords('api_tokens') || [];
+
+        const newTokenRecord = store.create(tokenId as string, 'ApiToken');
+        newTokenRecord.setValue(tokenId, 'id');
+        newTokenRecord.setValue(values.name, 'name');
+        newTokenRecord.setValue(new Date().toISOString(), 'created_at');
+        newTokenRecord.setValue(expiresAt, 'expires_at');
+        newTokenRecord.setValue(maskedToken, 'masked_token');
+
+        userRecord.setLinkedRecords([...apiTokens, newTokenRecord], 'api_tokens');
+      },
       optimisticUpdater: undefined,
       optimisticResponse: undefined,
       onCompleted: (response: TokenCreationFormMutation$data, errors: readonly PayloadError[] | null | undefined) => {

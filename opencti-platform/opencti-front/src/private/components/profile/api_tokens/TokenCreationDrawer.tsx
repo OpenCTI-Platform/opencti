@@ -5,11 +5,13 @@ import TokenCreationForm from './TokenCreationForm';
 import TokenResultView from './TokenResultView';
 
 interface TokenCreationDrawerProps {
+  userId: string;
   open: boolean;
   onClose: () => void;
 }
 
 const TokenCreationDrawer: FunctionComponent<TokenCreationDrawerProps> = ({
+  userId,
   open,
   onClose,
 }) => {
@@ -43,7 +45,7 @@ const TokenCreationDrawer: FunctionComponent<TokenCreationDrawerProps> = ({
         ) : (
           <>
             <h2>{t_i18n('Generate a new token')}</h2>
-            <TokenCreationForm onSuccess={onSuccess} onClose={handleClose} />
+            <TokenCreationForm userId={userId} onSuccess={onSuccess} onClose={handleClose} />
           </>
         )}
       </div>

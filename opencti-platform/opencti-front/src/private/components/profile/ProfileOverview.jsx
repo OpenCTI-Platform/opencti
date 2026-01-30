@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import TokenCreationDrawer from './api_tokens/TokenCreationDrawer';
+import TokenList from './api_tokens/TokenList';
 import * as PropTypes from 'prop-types';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
@@ -278,6 +279,7 @@ const ProfileOverviewComponent = (props) => {
   return (
     <div className={classes.container}>
       <TokenCreationDrawer
+        userId={me.id}
         open={displayTokenCreation}
         onClose={() => setDisplayTokenCreation(false)}
       />
@@ -612,6 +614,7 @@ const ProfileOverviewComponent = (props) => {
               </Button>
             )}
           </div>
+          <TokenList node={me} />
         </div>
       </Paper>
       <ProfileLocalStorage />
@@ -658,6 +661,7 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
           }
         }
       }
+      ...TokenList_node
     }
   `,
   about: graphql`

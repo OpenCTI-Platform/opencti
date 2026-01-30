@@ -1853,7 +1853,7 @@ type ApiToken {
 type TokenGenerated {
   token_id: String!
   plaintext_token: String!
-  expires_at: DateTime!
+  expires_at: DateTime
   masked_token: String!
 }
 
