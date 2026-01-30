@@ -1,8 +1,5 @@
-import { Field, FieldArray } from 'formik';
+import { Field } from 'formik';
 import TextField from 'src/components/TextField';
-import Typography from '@mui/material/Typography';
-import IconButton from '@common/button/IconButton';
-import { Add, Delete } from '@mui/icons-material';
 import React from 'react';
 import { SSODefinitionFormValues } from '@components/settings/sso_definitions/SSODefinitionForm';
 import { useFormatter } from 'src/components/i18n';

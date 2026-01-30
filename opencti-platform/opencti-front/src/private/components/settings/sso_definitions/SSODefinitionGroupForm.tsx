@@ -1,4 +1,4 @@
-import { Field, FieldArray } from 'formik';
+import { Field } from 'formik';
 import TextField from 'src/components/TextField';
 import React from 'react';
 import { SSODefinitionFormValues } from '@components/settings/sso_definitions/SSODefinitionForm';
