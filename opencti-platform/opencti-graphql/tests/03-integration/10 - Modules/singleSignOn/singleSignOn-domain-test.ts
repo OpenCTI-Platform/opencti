@@ -8,6 +8,9 @@ import { PROVIDERS } from '../../../../src/modules/singleSignOn/providers-config
 import type { BasicStoreEntitySingleSignOn, StixSingleSignOn, StoreEntitySingleSignOn } from '../../../../src/modules/singleSignOn/singleSignOn-types';
 import convertSingleSignOnToStix from '../../../../src/modules/singleSignOn/singleSignOn-converter';
 import { onAuthenticationMessageAdd, onAuthenticationMessageDelete, onAuthenticationMessageEdit } from '../../../../src/modules/singleSignOn/singleSignOn-listener';
+import * as providerConfig from '../../../../src/modules/singleSignOn/providers-configuration';
+import { getFakeAuthUser } from '../../../utils/domainQueryHelper';
+import { initializeAdminUser } from '../../../../src/modules/singleSignOn/providers-initialization';
 
 describe('Single sign on Domain coverage tests', () => {
   describe('SAML coverage tests', () => {
@@ -380,6 +383,60 @@ describe('Single sign on Domain coverage tests', () => {
       // Here there is a pub/sub on redis, let's just call the same method as listener
       await onAuthenticationMessageAdd({ instance: ldapEntity });
       expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'ldapTest1')).toBeTruthy();
+    });
+  });
+
+  describe('Edition locked coverage tests', () => {
+    let ssoCreate: BasicStoreEntitySingleSignOn;
+    vi.spyOn(providerConfig, 'isAuthenticationEditionLocked').mockReturnValue(true);
+    const mockDummyUser = getFakeAuthUser('NotAdmin');
+
+    it('should not admin be refused to add SSO', async () => {
+      const input: SingleSignOnAddInput = {
+        name: 'LDAP for test NotAdmin',
+        strategy: StrategyType.LdapStrategy,
+        identifier: 'ldapTestNotAdmin',
+        enabled: true,
+        configuration: [
+          { key: 'url', type: 'string', value: 'ldap://localhost:389' },
+          { key: 'bindDN', type: 'string', value: 'cn=admin,dc=example,dc=org' },
+          { key: 'bindCredentials', type: 'string', value: 'youShallNotPass' },
+          { key: 'searchBase', type: 'string', value: 'dc=example,dc=org' },
+          { key: 'searchFilter', type: 'string', value: 'mail={{username}}' },
+        ],
+      };
+
+      // Any user should be refused
+      await expect(async () => {
+        await addSingleSignOn(testContext, mockDummyUser, input);
+      }).rejects.toThrowError('Authentication edition is locked by environment variable');
+
+      // But config admin can still do
+      ssoCreate = await addSingleSignOn(testContext, ADMIN_USER, input);
+      expect(ssoCreate.identifier).toBe('ldapTestNotAdmin');
+    });
+
+    it('should not admin be refused to fieldPatch SSO', async () => {
+      // Any user should be refused
+      await expect(async () => {
+        await fieldPatchSingleSignOn(testContext, mockDummyUser, ssoCreate.id, [{ key: 'label', value: ['hacked'] }]);
+      }).rejects.toThrowError('Authentication edition is locked by environment variable');
+
+      // But config admin can still do
+      const patched = await fieldPatchSingleSignOn(testContext, ADMIN_USER, ssoCreate.id, [{ key: 'label', value: ['notHacked'] }]);
+      expect(patched.label).toBe('notHacked');
+      // expect no error
+    });
+
+    it('should not admin be refused to delete SSO', async () => {
+      // Any user should be refused
+      await expect(async () => {
+        await deleteSingleSignOn(testContext, mockDummyUser, ssoCreate.id);
+      }).rejects.toThrowError('Authentication edition is locked by environment variable');
+
+      // But config admin can still do
+      await deleteSingleSignOn(testContext, ADMIN_USER, ssoCreate.id);
+      // expect no error
     });
   });
 });
