@@ -69,14 +69,14 @@ export interface Context {
  * Functional guard that must return true for a transition to be valid.
  */
 export type ConditionValidator<TContext extends Context = Context> = (
-  context: TContext
+  context: TContext,
 ) => boolean | Promise<boolean>;
 
 /**
  * Side effect executed during state entry, exit, or transition.
  */
 export type SideEffect<TContext extends Context = Context> = (
-  context: TContext
+  context: TContext,
 ) => void | Promise<void>;
 
 /**
