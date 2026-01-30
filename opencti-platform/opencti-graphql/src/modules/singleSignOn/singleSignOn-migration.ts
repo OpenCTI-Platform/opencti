@@ -300,21 +300,21 @@ const parseHEADERStrategyConfiguration = (ssoKey: string, envConfiguration: any,
   return authEntity;
 };
 
-// const parseCERTStrategyConfiguration = (ssoKey: string, envConfiguration: any, dryRun: boolean) => {
-//   const { configuration } = computeConfiguration(envConfiguration, StrategyType.ClientCertStrategy);
-//   const identifier = envConfiguration?.identifier || 'cert';
-//
-//   const authEntity: SingleSignOnAddInput = {
-//     identifier,
-//     strategy: StrategyType.ClientCertStrategy,
-//     name: computeAuthenticationName(ssoKey, envConfiguration, identifier),
-//     label: computeAuthenticationLabel(ssoKey, envConfiguration),
-//     description: `${StrategyType.ClientCertStrategy} Automatically ${dryRun ? 'detected' : 'created'} from ${ssoKey} at ${now()}`,
-//     enabled: computeEnabled(envConfiguration),
-//     configuration,
-//   };
-//   return authEntity;
-// };
+const parseCERTStrategyConfiguration = (ssoKey: string, envConfiguration: any, dryRun: boolean) => {
+  const { configuration } = computeConfiguration(envConfiguration, StrategyType.ClientCertStrategy);
+  const identifier = envConfiguration?.identifier || 'cert';
+
+  const authEntity: SingleSignOnAddInput = {
+    identifier,
+    strategy: StrategyType.ClientCertStrategy,
+    name: computeAuthenticationName(ssoKey, envConfiguration, identifier),
+    label: computeAuthenticationLabel(ssoKey, envConfiguration),
+    description: `${StrategyType.ClientCertStrategy} Automatically ${dryRun ? 'detected' : 'created'} from ${ssoKey} at ${now()}`,
+    enabled: computeEnabled(envConfiguration),
+    configuration,
+  };
+  return authEntity;
+};
 
 const parseLocalStrategyConfiguration = (ssoKey: string, envConfiguration: any, dryRun: boolean) => {
   const authEntity: SingleSignOnAddInput = {
@@ -357,9 +357,8 @@ export const parseSingleSignOnRunConfiguration = async (context: AuthContext, us
             authenticationStrategiesInput.push(parseLDAPStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
             break;
           case EnvStrategyType.STRATEGY_CERT:
-            logApp.warn(`[SSO CONVERSION] NOT IMPLEMENTED ${currentSSOconfig.strategy} detected.`);
-            // logApp.info('[SSO MIGRATION] Looking at CERT migration');
-            // authenticationStrategiesInput.push(parseCERTStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
+            logApp.info('[SSO MIGRATION] Looking at CERT migration');
+            authenticationStrategiesInput.push(parseCERTStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
             break;
           case EnvStrategyType.STRATEGY_HEADER:
             logApp.info('[SSO MIGRATION] Looking at HEADER migration');
