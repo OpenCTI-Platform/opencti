@@ -420,7 +420,7 @@ const createApp = async (app, schema) => {
           if (strategy) {
             if (providerCache.logout_remote === true) {
               if (strategy.logout) {
-                logApp.info('[LOGOUT] requesting remote logout using authentication strategy parameters.');
+                logApp.debug('[LOGOUT] requesting remote logout using authentication strategy parameters.');
                 req.user = user; // Needed for passport
                 strategy.logout(req, (error, request) => {
                   // When logout is implemented for strategy
