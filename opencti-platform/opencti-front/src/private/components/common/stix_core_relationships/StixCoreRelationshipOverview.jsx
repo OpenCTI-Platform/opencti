@@ -1,53 +1,53 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
-import * as R from 'ramda';
-import withStyles from '@mui/styles/withStyles';
-import withTheme from '@mui/styles/withTheme';
-import { createFragmentContainer, graphql } from 'react-relay';
-import Grid from '@mui/material/Grid';
-import { ArrowRightAlt, EditOutlined, ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
-import Divider from '@mui/material/Divider';
-import Chip from '@mui/material/Chip';
+import { ArrowRightAlt, EditOutlined, ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
+import { Tooltip, Typography } from '@mui/material';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
-import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
-import { DraftChip } from '../draft/DraftChip';
-import { itemColor } from '../../../../utils/Colors';
-import { resolveLink } from '../../../../utils/Entity';
-import { truncate } from '../../../../utils/String';
-import inject18n from '../../../../components/i18n';
-import ItemIcon from '../../../../components/ItemIcon';
-import ItemConfidence from '../../../../components/ItemConfidence';
-import StixCoreRelationshipEdition, { stixCoreRelationshipEditionDeleteMutation } from './StixCoreRelationshipEdition';
-import { commitMutation } from '../../../../relay/environment';
-import { stixCoreRelationshipEditionFocus } from './StixCoreRelationshipEditionOverview';
-import StixCoreRelationshipStixCoreRelationships from './StixCoreRelationshipStixCoreRelationships';
-import ItemAuthor from '../../../../components/ItemAuthor';
-import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
-import StixCoreRelationshipInference from './StixCoreRelationshipInference';
-import StixCoreRelationshipExternalReferences from '../../analyses/external_references/StixCoreRelationshipExternalReferences';
-import StixCoreRelationshipLatestHistory from './StixCoreRelationshipLatestHistory';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
-import ItemStatus from '../../../../components/ItemStatus';
-import ItemCreators from '../../../../components/ItemCreators';
-import StixCoreRelationshipSharing from './StixCoreRelationshipSharing';
-import ItemMarkings from '../../../../components/ItemMarkings';
-import StixCoreObjectKillChainPhasesView from '../stix_core_objects/StixCoreObjectKillChainPhasesView';
-import StixCoreObjectOrStixRelationshipLastContainers from '../containers/StixCoreObjectOrStixRelationshipLastContainers';
-import StixCoreRelationshipObjectLabelsView from './StixCoreRelationshipLabelsView';
-import Transition from '../../../../components/Transition';
-import MarkdownDisplay from '../../../../components/MarkdownDisplay';
-import withRouter from '../../../../utils/compat_router/withRouter';
+import Divider from '@mui/material/Divider';
+import Grid from '@mui/material/Grid';
+import withStyles from '@mui/styles/withStyles';
+import withTheme from '@mui/styles/withTheme';
+import * as PropTypes from 'prop-types';
+import * as R from 'ramda';
+import { Component } from 'react';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { Link } from 'react-router-dom';
 import Card from '../../../../components/common/card/Card';
-import Label from '../../../../components/common/label/Label';
 import CardTitle from '../../../../components/common/card/CardTitle';
+import Label from '../../../../components/common/label/Label';
+import inject18n from '../../../../components/i18n';
+import ItemAuthor from '../../../../components/ItemAuthor';
+import ItemConfidence from '../../../../components/ItemConfidence';
+import ItemCreators from '../../../../components/ItemCreators';
+import ItemIcon from '../../../../components/ItemIcon';
+import ItemMarkings from '../../../../components/ItemMarkings';
+import ItemStatus from '../../../../components/ItemStatus';
+import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import Transition from '../../../../components/Transition';
+import { commitMutation } from '../../../../relay/environment';
+import { itemColor } from '../../../../utils/Colors';
+import withRouter from '../../../../utils/compat_router/withRouter';
+import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
+import { resolveLink } from '../../../../utils/Entity';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import Security from '../../../../utils/Security';
+import { capitalizeFirstLetter, truncate } from '../../../../utils/String';
+import StixCoreRelationshipExternalReferences from '../../analyses/external_references/StixCoreRelationshipExternalReferences';
+import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
+import StixCoreObjectOrStixRelationshipLastContainers from '../containers/StixCoreObjectOrStixRelationshipLastContainers';
+import { DraftChip } from '../draft/DraftChip';
+import StixCoreObjectKillChainPhasesView from '../stix_core_objects/StixCoreObjectKillChainPhasesView';
+import StixCoreRelationshipEdition, { stixCoreRelationshipEditionDeleteMutation } from './StixCoreRelationshipEdition';
+import { stixCoreRelationshipEditionFocus } from './StixCoreRelationshipEditionOverview';
+import StixCoreRelationshipInference from './StixCoreRelationshipInference';
+import StixCoreRelationshipObjectLabelsView from './StixCoreRelationshipLabelsView';
+import StixCoreRelationshipLatestHistory from './StixCoreRelationshipLatestHistory';
+import StixCoreRelationshipSharing from './StixCoreRelationshipSharing';
+import StixCoreRelationshipStixCoreRelationships from './StixCoreRelationshipStixCoreRelationships';
 
 const styles = (theme) => ({
   container: {
@@ -71,7 +71,7 @@ const styles = (theme) => ({
     position: 'absolute',
     width: 180,
     height: 80,
-    borderRadius: 10,
+    borderRadius: 8,
   },
   itemHeader: {
     padding: '10px 0 10px 0',
@@ -90,10 +90,12 @@ const styles = (theme) => ({
   },
   content: {
     width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     padding: '0 10px 0 10px',
     height: 40,
     maxHeight: 40,
-    lineHeight: '40px',
     color: theme.palette.text.primary,
     textAlign: 'center',
     wordBreak: 'break-word',
@@ -153,13 +155,9 @@ const styles = (theme) => ({
           : 'rgba(0, 0, 0, .2)',
     },
   },
-  chipInList: {
-    fontSize: 15,
-    height: 30,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-  },
 });
+
+const TRUNCATE_CHARS_COUNT = 40;
 
 class StixCoreRelationshipContainer extends Component {
   constructor(props) {
@@ -241,6 +239,14 @@ class StixCoreRelationshipContainer extends Component {
     const expandable = stixCoreRelationship.x_opencti_inferences
       && stixCoreRelationship.x_opencti_inferences.length > 1;
 
+    const fromText = getMainRepresentative(from) !== 'Unknown'
+      ? getMainRepresentative(from)
+      : t(`relationship_${from.entity_type}`);
+
+    const toText = getMainRepresentative(to) !== 'Unknown'
+      ? getMainRepresentative(to)
+      : t(`relationship_${to.entity_type}`);
+
     return (
       <div className={classes.container}>
         <Grid
@@ -273,7 +279,7 @@ class StixCoreRelationshipContainer extends Component {
                 <div
                   className={classes.item}
                   style={{
-                    border: `2px solid ${itemColor(
+                    border: `1px solid ${itemColor(
                       !fromRestricted ? from.entity_type : 'Restricted',
                     )}`,
                     top: 20,
@@ -308,14 +314,11 @@ class StixCoreRelationshipContainer extends Component {
                   </div>
                   <div className={classes.content}>
                     <span className={classes.name}>
-                      {!fromRestricted
-                        ? truncate(
-                            getMainRepresentative(from) !== 'Unknown'
-                              ? getMainRepresentative(from)
-                              : t(`relationship_${from.entity_type}`),
-                            50,
-                          )
-                        : t('Restricted')}
+                      <Tooltip title={fromText}>
+                        {!fromRestricted
+                          ? truncate(fromText, TRUNCATE_CHARS_COUNT)
+                          : t('Restricted')}
+                      </Tooltip>
                       {!fromRestricted && stixCoreRelationship.from.draftVersion && (<DraftChip />)}
                     </span>
                   </div>
@@ -323,21 +326,15 @@ class StixCoreRelationshipContainer extends Component {
               </Link>
               <div className={classes.middle}>
                 <ArrowRightAlt fontSize="large" />
-                <br />
-                <Chip
-                  variant="outlined"
-                  classes={{ root: classes.chipInList }}
-                  color="primary"
-                  label={t(
-                    `relationship_${stixCoreRelationship.relationship_type}`,
-                  )}
-                />
+                <Typography sx={{ fontSize: '14px', fontWeight: 400 }}>
+                  {capitalizeFirstLetter(t(`relationship_${stixCoreRelationship.relationship_type}`))}
+                </Typography>
               </div>
               <Link to={!toRestricted ? `${linkTo}/${to.id}` : '#'}>
                 <div
                   className={classes.item}
                   style={{
-                    border: `2px solid ${itemColor(
+                    border: `1px solid ${itemColor(
                       !toRestricted ? to.entity_type : 'Restricted',
                     )}`,
                     top: 20,
@@ -363,7 +360,6 @@ class StixCoreRelationshipContainer extends Component {
                     </div>
                     <div className={classes.type}>
                       {
-
                         !toRestricted
                           ? to.relationship_type
                             ? t('Relationship')
@@ -374,14 +370,11 @@ class StixCoreRelationshipContainer extends Component {
                   </div>
                   <div className={classes.content}>
                     <span className={classes.name}>
-                      {!toRestricted
-                        ? truncate(
-                            getMainRepresentative(to) !== 'Unknown'
-                              ? getMainRepresentative(to)
-                              : t(`relationship_${to.entity_type}`),
-                            50,
-                          )
-                        : t('Restricted')}
+                      <Tooltip title={toText}>
+                        {!toRestricted
+                          ? truncate(toText, TRUNCATE_CHARS_COUNT)
+                          : t('Restricted')}
+                      </Tooltip>
                       {!toRestricted && stixCoreRelationship.to.draftVersion && (<DraftChip />)}
                     </span>
                   </div>

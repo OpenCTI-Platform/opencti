@@ -48,33 +48,23 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationships = ({
   const dataColumns = {
     relationship_type: {
       label: 'Relationship type',
-      width: '12%',
+      width: '20%',
       isSortable: true,
     },
     entity_type: {
       label: 'Type',
-      width: '15%',
+      width: '20%',
       isSortable: true,
     },
     name: {
       label: 'Name',
-      width: '30%',
+      width: '40%',
       isSortable: true,
     },
     created_at: {
       label: 'Platform creation date',
-      width: '12%',
+      width: '20%',
       isSortable: true,
-    },
-    confidence: {
-      label: 'Confidence',
-      width: '12%',
-      isSortable: false,
-    },
-    markings: {
-      label: 'Markings',
-      isSortable: false,
-      width: '12%',
     },
   };
   const paginationOptions: SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesPaginationQuery$variables = {
