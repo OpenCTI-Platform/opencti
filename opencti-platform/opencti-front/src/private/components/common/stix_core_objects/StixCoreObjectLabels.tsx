@@ -29,7 +29,24 @@ const StixCoreObjectLabels = ({
   const labelValues = labels?.map((l) => l.value || l.id) ?? [];
   const { containerRef, chipRefs, visibleCount, shouldTruncate } = useChipOverflow(labelValues);
 
-  if (!revoked && labels && labels.length > 0) {
+  // case Revoked
+  if (revoked) {
+    return (
+      <Tag
+        variant="outlined"
+        label={t_i18n('Revoked')}
+        onClick={(e: SyntheticEvent) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onClick?.('objectLabel', null, 'eq');
+        }}
+        color={theme.palette.designSystem.tertiary.red[400]}
+      />
+    );
+  }
+
+  // case Some labels
+  if (labels && labels.length > 0) {
     const hiddenCount = labels.length - visibleCount;
 
     return (
@@ -88,31 +105,9 @@ const StixCoreObjectLabels = ({
     );
   }
 
+  // case no labels
   return (
-    <>
-      {revoked ? (
-        <Tag
-          variant="outlined"
-          label={t_i18n('Revoked')}
-          onClick={(e: SyntheticEvent) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onClick?.('objectLabel', null, 'eq');
-          }}
-          color={theme.palette.designSystem.tertiary.red[400]}
-        />
-      ) : (
-        <Tag
-          label={t_i18n('No label')}
-          onClick={(e: SyntheticEvent) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onClick?.('objectLabel', null, 'eq');
-          }}
-          color={theme.palette.designSystem.tertiary.blue[900]}
-        />
-      )}
-    </>
+    <>-</>
   );
 };
 
