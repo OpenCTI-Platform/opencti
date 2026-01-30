@@ -1,7 +1,7 @@
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import { ArrowRightAlt, EditOutlined, ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
-import { Typography } from '@mui/material';
+import { Tooltip, Typography } from '@mui/material';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -35,7 +35,7 @@ import { getMainRepresentative } from '../../../../utils/defaultRepresentatives'
 import { resolveLink } from '../../../../utils/Entity';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
-import { truncate } from '../../../../utils/String';
+import { capitalizeFirstLetter, truncate } from '../../../../utils/String';
 import StixCoreRelationshipExternalReferences from '../../analyses/external_references/StixCoreRelationshipExternalReferences';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixCoreObjectOrStixRelationshipLastContainers from '../containers/StixCoreObjectOrStixRelationshipLastContainers';
@@ -239,6 +239,14 @@ class StixCoreRelationshipContainer extends Component {
     const expandable = stixCoreRelationship.x_opencti_inferences
       && stixCoreRelationship.x_opencti_inferences.length > 1;
 
+    const fromText = getMainRepresentative(from) !== 'Unknown'
+      ? getMainRepresentative(from)
+      : t(`relationship_${from.entity_type}`);
+
+    const toText = getMainRepresentative(to) !== 'Unknown'
+      ? getMainRepresentative(to)
+      : t(`relationship_${to.entity_type}`);
+
     return (
       <div className={classes.container}>
         <Grid
@@ -306,14 +314,11 @@ class StixCoreRelationshipContainer extends Component {
                   </div>
                   <div className={classes.content}>
                     <span className={classes.name}>
-                      {!fromRestricted
-                        ? truncate(
-                            getMainRepresentative(from) !== 'Unknown'
-                              ? getMainRepresentative(from)
-                              : t(`relationship_${from.entity_type}`),
-                            TRUNCATE_CHARS_COUNT,
-                          )
-                        : t('Restricted')}
+                      <Tooltip title={fromText}>
+                        {!fromRestricted
+                          ? truncate(fromText, TRUNCATE_CHARS_COUNT)
+                          : t('Restricted')}
+                      </Tooltip>
                       {!fromRestricted && stixCoreRelationship.from.draftVersion && (<DraftChip />)}
                     </span>
                   </div>
@@ -322,7 +327,7 @@ class StixCoreRelationshipContainer extends Component {
               <div className={classes.middle}>
                 <ArrowRightAlt fontSize="large" />
                 <Typography sx={{ fontSize: '14px', fontWeight: 400 }}>
-                  {t(`relationship_${stixCoreRelationship.relationship_type}`)}
+                  {capitalizeFirstLetter(t(`relationship_${stixCoreRelationship.relationship_type}`))}
                 </Typography>
               </div>
               <Link to={!toRestricted ? `${linkTo}/${to.id}` : '#'}>
@@ -355,7 +360,6 @@ class StixCoreRelationshipContainer extends Component {
                     </div>
                     <div className={classes.type}>
                       {
-
                         !toRestricted
                           ? to.relationship_type
                             ? t('Relationship')
@@ -366,14 +370,11 @@ class StixCoreRelationshipContainer extends Component {
                   </div>
                   <div className={classes.content}>
                     <span className={classes.name}>
-                      {!toRestricted
-                        ? truncate(
-                            getMainRepresentative(to) !== 'Unknown'
-                              ? getMainRepresentative(to)
-                              : t(`relationship_${to.entity_type}`),
-                            TRUNCATE_CHARS_COUNT,
-                          )
-                        : t('Restricted')}
+                      <Tooltip title={toText}>
+                        {!toRestricted
+                          ? truncate(toText, TRUNCATE_CHARS_COUNT)
+                          : t('Restricted')}
+                      </Tooltip>
                       {!toRestricted && stixCoreRelationship.to.draftVersion && (<DraftChip />)}
                     </span>
                   </div>
