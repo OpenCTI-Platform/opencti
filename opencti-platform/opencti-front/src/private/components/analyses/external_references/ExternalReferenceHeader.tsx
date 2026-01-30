@@ -9,8 +9,10 @@ import { truncate } from '../../../../utils/String';
 import { ExternalReferenceHeader_externalReference$data } from './__generated__/ExternalReferenceHeader_externalReference.graphql';
 import PopoverMenu from '../../../../components/PopoverMenu';
 import { useFormatter } from '../../../../components/i18n';
-import useGranted, { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import useGranted, { AUTOMATION, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
+import StixCoreObjectMenuItemUnderEE from '@components/common/stix_core_objects/StixCoreObjectMenuItemUnderEE';
+import StixCoreObjectEnrollPlaybook from '@components/common/stix_core_objects/StixCoreObjectEnrollPlaybook';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -23,18 +25,26 @@ const useStyles = makeStyles(() => ({
 interface ExternalReferenceHeaderComponentProps {
   externalReference: ExternalReferenceHeader_externalReference$data;
   EditComponent?: React.JSX.Element | boolean;
+  enableEnrollPlaybook?: boolean;
 }
 
 const ExternalReferenceHeaderComponent = ({
   externalReference,
   EditComponent,
+  enableEnrollPlaybook,
 }: ExternalReferenceHeaderComponentProps) => {
   const classes = useStyles();
   const canDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]);
   const { t_i18n } = useFormatter();
   const [openDelete, setOpenDelete] = useState(false);
+  const [openEnrollPlaybook, setOpenEnrollPlaybook] = useState(false);
+
   const handleOpenDelete = () => setOpenDelete(true);
   const handleCloseDelete = () => setOpenDelete(false);
+  const handleCloseEnrollPlaybook = () => {
+    setOpenEnrollPlaybook(false);
+  };
+  const displayPopoverMenu = canDelete || enableEnrollPlaybook;
 
   return (
     <div
@@ -56,17 +66,37 @@ const ExternalReferenceHeaderComponent = ({
       </div>
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <div style={{ display: 'flex' }}>
-          {canDelete && (
+          {enableEnrollPlaybook
+            && (
+              <StixCoreObjectEnrollPlaybook
+                stixCoreObjectId={externalReference.id}
+                open={openEnrollPlaybook}
+                handleClose={handleCloseEnrollPlaybook}
+              />
+            )
+          }
+          {displayPopoverMenu && (
             <PopoverMenu>
               {({ closeMenu }) => (
                 <Box>
-                  <MenuItem onClick={() => {
-                    handleOpenDelete();
-                    closeMenu();
-                  }}
-                  >
-                    {t_i18n('Delete')}
-                  </MenuItem>
+                  {enableEnrollPlaybook && (
+                    <StixCoreObjectMenuItemUnderEE
+                      title={t_i18n('Enroll in playbook')}
+                      setOpen={setOpenEnrollPlaybook}
+                      handleCloseMenu={closeMenu}
+                      needs={[AUTOMATION]}
+                      matchAll
+                    />
+                  )}
+                  {canDelete && (
+                    <MenuItem onClick={() => {
+                      handleOpenDelete();
+                      closeMenu();
+                    }}
+                    >
+                      {t_i18n('Delete')}
+                    </MenuItem>
+                  )}
                 </Box>
               )}
             </PopoverMenu>

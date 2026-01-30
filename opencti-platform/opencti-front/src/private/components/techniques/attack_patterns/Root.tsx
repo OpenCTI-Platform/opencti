@@ -157,6 +157,7 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
                 </Security>
               )}
               redirectToContent={true}
+              enableEnrollPlaybook={true}
             />
             <Box
               sx={{

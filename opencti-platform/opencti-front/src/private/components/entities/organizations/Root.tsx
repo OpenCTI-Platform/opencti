@@ -206,6 +206,7 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
               viewAs={viewAs}
               redirectToContent={true}
               enableEnricher={true}
+              enableEnrollPlaybook={true}
             />
             <Box
               sx={{

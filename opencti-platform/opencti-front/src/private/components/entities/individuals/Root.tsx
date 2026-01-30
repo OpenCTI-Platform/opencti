@@ -195,6 +195,7 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
               viewAs={viewAs}
               redirectToContent={true}
               disableSharing={individual.isUser}
+              enableEnrollPlaybook={true}
             />
             <Box
               sx={{

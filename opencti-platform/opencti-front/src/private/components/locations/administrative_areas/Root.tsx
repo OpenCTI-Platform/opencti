@@ -159,6 +159,7 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
               enableQuickSubscription={true}
               isOpenctiAlias={true}
               redirectToContent={true}
+              enableEnrollPlaybook={true}
             />
             <Box
               sx={{
