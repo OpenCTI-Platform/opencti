@@ -953,11 +953,11 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Priority',
     percentWidth: 10,
     isSortable: true,
-    render: ({ priority }, { t_i18n }) => (
+    render: ({ priority }) => (
       <ItemPriority
         variant="inList"
         priority={priority}
-        label={priority || t_i18n('Unknown')}
+        label={priority}
       />
     ),
   },
@@ -1115,11 +1115,11 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Severity',
     percentWidth: 10,
     isSortable: true,
-    render: ({ severity }, { t_i18n }) => (
+    render: ({ severity }) => (
       <ItemSeverity
         variant="inList"
         severity={severity}
-        label={severity || t_i18n('Unknown')}
+        label={severity}
       />
     ),
   },
@@ -1494,10 +1494,10 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'CVSS3 - Severity',
     percentWidth: 15,
     isSortable: true,
-    render: ({ x_opencti_cvss_base_severity }, { t_i18n }) => (
+    render: ({ x_opencti_cvss_base_severity }) => (
       <ItemSeverity
         severity={x_opencti_cvss_base_severity}
-        label={x_opencti_cvss_base_severity || t_i18n('Unknown')}
+        label={x_opencti_cvss_base_severity}
       />
     ),
   },
@@ -1506,10 +1506,10 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'CVSS4 - Severity',
     percentWidth: 15,
     isSortable: true,
-    render: ({ x_opencti_cvss_v4_base_severity }, { t_i18n }) => (
+    render: ({ x_opencti_cvss_v4_base_severity }) => (
       <ItemSeverity
         severity={x_opencti_cvss_v4_base_severity}
-        label={x_opencti_cvss_v4_base_severity || t_i18n('Unknown')}
+        label={x_opencti_cvss_v4_base_severity}
       />
     ),
   },

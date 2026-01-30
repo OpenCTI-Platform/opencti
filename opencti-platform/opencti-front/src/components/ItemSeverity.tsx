@@ -14,6 +14,9 @@ const ItemSeverity: FunctionComponent<ItemSeverityProps> = ({
   severity,
 }) => {
   const theme = useTheme<Theme>();
+  if (!severity) {
+    return <>-</>;
+  }
 
   let severityColor = theme.palette.severity.default;
   switch (severity?.toLowerCase()) {
