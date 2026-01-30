@@ -111,6 +111,7 @@ const CaseHeaderMenu: FunctionComponent<CaseHeaderMenuProps> = ({
       <Breadcrumbs elements={breadcrumb} />
 
       <HeaderMainEntityLayout
+        hasPlaceholderTags={false}
         title={caseTemplate.name}
         rightActions={(
           <>
@@ -243,7 +244,6 @@ const CaseTemplateTasks = () => {
           </React.Suspense>
         </>
       )}
-      <div className="clearfix" style={{ paddingTop: 16 }} />
       <LabelsVocabulariesMenu />
       {renderLines()}
     </div>
