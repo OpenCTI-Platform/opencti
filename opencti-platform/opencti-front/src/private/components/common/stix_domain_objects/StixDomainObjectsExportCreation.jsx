@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, filter, flatten, fromPairs, includes, map, propOr, uniq, zip } from 'ramda';
+import { compose, filter, flatten, fromPairs, includes, map, uniq, zip } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -9,7 +9,6 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
 import Slide from '@mui/material/Slide';
 import { InfoOutlined } from '@mui/icons-material';
-import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import MenuItem from '@mui/material/MenuItem';
 import * as Yup from 'yup';
@@ -21,6 +20,7 @@ import SelectField from '../../../../components/fields/SelectField';
 import { ExportContext } from '../../../../utils/ExportContextProvider';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE } from '../files/FileManager';
+import { graphql } from 'react-relay';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -98,22 +98,14 @@ export const scopesConn = (exportConnectors) => {
   return fromPairs(zipped);
 };
 
-class StixDomainObjectsExportCreationComponent extends Component {
+class StixDomainObjectsExportCreation extends Component {
   constructor(props) {
     super(props);
-    this.state = { open: false, selectedContentMaxMarkingsIds: [] };
+    this.state = { selectedContentMaxMarkingsIds: [] };
   }
 
   handleSelectedContentMaxMarkingsChange(values) {
     this.setState({ selectedContentMaxMarkingsIds: values.map(({ value }) => value) });
-  }
-
-  handleOpen() {
-    this.setState({ open: true });
-  }
-
-  handleClose() {
-    this.setState({ open: false });
   }
 
   onSubmit(selectedIds, values, { setSubmitting, resetForm }) {
@@ -144,37 +136,13 @@ class StixDomainObjectsExportCreationComponent extends Component {
   }
 
   render() {
-    const { classes, t, data } = this.props;
-    const connectorsExport = propOr([], 'connectorsForExport', data);
-    const exportScopes = uniq(
-      flatten(map((c) => c.connector_scope, connectorsExport)),
-    );
-    const exportConnsPerFormat = scopesConn(connectorsExport);
-    const isExportActive = (format) => filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
-    const isExportPossible = filter((x) => isExportActive(x), exportScopes).length > 0;
+    const { t, exportScopes, isExportActive } = this.props;
     const availableFormat = exportScopes;
     return (
       <ExportContext.Consumer>
         {({ selectedIds }) => {
           return (
             <>
-              <Tooltip
-                title={
-                  isExportPossible
-                    ? t('Generate an export')
-                    : t('No export connector available to generate an export')
-                }
-                aria-label="generate-export"
-              >
-                <Button
-                  onClick={this.handleOpen.bind(this)}
-                  color="secondary"
-                  className={classes.createButton}
-                  disabled={!isExportPossible}
-                >
-                  {t('Generate an export')}
-                </Button>
-              </Tooltip>
               <Formik
                 enableReinitialize={true}
                 initialValues={{
@@ -186,14 +154,14 @@ class StixDomainObjectsExportCreationComponent extends Component {
                 }}
                 validationSchema={exportValidation(t)}
                 onSubmit={this.onSubmit.bind(this, selectedIds)}
-                onReset={this.handleClose.bind(this)}
+                onReset={() => this.props.onClose()}
               >
-                {({ submitForm, handleReset, isSubmitting, resetForm, setFieldValue }) => (
+                {({ submitForm, resetForm, isSubmitting, setFieldValue }) => (
                   <Form>
                     <Dialog
                       slotProps={{ paper: { elevation: 1 } }}
-                      open={this.state.open}
-                      onClose={resetForm}
+                      open={this.props.open}
+                      onClose={this.props.onClose}
                       fullWidth={true}
                       data-testid="StixDomainObjectsExportCreationDialog"
                     >
@@ -257,7 +225,14 @@ class StixDomainObjectsExportCreationComponent extends Component {
                         />
                       </DialogContent>
                       <DialogActions>
-                        <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
+                        <Button
+                          variant="secondary"
+                          onClick={() => {
+                            this.props.onClose();
+                            resetForm();
+                          }}
+                          disabled={isSubmitting}
+                        >
                           {t('Cancel')}
                         </Button>
                         <Button
@@ -279,33 +254,17 @@ class StixDomainObjectsExportCreationComponent extends Component {
   }
 }
 
-const StixDomainObjectsExportCreations = createFragmentContainer(
-  StixDomainObjectsExportCreationComponent,
-  {
-    data: graphql`
-      fragment StixDomainObjectsExportCreation_data on Query {
-        connectorsForExport {
-          id
-          name
-          active
-          connector_scope
-          updated_at
-        }
-      }
-    `,
-  },
-);
-
-StixDomainObjectsExportCreations.propTypes = {
+StixDomainObjectsExportCreation.propTypes = {
   classes: PropTypes.object.isRequired,
   t: PropTypes.func,
   data: PropTypes.object,
   exportContext: PropTypes.object,
   paginationOptions: PropTypes.object,
   onExportAsk: PropTypes.func,
+  open: PropTypes.bool,
 };
 
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixDomainObjectsExportCreations);
+)(StixDomainObjectsExportCreation);
