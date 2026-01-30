@@ -14,7 +14,6 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
 import { Link } from 'react-router-dom';
 import { useTheme } from '@mui/styles';
-import makeStyles from '@mui/styles/makeStyles';
 import { ApexOptions } from 'apexcharts';
 import { SimplePaletteColorOptions } from '@mui/material/styles/createPalette';
 import UserConfidenceLevel from '@components/settings/users/UserConfidenceLevel';
@@ -55,14 +54,6 @@ import Tag from '../../../../components/common/tag/Tag';
 
 const startDate = yearsAgo(1);
 const endDate = now();
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>(() => ({
-  gridContainer: {
-    marginBottom: 50,
-  },
-}));
 
 export const userSessionKillMutation = graphql`
   mutation UserSessionKillMutation($id: ID!) {
@@ -232,7 +223,6 @@ interface UserProps {
 }
 
 const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
-  const classes = useStyles();
   const { t_i18n, nsdt, fsd, fldt } = useFormatter();
   const { me } = useAuth();
   const theme = useTheme<Theme>();
@@ -363,7 +353,9 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
+        style={{
+          marginBottom: 50,
+        }}
       >
         <Grid item xs={6}>
           <Card title={t_i18n('Basic information')}>
@@ -411,11 +403,13 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                     <Label>
                       {t_i18n('Account status')}
                     </Label>
-                    <ItemAccountStatus
-                      account_status={user.account_status}
-                      label={t_i18n(user.account_status || 'Unknown')}
-                      variant="outlined"
-                    />
+                    <FieldOrEmpty source={user.account_status}>
+                      <ItemAccountStatus
+                        account_status={user.account_status}
+                        label={t_i18n(user.account_status)}
+                        variant="outlined"
+                      />
+                    </FieldOrEmpty>
                   </Grid>
                   <Grid item xs={4}>
                     <Label>
@@ -495,11 +489,13 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                     <Label>
                       {t_i18n('Account status')}
                     </Label>
-                    <ItemAccountStatus
-                      account_status={user.account_status}
-                      label={t_i18n(user.account_status || 'Unknown')}
-                      variant="outlined"
-                    />
+                    <FieldOrEmpty source={user.account_status}>
+                      <ItemAccountStatus
+                        account_status={user.account_status}
+                        label={t_i18n(user.account_status)}
+                        variant="outlined"
+                      />
+                    </FieldOrEmpty>
                   </Grid>
                   <Grid item xs={6}>
                     <Label>

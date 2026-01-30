@@ -1,6 +1,5 @@
 import React, { CSSProperties, ReactNode } from 'react';
 import Chip from '@mui/material/Chip';
-import makeStyles from '@mui/styles/makeStyles';
 import StixCoreObjectLabels from '@components/common/stix_core_objects/StixCoreObjectLabels';
 import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/styles';
@@ -13,7 +12,6 @@ import type { DataTableColumn } from './dataTableTypes';
 import { DataTableProps } from './dataTableTypes';
 import ItemMarkings from '../ItemMarkings';
 import ItemStatus from '../ItemStatus';
-import { emptyFilled } from '../../utils/String';
 import ItemPriority from '../ItemPriority';
 import { isNotEmptyField } from '../../utils/utils';
 import RatingField from '../fields/RatingField';
@@ -47,30 +45,6 @@ const chipStyle: CSSProperties = {
   borderRadius: '4px',
   textTransform: 'uppercase',
 };
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  chipInList: {
-    fontSize: 12,
-    height: 20,
-    float: 'left',
-    width: 120,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-  },
-  chip: {
-    fontSize: 13,
-    lineHeight: '12px',
-    height: 20,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-    cursor: 'pointer',
-    '&:hover': {
-      backgroundColor: theme.palette.primary.main,
-    },
-  },
-}));
 
 export const Truncate = ({ children }: { children: ReactNode }) => (
   <div
@@ -106,24 +80,15 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Aliases',
     percentWidth: 10,
     render: ({ aliases }) => {
-      const theme = useTheme<Theme>();
-
-      return aliases ? (
-        <Tooltip title={aliases.join(', ')}>
-          <div
-            style={{
-              maxWidth: '100%',
-              display: 'flex',
-              gap: theme.spacing(0.5),
-            }}
+      return (
+        <FieldOrEmpty source={aliases}>
+          <TagsOverflow
+            items={aliases}
+            getKey={(alias: string) => alias}
+            renderTag={(alias: string) => (<Tag label={alias} />)}
           >
-            {aliases.map((value: string) => (
-              <Chip key={value} label={value} size="small" />
-            ))}
-          </div>
-        </Tooltip>
-      ) : (
-        defaultRender('-')
+          </TagsOverflow>
+        </FieldOrEmpty>
       );
     },
   },
@@ -572,17 +537,19 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: (
       { incident_type },
-      { t_i18n, storageHelpers: { handleAddFilter } },
+      { storageHelpers: { handleAddFilter } },
     ) => {
       return (
-        <Tag
-          label={incident_type || t_i18n('Unknown')}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleAddFilter('incident_type', incident_type ?? null, 'eq');
-          }}
-        />
+        <FieldOrEmpty source={incident_type}>
+          <Tag
+            label={incident_type}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleAddFilter('incident_type', incident_type ?? null, 'eq');
+            }}
+          />
+        </FieldOrEmpty>
       );
     },
   },
@@ -593,21 +560,23 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: (
       { information_types },
-      { t_i18n, storageHelpers: { handleAddFilter } },
+      { storageHelpers: { handleAddFilter } },
     ) => {
       return (
-        <Tag
-          label={information_types?.at(0) ?? t_i18n('Unknown')}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleAddFilter(
-              'information_types',
-              information_types?.at(0) ?? null,
-              'eq',
-            );
-          }}
-        />
+        <FieldOrEmpty source={information_types}>
+          <Tag
+            label={information_types?.at(0)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleAddFilter(
+                'information_types',
+                information_types?.at(0) ?? null,
+                'eq',
+              );
+            }}
+          />
+        </FieldOrEmpty>
       );
     },
   },
@@ -618,21 +587,23 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: (
       { infrastructure_types },
-      { t_i18n, storageHelpers: { handleAddFilter } },
+      { storageHelpers: { handleAddFilter } },
     ) => {
       return (
-        <Tag
-          label={infrastructure_types?.at(0) ?? t_i18n('Unknown')}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleAddFilter(
-              'infrastructure_types',
-              infrastructure_types?.at(0) ?? null,
-              'eq',
-            );
-          }}
-        />
+        <FieldOrEmpty source={infrastructure_types}>
+          <Tag
+            label={infrastructure_types?.at(0)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleAddFilter(
+                'infrastructure_types',
+                infrastructure_types?.at(0) ?? null,
+                'eq',
+              );
+            }}
+          />
+        </FieldOrEmpty>
       );
     },
   },
@@ -735,17 +706,19 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: (
       { note_types },
-      { t_i18n, storageHelpers: { handleAddFilter } },
+      { storageHelpers: { handleAddFilter } },
     ) => {
       return (
-        <Tag
-          label={note_types?.at(0) ?? t_i18n('Unknown')}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleAddFilter('note_types', note_types?.at(0) ?? null, 'eq');
-          }}
-        />
+        <FieldOrEmpty source={note_types}>
+          <Tag
+            label={note_types?.at(0)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleAddFilter('note_types', note_types?.at(0) ?? null, 'eq');
+            }}
+          />
+        </FieldOrEmpty>
       );
     },
   },
@@ -953,11 +926,11 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Priority',
     percentWidth: 10,
     isSortable: true,
-    render: ({ priority }, { t_i18n }) => (
+    render: ({ priority }) => (
       <ItemPriority
         variant="inList"
         priority={priority}
-        label={priority || t_i18n('Unknown')}
+        label={priority}
       />
     ),
   },
@@ -1023,17 +996,19 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: (
       { report_types },
-      { t_i18n, storageHelpers: { handleAddFilter } },
+      { storageHelpers: { handleAddFilter } },
     ) => {
       return (
-        <Tag
-          label={report_types?.at(0) ?? t_i18n('Unknown')}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleAddFilter('report_types', report_types?.at(0) ?? null, 'eq');
-          }}
-        />
+        <FieldOrEmpty source={report_types}>
+          <Tag
+            label={report_types?.at(0)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleAddFilter('report_types', report_types?.at(0) ?? null, 'eq');
+            }}
+          />
+        </FieldOrEmpty>
       );
     },
   },
@@ -1056,25 +1031,23 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: (
       { response_types },
-      { t_i18n, storageHelpers: { handleAddFilter } },
+      { storageHelpers: { handleAddFilter } },
     ) => {
-      const classes = useStyles();
       return (
-        <Chip
-          classes={{ root: classes.chipInList }}
-          color="primary"
-          variant="outlined"
-          label={response_types?.at(0) ?? t_i18n('Unknown')}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleAddFilter(
-              'response_types',
-              response_types?.at(0) ?? null,
-              'eq',
-            );
-          }}
-        />
+        <FieldOrEmpty source={response_types}>
+          <Tag
+            label={response_types?.at(0)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleAddFilter(
+                'response_types',
+                response_types?.at(0) ?? null,
+                'eq',
+              );
+            }}
+          />
+        </FieldOrEmpty>
       );
     },
   },
@@ -1104,10 +1077,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 20,
     isSortable: true,
     render: ({ security_platform_type }) => {
-      const value = isNotEmptyField(security_platform_type)
-        ? security_platform_type
-        : '-';
-      return defaultRender(value);
+      return defaultRender(security_platform_type);
     },
   },
   severity: {
@@ -1115,11 +1085,11 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Severity',
     percentWidth: 10,
     isSortable: true,
-    render: ({ severity }, { t_i18n }) => (
+    render: ({ severity }) => (
       <ItemSeverity
         variant="inList"
         severity={severity}
-        label={severity || t_i18n('Unknown')}
+        label={severity}
       />
     ),
   },
@@ -1178,25 +1148,23 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: (
       { takedown_types },
-      { t_i18n, storageHelpers: { handleAddFilter } },
+      { storageHelpers: { handleAddFilter } },
     ) => {
-      const classes = useStyles();
       return (
-        <Chip
-          classes={{ root: classes.chipInList }}
-          color="primary"
-          variant="outlined"
-          label={takedown_types?.at(0) ?? t_i18n('Unknown')}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleAddFilter(
-              'takedown_types',
-              takedown_types?.at(0) ?? null,
-              'eq',
-            );
-          }}
-        />
+        <FieldOrEmpty source={takedown_types}>
+          <Tag
+            label={takedown_types?.at(0)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleAddFilter(
+                'takedown_types',
+                takedown_types?.at(0) ?? null,
+                'eq',
+              );
+            }}
+          />
+        </FieldOrEmpty>
       );
     },
   },
@@ -1264,21 +1232,19 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: (
       { tool_types },
-      { t_i18n, storageHelpers: { handleAddFilter } },
+      { storageHelpers: { handleAddFilter } },
     ) => {
-      const classes = useStyles();
       return (
-        <Chip
-          classes={{ root: classes.chipInList }}
-          color="primary"
-          variant="outlined"
-          label={tool_types?.at(0) ?? t_i18n('Unknown')}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleAddFilter('tool_types', tool_types?.at(0) ?? null, 'eq');
-          }}
-        />
+        <FieldOrEmpty source={tool_types}>
+          <Tag
+            label={tool_types?.at(0)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleAddFilter('tool_types', tool_types?.at(0) ?? null, 'eq');
+            }}
+          />
+        </FieldOrEmpty>
       );
     },
   },
@@ -1334,8 +1300,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 20,
     isSortable: false,
     render: ({ usages }) => {
-      const value = usages != null ? usages : '-';
-      return defaultRender(value);
+      return defaultRender(usages);
     },
   },
   user_email: {
@@ -1379,7 +1344,11 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'ID',
     percentWidth: 10,
     isSortable: true,
-    render: ({ x_mitre_id }) => <code>{emptyFilled(x_mitre_id)}</code>,
+    render: ({ x_mitre_id }) => (
+      <FieldOrEmpty source={x_mitre_id}>
+        <code>{x_mitre_id}</code>
+      </FieldOrEmpty>
+    ),
   },
   x_opencti_color: {
     id: 'x_opencti_color',
@@ -1474,7 +1443,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     render: ({ x_opencti_epss_score }) => {
       const value = x_opencti_epss_score
         ? Math.trunc(x_opencti_epss_score * 100000) / 100000
-        : '-';
+        : undefined;
       return defaultRender(value);
     },
   },
@@ -1485,7 +1454,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     render: ({ x_opencti_epss_percentile }) => {
       const value = x_opencti_epss_percentile
         ? Math.trunc(x_opencti_epss_percentile * 100000) / 100000
-        : '-';
+        : undefined;
       return defaultRender(value);
     },
   },
@@ -1494,10 +1463,10 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'CVSS3 - Severity',
     percentWidth: 15,
     isSortable: true,
-    render: ({ x_opencti_cvss_base_severity }, { t_i18n }) => (
+    render: ({ x_opencti_cvss_base_severity }) => (
       <ItemSeverity
         severity={x_opencti_cvss_base_severity}
-        label={x_opencti_cvss_base_severity || t_i18n('Unknown')}
+        label={x_opencti_cvss_base_severity}
       />
     ),
   },
@@ -1506,10 +1475,10 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'CVSS4 - Severity',
     percentWidth: 15,
     isSortable: true,
-    render: ({ x_opencti_cvss_v4_base_severity }, { t_i18n }) => (
+    render: ({ x_opencti_cvss_v4_base_severity }) => (
       <ItemSeverity
         severity={x_opencti_cvss_v4_base_severity}
-        label={x_opencti_cvss_v4_base_severity || t_i18n('Unknown')}
+        label={x_opencti_cvss_v4_base_severity}
       />
     ),
   },
@@ -1522,23 +1491,21 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       { x_opencti_organization_type },
       { storageHelpers: { handleAddFilter } },
     ) => {
-      const classes = useStyles();
       return (
-        <Chip
-          classes={{ root: classes.chipInList }}
-          color="primary"
-          variant="outlined"
-          label={x_opencti_organization_type || 'Unknown'}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleAddFilter(
-              'x_opencti_organization_type',
-              x_opencti_organization_type ?? null,
-              'eq',
-            );
-          }}
-        />
+        <FieldOrEmpty source={x_opencti_organization_type}>
+          <Tag
+            label={x_opencti_organization_type}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleAddFilter(
+                'x_opencti_organization_type',
+                x_opencti_organization_type ?? null,
+                'eq',
+              );
+            }}
+          />
+        </FieldOrEmpty>
       );
     },
   },

@@ -7,6 +7,7 @@ import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
 import Tag from '../../../../components/common/tag/Tag';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 interface SecurityPlatformDetailsComponentProps {
   securityPlatform: SecurityPlatformDetails_securityPlatform$data;
@@ -22,9 +23,11 @@ const SecurityPlatformDetailsComponent: FunctionComponent<SecurityPlatformDetail
             <Label>
               {t_i18n('Security platform type')}
             </Label>
-            <Tag
-              label={securityPlatform.security_platform_type || t_i18n('Unknown')}
-            />
+            <FieldOrEmpty source={securityPlatform.security_platform_type}>
+              <Tag
+                label={securityPlatform.security_platform_type}
+              />
+            </FieldOrEmpty>
             <Label
               sx={{ mt: 2 }}
             >

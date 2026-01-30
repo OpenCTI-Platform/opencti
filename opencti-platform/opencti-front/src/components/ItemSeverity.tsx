@@ -4,7 +4,7 @@ import Tag from '@common/tag/Tag';
 import type { Theme } from './Theme';
 
 interface ItemSeverityProps {
-  label: string;
+  label?: string | null;
   severity?: string | null;
   variant?: 'inList' | 'high';
 }
@@ -14,6 +14,9 @@ const ItemSeverity: FunctionComponent<ItemSeverityProps> = ({
   severity,
 }) => {
   const theme = useTheme<Theme>();
+  if (!severity) {
+    return <>-</>;
+  }
 
   let severityColor = theme.palette.severity.default;
   switch (severity?.toLowerCase()) {

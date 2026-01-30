@@ -3,6 +3,7 @@ import { Badge, Stack, Tooltip } from '@mui/material';
 import Tag from '@common/tag/Tag';
 import type { Theme } from './Theme';
 import stopEvent from '../utils/domEvent';
+import FieldOrEmpty from './FieldOrEmpty';
 
 interface Marking {
   id: string;
@@ -94,22 +95,18 @@ const ItemMarkings = ({
   const markings = markingDefinitions ?? [];
 
   if (!limit || markings.length <= 1) {
-    if (markings.length === 0) {
-      return (
-        <ChipMarking markingDefinition={{ definition: 'NONE', id: 'NONE' }} />
-      );
-    }
-
     return (
-      <Stack direction="row" gap={1} flexWrap="wrap">
-        {markings.map((markingDefinition) => (
-          <ChipMarking
-            key={markingDefinition.id}
-            markingDefinition={markingDefinition}
-            onClick={onClick}
-          />
-        ))}
-      </Stack>
+      <FieldOrEmpty source={markings}>
+        <Stack direction="row" gap={1} flexWrap="wrap">
+          {markings.map((markingDefinition) => (
+            <ChipMarking
+              key={markingDefinition.id}
+              markingDefinition={markingDefinition}
+              onClick={onClick}
+            />
+          ))}
+        </Stack>
+      </FieldOrEmpty>
     );
   }
 
