@@ -1,5 +1,4 @@
 import bcrypt from 'bcryptjs';
-import crypto from 'crypto';
 import * as R from 'ramda';
 import { uniq } from 'ramda';
 import { v4 as uuid } from 'uuid';
@@ -1639,45 +1638,26 @@ export const resolveUserById = async (context, id) => {
 
 export const authenticateUserByToken = async (context, req, token) => {
   const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  let user;
-
-  // New auth: Check if token matches a hashed token (O(1) lookup)
-  if (token.startsWith('flgrn_octi_tkn_')) {
-    const hashedToken = hashSHA256(token);
-    user = platformUsers.get(hashedToken);
-
-    if (user) {
-      // User found by hash, finding the specific token to check expiration
-      // Although we found the user, we need to ensure the token hasn't expired
-      const userTokens = user.api_tokens || [];
-      const matchingToken = userTokens.find((t) => t.hash === hashedToken);
-      if (matchingToken) {
-        if (matchingToken.expires_at) {
-          const now = new Date();
-          const expiresAt = new Date(matchingToken.expires_at);
-          if (now >= expiresAt) {
-            throw FunctionalError('Token expired');
-          }
+  const hashedToken = hashSHA256(token);
+  const user = platformUsers.get(hashedToken);
+  if (user) {
+    // User found by hash, finding the specific token to check expiration
+    // Although we found the user, we need to ensure the token hasn't expired
+    const userTokens = user.api_tokens || [];
+    const matchingToken = userTokens.find((t) => t.hash === hashedToken);
+    if (matchingToken) {
+      if (matchingToken.expires_at) {
+        const now = new Date();
+        const expiresAt = new Date(matchingToken.expires_at);
+        if (now >= expiresAt) {
+          throw FunctionalError('Token expired');
         }
-      } else {
-        // Token hash found in index but token object missing from user profile (Revoked/Stale)
-        user = undefined;
       }
     }
-  } else {
-    // Legacy auth: Check if token matches a user's legacy api_token (O(1) lookup)
-    user = platformUsers.get(token);
-    // If a user is found, ensure the token actually matches their api_token field
-    // (preventing accidental authentication via other IDs if they collide, which is impossible for UUIDs but good practice)
-    if (user && !crypto.timingSafeEqual(Buffer.from(user.api_token), Buffer.from(token))) {
-      user = undefined;
-    }
   }
-
   if (user) {
     return internalAuthenticateUser(context, req, user);
   }
-
   throw FunctionalError('Cannot identify user with token');
 };
 
