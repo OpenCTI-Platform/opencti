@@ -82,23 +82,23 @@ To create a user, just click on the `+` button:
 
 ![Create user](assets/create_user.png)
 
-# Service Account
+### Service Account
 
 Service Account aims administrators to create technical users. Service accounts do not have any password which therefore prevent them from logging in via UI.
 
-## Create a Service Account
+#### Create a Service Account
 It is possible to create `Service accounts`. These accounts are specifically designed for technical users, such as connectors.
 
 When creating a service account, an email address is automatically generated for the `Service account` if not provided by the user who creates the service account. A password is automatically generated for the `Service account` and it is not stored in the database. Technical users like connectors will authenticate using their API tokens.
 Although these accounts generally do not receive emails, it is possible to add a personalized email.
 
-## Main difference between a Service Account & a user
+#### Main difference between a Service Account & a user
 
 - A Service Account will be considered to belong to the platform's organization to ensure it can access the data: service account when logging in, will be considered as users of the main platform organisation, in addition of their current organization. This will be done by manually adding **the platform org to the user's session**. It will not be possible to change this behavior. Therefore, even if you change your main platform organization, your service account will always be considered to be part of the main platform organisation, ensuring that you do not have any issue ingesting data. Removing your platform org will ensure that your service account does not belong anymore to the platform organisation, unless a specific relation between the organisation and the service account has been created.
 - A Service Account will not be able to log in via Email & Password since the password of the service account will not exists in DB.
 - A service account will not be able to receive emails.
 
-## Convert a User into a Service Account & vice-versa
+#### Convert a User into a Service Account & vice-versa
 
 It is possible to convert a user into a service account and ice-versa.
 Two options are possible:
@@ -189,7 +189,7 @@ When managing a group, you can define the members and all above configurations.
 
 Users can belong to organizations, which is an additional layer of [data segregation](segregation.md) and customization. To find out more about this part, please refer to the page on [organization segregation](organization-segregation.md).
 
-## Organization administration
+### Organization administration
 
 Platform administrators can promote members of an organization as "Organization administrator". This elevated role grants them the necessary capabilities to create, edit and delete users from the corresponding Organization. Additionally, administrators have the flexibility to define a list of groups that can be granted to newly created members by the organization administrators. This feature simplifies the process of granting appropriate access and privileges to individuals joining the organization.
 
@@ -202,3 +202,29 @@ The platform administrator can promote/demote an organization admin through its 
 !!! info "Organization admin rights"
 
     The "Organization admin" has restricted access to Settings. They can only manage the members of the organizations for which they have been promoted as "admins".
+
+## Users visibility according to their organizations
+
+There are various places in OpenCTI where users are listed:
+
+- some filters values,
+- assignees, authors and participants of entities,
+- access restrictions,
+- ...
+
+But all the users are not always visible, according to your capabilities, organizations, and the platform settings.
+
+A user can see all the other users in each of those 3 cases:
+- The user has the BYPASS capability, the capability to manage users, to manage playbooks, or to manage customization.
+- Organization sharing is not activated.
+- The policies option 'allow users to view users of other organizations' is activated.
+  Note that this option can be modified in Settings > Policies.
+
+  ![Policies: View all users option](assets/view-all-users-option.png)
+
+Else, we are in the case where the user hasn't one of the mentioned capabilities, and organization sharing is activated, and the option 'allow users to view users of other organizations' is not activated. In this case, the user will only see the following users:
+
+- the users in no organization,
+- the users who directly participate in an organization which the user directly participate in (meaning participations via inferred relationships are not taken into account),
+- the service account users,
+- the internal users (like the user associated to the rule manager).

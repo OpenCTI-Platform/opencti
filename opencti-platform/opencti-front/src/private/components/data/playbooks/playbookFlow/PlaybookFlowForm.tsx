@@ -230,15 +230,6 @@ const PlaybookFlowForm = ({
                         <MenuItem key="ENDPOINT" value="ENDPOINT">
                           {t_i18n('Endpoint')}
                         </MenuItem>
-                        <MenuItem key="CLOUD" value="CLOUD">
-                          {t_i18n('Cloud')}
-                        </MenuItem>
-                        <MenuItem key="WEB" value="WEB">
-                          {t_i18n('Web')}
-                        </MenuItem>
-                        <MenuItem key="TABLE-TOP" value="TABLE-TOP">
-                          {t_i18n('Table-top')}
-                        </MenuItem>
                       </Field>
                     );
                   }

@@ -133,12 +133,14 @@ const syncManagerInstance = (syncId) => {
       const sseUri = createSyncHttpUri(sync, lastState, false);
       startStreamListening(sseUri, sync);
       let currentDelay = lDelay;
+      let currentEvent = null;
       while (isRunning()) {
-        const event = eventsQueue.dequeue();
-        if (event) {
+        // Get the next event in the queue only if not in retry state
+        currentEvent = currentEvent ?? eventsQueue.dequeue();
+        if (currentEvent) {
           try {
             currentDelay = await manageBackPressure(httpClient, sync, currentDelay);
-            const { id: eventId, type: eventType, data, context: eventContext, event_id } = event;
+            const { id: eventId, type: eventType, data, context: eventContext, event_id } = currentEvent;
             if (eventType === 'heartbeat') {
               await saveCurrentState(context, eventType, sync, eventId);
             } else {
@@ -157,11 +159,17 @@ const syncManagerInstance = (syncId) => {
               });
               await saveCurrentState(context, 'event', sync, eventId);
             }
+            // Clear the current event to dequeue the next one
+            // If error occurs, keep the current event to retry it undefinitely as only exception can be generated
+            // by pushToWorkerForConnector or saveCurrentState
+            currentEvent = null;
           } catch (e) {
             logApp.error('[OPENCTI-MODULE] Sync manager event handling error', { cause: e, id: syncId, manager: 'SYNC_MANAGER' });
           }
+        } else {
+          // Only wait when queue is empty to avoid CPU spinning
+          await wait(100);
         }
-        await wait(10);
       }
       logApp.info(`[OPENCTI] Sync ${syncId}: manager stopped`);
     },
@@ -216,7 +224,6 @@ const initSyncManager = () => {
       await wait(WAIT_TIME_ACTION);
     }
     // Stopping
-    // eslint-disable-next-line no-restricted-syntax
     for (const syncManager of syncManagers.values()) {
       if (syncManager.isRunning()) {
         await syncManager.stop();

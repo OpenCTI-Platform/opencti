@@ -4,7 +4,7 @@
 
 !!! question "Connectors list"
     
-    You are looking for the available connectors? The list is in the [OpenCTI Ecosystem](https://filigran.notion.site/OpenCTI-Ecosystem-868329e9fb734fca89692b2ed6087e76).
+    You are looking for the available connectors? The list is in the [XTM Hub Integrations Library](https://hub.filigran.io/cybersecurity-solutions/open-cti-integrations).
 
 Connectors are the cornerstone of the OpenCTI platform and allow organizations to easily ingest, enrich or export data. According to their functionality and use case, they are categorized in the following classes.
 

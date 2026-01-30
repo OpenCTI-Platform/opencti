@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import * as R from 'ramda';
 import { uniq } from 'ramda';
 import { v4 as uuid } from 'uuid';
@@ -18,12 +19,12 @@ import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache }
 import { elLoadBy, elRawDeleteByQuery } from '../database/engine';
 import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute, updatedInputsToData } from '../database/middleware';
 import {
-  internalFindByIds,
-  internalLoadById,
   fullEntitiesList,
   fullEntitiesThoughAggregationConnection,
-  fullRelationsList,
   fullEntitiesThroughRelationsToList,
+  fullRelationsList,
+  internalFindByIds,
+  internalLoadById,
   pageEntitiesConnection,
   pageRegardingEntitiesConnection,
   storeLoadById,
@@ -49,13 +50,14 @@ import {
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import {
-  applyOrganizationRestriction,
   buildUserOrganizationRestrictedFiltersOptions,
   BYPASS,
   CAPABILITIES_IN_DRAFT_NAMES,
   executionContext,
   FilterMembersMode,
-  filterMembersWithUsersOrgs,
+  filterMembersUsersWithUsersOrgs,
+  findAllMembersWithOrgaRestriction,
+  findMembersPaginatedWithOrgaRestriction,
   INTERNAL_USERS,
   INTERNAL_USERS_WITHOUT_REDACTED,
   isBypassUser,
@@ -94,7 +96,6 @@ const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
 export const TAXIIAPI = 'TAXIIAPI';
 const PLATFORM_ORGANIZATION = 'settings_platform_organization';
-export const MEMBERS_ENTITY_TYPES = [ENTITY_TYPE_USER, ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_GROUP];
 const PROTECTED_USER_ATTRIBUTES = ['api_token', 'external'];
 const PROTECTED_EXTERNAL_ATTRIBUTES = ['user_email', 'user_name'];
 const ME_USER_MODIFIABLE_ATTRIBUTES = [
@@ -210,41 +211,35 @@ export const findUserPaginated = async (context, user, args) => {
   return pageEntitiesConnection(context, user, [ENTITY_TYPE_USER], { ...args, filters, noRegardingOfFilterIdsCheck });
 };
 
+const postResolveMembersFunction = (context, user) => {
+  return async (usersResult) => {
+    return filterMembersUsersWithUsersOrgs(context, user, usersResult, FilterMembersMode.EXCLUDE);
+  };
+};
+
 export const findCreators = (context, user, args) => {
   const { entityTypes = [] } = args;
-  const creatorsFilter = async (creators) => {
-    return filterMembersWithUsersOrgs(context, user, creators, FilterMembersMode.EXCLUDE);
-  };
+  const creatorsFilter = postResolveMembersFunction(context, user);
   return fullEntitiesThoughAggregationConnection(context, user, CREATOR_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes, postResolveFilter: creatorsFilter });
 };
 
 export const findAssignees = (context, user, args) => {
   const { entityTypes = [] } = args;
-  const assigneesFilter = async (assignees) => {
-    return filterMembersWithUsersOrgs(context, user, assignees, FilterMembersMode.EXCLUDE);
-  };
+  const assigneesFilter = postResolveMembersFunction(context, user);
   return fullEntitiesThoughAggregationConnection(context, user, ASSIGNEE_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes, postResolveFilter: assigneesFilter });
 };
 export const findParticipants = (context, user, args) => {
   const { entityTypes = [] } = args;
-  const participantsFilter = async (participants) => {
-    return filterMembersWithUsersOrgs(context, user, participants, FilterMembersMode.EXCLUDE);
-  };
+  const participantsFilter = postResolveMembersFunction(context, user);
   return fullEntitiesThoughAggregationConnection(context, user, PARTICIPANT_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes, postResolveFilter: participantsFilter });
 };
 
 export const findMembersPaginated = async (context, user, args) => {
-  const { entityTypes = null } = args;
-  const types = entityTypes || MEMBERS_ENTITY_TYPES;
-  const restrictedArgs = await applyOrganizationRestriction(context, user, args);
-  return pageEntitiesConnection(context, user, types, restrictedArgs);
+  return findMembersPaginatedWithOrgaRestriction(context, user, args);
 };
 
 export const findAllMembers = async (context, user, args) => {
-  const { entityTypes = null } = args;
-  const types = entityTypes || MEMBERS_ENTITY_TYPES;
-  const restrictedArgs = await applyOrganizationRestriction(context, user, args);
-  return fullEntitiesList(context, user, types, restrictedArgs);
+  return findAllMembersWithOrgaRestriction(context, user, args);
 };
 
 export const findUserWithCapabilities = async (context, user, capabilities) => {
@@ -1001,7 +996,7 @@ export const bookmarks = async (context, user, args) => {
   // handle filters
   if (filters) {
     // check filters are supported
-    // i.e. filters can only contains filters with key=entity_type
+    // i.e. filters can only contain filters with key=entity_type
     if (extractFilterKeys(filters).filter((f) => f !== 'entity_type').length > 0) {
       throw UnsupportedError('Bookmarks widgets only support filter with key=entity_type.');
     }
@@ -1642,22 +1637,39 @@ export const resolveUserById = async (context, id) => {
   return buildCompleteUser(context, client);
 };
 
-export const authenticateUserByTokenOrUserId = async (context, req, tokenOrId) => {
+export const authenticateUserByToken = async (context, req, token) => {
   const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  if (platformUsers.has(tokenOrId)) {
-    let authenticatedUser = platformUsers.get(tokenOrId);
-    const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-    const applicantId = req.headers['opencti-applicant-id'];
-    if (applicantId && isBypassUser(authenticatedUser)) {
-      authenticatedUser = platformUsers.get(applicantId) || INTERNAL_USERS[applicantId];
-      if (!authenticatedUser) {
-        throw FunctionalError(`Cant impersonate applicant ${applicantId}`);
-      }
+  if (platformUsers.has(token)) {
+    const user = platformUsers.get(token);
+    if (crypto.timingSafeEqual(Buffer.from(user.api_token), Buffer.from(token))) {
+      return internalAuthenticateUser(context, req, user);
     }
-    validateUser(authenticatedUser, settings);
-    return userWithOrigin(req, authenticatedUser);
   }
-  throw FunctionalError(`Cant identify with ${tokenOrId}`);
+  throw FunctionalError('Cannot identify user with token');
+};
+
+export const authenticateUserByUserId = async (context, req, userId) => {
+  const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  if (platformUsers.has(userId)) {
+    const user = platformUsers.get(userId);
+    return internalAuthenticateUser(context, req, user);
+  }
+  throw FunctionalError('Cannot identify user with id');
+};
+
+const internalAuthenticateUser = async (context, req, user) => {
+  let authenticatedUser = user;
+  const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const applicantId = req.headers['opencti-applicant-id'];
+  if (applicantId && isBypassUser(authenticatedUser)) {
+    const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+    authenticatedUser = platformUsers.get(applicantId) || INTERNAL_USERS[applicantId];
+    if (!authenticatedUser) {
+      throw FunctionalError(`Cant impersonate applicant ${applicantId}`);
+    }
+  }
+  validateUser(authenticatedUser, settings);
+  return userWithOrigin(req, authenticatedUser);
 };
 
 export const userRenewToken = async (context, user, userId) => {
@@ -1779,7 +1791,7 @@ export const authenticateUserFromRequest = async (context, req) => {
       const headProvider = HEADERS_AUTHENTICATORS[i];
       const user = await headProvider.reqLoginHandler(req);
       if (user) {
-        return await authenticateUserByTokenOrUserId(context, req, user.id);
+        return await authenticateUserByUserId(context, req, user.id);
       }
     }
   }
@@ -1792,7 +1804,7 @@ export const authenticateUserFromRequest = async (context, req) => {
   // Get user from the token if found
   if (tokenUUID) {
     try {
-      return await authenticateUserByTokenOrUserId(context, req, tokenUUID);
+      return await authenticateUserByToken(context, req, tokenUUID);
     } catch (err) {
       logApp.warn('Error resolving user by token', { cause: err });
     }

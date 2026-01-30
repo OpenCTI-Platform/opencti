@@ -32,6 +32,7 @@ import { extractContentFrom } from '../../utils/fileToContent';
 import { addFormIntakeCreatedCount, addFormIntakeDeletedCount, addFormIntakeSubmittedCount, addFormIntakeUpdatedCount } from '../../manager/telemetryManager';
 import { checkObservableSyntax } from '../../utils/syntax';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
+import { convertIdentityClass } from './form-utils';
 
 const ajv = new Ajv();
 const validateSchema = ajv.compile(FormSchemaDefinitionSchema);
@@ -371,7 +372,7 @@ const transformSpecialFields = async (
   return transformed;
 };
 
-const completeEntity = (entityType: string, entity: StoreEntity) => {
+export const completeEntity = (entityType: string, entity: StoreEntity) => {
   const finalEntity = entity;
   finalEntity.standard_id = generateStandardId(entityType, entity) as StixId;
   finalEntity.internal_id = uuidv4();
@@ -382,6 +383,7 @@ const completeEntity = (entityType: string, entity: StoreEntity) => {
     if (isEmptyField(finalEntity.modified)) {
       finalEntity.modified = new Date();
     }
+    convertIdentityClass(entityType, entity);
   }
   finalEntity.id = finalEntity.internal_id;
   return finalEntity;

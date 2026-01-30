@@ -1,13 +1,14 @@
-import React, { FunctionComponent, useEffect, useRef } from 'react';
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
-import { DataColumns } from './list_lines';
-import { GqlFilterGroup, isFilterGroupNotEmpty, removeIdFromFilterGroupObject, FiltersRestrictions, FilterSearchContext } from '../utils/filters/filtersUtils';
+import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
+import { FilterSearchContext, FiltersRestrictions, GqlFilterGroup, isFilterGroupNotEmpty, removeIdFromFilterGroupObject } from '../utils/filters/filtersUtils';
 import useQueryLoading from '../utils/hooks/useQueryLoading';
+import { DataColumns } from './list_lines';
 
+import { Filter, FilterGroup, handleFilterHelpers } from '../utils/filters/filtersHelpers-types';
 import FilterIconButtonContainer from './FilterIconButtonContainer';
 import { filterValuesContentQuery } from './FilterValuesContent';
 import { FilterValuesContentQuery } from './__generated__/FilterValuesContentQuery.graphql';
-import { Filter, FilterGroup, handleFilterHelpers } from '../utils/filters/filtersHelpers-types';
+import { FilterChipsParameter } from './filters/FilterChipPopover';
 
 export interface FilterIconButtonProps {
   availableFilterKeys?: string[];
@@ -35,6 +36,8 @@ interface FilterIconButtonIfFiltersProps extends FilterIconButtonProps {
   filters: FilterGroup;
   hasRenderedRef: boolean;
   setHasRenderedRef: (value: boolean) => void;
+  filterChipsParams: FilterChipsParameter;
+  setFilterChipsParams: React.Dispatch<React.SetStateAction<FilterChipsParameter>>;
 }
 const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButtonIfFiltersProps> = ({
   filters,
@@ -56,6 +59,8 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
   availableRelationshipTypes,
   fintelTemplatesContext,
   hasSavedFilters,
+  filterChipsParams,
+  setFilterChipsParams,
 }) => {
   const filtersRepresentativesQueryRef = useQueryLoading<FilterValuesContentQuery>(
     filterValuesContentQuery,
@@ -89,6 +94,8 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
             availableRelationshipTypes={availableRelationshipTypes}
             fintelTemplatesContext={fintelTemplatesContext}
             hasSavedFilters={hasSavedFilters}
+            filterChipsParams={filterChipsParams}
+            setFilterChipsParams={setFilterChipsParams}
           />
         </React.Suspense>
       )}
@@ -131,11 +138,18 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
   const setHasRenderedRef = (value: boolean) => {
     hasRenderedRef.current = value;
   };
+
+  const [filterChipsParams, setFilterChipsParams] = useState<FilterChipsParameter>({
+    filterId: undefined,
+    anchorEl: undefined,
+    anchorPosition: undefined,
+  });
+
   const displayedFilters = filters
     ? {
         ...filters,
         filters:
-        filters.filters.filter((f) => !availableFilterKeys || availableFilterKeys?.some((k) => f.key === k)),
+          filters.filters.filter((currentFilter) => !availableFilterKeys || availableFilterKeys?.some((currentKey) => currentFilter.key === currentKey)),
       } : undefined;
   if (displayedFilters && isFilterGroupNotEmpty(displayedFilters)) { // to avoid running the FiltersRepresentatives query if filters are empty
     return (
@@ -159,6 +173,8 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
         availableRelationshipTypes={availableRelationshipTypes}
         fintelTemplatesContext={fintelTemplatesContext}
         hasSavedFilters={hasSavedFilters}
+        filterChipsParams={filterChipsParams}
+        setFilterChipsParams={setFilterChipsParams}
       />
     );
   }

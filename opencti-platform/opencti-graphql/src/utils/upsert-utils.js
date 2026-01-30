@@ -3,7 +3,8 @@ import moment from 'moment/moment';
 import { INTERNAL_USERS, isBypassUser, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT } from './access';
 import { logApp } from '../config/conf';
 import { storeFileConverter, uploadToStorage } from '../database/file-storage';
-import { computeDateFromEventId, utcDate } from './format';
+import path from 'path';
+import { computeDateFromEventId, truncate, utcDate } from './format';
 import { isEmptyField, isNotEmptyField, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REPLACE } from '../database/utils';
 import { hasSameSourceAlreadyUpdateThisScore, INDICATOR_DEFAULT_SCORE } from '../modules/indicator/indicator-utils';
 import { creators as creatorsAttribute, iAttributes, xOpenctiStixIds } from '../schema/attribute-definition';
@@ -13,9 +14,12 @@ import { isObjectAttribute, schemaAttributesDefinition } from '../schema/schema-
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA } from '../schema/stixDomainObject';
-import { RELATION_CREATED_BY, RELATION_GRANTED_TO } from '../schema/stixRefRelationship';
+import { externalReferences, objectLabel, RELATION_CREATED_BY, RELATION_GRANTED_TO } from '../schema/stixRefRelationship';
+import { INPUT_MARKINGS } from '../schema/general';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { FunctionalError } from '../config/errors';
+import { getDraftContext } from './draftContext';
+import { getDraftFilePrefix } from '../database/draft-utils';
 
 const ALIGN_OLDEST = 'oldest';
 const ALIGN_NEWEST = 'newest';
@@ -179,17 +183,119 @@ export const buildUpdatePatchForUpsert = (user, resolvedElement, type, basePatch
   return updatePatch;
 };
 
-const generateFileInputsForUpsert = async (context, user, resolvedElement, updatePatch) => {
-  // If file directly attached
-  if (!isEmptyField(updatePatch.file)) {
-    const path = `import/${resolvedElement.entity_type}/${resolvedElement.internal_id}`;
-    const { upload: file } = await uploadToStorage(context, user, path, updatePatch.file, { entity: resolvedElement });
-    const convertedFile = storeFileConverter(user, file);
-    // The impact in the database is the completion of the files
-    const fileImpact = { key: 'x_opencti_files', value: [...(resolvedElement.x_opencti_files ?? []), convertedFile] };
-    return [fileImpact];
+const generateFileInputsForUpsert = async (context, user, resolvedElement, updatePatch, confidenceForUpsert) => {
+  const { isConfidenceMatch } = confidenceForUpsert;
+  const inputs = [];
+
+  // Collect all files to upload (both plural 'files' and singular 'file' for backward compatibility)
+  const filesToUpload = [];
+  if (!isEmptyField(updatePatch.files) && Array.isArray(updatePatch.files)) {
+    const filesMarkings = updatePatch.filesMarkings || [];
+    for (let i = 0; i < updatePatch.files.length; i += 1) {
+      const fileInput = updatePatch.files[i];
+      // Use snake_case to match storage API parameter naming
+      const file_markings = filesMarkings[i] || updatePatch.objectMarking?.map(({ id }) => id);
+      filesToUpload.push({ file: fileInput, markings: file_markings });
+    }
   }
-  return [];
+  // Handle single file upload (backward compatibility)
+  if (!isEmptyField(updatePatch.file)) {
+    const file_markings = isNotEmptyField(updatePatch.fileMarkings) ? updatePatch.fileMarkings : updatePatch.objectMarking?.map(({ id }) => id);
+    filesToUpload.push({ file: updatePatch.file, markings: file_markings });
+  }
+
+  if (filesToUpload.length === 0) {
+    return inputs;
+  }
+
+  // Build a map of existing files by their full ID (path) for conflict detection
+  const existingFiles = resolvedElement.x_opencti_files ?? [];
+  const existingFilesById = new Map(existingFiles.map((f) => [f.id, f]));
+
+  const filePath = `import/${resolvedElement.entity_type}/${resolvedElement.internal_id}`;
+  const newFiles = []; // Files that didn't exist on entity before
+  const replacedFiles = []; // Files that replace existing ones
+
+  // Handle draft context - files in draft have a prefix added to their path
+  const draftContext = getDraftContext(context, user);
+
+  for (let i = 0; i < filesToUpload.length; i += 1) {
+    const { file: fileInput, markings: file_markings } = filesToUpload[i];
+    const { filename } = await fileInput;
+    // Build the exact same key that file-storage.ts uses (truncated + lowercased)
+    const truncatedFileName = `${truncate(path.parse(filename).name, 200, false)}${truncate(path.parse(filename).ext, 10, false)}`;
+    let fileKey = `${filePath}/${truncatedFileName.toLowerCase()}`;
+    // In draft context, files are stored with a prefix - match that for conflict detection
+    if (draftContext) {
+      const draftPrefix = getDraftFilePrefix(draftContext);
+      fileKey = `${draftPrefix}${fileKey}`;
+    }
+
+    // Check if file already exists on this entity by matching the full file ID
+    const existingFile = existingFilesById.get(fileKey);
+    const fileAlreadyExistsOnEntity = isNotEmptyField(existingFile);
+
+    // Apply confidence-based conflict resolution for files:
+    // - NEW files (file doesn't exist on entity): ALWAYS allowed regardless of confidence level
+    //   This follows the principle that adding new data (like filling empty fields) should not require higher confidence
+    // - EXISTING files (file already exists on entity): only REPLACE if confidence matches (isConfidenceMatch)
+    //   Replacing existing data requires sufficient confidence to overwrite
+    if (fileAlreadyExistsOnEntity && !isConfidenceMatch) {
+      // File exists but confidence is lower - skip replacing this file
+      logApp.info('Skipping file replacement due to insufficient confidence', { filename, entity_id: resolvedElement.internal_id });
+      continue;
+    }
+
+    const { upload: uploadedFile, untouched } = await uploadToStorage(context, user, filePath, fileInput, {
+      entity: resolvedElement,
+      file_markings,
+    });
+
+    if (untouched && fileAlreadyExistsOnEntity) {
+      const existingMarkings = (existingFile.file_markings ?? []).sort();
+      const newMarkings = (file_markings ?? []).sort();
+      const markingsChanged = !R.equals(existingMarkings, newMarkings);
+
+      if (markingsChanged) {
+        const { [INPUT_MARKINGS]: _, ...existingFileWithoutMarkings } = existingFile;
+        const updatedFile = { ...existingFileWithoutMarkings, file_markings: newMarkings };
+        replacedFiles.push(updatedFile);
+      }
+      // If markings are the same, skip entirely
+      continue;
+    }
+
+    const convertedFile = storeFileConverter(user, uploadedFile);
+    // Track whether this is a new file or a replacement for proper history message
+    if (fileAlreadyExistsOnEntity) {
+      logApp.info('Replacing existing file on entity', { filename, entity_id: resolvedElement.internal_id });
+      replacedFiles.push(convertedFile);
+    } else {
+      // New file added - this works regardless of confidence level
+      logApp.info('Adding new file to entity', { filename, entity_id: resolvedElement.internal_id });
+      newFiles.push(convertedFile);
+    }
+  }
+
+  const allUploadedFiles = [...newFiles, ...replacedFiles];
+  if (allUploadedFiles.length > 0) {
+    const allUploadedFileIds = new Set(allUploadedFiles.map((f) => f.id));
+    const filteredExistingFiles = existingFiles
+      .filter((f) => !allUploadedFileIds.has(f.id))
+      .map((f) => {
+        const { [INPUT_MARKINGS]: _, ...fileWithoutMarkings } = f;
+        return fileWithoutMarkings;
+      });
+
+    const fileImpact = {
+      key: 'x_opencti_files',
+      value: [...filteredExistingFiles, ...allUploadedFiles],
+      operation: UPDATE_OPERATION_REPLACE,
+    };
+    inputs.push(fileImpact);
+  }
+
+  return inputs;
 };
 
 const mergeUpsertOperations = (upsertKey, elementCurrentValue, upsertOperations) => {
@@ -373,13 +479,17 @@ const generateRefsInputsForUpsert = (context, user, resolvedElement, _type, upda
             // In full synchro, just replace everything
             if (isUpsertSynchro) {
               inputs.push({ key: inputField, value: fullPatchInputData, operation: UPDATE_OPERATION_REPLACE });
-            } else if ((isCurrentWithData && isInputWithData && inputToCurrentDiff.length > 0 && isConfidenceMatch)
-              || (isInputWithData && !isCurrentWithData)
-            ) {
-              // If data is provided, different from existing data, and of higher confidence
-              // OR if existing data is empty and data is provided (even if lower confidence, it's better than nothing),
-              // --> apply an add operation
-              inputs.push({ key: inputField, value: inputToCurrentDiff, operation: UPDATE_OPERATION_ADD });
+            } else {
+              const fillEmptyData = isInputWithData && !isCurrentWithData;
+              const hasDataDifferential = isCurrentWithData && isInputWithData && inputToCurrentDiff.length > 0;
+              const isAllowedAddRefWithoutConfidence = relDef.name === objectLabel.name || relDef.name === externalReferences.name;
+              const isConfidenceAllowed = isConfidenceMatch || isAllowedAddRefWithoutConfidence;
+              if ((hasDataDifferential && isConfidenceAllowed) || fillEmptyData) {
+                // If data is provided, different from existing data, and of higher confidence
+                // OR if existing data is empty and data is provided (even if lower confidence, it's better than nothing),
+                // --> apply an add operation
+                inputs.push({ key: inputField, value: inputToCurrentDiff, operation: UPDATE_OPERATION_ADD });
+              }
             }
           }
         } else { // not multiple
@@ -408,22 +518,19 @@ const generateRefsInputsForUpsert = (context, user, resolvedElement, _type, upda
 
 export const generateInputsForUpsert = async (context, user, resolvedElement, type, updatePatch, confidenceForUpsert, validEnterpriseEdition) => {
   const inputs = []; // All inputs impacted by modifications (+inner)
-  // if file in updatePatch, we need to upload it and update x_opencti_files
-  const fileInputs = await generateFileInputsForUpsert(context, user, resolvedElement, updatePatch);
+  // if file(s) in updatePatch, we need to upload them and update x_opencti_files
+  // Files follow the same confidence-based conflict resolution as other fields
+  const fileInputs = await generateFileInputsForUpsert(context, user, resolvedElement, updatePatch, confidenceForUpsert);
   inputs.push(...fileInputs);
   // -- Upsert attributes
   const attributesInputs = generateAttributesInputsForUpsert(context, user, resolvedElement, type, updatePatch, confidenceForUpsert);
   inputs.push(...attributesInputs);
-
   // -- Upsert refs
   const refsInputs = generateRefsInputsForUpsert(context, user, resolvedElement, type, updatePatch, confidenceForUpsert, validEnterpriseEdition);
   inputs.push(...refsInputs);
-
   // -- merge inputs with upsertOperations
   if (updatePatch.upsertOperations?.length > 0 && !isBypassUser(user)) {
     throw FunctionalError('User has insufficient rights to use upsertOperations', { user_id: user.id, element_id: resolvedElement.id });
   }
-  const finalInputs = mergeUpsertInputs(resolvedElement, updatePatch, inputs, updatePatch.upsertOperations);
-
-  return finalInputs;
+  return mergeUpsertInputs(resolvedElement, updatePatch, inputs, updatePatch.upsertOperations);
 };

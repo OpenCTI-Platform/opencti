@@ -309,7 +309,7 @@ export const elConfigureAttachmentProcessor = async (): Promise<boolean> => {
         },
       ],
     }).catch((e) => {
-      logApp.error('Engine attachment processor configuration fail', { cause: e });
+      logApp.info('Engine attachment processor configuration fail', { cause: e });
       success = false;
     });
   } else {
@@ -331,7 +331,7 @@ export const elConfigureAttachmentProcessor = async (): Promise<boolean> => {
         ],
       },
     }).catch((e) => {
-      logApp.error('Engine attachment processor configuration fail', { cause: e });
+      logApp.info('Engine attachment processor configuration fail', { cause: e });
       success = false;
     });
   }
@@ -339,18 +339,18 @@ export const elConfigureAttachmentProcessor = async (): Promise<boolean> => {
 };
 
 // Look for the engine version with OpenSearch client
-export const searchEngineVersion = async (): Promise<{ platform: string; version: string }> => {
-  const engineToUse = engine as OpenClient;
-  const searchInfo = await engineToUse.info()
-    .then((info) => oebp(info).version)
-    .catch(
-      /* v8 ignore next */ (e) => {
-        throw ConfigurationError('Search engine seems down', { cause: e });
-      },
-    );
-  const searchPlatform = searchInfo.distribution || ELK_ENGINE; // openSearch or elasticSearch
-  const searchVersion = searchInfo.number;
-  return { platform: searchPlatform, version: searchVersion };
+export const searchEngineVersion = async () => {
+  try {
+    const { version: { distribution, number }, tagline } = oebp(await (engine as OpenClient).info());
+    // Try to detect OpenSearch engine, based on https://github.com/opensearch-project/OpenSearch/blame/main/server/src/main/java/org/opensearch/action/main/MainResponse.java
+    const platform = (distribution === OPENSEARCH_ENGINE || tagline?.includes('OpenSearch')) ? OPENSEARCH_ENGINE : ELK_ENGINE;
+    return {
+      platform: platform,
+      version: number,
+    } as const;
+  } catch (e) {
+    throw ConfigurationError('Search engine seems down', { cause: e });
+  }
 };
 
 export const searchEngineInit = async (): Promise<boolean> => {
@@ -1735,7 +1735,7 @@ export const elFindByIds = async <T extends BasicStoreBase> (
   } = opts;
   const idsArray = Array.isArray(ids) ? ids : [ids];
   const types = (Array.isArray(type) || isEmptyField(type)) ? type : [type] as string[];
-  const processIds = R.filter((id) => isNotEmptyField(id), idsArray);
+  const processIds = idsArray.filter((id) => isNotEmptyField(id));
   if (processIds.length === 0) {
     return toMap ? {} as Record<string, T> : [] as T[];
   }
@@ -2507,19 +2507,23 @@ export const buildLocalMustFilter = (validFilter: any) => {
 };
 
 const POST_FILTER_TAG_SEPARATOR = ';';
+const NAMED_QUERIES_UNIQUENESS_SEPARATOR = ':';
 const buildSubQueryForFilterGroup = (
   context: AuthContext,
   user: AuthUser,
   inputFilters: FilterGroup,
-): { subQuery: any; postFiltersTags: Set<string> } => {
+  currentSaltCount = 0,
+): { subQuery: any; postFiltersTags: Set<string>; resultSaltCount: number } => {
   const { mode = 'and', filters = [], filterGroups = [] } = inputFilters;
   const localSubQueries: { subQuery: any; associatedTags: Set<string> }[] = [];
   const localPostFilterTags = new Set<string>();
+  let localSaltCount = currentSaltCount;
   // Handle filterGroups
   for (let index = 0; index < filterGroups.length; index += 1) {
     const group = filterGroups[index];
     if (isFilterGroupNotEmpty(group)) {
-      const { subQuery, postFiltersTags } = buildSubQueryForFilterGroup(context, user, group);
+      const { subQuery, postFiltersTags, resultSaltCount } = buildSubQueryForFilterGroup(context, user, group, localSaltCount);
+      localSaltCount = resultSaltCount;
       if (subQuery) { // can be null
         localSubQueries.push({ subQuery, associatedTags: postFiltersTags });
       }
@@ -2547,10 +2551,12 @@ const buildSubQueryForFilterGroup = (
   const localMustFilters = localSubQueries.map(({ subQuery, associatedTags }) => {
     const tagsToApply = mode === 'or' ? [...localPostFilterTags].filter((t: string) => !associatedTags.has(t)) : [];
     if (tagsToApply.length > 0) {
+      const nameToApply = tagsToApply.join(POST_FILTER_TAG_SEPARATOR) + NAMED_QUERIES_UNIQUENESS_SEPARATOR + localSaltCount;
+      localSaltCount += 1;
       return {
         bool: {
           must: [subQuery],
-          ['_name']: tagsToApply.join(POST_FILTER_TAG_SEPARATOR),
+          ['_name']: nameToApply,
         },
       };
     }
@@ -2564,7 +2570,7 @@ const buildSubQueryForFilterGroup = (
           minimum_should_match: mode === 'or' ? 1 : localMustFilters.length,
         } }
     : null;
-  return { subQuery: currentSubQuery, postFiltersTags: localPostFilterTags };
+  return { subQuery: currentSubQuery, postFiltersTags: localPostFilterTags, resultSaltCount: localSaltCount };
 };
 
 const getRuntimeEntities = async (context: AuthContext, user: AuthUser, entityType: string) => {
@@ -2927,7 +2933,10 @@ const buildSearchResult = <T extends BasicStoreBase>(
   return elements;
 };
 
-const tagFiltersForPostFiltering = (filters: FilterGroup | undefined | null) => {
+const tagFiltersForPostFiltering = (
+  filters: FilterGroup | undefined | null,
+  noRegardingOfFilterIdsCheck?: boolean,
+) => {
   const taggedFilters: (Filter & { postFilteringTag: string })[] = filters
     ? extractFiltersFromGroup(filters, [INSTANCE_REGARDING_OF, INSTANCE_DYNAMIC_REGARDING_OF])
         .filter((filter) => isEmptyField(filter.operator) || filter.operator === 'eq')
@@ -2938,14 +2947,14 @@ const tagFiltersForPostFiltering = (filters: FilterGroup | undefined | null) => 
         })
     : [];
 
-  if (taggedFilters) {
+  if (taggedFilters.length > 0) {
     return async <T extends BasicStoreBase> (context: AuthContext, user: AuthUser, elementsIds: string[]) => {
       const postFilters: { tag: string; postFilter: (element: T) => boolean }[] = [];
       for (let i = 0; i < taggedFilters.length; i++) {
         const taggedFilter = taggedFilters[i];
         postFilters.push({
           tag: taggedFilter.postFilteringTag,
-          postFilter: await buildRegardingOfFilter<T>(context, user, elementsIds, taggedFilter),
+          postFilter: await buildRegardingOfFilter<T>(context, user, elementsIds, taggedFilter, noRegardingOfFilterIdsCheck),
         });
       }
       return (element: T, tagsToIgnore: Set<string>) =>
@@ -2992,7 +3001,7 @@ export const elPaginate = async <T extends BasicStoreBase>(
     noRegardingOfFilterIdsCheck = false,
   } = options;
   // tagFiltersForPostFiltering have side effect on options.filters, it must be done before elQueryBodyBuilder
-  const createPostFilter = tagFiltersForPostFiltering(options.filters);
+  const createPostFilter = tagFiltersForPostFiltering(options.filters, noRegardingOfFilterIdsCheck);
   const body = await elQueryBodyBuilder(context, user, options);
   if (body.size > ES_MAX_PAGINATION && !bypassSizeLimit) {
     logApp.info('[SEARCH] Pagination limited to max result config', { size: body.size, max: ES_MAX_PAGINATION });
@@ -3015,12 +3024,13 @@ export const elPaginate = async <T extends BasicStoreBase>(
     const { hits: { hits, total: { value: globalCount } } } = await elRawSearch(context, user, types !== null ? types : 'Any', query);
     const elements = await elConvertHits<T>(hits);
     let finalElements = elements;
-    if (!noRegardingOfFilterIdsCheck && finalElements.length > 0 && createPostFilter) {
+    if (finalElements.length > 0 && createPostFilter) {
       // Since filters contains filters requiring post filtering (regardingOf, dynamicRegardingOf), a post-security filtering is needed
       const postFilter = await createPostFilter<T>(context, user, elements.map(({ id }) => id));
       finalElements = elements.filter((element, i) => {
         const dataHit = hits[i];
-        const tagsToIgnoreSet = new Set<string>((dataHit.matched_queries ?? []).flatMap((matchedQuery: string) => matchedQuery.split(POST_FILTER_TAG_SEPARATOR)));
+        const tagsToIgnoreSet = new Set<string>((dataHit.matched_queries ?? [])
+          .flatMap((matchedQuery: string) => matchedQuery.split(NAMED_QUERIES_UNIQUENESS_SEPARATOR)[0].split(POST_FILTER_TAG_SEPARATOR)));
         return postFilter(element, tagsToIgnoreSet);
       });
     }
@@ -3551,6 +3561,7 @@ const buildRegardingOfFilter = async <T extends BasicStoreBase> (
   user: AuthUser,
   elementIds: string[],
   filter: Filter,
+  noRegardingOfFilterIdsCheck?: boolean,
 ) => {
   // We need to ensure elements are filtered according to denormalization rights.
   const targetValidatedIds = new Set();
@@ -3602,7 +3613,10 @@ const buildRegardingOfFilter = async <T extends BasicStoreBase> (
       relationshipIndices = READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED;
     }
   }
-  const relationships = await elList<BasicStoreRelation>(context, user, relationshipIndices, paginateArgs);
+  const userListingRelationships = noRegardingOfFilterIdsCheck
+    ? SYSTEM_USER // relationships are listed by a user with all the rights to fetch all the relationships among relationshipIndices (relationships inferred or not)
+    : user;
+  const relationships = await elList<BasicStoreRelation>(context, userListingRelationships, relationshipIndices, paginateArgs);
   // compute side ids
   const addTypeSide = (sideId: string, sideType: string) => {
     targetValidatedIds.add(sideId);
