@@ -66,16 +66,6 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationships = ({
       width: '20%',
       isSortable: true,
     },
-    // confidence: {
-    //   label: 'Confidence',
-    //   width: '12%',
-    //   isSortable: false,
-    // },
-    // markings: {
-    //   label: 'Markings',
-    //   isSortable: false,
-    //   width: '12%',
-    // },
   };
   const paginationOptions: SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesPaginationQuery$variables = {
     count: 8,
