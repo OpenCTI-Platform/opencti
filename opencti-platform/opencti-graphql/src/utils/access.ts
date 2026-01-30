@@ -3,7 +3,7 @@ import { context as telemetryContext, trace } from '@opentelemetry/api';
 import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
-import conf, { ACCOUNT_STATUS_ACTIVE, isFeatureEnabled } from '../config/conf';
+import { ACCOUNT_STATUS_ACTIVE, isFeatureEnabled } from '../config/conf';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { telemetry } from '../config/tracing';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
@@ -29,6 +29,7 @@ import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type { BasicConnection, BasicStoreCommon, BasicStoreEntity, BasicStoreRelation } from '../types/store';
 import type { AuthContext, AuthUser, UserRole } from '../types/user';
 import { ID_SUBFILTER, INSTANCE_REGARDING_OF, RELATION_INFERRED_SUBFILTER, RELATION_TYPE_SUBFILTER } from './filtering/filtering-constants';
+import { getConfigurationAdminEmail } from '../modules/singleSignOn/providers-configuration';
 
 export const DEFAULT_INVALID_CONF_VALUE = 'ChangeMe';
 
@@ -78,8 +79,6 @@ export const REDACTED_USER_UUID = '31afac4e-6b99-44a0-b91b-e04738d31461';
 export const RESTRICTED_USER_UUID = '27d2b0af-4d1e-42ae-a50c-9691bf57f35d';
 const PIR_MANAGER_USER_UUID = '1e20b6e5-e0f7-46f2-bacb-c37e4f8707a2';
 const HUB_REGISTRATION_MANAGER_USER_UUID = 'e16d7175-17c7-4dae-bd3c-48c939f47dfb';
-
-export const CONFIGURATION_ADMIN_EMAIL = conf.get('app:admin:email');
 
 export enum AccessOperation {
   EDIT = 'edit',
@@ -587,7 +586,7 @@ export const isInternalUser = (user: AuthUser): boolean => {
 };
 
 export const isConfigurationAdminUser = (context: AuthContext, user: AuthUser): boolean => {
-  return user.user_email === CONFIGURATION_ADMIN_EMAIL;
+  return user.user_email === getConfigurationAdminEmail();
 };
 
 export const isBypassUser = (user: AuthUser): boolean => {
