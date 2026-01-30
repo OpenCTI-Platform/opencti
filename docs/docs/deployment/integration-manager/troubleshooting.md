@@ -333,4 +333,4 @@ If you continue to experience issues:
 3. **Verify network connectivity** between all components
 4. **Consult the OpenCTI community** for additional support
 
-For bug reports and feature requests, visit the [GitHub repository](https://github.com/OpenCTI-Platform/xtm-composer).
+For bug reports and feature requests, visit the [GitHub repository](https://github.com/FiligranHQ/xtm-composer).
