@@ -6,12 +6,11 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
 import { InfoOutlined } from '@mui/icons-material';
-import { createFragmentContainer, graphql } from 'react-relay';
+import { graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import MenuItem from '@mui/material/MenuItem';
 import * as Yup from 'yup';
 import Tooltip from '@mui/material/Tooltip';
-import makeStyles from '@mui/styles/makeStyles';
 import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE } from '../files/FileManager';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import { useFormatter } from '../../../../components/i18n';
@@ -21,17 +20,6 @@ import SelectField from '../../../../components/fields/SelectField';
 import Loader from '../../../../components/Loader';
 import { ExportContext } from '../../../../utils/ExportContextProvider';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    zIndex: 2000,
-  },
-}));
 
 export const StixCoreObjectsExportCreationMutation = graphql`
   mutation StixCoreObjectsExportCreationMutation(
@@ -65,16 +53,18 @@ export const scopesConn = (exportConnectors) => {
   return R.fromPairs(zipped);
 };
 
-const StixCoreObjectsExportCreationComponent = ({
+const StixCoreObjectsExportCreation = ({
   paginationOptions,
   exportContext,
   onExportAsk,
   exportType,
-  data,
+  exportScopes,
+  isExportActive,
+  open,
+  setOpen,
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
-  const [open, setOpen] = useState(false);
+
   const [selectedContentMaxMarkingsIds, setSelectedContentMaxMarkingsIds] = useState([]);
   const handleSelectedContentMaxMarkingsChange = (values) => setSelectedContentMaxMarkingsIds(values.map(({ value }) => value));
   const onSubmit = (selectedIds, values, { setSubmitting, resetForm }) => {
@@ -106,36 +96,12 @@ const StixCoreObjectsExportCreationComponent = ({
       },
     });
   };
-  const connectorsExport = R.propOr([], 'connectorsForExport', data);
-  const exportScopes = R.uniq(
-    R.flatten(R.map((c) => c.connector_scope, connectorsExport)),
-  );
-  const exportConnsPerFormat = scopesConn(connectorsExport);
 
-  const isExportActive = (format) => R.filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
-  const isExportPossible = R.filter((x) => isExportActive(x), exportScopes).length > 0;
   return (
     <ExportContext.Consumer>
       {({ selectedIds }) => {
         return (
           <>
-            <Tooltip
-              title={
-                isExportPossible
-                  ? t_i18n('Generate an export')
-                  : t_i18n('No export connector available to generate an export')
-              }
-              aria-label="generate-export"
-            >
-              <Button
-                onClick={() => setOpen(true)}
-                color="secondary"
-                className={classes.createButton}
-                disabled={!isExportPossible}
-              >
-                {t_i18n('Generate an export')}
-              </Button>
-            </Tooltip>
             <Formik
               enableReinitialize={true}
               initialValues={{
@@ -236,16 +202,4 @@ const StixCoreObjectsExportCreationComponent = ({
   );
 };
 
-export default createFragmentContainer(StixCoreObjectsExportCreationComponent, {
-  data: graphql`
-    fragment StixCoreObjectsExportCreation_data on Query {
-      connectorsForExport {
-        id
-        name
-        active
-        connector_scope
-        updated_at
-      }
-    }
-  `,
-});
+export default StixCoreObjectsExportCreation;

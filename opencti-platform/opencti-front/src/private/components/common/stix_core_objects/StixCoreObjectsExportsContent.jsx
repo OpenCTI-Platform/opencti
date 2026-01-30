@@ -1,13 +1,16 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createRefetchContainer, graphql } from 'react-relay';
 import List from '@mui/material/List';
 import { interval } from 'rxjs';
-import StixCoreObjectsExportCreation from './StixCoreObjectsExportCreation';
+import StixCoreObjectsExportCreation, { scopesConn } from './StixCoreObjectsExportCreation';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import FileLine from '../files/FileLine';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNGETEXPORT_KNASKEXPORT } from '../../../../utils/hooks/useGranted';
 import { useFormatter } from '../../../../components/i18n';
+import Button from '@common/button/Button';
+import Tooltip from '@mui/material/Tooltip';
+import * as R from 'ramda';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -20,6 +23,8 @@ const StixCoreObjectsExportsContentComponent = ({
   exportType,
 }) => {
   const { t_i18n } = useFormatter();
+  const [open, setOpen] = useState(false);
+
   useEffect(() => {
     const subscription = interval$.subscribe(() => {
       if (isOpen) {
@@ -34,8 +39,36 @@ const StixCoreObjectsExportsContentComponent = ({
     };
   });
   const stixCoreObjectsExportFiles = data?.stixCoreObjectsExportFiles?.edges ?? [];
+
+  const connectorsExport = data?.connectorsForExport ?? [];
+  const exportScopes = R.uniq(
+    R.flatten(R.map((c) => c.connector_scope, connectorsExport)),
+  );
+  const exportConnsPerFormat = scopesConn(connectorsExport);
+
+  const isExportActive = (format) => R.filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
+  const isExportPossible = R.filter((x) => isExportActive(x), exportScopes).length > 0;
+
   return (
     <>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', paddingBottom: 8 }}>
+        <Tooltip
+          title={
+            isExportPossible
+              ? t_i18n('Generate an export')
+              : t_i18n('No export connector available to generate an export')
+          }
+          aria-label="generate-export"
+        >
+          <Button
+            onClick={() => setOpen(true)}
+            color="secondary"
+            disabled={!isExportPossible}
+          >
+            {t_i18n('Generate an export')}
+          </Button>
+        </Tooltip>
+      </div>
       <List>
         {stixCoreObjectsExportFiles.length > 0 ? (
           stixCoreObjectsExportFiles.map((file) => file?.node && (
@@ -67,7 +100,11 @@ const StixCoreObjectsExportsContentComponent = ({
           exportContext={exportContext}
           paginationOptions={paginationOptions}
           exportType={exportType}
+          open={open}
+          setOpen={setOpen}
           onExportAsk={() => relay.refetch({ count: 25, exportContext })}
+          exportScopes={exportScopes}
+          isExportActive={isExportActive}
         />
       </Security>
     </>
@@ -101,7 +138,13 @@ export default createRefetchContainer(
             }
           }
         }
-        ...StixCoreObjectsExportCreation_data
+        connectorsForExport {
+          id
+          name
+          active
+          connector_scope
+          updated_at
+        }
       }
     `,
   },
