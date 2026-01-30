@@ -3,7 +3,7 @@ import Tag from '@common/tag/Tag';
 import { useTheme } from '@mui/material/styles';
 
 interface ItemLikelihoodProps {
-  likelihood?: number;
+  likelihood?: number | null;
 }
 
 const ItemLikelihood = ({ likelihood }: ItemLikelihoodProps) => {
