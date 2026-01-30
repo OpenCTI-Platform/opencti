@@ -57,7 +57,7 @@ import {
 import { subscribeToInstanceEvents, subscribeToUserEvents } from '../graphql/subscriptionWrapper';
 import { publishUserAction } from '../listener/UserActionListener';
 import { findById as findDraftById } from '../modules/draftWorkspace/draftWorkspace-domain';
-import { addUserToken } from '../modules/user/user-domain';
+import { addUserToken, revokeUserToken } from '../modules/user/user-domain';
 import { findById as findWorskpaceById } from '../modules/workspace/workspace-domain';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { executionContext, REDACTED_USER } from '../utils/access';
@@ -252,6 +252,7 @@ const userResolvers = {
       return sendEmailToUser(context, context.user, input);
     },
     userTokenAdd: (_, { input }, context) => addUserToken(context, context.user, input),
+    userTokenRevoke: async (_, { id }, context) => revokeUserToken(context, context.user, id),
   },
   Subscription: {
     me: {

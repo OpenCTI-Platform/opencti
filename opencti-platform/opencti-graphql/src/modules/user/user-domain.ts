@@ -10,8 +10,12 @@ import { TokenDuration, type UserAddInput, type UserTokenAddInput } from '../../
 import { getEntityFromCache } from '../../database/cache';
 import type { BasicStoreSettings } from '../../types/settings';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../../schema/internalObject';
-import { patchAttribute } from '../../database/middleware';
+import { updateAttribute } from '../../database/middleware';
+
 import { publishUserAction } from '../../listener/UserActionListener';
+import { notify } from '../../database/redis';
+import { BUS_TOPICS } from '../../config/conf';
+import { internalLoadById } from '../../database/middleware-loader';
 
 // -- Existing Logic --
 export const userAlreadyExists = async (context: AuthContext, name: string) => {
@@ -74,6 +78,7 @@ export const createOnTheFlyUser = async (
 // -- API Token Logic --
 
 import { generateSecureToken } from '../../utils/security';
+import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../../database/utils';
 
 export const addUserToken = async (context: AuthContext, user: AuthUser, input: UserTokenAddInput) => {
   const { duration, description } = input;
@@ -104,9 +109,8 @@ export const addUserToken = async (context: AuthContext, user: AuthUser, input: 
     masked_token,
   };
 
-  await patchAttribute(context, user, user.id, ENTITY_TYPE_USER, {
-    api_tokens: [newToken],
-  }, { operation: 'add' });
+  const updates = [{ key: 'api_tokens', value: [newToken], operation: UPDATE_OPERATION_ADD }];
+  const { element } = await updateAttribute(context, user, user.id, ENTITY_TYPE_USER, updates);
 
   await publishUserAction({
     user,
@@ -125,10 +129,46 @@ export const addUserToken = async (context: AuthContext, user: AuthUser, input: 
     },
   });
 
+  // Notify for cache invalidation
+  await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
+
   return {
     token_id: tokenId,
     plaintext_token: token,
     masked_token,
     expires_at,
   };
+};
+
+export const revokeUserToken = async (context: AuthContext, user: AuthUser, tokenId: string) => {
+  // Reload user to ensure we have the latest tokens
+  const userToEdit = await internalLoadById(context, user, user.id) as unknown as AuthUser;
+  const tokens = userToEdit.api_tokens || [];
+  const tokenToRemove = tokens.find((t: any) => t.id === tokenId);
+  if (!tokenToRemove) {
+    throw FunctionalError('Token not found', { tokenId });
+  }
+
+  const updates = [{ key: 'api_tokens', value: [tokenToRemove], operation: UPDATE_OPERATION_REMOVE }];
+  const { element } = await updateAttribute(context, user, user.id, ENTITY_TYPE_USER, updates);
+
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: `revoked API token '${tokenToRemove.name}'`,
+    context_data: {
+      id: user.id,
+      entity_type: ENTITY_TYPE_USER,
+      input: {
+        token_id: tokenId,
+      },
+    },
+  });
+
+  // Notify for cache invalidation
+  await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
+
+  return tokenId;
 };

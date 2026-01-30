@@ -404,6 +404,7 @@ export type ApiToken = {
   created_at?: Maybe<Scalars['DateTime']['output']>;
   expires_at?: Maybe<Scalars['DateTime']['output']>;
   id: Scalars['ID']['output'];
+  masked_token?: Maybe<Scalars['String']['output']>;
   name?: Maybe<Scalars['String']['output']>;
 };
 
@@ -15625,6 +15626,7 @@ export type Mutation = {
   userOpinionAdd?: Maybe<Opinion>;
   userSessionsKill?: Maybe<Array<Maybe<Scalars['ID']['output']>>>;
   userTokenAdd: TokenGenerated;
+  userTokenRevoke?: Maybe<Scalars['ID']['output']>;
   verifyMfa?: Maybe<Scalars['Boolean']['output']>;
   verifyOtp?: Maybe<VerifyOtp>;
   vocabularyAdd?: Maybe<Vocabulary>;
@@ -18064,6 +18066,11 @@ export type MutationUserSessionsKillArgs = {
 
 export type MutationUserTokenAddArgs = {
   input: UserTokenAddInput;
+};
+
+
+export type MutationUserTokenRevokeArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -38591,6 +38598,7 @@ export type ApiTokenResolvers<ContextType = any, ParentType extends ResolversPar
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   expires_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  masked_token?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
@@ -44032,6 +44040,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   userOpinionAdd?: Resolver<Maybe<ResolversTypes['Opinion']>, ParentType, ContextType, RequireFields<MutationUserOpinionAddArgs, 'input'>>;
   userSessionsKill?: Resolver<Maybe<Array<Maybe<ResolversTypes['ID']>>>, ParentType, ContextType, RequireFields<MutationUserSessionsKillArgs, 'id'>>;
   userTokenAdd?: Resolver<ResolversTypes['TokenGenerated'], ParentType, ContextType, RequireFields<MutationUserTokenAddArgs, 'input'>>;
+  userTokenRevoke?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationUserTokenRevokeArgs, 'id'>>;
   verifyMfa?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationVerifyMfaArgs, 'input'>>;
   verifyOtp?: Resolver<Maybe<ResolversTypes['VerifyOtp']>, ParentType, ContextType, RequireFields<MutationVerifyOtpArgs, 'input'>>;
   vocabularyAdd?: Resolver<Maybe<ResolversTypes['Vocabulary']>, ParentType, ContextType, RequireFields<MutationVocabularyAddArgs, 'input'>>;

@@ -10,6 +10,7 @@ If covereage is not 100%, you MUST write unit tests and integration tests to cov
 When considering a work done, you MUST:
 *   Check typescript integrity `yarn check-ts`
 *   Checking linting rules, `yarn lint`
+*   Checking building succeed, `yarn build`
 *   Run and check relevant unit tests (`npx vitest run ...`)
 *   Run and check relevant integration Tests (`npx vitest run ... --config vitest.config.integration.ts`)
 

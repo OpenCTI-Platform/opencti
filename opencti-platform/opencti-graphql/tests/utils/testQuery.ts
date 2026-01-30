@@ -330,6 +330,7 @@ export const ADMIN_USER: AuthUser = {
   default_marking: [],
   origin: { referer: 'test', user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f' },
   api_token: 'd434ce02-e58e-4cac-8b4c-42bf16748e84',
+  api_tokens: [],
   account_status: ACCOUNT_STATUS_ACTIVE,
   account_lock_after_date: undefined,
   effective_confidence_level: {
@@ -717,6 +718,7 @@ export const buildStandardUser = (
     max_shareable_marking: [],
     origin: { referer: 'test', user_id: '98ec0c6a-13ce-5e39-b486-354fe4a7084f' },
     api_token: 'd434ce02-e58e-4cac-8b4c-42bf16748e85',
+    api_tokens: [],
     account_status: ACCOUNT_STATUS_ACTIVE,
     account_lock_after_date: undefined,
     effective_confidence_level: {

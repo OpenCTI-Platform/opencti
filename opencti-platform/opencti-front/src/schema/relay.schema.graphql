@@ -1847,6 +1847,7 @@ type ApiToken {
   name: String
   created_at: DateTime
   expires_at: DateTime
+  masked_token: String
 }
 
 type TokenGenerated {
@@ -9940,6 +9941,7 @@ type Mutation {
   userAdd(input: UserAddInput!): User
   userEdit(id: ID!): UserEditMutations
   userTokenAdd(input: UserTokenAddInput!): TokenGenerated!
+  userTokenRevoke(id: ID!): ID
   meTokenRenew: MeUser
   meEdit(input: [EditInput]!, password: String): MeUser
   bookmarkAdd(id: ID!, type: String!): StixDomainObject

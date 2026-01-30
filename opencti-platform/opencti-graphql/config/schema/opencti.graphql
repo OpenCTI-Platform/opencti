@@ -1742,6 +1742,7 @@ type ApiToken {
   name: String
   created_at: DateTime
   expires_at: DateTime
+  masked_token: String
 }
 
 type TokenGenerated {
@@ -15631,6 +15632,7 @@ type Mutation {
   userAdd(input: UserAddInput!): User @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   userEdit(id: ID!): UserEditMutations @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   userTokenAdd(input: UserTokenAddInput!): TokenGenerated! @auth
+  userTokenRevoke(id: ID!): ID @auth
   meTokenRenew: MeUser @auth
   meEdit(input: [EditInput]!, password: String): MeUser @auth
   bookmarkAdd(id: ID!, type: String!): StixDomainObject @auth(for: [KNOWLEDGE])

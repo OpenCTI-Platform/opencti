@@ -3,7 +3,7 @@ import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
-import { DeleteForeverOutlined, DeleteOutlined, RefreshOutlined, Visibility, VisibilityOff } from '@mui/icons-material';
+import { DeleteForeverOutlined, DeleteOutlined } from '@mui/icons-material';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -49,8 +49,6 @@ import Security from '../../../../utils/Security';
 import useAuth from '../../../../utils/hooks/useAuth';
 import type { Theme } from '../../../../components/Theme';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import ItemCopy from '../../../../components/ItemCopy';
-import { maskString } from '../../../../utils/String';
 
 const startDate = yearsAgo(1);
 const endDate = now();
@@ -232,7 +230,6 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
   const { t_i18n, nsdt, fsd, fldt } = useFormatter();
   const { me } = useAuth();
   const theme = useTheme<Theme>();
-  const [showToken, setShowToken] = useState<boolean>(false);
   const [displayKillSession, setDisplayKillSession] = useState<boolean>(false);
   const [displayKillSessions, setDisplayKillSessions] = useState<boolean>(false);
   const [killing, setKilling] = useState<boolean>(false);
@@ -390,15 +387,15 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                     </Typography>
                     {user.user_service_account
                       ? (
-                        <Chip
-                          variant="outlined"
-                          label={t_i18n('Service account')}
-                          style={{
-                            borderRadius: 4,
-                            width: 150
-                          }}
-                        />
-                      )
+                          <Chip
+                            variant="outlined"
+                            label={t_i18n('Service account')}
+                            style={{
+                              borderRadius: 4,
+                              width: 150,
+                            }}
+                          />
+                        )
                       : '-'}
                   </Grid>
                   <Grid item xs={4}>
@@ -572,9 +569,9 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                                 ?? []
                               ).includes(user.id)
                                 ? (
-                                  theme.palette
-                                    .warning as SimplePaletteColorOptions
-                                ).main
+                                    theme.palette
+                                      .warning as SimplePaletteColorOptions
+                                  ).main
                                 : theme.palette.primary.main
                             }
                           />
@@ -834,33 +831,6 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
             onClick={submitKillSessions}
             color="secondary"
             disabled={killing}
-          >
-            {t_i18n('Confirm')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <Dialog
-        open={displayRenewToken}
-        slotProps={{ paper: { elevation: 1 } }}
-        keepMounted={true}
-        slots={{ transition: Transition }}
-        onClose={handleCloseRenewToken}
-      >
-        <DialogTitle>
-          {t_i18n('Are you sure?')}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to revoke this user token ? Once the token is revoked all access are forbidden, please verify that the token is not used by connectors or other API calls before revoking.')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseRenewToken}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button
-            onClick={submitRenewToken}
-            color="secondary"
           >
             {t_i18n('Confirm')}
           </Button>

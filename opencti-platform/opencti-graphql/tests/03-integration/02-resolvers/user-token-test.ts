@@ -88,5 +88,31 @@ describe('User Token behavior', () => {
     expect(foundToken).toBeDefined();
     expect(foundToken.name).toEqual('Integration Test Token');
     expect(foundToken.masked_token).toEqual(masked_token);
+
+    // 3. Revoke Token
+    const REVOKE_MUTATION = gql`
+      mutation UserTokenRevoke($id: ID!) {
+        userTokenRevoke(id: $id)
+      }
+    `;
+
+    const revokeResult = await adminQuery({
+      query: REVOKE_MUTATION,
+      variables: { id: token_id }
+    });
+
+    expect(revokeResult.errors).toBeUndefined();
+    expect(revokeResult.data?.userTokenRevoke).toEqual(token_id);
+
+    // 4. Verify Token is removed
+    const userResultAfter = await queryAsAdmin({
+      query: USER_QUERY,
+      variables: { id: ADMIN_USER.id }
+    });
+
+    const userAfter = userResultAfter.data?.user;
+    expect(userAfter.api_tokens).toBeDefined();
+    const revokedToken = userAfter.api_tokens.find((t: any) => t.id === token_id);
+    expect(revokedToken).toBeUndefined();
   });
 });
