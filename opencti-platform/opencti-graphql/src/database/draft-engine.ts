@@ -26,7 +26,7 @@ import {
 import { SYSTEM_USER } from '../utils/access';
 import { isBasicRelationship } from '../schema/stixRelationship';
 import { getDraftContext } from '../utils/draftContext';
-import { buildReverseUpdateFieldPatch, FILES_UPDATE_KEY } from './draft-utils';
+import { buildReverseUpdateFieldPatch } from './draft-utils';
 import { storeLoadByIdWithRefs, updateAttributeFromLoadedWithRefs } from './middleware';
 import { buildRefRelationKey } from '../schema/general';
 import { getFileContent } from './raw-file-storage';
@@ -34,6 +34,7 @@ import { loadFile } from './file-storage';
 import { EditOperation } from '../generated/graphql';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreCommon, BasicStoreRelation, InternalEditInput, StoreRelation } from '../types/store';
+import { files } from '../schema/attribute-definition';
 
 const completeDeleteElementsFromDraft = async (context: AuthContext, user: AuthUser, elements: BasicStoreCommon[]): Promise<void> => {
   const draftContext = getDraftContext(context, user);
@@ -274,8 +275,8 @@ export const elDeleteDraftContextFromWorks = async (context: AuthContext, user: 
 };
 
 export const resolveDraftUpdateFiles = async (context: AuthContext, user: AuthUser, draftUpdates: InternalEditInput[]) => {
-  const resolvedDraftUpdatePatch = [...draftUpdates.filter((k) => k.key !== FILES_UPDATE_KEY)];
-  const addedFiles = draftUpdates.find((k) => k.key === FILES_UPDATE_KEY && k.operation === EditOperation.Add);
+  const resolvedDraftUpdatePatch = [...draftUpdates.filter((k) => k.key !== files.name)];
+  const addedFiles = draftUpdates.find((k) => k.key === files.name && k.operation === EditOperation.Add);
   if (addedFiles) {
     const fileIds = addedFiles.value;
     const loadedFileValues = [];
@@ -295,7 +296,7 @@ export const resolveDraftUpdateFiles = async (context: AuthContext, user: AuthUs
         loadedFileValues.push(currentFileObject);
       }
     }
-    const addInput = { key: FILES_UPDATE_KEY, value: loadedFileValues, operation: EditOperation.Add };
+    const addInput = { key: files.name, value: loadedFileValues, operation: EditOperation.Add };
     resolvedDraftUpdatePatch.push(addInput);
   }
   return resolvedDraftUpdatePatch;

@@ -6,8 +6,6 @@ import { useTheme } from '@mui/styles';
 import { useFormatter } from 'src/components/i18n';
 import useInterval from 'src/utils/hooks/useInterval';
 import { FIVE_SECONDS } from 'src/utils/Time';
-import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@mui/material/IconButton';
 import ListItem from '@mui/material/ListItem';
 import { ListItemButton } from '@mui/material';
 import HistoryDrawer from '@components/common/drawer/HistoryDrawer';
@@ -19,6 +17,9 @@ export const stixCoreObjectHistoryLinesQuery = graphql`
     $orderMode: OrderingMode
     $filters: FilterGroup
     $search: String
+    $tz: String
+    $locale: String
+    $unit_system: String
   ) {
     ...StixSightingRelationshipHistoryLines_data
   }
@@ -26,8 +27,7 @@ export const stixCoreObjectHistoryLinesQuery = graphql`
 
 const StixSightingRelationshipHistoryFragment = graphql`
   fragment StixSightingRelationshipHistoryLines_data on Query
-  @refetchable(queryName: "StixSightingRelationshipHistoryRefetchQuery")
-  {
+  @refetchable(queryName: "StixSightingRelationshipHistoryRefetchQuery") {
     logs(
       first: $first
       orderBy: $orderBy
@@ -38,7 +38,12 @@ const StixSightingRelationshipHistoryFragment = graphql`
       edges {
         node {
           id
-          ...StixCoreObjectHistoryLine_node
+          context_data(tz: $tz, locale: $locale, unit_system: $unit_system) {
+            changes {
+              field
+            }
+          }
+          ...StixCoreObjectHistoryLine_node @arguments(tz: $tz, locale: $locale, unit_system: $unit_system)
         }
       }
     }
@@ -52,14 +57,15 @@ const StixSightingRelationshipHistoryLines = ({ queryRef, isRelationLog, paginat
   const [selectedLog, setSelectedLog] = useState(undefined);
   const queryData = usePreloadedQuery(stixCoreObjectHistoryLinesQuery, queryRef);
   const [data, refetch] = useRefetchableFragment(StixSightingRelationshipHistoryFragment, queryData);
+
   useInterval(() => {
     // Refresh the history every interval
     refetch(paginationOptions, { fetchPolicy: 'store-and-network' });
   }, FIVE_SECONDS);
   const logs = data?.logs.edges ?? [];
 
-  const handleOpen = (log) => {
-    setSelectedLog(log);
+  const handleOpen = (logId) => {
+    setSelectedLog(logId);
     setOpen(true);
   };
   const handleClose = () => {
@@ -77,45 +83,30 @@ const StixSightingRelationshipHistoryLines = ({ queryRef, isRelationLog, paginat
       className="paper-for-grid"
       variant="outlined"
     >
+      <HistoryDrawer
+        open={open}
+        onClose={handleClose}
+        title={t_i18n('Sightings log details')}
+        logId={selectedLog}
+      />
       {logs.length > 0 ? (
-        logs.map((logEdge) => {
+        logs.filter((l) => !!l).map((logEdge) => {
           const log = logEdge.node;
+          const hasChanges = (log.context_data?.changes ?? []).length > 0;
           return (
             <React.Fragment key={log.id}>
-              <ListItem
-                dense={true}
-                divider={true}
-                disablePadding
-                secondaryAction={(
-                  <>
-                    <Tooltip title={t_i18n('Browse the link')}>
-                      <IconButton
-                        onClick={() => handleOpen(log)}
-                        size="large"
-                        color="primary"
-                      >
-                      </IconButton>
-                    </Tooltip>
-                  </>
-                )}
-              >
+              <ListItem dense={true} divider={true} disablePadding>
                 <ListItemButton
-                  style={{ margin: 0, height: 60 }}
-                  onClick={() => handleOpen(log)}
+                  style={{ margin: 0, height: 60, cursor: hasChanges ? 'pointer' : 'default' }}
+                  disableRipple={!hasChanges}
+                  onClick={() => {
+                    if (hasChanges) {
+                      handleOpen(log.id);
+                    }
+                  }}
                 >
-                  <StixCoreObjectHistoryLine
-                    key={log.id}
-                    node={log}
-                    isRelation={isRelationLog}
-                  />
+                  <StixCoreObjectHistoryLine key={log.id} node={log} isRelation={isRelationLog} />
                 </ListItemButton>
-                <HistoryDrawer
-                  key={log.id}
-                  open={open}
-                  onClose={handleClose}
-                  title={t_i18n('Sightings log details')}
-                  node={selectedLog}
-                />
               </ListItem>
             </React.Fragment>
           );

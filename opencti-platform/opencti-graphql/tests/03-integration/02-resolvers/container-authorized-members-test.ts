@@ -185,6 +185,7 @@ describe('Case Incident Response standard behavior with authorized_members activ
       variables: {
         input: {
           name: 'Case Incident Response With Authorized Members from entity',
+          x_opencti_stix_ids: ['case-incident--019839f8-3220-5fe2-b937-404fe19ef54a'],
         },
       },
     });

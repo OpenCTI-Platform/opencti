@@ -13,6 +13,7 @@ import { batchEntitySettingsByType } from '../modules/entitySetting/entitySettin
 import { batchIsSubAttackPattern } from '../domain/attackPattern';
 import { executionContext, isUserInPlatformOrganization, SYSTEM_USER } from '../utils/access';
 import { getEnterpriseEditionInfo, IS_LTS_PLATFORM } from '../modules/settings/licensing';
+import { batchContextDataForLog } from '../database/data-changes';
 
 export const computeLoaders = (executeContext, user) => {
   // Generic loaders
@@ -26,6 +27,7 @@ export const computeLoaders = (executeContext, user) => {
     // Specific loaders
     domainsBatchLoader: batchLoader(batchStixDomainObjects, executeContext, user), // Could be change to use idsBatchLoader?
     userRolesBatchLoader: batchLoader(batchRolesForUsers, executeContext, user),
+    logContextDataBatchLoader: batchLoader(batchContextDataForLog, executeContext, user),
     userEffectiveConfidenceBatchLoader: batchLoader(batchUserEffectiveConfidenceLevel, executeContext, user),
     fileMarkingsBatchLoader: batchLoader(batchFileMarkingDefinitions, executeContext, user),
     fileWorksBatchLoader: batchLoader(batchFileWorks, executeContext, user),
