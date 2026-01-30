@@ -1,10 +1,28 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Tooltip } from '@mui/material';
+import { RecordSourceSelectorProxy, RecordProxy } from 'relay-runtime';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  IconButton,
+  Tooltip,
+  Dialog,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
+  DialogTitle,
+} from '@mui/material';
 import { Delete } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
+import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import { TokenList_node$data } from './__generated__/TokenList_node.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -29,6 +47,12 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
+const tokenListRevokeMutation = graphql`
+  mutation TokenListRevokeMutation($id: ID!) {
+    userTokenRevoke(id: $id)
+  }
+`;
+
 interface TokenListProps {
   node: TokenList_node$data;
 }
@@ -36,8 +60,9 @@ interface TokenListProps {
 export const TokenListBase: React.FC<TokenListProps> = ({ node }) => {
   const classes = useStyles();
   const { t_i18n, nsdt } = useFormatter();
-  const tokens = node.api_tokens || [];
+  const [deletingToken, setDeletingToken] = useState<{ id: string; name: string } | null>(null);
 
+  const tokens = node.api_tokens || [];
   const now = new Date();
 
   const getExpirationStatus = (expiresAt: string | null) => {
@@ -55,9 +80,44 @@ export const TokenListBase: React.FC<TokenListProps> = ({ node }) => {
     return null;
   };
 
-  const handleRevoke = (id: string) => {
-    // TODO: Implement revocation (confimation dialog first?)
-    console.log('Revoke token', id);
+  const handleOpenDelete = (token: { id: string; name: string }) => {
+    setDeletingToken(token);
+  };
+
+  const handleCloseDelete = () => {
+    setDeletingToken(null);
+  };
+
+  const submitDelete = () => {
+    if (!deletingToken) return;
+    commitMutation({
+      mutation: tokenListRevokeMutation,
+      variables: {
+        id: deletingToken.id,
+      },
+      updater: (store: RecordSourceSelectorProxy) => {
+        const userProxy = store.get(node.id);
+        if (!userProxy) return;
+        const currentTokens = userProxy.getLinkedRecords('api_tokens');
+        if (currentTokens) {
+          userProxy.setLinkedRecords(
+            currentTokens.filter((t: RecordProxy) => t.getDataID() !== deletingToken.id),
+            'api_tokens'
+          );
+        }
+      },
+      optimisticUpdater: undefined,
+      optimisticResponse: undefined,
+      onCompleted: () => {
+        MESSAGING$.notifySuccess(t_i18n('Token revoked successfully'));
+        handleCloseDelete();
+      },
+      onError: (error: Error) => {
+        MESSAGING$.notifyError(error);
+        handleCloseDelete();
+      },
+      setSubmitting: undefined,
+    });
   };
 
   if (tokens.length === 0) {
@@ -71,55 +131,79 @@ export const TokenListBase: React.FC<TokenListProps> = ({ node }) => {
   }
 
   return (
-    <TableContainer component={Paper} variant="outlined" className={classes.container}>
-      <Table className={classes.table} size="small" aria-label="token list">
-        <TableHead>
-          <TableRow>
-            <TableCell>{t_i18n('Name')}</TableCell>
-            <TableCell>{t_i18n('Token')}</TableCell>
-            <TableCell>{t_i18n('Created At')}</TableCell>
-            <TableCell>{t_i18n('Expires At')}</TableCell>
-            <TableCell align="right">{t_i18n('Actions')}</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {tokens.map((token) => (
-            <TableRow key={token.id}>
-              <TableCell component="th" scope="row">
-                {token.name || '-'}
-              </TableCell>
-              <TableCell>
-                {token.masked_token}
-              </TableCell>
-              <TableCell>{nsdt(token.created_at)}</TableCell>
-              <TableCell>
-                {token.expires_at ? nsdt(token.expires_at) : t_i18n('Unlimited')}
-                {' '}
-                {getExpirationStatus(token.expires_at)}
-              </TableCell>
-              <TableCell align="right">
-                <Tooltip title={t_i18n('Revoke')}>
-                  <IconButton
-                    aria-label="revoke"
-                    color="primary"
-                    onClick={() => handleRevoke(token.id)}
-                    size="small"
-                  >
-                    <Delete fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              </TableCell>
+    <div className={classes.container}>
+      <TableContainer component={Paper} variant="outlined">
+        <Table className={classes.table} size="small" aria-label="token list">
+          <TableHead>
+            <TableRow>
+              <TableCell>{t_i18n('Name')}</TableCell>
+              <TableCell>{t_i18n('Token')}</TableCell>
+              <TableCell>{t_i18n('Created At')}</TableCell>
+              <TableCell>{t_i18n('Expires At')}</TableCell>
+              <TableCell align="right">{t_i18n('Actions')}</TableCell>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+          </TableHead>
+          <TableBody>
+            {tokens.map((token) => (
+              <TableRow key={token.id}>
+                <TableCell component="th" scope="row">
+                  {token.name || '-'}
+                </TableCell>
+                <TableCell>
+                  {token.masked_token}
+                </TableCell>
+                <TableCell>{nsdt(token.created_at)}</TableCell>
+                <TableCell>
+                  {token.expires_at ? nsdt(token.expires_at) : t_i18n('Unlimited')}
+                  {' '}
+                  {getExpirationStatus(token.expires_at)}
+                </TableCell>
+                <TableCell align="right">
+                  <Tooltip title={t_i18n('Revoke')}>
+                    <IconButton
+                      aria-label="revoke"
+                      color="primary"
+                      onClick={() => handleOpenDelete({ id: token.id, name: token.name || '' })}
+                      size="small"
+                    >
+                      <Delete fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      <Dialog
+        open={deletingToken !== null}
+        onClose={handleCloseDelete}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">{t_i18n('Revoke API Token')}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            {t_i18n('Do you want to revoke the token')} <strong>{deletingToken?.name}</strong>?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDelete}>
+            {t_i18n('Cancel')}
+          </Button>
+          <Button onClick={submitDelete} color="error" autoFocus>
+            {t_i18n('Revoke')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </div>
   );
 };
 
 export default createFragmentContainer(TokenListBase, {
   node: graphql`
     fragment TokenList_node on MeUser {
+      id
       api_tokens {
         id
         name

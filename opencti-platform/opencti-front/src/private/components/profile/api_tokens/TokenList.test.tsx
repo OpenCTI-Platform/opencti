@@ -1,12 +1,28 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, Mock } from 'vitest';
 import React from 'react';
-import { screen } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import testRender from '../../../../utils/tests/test-render';
 import { TokenListBase } from './TokenList';
 import { TokenList_node$data } from '@components/profile/api_tokens/__generated__/TokenList_node.graphql';
+import { MESSAGING$ } from '../../../../relay/environment';
+
+// Mock mutation
+vi.mock('../../../../relay/environment', async () => {
+  const actual = await vi.importActual('../../../../relay/environment');
+  return {
+    ...actual,
+    commitMutation: vi.fn(),
+    MESSAGING$: {
+      notifySuccess: vi.fn(),
+      notifyError: vi.fn(),
+    },
+  };
+});
+import { commitMutation } from '../../../../relay/environment';
 
 describe('Component: TokenList', () => {
   const mockNode = {
+    id: 'user-id',
     api_tokens: [
       {
         id: 'token-1',
@@ -35,8 +51,38 @@ describe('Component: TokenList', () => {
     expect(screen.getByText('Expired')).toBeInTheDocument();
   });
 
+  it('should handle token revocation', async () => {
+    const { user } = testRender(<TokenListBase node={mockNode} />);
+    const commitMutationMock = commitMutation as Mock;
+
+    // Click revoke on first token
+    const revokeButtons = screen.getAllByLabelText('revoke');
+    await user.click(revokeButtons[0]);
+
+    // Dialog should open
+    expect(screen.getByText('Revoke API Token')).toBeInTheDocument();
+    expect(screen.getByText(/Do you want to revoke the token/)).toBeInTheDocument();
+
+    // Check for token name specifically within the dialog to avoid ambiguity with the list item
+    const dialog = screen.getByRole('dialog');
+    expect(within(dialog).getByText('Test Token 1')).toBeInTheDocument();
+
+    // Confirm revocation
+    await user.click(screen.getByText('Revoke'));
+
+    expect(commitMutationMock).toHaveBeenCalledWith(expect.objectContaining({
+      variables: { id: 'token-1' },
+    }));
+
+    // Manually trigger success callback since we mocked commitMutation simplistically
+    const config = commitMutationMock.mock.calls[0][0];
+    config.onCompleted();
+
+    expect(MESSAGING$.notifySuccess).toHaveBeenCalledWith('Token revoked successfully');
+  });
+
   it('should render empty state', () => {
-    const node = { api_tokens: [] } as unknown as TokenList_node$data;
+    const node = { id: 'user-id', api_tokens: [] } as unknown as TokenList_node$data;
     testRender(<TokenListBase node={node} />);
     expect(screen.getByText(/No tokens found/)).toBeInTheDocument();
   });
