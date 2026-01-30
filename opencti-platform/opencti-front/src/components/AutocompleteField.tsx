@@ -86,7 +86,7 @@ const AutocompleteField = <
   const defaultGetOptionLabel: MuiProps['getOptionLabel'] = (option) => {
     return typeof option === 'object'
       ? truncate(option.label, optionLength)
-      : truncate(option, optionLength);
+      : truncate(option, optionLength) ?? '-';
   };
 
   const helperText = textfieldprops?.helperText;

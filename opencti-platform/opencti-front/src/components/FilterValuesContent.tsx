@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, ReactNode } from 'react';
 import { graphql } from 'react-relay';
 import { Link } from 'react-router-dom';
 import { Tooltip } from '@mui/material';
@@ -37,7 +37,7 @@ const FilterValuesContent: FunctionComponent<
   const completedStixCoreObjectTypes = stixCoreObjectTypes.concat(['Stix-Core-Object', 'Stix-Cyber-Observable']);
 
   const filterType = filterDefinition?.type;
-  let displayedValue = isFilterTooltip
+  let displayedValue: ReactNode = isFilterTooltip
     ? filterValue(filterKey, value, filterType, filterOperator)
     : truncate(filterValue(filterKey, value, filterType, filterOperator), 20);
   if (displayedValue === null) {

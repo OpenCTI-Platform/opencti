@@ -4,22 +4,18 @@ import IconButton from '@mui/material/IconButton';
 import Popover from '@mui/material/Popover';
 import Tooltip from '@mui/material/Tooltip';
 import { RayEndArrow, RayStartArrow } from 'mdi-material-ui';
-import React from 'react';
-import makeStyles from '@mui/styles/makeStyles';
+import React, { ReactElement } from 'react';
 import { useFormatter } from '../../../../components/i18n';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  filters: {
-    float: 'left',
-    margin: '-3px 0 0 -5px',
-  },
-  container: {
-    width: 600,
-    padding: 20,
-  },
-}));
+interface ListFiltersWithoutLocalStorageProps {
+  handleOpenFilters: (event: React.SyntheticEvent) => void;
+  handleCloseFilters: () => void;
+  open: boolean;
+  anchorEl: Element | null;
+  filterElement: ReactElement;
+  variant?: string;
+  type?: string;
+}
 
 const ListFiltersWithoutLocalStorage = ({
   handleOpenFilters,
@@ -29,12 +25,11 @@ const ListFiltersWithoutLocalStorage = ({
   filterElement,
   variant,
   type,
-}) => {
+}: ListFiltersWithoutLocalStorageProps) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   let icon = <FilterListOutlined fontSize="medium" />;
   let tooltip = t_i18n('Filters');
-  let color = 'primary';
+  let color: 'primary' | 'warning' | 'success' = 'primary';
   if (type === 'from') {
     icon = <RayStartArrow fontSize="medium" />;
     tooltip = t_i18n('Dynamic source filters');
@@ -45,7 +40,12 @@ const ListFiltersWithoutLocalStorage = ({
     color = 'success';
   }
   return (
-    <div className={classes.filters}>
+    <div
+      style={{
+        float: 'left',
+        margin: '-3px 0 0 -5px',
+      }}
+    >
       {variant === 'text' ? (
         <Tooltip title={tooltip}>
           <Button
@@ -72,7 +72,12 @@ const ListFiltersWithoutLocalStorage = ({
         </Tooltip>
       )}
       <Popover
-        classes={{ paper: classes.container }}
+        sx={{
+          '& .MuiPaper-root': {
+            width: 600,
+            padding: 20,
+          },
+        }}
         open={open}
         anchorEl={anchorEl}
         onClose={handleCloseFilters}
