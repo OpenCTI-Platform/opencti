@@ -57,7 +57,7 @@ import {
 import { subscribeToInstanceEvents, subscribeToUserEvents } from '../graphql/subscriptionWrapper';
 import { publishUserAction } from '../listener/UserActionListener';
 import { findById as findDraftById } from '../modules/draftWorkspace/draftWorkspace-domain';
-import { addUserToken, revokeUserToken } from '../modules/user/user-domain';
+import { addUserToken, revokeUserToken, revokeUserTokenByAdmin, addUserTokenByAdmin } from '../modules/user/user-domain';
 import { findById as findWorskpaceById } from '../modules/workspace/workspace-domain';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { executionContext, REDACTED_USER } from '../utils/access';
@@ -253,6 +253,8 @@ const userResolvers = {
     },
     userTokenAdd: (_, { input }, context) => addUserToken(context, context.user, input),
     userTokenRevoke: async (_, { id }, context) => revokeUserToken(context, context.user, id),
+    userAdminTokenRevoke: async (_, { userId, id }, context) => revokeUserTokenByAdmin(context, context.user, userId, id),
+    userAdminTokenAdd: async (_, { userId, input }, context) => addUserTokenByAdmin(context, context.user, userId, input),
   },
   Subscription: {
     me: {

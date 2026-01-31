@@ -172,3 +172,106 @@ export const revokeUserToken = async (context: AuthContext, user: AuthUser, toke
 
   return tokenId;
 };
+
+export const revokeUserTokenByAdmin = async (context: AuthContext, user: AuthUser, targetUserId: string, tokenId: string) => {
+  // Load target user
+  const userToEdit = await internalLoadById(context, user, targetUserId) as unknown as AuthUser;
+  if (!userToEdit) {
+    throw FunctionalError('User not found', { targetUserId });
+  }
+
+  const tokens = userToEdit.api_tokens || [];
+  const tokenToRemove = tokens.find((t: any) => t.id === tokenId);
+  if (!tokenToRemove) {
+    throw FunctionalError('Token not found', { tokenId });
+  }
+
+  const updates = [{ key: 'api_tokens', value: [tokenToRemove], operation: UPDATE_OPERATION_REMOVE }];
+  const { element } = await updateAttribute(context, user, targetUserId, ENTITY_TYPE_USER, updates);
+
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: `revoked API token '${tokenToRemove.name}' for user '${userToEdit.user_email}'`,
+    context_data: {
+      id: targetUserId,
+      entity_type: ENTITY_TYPE_USER,
+      input: {
+        token_id: tokenId,
+      },
+    },
+  });
+
+  // Notify for cache invalidation
+  await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
+
+  return tokenId;
+};
+
+export const addUserTokenByAdmin = async (context: AuthContext, user: AuthUser, targetUserId: string, input: UserTokenAddInput) => {
+  // Load target user
+  const userToEdit = await internalLoadById(context, user, targetUserId) as unknown as AuthUser;
+  if (!userToEdit) {
+    throw FunctionalError('User not found', { targetUserId });
+  }
+
+  const { duration, name } = input;
+  let expires_at = null;
+  if (duration && duration !== TokenDuration.Unlimited) {
+    const durationDays: Record<string, number> = {
+      [TokenDuration.Days_30]: 30,
+      [TokenDuration.Days_60]: 60,
+      [TokenDuration.Days_90]: 90,
+      [TokenDuration.Days_365]: 365,
+    };
+    const days = durationDays[duration];
+    if (days) {
+      expires_at = DateTime.now().plus({ days }).toUTC().toString();
+    }
+  }
+
+  const { token, hash, masked_token } = generateSecureToken();
+  const tokenId = uuid();
+  const now = DateTime.now().toUTC().toString();
+
+  const newToken = {
+    id: tokenId,
+    name,
+    hash,
+    created_at: now,
+    expires_at,
+    masked_token,
+  };
+
+  const updates = [{ key: 'api_tokens', value: [newToken], operation: UPDATE_OPERATION_ADD }];
+  const { element } = await updateAttribute(context, user, targetUserId, ENTITY_TYPE_USER, updates);
+
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: `generated a new API token '${newToken.name}' for user '${userToEdit.user_email}'`,
+    context_data: {
+      id: targetUserId,
+      entity_type: ENTITY_TYPE_USER,
+      input: {
+        duration,
+        name,
+        token_id: tokenId,
+      },
+    },
+  });
+
+  // Notify for cache invalidation
+  await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
+
+  return {
+    token_id: tokenId,
+    plaintext_token: token,
+    masked_token,
+    expires_at,
+  };
+};

@@ -9942,6 +9942,8 @@ type Mutation {
   userEdit(id: ID!): UserEditMutations
   userTokenAdd(input: UserTokenAddInput!): TokenGenerated!
   userTokenRevoke(id: ID!): ID
+  userAdminTokenRevoke(userId: ID!, id: ID!): ID
+  userAdminTokenAdd(userId: ID!, input: UserTokenAddInput!): TokenGenerated!
   meTokenRenew: MeUser
   meEdit(input: [EditInput]!, password: String): MeUser
   bookmarkAdd(id: ID!, type: String!): StixDomainObject

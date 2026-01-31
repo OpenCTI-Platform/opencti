@@ -37,7 +37,7 @@ describe('User Domain', () => {
   describe('addUserToken', () => {
     it('should generate token, patch user and log audit action', async () => {
       const input = {
-        description: 'Test Token',
+        name: 'Test Token',
         duration: TokenDuration.Days_30,
       };
 
@@ -81,7 +81,7 @@ describe('User Domain', () => {
           id: user.id,
           entity_type: ENTITY_TYPE_USER,
           input: expect.objectContaining({
-            description: 'Test Token',
+            name: 'Test Token',
             token_id: result.token_id,
           }),
         },
@@ -93,7 +93,7 @@ describe('User Domain', () => {
 
     it('should handle infinite duration', async () => {
       const input = {
-        description: 'Permanent Token',
+        name: 'Permanent Token',
         duration: TokenDuration.Unlimited,
       };
 

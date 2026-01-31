@@ -15633,6 +15633,8 @@ type Mutation {
   userEdit(id: ID!): UserEditMutations @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   userTokenAdd(input: UserTokenAddInput!): TokenGenerated! @auth
   userTokenRevoke(id: ID!): ID @auth
+  userAdminTokenRevoke(userId: ID!, id: ID!): ID @auth(for: [SETTINGS_SETACCESSES])
+  userAdminTokenAdd(userId: ID!, input: UserTokenAddInput!): TokenGenerated! @auth(for: [SETTINGS_SETACCESSES])
   meTokenRenew: MeUser @auth
   meEdit(input: [EditInput]!, password: String): MeUser @auth
   bookmarkAdd(id: ID!, type: String!): StixDomainObject @auth(for: [KNOWLEDGE])

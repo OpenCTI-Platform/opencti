@@ -15621,6 +15621,8 @@ export type Mutation = {
   uploadImport?: Maybe<File>;
   uploadPending?: Maybe<File>;
   userAdd?: Maybe<User>;
+  userAdminTokenAdd: TokenGenerated;
+  userAdminTokenRevoke?: Maybe<Scalars['ID']['output']>;
   userEdit?: Maybe<UserEditMutations>;
   userNoteAdd?: Maybe<Note>;
   userOpinionAdd?: Maybe<Opinion>;
@@ -18041,6 +18043,18 @@ export type MutationUploadPendingArgs = {
 
 export type MutationUserAddArgs = {
   input: UserAddInput;
+};
+
+
+export type MutationUserAdminTokenAddArgs = {
+  input: UserTokenAddInput;
+  userId: Scalars['ID']['input'];
+};
+
+
+export type MutationUserAdminTokenRevokeArgs = {
+  id: Scalars['ID']['input'];
+  userId: Scalars['ID']['input'];
 };
 
 
@@ -44035,6 +44049,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   uploadImport?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<MutationUploadImportArgs, 'file'>>;
   uploadPending?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<MutationUploadPendingArgs, 'file'>>;
   userAdd?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUserAddArgs, 'input'>>;
+  userAdminTokenAdd?: Resolver<ResolversTypes['TokenGenerated'], ParentType, ContextType, RequireFields<MutationUserAdminTokenAddArgs, 'input' | 'userId'>>;
+  userAdminTokenRevoke?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationUserAdminTokenRevokeArgs, 'id' | 'userId'>>;
   userEdit?: Resolver<Maybe<ResolversTypes['UserEditMutations']>, ParentType, ContextType, RequireFields<MutationUserEditArgs, 'id'>>;
   userNoteAdd?: Resolver<Maybe<ResolversTypes['Note']>, ParentType, ContextType, RequireFields<MutationUserNoteAddArgs, 'input'>>;
   userOpinionAdd?: Resolver<Maybe<ResolversTypes['Opinion']>, ParentType, ContextType, RequireFields<MutationUserOpinionAddArgs, 'input'>>;

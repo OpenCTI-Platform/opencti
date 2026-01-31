@@ -10,7 +10,7 @@ import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 import { vi } from 'vitest';
 import { DateTime } from 'luxon';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
-import type { UserTokenAddInput } from '../../../src/generated/graphql';
+import { TokenDuration, type UserTokenAddInput } from '../../../src/generated/graphql';
 
 vi.mock('../../../src/database/middleware', () => ({
   patchAttribute: vi.fn(),
@@ -345,7 +345,7 @@ describe('API Token Generation', () => {
 
   it('addUserToken should create token, patch user, log action, and return plaintext', async () => {
     const user = { id: 'user-123', user_email: 'test@example.com' } as AuthUser;
-    const input = { duration: 'UNLIMITED', description: 'Test Token' } as UserTokenAddInput;
+    const input = { duration: 'UNLIMITED', name: 'Test Token' } as UserTokenAddInput;
     const context = { user: { id: 'admin' } } as AuthContext;
 
     const result = await addUserToken(context, user, input);
@@ -374,7 +374,7 @@ describe('API Token Generation', () => {
 
   it('addUserToken should calculate expiration correctly', async () => {
     const user = { id: 'user-123' } as AuthUser;
-    const input = { duration: 'DAYS_30', description: 'Expiring Token' } as UserTokenAddInput;
+    const input = { duration: TokenDuration.Days_30, name: 'Expiring Token' } as UserTokenAddInput;
     const context = {} as AuthContext;
 
     const result = await addUserToken(context, user, input);

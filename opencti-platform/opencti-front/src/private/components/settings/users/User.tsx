@@ -44,6 +44,7 @@ import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import ItemIcon from '../../../../components/ItemIcon';
 import HiddenTypesChipList from '../hidden_types/HiddenTypesChipList';
 import ItemAccountStatus from '../../../../components/ItemAccountStatus';
+import UserTokenList from './UserTokenList';
 import useGranted, { BYPASS, KNOWLEDGE, SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import useAuth from '../../../../utils/hooks/useAuth';
@@ -211,6 +212,7 @@ const UserFragment = graphql`
       created
       ttl
     }
+    ...UserTokenList_node
   }
 `;
 
@@ -418,9 +420,10 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
               )}
               <Grid item xs={12}>
                 <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
-                  {t_i18n('Token')}
+                  {t_i18n('API Tokens')}
                 </Typography>
                 <div className="clearfix" />
+                <UserTokenList node={user} />
               </Grid>
               {!isServiceAccount && (
                 <>
