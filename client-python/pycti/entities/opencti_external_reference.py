@@ -286,6 +286,7 @@ class ExternalReference:
         update = kwargs.get("update", False)
         files = kwargs.get("files", None)
         files_markings = kwargs.get("filesMarkings", None)
+        no_trigger_import = kwargs.get("noTriggerImport", False)
 
         if source_name is not None or url is not None:
             self.opencti.app_logger.info(
@@ -314,6 +315,7 @@ class ExternalReference:
                 "update": update,
                 "files": files,
                 "filesMarkings": files_markings,
+                "noTriggerImport": no_trigger_import,
             }
             result = self.opencti.query(query, {"input": input_variables})
             return self.opencti.process_multiple_fields(

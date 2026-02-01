@@ -191,6 +191,7 @@ input LanguageAddInput {
     fileMarkings: [String]
     files: [Upload]
     filesMarkings: [[String]]
+    noTriggerImport: Boolean
 }
 
 type Mutation {
