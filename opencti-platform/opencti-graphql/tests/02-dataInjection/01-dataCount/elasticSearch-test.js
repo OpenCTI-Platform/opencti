@@ -450,6 +450,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Tracking-Number')).toBe(entitiesCounter.TrackingNumber);
     expect(entityTypeMap.get('User')).toBe(entitiesCounter.User);
     expect(entityTypeMap.get('Vocabulary')).toBe(entitiesCounter.Vocabulary);
+    expect(entityTypeMap.get('RetentionRule')).toBe(entitiesCounter.RetentionRule);
     expect(data.edges.length).toEqual(entitiesCounterTotal);
     const filterBaseTypes = R.uniq(R.map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
