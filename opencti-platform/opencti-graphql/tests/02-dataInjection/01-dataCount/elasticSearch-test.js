@@ -601,7 +601,8 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('User')).toBe(entitiesCounter.User);
     expect(entityTypeMap.get('Vocabulary')).toBe(entitiesCounter.Vocabulary);
     expect(entityTypeMap.get('EmailTemplate')).toBe(entitiesCounter.EmailTemplate);
-    expect(data.edges.length).toEqual(210 + entitiesCounter.Vocabulary);
+    expect(entityTypeMap.get('RetentionRule')).toBe(entitiesCounter.RetentionRule);
+    expect(data.edges.length).toEqual(212 + entitiesCounter.Vocabulary);
   });
   it('should entity paginate with field exist filter', async () => {
     const filters = {
