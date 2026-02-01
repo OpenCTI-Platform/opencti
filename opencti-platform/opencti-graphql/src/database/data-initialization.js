@@ -318,6 +318,13 @@ export const createCapabilities = async (context, capabilities, parentName = '')
 };
 
 const createDefaultRetentionRules = async (context) => {
+  // Create default retention rule for global files (30 days)
+  await createRetentionRule(context, SYSTEM_USER, {
+    name: 'Global files retention',
+    max_retention: 30,
+    retention_unit: 'days',
+    scope: 'file',
+  });
   // Create default retention rule for all workbenches (30 days)
   await createRetentionRule(context, SYSTEM_USER, {
     name: 'All workbenches retention',

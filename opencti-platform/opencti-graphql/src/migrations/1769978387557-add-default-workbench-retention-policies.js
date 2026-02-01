@@ -2,18 +2,29 @@ import { logApp } from '../config/conf';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { createRetentionRule, listRules } from '../domain/retentionRule';
 
-const message = '[MIGRATION] Add default workbench retention policy';
+const message = '[MIGRATION] Add default file and workbench retention policies';
 
 export const up = async (next) => {
   logApp.info(`${message} > started`);
   const context = executionContext('migration');
 
-  // Check if a retention rule for workbench scope already exists
-  const existingRules = await listRules(context, SYSTEM_USER, { filters: { mode: 'and', filters: [{ key: 'scope', values: ['workbench'] }], filterGroups: [] } });
-  const hasWorkbenchRule = existingRules.length > 0;
+  // Check if a retention rule for file scope already exists
+  const existingFileRules = await listRules(context, SYSTEM_USER, { filters: { mode: 'and', filters: [{ key: 'scope', values: ['file'] }], filterGroups: [] } });
+  if (existingFileRules.length === 0) {
+    await createRetentionRule(context, SYSTEM_USER, {
+      name: 'Global files retention',
+      max_retention: 30,
+      retention_unit: 'days',
+      scope: 'file',
+    });
+    logApp.info(`${message} > Created file retention rule (30 days for global files)`);
+  } else {
+    logApp.info(`${message} > File retention rule already exists, skipping`);
+  }
 
-  // Create retention rule for all workbenches if it doesn't exist
-  if (!hasWorkbenchRule) {
+  // Check if a retention rule for workbench scope already exists
+  const existingWorkbenchRules = await listRules(context, SYSTEM_USER, { filters: { mode: 'and', filters: [{ key: 'scope', values: ['workbench'] }], filterGroups: [] } });
+  if (existingWorkbenchRules.length === 0) {
     await createRetentionRule(context, SYSTEM_USER, {
       name: 'All workbenches retention',
       max_retention: 30,
