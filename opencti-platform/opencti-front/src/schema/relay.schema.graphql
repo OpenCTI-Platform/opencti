@@ -2774,6 +2774,7 @@ input ExternalReferenceAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   external_id: String
   created: DateTime
   modified: DateTime
@@ -3198,6 +3199,7 @@ input AttackPatternAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -3347,6 +3349,7 @@ input CampaignAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -3549,6 +3552,7 @@ input NoteAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -3692,6 +3696,7 @@ input ObservedDataAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -3812,6 +3817,7 @@ input OpinionAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
 }
 
 input OpinionUserAddInput {
@@ -3965,6 +3971,7 @@ input ReportAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   authorized_members: [MemberAccessInput!]
   upsertOperations: [EditInput!]
 }
@@ -4081,6 +4088,7 @@ input CourseOfActionAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -4198,6 +4206,7 @@ input IdentityAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   update: Boolean
   upsertOperations: [EditInput!]
 }
@@ -4321,6 +4330,7 @@ input IndividualAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -4440,6 +4450,7 @@ input SectorAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -4561,6 +4572,7 @@ input SystemAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -4684,6 +4696,7 @@ input InfrastructureAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -4811,6 +4824,7 @@ input IntrusionSetAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -4925,6 +4939,7 @@ input LocationAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -5045,6 +5060,7 @@ input PositionAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -5164,6 +5180,7 @@ input CityAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -5278,6 +5295,7 @@ input CountryAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -5394,6 +5412,7 @@ input RegionAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -5533,6 +5552,7 @@ input MalwareAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -5750,6 +5770,7 @@ input ThreatActorGroupAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -5865,6 +5886,7 @@ input ToolAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -6075,6 +6097,7 @@ input VulnerabilityAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -6207,6 +6230,7 @@ input IncidentAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -6337,6 +6361,7 @@ input AutonomousSystemAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -6403,6 +6428,7 @@ input DirectoryAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -6461,6 +6487,7 @@ input DomainNameAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -6521,6 +6548,7 @@ input EmailAddrAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -6591,6 +6619,7 @@ input EmailMessageAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -6653,6 +6682,7 @@ input EmailMimePartTypeAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -6795,6 +6825,7 @@ input ArtifactAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -6874,6 +6905,7 @@ input StixFileAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -6986,6 +7018,7 @@ input X509CertificateAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -7047,6 +7080,7 @@ input IPv4AddrAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -7106,6 +7140,7 @@ input IPv6AddrAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -7164,6 +7199,7 @@ input MacAddrAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -7222,6 +7258,7 @@ input MutexAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -7303,6 +7340,7 @@ input NetworkTrafficAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -7403,6 +7441,7 @@ input ProcessAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -7484,6 +7523,7 @@ input SoftwareAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -7542,6 +7582,7 @@ input UrlAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -7627,6 +7668,7 @@ input UserAccountAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -7688,6 +7730,7 @@ input WindowsRegistryKeyAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   number_of_subkeys: Int
   upsertOperations: [EditInput!]
 }
@@ -7751,6 +7794,7 @@ input WindowsRegistryValueTypeAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -7809,6 +7853,7 @@ input CryptographicKeyAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -7867,6 +7912,7 @@ input CryptocurrencyWalletAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -7925,6 +7971,7 @@ input HostnameAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -7983,6 +8030,7 @@ input TextAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -8041,6 +8089,7 @@ input UserAgentAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -8103,6 +8152,7 @@ input BankAccountAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -8161,6 +8211,7 @@ input TrackingNumberAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -8219,6 +8270,7 @@ input CredentialAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -8277,6 +8329,7 @@ input PhoneNumberAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -8341,6 +8394,7 @@ input PaymentCardAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -8408,6 +8462,7 @@ input MediaContentAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -8469,6 +8524,7 @@ input PersonaAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -8545,6 +8601,7 @@ input SSHKeyAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -9031,6 +9088,7 @@ input StixRefRelationshipAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
 }
 
 input StixRefRelationshipsAddInput {
@@ -10487,6 +10545,7 @@ input ChannelAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -10627,6 +10686,7 @@ input LanguageAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
 }
 
 type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObject {
@@ -10744,6 +10804,7 @@ input EventAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -10873,6 +10934,7 @@ input GroupingAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   authorized_members: [MemberAccessInput!]
   upsertOperations: [EditInput!]
 }
@@ -10988,6 +11050,7 @@ input NarrativeAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   upsertOperations: [EditInput!]
@@ -11269,6 +11332,7 @@ input DataComponentAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   x_opencti_workflow_id: String
   x_opencti_modified_at: DateTime
   upsertOperations: [EditInput!]
@@ -11384,6 +11448,7 @@ input DataSourceAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   x_opencti_workflow_id: String
   x_opencti_modified_at: DateTime
   upsertOperations: [EditInput!]
@@ -11628,6 +11693,7 @@ input AdministrativeAreaAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -11745,6 +11811,7 @@ input TaskAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -12051,6 +12118,7 @@ input CaseIncidentAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   clientMutationId: String
   update: Boolean
   authorized_members: [MemberAccessInput!]
@@ -12193,6 +12261,7 @@ input CaseRfiAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   clientMutationId: String
   update: Boolean
   information_types: [String!]
@@ -12329,6 +12398,7 @@ input CaseRftAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   clientMutationId: String
   x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
@@ -12461,6 +12531,7 @@ input FeedbackAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   clientMutationId: String
   update: Boolean
   rating: Int
@@ -12752,6 +12823,7 @@ input MalwareAnalysisAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -12995,6 +13067,7 @@ input ThreatActorIndividualAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -13669,6 +13742,7 @@ input IndicatorAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   basedOn: [String!]
   upsertOperations: [EditInput!]
 }
@@ -13898,6 +13972,7 @@ input OrganizationAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -15028,6 +15103,7 @@ input SecurityPlatformAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -15157,6 +15233,7 @@ input SecurityCoverageAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   update: Boolean
   auto_enrichment_disable: Boolean!
   periodicity: String

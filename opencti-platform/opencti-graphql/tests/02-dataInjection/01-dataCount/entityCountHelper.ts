@@ -45,6 +45,7 @@ export const entitiesCounter = {
   User: TESTING_USERS.length + 1,
   Vocabulary: 354,
   EmailTemplate: 1,
+  RetentionRule: 2,
 };
 
 export const entitiesCounterTotal = Object.values(entitiesCounter).reduce((acc, value) => acc + value, 0);

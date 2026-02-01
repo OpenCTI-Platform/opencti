@@ -450,6 +450,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Tracking-Number')).toBe(entitiesCounter.TrackingNumber);
     expect(entityTypeMap.get('User')).toBe(entitiesCounter.User);
     expect(entityTypeMap.get('Vocabulary')).toBe(entitiesCounter.Vocabulary);
+    expect(entityTypeMap.get('RetentionRule')).toBe(entitiesCounter.RetentionRule);
     expect(data.edges.length).toEqual(entitiesCounterTotal);
     const filterBaseTypes = R.uniq(R.map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
@@ -600,6 +601,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('User')).toBe(entitiesCounter.User);
     expect(entityTypeMap.get('Vocabulary')).toBe(entitiesCounter.Vocabulary);
     expect(entityTypeMap.get('EmailTemplate')).toBe(entitiesCounter.EmailTemplate);
+    expect(entityTypeMap.get('RetentionRule')).toBe(entitiesCounter.RetentionRule);
     expect(data.edges.length).toEqual(212 + entitiesCounter.Vocabulary);
   });
   it('should entity paginate with field exist filter', async () => {
@@ -739,6 +741,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Kill-Chain-Phase')).toBe(entitiesCounter.KillChainPhase);
     expect(entityTypeMap.get('External-Reference')).toBe(entitiesCounter.ExternalReference);
     expect(entityTypeMap.get('EmailTemplate')).toBe(entitiesCounter.EmailTemplate);
+    expect(entityTypeMap.get('RetentionRule')).toBe(entitiesCounter.RetentionRule);
     expect(data.edges.length).toEqual(223 + entitiesCounter.Vocabulary);
     const createdDates = R.map((e) => e.node.created, data.edges);
     let previousCreatedDate = null;

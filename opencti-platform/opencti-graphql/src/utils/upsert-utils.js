@@ -246,9 +246,11 @@ const generateFileInputsForUpsert = async (context, user, resolvedElement, updat
       continue;
     }
 
+    const noTriggerImport = updatePatch.noTriggerImport ?? false;
     const { upload: uploadedFile, untouched } = await uploadToStorage(context, user, filePath, fileInput, {
       entity: resolvedElement,
       file_markings,
+      noTriggerImport,
     });
 
     if (untouched && fileAlreadyExistsOnEntity) {

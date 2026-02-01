@@ -25,6 +25,7 @@ import { ConfigurationError } from '../config/errors';
 import { initDefaultTheme } from '../modules/theme/theme-domain';
 import { addEmailTemplate } from '../modules/emailTemplate/emailTemplate-domain';
 import { DEFAULT_EMAIL_TEMPLATE_INPUT } from './default-email-template-input';
+import { createRetentionRule } from '../domain/retentionRule';
 
 // region Platform capabilities definition
 const KNOWLEDGE_CAPABILITY = 'KNOWLEDGE';
@@ -317,6 +318,23 @@ export const createCapabilities = async (context, capabilities, parentName = '')
   }
 };
 
+const createDefaultRetentionRules = async (context) => {
+  // Create default retention rule for global files (30 days)
+  await createRetentionRule(context, SYSTEM_USER, {
+    name: 'Global files retention',
+    max_retention: 30,
+    retention_unit: 'days',
+    scope: 'file',
+  });
+  // Create default retention rule for all workbenches (30 days)
+  await createRetentionRule(context, SYSTEM_USER, {
+    name: 'All workbenches retention',
+    max_retention: 30,
+    retention_unit: 'days',
+    scope: 'workbench',
+  });
+};
+
 const createBasicRolesAndCapabilities = async (context) => {
   // Create capabilities
   await createCapabilities(context, CAPABILITIES);
@@ -430,6 +448,7 @@ export const initializeData = async (context, withMarkings = true) => {
   await createBasicRolesAndCapabilities(context);
   await createVocabularies(context);
   await addEmailTemplate(context, SYSTEM_USER, DEFAULT_EMAIL_TEMPLATE_INPUT, false);
+  await createDefaultRetentionRules(context);
   if (withMarkings) {
     await createMarkingDefinitions(context);
   }

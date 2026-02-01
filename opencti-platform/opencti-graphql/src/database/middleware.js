@@ -3387,6 +3387,7 @@ const internalCreateEntityRaw = async (context, user, rawInput, type, opts = {})
     // Process all files to upload
     if (filesToUpload.length > 0) {
       const isAutoExternal = entitySetting?.platform_entity_files_ref;
+      const noTriggerImport = resolvedInput.noTriggerImport ?? false;
       const path = `import/${type}/${dataEntity.element[ID_INTERNAL]}`;
       const uploadedFiles = [];
       for (let i = 0; i < filesToUpload.length; i += 1) {
@@ -3394,7 +3395,7 @@ const internalCreateEntityRaw = async (context, user, rawInput, type, opts = {})
         const { filename } = await fileInput;
         const key = `${path}/${filename}`;
         const meta = isAutoExternal ? { external_reference_id: generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, { url: `/storage/get/${key}` }) } : {};
-        const { upload: uploadedFile } = await uploadToStorage(context, user, path, fileInput, { entity: dataEntity.element, file_markings, meta });
+        const { upload: uploadedFile } = await uploadToStorage(context, user, path, fileInput, { entity: dataEntity.element, file_markings, meta, noTriggerImport });
         uploadedFiles.push(storeFileConverter(user, uploadedFile));
         // Add external references from files if necessary
         if (isAutoExternal) {

@@ -814,6 +814,7 @@ class CaseRfi:
         information_types = kwargs.get("information_types", None)
         files = kwargs.get("files", None)
         files_markings = kwargs.get("filesMarkings", None)
+        no_trigger_import = kwargs.get("noTriggerImport", False)
         upsert_operations = kwargs.get("upsert_operations", None)
 
         if name is not None:
@@ -855,6 +856,7 @@ class CaseRfi:
                 "information_types": information_types,
                 "files": files,
                 "filesMarkings": files_markings,
+                "noTriggerImport": no_trigger_import,
                 "upsertOperations": upsert_operations,
             }
             result = self.opencti.query(query, {"input": input_variables})
@@ -1096,6 +1098,7 @@ class CaseRfi:
                 ),
                 files=extras.get("files"),
                 filesMarkings=extras.get("filesMarkings"),
+                noTriggerImport=extras.get("noTriggerImport", False),
             )
         else:
             self.opencti.app_logger.error(

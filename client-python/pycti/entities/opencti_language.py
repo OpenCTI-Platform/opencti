@@ -478,6 +478,7 @@ class Language:
         update = kwargs.get("update", False)
         files = kwargs.get("files", None)
         files_markings = kwargs.get("filesMarkings", None)
+        no_trigger_import = kwargs.get("noTriggerImport", False)
 
         if name is not None:
             self.opencti.app_logger.info("Creating Language", {"name": name})
@@ -512,6 +513,7 @@ class Language:
                         "update": update,
                         "files": files,
                         "filesMarkings": files_markings,
+                        "noTriggerImport": no_trigger_import,
                     }
                 },
             )
@@ -590,6 +592,7 @@ class Language:
                 update=update,
                 files=extras.get("files"),
                 filesMarkings=extras.get("filesMarkings"),
+                noTriggerImport=extras.get("noTriggerImport", False),
             )
         else:
             self.opencti.app_logger.error(

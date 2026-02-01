@@ -3,6 +3,7 @@ config.yml
 exports
 logs
 test.py
+test.json
 examples/*.json
 examples/*.pdf
 Pipfile*
