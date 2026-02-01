@@ -176,7 +176,9 @@ export const allFilesMimeTypeDistribution = async (context: AuthContext, user: A
 // Images metadata for users
 // In progress virtual files from export
 export const paginatedForPathWithEnrichment = async (context: AuthContext, user: AuthUser, path: string, entity_id?: string, opts?: FilesOptions<BasicStoreEntityDocument>) => {
-  const filterOpts = { ...opts, exact_path: isEmptyField(entity_id) };
+  // Only auto-set exact_path if it's not explicitly provided in opts
+  const autoExactPath = opts?.exact_path === undefined ? isEmptyField(entity_id) : opts.exact_path;
+  const filterOpts = { ...opts, exact_path: autoExactPath };
   const draftContext = getDraftContext(context, user);
   const pathsToTarget = draftContext ? [`${getDraftFilePrefix(draftContext)}${path}`, path] : [path];
   const findOpts: EntityOptions<BasicStoreEntityDocument> = {
