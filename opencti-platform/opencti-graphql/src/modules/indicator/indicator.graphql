@@ -254,6 +254,7 @@ input IndicatorAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   basedOn: [String!]
   upsertOperations: [EditInput!]
 }

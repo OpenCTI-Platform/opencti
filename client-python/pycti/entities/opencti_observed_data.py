@@ -709,6 +709,7 @@ class ObservedData:
         update = kwargs.get("update", False)
         files = kwargs.get("files", None)
         files_markings = kwargs.get("filesMarkings", None)
+        no_trigger_import = kwargs.get("noTriggerImport", False)
         upsert_operations = kwargs.get("upsert_operations", None)
 
         if (
@@ -750,6 +751,7 @@ class ObservedData:
                 "update": update,
                 "files": files,
                 "filesMarkings": files_markings,
+                "noTriggerImport": no_trigger_import,
                 "upsertOperations": upsert_operations,
             }
             result = self.opencti.query(query, {"input": input_variables})
@@ -1000,6 +1002,7 @@ class ObservedData:
                 update=update,
                 files=extras.get("files"),
                 filesMarkings=extras.get("filesMarkings"),
+                noTriggerImport=extras.get("noTriggerImport", False),
                 upsert_operations=(
                     stix_object["opencti_upsert_operations"]
                     if "opencti_upsert_operations" in stix_object

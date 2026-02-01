@@ -249,6 +249,7 @@ input CaseIncidentAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   clientMutationId: String
   update: Boolean
   authorized_members: [MemberAccessInput!]

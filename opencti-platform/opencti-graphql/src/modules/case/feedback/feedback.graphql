@@ -239,6 +239,7 @@ input FeedbackAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   clientMutationId: String
   update: Boolean
   rating: Int
