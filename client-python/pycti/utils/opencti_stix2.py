@@ -823,23 +823,26 @@ class OpenCTIStix2:
                 if generated_ref_id is None:
                     continue
                 else:
-                    # Prepare all files for direct upload during creation
-                    files_to_upload = []
-                    files_markings = []
-                    no_trigger_import = False
+                    # Collect files from both x_opencti_files and extension
                     all_files = []
                     if "x_opencti_files" in external_reference:
-                        all_files = external_reference["x_opencti_files"]
-                    elif (
+                        all_files.extend(external_reference["x_opencti_files"])
+                    if (
                         self.opencti.get_attribute_in_extension(
                             "files", external_reference
                         )
                         is not None
                     ):
-                        all_files = self.opencti.get_attribute_in_extension(
-                            "files", external_reference
+                        all_files.extend(
+                            self.opencti.get_attribute_in_extension(
+                                "files", external_reference
+                            )
                         )
 
+                    # Prepare all files for direct upload during creation
+                    files_to_upload = []
+                    files_markings = []
+                    no_trigger_import = False
                     for file_obj in all_files:
                         data = None
                         if "data" in file_obj:
