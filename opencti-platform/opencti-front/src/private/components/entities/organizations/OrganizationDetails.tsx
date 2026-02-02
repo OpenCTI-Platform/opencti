@@ -44,7 +44,6 @@ const OrganizationDetails: FunctionComponent<OrganizationDetailsComponentProps> 
             </Label>
             <FieldOrEmpty source={organization.x_opencti_organization_type}>
               <Tag
-                color="#e59889"
                 label={organization.x_opencti_organization_type}
               />
             </FieldOrEmpty>

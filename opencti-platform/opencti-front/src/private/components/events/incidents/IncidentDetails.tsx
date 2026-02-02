@@ -1,7 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
-import Chip from '@mui/material/Chip';
 import { useFormatter } from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { IncidentDetails_incident$data, IncidentDetails_incident$key } from './__generated__/IncidentDetails_incident.graphql';
@@ -141,17 +140,7 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
               {t_i18n('Source')}
             </Label>
             <FieldOrEmpty source={incident.source}>
-              <Chip
-                style={{
-                  fontSize: 12,
-                  height: 25,
-                  marginRight: 7,
-                  textTransform: 'uppercase',
-                  borderRadius: 4,
-                  width: 150,
-                }}
-                color="secondary"
-                variant="outlined"
+              <Tag
                 label={incident.source}
               />
             </FieldOrEmpty>
