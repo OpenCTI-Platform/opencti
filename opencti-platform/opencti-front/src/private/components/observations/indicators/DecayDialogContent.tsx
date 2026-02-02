@@ -17,6 +17,7 @@ import { useFormatter } from '../../../../components/i18n';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 interface DecayDialogContentProps {
   indicator: IndicatorDetails_indicator$data;
@@ -41,7 +42,7 @@ const DecayDialogContent: FunctionComponent<DecayDialogContentProps> = ({ indica
 
   const getDateAsTextFor = (history: DecayHistory) => {
     if (indicator.x_opencti_score === null || indicator.x_opencti_score === undefined) {
-      return '-';
+      return EMPTY_VALUE;
     }
     if (history.score < indicator.x_opencti_score && history.updated_at > indicator.decay_base_score_date) {
       return rd(history.updated_at);

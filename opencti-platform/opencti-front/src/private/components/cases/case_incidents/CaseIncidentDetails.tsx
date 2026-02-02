@@ -1,6 +1,4 @@
-import Chip from '@mui/material/Chip';
 import Grid from '@mui/material/Grid';
-import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import RelatedContainers from '@components/common/containers/related_containers/RelatedContainers';
@@ -8,23 +6,11 @@ import Divider from '@mui/material/Divider';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
-import type { Theme } from '../../../../components/Theme';
 import { CaseIncidentDetails_case$key } from './__generated__/CaseIncidentDetails_case.graphql';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  chip: {
-    fontSize: 12,
-    lineHeight: '12px',
-    backgroundColor: theme.palette.background.accent,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-    margin: '0 5px 5px 0',
-  },
-}));
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import Tag from '../../../../components/common/tag/Tag';
 
 const CaseIncidentDetailsFragment = graphql`
   fragment CaseIncidentDetails_case on CaseIncident {
@@ -74,7 +60,6 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
   caseIncidentData,
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const data = useFragment(CaseIncidentDetailsFragment, caseIncidentData);
   const responseTypes = data.response_types ?? [];
 
@@ -110,25 +95,22 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
             <Label>
               {t_i18n('Incident response type')}
             </Label>
-            {responseTypes.length > 0
-              ? (data.response_types ?? []).map((responseType) => (
-                  <Chip
-                    key={responseType}
-                    classes={{ root: classes.chip }}
-                    label={responseType}
-                  />
-                ))
-              : '-'}
+            <FieldOrEmpty source={responseTypes}>
+              {responseTypes.map((responseType) => (
+                <Tag
+                  key={responseType}
+                  label={responseType}
+                />
+              ))}
+            </FieldOrEmpty>
           </Grid>
           <Grid item xs={12}>
             <Label>
               {t_i18n('Description')}
             </Label>
-            {data.description ? (
+            <FieldOrEmpty source={data.description}>
               <ExpandableMarkdown source={data.description} limit={300} />
-            ) : (
-              '-'
-            )}
+            </FieldOrEmpty>
           </Grid>
         </Grid>
         <Divider />

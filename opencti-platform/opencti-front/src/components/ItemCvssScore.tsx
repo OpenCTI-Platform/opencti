@@ -1,6 +1,8 @@
 import { useTheme } from '@mui/styles';
 import type { Theme } from './Theme';
 import Tag from './common/tag/Tag';
+import { EMPTY_VALUE } from '../utils/String';
+import { isEmptyField } from '../utils/utils';
 
 type ItemCvssScoreProps = {
   score?: number | null;
@@ -21,7 +23,7 @@ const ItemCvssScore = ({ score }: ItemCvssScoreProps) => {
     }
   };
 
-  if (score === null || score === undefined) return '-';
+  if (isEmptyField(score)) return EMPTY_VALUE;
 
   return (
     <Tag

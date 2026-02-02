@@ -7,6 +7,7 @@ import Box from '@mui/material/Box';
 import { User_user$data } from '@components/settings/users/__generated__/User_user.graphql';
 import UserConfidenceOverrides from '@components/settings/users/UserConfidenceOverrides';
 import { useFormatter } from '../../../../components/i18n';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 type UserConfidenceLevelProps = {
   user: Pick<User_user$data, 'effective_confidence_level'>;
@@ -88,7 +89,7 @@ const UserConfidenceLevel: React.FC<UserConfidenceLevelProps> = ({ user }) => {
 
   return (
     <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
-      <span>{`${user.effective_confidence_level.max_confidence ?? '-'}`}</span>
+      <span>{`${user.effective_confidence_level.max_confidence ?? EMPTY_VALUE}`}</span>
       {user.effective_confidence_level.source
         && <MaxConfidenceSource user={user} />
       }

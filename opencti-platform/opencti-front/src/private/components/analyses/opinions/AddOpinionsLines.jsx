@@ -9,7 +9,7 @@ import ListItemText from '@mui/material/ListItemText';
 import { CheckCircle, WorkOutline } from '@mui/icons-material';
 import { ConnectionHandler } from 'relay-runtime';
 import { ListItemButton } from '@mui/material';
-import { truncate } from '../../../../utils/String';
+import { truncate, EMPTY_VALUE } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import ItemMarkings from '../../../../components/ItemMarkings';
@@ -140,7 +140,7 @@ class AddOpinionsLinesContainer extends Component {
                 secondary={truncate(opinion.explanation, 120)}
               />
               <div style={{ marginRight: 50 }}>
-                {opinion.createdBy?.name ?? '-'}
+                {opinion.createdBy?.name ?? EMPTY_VALUE}
               </div>
               <div style={{ marginRight: 50 }}>
                 <ItemMarkings

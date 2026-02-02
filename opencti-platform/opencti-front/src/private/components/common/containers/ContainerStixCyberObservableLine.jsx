@@ -16,7 +16,7 @@ import { ListItemButton } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import ContainerStixCoreObjectPopover from './ContainerStixCoreObjectPopover';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
-import { renderObservableValue } from '../../../../utils/String';
+import { EMPTY_VALUE, renderObservableValue } from '../../../../utils/String';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemIcon from '../../../../components/ItemIcon';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
@@ -174,7 +174,7 @@ const ContainerStixCyberObservableLineComponent = (props) => {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.createdBy.width }}
               >
-                {node.createdBy?.name ?? '-'}
+                {node.createdBy?.name ?? EMPTY_VALUE}
               </div>
               <div
                 className={classes.bodyItem}

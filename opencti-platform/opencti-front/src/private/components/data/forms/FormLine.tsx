@@ -16,6 +16,7 @@ import { useFormatter } from '../../../../components/i18n';
 import FormPopover from './FormPopover';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import ItemIcon from '../../../../components/ItemIcon';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 // Styles
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -102,7 +103,7 @@ export const FormLineComponent: FunctionComponent<FormLineComponentProps> = ({
                 {data.name}
               </div>
               <div className={classes.bodyItem} style={{ width: dataColumns.description.width }}>
-                {data.description || '-'}
+                {data.description || EMPTY_VALUE}
               </div>
               <div className={classes.bodyItem} style={{ width: dataColumns.mainEntityType.width }}>
                 {mainEntityType}

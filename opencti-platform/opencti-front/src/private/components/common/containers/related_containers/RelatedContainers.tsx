@@ -18,6 +18,7 @@ import DataTableWithoutFragment from '../../../../../components/dataGrid/DataTab
 import { DataTableVariant } from '../../../../../components/dataGrid/dataTableTypes';
 import Label from '../../../../../components/common/label/Label';
 import { Box } from '@mui/material';
+import { EMPTY_VALUE } from '../../../../../utils/String';
 
 export const RelatedContainersFragment = graphql`
   fragment RelatedContainersFragment_container_connection on ContainerConnection {
@@ -211,7 +212,7 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
         )}
       </div>
       <Drawer
-        title={selectedContainer?.name ?? '-'}
+        title={selectedContainer?.name ?? EMPTY_VALUE}
         open={!!selectedContainer}
         onClose={() => setSelectedContainer(undefined)}
         header={(

@@ -6,6 +6,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 import useChipOverflow from '../../data/IngestionCatalog/components/card/usecases/useChipOverflow';
 import { Theme } from '../../../../components/Theme';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 interface StixCoreObjectLabelsProps {
   labels: readonly {
@@ -29,7 +30,24 @@ const StixCoreObjectLabels = ({
   const labelValues = labels?.map((l) => l.value || l.id) ?? [];
   const { containerRef, chipRefs, visibleCount, shouldTruncate } = useChipOverflow(labelValues);
 
-  if (!revoked && labels && labels.length > 0) {
+  // case Revoked
+  if (revoked) {
+    return (
+      <Tag
+        variant="outlined"
+        label={t_i18n('Revoked')}
+        onClick={(e: SyntheticEvent) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onClick?.('objectLabel', null, 'eq');
+        }}
+        color={theme.palette.designSystem.tertiary.red[400]}
+      />
+    );
+  }
+
+  // case Some labels
+  if (labels && labels.length > 0) {
     const hiddenCount = labels.length - visibleCount;
 
     return (
@@ -55,7 +73,7 @@ const StixCoreObjectLabels = ({
                 chipRefs.current[index] = el;
               }}
             >
-              <Tag label={label.value || '-'} />
+              <Tag label={label.value || EMPTY_VALUE} />
             </div>
           ))}
         </Stack>
@@ -88,31 +106,9 @@ const StixCoreObjectLabels = ({
     );
   }
 
+  // case no labels
   return (
-    <>
-      {revoked ? (
-        <Tag
-          variant="outlined"
-          label={t_i18n('Revoked')}
-          onClick={(e: SyntheticEvent) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onClick?.('objectLabel', null, 'eq');
-          }}
-          color={theme.palette.designSystem.tertiary.red[400]}
-        />
-      ) : (
-        <Tag
-          label={t_i18n('No label')}
-          onClick={(e: SyntheticEvent) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onClick?.('objectLabel', null, 'eq');
-          }}
-          color={theme.palette.designSystem.tertiary.blue[900]}
-        />
-      )}
-    </>
+    <>{EMPTY_VALUE}</>
   );
 };
 

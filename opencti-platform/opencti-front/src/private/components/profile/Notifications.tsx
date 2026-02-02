@@ -34,6 +34,7 @@ import { isNotEmptyField } from '../../../utils/utils';
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 import { colors, getFirstOperation, iconSelector } from './notifications/notificationUtils';
 import { chipInListBasicStyle } from '../../../utils/chipStyle';
+import { EMPTY_VALUE } from '../../../utils/String';
 
 export const LOCAL_STORAGE_KEY = 'notifiers';
 
@@ -282,9 +283,9 @@ const Notifications: FunctionComponent = () => {
             {multipleEvents ? (
               <i>{t_i18n('Digest with multiple notifiers')}</i>
             ) : (
-              <Tooltip title={firstEvent?.message ?? '-'}>
+              <Tooltip title={firstEvent?.message ?? EMPTY_VALUE}>
                 <span>
-                  <MarkdownDisplay content={firstEvent?.message ?? '-'} remarkGfmPlugin commonmark removeLinks />
+                  <MarkdownDisplay content={firstEvent?.message ?? EMPTY_VALUE} remarkGfmPlugin commonmark removeLinks />
                 </span>
               </Tooltip>
             )}
@@ -315,7 +316,7 @@ const Notifications: FunctionComponent = () => {
             paddingRight: 10,
           }}
           >
-            <Tooltip title={name ?? '-'}>
+            <Tooltip title={name ?? EMPTY_VALUE}>
               <Chip
                 style={{
                   ...chipInListBasicStyle,
@@ -326,7 +327,7 @@ const Notifications: FunctionComponent = () => {
                   ? 'warning'
                   : 'secondary'}
                 variant="outlined"
-                label={name ?? '-'}
+                label={name ?? EMPTY_VALUE}
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();

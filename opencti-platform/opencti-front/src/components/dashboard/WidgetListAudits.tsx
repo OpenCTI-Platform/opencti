@@ -12,6 +12,7 @@ import { resolveLink } from '../../utils/Entity';
 import { useGenerateAuditMessage } from '../../utils/history';
 import type { Theme } from '../Theme';
 import { useFormatter } from '../i18n';
+import { EMPTY_VALUE } from '../../utils/String';
 
 interface WidgetListAuditsProps {
   data: NonNullable<AuditsListComponentQuery$data['audits']>['edges'];
@@ -93,7 +94,7 @@ const WidgetListAudits = ({ data }: WidgetListAuditsProps) => {
                     <div
                       style={{ ...bodyItemStyle, width: '18%' }}
                     >
-                      {audit.user?.name ?? '-'}
+                      {audit.user?.name ?? EMPTY_VALUE}
                     </div>
                     <div
                       style={{ ...bodyItemStyle, width: '15%' }}

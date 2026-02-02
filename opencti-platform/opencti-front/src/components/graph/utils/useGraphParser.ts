@@ -3,7 +3,7 @@ import { dateFormat, jsDate } from '../../../utils/Time';
 import { isNone, useFormatter } from '../../i18n';
 import { defaultDate, getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import type { OctiGraphPositions, GraphLink, GraphNode } from '../graph.types';
-import { truncate } from '../../../utils/String';
+import { EMPTY_VALUE, truncate } from '../../../utils/String';
 import GRAPH_IMAGES from './graphImages';
 import { itemColor } from '../../../utils/Colors';
 
@@ -60,9 +60,9 @@ const useGraphParser = () => {
     const relTypeStr = `<strong>${t_i18n(`relationship_${key}`)}</strong>`;
     const createdStr = `${t_i18n('Created the')} ${dateFormat(data.created)}`;
     const start = data.start_time || data.first_seen;
-    const startStr = `${t_i18n('Start time')} ${isNone(start) ? '-' : dateFormat(start)}`;
+    const startStr = `${t_i18n('Start time')} ${isNone(start) ? EMPTY_VALUE : dateFormat(start)}`;
     const end = data.stop_time || data.last_seen;
-    const endStr = `${t_i18n('Stop time')} ${isNone(end) ? '-' : dateFormat(end)}`;
+    const endStr = `${t_i18n('Stop time')} ${isNone(end) ? EMPTY_VALUE : dateFormat(end)}`;
     return `${relTypeStr}\n${createdStr}\n${startStr}\n${endStr}`;
   };
 

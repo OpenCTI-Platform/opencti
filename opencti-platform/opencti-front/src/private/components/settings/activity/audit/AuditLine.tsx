@@ -26,6 +26,7 @@ import ItemIcon from '../../../../../components/ItemIcon';
 import MarkdownDisplay from '../../../../../components/MarkdownDisplay';
 import { useGenerateAuditMessage } from '../../../../../utils/history';
 import { HandleAddFilter } from '../../../../../utils/hooks/useLocalStorage';
+import { EMPTY_VALUE } from '../../../../../utils/String';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -165,19 +166,19 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
                               </TableCell>
                               <TableCell align="left">{row?.previous && row.previous.length > 0
                                 ? row.previous.join(', ')
-                                : '-'}
+                                : EMPTY_VALUE}
                               </TableCell>
                               <TableCell align="left">{row?.new && row.new.length > 0
                                 ? row.new.join(', ')
-                                : '-'}
+                                : EMPTY_VALUE}
                               </TableCell>
                               <TableCell align="left">{row?.added && row.added.length > 0
                                 ? row.added.join(', ')
-                                : '-'}
+                                : EMPTY_VALUE}
                               </TableCell>
                               <TableCell align="left">{row?.removed && row.removed.length > 0
                                 ? row.removed.join(', ')
-                                : '-'}
+                                : EMPTY_VALUE}
                               </TableCell>
                             </TableRow>
                           ))
@@ -229,7 +230,7 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
                 className={classes.bodyItem}
                 style={{ width: dataColumns.user.width }}
               >
-                {data.user?.name ?? '-'}
+                {data.user?.name ?? EMPTY_VALUE}
               </div>
               <div
                 className={classes.bodyItem}
@@ -241,7 +242,7 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
                 className={classes.bodyItem}
                 style={{ width: dataColumns.event_scope.width }}
               >
-                {data.event_scope ?? '-'}
+                {data.event_scope ?? EMPTY_VALUE}
               </div>
               <div
                 className={classes.bodyItem}

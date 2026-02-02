@@ -18,6 +18,7 @@ import type { Theme } from '../../../../components/Theme';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -114,7 +115,7 @@ export const IngestionJsonLineComponent: FunctionComponent<IngestionJsonLineProp
               className={classes.bodyItem}
               style={{ width: dataColumns.connector.width }}
             >
-              {fldt(data.last_execution_date) || '-'}
+              {fldt(data.last_execution_date) || EMPTY_VALUE}
             </div>
             <div
               className={classes.bodyItem}

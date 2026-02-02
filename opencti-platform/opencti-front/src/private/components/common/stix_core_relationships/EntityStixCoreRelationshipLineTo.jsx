@@ -24,6 +24,7 @@ import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemEntityType from '../../../../components/ItemEntityType';
 import { DraftChip, getDraftModeColor } from '../draft/DraftChip';
 import SecurityCoverageInformation from '../../analyses/security_coverages/SecurityCoverageInformation';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 const styles = (theme) => ({
   item: {
@@ -161,7 +162,7 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
                     className={classes.bodyItem}
                     style={{ width: dataColumns.x_mitre_id.width }}
                   >
-                    {node.from?.x_mitre_id ?? '-'}
+                    {node.from?.x_mitre_id ?? EMPTY_VALUE}
                   </div>
                 )}
                 {dataColumns.coverage_information && (
@@ -185,7 +186,7 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
                   className={classes.bodyItem}
                   style={{ width: dataColumns.createdBy.width }}
                 >
-                  {node.createdBy?.name ?? '-'}
+                  {node.createdBy?.name ?? EMPTY_VALUE}
                 </div>
                 <div
                   className={classes.bodyItem}

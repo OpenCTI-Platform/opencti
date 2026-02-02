@@ -9,7 +9,7 @@ import ListItemText from '@mui/material/ListItemText';
 import { CheckCircle, WorkOutline } from '@mui/icons-material';
 import { ConnectionHandler } from 'relay-runtime';
 import { ListItemButton } from '@mui/material';
-import { truncate } from '../../../../utils/String';
+import { EMPTY_VALUE, truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import ItemMarkings from '../../../../components/ItemMarkings';
@@ -144,7 +144,7 @@ class AddObservedDataLinesContainer extends Component {
                 secondary={truncate(observedData.explanation, 120)}
               />
               <div style={{ marginRight: 50 }}>
-                {observedData.createdBy?.name ?? '-'}
+                {observedData.createdBy?.name ?? EMPTY_VALUE}
               </div>
               <div style={{ marginRight: 50 }}>
                 <ItemMarkings

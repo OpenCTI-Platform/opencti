@@ -16,6 +16,7 @@ import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePrelo
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import { getFileUri } from '../../../../utils/utils';
 import UploadImport from '../../../../components/UploadImport';
+import { defaultRender } from '../../../../components/dataGrid/dataTableUtils';
 
 export const workbenchLineFragment = graphql`
   fragment ImportFilesContentFileLine_file on File {
@@ -178,7 +179,7 @@ const ImportFilesContent = ({ inDraftOverview }: ImportFilesContentProps) => {
     createdBy: {
       label: 'Creator',
       percentWidth: 15,
-      render: ({ metaData }: ImportFilesContentFileLine_file$data) => metaData?.creator?.name ?? '-',
+      render: ({ metaData }: ImportFilesContentFileLine_file$data) => defaultRender(metaData?.creator?.name),
     },
     objectMarking: {
       percentWidth: 15,

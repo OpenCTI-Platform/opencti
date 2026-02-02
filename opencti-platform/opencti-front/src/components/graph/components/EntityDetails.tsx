@@ -20,7 +20,7 @@ import ErrorNotFound from '../../ErrorNotFound';
 import ItemIcon from '../../ItemIcon';
 import type { Theme } from '../../Theme';
 import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
-import { truncate } from '../../../utils/String';
+import { EMPTY_VALUE, truncate } from '../../../utils/String';
 import ItemCreators from '../../ItemCreators';
 import { EntityDetailsQuery } from './__generated__/EntityDetailsQuery.graphql';
 import ItemConfidence from '../../ItemConfidence';
@@ -381,7 +381,7 @@ const EntityDetailsComponent: FunctionComponent<
       {entityDescription && entityDescription.length > 0 ? (
         <ExpandableMarkdown source={entityDescription} limit={400} />
       ) : (
-        '-'
+        EMPTY_VALUE
       )}
       {!stixCoreObject.parent_types.includes('Stix-Cyber-Observable') && (
         <div>
@@ -405,15 +405,10 @@ const EntityDetailsComponent: FunctionComponent<
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t_i18n('Marking')}
       </Typography>
-      {stixCoreObject.objectMarking
-        && stixCoreObject.objectMarking.length > 0 ? (
-            <ItemMarkings
-              markingDefinitions={stixCoreObject.objectMarking}
-              limit={2}
-            />
-          ) : (
-            '-'
-          )}
+      <ItemMarkings
+        markingDefinitions={stixCoreObject.objectMarking}
+        limit={2}
+      />
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t_i18n('Author')}
       </Typography>
@@ -455,7 +450,7 @@ const EntityDetailsComponent: FunctionComponent<
                     )}
                     secondary={(
                       <div className={classes.bodyItem}>
-                        {report.createdBy?.name ?? '-'}
+                        {report.createdBy?.name ?? EMPTY_VALUE}
                       </div>
                     )}
                   />
@@ -466,7 +461,7 @@ const EntityDetailsComponent: FunctionComponent<
           })}
         </List>
       ) : (
-        '-'
+        EMPTY_VALUE
       )}
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t_i18n('External references')}
@@ -522,7 +517,7 @@ const EntityDetailsComponent: FunctionComponent<
             })}
         </List>
       ) : (
-        '-'
+        EMPTY_VALUE
       )}
       {expandable && (
         <IconButton

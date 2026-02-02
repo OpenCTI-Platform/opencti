@@ -9,6 +9,9 @@ import { isNotEmptyField } from './utils';
 // the relative date values must be: 'now' OR 'now' followed by -/+ then a number then a letter among [smhHdwMy] and eventually a / followed by a letter among [smhHdwMy]
 export const RELATIVE_DATE_REGEX = /^now([-+]\d+[smhHdwMy](\/[smhHdwMy])?)?$/;
 
+// the value to display if a field is empty or undefined
+export const EMPTY_VALUE = '-';
+
 export const truncate = (str, limit, truncateSpaces = true) => {
   if (str === undefined || str === null || str.length <= limit) {
     return str;
@@ -139,7 +142,7 @@ export const renderObservableValue = (observable) => {
   }
 };
 
-export const emptyFilled = (str) => (isNotEmptyField(str) ? str : '-');
+export const emptyFilled = (str) => (isNotEmptyField(str) ? str : EMPTY_VALUE);
 
 /**
  * @param str {string}

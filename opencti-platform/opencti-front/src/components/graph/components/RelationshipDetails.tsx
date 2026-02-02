@@ -25,6 +25,7 @@ import ItemCreators from '../../ItemCreators';
 import { RelationshipDetailsQuery } from './__generated__/RelationshipDetailsQuery.graphql';
 import ItemEntityType from '../../ItemEntityType';
 import { GraphLink } from '../graph.types';
+import { EMPTY_VALUE } from '../../../utils/String';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -381,36 +382,26 @@ const RelationshipDetailsComponent: FunctionComponent<
                 limit={400}
               />
             ) : (
-              '-'
+              EMPTY_VALUE
             )}
         <Typography variant="h3" gutterBottom={true} className={classes.label}>
           {t_i18n('Confidence level')}
         </Typography>
-        {stixRelationship.confidence ? (
-          <ItemConfidence
-            confidence={stixRelationship.confidence}
-            entityType="stix-core-relationship"
-          />
-        ) : (
-          '-'
-        )}
+        <ItemConfidence
+          confidence={stixRelationship.confidence}
+          entityType="stix-core-relationship"
+        />
         <Typography variant="h3" gutterBottom={true} className={classes.label}>
           {t_i18n('Marking')}
         </Typography>
-        {stixRelationship.objectMarking && stixRelationship.objectMarking.length > 0 ? (
-          <ItemMarkings
-            markingDefinitions={stixRelationship.objectMarking}
-            limit={2}
-          />
-        ) : ('-')}
+        <ItemMarkings
+          markingDefinitions={stixRelationship.objectMarking}
+          limit={2}
+        />
         <Typography variant="h3" gutterBottom={true} className={classes.label}>
           {t_i18n('Author')}
         </Typography>
-        {stixRelationship.createdBy ? (
-          <ItemAuthor createdBy={stixRelationship.createdBy} />
-        ) : (
-          '-'
-        )}
+        <ItemAuthor createdBy={stixRelationship.createdBy} />
         <Typography variant="h3" gutterBottom={true} className={classes.label}>
           {t_i18n('Creators')}
         </Typography>
@@ -448,7 +439,7 @@ const RelationshipDetailsComponent: FunctionComponent<
                       )}
                       secondary={(
                         <div className={classes.bodyItem}>
-                          {report.createdBy?.name ?? '-'}
+                          {report.createdBy?.name ?? EMPTY_VALUE}
                         </div>
                       )}
                     />
@@ -459,7 +450,7 @@ const RelationshipDetailsComponent: FunctionComponent<
             })}
           </List>
         ) : (
-          '-'
+          EMPTY_VALUE
         )}
         <Typography variant="h3" gutterBottom={true} className={classes.label}>
           {t_i18n('External References')}
@@ -471,8 +462,8 @@ const RelationshipDetailsComponent: FunctionComponent<
               .map((externalReference) => {
                 const externalReferenceId = externalReference.node.external_id
                   ? `(${externalReference.node.external_id})`
-                  : '';
-                let externalReferenceSecondary = '';
+                  : EMPTY_VALUE;
+                let externalReferenceSecondary;
                 if (
                   externalReference.node.url
                   && externalReference.node.url.length > 0
@@ -484,7 +475,7 @@ const RelationshipDetailsComponent: FunctionComponent<
                 ) {
                   externalReferenceSecondary = externalReference.node.description;
                 } else {
-                  externalReferenceSecondary = t_i18n('No description');
+                  externalReferenceSecondary = EMPTY_VALUE;
                 }
                 return (
                   <React.Fragment key={externalReference.node.id}>
@@ -515,7 +506,7 @@ const RelationshipDetailsComponent: FunctionComponent<
               })}
           </List>
         ) : (
-          '-'
+          EMPTY_VALUE
         )}
       </>
     );

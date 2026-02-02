@@ -12,6 +12,7 @@ import { handleErrorInForm } from '../../../../../relay/environment';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../../utils/field';
 import { RequestAccessConfigurationEdition_requestAccess$key } from './__generated__/RequestAccessConfigurationEdition_requestAccess.graphql';
 import { RequestAccessConfigurationEditionMutation, RequestAccessConfigureInput } from './__generated__/RequestAccessConfigurationEditionMutation.graphql';
+import { EMPTY_VALUE } from '../../../../../utils/String';
 
 const requestAccessConfigurationMutation = graphql`
     mutation RequestAccessConfigurationEditionMutation($input: RequestAccessConfigureInput!) {
@@ -72,17 +73,17 @@ const RequestAccessConfigurationEdition: FunctionComponent<RequestAccessWorkflow
   const initialValues: RequestAccessEditionFormInputs = {
     acceptedTemplate: {
       color: approvedTemplateStatus ? approvedTemplateStatus.color : '#fff',
-      label: approvedTemplateStatus ? approvedTemplateStatus.name : '-',
-      value: approvedTemplateStatus ? approvedTemplateStatus.id : '-',
+      label: approvedTemplateStatus ? approvedTemplateStatus.name : EMPTY_VALUE,
+      value: approvedTemplateStatus ? approvedTemplateStatus.id : EMPTY_VALUE,
     },
     declinedTemplate: {
       color: declinedTemplateStatus ? declinedTemplateStatus.color : '#fff',
-      label: declinedTemplateStatus ? declinedTemplateStatus.name : '-',
-      value: declinedTemplateStatus ? declinedTemplateStatus.id : '-',
+      label: declinedTemplateStatus ? declinedTemplateStatus.name : EMPTY_VALUE,
+      value: declinedTemplateStatus ? declinedTemplateStatus.id : EMPTY_VALUE,
     },
     approvalAdmin: {
-      label: adminData && adminData[0] ? adminData[0].name : '',
-      value: adminData && adminData[0] ? adminData[0].id : '',
+      label: adminData && adminData[0] ? adminData[0].name : EMPTY_VALUE,
+      value: adminData && adminData[0] ? adminData[0].id : EMPTY_VALUE,
     },
   };
 

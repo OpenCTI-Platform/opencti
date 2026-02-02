@@ -16,6 +16,7 @@ import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectL
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemStatus from '../../../../components/ItemStatus';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 const styles = (theme) => ({
   item: {
@@ -103,7 +104,7 @@ class OpinionLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.createdBy.width }}
               >
-                {node.createdBy?.name}
+                {node.createdBy?.name ?? EMPTY_VALUE}
               </div>
               <div
                 className={classes.bodyItem}

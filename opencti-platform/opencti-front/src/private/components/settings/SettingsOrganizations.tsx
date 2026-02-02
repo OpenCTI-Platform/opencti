@@ -16,6 +16,7 @@ import useAuth from '../../../utils/hooks/useAuth';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../utils/hooks/useGranted';
+import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -65,7 +66,7 @@ const SettingsOrganizations = () => {
       label: 'Type',
       width: '20%',
       isSortable: true,
-      render: (node: Organization) => (node.x_opencti_organization_type ?? '-'),
+      render: (node: Organization) => defaultRender(node.x_opencti_organization_type),
     },
     created: {
       label: 'Original creation date',

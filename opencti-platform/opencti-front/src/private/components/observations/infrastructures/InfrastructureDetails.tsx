@@ -1,30 +1,17 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
-import Chip from '@mui/material/Chip';
+import Tag from '../../../../components/common/tag/Tag';
 import { List } from '@mui/material';
-import makeStyles from '@mui/styles/makeStyles';
 import StixCoreObjectsDonut from '../../common/stix_core_objects/StixCoreObjectsDonut';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectKillChainPhasesView from '../../common/stix_core_objects/StixCoreObjectKillChainPhasesView';
-import type { Theme } from '../../../../components/Theme';
 import { InfrastructureDetails_infrastructure$data, InfrastructureDetails_infrastructure$key } from './__generated__/InfrastructureDetails_infrastructure.graphql';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  chip: {
-    fontSize: 12,
-    lineHeight: '12px',
-    backgroundColor: theme.palette.background.accent,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-    margin: '0 5px 5px 0',
-  },
-}));
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 const InfrastructureDetailsFragment = graphql`
   fragment InfrastructureDetails_infrastructure on Infrastructure {
@@ -56,7 +43,6 @@ interface InfrastructureDetailsProps {
 const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
   infrastructure,
 }) => {
-  const classes = useStyles();
   const { t_i18n, fldt } = useFormatter();
 
   const data: InfrastructureDetails_infrastructure$data = useFragment(
@@ -64,6 +50,7 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
     infrastructure,
   );
   const killChainPhases = data.killChainPhases ?? [];
+  const infrastructureTypes = data.infrastructure_types ?? [];
   const observablesDataSelection = [
     {
       attribute: 'entity_type',
@@ -94,20 +81,18 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
             <Label>
               {t_i18n('Infrastructure types')}
             </Label>
-            {data.infrastructure_types
-              && data.infrastructure_types.length > 0 ? (
-                  <List>
-                    {data.infrastructure_types.map((infrastructureType) => (
-                      <Chip
-                        key={infrastructureType}
-                        classes={{ root: classes.chip }}
-                        label={infrastructureType}
-                      />
-                    ))}
-                  </List>
-                ) : (
-                  '-'
-                )}
+            <FieldOrEmpty source={infrastructureTypes}>
+              {infrastructureTypes.length > 0 && (
+                <List>
+                  {infrastructureTypes.map((infrastructureType) => (
+                    <Tag
+                      key={infrastructureType}
+                      label={infrastructureType}
+                    />
+                  ))}
+                </List>
+              )}
+            </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
             <Label>
@@ -119,13 +104,13 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
             <Label>
               {t_i18n('First seen')}
             </Label>
-            {data.first_seen ? fldt(data.first_seen) : '-'}
+            {data.first_seen ? fldt(data.first_seen) : EMPTY_VALUE}
           </Grid>
           <Grid item xs={6}>
             <Label>
               {t_i18n('Last seen')}
             </Label>
-            {data.last_seen ? fldt(data.last_seen) : '-'}
+            {data.last_seen ? fldt(data.last_seen) : EMPTY_VALUE}
           </Grid>
           <Grid item xs={6}>
             <StixCoreObjectKillChainPhasesView killChainPhases={killChainPhases} />

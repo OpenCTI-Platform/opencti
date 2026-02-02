@@ -1,37 +1,15 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
-import { makeStyles } from '@mui/styles';
-import Chip from '@mui/material/Chip';
 import { useFormatter } from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
-import type { Theme } from '../../../../components/Theme';
 import { IncidentDetails_incident$data, IncidentDetails_incident$key } from './__generated__/IncidentDetails_incident.graphql';
 import StixCoreObjectsDonut from '../../common/stix_core_objects/StixCoreObjectsDonut';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  chip: {
-    fontSize: 12,
-    lineHeight: '12px',
-    backgroundColor: theme.palette.background.accent,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-    margin: '0 5px 5px 0',
-  },
-  chip2: {
-    fontSize: 12,
-    height: 25,
-    marginRight: 7,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-    width: 150,
-  },
-}));
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import Tag from '../../../../components/common/tag/Tag';
 
 const incidentDetailsFragment = graphql`
   fragment IncidentDetails_incident on Incident {
@@ -62,7 +40,6 @@ interface IncidentDetailsProps {
 const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
   incidentData,
 }) => {
-  const classes = useStyles();
   const { t_i18n, fldt } = useFormatter();
 
   const incident: IncidentDetails_incident$data = useFragment(
@@ -122,10 +99,11 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
             <Label>
               {t_i18n('Incident type')}
             </Label>
-            <Chip
-              classes={{ root: classes.chip }}
-              label={incident.incident_type || t_i18n('Unknown')}
-            />
+            <FieldOrEmpty source={incident.incident_type}>
+              <Tag
+                label={incident.incident_type}
+              />
+            </FieldOrEmpty>
             <Label
               sx={{ marginTop: 2 }}
             >
@@ -161,12 +139,11 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
             >
               {t_i18n('Source')}
             </Label>
-            <Chip
-              classes={{ root: classes.chip2 }}
-              color="secondary"
-              variant="outlined"
-              label={incident.source || t_i18n('Unknown')}
-            />
+            <FieldOrEmpty source={incident.source}>
+              <Tag
+                label={incident.source}
+              />
+            </FieldOrEmpty>
             <Label
               sx={{ marginTop: 2 }}
             >

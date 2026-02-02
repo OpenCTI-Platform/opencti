@@ -22,6 +22,7 @@ import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreRelationshipPopover from '../../common/stix_core_relationships/StixCoreRelationshipPopover';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import ItemEntityType from '../../../../components/ItemEntityType';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -191,7 +192,7 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
                           className={classes.bodyItem}
                           style={{ width: '12%' }}
                         >
-                          {node.createdBy?.name ?? '-'}
+                          {node.createdBy?.name ?? EMPTY_VALUE}
                         </div>
                         <div
                           className={classes.bodyItem}

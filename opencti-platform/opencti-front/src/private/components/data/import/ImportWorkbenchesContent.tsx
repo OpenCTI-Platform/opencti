@@ -14,7 +14,7 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
-import { toB64 } from '../../../../utils/String';
+import { EMPTY_VALUE, toB64 } from '../../../../utils/String';
 import { ImportWorkbenchesContentLines_data$data } from './__generated__/ImportWorkbenchesContentLines_data.graphql';
 
 export const WorkbenchFileLineDeleteMutation = graphql`
@@ -179,7 +179,7 @@ const ImportWorkbenchesContent = () => {
     createdBy: {
       label: 'Creator',
       percentWidth: 10,
-      render: ({ metaData }: ImportWorkbenchesContentFileLine_file$data) => metaData?.creator?.name ?? '-',
+      render: ({ metaData }: ImportWorkbenchesContentFileLine_file$data) => metaData?.creator?.name ?? EMPTY_VALUE,
     },
     objectLabel: {
       percentWidth: 10,

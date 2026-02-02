@@ -18,6 +18,7 @@ import { dayStartDate, formatTimeForToday } from '../../../../utils/Time';
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
 import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
 import { chipInListBasicStyle } from '../../../../utils/chipStyle';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -167,7 +168,7 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
                 && data.notifiers.length > 0)
                 ? data.notifiers
                     .map<React.ReactNode>((n) => <code key={n.id} style={{ marginRight: 5 }}>{n.name}</code>)
-                : '-'
+                : EMPTY_VALUE
               }
             </div>
             <div
@@ -208,7 +209,7 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
                     redirection
                     entityTypes={data.instance_trigger ? ['Instance'] : ['Stix-Core-Object', 'Stix-Filtering']}
                   />
-                ) : '-'}
+                ) : EMPTY_VALUE}
               </div>
             )}
             {data.trigger_type === 'digest' && (

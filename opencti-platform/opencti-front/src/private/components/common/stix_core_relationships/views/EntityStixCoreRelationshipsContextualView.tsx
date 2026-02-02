@@ -28,6 +28,7 @@ import { resolveLink } from '../../../../../utils/Entity';
 import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../../utils/filters/filtersUtils';
 import { FilterGroup } from '../../../../../utils/filters/filtersHelpers-types';
 import ItemEntityType from '../../../../../components/ItemEntityType';
+import { defaultRender } from '../../../../../components/dataGrid/dataTableUtils';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -145,13 +146,13 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
       label: 'Author',
       width: '10%',
       isSortable: isRuntimeSort ?? false,
-      render: (stixCoreObject: EntityStixCoreRelationshipsContextualViewLine_node$data) => stixCoreObject.createdBy?.name ?? '-',
+      render: (stixCoreObject: EntityStixCoreRelationshipsContextualViewLine_node$data) => defaultRender(stixCoreObject.createdBy?.name),
     },
     creator: {
       label: 'Creators',
       width: '10%',
       isSortable: isRuntimeSort ?? false,
-      render: (stixCoreObject: EntityStixCoreRelationshipsContextualViewLine_node$data) => (stixCoreObject.creators ?? []).map((c) => c?.name).join(', '),
+      render: (stixCoreObject: EntityStixCoreRelationshipsContextualViewLine_node$data) => defaultRender(stixCoreObject.creators?.map((c) => c?.name)),
     },
     objectLabel: {
       label: 'Labels',

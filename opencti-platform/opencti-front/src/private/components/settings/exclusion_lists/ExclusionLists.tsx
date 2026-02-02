@@ -23,6 +23,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import EnrichedTooltip from '../../../../components/EnrichedTooltip';
 import PageContainer from '../../../../components/PageContainer';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 export const exclusionListsQuery = graphql`
   query ExclusionListsLinesPaginationQuery(
@@ -172,7 +173,7 @@ const ExclusionLists = () => {
       label: t_i18n('Number of elements'),
       percentWidth: 15,
       isSortable: true,
-      render: (node: ExclusionListsLine_node$data) => node.exclusion_list_values_count || '-',
+      render: (node: ExclusionListsLine_node$data) => node.exclusion_list_values_count || EMPTY_VALUE,
     },
     created_at: {
       label: t_i18n('Creation date'),

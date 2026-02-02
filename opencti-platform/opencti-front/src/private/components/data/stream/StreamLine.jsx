@@ -19,6 +19,7 @@ import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../
 import Security from '../../../../utils/Security';
 import { TAXIIAPI_SETCOLLECTIONS } from '../../../../utils/hooks/useGranted';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -151,7 +152,8 @@ class StreamLineLineComponent extends Component {
                           entityTypes={['Stix-Filtering']}
                         />
                       )
-                    : '-'}
+                    : EMPTY_VALUE
+                  }
                 </div>
               </>
             )}

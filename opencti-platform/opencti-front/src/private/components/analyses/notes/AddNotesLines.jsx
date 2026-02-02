@@ -15,7 +15,7 @@ import inject18n from '../../../../components/i18n';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { commitMutation } from '../../../../relay/environment';
 import { deleteNode, insertNode } from '../../../../utils/store';
-import { truncate } from '../../../../utils/String';
+import { EMPTY_VALUE, truncate } from '../../../../utils/String';
 
 const styles = () => ({
   avatar: {
@@ -163,7 +163,7 @@ class AddNotesLinesContainer extends Component {
                     </Typography>
                   </TableCell>
                   <TableCell sx={{ paddingY: 1, paddingX: 2, whiteSpace: 'nowrap' }}>
-                    {note.createdBy?.name ?? '-'}
+                    {note.createdBy?.name ?? EMPTY_VALUE}
                   </TableCell>
                   <TableCell sx={{ paddingY: 1, paddingX: 2 }}>
                     <ItemMarkings

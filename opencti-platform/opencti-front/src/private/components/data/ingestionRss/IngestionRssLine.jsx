@@ -15,6 +15,7 @@ import inject18n from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import Security from '../../../../utils/Security';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -114,13 +115,13 @@ class IngestionRssLineLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.last_execution_date.width }}
               >
-                {nsdt(node.last_execution_date) || '-'}
+                {nsdt(node.last_execution_date) || EMPTY_VALUE}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.current_state_date.width }}
               >
-                {nsdt(node.current_state_date) || '-'}
+                {nsdt(node.current_state_date) || EMPTY_VALUE}
               </div>
             </div>
           )}

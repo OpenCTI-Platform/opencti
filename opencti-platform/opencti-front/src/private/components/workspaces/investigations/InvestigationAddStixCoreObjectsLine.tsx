@@ -16,6 +16,7 @@ import type { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
 import ItemEntityType from '../../../../components/ItemEntityType';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -100,7 +101,7 @@ const InvestigationAddStixCoreObjectsLineComponent = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.createdBy.width }}
             >
-              {node.createdBy?.name}
+              {node.createdBy?.name ?? EMPTY_VALUE}
             </div>
             <div
               className={classes.bodyItem}

@@ -14,6 +14,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { StixCoreRelationshipHistoryFragment } from '@components/common/stix_core_relationships/StixCoreRelationshipHistoryLine';
 import Label from '../../../../components/common/label/Label';
 import Card from '../../../../components/common/card/Card';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 interface HistoryDrawerProps {
   open: boolean;
@@ -75,19 +76,19 @@ const HistoryDrawer: FunctionComponent<HistoryDrawerProps> = ({ open, onClose, t
                       </TableCell>
                       <TableCell align="left">{row?.previous && row.previous.length > 0
                         ? row.previous.join(', ')
-                        : '-'}
+                        : EMPTY_VALUE}
                       </TableCell>
                       <TableCell align="left">{row?.new && row.new.length > 0
                         ? row.new.join(', ')
-                        : '-'}
+                        : EMPTY_VALUE}
                       </TableCell>
                       <TableCell align="left">{row?.added && row.added.length > 0
                         ? row.added.join(', ')
-                        : '-'}
+                        : EMPTY_VALUE}
                       </TableCell>
                       <TableCell align="left">{row?.removed && row.removed.length > 0
                         ? row.removed.join(', ')
-                        : '-'}
+                        : EMPTY_VALUE}
                       </TableCell>
                     </TableRow>
                   ))

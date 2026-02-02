@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { injectIntl, useIntl } from 'react-intl';
 import moment from 'moment-timezone';
 import { bytesFormat, numberFormat } from '../utils/Number';
+import { EMPTY_VALUE } from '../utils/String';
 
 const FROM_START = 0;
 const UNTIL_END = 100000000000000;
@@ -33,7 +34,7 @@ const inject18n = (WrappedComponent) => {
       const translate = (message) => this.props.intl.formatMessage({ id: message });
       const formatNumber = (number) => {
         if (number === null || number === '') {
-          return '-';
+          return EMPTY_VALUE;
         }
         return `${this.props.intl.formatNumber(numberFormat(number).number)}${
           numberFormat(number).symbol
@@ -44,7 +45,7 @@ const inject18n = (WrappedComponent) => {
       }`;
       const longDate = (date) => {
         if (isNone(date)) {
-          return '-';
+          return EMPTY_VALUE;
         }
         return this.props.intl.formatDate(date, {
           day: 'numeric',
@@ -54,7 +55,7 @@ const inject18n = (WrappedComponent) => {
       };
       const longDateTime = (date) => {
         if (isNone(date)) {
-          return '-';
+          return EMPTY_VALUE;
         }
         return this.props.intl.formatDate(date, {
           day: 'numeric',
@@ -67,7 +68,7 @@ const inject18n = (WrappedComponent) => {
       };
       const shortDate = (date) => {
         if (isNone(date)) {
-          return '-';
+          return EMPTY_VALUE;
         }
         return this.props.intl.formatDate(date, {
           day: 'numeric',
@@ -77,7 +78,7 @@ const inject18n = (WrappedComponent) => {
       };
       const shortNumericDate = (date) => {
         if (isNone(date)) {
-          return '-';
+          return EMPTY_VALUE;
         }
         return this.props.intl.formatDate(date, {
           day: 'numeric',
@@ -87,7 +88,7 @@ const inject18n = (WrappedComponent) => {
       };
       const shortNumericDateTime = (date) => {
         if (isNone(date)) {
-          return '-';
+          return EMPTY_VALUE;
         }
         return this.props.intl.formatDate(date, {
           second: 'numeric',
@@ -100,7 +101,7 @@ const inject18n = (WrappedComponent) => {
       };
       const standardDate = (date) => {
         if (isNone(date)) {
-          return '-';
+          return EMPTY_VALUE;
         }
         return this.props.intl.formatDate(date, {
           day: 'numeric',
@@ -110,7 +111,7 @@ const inject18n = (WrappedComponent) => {
       };
       const monthDate = (date) => {
         if (isNone(date)) {
-          return '-';
+          return EMPTY_VALUE;
         }
         return this.props.intl.formatDate(date, {
           month: 'short',
@@ -119,13 +120,13 @@ const inject18n = (WrappedComponent) => {
       };
       const monthTextDate = (date) => {
         if (isNone(date)) {
-          return '-';
+          return EMPTY_VALUE;
         }
         return this.props.intl.formatDate(date, { month: 'long' });
       };
       const monthTextYearDate = (date) => {
         if (isNone(date)) {
-          return '-';
+          return EMPTY_VALUE;
         }
         return this.props.intl.formatDate(date, {
           month: 'long',
@@ -134,7 +135,7 @@ const inject18n = (WrappedComponent) => {
       };
       const yearDate = (date) => {
         if (isNone(date)) {
-          return '-';
+          return EMPTY_VALUE;
         }
         return this.props.intl.formatDate(date, { year: 'numeric' });
       };
@@ -168,7 +169,7 @@ export const useFormatter = () => {
   const translate = (message, { id, values } = {}) => intl.formatMessage({ id: id ?? message }, values);
   const formatNumber = (number) => {
     if (number === null || number === '') {
-      return '-';
+      return EMPTY_VALUE;
     }
     return `${intl.formatNumber(numberFormat(number).number)}${
       numberFormat(number).symbol
@@ -179,7 +180,7 @@ export const useFormatter = () => {
   }`;
   const longDate = (date) => {
     if (isNone(date)) {
-      return '-';
+      return EMPTY_VALUE;
     }
     return intl.formatDate(date, {
       day: 'numeric',
@@ -189,7 +190,7 @@ export const useFormatter = () => {
   };
   const longDateTime = (date) => {
     if (isNone(date)) {
-      return '-';
+      return EMPTY_VALUE;
     }
     return intl.formatDate(date, {
       day: 'numeric',
@@ -202,7 +203,7 @@ export const useFormatter = () => {
   };
   const shortDate = (date) => {
     if (isNone(date)) {
-      return '-';
+      return EMPTY_VALUE;
     }
     return intl.formatDate(date, {
       day: 'numeric',
@@ -212,7 +213,7 @@ export const useFormatter = () => {
   };
   const shortNumericDate = (date) => {
     if (isNone(date)) {
-      return '-';
+      return EMPTY_VALUE;
     }
     return intl.formatDate(date, {
       day: 'numeric',
@@ -228,7 +229,7 @@ export const useFormatter = () => {
    */
   const minuteHourDate = (date) => {
     if (isNone(date)) {
-      return '-';
+      return EMPTY_VALUE;
     }
     return intl.formatDate(date, {
       minute: 'numeric',
@@ -246,7 +247,7 @@ export const useFormatter = () => {
    */
   const shortMinuteHourDate = (date) => {
     if (isNone(date)) {
-      return '-';
+      return EMPTY_VALUE;
     }
     return intl.formatDate(date, {
       minute: 'numeric',
@@ -282,7 +283,7 @@ export const useFormatter = () => {
    */
   const relativeDate = (date) => {
     if (isNone(date)) {
-      return '-';
+      return EMPTY_VALUE;
     }
     const diff = new Date(date) - new Date();
     for (const { unit, interval } of timeUnits) {
@@ -298,7 +299,7 @@ export const useFormatter = () => {
 
   const shortNumericDateTime = (date) => {
     if (isNone(date)) {
-      return '-';
+      return EMPTY_VALUE;
     }
     return intl.formatDate(date, {
       second: 'numeric',
@@ -311,7 +312,7 @@ export const useFormatter = () => {
   };
   const fullNumericDateTime = (date) => {
     if (isNone(date)) {
-      return '-';
+      return EMPTY_VALUE;
     }
     return intl.formatDate(date, {
       second: 'numeric',
@@ -324,7 +325,7 @@ export const useFormatter = () => {
   };
   const standardDate = (date) => {
     if (isNone(date)) {
-      return '-';
+      return EMPTY_VALUE;
     }
     return intl.formatDate(date, {
       day: 'numeric',
@@ -334,7 +335,7 @@ export const useFormatter = () => {
   };
   const monthDate = (date) => {
     if (isNone(date)) {
-      return '-';
+      return EMPTY_VALUE;
     }
     return intl.formatDate(date, {
       month: 'short',
@@ -343,25 +344,25 @@ export const useFormatter = () => {
   };
   const monthTextDate = (date) => {
     if (isNone(date)) {
-      return '-';
+      return EMPTY_VALUE;
     }
     return intl.formatDate(date, { month: 'long' });
   };
   const monthTextYearDate = (date) => {
     if (isNone(date)) {
-      return '-';
+      return EMPTY_VALUE;
     }
     return intl.formatDate(date, { month: 'long', year: 'numeric' });
   };
   const yearDate = (date) => {
     if (isNone(date)) {
-      return '-';
+      return EMPTY_VALUE;
     }
     return intl.formatDate(date, { year: 'numeric' });
   };
   const numericTime = (date) => {
     if (isNone(date)) {
-      return '-';
+      return EMPTY_VALUE;
     }
     return intl.formatDate(date, {
       second: 'numeric',

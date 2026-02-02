@@ -7,6 +7,7 @@ import { useFormatter } from '../../../../components/i18n';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 const IngestionCatalogConnectorOverview = ({ connector }: { connector: IngestionConnector }) => {
   const { t_i18n } = useFormatter();
@@ -57,7 +58,7 @@ const IngestionCatalogConnectorOverview = ({ connector }: { connector: Ingestion
               <Label>
                 {t_i18n('Last verified')}
               </Label>
-              {connector.last_verified_date || '-' }
+              {connector.last_verified_date || EMPTY_VALUE}
             </Grid>
           </Grid>
         </Card>

@@ -21,6 +21,7 @@ import { DataColumns } from '../../../../components/list_lines';
 import { StixCoreObjectOrStixCoreRelationshipContainerLine_node$data } from './__generated__/StixCoreObjectOrStixCoreRelationshipContainerLine_node.graphql';
 import ItemEntityType from '../../../../components/ItemEntityType';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -96,7 +97,7 @@ export const StixCoreObjectOrStixCoreRelationshipContainerLineComponent: Functio
               className={classes.bodyItem}
               style={{ width: dataColumns.createdBy.width }}
             >
-              {node.createdBy?.name ?? '-'}
+              {node.createdBy?.name ?? EMPTY_VALUE}
             </div>
             <div
               className={classes.bodyItem}

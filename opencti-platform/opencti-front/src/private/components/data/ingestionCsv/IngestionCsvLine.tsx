@@ -18,6 +18,7 @@ import type { Theme } from '../../../../components/Theme';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -89,7 +90,7 @@ export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps>
   const classes = useStyles();
   const { t_i18n, fldt } = useFormatter();
   const data = useFragment(ingestionCsvLineFragment, node);
-  const [stateHash, setStateHash] = useState(data.current_state_hash ? data.current_state_hash : '-');
+  const [stateHash, setStateHash] = useState(data.current_state_hash ? data.current_state_hash : EMPTY_VALUE);
   return (
     <ListItem
       classes={{ root: classes.item }}
@@ -124,7 +125,7 @@ export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps>
               />
             </Cell>
             <Cell width={dataColumns.last_execution_date.width}>
-              {fldt(data.last_execution_date) || '-'}
+              {fldt(data.last_execution_date) || EMPTY_VALUE}
             </Cell>
             <Cell width={dataColumns.current_state_hash.width}>
               {stateHash}

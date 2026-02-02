@@ -16,6 +16,7 @@ import ItemMarkings from '../../../../components/ItemMarkings';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemEntityType from '../../../../components/ItemEntityType';
 import { useFormatter } from '../../../../components/i18n';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 const useStyles = makeStyles((theme) => ({
   item: {
@@ -369,7 +370,7 @@ const StixCoreObjectOrStixRelationshipLastContainers = (props) => {
                                   </div>
                                 </Tooltip>
                                 <div className={classes.bodyItem} style={{ width: '20%' }}>
-                                  {container.createdBy?.name ?? '-'}
+                                  {container.createdBy?.name ?? EMPTY_VALUE}
                                 </div>
                                 <div className={classes.bodyItem} style={{ width: '12%' }}>
                                   {fsd(container.created)}
