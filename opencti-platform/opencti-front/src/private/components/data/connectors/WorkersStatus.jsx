@@ -4,42 +4,12 @@ import { compose, pathOr } from 'ramda';
 import { interval } from 'rxjs';
 import Grid from '@mui/material/Grid';
 import { createRefetchContainer, graphql } from 'react-relay';
-import Typography from '@mui/material/Typography';
-import Card from '@common/card/Card';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
-import { useTheme } from '@mui/material';
 import { EMPTY_VALUE } from '../../../../utils/String';
+import CardStatistic from '../../../../components/common/card/CardStatistic';
 
 const interval$ = interval(FIVE_SECONDS);
-
-const MetricCard = ({ title, value }) => {
-  const theme = useTheme();
-
-  const paperStyle = {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    flexDirection: 'column',
-    height: '100%',
-  };
-
-  const numberStyle = {
-    color: theme.palette.primary.main,
-    fontSize: 32,
-    lineHeight: '60px',
-    verticalAlign: 'middle',
-  };
-
-  return (
-    <Card>
-      <div style={paperStyle}>
-        <Typography variant="h5">{title}</Typography>
-        <div style={numberStyle}>{value}</div>
-      </div>
-    </Card>
-  );
-};
 
 class WorkersStatusComponent extends Component {
   constructor(props) {
@@ -90,38 +60,38 @@ class WorkersStatusComponent extends Component {
     return (
       <Grid container={true} spacing={3}>
         <Grid item xs={2}>
-          <MetricCard
-            title={t('Connected workers')}
+          <CardStatistic
+            label={t('Connected workers')}
             value={this.safeValue(consumers, n)}
           />
         </Grid>
         <Grid item xs={2}>
-          <MetricCard
-            title={t('Queued bundles')}
+          <CardStatistic
+            label={t('Queued bundles')}
             value={this.safeValue(overview ? pathOr(0, ['queue_totals', 'messages'], overview) : null, n)}
           />
         </Grid>
         <Grid item xs={2}>
-          <MetricCard
-            title={t('Bundles processed')}
+          <CardStatistic
+            label={t('Bundles processed')}
             value={this.safeValue(overview ? pathOr(0, ['message_stats', 'ack_details', 'rate'], overview) : null, n, '/s')}
           />
         </Grid>
         <Grid item xs={2}>
-          <MetricCard
-            title={t('Read operations')}
+          <CardStatistic
+            label={t('Read operations')}
             value={this.safeValue(readOperations, n, '/s')}
           />
         </Grid>
         <Grid item xs={2}>
-          <MetricCard
-            title={t('Write operations')}
+          <CardStatistic
+            label={t('Write operations')}
             value={this.safeValue(writeOperations, n, '/s')}
           />
         </Grid>
         <Grid item xs={2}>
-          <MetricCard
-            title={t('Total number of documents')}
+          <CardStatistic
+            label={t('Total number of documents')}
             value={this.safeValue(docs?.count, n)}
           />
         </Grid>
