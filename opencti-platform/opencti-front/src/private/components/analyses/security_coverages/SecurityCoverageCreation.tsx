@@ -460,8 +460,8 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
         setSubmitting(false);
         resetForm();
         handleClose();
-        if (response && shouldRedirect) {
-          navigate(`/dashboard/analyses/security_coverages/${response.securityCoverageAdd?.id}`);
+        if (response.securityCoverageAdd && shouldRedirect) {
+          navigate(`/dashboard/analyses/security_coverages/${response.securityCoverageAdd.id}`);
         }
       },
     });
