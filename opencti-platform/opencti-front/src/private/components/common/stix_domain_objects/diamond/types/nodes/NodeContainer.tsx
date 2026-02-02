@@ -7,14 +7,12 @@ import Card from '../../../../../../../components/common/card/Card';
 
 interface NodeContainerProps {
   children: ReactNode;
-  height?: number;
   link: string;
   position: Position;
 }
 
 const NodeContainer: FunctionComponent<NodeContainerProps> = ({
   children,
-  height = 300,
   link,
   position,
 }) => {
@@ -25,18 +23,11 @@ const NodeContainer: FunctionComponent<NodeContainerProps> = ({
       sx={{
         position: 'relative',
         width: '400px',
-        height: `${height}px`,
       }}
     >
-      <div style={{
-        width: '100%',
-        height: 'calc(100% - 24px)',
-        overflowY: 'auto',
-      }}
-      >
-        {children}
-      </div>
+      <div>{children}</div>
       <Button
+        sx={{ mt: 2 }}
         component={Link}
         to={link}
         size="small"

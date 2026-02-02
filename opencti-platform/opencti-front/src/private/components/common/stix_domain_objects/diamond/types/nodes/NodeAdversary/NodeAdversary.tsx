@@ -11,7 +11,10 @@ const NodeAdversary = ({ data }: NodeProps) => {
   const { entityLink, generatedFilters, aliases, isArsenal, lastAttributions } = nodeAdversaryUtils({ data });
   const { t_i18n } = useFormatter();
   return (
-    <NodeContainer link={`${entityLink}/all?filters=${generatedFilters}&view=entities`} position={Position.Bottom} height={200}>
+    <NodeContainer
+      link={`${entityLink}/all?filters=${generatedFilters}&view=entities`}
+      position={Position.Bottom}
+    >
       <>
         <Typography variant="h3" gutterBottom>
           {t_i18n('Aliases')}
