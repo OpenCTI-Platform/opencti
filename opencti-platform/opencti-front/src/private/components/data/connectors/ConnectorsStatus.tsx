@@ -30,6 +30,8 @@ import ItemBoolean from '../../../../components/ItemBoolean';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import type { Theme } from '../../../../components/Theme';
 import Transition from '../../../../components/Transition';
+import Card from '../../../../components/common/card/Card';
+import BooleanStatusIcon from '../../../../components/common/icons/BooleanStatusIcon';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import { type Connector, getConnectorTriggerStatus } from '../../../../utils/Connector';
@@ -40,9 +42,7 @@ import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModif
 import { connectorDeletionMutation, connectorResetStateMutation } from './Connector';
 import SortConnectorsHeader from './SortConnectorsHeader';
 import canDeleteConnector from './utils/canDeleteConnector';
-import Card from '../../../../components/common/card/Card';
 import { EMPTY_VALUE } from '../../../../utils/String';
-import BooleanStatusIcon from '../../../../components/common/icons/BooleanStatusIcon';
 
 const interval$ = interval(FIVE_SECONDS);
 
