@@ -36,6 +36,7 @@ import { typesWithNoAnalysesTab } from '../../utils/hooks/useAttributes';
 import { useNavigate } from 'react-router-dom';
 import TagsOverflow from '../common/tag/TagsOverflow';
 import { VocabularyDefinition } from '../../utils/hooks/useVocabularyCategory';
+import { EMPTY_VALUE } from '../../utils/String';
 
 const chipStyle: CSSProperties = {
   fontSize: '12px',
@@ -62,11 +63,12 @@ export const defaultRender: NonNullable<DataTableColumn['render']> = (
   data,
   displayDraftChip = false,
 ) => {
+  const displayedData = Array.isArray(data) ? data.join(', ') : data;
   return (
     <FieldOrEmpty source={data}>
-      <Tooltip title={data}>
+      <Tooltip title={displayedData}>
         <div style={{ maxWidth: '100%', display: 'flex' }}>
-          <Truncate>{data}</Truncate>
+          <Truncate>{displayedData}</Truncate>
           {displayDraftChip && <DraftChip />}
         </div>
       </Tooltip>
@@ -160,10 +162,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 20,
     isSortable: true,
     render: ({ channel_types }) => {
-      const value = isNotEmptyField(channel_types)
-        ? channel_types.join(', ')
-        : '-';
-      return defaultRender(value);
+      return defaultRender(channel_types);
     },
   },
   color: {
@@ -232,16 +231,14 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     id: 'createdBy',
     label: 'Author',
     percentWidth: 12,
-    render: ({ createdBy }) => createdBy?.name ?? '-',
+    render: ({ createdBy }) => defaultRender(createdBy?.name),
   },
   creator: {
     id: 'creator',
     label: 'Creators',
     percentWidth: 12,
     render: ({ creators }) => {
-      const value = isNotEmptyField(creators)
-        ? creators.map((c: { name: string }) => c.name).join(', ')
-        : '-';
+      const value = creators?.map((c: { name: string }) => c.name);
       return defaultRender(value);
     },
   },
@@ -250,9 +247,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Creators',
     percentWidth: 12,
     render: ({ creators }) => {
-      const value = isNotEmptyField(creators)
-        ? creators.map((c: { name: string }) => c.name).join(', ')
-        : '-';
+      const value = creators?.map((c: { name: string }) => c.name);
       return defaultRender(value);
     },
   },
@@ -352,8 +347,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 20,
     isSortable: true,
     render: ({ event_types }) => {
-      const value = isNotEmptyField(event_types) ? event_types.join(', ') : '-';
-      return defaultRender(value);
+      return defaultRender(event_types);
     },
   },
   external_id: {
@@ -477,9 +471,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 12,
     render: ({ from }) => {
       const { creators } = from;
-      const value = isNotEmptyField(creators)
-        ? creators.map((c: { name: string }) => c.name).join(', ')
-        : '-';
+      const value = creators.map((c: { name: string }) => c.name);
       return defaultRender(value);
     },
   },
@@ -497,9 +489,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 15,
     isSortable: false,
     render: ({ from }) => {
-      if (!from) return '-';
-      const { objectLabel } = from;
-      return <StixCoreObjectLabels variant="inList" labels={objectLabel} />;
+      return <StixCoreObjectLabels variant="inList" labels={from?.objectLabel} />;
     },
   },
   from_objectMarking: {
@@ -508,11 +498,9 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 8,
     isSortable: true,
     render: ({ from }, { storageHelpers: { handleAddFilter } }) => {
-      if (!from) return '-';
-      const { objectMarking } = from;
       return (
         <ItemMarkings
-          markingDefinitions={objectMarking ?? []}
+          markingDefinitions={from?.objectMarking ?? []}
           limit={1}
           onClick={(m) => handleAddFilter('objectMarking', m.id, 'eq')}
         />
@@ -640,7 +628,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       const formattedKillChainPhase
         = killChainPhases && killChainPhases.length > 0
           ? `[${killChainPhases[0].kill_chain_name}] ${killChainPhases[0].phase_name}`
-          : '-';
+          : EMPTY_VALUE;
       return defaultRender(formattedKillChainPhase);
     },
   },
@@ -678,8 +666,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 15,
     isSortable: true,
     render: ({ malware_types }) => {
-      const value = malware_types ? malware_types.join(', ') : '-';
-      return defaultRender(value);
+      return defaultRender(malware_types);
     },
   },
   modified: {
@@ -739,9 +726,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: false,
     render: ({ objectAssignee }) => {
-      const value = isNotEmptyField(objectAssignee)
-        ? objectAssignee.map((c: { name: string }) => c.name).join(', ')
-        : '-';
+      const value = objectAssignee?.map((c: { name: string }) => c.name);
       return defaultRender(value);
     },
   },
@@ -778,9 +763,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Participant',
     percentWidth: 10,
     render: ({ objectParticipant }) => {
-      const value = isNotEmptyField(objectParticipant)
-        ? objectParticipant.map((c: { name: string }) => c.name).join(', ')
-        : '-';
+      const value = objectParticipant?.map((c: { name: string }) => c.name);
       return defaultRender(value);
     },
   },
@@ -846,7 +829,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: false,
     render: ({ operatingSystem }) => (
       <Tooltip title={operatingSystem?.name}>
-        <>{operatingSystem?.name ?? '-'}</>
+        <>{operatingSystem?.name ?? EMPTY_VALUE}</>
       </Tooltip>
     ),
   },
@@ -856,7 +839,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     render: ({ opinions_metrics }) => (
       <span style={{ fontWeight: 700, fontSize: 15 }}>
-        {opinions_metrics?.mean ?? '-'}
+        {opinions_metrics?.mean ?? EMPTY_VALUE}
       </span>
     ),
   },
@@ -1065,10 +1048,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: false,
     render: ({ secondary_motivations }) => {
-      const value = secondary_motivations
-        ? secondary_motivations.join(', ')
-        : '-';
-      return defaultRender(value);
+      return defaultRender(secondary_motivations);
     },
   },
   security_platform_type: {
@@ -1174,7 +1154,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 15,
     isSortable: false,
     render: ({ tags }) => {
-      if (!tags || tags.length === 0) return '-';
+      if (!tags || tags.length === 0) return EMPTY_VALUE;
       return (
         <Tooltip
           title={(
@@ -1199,10 +1179,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 20,
     isSortable: true,
     render: ({ threat_actor_types }) => {
-      const value = isNotEmptyField(threat_actor_types)
-        ? threat_actor_types.join(', ')
-        : '-';
-      return defaultRender(value);
+      return defaultRender(threat_actor_types);
     },
   },
   timestamp: {
@@ -1533,7 +1510,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       const theme = useTheme<Theme>();
 
       if (!x_opencti_aliases) {
-        return defaultRender('-');
+        return defaultRender(EMPTY_VALUE);
       }
       if (entity_type === 'Country') {
         const flag = x_opencti_aliases.filter((n: string) => n.length === 2)[0];
@@ -1627,7 +1604,7 @@ export const buildMetricsColumns = (
             return defaultRender(metricFound.value);
           }
         }
-        return defaultRender('-');
+        return defaultRender(EMPTY_VALUE);
       },
     };
   }

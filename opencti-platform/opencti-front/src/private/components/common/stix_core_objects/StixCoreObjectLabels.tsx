@@ -6,6 +6,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 import useChipOverflow from '../../data/IngestionCatalog/components/card/usecases/useChipOverflow';
 import { Theme } from '../../../../components/Theme';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 interface StixCoreObjectLabelsProps {
   labels: readonly {
@@ -107,7 +108,7 @@ const StixCoreObjectLabels = ({
 
   // case no labels
   return (
-    <>-</>
+    <>{EMPTY_VALUE}</>
   );
 };
 
