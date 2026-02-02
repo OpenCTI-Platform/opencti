@@ -309,6 +309,21 @@ describe('SSO: Local strategy dedicated behaviour', () => {
     expect(createdLocalStrategy?.data?.singleSignOnAdd.name).toBe('local');
     createdLocalStrategyId = createdLocalStrategy?.data?.singleSignOnAdd.id;
   });
+  it('should not create 2nd Local Strategy', async () => {
+    const createInput: SingleSignOnAddInput = {
+      name: 'local2',
+      strategy: StrategyType.LocalStrategy,
+      enabled: true,
+      identifier: 'local2',
+      configuration: [
+        { key: 'label', value: 'local label', type: 'string' },
+      ],
+    };
+    await queryAsUserIsExpectedError(USER_SECURITY.client, {
+      query: SINGLE_SIGN_ON_CREATE,
+      variables: { input: createInput },
+    }, 'Local Strategy already exists in database', 'FUNCTIONAL_ERROR');
+  });
   it('should not delete Local Strategy', async () => {
     await queryAsUserIsExpectedError(USER_SECURITY.client, {
       query: SINGLE_SIGN_ON_DELETE,
