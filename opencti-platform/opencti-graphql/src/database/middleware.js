@@ -1468,6 +1468,12 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
     { concurrency: ES_MAX_CONCURRENCY },
   );
 
+  // Delete remaining files for source entities (workbenches linked via metaData.entity_id)
+  // Note: regular files were already moved by moveAllFilesFromEntityToAnother
+  for (let i = 0; i < sourceEntities.length; i += 1) {
+    await deleteAllObjectFiles(context, SYSTEM_USER, sourceEntities[i]);
+  }
+
   // Take care of relations deletions to prevent duplicate marking definitions.
   const elementToRemoves = [...sourceEntities, ...fromDeletions, ...toDeletions];
   // All not move relations will be deleted, so we need to remove impacted rel in entities.
