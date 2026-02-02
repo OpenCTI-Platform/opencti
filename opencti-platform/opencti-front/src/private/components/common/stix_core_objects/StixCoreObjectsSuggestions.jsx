@@ -305,7 +305,7 @@ const StixCoreObjectsSuggestionsComponent = (props) => {
             const appliedSuggestions = getAppliedSuggestions();
             if (userIsKnowledgeEditor) {
               return (
-                <div style={{ marginLeft: theme.spacing(2) }}>
+                <div>
                   <Tooltip title={t_i18n('Open the suggestions')}>
                     <ToggleButton
                       onClick={() => setDisplaySuggestions(true)}

@@ -508,7 +508,7 @@ const ContainerHeader = (props) => {
     containerStyle = {
       position: 'absolute',
       display: 'flex',
-      top: 190 + bannerHeightNumber + settingsMessagesBannerHeight,
+      top: 196 + bannerHeightNumber + settingsMessagesBannerHeight,
       right: 24,
     };
   }
@@ -572,11 +572,6 @@ const ContainerHeader = (props) => {
           <HeaderMainEntityLayout
             title={title}
             hideTitle={knowledge}
-            titleRight={(
-              <>
-
-              </>
-            )}
             rightActions={(
               <>
                 {!knowledge && (
@@ -624,7 +619,7 @@ const ContainerHeader = (props) => {
                 {
                   modes && (
                     <div id="container-view-buttons">
-                      <ToggleButtonGroup size="small" exclusive={true} style={{ marginLeft: theme.spacing(2) }}>
+                      <ToggleButtonGroup size="small" exclusive={true}>
                         {modes.includes('graph') && (
                           <Tooltip title={t_i18n('Graph view')}>
                             <ToggleButton

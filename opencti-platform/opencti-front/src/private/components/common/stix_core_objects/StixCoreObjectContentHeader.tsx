@@ -25,7 +25,7 @@ const StixCoreObjectContentHeader: FunctionComponent<StixCoreObjectContentHeader
 
   return (
     <div style={{
-      margin: '-65px 0 0 0',
+      margin: '-70px 0 0 0',
       float: 'right',
     }}
     >
