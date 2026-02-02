@@ -25,6 +25,7 @@ import {
 } from './__generated__/EntityStixCoreRelationshipsEntitiesViewLine_node.graphql';
 import ItemEntityType from '../../../../../components/ItemEntityType';
 import { HandleAddFilter } from '../../../../../utils/hooks/useLocalStorage';
+import { EMPTY_VALUE } from '../../../../../utils/String';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -290,7 +291,7 @@ export const EntityStixCoreRelationshipsEntitiesViewLine: FunctionComponent<
               className={classes.bodyItem}
               style={{ width: dataColumns.createdBy.width }}
             >
-              {stixCoreObject.createdBy?.name ?? '-'}
+              {stixCoreObject.createdBy?.name ?? EMPTY_VALUE}
             </div>
             <div
               className={classes.bodyItem}

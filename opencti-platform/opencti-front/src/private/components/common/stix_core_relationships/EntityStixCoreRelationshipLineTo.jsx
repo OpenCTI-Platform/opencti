@@ -161,7 +161,7 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
                     className={classes.bodyItem}
                     style={{ width: dataColumns.x_mitre_id.width }}
                   >
-                    {node.from?.x_mitre_id ?? '-'}
+                    {node.from?.x_mitre_id ?? EMPTY_VALUE}
                   </div>
                 )}
                 {dataColumns.coverage_information && (
@@ -185,7 +185,7 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
                   className={classes.bodyItem}
                   style={{ width: dataColumns.createdBy.width }}
                 >
-                  {node.createdBy?.name ?? '-'}
+                  {node.createdBy?.name ?? EMPTY_VALUE}
                 </div>
                 <div
                   className={classes.bodyItem}

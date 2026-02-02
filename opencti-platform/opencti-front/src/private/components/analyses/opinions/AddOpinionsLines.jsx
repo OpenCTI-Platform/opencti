@@ -140,7 +140,7 @@ class AddOpinionsLinesContainer extends Component {
                 secondary={truncate(opinion.explanation, 120)}
               />
               <div style={{ marginRight: 50 }}>
-                {opinion.createdBy?.name ?? '-'}
+                {opinion.createdBy?.name ?? EMPTY_VALUE}
               </div>
               <div style={{ marginRight: 50 }}>
                 <ItemMarkings

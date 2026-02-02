@@ -16,6 +16,7 @@ import ItemCreators from '../../../../components/ItemCreators';
 import Transition from '../../../../components/Transition';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 interface ExternalReferenceDetailsComponentProps {
   externalReference: ExternalReferenceDetails_externalReference$data;
@@ -53,7 +54,7 @@ const ExternalReferenceDetailsComponent = ({
             <Label>
               {t_i18n('External ID')}
             </Label>
-            {externalReference.external_id ?? '-'}
+            {externalReference.external_id ?? EMPTY_VALUE}
             <Label
               sx={{ marginTop: 2 }}
             >

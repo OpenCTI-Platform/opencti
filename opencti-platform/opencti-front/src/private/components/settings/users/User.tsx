@@ -47,7 +47,7 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import type { Theme } from '../../../../components/Theme';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import ItemCopy from '../../../../components/ItemCopy';
-import { maskString } from '../../../../utils/String';
+import { EMPTY_VALUE, maskString } from '../../../../utils/String';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
 import Tag from '../../../../components/common/tag/Tag';
@@ -340,7 +340,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
   const accountExpireDate = fldt(user.account_lock_after_date);
   const isServiceAccount = user.user_service_account;
   const creationDate = fldt(user.created_at);
-  const creatorName = user.creator ? user.creator?.name : '-';
+  const creatorName = user.creator ? user.creator?.name : EMPTY_VALUE;
   let historyTypes = ['History'];
   if (isGrantedToAudit && !isGrantedToKnowledge) {
     historyTypes = ['Activity'];
@@ -396,7 +396,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                     </Label>
                     {!user.user_service_account
                       ? <Tag label={t_i18n('Service account')} />
-                      : '-'
+                      : EMPTY_VALUE
                     }
                   </Grid>
                   <Grid item xs={4}>
@@ -415,7 +415,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                     <Label>
                       {t_i18n('Account expiration date')}
                     </Label>
-                    {accountExpireDate || '-'}
+                    {accountExpireDate || EMPTY_VALUE}
                   </Grid>
                 </>
               )}
@@ -477,13 +477,13 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                     <Label>
                       {t_i18n('Firstname')}
                     </Label>
-                    {user.firstname || '-'}
+                    {user.firstname || EMPTY_VALUE}
                   </Grid>
                   <Grid item xs={6}>
                     <Label>
                       {t_i18n('Lastname')}
                     </Label>
-                    {user.lastname || '-'}
+                    {user.lastname || EMPTY_VALUE}
                   </Grid>
                   <Grid item xs={6}>
                     <Label>
@@ -501,7 +501,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                     <Label>
                       {t_i18n('Account expiration date')}
                     </Label>
-                    {accountExpireDate || '-'}
+                    {accountExpireDate || EMPTY_VALUE}
                   </Grid>
                 </>
               )}
@@ -517,7 +517,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                     <Label>
                       {t_i18n('Creation date')}
                     </Label>
-                    {creationDate || '-'}
+                    {creationDate || EMPTY_VALUE}
                   </Grid>
                 </>
               )}

@@ -12,7 +12,7 @@ interface Marking {
 }
 
 interface ItemMarkingsProps {
-  markingDefinitions: readonly Marking[];
+  markingDefinitions?: readonly Marking[] | null;
   limit?: number;
   onClick?: (marking: Marking) => void;
 }

@@ -10,7 +10,7 @@ import { CaseIncidentDetails_case$key } from './__generated__/CaseIncidentDetail
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
-import Tag from '@common/tag/Tag';
+import Tag from '../../../../components/common/tag/Tag';
 
 const CaseIncidentDetailsFragment = graphql`
   fragment CaseIncidentDetails_case on CaseIncident {

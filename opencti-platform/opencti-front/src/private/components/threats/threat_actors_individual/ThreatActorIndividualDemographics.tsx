@@ -10,6 +10,7 @@ import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import Card from '@common/card/Card';
 import Label from '@common/label/Label';
 import Tag from '@common/tag/Tag';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 interface ThreatActorIndividualDemographicsCountryRelationships {
   country_of_residence: Array<string>;
@@ -117,7 +118,7 @@ const ThreatActorIndividualDemographics = ({
             {t_i18n('Place of Birth')}
           </Label>
           <div id="place_of_birth">
-            {t_i18n(countryRelationship.place_of_birth ?? '-')}
+            {t_i18n(countryRelationship.place_of_birth ?? EMPTY_VALUE)}
           </div>
         </Grid>
         <Grid item xs={4}>
@@ -127,7 +128,7 @@ const ThreatActorIndividualDemographics = ({
           <div id="date_of_birth">
             {threatActorIndividual.date_of_birth
               ? fsd(threatActorIndividual.date_of_birth)
-              : '-'}
+              : EMPTY_VALUE}
           </div>
         </Grid>
         <Grid item xs={4}>
@@ -160,7 +161,7 @@ const ThreatActorIndividualDemographics = ({
           <Label>
             {t_i18n('Ethnicity')}
           </Label>
-          <div id="ethnicity">{t_i18n(countryRelationship.ethnicity ?? '-')}</div>
+          <div id="ethnicity">{t_i18n(countryRelationship.ethnicity ?? EMPTY_VALUE)}</div>
         </Grid>
         <Grid item xs={4}>
           <Label>

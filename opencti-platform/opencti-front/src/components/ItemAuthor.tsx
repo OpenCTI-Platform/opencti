@@ -1,6 +1,7 @@
 import Tag from '@common/tag/Tag';
 import { useNavigate } from 'react-router-dom';
 import { resolveLink } from '../utils/Entity';
+import { EMPTY_VALUE } from '../utils/String';
 
 interface ItemAuthorProps {
   createdBy: {
@@ -22,7 +23,7 @@ const ItemAuthor = ({ createdBy }: ItemAuthorProps) => {
           {...!!URL && { onClick: () => navigate(URL) }}
         />
       ) : (
-        '-'
+        EMPTY_VALUE
       )}
     </>
   );

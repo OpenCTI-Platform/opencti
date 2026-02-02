@@ -1,6 +1,4 @@
-import Chip from '@mui/material/Chip';
 import Grid from '@mui/material/Grid';
-import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import RelatedContainers from '@components/common/containers/related_containers/RelatedContainers';
@@ -8,23 +6,11 @@ import Divider from '@mui/material/Divider';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
-import type { Theme } from '../../../../components/Theme';
 import { CaseRftDetails_case$key } from './__generated__/CaseRftDetails_case.graphql';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  chip: {
-    fontSize: 12,
-    lineHeight: '12px',
-    backgroundColor: theme.palette.background.accent,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-    margin: '0 5px 5px 0',
-  },
-}));
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import Tag from '../../../../components/common/tag/Tag';
 
 const CaseRftDetailsFragment = graphql`
   fragment CaseRftDetails_case on CaseRft {
@@ -74,7 +60,6 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
   caseRftData,
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const data = useFragment(CaseRftDetailsFragment, caseRftData);
   const takedownTypes = data.takedown_types ?? [];
 
@@ -86,15 +71,14 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
             <Label>
               {t_i18n('Takedown type')}
             </Label>
-            {takedownTypes.length > 0
-              ? takedownTypes.map((takedownType) => (
-                  <Chip
-                    key={takedownType}
-                    classes={{ root: classes.chip }}
-                    label={takedownType}
-                  />
-                ))
-              : '-'}
+            <FieldOrEmpty source={takedownTypes}>
+              {takedownTypes.map((takedownType) => (
+                <Tag
+                  key={takedownType}
+                  label={takedownType}
+                />
+              ))}
+            </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
             <Label>
