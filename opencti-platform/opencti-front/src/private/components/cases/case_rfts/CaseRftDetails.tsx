@@ -124,11 +124,9 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
             <Label>
               {t_i18n('Description')}
             </Label>
-            {data.description ? (
+            <FieldOrEmpty source={data.description}>
               <ExpandableMarkdown source={data.description} limit={300} />
-            ) : (
-              '-'
-            )}
+            </FieldOrEmpty>
           </Grid>
         </Grid>
         <Divider />

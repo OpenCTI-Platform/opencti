@@ -1,6 +1,4 @@
-import Chip from '@mui/material/Chip';
 import Grid from '@mui/material/Grid';
-import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import RelatedContainers from '@components/common/containers/related_containers/RelatedContainers';
@@ -8,23 +6,11 @@ import Divider from '@mui/material/Divider';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
-import type { Theme } from '../../../../components/Theme';
 import { CaseRfiDetails_case$key } from './__generated__/CaseRfiDetails_case.graphql';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  chip: {
-    fontSize: 12,
-    lineHeight: '12px',
-    backgroundColor: theme.palette.background.accent,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-    margin: '0 5px 5px 0',
-  },
-}));
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import Tag from '../../../../components/common/tag/Tag';
 
 const CaseRfiDetailsFragment = graphql`
   fragment CaseRfiDetails_case on CaseRfi {
@@ -74,7 +60,6 @@ const CaseRfiDetails: FunctionComponent<CaseRfiDetailsProps> = ({
   caseRfiData,
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const data = useFragment(CaseRfiDetailsFragment, caseRfiData);
   const informationTypes = data.information_types ?? [];
 
@@ -86,15 +71,14 @@ const CaseRfiDetails: FunctionComponent<CaseRfiDetailsProps> = ({
             <Label>
               {t_i18n('Information type')}
             </Label>
-            {informationTypes.length > 0
-              ? (data.information_types ?? []).map((informationType) => (
-                  <Chip
-                    key={informationType}
-                    classes={{ root: classes.chip }}
-                    label={informationType}
-                  />
-                ))
-              : '-'}
+            <FieldOrEmpty source={informationTypes}>
+              {informationTypes.map((informationType) => (
+                <Tag
+                  key={informationType}
+                  label={informationType}
+                />
+              ))}
+            </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
             <Label>
@@ -124,11 +108,9 @@ const CaseRfiDetails: FunctionComponent<CaseRfiDetailsProps> = ({
             <Label>
               {t_i18n('Description')}
             </Label>
-            {data.description ? (
+            <FieldOrEmpty source={data.description}>
               <ExpandableMarkdown source={data.description} limit={300} />
-            ) : (
-              '-'
-            )}
+            </FieldOrEmpty>
           </Grid>
         </Grid>
         <Divider />
