@@ -84,7 +84,7 @@ export const internalAddSingleSignOn = async (context: AuthContext, user: AuthUs
       filterGroups: [],
     };
     const hasLocalStrategy = await findSingleSignOnPaginated(context, user, { filters });
-    if (hasLocalStrategy.edges.length === 0) {
+    if (hasLocalStrategy.edges.length > 0) {
       throw FunctionalError('Local Strategy already exists in database');
     }
   }
