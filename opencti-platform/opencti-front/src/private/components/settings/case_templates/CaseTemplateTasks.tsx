@@ -1,34 +1,32 @@
+import { Box } from '@mui/material';
+import MenuItem from '@mui/material/MenuItem';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import MenuItem from '@mui/material/MenuItem';
 import { graphql, PreloadedQuery } from 'react-relay';
-import { Box, Stack } from '@mui/material';
-import { useTheme } from '@mui/styles';
+import { useNavigate, useParams } from 'react-router-dom';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
+import HeaderMainEntityLayout from '../../../../components/common/header/HeaderMainEntityLayout';
+import DeleteDialog from '../../../../components/DeleteDialog';
+import { useFormatter } from '../../../../components/i18n';
 import ListLines from '../../../../components/list_lines/ListLines';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import PopoverMenu from '../../../../components/PopoverMenu';
+import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
+import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useDeletion from '../../../../utils/hooks/useDeletion';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import LabelsVocabulariesMenu from '../LabelsVocabulariesMenu';
+import { CaseTemplateEditionQuery } from './__generated__/CaseTemplateEditionQuery.graphql';
+import { CaseTemplateLine_node$key } from './__generated__/CaseTemplateLine_node.graphql';
 import { CaseTemplateTasksLine_node$data } from './__generated__/CaseTemplateTasksLine_node.graphql';
 import { CaseTemplateTasksLines_DataQuery$variables } from './__generated__/CaseTemplateTasksLines_DataQuery.graphql';
 import { CaseTemplateTasksLinesPaginationQuery, CaseTemplateTasksLinesPaginationQuery$variables } from './__generated__/CaseTemplateTasksLinesPaginationQuery.graphql';
-import CaseTemplateTasksLines, { tasksLinesQuery } from './CaseTemplateTasksLines';
-import { CaseTemplateEditionQuery } from './__generated__/CaseTemplateEditionQuery.graphql';
 import CaseTemplateEdition, { caseTemplateQuery } from './CaseTemplateEdition';
-import { useFormatter } from '../../../../components/i18n';
-import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
-import { CaseTemplateLine_node$key } from './__generated__/CaseTemplateLine_node.graphql';
 import { CaseTemplateLineFragment } from './CaseTemplateLine';
-import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
-import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
-import DeleteDialog from '../../../../components/DeleteDialog';
-import useDeletion from '../../../../utils/hooks/useDeletion';
-import type { Theme } from '../../../../components/Theme';
-import PopoverMenu from '../../../../components/PopoverMenu';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
-import Breadcrumbs from '../../../../components/Breadcrumbs';
+import CaseTemplateTasksLines, { tasksLinesQuery } from './CaseTemplateTasksLines';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -58,7 +56,6 @@ const CaseHeaderMenu: FunctionComponent<CaseHeaderMenuProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
-  const theme = useTheme<Theme>();
   const [openEdition, setOpenEdition] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
   const handleClose = () => {};
@@ -112,39 +109,41 @@ const CaseHeaderMenu: FunctionComponent<CaseHeaderMenuProps> = ({
   return (
     <>
       <Breadcrumbs elements={breadcrumb} />
-      <Stack direction="row" mb={3}>
-        <TitleMainEntity sx={{ flex: 1 }}>
-          {caseTemplate.name}
-        </TitleMainEntity>
-        <div style={{ marginRight: theme.spacing(0.5) }}>
-          <PopoverMenu>
-            {({ closeMenu }) => (
-              <Box>
-                <MenuItem onClick={() => {
-                  handleOpenDelete();
-                  closeMenu();
-                }}
-                >
-                  {t_i18n('Delete')}
-                </MenuItem>
-              </Box>
-            )}
-          </PopoverMenu>
-          <CaseTemplateEdition
-            caseTemplate={caseTemplate}
-            paginationOptions={paginationOptions}
-            openPanel={openEdition}
-            setOpenPanel={setOpenEdition}
-          />
-          <DeleteDialog
-            deletion={deletion}
-            isOpen={openDelete}
-            onClose={handleCloseDelete}
-            submitDelete={submitDelete}
-            message={t_i18n('Do you want to delete this template?')}
-          />
-        </div>
-      </Stack>
+
+      <HeaderMainEntityLayout
+        hasPlaceholderTags={false}
+        title={caseTemplate.name}
+        rightActions={(
+          <>
+            <PopoverMenu>
+              {({ closeMenu }) => (
+                <Box>
+                  <MenuItem onClick={() => {
+                    handleOpenDelete();
+                    closeMenu();
+                  }}
+                  >
+                    {t_i18n('Delete')}
+                  </MenuItem>
+                </Box>
+              )}
+            </PopoverMenu>
+            <CaseTemplateEdition
+              caseTemplate={caseTemplate}
+              paginationOptions={paginationOptions}
+              openPanel={openEdition}
+              setOpenPanel={setOpenEdition}
+            />
+            <DeleteDialog
+              deletion={deletion}
+              isOpen={openDelete}
+              onClose={handleCloseDelete}
+              submitDelete={submitDelete}
+              message={t_i18n('Do you want to delete this template?')}
+            />
+          </>
+        )}
+      />
     </>
   );
 };
@@ -245,7 +244,6 @@ const CaseTemplateTasks = () => {
           </React.Suspense>
         </>
       )}
-      <div className="clearfix" style={{ paddingTop: 16 }} />
       <LabelsVocabulariesMenu />
       {renderLines()}
     </div>

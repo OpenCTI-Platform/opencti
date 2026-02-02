@@ -13,36 +13,35 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React, { useEffect, useState } from 'react';
-import Chip from '@mui/material/Chip';
-import ToggleButton from '@mui/material/ToggleButton';
-import Tooltip from '@mui/material/Tooltip';
+import Tag from '@common/tag/Tag';
+import PlaybookEdition from '@components/data/playbooks/PlaybookEdition';
 import { CheckCircleOutlined, ErrorOutlined, ExpandLessOutlined, ExpandMoreOutlined, ManageHistoryOutlined } from '@mui/icons-material';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import List from '@mui/material/List';
-import Collapse from '@mui/material/Collapse';
+import { Stack } from '@mui/material';
 import Badge from '@mui/material/Badge';
-import { createRefetchContainer, graphql, RelayRefetchProp } from 'react-relay';
-import { interval } from 'rxjs';
-import DialogTitle from '@mui/material/DialogTitle';
+import Collapse from '@mui/material/Collapse';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
-import { Stack } from '@mui/material';
-import { useTheme } from '@mui/styles';
-import { Theme } from '../../../../components/Theme';
+import DialogTitle from '@mui/material/DialogTitle';
+import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
-import PlaybookEdition from '@components/data/playbooks/PlaybookEdition';
-import Drawer from '../../common/drawer/Drawer';
-import { PlaybookHeader_playbook$data } from './__generated__/PlaybookHeader_playbook.graphql';
-import { useFormatter } from '../../../../components/i18n';
-import PlaybookPopover from './PlaybookPopover';
-import { FIVE_SECONDS } from '../../../../utils/Time';
-import Transition from '../../../../components/Transition';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import Tooltip from '@mui/material/Tooltip';
+import { useTheme } from '@mui/styles';
+import React, { useEffect, useState } from 'react';
+import { createRefetchContainer, graphql, RelayRefetchProp } from 'react-relay';
+import { interval } from 'rxjs';
 import ItemIcon from '../../../../components/ItemIcon';
+import { Theme } from '../../../../components/Theme';
+import Transition from '../../../../components/Transition';
 import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
-import Tag from '@common/tag/Tag';
+import { useFormatter } from '../../../../components/i18n';
+import { FIVE_SECONDS } from '../../../../utils/Time';
+import Drawer from '../../common/drawer/Drawer';
+import PlaybookPopover from './PlaybookPopover';
+import { PlaybookHeader_playbook$data } from './__generated__/PlaybookHeader_playbook.graphql';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -92,19 +91,13 @@ const PlaybookHeaderComponent = ({
             {playbook.name}
           </TitleMainEntity>
           <Tag
-            style={{
-              fontSize: 12,
-              lineHeight: '12px',
-              height: 25,
-              textTransform: 'uppercase',
-              borderRadius: 4,
-              ...(playbook.playbook_running ? inlineStyles.green : inlineStyles.red),
-            }}
+            {...(playbook.playbook_running ? inlineStyles.green : inlineStyles.red)}
             label={
               playbook.playbook_running
                 ? t_i18n('Playbook is running')
                 : t_i18n('Playbook is stopped')
             }
+            labelTextTransform="none"
           />
         </Stack>
         <ToggleButtonGroup
@@ -113,34 +106,26 @@ const PlaybookHeaderComponent = ({
           value={openLastExecutions}
           exclusive={true}
           onChange={() => setOpenLastExecutions(!openLastExecutions)}
-          style={{ margin: '0 4px 0 0' }}
         >
           <ToggleButton
             value="cards"
             aria-label="cards"
             style={{ padding: '5px' }}
           >
-            <div>
-              <Chip
-                style={{
-                  fontSize: 12,
-                  lineHeight: '12px',
-                  height: 25,
-                  textTransform: 'uppercase',
-                  borderRadius: 4,
-                  marginRight: 14,
-                }}
+            <Stack direction="row" alignItems="center" gap={1}>
+              <Tag
                 label={`${n(playbook.queue_messages)} ${t_i18n('messages in queue')}`}
+                labelTextTransform="none"
               />
-            </div>
-            <Tooltip title={t_i18n('Open last execution traces')}>
-              <Badge
-                badgeContent={(playbook.last_executions ?? []).length}
-                color="secondary"
-              >
-                <ManageHistoryOutlined fontSize="small" color="primary" />
-              </Badge>
-            </Tooltip>
+              <Tooltip title={t_i18n('Open last execution traces')}>
+                <Badge
+                  badgeContent={(playbook.last_executions ?? []).length}
+                  color="secondary"
+                >
+                  <ManageHistoryOutlined fontSize="small" color="primary" />
+                </Badge>
+              </Tooltip>
+            </Stack>
           </ToggleButton>
         </ToggleButtonGroup>
         <PlaybookPopover
