@@ -406,6 +406,10 @@ const ThemeDark = (
       styleOverrides: {
         root: {
           color: text_color,
+          // Shrink = when at the top of the input in small size.
+          '& .MuiFormLabel-root:not(.MuiInputLabel-shrink):not(.Mui-error)': {
+            color: '#AFB0B6',
+          },
         },
       },
     },
@@ -633,6 +637,10 @@ const ThemeDark = (
     MuiAutocomplete: {
       styleOverrides: {
         root: {
+          // Shrink = when at the top of the input in small size.
+          '& .MuiFormLabel-root:not(.MuiInputLabel-shrink):not(.Mui-error)': {
+            color: '#AFB0B6',
+          },
           '& .MuiOutlinedInput-root': {
             // the only way for now to know if we should apply the paper color or not
             backgroundColor: paper === THEME_DARK_DEFAULT_PAPER
