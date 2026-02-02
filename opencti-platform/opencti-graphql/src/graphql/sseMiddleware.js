@@ -200,7 +200,8 @@ export const resolveMissingReferences = async (context, user, missingRefs, cache
       await doYield();
       const missingElement = missingElements[index];
       const stix = convertStoreToStix_2_1(missingElement);
-      elementsWithStix.push({ message: generateCreateMessage(missingElement), stix });
+      const instanceIds = [missingElement.internal_id, missingElement.standard_id, ...(missingElement.x_opencti_stix_ids ?? [])];
+      elementsWithStix.push({ message: generateCreateMessage(missingElement), stix, instanceIds });
       const newResolvedIds = extractIdsFromStoreObject(missingElement);
       newResolvedIds.forEach((id) => resolvedIds.add(id));
       const extractedRefs = stixRefsExtractor(stix);
@@ -385,15 +386,12 @@ const createSseMiddleware = () => {
     const refs = stixRefsExtractor(stixData);
     const missingInstances = await resolveMissingReferences(context, req.user, refs, cache);
     if (stixData.type === STIX_TYPE_RELATION || stixData.type === STIX_TYPE_SIGHTING) {
-      const missingAllPerIds = missingInstances
-        .map((m) => [m.store.internal_id, m.store.standard_id, ...(m.store.x_opencti_stix_ids ?? [])].map((id) => ({ id, value: m })))
-        .flat();
-      const missingMap = new Map(missingAllPerIds.map((m) => [m.id, m.value]));
+      const resolvedMissingIds = new Set(missingInstances.map((m) => m.instanceIds).flat());
       // Check for a relation that the from and the to is correctly accessible.
       const fromId = stixData.source_ref ?? stixData.sighting_of_ref;
       const toId = stixData.target_ref ?? stixData.where_sighted_refs[0];
-      const hasFrom = missingMap.has(fromId) || cache.has(fromId);
-      const hasTo = missingMap.has(toId) || cache.has(toId);
+      const hasFrom = resolvedMissingIds.has(fromId) || cache.has(fromId);
+      const hasTo = resolvedMissingIds.has(toId) || cache.has(toId);
       if (!hasFrom || !hasTo) {
         return false;
       }
