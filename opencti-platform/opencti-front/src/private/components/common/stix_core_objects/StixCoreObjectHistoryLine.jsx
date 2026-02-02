@@ -201,7 +201,7 @@ const StixCoreObjectHistoryLine = ({ node, isRelation }) => {
             }}
             title={(
               <MarkdownDisplay
-                content={`\`${data.user.name}\` ${data.context_data.message}`}
+                content={`\`${data.user?.name}\` ${data.context_data.message}`}
                 remarkGfmPlugin={true}
                 commonmark={true}
               />
@@ -215,7 +215,7 @@ const StixCoreObjectHistoryLine = ({ node, isRelation }) => {
             }}
             >
               <MarkdownDisplay
-                content={`\`${data.user.name}\` ${data.context_data.message}`}
+                content={`\`${data.user?.name}\` ${data.context_data.message}`}
                 remarkGfmPlugin={true}
                 commonmark={true}
               />
