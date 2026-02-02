@@ -574,6 +574,43 @@ const ContainerHeader = (props) => {
             hideTitle={knowledge}
             titleRight={(
               <>
+
+              </>
+            )}
+            rightActions={(
+              <>
+                {!knowledge && (
+                  <StixCoreObjectBackgroundTasks
+                    id={container.id}
+                    actionsFilter={['SHARE', 'UNSHARE', 'SHARE_MULTIPLE', 'UNSHARE_MULTIPLE']}
+                  />
+                )}
+                {displaySharing && (
+                  <>
+                    <StixCoreObjectSharing
+                      elementId={container.id}
+                      open={openSharing}
+                      variant="header"
+                      disabled={isSharingDisabled}
+                      handleClose={displaySharingButton ? undefined : handleCloseSharing}
+                      inContainer={true}
+                    />
+                  </>
+                )}
+                {displayAuthorizedMembers && (
+                  <FormAuthorizedMembersDialog
+                    id={container.id}
+                    owner={container.creators?.[0]}
+                    authorizedMembers={authorizedMembersToOptions(
+                      container.authorized_members,
+                    )}
+                    mutation={containerHeaderEditAuthorizedMembersMutation}
+                    open={openAccessRestriction}
+                    handleClose={displayAuthorizedMembersButton ? undefined : handleCloseAccessRestriction}
+                    canDeactivate={true}
+                  />
+                )}
+
                 {knowledge && (
                   <ExportButtons
                     domElementId="container"
@@ -653,41 +690,7 @@ const ContainerHeader = (props) => {
                       </ToggleButtonGroup>
                     </div>
                   )}
-              </>
-            )}
-            rightActions={(
-              <>
-                {!knowledge && (
-                  <StixCoreObjectBackgroundTasks
-                    id={container.id}
-                    actionsFilter={['SHARE', 'UNSHARE', 'SHARE_MULTIPLE', 'UNSHARE_MULTIPLE']}
-                  />
-                )}
-                {displaySharing && (
-                  <>
-                    <StixCoreObjectSharing
-                      elementId={container.id}
-                      open={openSharing}
-                      variant="header"
-                      disabled={isSharingDisabled}
-                      handleClose={displaySharingButton ? undefined : handleCloseSharing}
-                      inContainer={true}
-                    />
-                  </>
-                )}
-                {displayAuthorizedMembers && (
-                  <FormAuthorizedMembersDialog
-                    id={container.id}
-                    owner={container.creators?.[0]}
-                    authorizedMembers={authorizedMembersToOptions(
-                      container.authorized_members,
-                    )}
-                    mutation={containerHeaderEditAuthorizedMembersMutation}
-                    open={openAccessRestriction}
-                    handleClose={displayAuthorizedMembersButton ? undefined : handleCloseAccessRestriction}
-                    canDeactivate={true}
-                  />
-                )}
+
                 {!knowledge && (
                   <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
                     <StixCoreObjectFileExport
