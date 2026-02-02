@@ -41,13 +41,12 @@ import { ENTITY_TYPE_STREAM_COLLECTION } from '../schema/internalObject';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { generateCreateMessage } from '../database/generate-message';
-import { asyncMap, uniqAsyncMap } from '../utils/data-processing';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
 import { STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
 import { createAuthenticatedContext } from '../http/httpAuthenticatedContext';
 import { EVENT_CURRENT_VERSION } from '../database/stream/stream-utils';
-
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
+import { doYield } from '../utils/eventloop-utils';
 
 const broadcastClients = {};
 const queryIndices = [...READ_STIX_INDICES, READ_INDEX_STIX_META_OBJECTS];
@@ -186,6 +185,39 @@ const authenticateForPublic = async (req, res, next) => {
   }
 };
 
+export const resolveMissingReferences = async (context, user, missingRefs, cache) => {
+  const allResolvedElements = [];
+  const resolvedIds = new Set();
+  let refsToResolve = missingRefs.filter((m) => !cache.has(m));
+  while (refsToResolve.length > 0) {
+    const missingElements = await storeLoadByIdsWithRefs(context, user, refsToResolve);
+    if (missingElements.length === 0) {
+      break;
+    }
+    const newRefsToResolve = new Set();
+    const elementsWithStix = [];
+    for (let index = 0; index < missingElements.length; index += 1) {
+      await doYield();
+      const missingElement = missingElements[index];
+      const stix = convertStoreToStix_2_1(missingElement);
+      elementsWithStix.push({ message: generateCreateMessage(missingElement), stix });
+      const newResolvedIds = extractIdsFromStoreObject(missingElement);
+      newResolvedIds.forEach((id) => resolvedIds.add(id));
+      const extractedRefs = stixRefsExtractor(stix);
+      // We also use a Set to ensure we don't fetch duplicate refs in the same batch
+      extractedRefs.forEach((refId) => {
+        if (!cache.has(refId) && !resolvedIds.has(refId)) {
+          newRefsToResolve.add(refId);
+        }
+      });
+    }
+    allResolvedElements.unshift(elementsWithStix);
+    refsToResolve = Array.from(newRefsToResolve);
+  }
+  // Return flattened results in reverse order (deepest dependencies first)
+  return allResolvedElements.flat();
+};
+
 const createSseMiddleware = () => {
   const extractQueryParameter = (req, param) => {
     const paramData = req.query[param];
@@ -195,38 +227,6 @@ const createSseMiddleware = () => {
     return paramData;
   };
   // Returns array of { store, stix } to avoid duplicate STIX conversions
-  const resolveMissingReferences = async (context, user, missingRefs, cache) => {
-    const refsToResolve = missingRefs.filter((m) => !cache.has(m));
-    if (refsToResolve.length === 0) {
-      return [];
-    }
-
-    const missingElements = await storeLoadByIdsWithRefs(context, user, refsToResolve);
-    if (missingElements.length === 0) {
-      return [];
-    }
-
-    // Convert to STIX once and keep both representations
-    const elementsWithStix = missingElements.map((store) => ({ store, stix: convertStoreToStix_2_1(store) }));
-
-    const allRefs = await uniqAsyncMap(elementsWithStix, (r) => stixRefsExtractor(r.stix), undefined, { flat: true });
-    if (allRefs.length === 0) {
-      return elementsWithStix;
-    }
-
-    const resolvedMissingIds = new Set(await asyncMap(elementsWithStix, (elem) => extractIdsFromStoreObject(elem.store), undefined, { flat: true }));
-    const parentRefs = allRefs.filter((parentId) => !resolvedMissingIds.has(parentId));
-    if (parentRefs.length === 0) {
-      return elementsWithStix;
-    }
-
-    const newMissing = await resolveMissingReferences(context, user, parentRefs, cache);
-    if (newMissing.length === 0) {
-      return elementsWithStix;
-    }
-
-    return newMissing.concat(elementsWithStix);
-  };
   const initBroadcasting = async (req, res, client, processor) => {
     const broadcasterInfo = processor ? await processor.info() : {};
     let closed = false;
@@ -399,10 +399,8 @@ const createSseMiddleware = () => {
       }
     }
     for (let missingIndex = 0; missingIndex < missingInstances.length; missingIndex += 1) {
-      const { store: missingInstance, stix: missingData } = missingInstances[missingIndex];
-      if (!cache.has(missingInstance.standard_id) && channel.connected()) {
-        // missingData is already converted to STIX, no duplicate conversion needed
-        const message = generateCreateMessage(missingInstance);
+      const { message, stix: missingData } = missingInstances[missingIndex];
+      if (!cache.has(missingData.id) && channel.connected()) {
         const origin = { referer: EVENT_TYPE_DEPENDENCIES };
         const content = { data: missingData, message, origin, version: EVENT_CURRENT_VERSION };
         await channel.sendEvent(eventId, EVENT_TYPE_CREATE, content);
