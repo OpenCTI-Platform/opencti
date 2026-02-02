@@ -10,8 +10,8 @@ export const isEnterpriseEdition = async (context: AuthContext) => {
   return isEnterpriseEditionFromSettings(settings);
 };
 
-export const isEnterpriseEditionFromSettings = (settings: Pick<BasicStoreSettings, 'valid_enterprise_edition'>): boolean => {
-  return settings.valid_enterprise_edition === true;
+export const isEnterpriseEditionFromSettings = (settings?: Pick<BasicStoreSettings, 'valid_enterprise_edition'>): boolean => {
+  return settings?.valid_enterprise_edition === true;
 };
 
 export const checkEnterpriseEdition = async (context: AuthContext) => {

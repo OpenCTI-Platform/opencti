@@ -394,7 +394,7 @@ const initPlaybookManager = () => {
       }, CRON_SCHEDULE_TIME);
     },
     status: (settings?: BasicStoreSettings) => {
-      const isEnterpriseEdition = settings ? isEnterpriseEditionFromSettings(settings) : false;
+      const isEnterpriseEdition = isEnterpriseEditionFromSettings(settings);
 
       return {
         id: 'PLAYBOOK_MANAGER',
