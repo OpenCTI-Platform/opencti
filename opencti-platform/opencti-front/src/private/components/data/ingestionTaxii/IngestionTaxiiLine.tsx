@@ -18,6 +18,7 @@ import ItemCopy from '../../../../components/ItemCopy';
 import type { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -71,7 +72,7 @@ export const IngestionTaxiiLineLineComponent: FunctionComponent<IngestionTaxiiLi
   const { t_i18n, fldt } = useFormatter();
   const classes = useStyles();
   const data = useFragment(ingestionTaxiiLineFragment, node);
-  const [stateValue, setStateValue] = useState(data.current_state_cursor ? data.current_state_cursor : '-');
+  const [stateValue, setStateValue] = useState(data.current_state_cursor ? data.current_state_cursor : EMPTY_VALUE);
   return (
     <ListItem
       classes={{ root: classes.item }}
@@ -118,13 +119,13 @@ export const IngestionTaxiiLineLineComponent: FunctionComponent<IngestionTaxiiLi
               className={classes.bodyItem}
               style={{ width: dataColumns.last_execution_date.width }}
             >
-              {fldt(data.last_execution_date) || '-'}
+              {fldt(data.last_execution_date) || EMPTY_VALUE}
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.added_after_start.width }}
             >
-              <ItemCopy content={data.added_after_start || '-'} variant="inLine" />
+              <ItemCopy content={data.added_after_start || EMPTY_VALUE} variant="inLine" />
             </div>
             <div
               className={classes.bodyItem}

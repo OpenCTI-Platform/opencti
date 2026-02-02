@@ -19,6 +19,7 @@ import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../
 import { TAXIIAPI_SETCOLLECTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -137,7 +138,7 @@ class TaxiiLineLineComponent extends Component {
                           styleNumber={3}
                         />
                       )
-                    : '-'}
+                    : EMPTY_VALUE}
                 </div>
               </>
             )}

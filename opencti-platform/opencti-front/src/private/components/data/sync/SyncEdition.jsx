@@ -26,6 +26,7 @@ import PasswordTextField from '../../../../components/PasswordTextField';
 import { extractToken } from '../../../../utils/ingestionAuthentificationUtils';
 import { useTheme } from '@mui/styles';
 import IngestionEditionUserHandling from '../../../../private/components/data/IngestionEditionUserHandling';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -238,8 +239,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
               fullWidth={true}
               style={{ marginTop: 20 }}
               value={
-                streams.find((s) => s.id === initialValues.stream_id)
-                  ?.label ?? '-'
+                streams.find((s) => s.id === initialValues.stream_id)?.label ?? EMPTY_VALUE
               }
               disabled={true}
             />

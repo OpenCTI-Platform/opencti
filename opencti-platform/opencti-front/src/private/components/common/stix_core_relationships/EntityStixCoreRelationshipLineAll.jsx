@@ -23,6 +23,7 @@ import { getMainRepresentative } from '../../../../utils/defaultRepresentatives'
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemEntityType from '../../../../components/ItemEntityType';
 import { DraftChip, getDraftModeColor } from '../draft/DraftChip';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 const styles = (theme) => ({
   item: {
@@ -181,7 +182,7 @@ class EntityStixCoreRelationshipLineAllComponent extends Component {
                   className={classes.bodyItem}
                   style={{ width: dataColumns.createdBy.width }}
                 >
-                  {node.createdBy?.name ?? '-'}
+                  {node.createdBy?.name ?? EMPTY_VALUE}
                 </div>
                 <div
                   className={classes.bodyItem}

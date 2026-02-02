@@ -70,7 +70,7 @@ import inject18n from '../../../components/i18n';
 import { commitMutation, fetchQuery, MESSAGING$ } from '../../../relay/environment';
 import { hexToRGB } from '../../../utils/Colors';
 import Security from '../../../utils/Security';
-import { truncate } from '../../../utils/String';
+import { EMPTY_VALUE, truncate } from '../../../utils/String';
 import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import { getEntityTypeTwoFirstLevelsFilterValues, removeIdAndIncorrectKeysFromFilterGroupObject, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
 import { UserContext } from '../../../utils/hooks/useAuth';
@@ -2901,7 +2901,7 @@ class DataTableToolBar extends Component {
                           )}
                         />
                         <div style={{ marginRight: 50 }}>
-                          {element.createdBy?.name ?? '-'}
+                          {element.createdBy?.name ?? EMPTY_VALUE}
                         </div>
                         <div style={{ marginRight: 50 }}>
                           <ItemMarkings
@@ -2954,7 +2954,7 @@ class DataTableToolBar extends Component {
                       >
                         {t('Author')}
                       </Typography>
-                      {keptElement?.createdBy?.name ?? '-'}
+                      {keptElement?.createdBy?.name ?? EMPTY_VALUE}
                     </>
                   )}
                   {noMarking !== true && (

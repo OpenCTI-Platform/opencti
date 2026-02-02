@@ -19,6 +19,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import ItemEntityType from '../../../../components/ItemEntityType';
 import { isEmptyField } from '../../../../utils/utils';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 const styles = (theme) => ({
   item: {
@@ -69,9 +70,9 @@ class IndicatorEntityLineComponent extends Component {
     const displayName = !restricted
       ? isRelationship
         ? element.representative?.main
-        ?? `${element.from?.name ?? element.from?.observable_value ?? '-'}
+        ?? `${element.from?.name ?? element.from?.observable_value ?? EMPTY_VALUE}
          ${String.fromCharCode(8594)}
-         ${element.to?.name ?? element.to?.observable_value ?? '-'}`
+         ${element.to?.name ?? element.to?.observable_value ?? EMPTY_VALUE}`
         : element.name || element.observable_value
       : t('Restricted');
 
@@ -135,7 +136,7 @@ class IndicatorEntityLineComponent extends Component {
                   className={classes.bodyItem}
                   style={{ width: dataColumns.createdBy.width }}
                 >
-                  {node.createdBy?.name ?? '-'}
+                  {node.createdBy?.name ?? EMPTY_VALUE}
                 </div>
                 <div
                   className={classes.bodyItem}

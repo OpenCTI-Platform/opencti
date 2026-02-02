@@ -27,6 +27,7 @@ import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { MESSAGING$ } from '../../../../relay/environment';
 import Label from '../../../../components/common/label/Label';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 type WorkMessages = NonNullable<NonNullable<NonNullable<ConnectorWorks_data$data['works']>['edges']>[0]>['node']['errors'];
 interface ConnectorWorkLineProps {
@@ -109,7 +110,7 @@ const ConnectorWorkLine: FunctionComponent<
               <Label>
                 {t_i18n('Work end time')}
               </Label>
-              {workEndTime ? nsdt(workEndTime) : '-'}
+              {workEndTime ? nsdt(workEndTime) : EMPTY_VALUE}
             </Grid>
           </Grid>
         </Grid>
@@ -121,8 +122,8 @@ const ConnectorWorkLine: FunctionComponent<
               </Label>
               <span style={{ fontWeight: 600, fontSize: 18 }}>
                 {workStatus === 'wait'
-                  ? '-'
-                  : workProcessedNumber ?? '-'}
+                  ? EMPTY_VALUE
+                  : workProcessedNumber ?? EMPTY_VALUE}
               </span>
             </Grid>
             <Grid item xs={6}>
@@ -130,7 +131,7 @@ const ConnectorWorkLine: FunctionComponent<
                 {t_i18n('Total number of operations')}
               </Label>
               <span style={{ fontWeight: 600, fontSize: 18 }}>
-                {workExpectedNumber ?? '-'}
+                {workExpectedNumber ?? EMPTY_VALUE}
               </span>
             </Grid>
             <Grid item xs={11}>

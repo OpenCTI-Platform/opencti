@@ -21,6 +21,7 @@ import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 import { TrashDeleteOperationLine_node$data } from './__generated__/TrashDeleteOperationLine_node.graphql';
 import DeleteOperationPopover from './DeleteOperationPopover';
+import { EMPTY_VALUE } from '../../../utils/String';
 
 const DeleteOperationFragment = graphql`
   fragment TrashDeleteOperationLine_node on DeleteOperation {
@@ -155,7 +156,7 @@ const Trash: React.FC = () => {
       label: 'Deleted by',
       percentWidth: 20,
       isSortable: isRuntimeSort,
-      render: ({ deletedBy }: TrashDeleteOperationLine_node$data) => deletedBy?.name ?? '-',
+      render: ({ deletedBy }: TrashDeleteOperationLine_node$data) => deletedBy?.name ?? EMPTY_VALUE,
     },
     created_at: {
       label: 'Deletion date',

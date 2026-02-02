@@ -17,7 +17,7 @@ import { stixDomainObjectsLinesSearchQuery } from './StixDomainObjectsLines';
 import { fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
-import { truncate } from '../../../../utils/String';
+import { EMPTY_VALUE, truncate } from '../../../../utils/String';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemMarkings from '../../../../components/ItemMarkings';
 
@@ -147,7 +147,7 @@ class StixDomainObjectDetectDuplicate extends Component {
                         secondary={truncate(element.node.description, 60)}
                       />
                       <div style={{ marginRight: 50 }}>
-                        {element.node.createdBy?.name ?? '-'}
+                        {element.node.createdBy?.name ?? EMPTY_VALUE}
                       </div>
                       <div style={{ marginRight: 50 }}>
                         <ItemMarkings

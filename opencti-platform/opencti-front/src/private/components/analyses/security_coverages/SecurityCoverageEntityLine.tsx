@@ -11,6 +11,7 @@ import { getMainRepresentative } from '../../../../utils/defaultRepresentatives'
 import ItemEntityType from '../../../../components/ItemEntityType';
 import { DataColumns } from '../../../../components/list_lines';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -91,7 +92,7 @@ const SecurityCoverageEntityLine: React.FC<SecurityCoverageEntityLineProps> = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.createdBy.width }}
             >
-              {entity.createdBy?.name ?? '-'}
+              {entity.createdBy?.name ?? EMPTY_VALUE}
             </div>
             <div
               className={classes.bodyItem}

@@ -21,6 +21,7 @@ import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import ItemEntityType from '../../../../components/ItemEntityType';
 import { DraftChip } from '../draft/DraftChip';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -124,7 +125,7 @@ const ContainerStixCoreObjectLineComponent = (props) => {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.createdBy.width }}
               >
-                {node.createdBy?.name ?? '-'}
+                {node.createdBy?.name ?? EMPTY_VALUE}
               </div>
               <div
                 className={classes.bodyItem}

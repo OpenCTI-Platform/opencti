@@ -116,7 +116,7 @@ const StixCoreObjectOpinionsList: FunctionComponent<StixCoreObjectOpinionsListPr
                       textOverflow: 'ellipsis',
                     }}
                   />
-                  <Tooltip title={opinion?.createdBy?.name ?? '-'}>
+                  <Tooltip title={opinion?.createdBy?.name ?? EMPTY_VALUE}>
                     <div style={{
                       marginRight: 50,
                       width: '200px',

@@ -22,6 +22,7 @@ import { resolveLink } from '../../../../utils/Entity';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { hexToRGB, itemColor } from '../../../../utils/Colors';
 import { DataColumns } from '../../../../components/list_lines';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -145,7 +146,7 @@ export const ContainerStixCoreObjectsSuggestedMappingLine: FunctionComponent<
                 className={classes.bodyItem}
                 style={{ width: dataColumns.createdBy.width }}
               >
-                {matchedEntity.createdBy?.name}
+                {matchedEntity.createdBy?.name ?? EMPTY_VALUE}
               </div>
               <div
                 className={classes.bodyItem}

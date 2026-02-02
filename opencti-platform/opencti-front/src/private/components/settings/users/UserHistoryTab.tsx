@@ -25,6 +25,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';
 import { UserHistoryLine_node$data } from './__generated__/UserHistoryLine_node.graphql';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 const LOCAL_STORAGE_KEY = 'audits';
 
@@ -44,14 +45,14 @@ const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const user = useFragment(userFragment, userData);
-  const [message, setMessage] = useState<string>('-');
+  const [message, setMessage] = useState<string>(EMPTY_VALUE);
   const [open, setOpen] = useState<boolean>(false);
   const handleOpen = () => {
     setOpen(true);
   };
   const handleClose = () => {
     setOpen(false);
-    setMessage('-');
+    setMessage(EMPTY_VALUE);
   };
   const dataColumns: DataTableProps['dataColumns'] = {
     event_scope: {},
@@ -119,7 +120,7 @@ const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({
   });
 
   const renderIcon = (eventScope: string | null | undefined, eventMessage: string | undefined, commit: string | null | undefined) => {
-    setMessage(eventMessage ?? '-');
+    setMessage(eventMessage ?? EMPTY_VALUE);
     if (eventScope === 'create') {
       return (
         <Avatar

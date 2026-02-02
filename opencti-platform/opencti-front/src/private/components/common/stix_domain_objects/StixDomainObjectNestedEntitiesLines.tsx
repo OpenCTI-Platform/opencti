@@ -18,6 +18,7 @@ import {
   StixDomainObjectNestedEntitiesLinesQuery$variables,
 } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectNestedEntitiesLinesQuery.graphql';
 import { StixDomainObjectNestedEntitiesLines_data$key } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectNestedEntitiesLines_data.graphql';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 export const stixDomainObjectNestedEntitiesLinesQuery = graphql`
   query StixDomainObjectNestedEntitiesLinesQuery(
@@ -396,7 +397,7 @@ const StixDomainObjectNestedEntitiesLines = ({
                         style={{ ...bodyItemStyle, width: '20%', height: '100%' }}
                       >
                         <ItemEntityType
-                          entityType={stixCoreObject.entity_type ?? '-'}
+                          entityType={stixCoreObject.entity_type ?? EMPTY_VALUE}
                           showIcon
                         />
                       </div>

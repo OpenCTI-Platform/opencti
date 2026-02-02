@@ -26,6 +26,7 @@ import obasLight from '../../../../static/images/xtm/obas_light.png';
 import ExternalLinkPopover from '../../../../components/ExternalLinkPopover';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 const securityCoverageDetailsFragment = graphql`
   fragment SecurityCoverageDetails_securityCoverage on SecurityCoverage {
@@ -73,7 +74,7 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
             <Label>
               {t_i18n('Name')}
             </Label>
-            {data.name || '-'}
+            {data.name || EMPTY_VALUE}
           </Grid>
           <Grid item xs={12}>
             <Label>
@@ -109,7 +110,7 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
             <Label>
               {t_i18n('Last result')}
             </Label>
-            {data.coverage_last_result ? fndt(data.coverage_last_result) : '-'}
+            {data.coverage_last_result ? fndt(data.coverage_last_result) : EMPTY_VALUE}
           </Grid>
           <Grid item xs={6}>
             <Label>
@@ -141,13 +142,13 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
             <Label>
               {t_i18n('Valid from')}
             </Label>
-            {data.coverage_valid_from ? fndt(data.coverage_valid_from) : '-'}
+            {data.coverage_valid_from ? fndt(data.coverage_valid_from) : EMPTY_VALUE}
           </Grid>
           <Grid item xs={6}>
             <Label>
               {t_i18n('Valid until')}
             </Label>
-            {data.coverage_valid_to ? fndt(data.coverage_valid_to) : '-'}
+            {data.coverage_valid_to ? fndt(data.coverage_valid_to) : EMPTY_VALUE}
           </Grid>
           <Grid item xs={12}>
             <SecurityCoverageSecurityPlatforms securityCoverage={data} />

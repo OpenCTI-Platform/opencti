@@ -22,6 +22,7 @@ import Alert from '../../../../components/Alert';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import PageContainer from '../../../../components/PageContainer';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 export const disseminationListsQuery = graphql`
   query DisseminationListsLinesPaginationQuery(
@@ -141,7 +142,7 @@ const DisseminationLists = () => {
       label: 'Number of recipients',
       percentWidth: 22,
       isSortable: true,
-      render: (node: DisseminationListsLine_node$data) => node.emails.length || '-',
+      render: (node: DisseminationListsLine_node$data) => node.emails.length || EMPTY_VALUE,
     },
   };
 

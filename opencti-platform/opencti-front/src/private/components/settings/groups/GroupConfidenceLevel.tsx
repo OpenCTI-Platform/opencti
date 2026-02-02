@@ -6,6 +6,7 @@ import { InformationOutline } from 'mdi-material-ui';
 import { Alert, AlertTitle } from '@mui/material';
 import GroupConfidenceOverrides from '@components/settings/groups/GroupConfidenceOverrides';
 import { useFormatter } from '../../../../components/i18n';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 type Data_GroupConfidenceLevel = Group_group$data['group_confidence_level'];
 
@@ -41,7 +42,7 @@ const GroupConfidenceLevel: React.FC<GroupConfidenceLevelProps> = ({ confidenceL
 
   return (
     <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
-      <span>{`${confidenceLevel.max_confidence ?? '-'}`}</span>
+      <span>{`${confidenceLevel.max_confidence ?? EMPTY_VALUE}`}</span>
       {!!confidenceLevel.max_confidence
         && <ConfidenceTooltip confidenceLevel={confidenceLevel} />
       }

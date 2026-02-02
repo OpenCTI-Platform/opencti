@@ -17,6 +17,7 @@ import FilterIconButton from '../../../../components/FilterIconButton';
 import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
 import { TAXIIAPI_SETCOLLECTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -122,7 +123,7 @@ class FeedLineLineComponent extends Component {
                           dataColumns={dataColumns}
                         />
                       )
-                    : '-'}
+                    : EMPTY_VALUE}
                 </div>
               </>
             )}

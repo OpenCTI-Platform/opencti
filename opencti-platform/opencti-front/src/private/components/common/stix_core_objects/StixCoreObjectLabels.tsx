@@ -73,7 +73,7 @@ const StixCoreObjectLabels = ({
                 chipRefs.current[index] = el;
               }}
             >
-              <Tag label={label.value || '-'} />
+              <Tag label={label.value || EMPTY_VALUE} />
             </div>
           ))}
         </Stack>

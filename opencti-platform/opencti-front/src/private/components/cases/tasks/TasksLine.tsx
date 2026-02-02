@@ -19,6 +19,7 @@ import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectL
 import ItemStatus from '../../../../components/ItemStatus';
 import ItemDueDate from '../../../../components/ItemDueDate';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -108,7 +109,7 @@ export const tasksDataColumns: DataColumns = {
 
     render: (task: TasksLine_node$data) => ((task.objectAssignee ?? []).length > 0
       ? (task.objectAssignee ?? []).map((node) => node.name).join(', ')
-      : '-'),
+      : EMPTY_VALUE),
   },
   objectLabel: {
     label: 'Labels',
