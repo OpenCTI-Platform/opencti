@@ -151,7 +151,7 @@ const initFileIndexManager = () => {
   const fileIndexHandler = async () => {
     const context = executionContext(FILE_INDEX_MANAGER_NAME);
     const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-    if (settings && isEnterpriseEditionFromSettings(settings)) {
+    if (isEnterpriseEditionFromSettings(settings)) {
       let lock;
       try {
         // Lock the manager
@@ -222,11 +222,9 @@ const initFileIndexManager = () => {
       }, STREAM_SCHEDULE_TIME);
     },
     status: (settings?: BasicStoreSettings) => {
-      const isEnterpriseEdition = settings ? isEnterpriseEditionFromSettings(settings) : false;
-
       return {
         id: 'FILE_INDEX_MANAGER',
-        enable: ENABLED_FILE_INDEX_MANAGER && isEnterpriseEdition,
+        enable: ENABLED_FILE_INDEX_MANAGER && isEnterpriseEditionFromSettings(settings),
         running,
         warning: !isAttachmentProcessorEnabled(),
       };
