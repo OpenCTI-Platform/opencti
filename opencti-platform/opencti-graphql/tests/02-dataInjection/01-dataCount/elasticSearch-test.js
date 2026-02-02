@@ -602,7 +602,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Vocabulary')).toBe(entitiesCounter.Vocabulary);
     expect(entityTypeMap.get('EmailTemplate')).toBe(entitiesCounter.EmailTemplate);
     expect(entityTypeMap.get('RetentionRule')).toBe(entitiesCounter.RetentionRule);
-    expect(data.edges.length).toEqual(212 + entitiesCounter.Vocabulary);
+    expect(data.edges.length).toEqual(214 + entitiesCounter.Vocabulary);
   });
   it('should entity paginate with field exist filter', async () => {
     const filters = {
@@ -742,7 +742,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('External-Reference')).toBe(entitiesCounter.ExternalReference);
     expect(entityTypeMap.get('EmailTemplate')).toBe(entitiesCounter.EmailTemplate);
     expect(entityTypeMap.get('RetentionRule')).toBe(entitiesCounter.RetentionRule);
-    expect(data.edges.length).toEqual(223 + entitiesCounter.Vocabulary);
+    expect(data.edges.length).toEqual(225 + entitiesCounter.Vocabulary);
     const createdDates = R.map((e) => e.node.created, data.edges);
     let previousCreatedDate = null;
     for (let index = 0; index < createdDates.length; index += 1) {
