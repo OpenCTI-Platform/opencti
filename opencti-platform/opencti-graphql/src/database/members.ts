@@ -21,7 +21,6 @@ export const loadCreator = async (
   user: AuthUser,
   userIdToLoad?: string,
 ) => {
-  if (!userIdToLoad) return null;
   const realUser = await context.batch?.creatorBatchLoader.load(userIdToLoad);
   if (!realUser) return null;
   const filteredUser = await filterMembersUsersWithUsersOrgs(context, user, [realUser]);
