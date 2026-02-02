@@ -1,10 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, pipe, map, assoc } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
 import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
 import Timeline from '@mui/lab/Timeline';
 import TimelineItem from '@mui/lab/TimelineItem';
 import TimelineSeparator from '@mui/lab/TimelineSeparator';
@@ -22,29 +20,17 @@ import { stixDomainObjectThreatKnowledgeStixRelationshipsQuery } from './StixDom
 import { truncate } from '../../../../utils/String';
 import { getSecondaryRepresentative, getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { itemColor } from '../../../../utils/Colors';
+import Card from '../../../../components/common/card/Card';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
 ));
 Transition.displayName = 'TransitionSlide';
 
-const styles = (theme) => ({
-  paper: {
-    padding: 15,
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  nested: {
-    paddingLeft: theme.spacing(4),
-  },
-});
-
 class StixDomainObjectTimelineComponent extends Component {
   render() {
     const {
       fldt,
-      classes,
       theme,
       data,
       stixDomainObjectId,
@@ -150,7 +136,7 @@ class StixDomainObjectTimelineComponent extends Component {
                     <TimelineConnector />
                   </TimelineSeparator>
                   <TimelineContent>
-                    <Paper variant="outlined" className={classes.paper}>
+                    <Card>
                       <Typography variant="h2">
                         {!restricted
                           ? truncate(
@@ -173,7 +159,7 @@ class StixDomainObjectTimelineComponent extends Component {
                           100,
                         )}
                       </span>
-                    </Paper>
+                    </Card>
                   </TimelineContent>
                 </TimelineItem>
               );
@@ -593,5 +579,4 @@ const StixDomainObjectTimeline = createRefetchContainer(
 export default compose(
   inject18n,
   withTheme,
-  withStyles(styles),
 )(StixDomainObjectTimeline);

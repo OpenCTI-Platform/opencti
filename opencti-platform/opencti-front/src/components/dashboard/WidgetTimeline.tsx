@@ -6,15 +6,16 @@ import { Link } from 'react-router-dom';
 import TimelineDot from '@mui/lab/TimelineDot';
 import TimelineConnector from '@mui/lab/TimelineConnector';
 import TimelineContent from '@mui/lab/TimelineContent';
-import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import React from 'react';
 import { getSecondaryRepresentative, getMainRepresentative } from '../../utils/defaultRepresentatives';
 import MarkdownDisplay from '../MarkdownDisplay';
 import ItemIcon from '../ItemIcon';
 import { itemColor } from '../../utils/Colors';
 import { useFormatter } from '../i18n';
 import FieldOrEmpty from '../FieldOrEmpty';
+import Card from '../common/card/Card';
+import { useTheme } from '@mui/styles';
+import { Theme } from '../Theme';
 
 interface WidgetTimelineProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -24,6 +25,7 @@ interface WidgetTimelineProps {
 
 const WidgetTimeline = ({ data, dateAttribute = 'created_at' }: WidgetTimelineProps) => {
   const { fldt } = useFormatter();
+  const theme = useTheme<Theme>();
 
   return (
     <div
@@ -69,7 +71,7 @@ const WidgetTimeline = ({ data, dateAttribute = 'created_at' }: WidgetTimelinePr
                 <TimelineConnector />
               </TimelineSeparator>
               <TimelineContent>
-                <Paper variant="outlined" sx={{ padding: '15px' }} className="noDrag">
+                <Card sx={{ background: theme.palette.designSystem.background.main }}>
                   <Typography variant="h2">
                     {getMainRepresentative(value)}
                   </Typography>
@@ -79,7 +81,7 @@ const WidgetTimeline = ({ data, dateAttribute = 'created_at' }: WidgetTimelinePr
                       limit={150}
                     />
                   </div>
-                </Paper>
+                </Card>
               </TimelineContent>
             </TimelineItem>
           );

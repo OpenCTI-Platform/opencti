@@ -9,7 +9,6 @@ import { Link } from 'react-router-dom';
 import TimelineDot from '@mui/lab/TimelineDot';
 import TimelineConnector from '@mui/lab/TimelineConnector';
 import TimelineContent from '@mui/lab/TimelineContent';
-import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { getSecondaryRepresentative, getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -17,6 +16,7 @@ import { resolveLink } from '../../../../utils/Entity';
 import { useFormatter } from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import Card from '../../../../components/common/card/Card';
 
 export const incidentKnowledgeTimeLineQuery = graphql`
   query IncidentKnowledgeTimeLineCaseQuery(
@@ -100,7 +100,7 @@ const IncidentKnowledgeTimeLineComponent = ({
                 <TimelineConnector />
               </TimelineSeparator>
               <TimelineContent>
-                <Paper variant="outlined" className={classes.paper}>
+                <Card>
                   <Typography variant="h2">{getMainRepresentative(node)}</Typography>
                   <div style={{ marginTop: -5, color: '#a8a8a8' }}>
                     <MarkdownDisplay
@@ -108,7 +108,7 @@ const IncidentKnowledgeTimeLineComponent = ({
                       limit={150}
                     />
                   </div>
-                </Paper>
+                </Card>
               </TimelineContent>
             </TimelineItem>
           );
