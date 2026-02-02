@@ -1,7 +1,7 @@
 import { useTheme } from '@mui/styles';
 import { Theme } from '../../Theme';
 import Card from './Card';
-import { Typography } from '@mui/material';
+import { Stack, Typography } from '@mui/material';
 
 interface CardStatisticProps {
   label: string;
@@ -19,20 +19,22 @@ const CardStatistic = ({ label, value }: CardStatisticProps) => {
 
   return (
     <Card sx={{ paddingY: 2 }}>
-      <Typography
-        color={theme.palette.text.light}
-        variant="body2"
-        gutterBottom
-      >
-        {label}
-      </Typography>
+      <Stack height="100%" justifyContent="space-between">
+        <Typography
+          color={theme.palette.text.light}
+          variant="body2"
+          gutterBottom
+        >
+          {label}
+        </Typography>
 
-      <div
-        data-testid={`card-stat-${label}`}
-        style={valueStyle}
-      >
-        {value}
-      </div>
+        <div
+          data-testid={`card-stat-${label}`}
+          style={valueStyle}
+        >
+          {value}
+        </div>
+      </Stack>
     </Card>
   );
 };
