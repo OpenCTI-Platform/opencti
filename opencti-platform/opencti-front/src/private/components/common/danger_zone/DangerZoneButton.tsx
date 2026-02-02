@@ -31,28 +31,29 @@ const DangerZoneButton = ({
     fontSize: 8,
   };
 
-  const buttonStyle: CSSProperties = {
-    borderColor: theme.palette.dangerZone.main,
-    color: !props.disabled
-      ? theme.palette.dangerZone.text?.primary
-      : theme.palette.dangerZone.text?.disabled,
-  };
-
   return (
     <DangerZoneBlock
       type={sensitiveType}
       sx={{ root: rootStyle, title: titleStyle }}
     >
-      {({ disabled }) => (
-        <Button
-          size="small"
-          intent="destructive"
-          variant="secondary"
-          disabled={disabled}
-          style={buttonStyle}
-          {...props}
-        />
-      )}
+      {({ disabled }) => {
+        const buttonStyle: CSSProperties = {
+          borderColor: theme.palette.dangerZone.main,
+          color: !disabled
+            ? theme.palette.dangerZone.text?.primary
+            : theme.palette.dangerZone.text?.disabled,
+        };
+        return (
+          <Button
+            size="small"
+            intent="destructive"
+            variant="secondary"
+            disabled={disabled}
+            style={buttonStyle}
+            {...props}
+          />
+        );
+      }}
     </DangerZoneBlock>
   );
 };

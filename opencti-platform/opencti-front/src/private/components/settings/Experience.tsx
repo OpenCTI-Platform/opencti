@@ -25,7 +25,6 @@ import { ExperienceFieldPatchMutation$data } from '@components/settings/__genera
 import getEEWarningMessage from '@components/settings/EEActivation';
 import { ExperienceQuery } from './__generated__/ExperienceQuery.graphql';
 import Transition from '../../../components/Transition';
-import useSensitiveModifications from '../../../utils/hooks/useSensitiveModifications';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
@@ -122,7 +121,6 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
   const settings = useFragment<Experience$key>(ExperienceFragment, data.settings);
   const isEnterpriseEditionActivated = settings.platform_enterprise_edition.license_enterprise;
   const isEnterpriseEditionByConfig = settings.platform_enterprise_edition.license_by_configuration;
-  const { isAllowed } = useSensitiveModifications('ce_ee_toggle');
   const [openEEChanges, setOpenEEChanges] = useState(false);
   const [openValidateTermsOfUse, setOpenValidateTermsOfUse] = useState(false);
   const experienceValidation = () => Yup.object().shape({
@@ -187,7 +185,6 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                     <DangerZoneButton
                       sensitiveType="ce_ee_toggle"
                       onClick={() => setOpenEEChanges(true)}
-                      disabled={!isAllowed}
                     >
                       {t_i18n('Disable Enterprise Edition')}
                     </DangerZoneButton>

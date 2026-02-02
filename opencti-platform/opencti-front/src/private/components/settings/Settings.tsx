@@ -33,7 +33,6 @@ import SettingsAnalytics from './settings_analytics/SettingsAnalytics';
 import ItemBoolean from '../../../components/ItemBoolean';
 import { availableLanguage } from '../../../components/AppIntlProvider';
 import Breadcrumbs from '../../../components/Breadcrumbs';
-import useSensitiveModifications from '../../../utils/hooks/useSensitiveModifications';
 import Transition from '../../../components/Transition';
 import ItemCopy from '../../../components/ItemCopy';
 import Loader, { LoaderVariant } from '../../../components/Loader';
@@ -187,7 +186,6 @@ const settingsFocus = graphql`
 const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
   const theme = useTheme<Theme>();
 
-  const { isAllowed } = useSensitiveModifications('ce_ee_toggle');
   const [openEEChanges, setOpenEEChanges] = useState(false);
 
   const { t_i18n, fldt } = useFormatter();
@@ -336,7 +334,6 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                 <DangerZoneButton
                   sensitiveType="ce_ee_toggle"
                   onClick={() => setOpenEEChanges(true)}
-                  disabled={!isAllowed}
                 >
                   {t_i18n('Disable Enterprise Edition')}
                 </DangerZoneButton>
