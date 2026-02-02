@@ -9,7 +9,7 @@ import Card from '@common/card/Card';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import { useTheme } from '@mui/material';
-import { EMPTY_VALUE } from "../../../../utils/String";
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 const interval$ = interval(FIVE_SECONDS);
 

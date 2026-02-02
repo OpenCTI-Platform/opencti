@@ -12,7 +12,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { ListItemButton } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
 import OpinionPopover from './OpinionPopover';
-import { truncate } from '../../../../utils/String';
+import { EMPTY_VALUE, truncate } from '../../../../utils/String';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { StixCoreObjectOpinionsListQuery } from './__generated__/StixCoreObjectOpinionsListQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
@@ -125,7 +125,7 @@ const StixCoreObjectOpinionsList: FunctionComponent<StixCoreObjectOpinionsListPr
                       textOverflow: 'ellipsis',
                     }}
                     >
-                      {opinion?.createdBy?.name ?? '-'}
+                      {opinion?.createdBy?.name ?? EMPTY_VALUE}
                     </div>
                   </Tooltip>
                   <div style={{ marginRight: 50 }}>

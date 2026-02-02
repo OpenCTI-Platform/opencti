@@ -13,7 +13,6 @@ import { DataTableProps } from './dataTableTypes';
 import ItemMarkings from '../ItemMarkings';
 import ItemStatus from '../ItemStatus';
 import ItemPriority from '../ItemPriority';
-import { isNotEmptyField } from '../../utils/utils';
 import RatingField from '../fields/RatingField';
 import ItemConfidence from '../ItemConfidence';
 import ItemPatternType from '../ItemPatternType';

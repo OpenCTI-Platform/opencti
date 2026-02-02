@@ -16,7 +16,7 @@ import Paper from '@mui/material/Paper';
 import ItemCopy from '../../../../components/ItemCopy';
 import Transition from '../../../../components/Transition';
 import { useFormatter } from '../../../../components/i18n';
-import { truncate } from '../../../../utils/String';
+import { EMPTY_VALUE, truncate } from '../../../../utils/String';
 
 interface ConnectorWorksErrorLineProps {
   error: ParsedWorkMessage;
@@ -64,13 +64,13 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
             <a href="https://docs.opencti.io/latest/deployment/troubleshooting" target="_blank" rel="noreferrer">{t_i18n('Unknown')}</a>
           )}
         </TableCell>
-        <TableCell>{error.isParsed ? error.parsedError.message : error.rawError.message ?? '-'}</TableCell>
+        <TableCell>{error.isParsed ? error.parsedError.message : error.rawError.message ?? EMPTY_VALUE}</TableCell>
         <TableCell>
           {error.isParsed ? (
             displayEntityOrId(error.parsedError.entity)
           ) : (
             <Tooltip title={t_i18n('Click on details to see more information')}>
-              {truncate(error.rawError.source ?? '-', truncateLimit)}
+              {truncate(error.rawError.source ?? EMPTY_VALUE, truncateLimit)}
             </Tooltip>
           )}
         </TableCell>
@@ -132,15 +132,15 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 15 }}>
                 <div>
                   <Typography variant="h3" gutterBottom={true}>{t_i18n('Timestamp')}</Typography>
-                  <pre><ItemCopy content={error.rawError.timestamp ?? '-'} /></pre>
+                  <pre><ItemCopy content={error.rawError.timestamp ?? EMPTY_VALUE} /></pre>
                 </div>
                 <div>
                   <Typography variant="h3" gutterBottom={true}>{t_i18n('Message')}</Typography>
-                  <pre><ItemCopy content={error.rawError.message ?? '-'} variant="wrap" /></pre>
+                  <pre><ItemCopy content={error.rawError.message ?? EMPTY_VALUE} variant="wrap" /></pre>
                 </div>
                 <div>
                   <Typography variant="h3" gutterBottom={true}>{t_i18n('Source')}</Typography>
-                  <pre><ItemCopy content={error.rawError.source ?? '-'} variant="wrap" /></pre>
+                  <pre><ItemCopy content={error.rawError.source ?? EMPTY_VALUE} variant="wrap" /></pre>
                 </div>
               </div>
             </Paper>

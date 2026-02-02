@@ -24,6 +24,7 @@ import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemEntityType from '../../../../components/ItemEntityType';
 import { DraftChip, getDraftModeColor } from '../draft/DraftChip';
 import SecurityCoverageInformation from '../../analyses/security_coverages/SecurityCoverageInformation';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 const styles = (theme) => ({
   item: {
