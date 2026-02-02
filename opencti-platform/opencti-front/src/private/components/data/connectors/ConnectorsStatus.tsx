@@ -41,6 +41,7 @@ import SortConnectorsHeader from './SortConnectorsHeader';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
 import canDeleteConnector from './utils/canDeleteConnector';
 import Card from '../../../../components/common/card/Card';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -341,7 +342,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
 
                 const connectorType = connector.connector_type
                   ? getConnectorMetadata(connector.connector_type as IngestionConnectorType, t_i18n).label
-                  : '-';
+                  : EMPTY_VALUE;
 
                 return (
                   <ListItem

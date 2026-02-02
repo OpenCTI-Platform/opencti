@@ -9,6 +9,7 @@ import Card from '@common/card/Card';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import { useTheme } from '@mui/material';
+import { EMPTY_VALUE } from "../../../../utils/String";
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -64,7 +65,7 @@ class WorkersStatusComponent extends Component {
   }
 
   safeValue = (value, formatter, suffix = '') => {
-    return value != null ? `${formatter(value)}${suffix}` : '-';
+    return value != null ? `${formatter(value)}${suffix}` : EMPTY_VALUE;
   };
 
   render() {
