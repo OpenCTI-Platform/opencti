@@ -82,6 +82,10 @@ export function GradientBorderTextField({
       {...props}
       variant="outlined"
       sx={{
+        '& .MuiInputBase-input::placeholder': {
+          opacity: 1,
+          color: theme.palette.text.light,
+        },
         '& .MuiOutlinedInput-root': {
           position: 'relative',
           borderRadius: 1,
