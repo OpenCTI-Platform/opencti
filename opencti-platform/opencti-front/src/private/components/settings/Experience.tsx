@@ -6,7 +6,6 @@ import SupportPackages from '@components/settings/support/SupportPackages';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { Experience$key } from '@components/settings/__generated__/Experience.graphql';
 import Typography from '@mui/material/Typography';
-import DangerZoneBlock from '@components/common/danger_zone/DangerZoneBlock';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Paper from '@mui/material/Paper';
@@ -26,7 +25,6 @@ import { ExperienceFieldPatchMutation$data } from '@components/settings/__genera
 import getEEWarningMessage from '@components/settings/EEActivation';
 import { ExperienceQuery } from './__generated__/ExperienceQuery.graphql';
 import Transition from '../../../components/Transition';
-import useSensitiveModifications from '../../../utils/hooks/useSensitiveModifications';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
@@ -41,6 +39,7 @@ import ValidateTermsOfUseDialog from './ValidateTermsOfUseDialog';
 import useAuth from '../../../utils/hooks/useAuth';
 import Card from '../../../components/common/card/Card';
 import Tag from '@common/tag/Tag';
+import DangerZoneButton from '../common/danger_zone/DangerZoneButton';
 
 export enum CGUStatus {
   pending = 'pending',
@@ -122,7 +121,6 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
   const settings = useFragment<Experience$key>(ExperienceFragment, data.settings);
   const isEnterpriseEditionActivated = settings.platform_enterprise_edition.license_enterprise;
   const isEnterpriseEditionByConfig = settings.platform_enterprise_edition.license_by_configuration;
-  const { isAllowed } = useSensitiveModifications('ce_ee_toggle');
   const [openEEChanges, setOpenEEChanges] = useState(false);
   const [openValidateTermsOfUse, setOpenValidateTermsOfUse] = useState(false);
   const experienceValidation = () => Yup.object().shape({
@@ -184,29 +182,12 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
               action={(
                 <Stack direction="row" gap={1}>
                   {!isEnterpriseEditionByConfig && isGrantedToParameters && (
-                    <DangerZoneBlock
-                      type="ce_ee_toggle"
-                      sx={{
-                        root: { position: 'relative', border: 'none', padding: 0, paddingTop: 0, margin: 0 },
-                        title: { position: 'absolute', zIndex: 2, left: 4, top: 5, fontSize: 8 },
-                      }}
+                    <DangerZoneButton
+                      sensitiveType="ce_ee_toggle"
+                      onClick={() => setOpenEEChanges(true)}
                     >
-                      {({ disabled }) => (
-                        <Button
-                          size="small"
-                          intent="destructive"
-                          variant="secondary"
-                          onClick={() => setOpenEEChanges(true)}
-                          disabled={disabled}
-                          style={{
-                            color: isAllowed ? theme.palette.dangerZone.text?.primary : theme.palette.dangerZone.text?.disabled,
-                            borderColor: theme.palette.dangerZone.main,
-                          }}
-                        >
-                          {t_i18n('Disable Enterprise Edition')}
-                        </Button>
-                      )}
-                    </DangerZoneBlock>
+                      {t_i18n('Disable Enterprise Edition')}
+                    </DangerZoneButton>
                   )}
                   {!isEnterpriseEditionByConfig && isGrantedToParameters && (
                     <EnterpriseEditionButton inLine title={t_i18n('Update license')} />
