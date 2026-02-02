@@ -48,7 +48,7 @@ paths:
                   PolicyID:
                     type: string
               example:
-                Content: "cDbSgNN7kxW1Kig8wBFPJzgiw2EgiTrA8Ch"
+                Content: "aOBaQuG6WVoQ4FKhOdIWOOdJp9e0M1Fc"
                 Name: "OpenID_DB_Prod"
                 Safe: "Safe_Production"
                 Folder: "Root"

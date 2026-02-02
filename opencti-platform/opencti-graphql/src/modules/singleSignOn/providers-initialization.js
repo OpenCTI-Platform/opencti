@@ -351,7 +351,7 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
         }
         if (strategy === EnvStrategyType.STRATEGY_OPENID) {
           const providerRef = identifier || 'oic';
-          logApp.info(`[ENV-PROVIDER][OPENID] OpenIDConnectStrategy found in configuration providerRef:${providerRef}`);
+          logApp.info(`[ENV-PROVIDER][OPENID] OpenIDConnectStrategy found in configuration providerRef:${providerRef}, providerIdent:${providerIdent}`);
           if (isForcedEnv) {
             // region backward compatibility
             // Here we use directly the config and not the mapped one.
@@ -359,6 +359,7 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
             const openIdClient = config.use_proxy ? getPlatformHttpProxyAgent(config.issuer) : undefined;
             OpenIDCustom.setHttpOptionsDefaults({ timeout: 0, agent: openIdClient });
             enrichWithRemoteCredentials(`providers:${providerIdent}`, config).then((clientConfig) => {
+              logApp.info('[ENV-PROVIDER][OPENID] OpenIDConnectStrategy after cyberark', { config });
               OpenIDIssuer.discover(config.issuer).then((issuer) => {
                 const { Client } = issuer;
                 const client = new Client(clientConfig);

@@ -27,6 +27,7 @@ const NO_CONFIGURATION_KEY = ['label', 'disabled'];
 
 const GROUP_MANAGEMENT_KEY = 'groups_management';
 const ORG_MANAGEMENT_KEY = 'organizations_management';
+const CREDENTIALS_PROVIDER_KEY = 'credentials_provider';
 
 interface ConfigurationType {
   configuration: ConfigurationTypeInput[];
@@ -173,6 +174,9 @@ const computeConfiguration = (envConfiguration: any, strategy: StrategyType) => 
         }
 
         organizations_management['organizations_mapping'] = organizations_mapping ?? [];
+      } else if (configKey === CREDENTIALS_PROVIDER_KEY) {
+        skipped_configuration.push(configKey);
+        logApp.warn(`[SSO CONVERSION] ${configKey} is not supported yet, ignored during conversion`);
       } else {
         // 5. Everything else is configuration
         const currentValue = mappedConfig[configKey];

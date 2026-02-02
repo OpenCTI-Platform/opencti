@@ -60,123 +60,116 @@ export const computeOpenIdGroupsMapping = (groupManagement, decodedUser, userinf
 export const registerOpenIdStrategy = async (ssoEntity) => {
   const providerRef = ssoEntity.identifier || 'oic';
   const ssoConfig = convertKeyValueToJsConfiguration(ssoEntity);
-  const providerName = ssoConfig?.label || providerRef;
+  logAuthInfo(`OpenIDConnectStrategy found in database providerRef:${providerRef}`, EnvStrategyType.STRATEGY_OPENID, ssoConfig);
+  const ssoConfigEnriched = await enrichWithRemoteCredentials(`providers:${providerRef}`, ssoConfig);
+  const providerName = ssoConfigEnriched?.label || providerRef;
 
-  if (ssoEntity.configuration) {
-    // Check mandatory configurations
-    const callBackURLConfiguration = ssoEntity.configuration.find((configuration) => configuration.key === 'redirect_uris');
-    if (!callBackURLConfiguration) {
-      throw ConfigurationError('redirect_uris is mandatory for OpenID', { id: ssoEntity.id, name: ssoEntity.name, identifier: ssoEntity.identifier });
-    }
+  logAuthInfo(`OpenIDConnectStrategy enriched providerRef:${providerRef}`, EnvStrategyType.STRATEGY_OPENID, ssoConfigEnriched);
 
-    const clientIdConfiguration = ssoEntity.configuration.find((configuration) => configuration.key === 'client_id');
-    if (!clientIdConfiguration) {
-      throw ConfigurationError('client_id is mandatory for OpenID', { id: ssoEntity.id, name: ssoEntity.name, identifier: ssoEntity.identifier });
-    }
-
-    const issuerConfiguration = ssoEntity.configuration.find((configuration) => configuration.key === 'issuer');
-    if (!issuerConfiguration) {
-      throw ConfigurationError('issuer is mandatory for OpenID', { id: ssoEntity.id, name: ssoEntity.name, identifier: ssoEntity.identifier });
-    }
-    const issuer = ssoConfig['issuer'];
-
-    const clientSecretConfiguration = ssoEntity.configuration.find((configuration) => configuration.key === 'client_secret');
-    if (!clientSecretConfiguration) {
-      throw ConfigurationError('client_secret is mandatory for OpenID', { id: ssoEntity.id, name: ssoEntity.name, identifier: ssoEntity.identifier });
-    }
-
-    logAuthInfo(`OpenIDConnectStrategy found in database providerRef:${providerRef}`, EnvStrategyType.STRATEGY_OPENID);
-    // Here we use directly the config and not the mapped one.
-    // All config of openid lib use snake case.
-    const openIdClient = ssoConfig.use_proxy ? getPlatformHttpProxyAgent(issuer) : undefined;
-    OpenIDCustom.setHttpOptionsDefaults({ timeout: 0, agent: openIdClient });
-    enrichWithRemoteCredentials(`providers:${providerRef}`, ssoConfig).then((clientConfig) => {
-      OpenIDIssuer.discover(issuer).then((issuer) => {
-        const { Client } = issuer;
-        const client = new Client(clientConfig);
-        // region scopes generation
-        const defaultScopes = ssoConfig.default_scopes ?? ['openid', 'email', 'profile'];
-        const openIdScopes = [...defaultScopes];
-        const groupsScope = ssoConfig.groups_management?.groups_scope;
-        if (groupsScope) {
-          openIdScopes.push(groupsScope);
-        }
-        const organizationsScope = ssoConfig.organizations_management?.organizations_scope;
-        if (organizationsScope) {
-          openIdScopes.push(organizationsScope);
-        }
-        // endregion
-        const openIdScope = R.uniq(openIdScopes).join(' ');
-        const options = {
-          client,
-          passReqToCallback: true,
-          params: {
-            scope: openIdScope, ...(ssoConfig.audience && { audience: ssoConfig.audience }),
-          },
-        };
-        const debugCallback = (message, meta) => logApp.info(message, meta);
-        const openIDStrategy = new OpenIDStrategy(options, debugCallback, (_, tokenset, userinfo, done) => {
-          logAuthInfo('Successfully logged', EnvStrategyType.STRATEGY_OPENID, { userinfo });
-
-          const isGroupMapping = (isNotEmptyField(ssoEntity?.groups_management) && isNotEmptyField(ssoEntity?.groups_management.groups_mapping));
-          logAuthInfo('Groups management configuration', EnvStrategyType.STRATEGY_OPENID, { groupsManagement: ssoEntity?.groups_management });
-          const groupManagement = ssoEntity?.groups_management;
-          // region groups mapping
-          const token = groupManagement?.token_reference || 'access_token';
-          const decodedUser = jwtDecode(tokenset[token]);
-          const mappedGroups = isGroupMapping ? computeOpenIdGroupsMapping(groupManagement, decodedUser, userinfo) : [];
-          const groupsToAssociate = R.uniq(mappedGroups);
-          // endregion
-          // region organizations mapping
-          const isOrgaMapping = isNotEmptyField(ssoConfig.organizations_default) || isNotEmptyField(ssoEntity.organizations_management);
-          const orgsManagement = ssoEntity.organizations_management;
-          const orgaDefault = ssoConfig.organizations_default ?? [];
-          const organizationsToAssociate = isOrgaMapping ? computeOpenIdOrganizationsMapping(orgsManagement, decodedUser, userinfo, orgaDefault) : [];
-          // endregion
-          if (!isGroupMapping || groupsToAssociate.length > 0) {
-            const get_user_attributes_from_id_token = ssoConfig.get_user_attributes_from_id_token ?? false;
-            const user_attribute_obj = get_user_attributes_from_id_token ? jwtDecode(tokenset.id_token) : userinfo;
-            const userInfo = computeOpenIdUserInfo(ssoConfig, user_attribute_obj);
-
-            const opts = {
-              providerGroups: groupsToAssociate,
-              providerOrganizations: organizationsToAssociate,
-              autoCreateGroup: ssoConfig.auto_create_group ?? false,
-            };
-            addUserLoginCount();
-            providerLoginHandler(userInfo, done, opts);
-          } else {
-            done({ message: 'Restricted access, ask your administrator' });
-          }
-        });
-        logAuthInfo('logout remote options', EnvStrategyType.STRATEGY_OPENID, options);
-        openIDStrategy.logout = (_, callback) => {
-          const isSpecificUri = isNotEmptyField(ssoConfig.logout_callback_url);
-          const endpointUri = issuer.end_session_endpoint ? issuer.end_session_endpoint : `${ssoConfig.issuer}/oidc/logout`;
-          logAuthInfo(`logout configuration, isSpecificUri:${isSpecificUri}, issuer.end_session_endpoint:${issuer.end_session_endpoint}, final endpointUri: ${endpointUri}`, EnvStrategyType.STRATEGY_OPENID);
-          if (isSpecificUri) {
-            const logoutUri = `${endpointUri}?post_logout_redirect_uri=${ssoConfig.logout_callback_url}`;
-            callback(null, logoutUri);
-          } else {
-            callback(null, endpointUri);
-          }
-        };
-        const providerConfig = {
-          name: providerName,
-          type: AuthType.AUTH_SSO,
-          strategy: EnvStrategyType.STRATEGY_OPENID,
-          provider: providerRef,
-          logout_remote: ssoConfig.logout_remote,
-        };
-        registerAuthenticationProvider(providerRef, openIDStrategy, providerConfig);
-      }).catch((err) => {
-        logApp.error('[SSO OPENID] Error initializing authentication provider', {
-          cause: err,
-          provider: providerRef,
-        });
-      });
-    }).catch((reason) => logApp.error('[SSO OPENID] Error when enrich with remote credentials', { cause: reason }));
-  } else {
-    throw ConfigurationError('SSO configuration is empty', { id: ssoEntity.id, name: ssoEntity.name, identifier: ssoEntity.identifier, strategy: ssoEntity.strategy });
+  // Check mandatory configurations
+  if (!ssoConfigEnriched.redirect_uris) {
+    throw ConfigurationError('redirect_uris is mandatory for OpenID', { id: ssoEntity.id, name: ssoEntity.name, identifier: ssoEntity.identifier });
   }
+
+  if (!ssoConfigEnriched.client_id) {
+    throw ConfigurationError('client_id is mandatory for OpenID', { id: ssoEntity.id, name: ssoEntity.name, identifier: ssoEntity.identifier });
+  }
+
+  if (!ssoConfigEnriched.issuer) {
+    throw ConfigurationError('issuer is mandatory for OpenID', { id: ssoEntity.id, name: ssoEntity.name, identifier: ssoEntity.identifier });
+  }
+  const issuer = ssoConfigEnriched['issuer'];
+
+  if (!ssoConfigEnriched.client_secret) {
+    throw ConfigurationError('client_secret is mandatory for OpenID', { id: ssoEntity.id, name: ssoEntity.name, identifier: ssoEntity.identifier });
+  }
+
+  // Here we use directly the config and not the mapped one.
+  // All config of openid lib use snake case.
+  const openIdClient = ssoConfigEnriched.use_proxy ? getPlatformHttpProxyAgent(issuer) : undefined;
+  OpenIDCustom.setHttpOptionsDefaults({ timeout: 0, agent: openIdClient });
+  OpenIDIssuer.discover(issuer).then((issuer) => {
+    const { Client } = issuer;
+    const client = new Client(ssoConfigEnriched);
+    // region scopes generation
+    const defaultScopes = ssoConfigEnriched.default_scopes ?? ['openid', 'email', 'profile'];
+    const openIdScopes = [...defaultScopes];
+    const groupsScope = ssoConfigEnriched.groups_management?.groups_scope;
+    if (groupsScope) {
+      openIdScopes.push(groupsScope);
+    }
+    const organizationsScope = ssoConfigEnriched.organizations_management?.organizations_scope;
+    if (organizationsScope) {
+      openIdScopes.push(organizationsScope);
+    }
+    // endregion
+    const openIdScope = R.uniq(openIdScopes).join(' ');
+    const options = {
+      client,
+      passReqToCallback: true,
+      params: {
+        scope: openIdScope, ...(ssoConfigEnriched.audience && { audience: ssoConfigEnriched.audience }),
+      },
+    };
+    const debugCallback = (message, meta) => logApp.info(message, meta);
+    const openIDStrategy = new OpenIDStrategy(options, debugCallback, (_, tokenset, userinfo, done) => {
+      logAuthInfo('Successfully logged', EnvStrategyType.STRATEGY_OPENID, { userinfo });
+
+      const isGroupMapping = (isNotEmptyField(ssoEntity?.groups_management) && isNotEmptyField(ssoEntity?.groups_management.groups_mapping));
+      logAuthInfo('Groups management configuration', EnvStrategyType.STRATEGY_OPENID, { groupsManagement: ssoEntity?.groups_management });
+      const groupManagement = ssoEntity?.groups_management;
+      // region groups mapping
+      const token = groupManagement?.token_reference || 'access_token';
+      const decodedUser = jwtDecode(tokenset[token]);
+      const mappedGroups = isGroupMapping ? computeOpenIdGroupsMapping(groupManagement, decodedUser, userinfo) : [];
+      const groupsToAssociate = R.uniq(mappedGroups);
+      // endregion
+      // region organizations mapping
+      const isOrgaMapping = isNotEmptyField(ssoConfigEnriched.organizations_default) || isNotEmptyField(ssoEntity.organizations_management);
+      const orgsManagement = ssoEntity.organizations_management;
+      const orgaDefault = ssoConfigEnriched.organizations_default ?? [];
+      const organizationsToAssociate = isOrgaMapping ? computeOpenIdOrganizationsMapping(orgsManagement, decodedUser, userinfo, orgaDefault) : [];
+      // endregion
+      if (!isGroupMapping || groupsToAssociate.length > 0) {
+        const get_user_attributes_from_id_token = ssoConfigEnriched.get_user_attributes_from_id_token ?? false;
+        const user_attribute_obj = get_user_attributes_from_id_token ? jwtDecode(tokenset.id_token) : userinfo;
+        const userInfo = computeOpenIdUserInfo(ssoConfigEnriched, user_attribute_obj);
+
+        const opts = {
+          providerGroups: groupsToAssociate,
+          providerOrganizations: organizationsToAssociate,
+          autoCreateGroup: ssoConfigEnriched.auto_create_group ?? false,
+        };
+        addUserLoginCount();
+        providerLoginHandler(userInfo, done, opts);
+      } else {
+        done({ message: 'Restricted access, ask your administrator' });
+      }
+    });
+    logAuthInfo('logout remote options', EnvStrategyType.STRATEGY_OPENID, options);
+    openIDStrategy.logout = (_, callback) => {
+      const isSpecificUri = isNotEmptyField(ssoConfigEnriched.logout_callback_url);
+      const endpointUri = issuer.end_session_endpoint ? issuer.end_session_endpoint : `${ssoConfigEnriched.issuer}/oidc/logout`;
+      logAuthInfo(`logout configuration, isSpecificUri:${isSpecificUri}, issuer.end_session_endpoint:${issuer.end_session_endpoint}, final endpointUri: ${endpointUri}`, EnvStrategyType.STRATEGY_OPENID);
+      if (isSpecificUri) {
+        const logoutUri = `${endpointUri}?post_logout_redirect_uri=${ssoConfigEnriched.logout_callback_url}`;
+        callback(null, logoutUri);
+      } else {
+        callback(null, endpointUri);
+      }
+    };
+    const providerConfig = {
+      name: providerName,
+      type: AuthType.AUTH_SSO,
+      strategy: EnvStrategyType.STRATEGY_OPENID,
+      provider: providerRef,
+      logout_remote: ssoConfigEnriched.logout_remote,
+    };
+    registerAuthenticationProvider(providerRef, openIDStrategy, providerConfig);
+  }).catch((err) => {
+    logApp.error('[SSO OPENID] Error initializing authentication provider', {
+      cause: err,
+      provider: providerRef,
+    });
+  });
 };
