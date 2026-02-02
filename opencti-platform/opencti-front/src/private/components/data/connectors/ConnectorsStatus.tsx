@@ -10,8 +10,6 @@ import { ConnectorsListQuery } from '@components/data/connectors/__generated__/C
 import { ConnectorsStateQuery } from '@components/data/connectors/__generated__/ConnectorsStateQuery.graphql';
 import useConnectorsStatusFilters from '@components/data/connectors/hooks/useConnectorsStatusFilters';
 import { DeleteOutlined, DeveloperBoardOutlined, ExtensionOutlined, HubOutlined, PlaylistRemoveOutlined } from '@mui/icons-material';
-import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
 import { ListItemButton } from '@mui/material';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -23,7 +21,6 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Tooltip from '@mui/material/Tooltip';
-import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useQueryLoader } from 'react-relay';
@@ -45,6 +42,7 @@ import SortConnectorsHeader from './SortConnectorsHeader';
 import canDeleteConnector from './utils/canDeleteConnector';
 import Card from '../../../../components/common/card/Card';
 import { EMPTY_VALUE } from '../../../../utils/String';
+import BooleanStatusIcon from '../../../../components/common/icons/BooleanStatusIcon';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -92,7 +90,6 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
 }) => {
   const { t_i18n, nsdt, n } = useFormatter();
 
-  const theme = useTheme<Theme>();
   const classes = useStyles(); // TODO remove as deprecated
   const { isSensitive } = useSensitiveModifications('connector_reset');
 
@@ -445,11 +442,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                               className={classes.bodyItem}
                               style={{ justifyContent: 'center' }}
                             >
-                              {
-                                connector.is_managed
-                                  ? <CheckIcon sx={{ color: theme.palette.designSystem.tertiary.green[600] }} />
-                                  : <CloseIcon sx={{ color: theme.palette.designSystem.tertiary.red[700] }} />
-                              }
+                              <BooleanStatusIcon status={connector.is_managed} />
                             </div>
                           </div>
                         )}
