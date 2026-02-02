@@ -15,9 +15,9 @@ jobs:
         client_python_local: true
       secrets: inherit
 
-  wf-api-test:
+  wf-backend-test:
       name: Backend
-      uses: ./.github/workflows/ci-test-api.yml
+      uses: ./.github/workflows/ci-test-backend.yml
       needs: wf-build-image
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}

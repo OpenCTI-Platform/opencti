@@ -1,4 +1,4 @@
-name: Run OpenCTI api tests
+name: Run OpenCTI backend tests
 
 on:
   workflow_call:
@@ -62,7 +62,7 @@ jobs:
           ./scripts/ci/wait-for-url-200.sh http://localhost:4300/health?health_access_key=cihealthkey 180 10
           ./scripts/ci/wait-for-url-200.sh http://localhost:4400/health?health_access_key=cihealthkey 180 10
 
-    - name: Start api test (aka yarn test:ci-integration-sync)
+    - name: Start backend test (aka yarn test:ci-integration-sync)
       run: |
         docker run --network runner-docker-network \
           --name api-tests \
@@ -232,7 +232,7 @@ jobs:
       continue-on-error: true
       run: cat runner_resource_stat.log
 
-  run-opencti-api-unit-test:
+  run-opencti-backend-unit-test:
     name: Unit tests
     runs-on: ubuntu-latest
 
