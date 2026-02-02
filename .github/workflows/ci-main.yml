@@ -16,7 +16,7 @@ jobs:
       secrets: inherit
 
   wf-api-test:
-      name: API test
+      name: Backend
       uses: ./.github/workflows/ci-test-api.yml
       needs: wf-build-image
       with:
@@ -25,7 +25,7 @@ jobs:
       secrets: inherit
 
   wf-frontend-test:
-      name: Frontend test
+      name: Frontend
       uses: ./.github/workflows/ci-test-frontend.yml
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
