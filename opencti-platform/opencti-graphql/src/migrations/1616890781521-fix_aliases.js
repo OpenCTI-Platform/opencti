@@ -7,6 +7,7 @@ import { logApp } from '../config/conf';
 import { ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION, OPENCTI_NAMESPACE } from '../schema/general';
 import { isStixDomainObjectIdentity } from '../schema/stixDomainObject';
 import { executionContext, SYSTEM_USER } from '../utils/access';
+import { pushAll } from '../utils/arrayUtil';
 
 const generateAliases = (aliases, additionalFields = {}) => {
   return R.map((a) => {
@@ -51,7 +52,7 @@ export const up = async (next) => {
         return [{ update: { _index: entity._index, _id: entity._id } }, { doc: { i_aliases_ids: newAliasIds } }];
       })
       .flat();
-    bulkOperations.push(...op);
+    pushAll(bulkOperations, op);
   };
   const opts = { types: [ENTITY_TYPE_LOCATION, ENTITY_TYPE_IDENTITY], callback };
   await elList(context, SYSTEM_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, opts);

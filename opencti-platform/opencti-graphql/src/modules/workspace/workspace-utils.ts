@@ -7,6 +7,7 @@ import { INSTANCE_REGARDING_OF } from '../../utils/filtering/filtering-constants
 import { isInternalId, isStixId } from '../../schema/schemaUtils';
 import { idsValuesRemap } from '../../database/stix-2-1-converter';
 import { isFilterGroupNotEmpty } from '../../utils/filtering/filtering-utils';
+import { pushAll } from '../../utils/arrayUtil';
 
 // workspace ids converter_2_1
 // Export => Dashboard filter ids must be converted to standard id
@@ -29,11 +30,11 @@ const extractFiltersIds = (filter: FilterGroup, from: 'internal' | 'stix') => {
       if (from === 'internal') return isInternalId(value);
       return isStixId(value);
     });
-    internalIds.push(...ids);
+    pushAll(internalIds, ids);
   });
   filter.filterGroups.forEach((group) => {
     const groupIds = extractFiltersIds(group, from);
-    internalIds.push(...groupIds);
+    pushAll(internalIds, groupIds);
   });
   return R.uniq(internalIds);
 };
@@ -71,15 +72,15 @@ export const convertWidgetsIds = async (context: AuthContext, user: AuthUser, wi
     widgetDefinition.dataSelection.forEach((selection: any) => {
       if (isFilterGroupNotEmpty(selection.filters)) {
         const filterIds = extractFiltersIds(selection.filters as FilterGroup, from);
-        resolvingIds.push(...filterIds);
+        pushAll(resolvingIds, filterIds);
       }
       if (isFilterGroupNotEmpty(selection.dynamicFrom)) {
         const dynamicFromIds = extractFiltersIds(selection.dynamicFrom as FilterGroup, from);
-        resolvingIds.push(...dynamicFromIds);
+        pushAll(resolvingIds, dynamicFromIds);
       }
       if (isFilterGroupNotEmpty(selection.dynamicTo)) {
         const dynamicToIds = extractFiltersIds(selection.dynamicTo as FilterGroup, from);
-        resolvingIds.push(...dynamicToIds);
+        pushAll(resolvingIds, dynamicToIds);
       }
     });
   });

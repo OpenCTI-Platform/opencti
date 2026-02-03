@@ -37,6 +37,7 @@ import { getDraftFilePrefix, isDraftFile } from './draft-utils';
 import { deleteFileFromStorage, getFileSize, rawCopyFile, rawListObjects, rawUpload } from './raw-file-storage';
 import { promiseMap } from '../utils/promiseUtils';
 import { ENTITY_TYPE_SUPPORT_PACKAGE } from '../modules/support/support-types';
+import { pushAll } from '../utils/arrayUtil';
 
 // Minio configuration
 const excludedFiles = conf.get('minio:excluded_files') || ['.DS_Store'];
@@ -404,7 +405,7 @@ export const loadedFilesListing = async (
       if (callback) {
         callback(resultLoaded.filter((n) => n !== undefined));
       } else {
-        files.push(...resultLoaded.filter((n) => n !== undefined));
+        pushAll(files, resultLoaded.filter((n) => n !== undefined));
       }
       truncated = response.IsTruncated ?? false;
       if (truncated) {

@@ -7,6 +7,7 @@ import type { DataPoint, ResourceMetrics } from '@opentelemetry/sdk-metrics/buil
 import { Resource } from '@opentelemetry/resources/build/src/Resource';
 import { UnknownError } from '../config/errors';
 import { logApp } from '../config/conf';
+import { pushAll } from '../utils/arrayUtil';
 
 export type BatchExportingMetricReaderOptions = {
   exporter: PushMetricExporter;
@@ -73,7 +74,7 @@ export class BatchExportingMetricReader extends MetricReader {
           value.metrics.forEach((metric) => {
             const findMetric = metrics.filter((newMetric) => newMetric.descriptor.name === metric.descriptor.name);
             const newDataPoints: DataPoint<any>[] = findMetric ? findMetric.map((f) => f.dataPoints).flat() : [];
-            metric.dataPoints.push(...newDataPoints);
+            pushAll(metric.dataPoints, newDataPoints);
           });
         });
         logApp.debug('[TELEMETRY] metrics collected.', { metrics });

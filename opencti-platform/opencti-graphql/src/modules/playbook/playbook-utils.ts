@@ -15,6 +15,7 @@ import { checkAndConvertFilters, type FiltersIdsFinder } from '../../utils/filte
 import { validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
 import type { ComponentDefinition, LinkDefinition, NodeDefinition } from './playbook-types';
 import { logApp } from '../../config/conf';
+import { pushAll } from '../../utils/arrayUtil';
 
 export const extractBundleBaseElement = (instanceId: string, bundle: StixBundle): StixObject => {
   const baseData = bundle.objects.find((o) => o.id === instanceId);
@@ -48,17 +49,17 @@ export const convertMembersToUsers = async (
       membersIds.push(baseData.extensions[STIX_EXT_OCTI].created_by_ref_id);
     } else if (m.value === 'CREATORS') {
       const creatorIds = baseData.extensions[STIX_EXT_OCTI].creator_ids;
-      membersIds.push(...creatorIds);
+      pushAll(membersIds, creatorIds);
     } else if (m.value === 'ASSIGNEES') {
       const assigneeIds = baseData.extensions[STIX_EXT_OCTI].assignee_ids;
-      membersIds.push(...assigneeIds);
+      pushAll(membersIds, assigneeIds);
     } else if (m.value === 'PARTICIPANTS') {
       const participantIds = baseData.extensions[STIX_EXT_OCTI].participant_ids;
-      membersIds.push(...participantIds);
+      pushAll(membersIds, participantIds);
     } else if (m.value === 'BUNDLE_ORGANIZATIONS') {
       const bundleOrganizations = bundle.objects.filter((o) => o.extensions[STIX_EXT_OCTI].type === ENTITY_TYPE_IDENTITY_ORGANIZATION);
       const bundleOrganizationsIds = bundleOrganizations.map((o) => o.extensions[STIX_EXT_OCTI].id);
-      membersIds.push(...bundleOrganizationsIds);
+      pushAll(membersIds, bundleOrganizationsIds);
     } else {
       membersIds.push(m.value);
     }
@@ -82,7 +83,7 @@ export const applyOperationFieldPatch = (element: StixObject, patchObject: {
   if (!element.extensions[STIX_EXT_OCTI].opencti_upsert_operations) {
     element.extensions[STIX_EXT_OCTI].opencti_upsert_operations = [];
   }
-  element.extensions[STIX_EXT_OCTI].opencti_upsert_operations.push(...patchObject);
+  pushAll(element.extensions[STIX_EXT_OCTI].opencti_upsert_operations, patchObject);
 };
 
 export const deleteLinksAndAllChildren = (definition: ComponentDefinition, links: LinkDefinition[]) => {
@@ -93,15 +94,15 @@ export const deleteLinksAndAllChildren = (definition: ComponentDefinition, links
   // Resolve children nodes
   let childrenNodes = definition.nodes.filter((n) => links.map((o) => o.to.id).includes(n.id));
   if (childrenNodes.length > 0) {
-    nodesToDelete.push(...childrenNodes);
+    pushAll(nodesToDelete, childrenNodes);
     childrenLinks = definition.links.filter((n) => childrenNodes.map((o) => o.id).includes(n.from.id));
   }
   while (childrenLinks.length > 0) {
-    linksToDelete.push(...childrenLinks);
+    pushAll(linksToDelete, childrenLinks);
     // Resolve children nodes not already in nodesToDelete
     childrenNodes = definition.nodes.filter((n) => linksToDelete.map((o) => o.to.id).includes(n.id) && !nodesToDelete.map((o) => o.id).includes(n.id));
     if (childrenNodes.length > 0) {
-      nodesToDelete.push(...childrenNodes);
+      pushAll(nodesToDelete, childrenNodes);
 
       childrenLinks = definition.links.filter((n) => childrenNodes.map((o) => o.id).includes(n.from.id));
     } else {

@@ -37,6 +37,7 @@ import type { BasicStoreObject } from '../../types/store';
 import { idLabel } from '../../schema/schema-labels';
 import { INTERNAL_RELATIONSHIPS } from '../../schema/internalRelationship';
 import { getMetricsAttributesNames } from '../../modules/metrics/metrics-utils';
+import { pushAll } from '../arrayUtil';
 
 export const emptyFilterGroup: FilterGroup = {
   mode: FilterMode.And,
@@ -147,7 +148,7 @@ export const extractFilterKeys = (filterGroup: FilterGroup): string[] => {
 export const extractFiltersFromGroup = (inputFilters: FilterGroup, keysToKeep: string[]): Filter[] => {
   const { filters = [], filterGroups = [] } = inputFilters;
   const filteredFilters = filters.filter((f) => (Array.isArray(f.key) ? f.key.some((k) => keysToKeep.includes(k)) : keysToKeep.includes(f.key)));
-  filteredFilters.push(...filterGroups.map((group) => extractFiltersFromGroup(group, keysToKeep)).flat());
+  pushAll(filteredFilters, filterGroups.map((group) => extractFiltersFromGroup(group, keysToKeep)).flat());
   return filteredFilters;
 };
 
@@ -165,7 +166,7 @@ export const extractFilterGroupValues = (
 ): string[] => {
   const keysToKeep = Array.isArray(key) ? key : [key];
   if (lookInDynamicFilters) {
-    keysToKeep.push(...[INSTANCE_DYNAMIC_REGARDING_OF, RELATION_DYNAMIC_TO_FILTER, RELATION_DYNAMIC_FROM_FILTER]);
+    pushAll(keysToKeep, [INSTANCE_DYNAMIC_REGARDING_OF, RELATION_DYNAMIC_TO_FILTER, RELATION_DYNAMIC_FROM_FILTER]);
   }
   const { filters = [], filterGroups = [] } = inputFilters;
   let filteredFilters = [];
@@ -178,31 +179,31 @@ export const extractFilterGroupValues = (
     filteredFilters = filters;
   }
 
-  const ids = [];
+  const ids: string[] = [];
   // we need to extract the ids that need representatives resolution
   filteredFilters.forEach((f) => {
     // regardingOf key is a composite filter id+type, values are [{ key: 'id', ...}, { key: 'relationship_type', ... }]
     if (f.key.includes(INSTANCE_REGARDING_OF)) {
       const regardingIds = f.values.find((v) => v.key === 'id')?.values ?? [];
-      ids.push(...regardingIds);
+      pushAll(ids, regardingIds);
     } else if (f.key.includes(INSTANCE_DYNAMIC_REGARDING_OF)) {
       // values of 'dynamic' subfilter are filters we should look for
       const dynamicValues = f.values.find((v) => v.key === 'dynamic')?.values ?? [];
       const dynamicIds = dynamicValues.map((v: FilterGroup) => extractFilterGroupValues(v, key, reverse)).flat();
-      ids.push(...dynamicIds);
+      pushAll(ids, dynamicIds);
       ids.push('dynamic');
     } else if (f.key.includes(RELATION_DYNAMIC_FROM_FILTER) || f.key.includes(RELATION_DYNAMIC_TO_FILTER)) {
       // values are filters we should look for
       const dynamicIds = f.values.map((v) => extractFilterGroupValues(v, key, reverse)).flat();
-      ids.push(...dynamicIds);
+      pushAll(ids, dynamicIds);
       ids.push('dynamic');
     } else {
-      ids.push(...f.values);
+      pushAll(ids, f.values);
     }
   });
   // recurse on filter groups
   if (filterGroups.length > 0) {
-    ids.push(...filterGroups.map((group) => extractFilterGroupValues(group, key, reverse)).flat());
+    pushAll(ids, filterGroups.map((group) => extractFilterGroupValues(group, key, reverse)).flat());
   }
   return uniq(ids);
 };
@@ -224,16 +225,16 @@ export const extractDynamicFilterGroupValues = (inputFilters: FilterGroup, key: 
   } else {
     filteredFilters = filters;
   }
-  const ids = [];
+  const ids: FilterGroup[] = [];
   // we need to extract the ids that need representatives resolution
   filteredFilters.forEach((f) => {
     if (f.key.includes(INSTANCE_DYNAMIC_REGARDING_OF) || f.key.includes(RELATION_DYNAMIC_FROM_FILTER) || f.key.includes(RELATION_DYNAMIC_TO_FILTER)) {
-      ids.push(...f.values);
+      pushAll(ids, f.values);
     }
   });
   // recurse on filter groups
   if (filterGroups.length > 0) {
-    ids.push(...filterGroups.map((group) => extractDynamicFilterGroupValues(group, key, reverse)).flat());
+    pushAll(ids, filterGroups.map((group) => extractDynamicFilterGroupValues(group, key, reverse)).flat());
   }
   return ids;
 };
@@ -375,12 +376,12 @@ export const extractFilterKeyValues = (filterKey: string, filterGroup: FilterGro
     const { key } = filter;
     const arrayKeys = Array.isArray(key) ? key : [key];
     if (arrayKeys.includes(filterKey)) {
-      values.push(...filter.values);
+      pushAll(values, filter.values);
     }
   });
   filtersResult.filterGroups.forEach((fg) => {
     const vals = extractFilterKeyValues(filterKey, fg);
-    values.push(...vals);
+    pushAll(values, vals);
   });
   return values;
 };

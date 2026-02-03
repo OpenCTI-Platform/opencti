@@ -16,6 +16,7 @@ import {
 } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';
 import { ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, isStixCyberObservable } from '../schema/stixCyberObservable';
+import { pushAll } from '../utils/arrayUtil';
 
 const message = '[MIGRATION] Cleaning deprecated rels';
 
@@ -41,20 +42,20 @@ export const up = async (next) => {
         const workingIds = groupIds[index];
         const entitiesBaseData = await elFindByIds(context, SYSTEM_USER, workingIds, { baseData: true });
         const entitiesIdsWithoutObservables = entitiesBaseData.filter((n) => !isStixCyberObservable(n.entity_type)).map((n) => n.internal_id);
-        newIds.push(...entitiesIdsWithoutObservables);
+        pushAll(newIds, entitiesIdsWithoutObservables);
       }
       if (newIds.length > 0) {
         const updateQuery = [
           { update: { _index: threat._index, _id: threat._id, retry_on_conflict: 5 } },
           { doc: { [relKeyRelatedTo]: newIds } },
         ];
-        bulkOperationsRelatedTo.push(...updateQuery);
+        pushAll(bulkOperationsRelatedTo, updateQuery);
       } else {
         const updateQuery = [
           { update: { _index: threat._index, _id: threat._id, retry_on_conflict: 5 } },
           { script: `ctx._source.remove('${relKeyRelatedTo}')` },
         ];
-        bulkOperationsRelatedTo.push(...updateQuery);
+        pushAll(bulkOperationsRelatedTo, updateQuery);
       }
       currentProcessingThreats += 1;
     }
@@ -98,20 +99,20 @@ export const up = async (next) => {
         const workingIds = groupIds[index];
         const entitiesBaseData = await elFindByIds(context, SYSTEM_USER, workingIds, { baseData: true });
         const entitiesIdsOnlyWithoutClearedTypes = entitiesBaseData.filter((n) => !cleanTypes.includes(n.entity_type)).map((n) => n.internal_id);
-        newIds.push(...entitiesIdsOnlyWithoutClearedTypes);
+        pushAll(newIds, entitiesIdsOnlyWithoutClearedTypes);
       }
       if (newIds.length > 0) {
         const updateQuery = [
           { update: { _index: location._index, _id: location._id, retry_on_conflict: 5 } },
           { doc: { [relKeyLocatedAt]: newIds } },
         ];
-        bulkOperationsLocatedAt.push(...updateQuery);
+        pushAll(bulkOperationsLocatedAt, updateQuery);
       } else {
         const updateQuery = [
           { update: { _index: location._index, _id: location._id, retry_on_conflict: 5 } },
           { script: `ctx._source.remove('${relKeyLocatedAt}')` },
         ];
-        bulkOperationsLocatedAt.push(...updateQuery);
+        pushAll(bulkOperationsLocatedAt, updateQuery);
       }
       currentProcessingLocations += 1;
     }
