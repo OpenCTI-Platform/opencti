@@ -303,11 +303,6 @@ class ListLines extends Component {
                       <Tooltip title={t('Entities view')}>
                         <LibraryBooksOutlined
                           fontSize="small"
-                          color={
-                            currentView === 'entities'
-                              ? 'secondary'
-                              : 'primary'
-                          }
                         />
                       </Tooltip>
                     </ToggleButton>
@@ -320,11 +315,6 @@ class ListLines extends Component {
                       >
                         <RelationManyToMany
                           fontSize="small"
-                          color={
-                            currentView === 'relationships' || (!enableEntitiesView && currentView === 'entities') || !currentView
-                              ? 'secondary'
-                              : 'primary'
-                          }
                         />
                       </ToggleButton>
                     </Tooltip>
@@ -360,11 +350,6 @@ class ListLines extends Component {
                       >
                         <Group
                           fontSize="small"
-                          color={
-                            currentView === 'contextual' || !currentView
-                              ? 'secondary'
-                              : 'primary'
-                          }
                         />
                       </Tooltip>
                     </ToggleButton>
