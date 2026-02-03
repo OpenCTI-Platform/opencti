@@ -6,72 +6,72 @@ const useFormikToSSOConfig = (selectedStrategy: string) => {
       {
         key: 'privateKey',
         value: values.privateKey,
-        type: 'String',
+        type: 'string',
       },
       {
         key: 'issuer',
         value: values.issuer,
-        type: 'String',
+        type: 'string',
       },
       {
         key: 'idpCert',
         value: values.idpCert,
-        type: 'String',
+        type: 'string',
       },
       {
         key: 'callbackUrl',
         value: values.callbackUrl,
-        type: 'String',
+        type: 'string',
       },
       {
         key: 'wantAssertionsSigned',
         value: values.wantAssertionsSigned ? 'true' : 'false',
-        type: 'Boolean',
+        type: 'boolean',
       },
       {
         key: 'wantAuthnResponseSigned',
         value: values.wantAuthnResponseSigned ? 'true' : 'false',
-        type: 'Boolean',
+        type: 'boolean',
       },
       {
         key: 'loginIdpDirectly',
         value: values.loginIdpDirectly ? 'true' : 'false',
-        type: 'Boolean',
+        type: 'boolean',
       },
       {
         key: 'logoutRemote',
         value: values.logoutRemote ? 'true' : 'false',
-        type: 'Boolean',
+        type: 'boolean',
       },
       {
         key: 'providerMethod',
         value: values.providerMethod,
-        type: 'String',
+        type: 'string',
       },
       {
         key: 'signingCert',
         value: values.signingCert,
-        type: 'String',
+        type: 'string',
       },
       {
         key: 'ssoBindingType',
         value: values.ssoBindingType,
-        type: 'String',
+        type: 'string',
       },
       {
         key: 'forceReauthentication',
         value: values.forceReauthentication ? 'true' : 'false',
-        type: 'Boolean',
+        type: 'boolean',
       },
       {
         key: 'enableDebugMode',
         value: values.enableDebugMode ? 'true' : 'false',
-        type: 'Boolean',
+        type: 'boolean',
       },
       {
         key: 'entryPoint',
         value: values.entryPoint,
-        type: 'String',
+        type: 'string',
       },
     ];
   };
@@ -81,22 +81,22 @@ const useFormikToSSOConfig = (selectedStrategy: string) => {
       {
         key: 'client_id',
         value: values.client_id,
-        type: 'String',
+        type: 'string',
       },
       {
         key: 'client_secret',
         value: values.client_secret,
-        type: 'String',
+        type: 'string',
       },
       {
         key: 'issuer',
         value: values.issuer,
-        type: 'String',
+        type: 'string',
       },
       {
         key: 'redirect_uris',
         value: JSON.stringify(values.redirect_uris),
-        type: 'Array',
+        type: 'array',
       },
     ];
   };
@@ -106,42 +106,42 @@ const useFormikToSSOConfig = (selectedStrategy: string) => {
       {
         key: 'url',
         value: values.url,
-        type: 'String',
+        type: 'string',
       },
       {
         key: 'bindDN',
         value: values.bindDN,
-        type: 'String',
+        type: 'string',
       },
       {
         key: 'bindCredentials',
         value: values.bindCredentials,
-        type: 'String',
+        type: 'string',
       },
       {
         key: 'searchBase',
         value: values.searchBase,
-        type: 'String',
+        type: 'string',
       },
       {
         key: 'searchFilter',
         value: values.searchFilter,
-        type: 'String',
+        type: 'string',
       },
       {
         key: 'groupSearchBase',
         value: values.groupSearchBase,
-        type: 'String',
+        type: 'string',
       },
       {
         key: 'groupSearchFilter',
         value: values.groupSearchFilter,
-        type: 'String',
+        type: 'string',
       },
       {
         key: 'allow_self_signed',
         value: values.allow_self_signed ? 'true' : 'false',
-        type: 'Boolean',
+        type: 'boolean',
       },
     ];
   };
