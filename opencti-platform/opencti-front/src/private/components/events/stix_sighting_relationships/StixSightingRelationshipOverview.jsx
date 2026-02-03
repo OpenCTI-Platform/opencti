@@ -502,17 +502,16 @@ class StixSightingRelationshipContainer extends Component {
               <CardTitle>
                 {t('Inference explanation')}
               </CardTitle>
-              <div>
-                {stixSightingRelationship.x_opencti_inferences.map(
-                  (inference) => (
+              {stixSightingRelationship.x_opencti_inferences.map(
+                (inference) => (
+                  <div key={inference.rule.id}>
                     <StixCoreRelationshipInference
-                      key={inference.rule.id}
                       inference={inference}
                       stixRelationship={stixSightingRelationship}
                     />
-                  ),
-                )}
-              </div>
+                  </div>
+                ),
+              )}
             </Grid>
           ) : (
             <>
