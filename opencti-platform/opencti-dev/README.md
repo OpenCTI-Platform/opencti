@@ -230,10 +230,10 @@ podman compose --profile mockapi up -d
           ],
           "app_id": "cyberark",
           "safe": "safe",
-          "object": "secret",
-          "https_cert": {
-            "reject_unauthorized": false
-          }
+          "object": "secret"
+        },
+        "https_cert": {
+          "reject_unauthorized": false
         }
       }
     }
