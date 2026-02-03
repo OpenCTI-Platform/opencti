@@ -1,4 +1,4 @@
-import { filterMembersUsersWithUsersOrgs } from '../utils/access';
+import { filterMembersUsersWithUsersOrgs, SYSTEM_USER } from '../utils/access';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreEntity } from '../types/store';
 import { loadThroughDenormalized } from '../resolvers/stix';
@@ -21,8 +21,9 @@ export const loadCreator = async (
   user: AuthUser,
   userIdToLoad?: string,
 ) => {
+  if (!userIdToLoad) return SYSTEM_USER;
   const realUser = await context.batch?.creatorBatchLoader.load(userIdToLoad);
-  if (!realUser) return null;
+  if (!realUser) return SYSTEM_USER;
   const filteredUser = await filterMembersUsersWithUsersOrgs(context, user, [realUser]);
   return filteredUser[0];
 };
