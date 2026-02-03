@@ -4,6 +4,8 @@ import {
   type ConfigurationTypeInput,
   type EditInput,
   EditOperation,
+  FilterMode,
+  FilterOperator,
   type SingleSignMigrationInput,
   type SingleSignOnAddInput,
   type SingleSignOnMigrationResult,
@@ -23,6 +25,7 @@ export const SINGLE_SIGN_ON_LIST_QUERY = gql`
                     name
                     strategy
                     enabled
+                    identifier
                 }
             }
         }
@@ -290,24 +293,19 @@ describe('Single Sign On', () => {
 });
 
 describe('SSO: Local strategy dedicated behaviour', () => {
-  let createdLocalStrategyId: string;
-  it('should create Local Strategy', async () => {
-    const createInput: SingleSignOnAddInput = {
-      name: 'local',
-      strategy: StrategyType.LocalStrategy,
-      enabled: true,
-      identifier: 'local',
-      configuration: [
-        { key: 'label', value: 'local label', type: 'string' },
-      ],
-    };
-    const createdLocalStrategy = await queryAsAdminWithSuccess({
-      query: SINGLE_SIGN_ON_CREATE,
-      variables: { input: createInput },
+  let localStrategyId: string;
+  it('should get Local Strategy', async () => {
+    const localStrategy = await queryAsAdminWithSuccess({
+      query: SINGLE_SIGN_ON_LIST_QUERY,
+      variables: { filters: {
+        mode: FilterMode.And,
+        filters: [{ key: ['strategy'], values: [StrategyType.LocalStrategy], operator: FilterOperator.Eq }],
+        filterGroups: [],
+      } },
     });
-    expect(createdLocalStrategy).toBeDefined();
-    expect(createdLocalStrategy?.data?.singleSignOnAdd.name).toBe('local');
-    createdLocalStrategyId = createdLocalStrategy?.data?.singleSignOnAdd.id;
+    expect(localStrategy).toBeDefined();
+    expect(localStrategy?.data?.singleSignOns.edges[0].node.identifier).toBe('local');
+    localStrategyId = localStrategy?.data?.singleSignOns.edges[0].node.id;
   });
   it('should not create 2nd Local Strategy', async () => {
     const createInput: SingleSignOnAddInput = {
@@ -327,11 +325,11 @@ describe('SSO: Local strategy dedicated behaviour', () => {
   it('should not delete Local Strategy', async () => {
     await queryAsUserIsExpectedError(USER_SECURITY.client, {
       query: SINGLE_SIGN_ON_DELETE,
-      variables: { id: createdLocalStrategyId },
+      variables: { id: localStrategyId },
     }, 'Cannot delete Local Strategy', 'FUNCTIONAL_ERROR');
   });
   it('should delete Local Strategy', async () => {
-    await deleteElementById(testContext, ADMIN_USER, createdLocalStrategyId, ENTITY_TYPE_SINGLE_SIGN_ON);
+    await deleteElementById(testContext, ADMIN_USER, localStrategyId, ENTITY_TYPE_SINGLE_SIGN_ON);
     const singleSignOnList = await queryAsAdminWithSuccess({
       query: SINGLE_SIGN_ON_LIST_QUERY,
       variables: { first: 10 },
@@ -339,7 +337,7 @@ describe('SSO: Local strategy dedicated behaviour', () => {
 
     expect(singleSignOnList).toBeDefined();
     const ssoList = singleSignOnList?.data?.singleSignOns.edges;
-    expect(ssoList.find((item: any) => item?.node?.id === createdLocalStrategyId)).toBeUndefined();
-    expect(ssoList.find((item: any) => item?.node?.id === createdLocalStrategyId)).toBeUndefined();
+    expect(ssoList.find((item: any) => item?.node?.id === localStrategyId)).toBeUndefined();
+    expect(ssoList.find((item: any) => item?.node?.id === localStrategyId)).toBeUndefined();
   });
 });

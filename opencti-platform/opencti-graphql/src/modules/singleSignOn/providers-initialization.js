@@ -152,7 +152,6 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
   const isForcedEnv = isAuthenticationForcedFromEnv();
   const existingIdentifiers = await getAllIdentifiers(context, user);
   const confProviders = getProvidersFromEnvironment();
-  let willLocalBeInDatabase = false;
   let shouldRunSSOMigration = false;
 
   if (confProviders) {
@@ -187,10 +186,8 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
           } else {
             if (isAuthenticationProviderMigrated(existingIdentifiers, LOCAL_STRATEGY_IDENTIFIER)) {
               logApp.info('[ENV-PROVIDER][LOCAL] LocalStrategy already in database, skipping old configuration');
-              willLocalBeInDatabase = true;
             } else {
               logApp.info('[ENV-PROVIDER][LOCAL] LocalStrategy is about to be converted to database configuration.');
-              willLocalBeInDatabase = true;
               shouldRunSSOMigration = true;
             }
           }
@@ -682,7 +679,7 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
     }
     // In case of disable local strategy, setup protected fallback for the admin user
     const hasLocal = PROVIDERS.find((p) => p.strategy === EnvStrategyType.STRATEGY_LOCAL);
-    if (!hasLocal && !willLocalBeInDatabase) {
+    if (!hasLocal && isForcedEnv) {
       logApp.info('[ENV-PROVIDER][FALLBACK] No local strategy, adding the fallback one');
       const adminLocalStrategy = new LocalStrategy({}, (username, password, done) => {
         const adminEmail = conf.get('app:admin:email');
