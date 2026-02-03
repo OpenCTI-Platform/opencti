@@ -46,8 +46,8 @@ podman compose --profile opensearch up -d
 
 You need to stop elasticsearch and kibana that are in the default setup:
 ```
-docker compose opencti-dev-elasticsearch opencti-dev-kibana stop
-podman compose opencti-dev-elasticsearch opencti-dev-kibana stop
+docker compose stop opencti-dev-elasticsearch opencti-dev-kibana
+podman compose stop opencti-dev-elasticsearch opencti-dev-kibana
 ```
 
 In opencti configuration you can now setup OpenSearch:
