@@ -122,6 +122,7 @@ import { isInternalObject } from '../schema/internalObject';
 import { isInternalId, isStixId } from '../schema/schemaUtils';
 import { assertType, cleanObject, convertObjectReferences, convertToStixDate, isValidStix } from './stix-converter-utils';
 import { type StoreRelationPir } from '../modules/pir/pir-types';
+import { pushAll } from '../utils/arrayUtil';
 
 export const isTrustedStixId = (stixId: string): boolean => {
   const segments = stixId.split('--');
@@ -159,7 +160,7 @@ export const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtensi
   const builtCreatorIds: string[] = [];
   if (instance.creator_id) {
     const arrayCreators = Array.isArray(instance.creator_id) ? instance.creator_id : [instance.creator_id];
-    builtCreatorIds.push(...arrayCreators);
+    pushAll(builtCreatorIds, arrayCreators);
   }
   const octiExtensions: S.StixOpenctiExtension = {
     extension_type: 'property-extension',

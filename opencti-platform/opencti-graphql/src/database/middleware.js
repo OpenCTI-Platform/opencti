@@ -245,6 +245,7 @@ import { doYield } from '../utils/eventloop-utils';
 import { ENTITY_TYPE_SECURITY_COVERAGE, RELATION_COVERED } from '../modules/securityCoverage/securityCoverage-types';
 import { findById as findDraftById } from '../modules/draftWorkspace/draftWorkspace-domain';
 import { isEnterpriseEditionFromSettings } from '../../src/enterprise-edition/ee';
+import { pushAll } from '../utils/arrayUtil';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -354,7 +355,7 @@ const loadElementMetaDependencies = async (context, user, elements, args = {}) =
     // As fullRelationsList can bring more than 100K+ relations, we need to split the append
     // due to nodejs limitation to 100K function parameters limit
     const allRelCallback = async (relations) => {
-      refsRelations.push(...relations);
+      pushAll(refsRelations, relations);
     };
     await fullRelationsList(context, user, relTypes, { baseData: true, filters: relationFilter, callback: allRelCallback });
   }
@@ -420,12 +421,12 @@ export const loadElementsWithDependencies = async (context, user, elements, opts
     if (isRelation) {
       elementsToDeps.push({ internal_id: e.fromId, entity_type: e.fromType });
       elementsToDeps.push({ internal_id: e.toId, entity_type: e.toType });
-      targetsToResolved.push(...[e.fromId, e.toId]);
+      pushAll(targetsToResolved, [e.fromId, e.toId]);
     }
     if (isNotEmptyField(e.x_opencti_files)) {
       e.x_opencti_files.forEach((f) => {
         if (isNotEmptyField(f.file_markings)) {
-          fileMarkings.push(...f.file_markings);
+          pushAll(fileMarkings, f.file_markings);
         }
       });
     }
@@ -881,7 +882,7 @@ export const inputResolveRefs = async (context, user, input, type, entitySetting
       instanceIds.forEach((instanceId) => {
         resolvedIds.add(instanceId);
         if (fetchingIdsMap.has(instanceId)) {
-          matchingConfigs.push(...fetchingIdsMap.get(instanceId));
+          pushAll(matchingConfigs, fetchingIdsMap.get(instanceId));
         }
       });
       for (let configIndex = 0; configIndex < matchingConfigs.length; configIndex += 1) {
@@ -1005,7 +1006,7 @@ const createContainerSharingTask = (context, type, element, relations = []) => {
   const elementGrants = (relations ?? []).filter((e) => e.entity_type === RELATION_GRANTED_TO).map((r) => r.to.internal_id);
   // If container is granted, we need to grant every new children.
   if (element.base_type === BASE_TYPE_ENTITY && isStixDomainObjectShareableContainer(element.entity_type)) {
-    elementGrants.push(...(element[RELATION_GRANTED_TO] ?? []));
+    pushAll(elementGrants, (element[RELATION_GRANTED_TO] ?? []));
     if (elementGrants.length > 0) {
       // A container has created or modified (addition of some object_refs)
       // We need to compute the granted_refs on the container and apply it on new child
@@ -1013,11 +1014,11 @@ const createContainerSharingTask = (context, type, element, relations = []) => {
       const newChildrenIds = (relations ?? [])
         .filter((e) => isRelationTargetGrants(elementGrants, e, type))
         .map((r) => r.to.internal_id);
-      targetGrantIds.push(...newChildrenIds);
+      pushAll(targetGrantIds, newChildrenIds);
     }
   }
   if (element.base_type === BASE_TYPE_RELATION && isStixDomainObjectShareableContainer(element.from.entity_type)) {
-    elementGrants.push(...(element.from[RELATION_GRANTED_TO] ?? []));
+    pushAll(elementGrants, (element.from[RELATION_GRANTED_TO] ?? []));
     // A new object_ref relation was created between a shareable container and an element
     // If this element is compatible we need to apply the granted_refs of the container on this new element
     if (elementGrants.length > 0 && isRelationTargetGrants(elementGrants, element, type)) {
@@ -1459,7 +1460,7 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
           return { id, _index, toReplace: null, relationType: key, entity_type, data: { internal_id: ids } };
         })
         .flat();
-      operations.push(...changeOperations);
+      pushAll(operations, changeOperations);
       // then execute each other one by one
       for (let index = 0; index < operations.length; index += 1) {
         const operation = operations[index];
@@ -1510,15 +1511,15 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
       const sourceValues = fieldValues || [];
       // For aliased entities, get name of the source to add it as alias of the target
       if (targetFieldKey === ATTRIBUTE_ALIASES || targetFieldKey === ATTRIBUTE_ALIASES_OPENCTI) {
-        sourceValues.push(...sourceEntities.map((s) => s.name).filter((n) => isNotEmptyField(n)));
+        pushAll(sourceValues, sourceEntities.map((s) => s.name).filter((n) => isNotEmptyField(n)));
       }
       // For x_opencti_additional_names exists, add the source name inside
       if (targetFieldKey === ATTRIBUTE_ADDITIONAL_NAMES) {
-        sourceValues.push(...sourceEntities.map((s) => s.name).filter((n) => isNotEmptyField(n)));
+        pushAll(sourceValues, sourceEntities.map((s) => s.name).filter((n) => isNotEmptyField(n)));
       }
       // standard_id of merged entities must be kept in x_opencti_stix_ids
       if (targetFieldKey === IDS_STIX) {
-        sourceValues.push(...sourceEntities.map((s) => s.standard_id));
+        pushAll(sourceValues, sourceEntities.map((s) => s.standard_id));
       }
       // If multiple attributes, concat all values
       if (sourceValues.length > 0) {
@@ -1825,7 +1826,7 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
         const aliases = [...(instance[aliasField] ?? [])];
         if (upsert) {
           // For upsert, we concatenate everything to be none destructive
-          aliases.push(...(aliasesInput ? aliasesInput.value : []));
+          pushAll(aliases, (aliasesInput ? aliasesInput.value : []));
           if (!aliases.includes(instance.name)) {
             // If name changing is part of an upsert, the previous name must be copied into aliases
             aliases.push(instance.name);
@@ -2231,7 +2232,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
   if (initial.entity_type === ENTITY_TYPE_VULNERABILITY) {
     const vulnerabilitiesUpdates = generateVulnerabilitiesUpdates(initial, updates);
     if (vulnerabilitiesUpdates.length > 0) {
-      updates.push(...vulnerabilitiesUpdates);
+      pushAll(updates, vulnerabilitiesUpdates);
     }
   }
 
@@ -2319,7 +2320,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     if (existingEntity) {
       lookingEntities.push(existingEntity);
     }
-    lookingEntities.push(...existingByHashed);
+    pushAll(lookingEntities, existingByHashed);
     const existingEntities = R.uniqBy((e) => e.internal_id, lookingEntities);
     // If already exist entities
     if (existingEntities.length > 0) {
@@ -2376,11 +2377,11 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
                 to: targetCreated,
                 from: initial,
               }));
-            relationsToDelete.push(...currentRels);
+            pushAll(relationsToDelete, currentRels);
           }
           // Create the new one
           if (isNotEmptyField(targetCreated)) {
-            relationsToCreate.push(...buildInstanceRelTo(targetCreated, relType));
+            pushAll(relationsToCreate, buildInstanceRelTo(targetCreated, relType));
             const previous = currentValue ? [currentValue] : currentValue;
             updatedInputs.push({ key, value: [targetCreated], previous });
             updatedInstance[key] = targetCreated;
@@ -2411,12 +2412,12 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
           const newTargetsIds = refs.map((n) => n.id);
           if (R.symmetricDifference(newTargetsIds, currentRelsToIds).length > 0) {
             if (currentRels.length > 0) {
-              relationsToDelete.push(...currentRels);
+              pushAll(relationsToDelete, currentRels);
             }
             // 02. Create the new relations
             if (refs.length > 0) {
               const newRelations = buildInstanceRelTo(refs, relType);
-              relationsToCreate.push(...newRelations);
+              pushAll(relationsToCreate, newRelations);
             }
             updatedInputs.push({ key, value: refs, previous: updatedInstance[key] });
             updatedInstance[key] = refs;
@@ -2429,7 +2430,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
           const refsToCreate = refs.filter((r) => !currentIds.includes(r.internal_id));
           if (refsToCreate.length > 0) {
             const newRelations = buildInstanceRelTo(refsToCreate, relType);
-            relationsToCreate.push(...newRelations);
+            pushAll(relationsToCreate, newRelations);
             updatedInputs.push({ key, value: refsToCreate, operation, previous: updatedInstance[key] });
             updatedInstance[key] = [...(updatedInstance[key] || []), ...refsToCreate];
             updatedInstance[relType] = updatedInstance[key].map((u) => u.internal_id);
@@ -2447,7 +2448,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
             }));
 
           if (relsToDelete.length > 0) {
-            relationsToDelete.push(...relsToDelete);
+            pushAll(relationsToDelete, relsToDelete);
             updatedInputs.push({ key, value: refs, operation, previous: updatedInstance[key] });
             updatedInstance[key] = (updatedInstance[key] || []).filter((c) => !targetIds.includes(c.internal_id));
             updatedInstance[relType] = updatedInstance[key].map((u) => u.internal_id);
@@ -2459,7 +2460,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     // region build attributes inner information
     lock.signal.throwIfAborted();
     const impactedKeys = impactedInputs.map((input) => input.key);
-    impactedKeys.push(...[...relationsToCreate, ...relationsToDelete].map((rel) => {
+    pushAll(impactedKeys, [...relationsToCreate, ...relationsToDelete].map((rel) => {
       return schemaRelationsRefDefinition.convertDatabaseNameToInputName(updatedInstance.entity_type, rel.relationship_type);
     }));
     const preventAttributeFollow = [updatedAt.name, modified.name, iAliasedIds.name];
@@ -2760,7 +2761,7 @@ const upsertRelationRule = async (context, user, instance, input, opts = {}) => 
   if (!fromRuleDeletion) {
     const keepRuleHashes = input[fromRule].map((i) => i.hash);
     const instanceRuleToKeep = (instance[fromRule] ?? []).filter((i) => !keepRuleHashes.includes(i.hash));
-    updatedRule.push(...instanceRuleToKeep);
+    pushAll(updatedRule, instanceRuleToKeep);
   }
   // 03 - Create the patch
   const patch = await createUpsertRulePatch(instance, input, opts);
@@ -2906,7 +2907,7 @@ export const getExistingRelations = async (context, user, input, opts = {}) => {
       indices: [READ_INDEX_INFERRED_RELATIONSHIPS],
     };
     const inferredRelationships = await topRelationsList(context, SYSTEM_USER, relationshipType, fromRuleArgs);
-    existingRelationships.push(...inferredRelationships);
+    pushAll(existingRelationships, inferredRelationships);
   } else {
     // In case of direct relation, try to find the relation with time filters
     // Only in standard indices.
@@ -2941,7 +2942,7 @@ export const getExistingRelations = async (context, user, input, opts = {}) => {
     // inputIds
     const manualArgs = { indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, filters: searchFilters };
     const manualRelationships = await topRelationsList(context, SYSTEM_USER, relationshipType, manualArgs);
-    existingRelationships.push(...manualRelationships);
+    pushAll(existingRelationships, manualRelationships);
   }
   return existingRelationships;
 };
@@ -3192,7 +3193,7 @@ export const getExistingEntities = async (context, user, input, type) => {
   }
   const [existingByIds, existingByHashed] = await Promise.all([existingByIdsPromise, existingByHashedPromise]);
   const existingEntities = [];
-  existingEntities.push(...R.uniqBy((e) => e.internal_id, [...existingByIds, ...existingByHashed]));
+  pushAll(existingEntities, R.uniqBy((e) => e.internal_id, [...existingByIds, ...existingByHashed]));
   return existingEntities;
 };
 
@@ -3278,7 +3279,7 @@ const internalCreateEntityRaw = async (context, user, rawInput, type, opts = {})
     }
     // Resolve the existing entity
     const [existingByIds, existingByHashed] = await Promise.all([existingByIdsPromise, existingByHashedPromise]);
-    existingEntities.push(...R.uniqBy((e) => e.internal_id, [...existingByIds, ...existingByHashed]));
+    pushAll(existingEntities, R.uniqBy((e) => e.internal_id, [...existingByIds, ...existingByHashed]));
     // region - Pre-Check
     if (existingEntities.length === 0) { // We do not use default values on upsert.
       resolvedInput = fillDefaultValues(user, resolvedInput, entitySetting);
@@ -3410,7 +3411,7 @@ const internalCreateEntityRaw = async (context, user, rawInput, type, opts = {})
           const createExternal = { source_name: uploadedFile.name, url: `/storage/get/${uploadedFile.id}`, fileId: uploadedFile.id };
           const externalRef = await createEntity(context, user, createExternal, ENTITY_TYPE_EXTERNAL_REFERENCE);
           const newRefRel = buildInnerRelation(dataEntity.element, externalRef, RELATION_EXTERNAL_REFERENCE);
-          dataEntity.relations.push(...newRefRel);
+          pushAll(dataEntity.relations, newRefRel);
         }
       }
       dataEntity.element = { ...dataEntity.element, x_opencti_files: uploadedFiles };

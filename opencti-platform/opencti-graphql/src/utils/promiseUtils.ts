@@ -1,3 +1,4 @@
+import { pushAll } from './arrayUtil';
 /**
  * Execute async operations with concurrency control.
  * Modern native alternative to Bluebird's Promise.map with concurrency.
@@ -26,7 +27,7 @@ export const promiseMap = async <T, R>(
     const chunkResults = await Promise.all(
       chunk.map((item, chunkIndex) => mapper(item, i + chunkIndex)),
     );
-    results.push(...chunkResults);
+    pushAll(results, chunkResults);
   }
 
   return results;

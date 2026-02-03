@@ -6,6 +6,7 @@ import { generateStandardId } from '../schema/identifier';
 import { logApp } from '../config/conf';
 import { ENTITY_TYPE_INCIDENT } from '../schema/stixDomainObject';
 import { executionContext, SYSTEM_USER } from '../utils/access';
+import { pushAll } from '../utils/arrayUtil';
 
 export const up = async (next) => {
   const context = executionContext('migration');
@@ -28,7 +29,7 @@ export const up = async (next) => {
         ];
       })
       .flat();
-    bulkOperations.push(...op);
+    pushAll(bulkOperations, op);
   };
   // Old type
   const opts = { types: ['X-OpenCTI-Incident'], callback };

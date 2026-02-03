@@ -19,6 +19,7 @@ import { doYield } from '../utils/eventloop-utils';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicNodeEdge, BasicStoreCommon, InternalEditInput, StoreCommon, BasicConnection } from '../types/store';
 import type { AttributeDefinition, BasicObjectDefinition } from '../schema/attribute-definition';
+import { pushAll } from '../utils/arrayUtil';
 
 export const ES_INDEX_PREFIX = conf.get('elasticsearch:index_prefix') || 'opencti';
 const rabbitmqPrefix = conf.get('rabbitmq:queue_prefix');
@@ -359,7 +360,7 @@ export const extractObjectsPirsFromInputs = (inputs: InternalEditInput[], entity
     inputs.forEach((input) => {
       if (input && input.key === INPUT_OBJECTS && input.value?.length > 0) {
         const pirIds = input.value.flatMap((value) => (value as Record<string, any>)[RELATION_IN_PIR] ?? []);
-        pir_ids.push(...pirIds);
+        pushAll(pir_ids, pirIds);
       }
     });
   }
@@ -372,7 +373,7 @@ export const extractObjectsRestrictionsFromInputs = (inputs: InternalEditInput[]
     inputs.forEach((input) => {
       if (input && input.key === INPUT_OBJECTS && input.value?.length > 0) {
         const objectMarking = input.value.flatMap((value) => (value as Record<string, any>)[RELATION_OBJECT_MARKING] ?? []);
-        markings.push(...objectMarking);
+        pushAll(markings, objectMarking);
       }
     });
   }

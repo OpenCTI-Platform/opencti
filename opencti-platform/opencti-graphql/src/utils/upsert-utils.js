@@ -20,6 +20,7 @@ import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { FunctionalError } from '../config/errors';
 import { getDraftContext } from './draftContext';
 import { getDraftFilePrefix } from '../database/draft-utils';
+import { pushAll } from './arrayUtil';
 
 const ALIGN_OLDEST = 'oldest';
 const ALIGN_NEWEST = 'newest';
@@ -318,7 +319,7 @@ const mergeUpsertOperations = (upsertKey, elementCurrentValue, upsertOperations)
       mergedUpsertOperationOperation = 'replace';
     } else if (currentUpsertOperation === 'add') {
       // add upsert operation values to final patch values first
-      mergedUpsertOperationValue.push(...(currentUpsertValue ?? []));
+      pushAll(mergedUpsertOperationValue, (currentUpsertValue ?? []));
       mergedUpsertOperationOperation = (!mergedUpsertOperationOperation || mergedUpsertOperationOperation === 'add') ? 'add' : 'replace';
     }
   }
@@ -348,7 +349,7 @@ export const mergeUpsertInput = (elementCurrentValue, upsertValue, updatePatchIn
     }
     // add updatePatchInput values coming from upsert
     if (updatePatchInput.value?.length > 0) {
-      finalPatchValue.push(...updatePatchInput.value);
+      pushAll(finalPatchValue, updatePatchInput.value);
     }
     // keep only unique values
     let finalDedupedPatchValuesMap = new Map();
@@ -440,7 +441,7 @@ export const generateAttributesInputsForUpsert = (context, _user, resolvedElemen
       // Upsert will be done if upsert is well-defined but also in full synchro mode or if the current value is empty
       if (!isOutDatedModification) {
         if (isStructuralUpsert || canBeUpsert || isFullSync || isCurrentlyEmpty) {
-          inputs.push(...buildAttributeUpdate(isFullSync, attribute, resolvedElement[attributeKey], inputData));
+          pushAll(inputs, buildAttributeUpdate(isFullSync, attribute, resolvedElement[attributeKey], inputData));
         }
       } else {
         logApp.info('Discarding outdated attribute update mutation', { key: attributeKey });
@@ -523,13 +524,13 @@ export const generateInputsForUpsert = async (context, user, resolvedElement, ty
   // if file(s) in updatePatch, we need to upload them and update x_opencti_files
   // Files follow the same confidence-based conflict resolution as other fields
   const fileInputs = await generateFileInputsForUpsert(context, user, resolvedElement, updatePatch, confidenceForUpsert);
-  inputs.push(...fileInputs);
+  pushAll(inputs, fileInputs);
   // -- Upsert attributes
   const attributesInputs = generateAttributesInputsForUpsert(context, user, resolvedElement, type, updatePatch, confidenceForUpsert);
-  inputs.push(...attributesInputs);
+  pushAll(inputs, attributesInputs);
   // -- Upsert refs
   const refsInputs = generateRefsInputsForUpsert(context, user, resolvedElement, type, updatePatch, confidenceForUpsert, validEnterpriseEdition);
-  inputs.push(...refsInputs);
+  pushAll(inputs, refsInputs);
   // -- merge inputs with upsertOperations
   if (updatePatch.upsertOperations?.length > 0 && !isBypassUser(user)) {
     throw FunctionalError('User has insufficient rights to use upsertOperations', { user_id: user.id, element_id: resolvedElement.id });

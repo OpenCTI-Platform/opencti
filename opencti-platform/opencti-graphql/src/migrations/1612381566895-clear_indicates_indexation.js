@@ -7,6 +7,7 @@ import { logApp } from '../config/conf';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
+import { pushAll } from '../utils/arrayUtil';
 
 export const up = async (next) => {
   const context = executionContext('migration');
@@ -23,7 +24,7 @@ export const up = async (next) => {
         ];
       })
       .flat();
-    bulkOperations.push(...op);
+    pushAll(bulkOperations, op);
   };
   const filters = {
     mode: 'and',

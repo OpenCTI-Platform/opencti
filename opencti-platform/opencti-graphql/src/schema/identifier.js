@@ -22,6 +22,7 @@ import { convertTypeToStixType } from '../database/stix-2-1-converter';
 import { INPUT_DST, INPUT_SRC, isStixRefRelationship } from './stixRefRelationship';
 import { cleanObject } from '../database/stix-converter-utils';
 import nconf from 'nconf';
+import { pushAll } from '../utils/arrayUtil';
 
 // region hashes
 const MD5 = 'MD5';
@@ -532,7 +533,7 @@ export const generateHashedObservableStandardIds = (instance) => {
             hashes: { [hashKey]: hashValue },
           });
         });
-      ids.push(...hashIds);
+      pushAll(ids, hashIds);
     }
   }
   return ids;
@@ -544,7 +545,7 @@ const getHashIds = (type, hashes) => {
     const hashIds = Object.entries(hashes)
       .map(([, s]) => s)
       .filter((s) => isNotEmptyField(s));
-    ids.push(...hashIds);
+    pushAll(ids, hashIds);
   }
   return ids;
 };
@@ -555,10 +556,10 @@ export const getInstanceIds = (instance, withoutInternal = false) => {
   }
   ids.push(instance.standard_id);
   if (instance.x_opencti_stix_ids) {
-    ids.push(...instance.x_opencti_stix_ids);
+    pushAll(ids, instance.x_opencti_stix_ids);
   }
-  ids.push(...generateAliasesIdsForInstance(instance));
-  ids.push(...getHashIds(instance.entity_type, instance.hashes));
+  pushAll(ids, generateAliasesIdsForInstance(instance));
+  pushAll(ids, getHashIds(instance.entity_type, instance.hashes));
   return R.uniq(ids);
 };
 export const getInputIds = (type, input, fromRule) => {
@@ -570,11 +571,11 @@ export const getInputIds = (type, input, fromRule) => {
     ids.push(input.stix_id);
   }
   if (isNotEmptyField(input.x_opencti_stix_ids)) {
-    ids.push(...input.x_opencti_stix_ids);
+    pushAll(ids, input.x_opencti_stix_ids);
   }
-  ids.push(...generateAliasesIdsForInstance(input));
-  ids.push(...getHashIds(type, input.hashes));
-  ids.push(...generateHashedObservableStandardIds(input));
+  pushAll(ids, generateAliasesIdsForInstance(input));
+  pushAll(ids, getHashIds(type, input.hashes));
+  pushAll(ids, generateHashedObservableStandardIds(input));
   // Inference can only be created once, locking the combination
   if (fromRule && isBasicRelationship(type)) {
     ids.push(`${input.from.internal_id}-${type}-${input.to.internal_id}`);
