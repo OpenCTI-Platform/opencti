@@ -1,46 +1,47 @@
-import React, { FunctionComponent, useCallback, useEffect, useMemo, useState } from 'react';
-import { interval } from 'rxjs';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
-import { useQueryLoader } from 'react-relay';
-import { DeleteOutlined, DeveloperBoardOutlined, ExtensionOutlined, HubOutlined, PlaylistRemoveOutlined } from '@mui/icons-material';
-import ListItem from '@mui/material/ListItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import List from '@mui/material/List';
-import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@common/button/IconButton';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import makeStyles from '@mui/styles/makeStyles';
-import DialogTitle from '@mui/material/DialogTitle';
-import { ListItemButton } from '@mui/material';
-import useConnectorsStatusFilters from '@components/data/connectors/hooks/useConnectorsStatusFilters';
-import ConnectorsStatusFilters from '@components/data/connectors/ConnectorsStatusFilters';
+import { getConnectorMetadata, IngestionConnectorType } from '@components/data/IngestionCatalog/utils/ingestionConnectorTypeMetadata';
 import ConnectorStatusChip from '@components/data/connectors/ConnectorStatusChip';
 import ConnectorsList, { connectorsListQuery } from '@components/data/connectors/ConnectorsList';
 import ConnectorsState, { connectorsStateQuery } from '@components/data/connectors/ConnectorsState';
+import ConnectorsStatusFilters from '@components/data/connectors/ConnectorsStatusFilters';
+import { Connector_connector$data } from '@components/data/connectors/__generated__/Connector_connector.graphql';
 import { ConnectorsListQuery } from '@components/data/connectors/__generated__/ConnectorsListQuery.graphql';
 import { ConnectorsStateQuery } from '@components/data/connectors/__generated__/ConnectorsStateQuery.graphql';
-import { Connector_connector$data } from '@components/data/connectors/__generated__/Connector_connector.graphql';
-import { getConnectorMetadata, IngestionConnectorType } from '@components/data/IngestionCatalog/utils/ingestionConnectorTypeMetadata';
+import useConnectorsStatusFilters from '@components/data/connectors/hooks/useConnectorsStatusFilters';
+import { DeleteOutlined, DeveloperBoardOutlined, ExtensionOutlined, HubOutlined, PlaylistRemoveOutlined } from '@mui/icons-material';
+import { ListItemButton } from '@mui/material';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Tooltip from '@mui/material/Tooltip';
+import makeStyles from '@mui/styles/makeStyles';
+import React, { FunctionComponent, useCallback, useEffect, useMemo, useState } from 'react';
+import { useQueryLoader } from 'react-relay';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { interval } from 'rxjs';
+import ItemBoolean from '../../../../components/ItemBoolean';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
+import type { Theme } from '../../../../components/Theme';
 import Transition from '../../../../components/Transition';
-import { FIVE_SECONDS } from '../../../../utils/Time';
+import Card from '../../../../components/common/card/Card';
+import BooleanStatusIcon from '../../../../components/common/icons/BooleanStatusIcon';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
-import Security from '../../../../utils/Security';
-import { MODULES_MODMANAGE } from '../../../../utils/hooks/useGranted';
 import { type Connector, getConnectorTriggerStatus } from '../../../../utils/Connector';
-import { connectorDeletionMutation, connectorResetStateMutation } from './Connector';
-import ItemBoolean from '../../../../components/ItemBoolean';
-import type { Theme } from '../../../../components/Theme';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
-import SortConnectorsHeader from './SortConnectorsHeader';
+import Security from '../../../../utils/Security';
+import { FIVE_SECONDS } from '../../../../utils/Time';
+import { MODULES_MODMANAGE } from '../../../../utils/hooks/useGranted';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
+import { connectorDeletionMutation, connectorResetStateMutation } from './Connector';
+import SortConnectorsHeader from './SortConnectorsHeader';
 import canDeleteConnector from './utils/canDeleteConnector';
-import Card from '../../../../components/common/card/Card';
 import { EMPTY_VALUE } from '../../../../utils/String';
 
 const interval$ = interval(FIVE_SECONDS);
@@ -437,11 +438,11 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                                 {nsdt(connector.updated_at)}
                               </span>
                             </div>
-                            <div className={classes.bodyItem}>
-                              <ItemBoolean
-                                label={connector.is_managed ? 'TRUE' : 'FALSE'}
-                                status={connector.is_managed}
-                              />
+                            <div
+                              className={classes.bodyItem}
+                              style={{ justifyContent: 'center' }}
+                            >
+                              <BooleanStatusIcon status={connector.is_managed} />
                             </div>
                           </div>
                         )}
