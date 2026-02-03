@@ -91,8 +91,6 @@ import { ENTITY_TYPE_INDICATOR, type StixIndicator } from '../indicator/indicato
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../case/case-rft/case-rft-types';
 import { ENTITY_TYPE_CONTAINER_TASK, type StixTask, type StoreEntityTask } from '../task/task-types';
-import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
-import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../case/feedback/feedback-types';
 import { EditOperation, FilterMode } from '../../generated/graphql';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { schemaTypesDefinition } from '../../schema/schema-types';
