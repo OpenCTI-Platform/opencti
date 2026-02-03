@@ -194,7 +194,7 @@ import type { BasicStoreSettings } from '../types/settings';
 import { completeSpecialFilterKeys } from '../utils/filtering/filtering-completeSpecialFilterKeys';
 import { IDS_ATTRIBUTES } from '../domain/attribute-utils';
 import type { FiltersWithNested } from './middleware-loader';
-import { pushAll } from '../utils/arrayUtil';
+import { pushAll, unshiftAll } from '../utils/arrayUtil';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -3830,12 +3830,12 @@ const getRelatedRelations = async (
       }
       preparedElements.push({ ...hit, level });
     });
-    elements.unshift(...preparedElements);
+    unshiftAll(elements, preparedElements);
     return true;
   };
   const finalOpts: RepaginateOpts<BasicStoreRelation> = { ...opts, filters, callback, types: [ABSTRACT_BASIC_RELATIONSHIP] };
   await elList<BasicStoreRelation>(context, user, READ_RELATIONSHIPS_INDICES, finalOpts);
-  // If relations find, need to recurs to find relations to relations
+  // If relations find, need to recurse to find relations to relations
   if (foundRelations.length > 0) {
     const groups = R.splitEvery(MAX_BULK_OPERATIONS, foundRelations);
     const concurrentFetch = (gIds: string[]) => getRelatedRelations(context, user, gIds, elements, level + 1, cache, opts);
