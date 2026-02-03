@@ -142,111 +142,109 @@ class StixDomainObjectsExportCreation extends Component {
       <ExportContext.Consumer>
         {({ selectedIds }) => {
           return (
-            <>
-              <Formik
-                enableReinitialize={true}
-                initialValues={{
-                  format: '',
-                  type: 'simple',
-                  maxMarkingDefinition: 'none',
-                  contentMaxMarkings: [],
-                  fileMarkings: [],
-                }}
-                validationSchema={exportValidation(t)}
-                onSubmit={this.onSubmit.bind(this, selectedIds)}
-                onReset={() => this.props.onClose()}
-              >
-                {({ submitForm, resetForm, isSubmitting, setFieldValue }) => (
-                  <Form>
-                    <Dialog
-                      slotProps={{ paper: { elevation: 1 } }}
-                      open={this.props.open}
-                      onClose={this.props.onClose}
-                      fullWidth={true}
-                      data-testid="StixDomainObjectsExportCreationDialog"
-                    >
-                      <DialogTitle>
-                        {t('Generate an export')}
-                        <Tooltip title={t('Your max shareable markings will be applied to the content max markings')}>
-                          <InfoOutlined sx={{ paddingLeft: 1 }} fontSize="small" />
-                        </Tooltip>
-                      </DialogTitle>
-                      <DialogContent>
-                        <Field
-                          component={SelectField}
-                          variant="standard"
-                          name="format"
-                          label={t('Export format')}
-                          fullWidth={true}
-                          containerstyle={{ width: '100%' }}
-                        >
-                          {availableFormat.map((value, i) => (
-                            <MenuItem
-                              key={i}
-                              value={value}
-                              disabled={!isExportActive(value)}
-                            >
-                              {value}
-                            </MenuItem>
-                          ))}
-                        </Field>
-                        <Field
-                          component={SelectField}
-                          variant="standard"
-                          name="type"
-                          label={t('Export type')}
-                          fullWidth={true}
-                          containerstyle={fieldSpacingContainerStyle}
-                        >
-                          <MenuItem value="simple">
-                            {t('Simple export (just the entity)')}
+            <Formik
+              enableReinitialize={true}
+              initialValues={{
+                format: '',
+                type: 'simple',
+                maxMarkingDefinition: 'none',
+                contentMaxMarkings: [],
+                fileMarkings: [],
+              }}
+              validationSchema={exportValidation(t)}
+              onSubmit={this.onSubmit.bind(this, selectedIds)}
+              onReset={() => this.props.onClose()}
+            >
+              {({ submitForm, resetForm, isSubmitting, setFieldValue }) => (
+                <Form>
+                  <Dialog
+                    slotProps={{ paper: { elevation: 1 } }}
+                    open={this.props.open}
+                    onClose={this.props.onClose}
+                    fullWidth={true}
+                    data-testid="StixDomainObjectsExportCreationDialog"
+                  >
+                    <DialogTitle>
+                      {t('Generate an export')}
+                      <Tooltip title={t('Your max shareable markings will be applied to the content max markings')}>
+                        <InfoOutlined sx={{ paddingLeft: 1 }} fontSize="small" />
+                      </Tooltip>
+                    </DialogTitle>
+                    <DialogContent>
+                      <Field
+                        component={SelectField}
+                        variant="standard"
+                        name="format"
+                        label={t('Export format')}
+                        fullWidth={true}
+                        containerstyle={{ width: '100%' }}
+                      >
+                        {availableFormat.map((value, i) => (
+                          <MenuItem
+                            key={i}
+                            value={value}
+                            disabled={!isExportActive(value)}
+                          >
+                            {value}
                           </MenuItem>
-                          <MenuItem value="full">
-                            {t(
-                              'Full export (entity and first neighbours)',
-                            )}
-                          </MenuItem>
-                        </Field>
-                        <ObjectMarkingField
-                          name="contentMaxMarkings"
-                          label={t(CONTENT_MAX_MARKINGS_TITLE)}
-                          onChange={(_, values) => this.handleSelectedContentMaxMarkingsChange(values)}
-                          style={fieldSpacingContainerStyle}
-                          setFieldValue={setFieldValue}
-                          limitToMaxSharing
-                          helpertext={t(CONTENT_MAX_MARKINGS_HELPERTEXT)}
-                        />
-                        <ObjectMarkingField
-                          name="fileMarkings"
-                          label={t('File marking definition levels')}
-                          filterTargetIds={this.state.selectedContentMaxMarkingsIds}
-                          style={fieldSpacingContainerStyle}
-                          setFieldValue={setFieldValue}
-                        />
-                      </DialogContent>
-                      <DialogActions>
-                        <Button
-                          variant="secondary"
-                          onClick={() => {
-                            this.props.onClose();
-                            resetForm();
-                          }}
-                          disabled={isSubmitting}
-                        >
-                          {t('Cancel')}
-                        </Button>
-                        <Button
-                          onClick={submitForm}
-                          disabled={isSubmitting}
-                        >
-                          {t('Create')}
-                        </Button>
-                      </DialogActions>
-                    </Dialog>
-                  </Form>
-                )}
-              </Formik>
-            </>
+                        ))}
+                      </Field>
+                      <Field
+                        component={SelectField}
+                        variant="standard"
+                        name="type"
+                        label={t('Export type')}
+                        fullWidth={true}
+                        containerstyle={fieldSpacingContainerStyle}
+                      >
+                        <MenuItem value="simple">
+                          {t('Simple export (just the entity)')}
+                        </MenuItem>
+                        <MenuItem value="full">
+                          {t(
+                            'Full export (entity and first neighbours)',
+                          )}
+                        </MenuItem>
+                      </Field>
+                      <ObjectMarkingField
+                        name="contentMaxMarkings"
+                        label={t(CONTENT_MAX_MARKINGS_TITLE)}
+                        onChange={(_, values) => this.handleSelectedContentMaxMarkingsChange(values)}
+                        style={fieldSpacingContainerStyle}
+                        setFieldValue={setFieldValue}
+                        limitToMaxSharing
+                        helpertext={t(CONTENT_MAX_MARKINGS_HELPERTEXT)}
+                      />
+                      <ObjectMarkingField
+                        name="fileMarkings"
+                        label={t('File marking definition levels')}
+                        filterTargetIds={this.state.selectedContentMaxMarkingsIds}
+                        style={fieldSpacingContainerStyle}
+                        setFieldValue={setFieldValue}
+                      />
+                    </DialogContent>
+                    <DialogActions>
+                      <Button
+                        variant="secondary"
+                        onClick={() => {
+                          this.props.onClose();
+                          resetForm();
+                        }}
+                        disabled={isSubmitting}
+                      >
+                        {t('Cancel')}
+                      </Button>
+                      <Button
+                        onClick={submitForm}
+                        disabled={isSubmitting}
+                      >
+                        {t('Create')}
+                      </Button>
+                    </DialogActions>
+                  </Dialog>
+                </Form>
+              )}
+            </Formik>
           );
         }}
       </ExportContext.Consumer>

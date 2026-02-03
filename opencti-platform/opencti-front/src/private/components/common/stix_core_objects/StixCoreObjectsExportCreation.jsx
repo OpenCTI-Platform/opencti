@@ -101,101 +101,99 @@ const StixCoreObjectsExportCreation = ({
     <ExportContext.Consumer>
       {({ selectedIds }) => {
         return (
-          <>
-            <Formik
-              enableReinitialize={true}
-              initialValues={{
-                format: '',
-                contentMaxMarkings: [],
-                fileMarkings: [],
-              }}
-              validationSchema={exportValidation(t_i18n)}
-              onSubmit={(values, { setSubmitting, resetForm }) => onSubmit(selectedIds, values, { setSubmitting, resetForm })
-              }
-              onReset={() => setOpen(false)}
-            >
-              {({ submitForm, handleReset, isSubmitting, resetForm, setFieldValue }) => (
-                <Form>
-                  <Dialog
-                    slotProps={{ paper: { elevation: 1 } }}
-                    open={open}
-                    onClose={() => {
-                      resetForm();
-                      setOpen(false);
+          <Formik
+            enableReinitialize={true}
+            initialValues={{
+              format: '',
+              contentMaxMarkings: [],
+              fileMarkings: [],
+            }}
+            validationSchema={exportValidation(t_i18n)}
+            onSubmit={(values, { setSubmitting, resetForm }) => onSubmit(selectedIds, values, { setSubmitting, resetForm })
+            }
+            onReset={() => setOpen(false)}
+          >
+            {({ submitForm, handleReset, isSubmitting, resetForm, setFieldValue }) => (
+              <Form>
+                <Dialog
+                  slotProps={{ paper: { elevation: 1 } }}
+                  open={open}
+                  onClose={() => {
+                    resetForm();
+                    setOpen(false);
+                  }}
+                  fullWidth={true}
+                  data-testid="StixCoreObjectsExportCreationDialog"
+                >
+                  <DialogTitle>
+                    {t_i18n('Generate an export')}
+                    <Tooltip title={t_i18n('Your max shareable markings will be applied to the content max markings')}>
+                      <InfoOutlined sx={{ paddingLeft: 1 }} fontSize="small" />
+                    </Tooltip>
+                  </DialogTitle>
+                  <QueryRenderer
+                    query={markingDefinitionsLinesSearchQuery}
+                    variables={{ first: 200 }}
+                    render={({ props }) => {
+                      if (props && props.markingDefinitions) {
+                        return (
+                          <DialogContent>
+                            <Field
+                              component={SelectField}
+                              variant="standard"
+                              name="format"
+                              label={t_i18n('Export format')}
+                              fullWidth={true}
+                              containerstyle={{ width: '100%' }}
+                            >
+                              {exportScopes.map((value, i) => (
+                                <MenuItem
+                                  key={i}
+                                  value={value}
+                                  disabled={!isExportActive(value)}
+                                >
+                                  {value}
+                                </MenuItem>
+                              ))}
+                            </Field>
+                            <ObjectMarkingField
+                              name="contentMaxMarkings"
+                              label={t_i18n(CONTENT_MAX_MARKINGS_TITLE)}
+                              onChange={(_, values) => handleSelectedContentMaxMarkingsChange(values)}
+                              style={fieldSpacingContainerStyle}
+                              setFieldValue={setFieldValue}
+                              limitToMaxSharing
+                              helpertext={t_i18n(CONTENT_MAX_MARKINGS_HELPERTEXT)}
+                            />
+                            <ObjectMarkingField
+                              name="fileMarkings"
+                              label={t_i18n('File marking definition levels')}
+                              filterTargetIds={selectedContentMaxMarkingsIds}
+                              style={fieldSpacingContainerStyle}
+                              setFieldValue={setFieldValue}
+                            />
+                          </DialogContent>
+                        );
+                      }
+                      return <Loader variant="inElement" />;
                     }}
-                    fullWidth={true}
-                    data-testid="StixCoreObjectsExportCreationDialog"
-                  >
-                    <DialogTitle>
-                      {t_i18n('Generate an export')}
-                      <Tooltip title={t_i18n('Your max shareable markings will be applied to the content max markings')}>
-                        <InfoOutlined sx={{ paddingLeft: 1 }} fontSize="small" />
-                      </Tooltip>
-                    </DialogTitle>
-                    <QueryRenderer
-                      query={markingDefinitionsLinesSearchQuery}
-                      variables={{ first: 200 }}
-                      render={({ props }) => {
-                        if (props && props.markingDefinitions) {
-                          return (
-                            <DialogContent>
-                              <Field
-                                component={SelectField}
-                                variant="standard"
-                                name="format"
-                                label={t_i18n('Export format')}
-                                fullWidth={true}
-                                containerstyle={{ width: '100%' }}
-                              >
-                                {exportScopes.map((value, i) => (
-                                  <MenuItem
-                                    key={i}
-                                    value={value}
-                                    disabled={!isExportActive(value)}
-                                  >
-                                    {value}
-                                  </MenuItem>
-                                ))}
-                              </Field>
-                              <ObjectMarkingField
-                                name="contentMaxMarkings"
-                                label={t_i18n(CONTENT_MAX_MARKINGS_TITLE)}
-                                onChange={(_, values) => handleSelectedContentMaxMarkingsChange(values)}
-                                style={fieldSpacingContainerStyle}
-                                setFieldValue={setFieldValue}
-                                limitToMaxSharing
-                                helpertext={t_i18n(CONTENT_MAX_MARKINGS_HELPERTEXT)}
-                              />
-                              <ObjectMarkingField
-                                name="fileMarkings"
-                                label={t_i18n('File marking definition levels')}
-                                filterTargetIds={selectedContentMaxMarkingsIds}
-                                style={fieldSpacingContainerStyle}
-                                setFieldValue={setFieldValue}
-                              />
-                            </DialogContent>
-                          );
-                        }
-                        return <Loader variant="inElement" />;
-                      }}
-                    />
-                    <DialogActions>
-                      <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
-                        {t_i18n('Cancel')}
-                      </Button>
-                      <Button
-                        // color="secondary"
-                        onClick={submitForm}
-                        disabled={isSubmitting}
-                      >
-                        {t_i18n('Create')}
-                      </Button>
-                    </DialogActions>
-                  </Dialog>
-                </Form>
-              )}
-            </Formik>
-          </>
+                  />
+                  <DialogActions>
+                    <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
+                      {t_i18n('Cancel')}
+                    </Button>
+                    <Button
+                      // color="secondary"
+                      onClick={submitForm}
+                      disabled={isSubmitting}
+                    >
+                      {t_i18n('Create')}
+                    </Button>
+                  </DialogActions>
+                </Dialog>
+              </Form>
+            )}
+          </Formik>
         );
       }}
     </ExportContext.Consumer>

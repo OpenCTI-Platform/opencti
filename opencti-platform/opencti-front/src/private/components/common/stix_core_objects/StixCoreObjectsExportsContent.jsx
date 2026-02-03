@@ -11,6 +11,7 @@ import { useFormatter } from '../../../../components/i18n';
 import Button from '@common/button/Button';
 import Tooltip from '@mui/material/Tooltip';
 import * as R from 'ramda';
+import { Stack } from '@mui/material';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -51,7 +52,11 @@ const StixCoreObjectsExportsContentComponent = ({
 
   return (
     <>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', paddingBottom: 8 }}>
+      <Stack
+        direction="row"
+        justifyContent="flex-end"
+        gap={1}
+      >
         <Tooltip
           title={
             isExportPossible
@@ -68,7 +73,7 @@ const StixCoreObjectsExportsContentComponent = ({
             {t_i18n('Generate an export')}
           </Button>
         </Tooltip>
-      </div>
+      </Stack>
       <List>
         {stixCoreObjectsExportFiles.length > 0 ? (
           stixCoreObjectsExportFiles.map((file) => file?.node && (

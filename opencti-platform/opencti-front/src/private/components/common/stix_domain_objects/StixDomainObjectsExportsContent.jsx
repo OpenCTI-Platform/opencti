@@ -13,6 +13,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNGETEXPORT_KNASKEXPORT } from '../../../../utils/hooks/useGranted';
 import Button from '@common/button/Button';
 import Tooltip from '@mui/material/Tooltip';
+import { Stack } from '@mui/material';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -61,7 +62,11 @@ class StixDomainObjectsExportsContentComponent extends Component {
 
     return (
       <>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', paddingBottom: 8 }}>
+        <Stack
+          direction="row"
+          justifyContent="flex-end"
+          gap={1}
+        >
           <Tooltip
             title={
               isExportPossible
@@ -78,7 +83,7 @@ class StixDomainObjectsExportsContentComponent extends Component {
               {t('Generate an export')}
             </Button>
           </Tooltip>
-        </div>
+        </Stack>
         <List>
           {stixDomainObjectsExportFiles.length > 0 ? (
             stixDomainObjectsExportFiles.map(
