@@ -20,7 +20,6 @@ import {
 } from './draftWorkspace-domain';
 import { loadThroughDenormalized } from '../../resolvers/stix';
 import { INPUT_CREATED_BY } from '../../schema/general';
-import { getWorkflowInstance } from '../workflow/workflow-domain';
 
 const draftWorkspaceResolvers: Resolvers = {
   Query: {
