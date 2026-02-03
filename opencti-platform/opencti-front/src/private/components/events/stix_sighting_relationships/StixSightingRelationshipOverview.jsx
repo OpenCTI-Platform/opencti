@@ -406,9 +406,7 @@ class StixSightingRelationshipContainer extends Component {
                       >
                         {t('Count')}
                       </Label>
-                      <span className={classes.number}>
-                        {n(stixSightingRelationship.attribute_count)}
-                      </span>
+                      {n(stixSightingRelationship.attribute_count)}
                       <Label
                         sx={{ marginTop: 2 }}
                       >
@@ -506,11 +504,12 @@ class StixSightingRelationshipContainer extends Component {
               </CardTitle>
               {stixSightingRelationship.x_opencti_inferences.map(
                 (inference) => (
-                  <StixCoreRelationshipInference
-                    key={inference.rule.id}
-                    inference={inference}
-                    stixRelationship={stixSightingRelationship}
-                  />
+                  <div key={inference.rule.id}>
+                    <StixCoreRelationshipInference
+                      inference={inference}
+                      stixRelationship={stixSightingRelationship}
+                    />
+                  </div>
                 ),
               )}
             </Grid>
