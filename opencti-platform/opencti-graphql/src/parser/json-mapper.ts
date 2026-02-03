@@ -15,8 +15,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import * as JSONPath from 'jsonpath-plus';
 
-import '../modules';
 import { v4 as uuidv4 } from 'uuid';
+import type { StixObject } from '../types/stix-2-1-common';
+import { logApp } from '../config/conf';
+import { UnsupportedError } from '../config/errors';
+import { isNotEmptyField } from '../database/utils';
+import { handleInnerType } from '../domain/stixDomainObject';
+import '../modules';
+import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
+import { getHashesNames } from '../modules/internal/csvMapper/csvMapper-utils';
 import {
   type BasedRepresentationAttribute,
   type ComplexAttributePath,
@@ -26,28 +33,19 @@ import {
   type RepresentationAttribute,
   type SimpleAttributePath,
 } from '../modules/internal/jsonMapper/jsonMapper-types';
-import type { StixObject } from '../types/stix-2-1-common';
-import { schemaAttributesDefinition } from '../schema/schema-attributes';
-import { generateStandardId } from '../schema/identifier';
-import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
-import { UnsupportedError } from '../config/errors';
-import { type AttributeDefinition, entityType, id as idType, type ObjectAttribute, relationshipType } from '../schema/attribute-definition';
-import { isNotEmptyField } from '../database/utils';
-import { computeDefaultValue, formatValue, handleDefaultMarkings, handleRefEntities, type InputType } from './csv-mapper';
-import { getHashesNames } from '../modules/internal/csvMapper/csvMapper-utils';
-import { SYSTEM_USER } from '../utils/access';
-import type { BasicStoreObject, StoreCommon } from '../types/store';
-import { INPUT_MARKINGS } from '../schema/general';
-import { isStixRelationshipExceptRef } from '../schema/stixRelationship';
-import { BundleBuilder } from './bundle-creator';
-import { handleInnerType } from '../domain/stixDomainObject';
 import { createStixPatternSync } from '../python/pythonBridge';
-import { logApp } from '../config/conf';
-import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
-import type { AuthContext, AuthUser } from '../types/user';
+import { type AttributeDefinition, entityType, id as idType, type ObjectAttribute, relationshipType } from '../schema/attribute-definition';
+import { INPUT_MARKINGS } from '../schema/general';
+import { generateStandardId } from '../schema/identifier';
+import { schemaAttributesDefinition } from '../schema/schema-attributes';
+import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { fromRef, toRef } from '../schema/stixRefRelationship';
+import { isStixRelationshipExceptRef } from '../schema/stixRelationship';
+import type { BasicStoreObject, StoreCommon } from '../types/store';
+import type { AuthContext, AuthUser } from '../types/user';
+import { SYSTEM_USER } from '../utils/access';
 import { safeRender } from '../utils/safeEjs';
-
+import { computeDefaultValue, formatValue, handleDefaultMarkings, handleRefEntities, type InputType } from './csv-mapper';
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
 
 const format = (value: string | string[], def: AttributeDefinition, attribute: SimpleAttributePath | ComplexAttributePath | undefined) => {
@@ -190,7 +188,6 @@ const extractTargetIdentifierFromJson = (base: JSON, record: JSON, identifier: s
   return orderedIdentifiersCombinations(arrayOfMappedIdentifiers).map((comb) => comb.join('-'));
 };
 
-/* eslint-disable no-param-reassign */
 const handleDirectAttribute = async (
   base: JSON,
   metaData: Record<string, any>,
@@ -239,7 +236,7 @@ const handleBasedOnAttribute = async (
   input: Record<string, InputType>,
   record: JSON,
   definition: AttributeDefinition,
-  otherEntities: Map<string, Record<string, InputType>[]>,
+  otherEntities: Map<string, Map<string, Record<string, InputType>>>,
   refEntities: Record<string, BasicStoreObject>,
   representation: JsonMapperRepresentation,
   chosenMarkings: string[],
@@ -267,16 +264,24 @@ const handleBasedOnAttribute = async (
   // endregion
   // region bind the value and override default if needed
   if (attribute.based_on && attribute.based_on.representations) {
-    let entities;
+    let entities: Record<string, InputType>[];
     if (attribute.based_on.identifier) {
       const mappedIdentifiers = extractTargetIdentifierFromJson(base, record, attribute.based_on.identifier, definition);
       entities = attribute.based_on.representations
-        .map((id) => otherEntities.get(id)).flat()
-        .filter((e) => e !== undefined && mappedIdentifiers.includes(e.__identifier as string)) as Record<string, InputType>[];
+        .flatMap((id) => {
+          const representationsMap = otherEntities.get(id);
+          if (!representationsMap) return [];
+          return mappedIdentifiers.flatMap((ident) => {
+            const e = representationsMap.get(ident);
+            return e ? [e] : [];
+          });
+        });
     } else {
       entities = attribute.based_on.representations
-        .map((id) => otherEntities.get(id)).flat()
-        .filter((e) => e !== undefined) as Record<string, InputType>[];
+        .flatMap((id) => {
+          const representationsMap = otherEntities.get(id);
+          return representationsMap ? Array.from(representationsMap.values()) : [];
+        });
     }
     if (entities.length > 0) {
       const entity_type = input[entityType.name] as string;
@@ -309,18 +314,6 @@ const handleBasedOnAttribute = async (
   // endregion
 };
 
-const addResult = (representation: JsonMapperRepresentation, results: Map<string, Record<string, InputType>[]>, input: any) => {
-  if (results.has(representation.id)) {
-    const current = results.get(representation.id) ?? [];
-    if (!current.map((c) => c.__identifier).includes(input.__identifier)) {
-      current?.push(input);
-      results.set(representation.id, current);
-    }
-  } else {
-    results.set(representation.id, [input]);
-  }
-};
-
 const computeOrderedRepresentations = (representations: JsonMapperRepresentation[]) => {
   const relationships = representations.filter((r) => r.type === JsonMapperRepresentationType.Relationship);
   const baseEntities = representations.filter((r) => {
@@ -344,7 +337,44 @@ const computeOrderedRepresentations = (representations: JsonMapperRepresentation
 const jsonMappingExecution = async (context: AuthContext, user: AuthUser, data: string | object, mapper: JsonMapperParsed, variables: Record<string, unknown> = {}) => {
   const refEntities = await handleRefEntities(context, SYSTEM_USER, mapper);
   const chosenMarkings = mapper.user_chosen_markings ?? [];
-  const results = new Map<string, Record<string, InputType>[]>();
+  const results = new Map<string, Map<string, Record<string, InputType>>>();
+
+  const finalObjects: StixObject[] = [];
+  const seenIds = new Set<string>();
+
+  const processInput = (representation: JsonMapperRepresentation, input: any) => {
+    let stixObject: StixObject | undefined;
+    try {
+      stixObject = convertStoreToStix_2_1(input as unknown as StoreCommon);
+    } catch (e) {
+      logApp.error('JSON mapper convert error', { cause: e });
+    }
+
+    if (stixObject && !seenIds.has(stixObject.id)) {
+      seenIds.add(stixObject.id);
+      finalObjects.push(stixObject);
+    }
+
+    if (representation.type === JsonMapperRepresentationType.Relationship) {
+      // We can discard relationships from/to references to free some memory.
+      // We need to store the relationship in results (below) so other objects can reference it (for example, sighting-of),
+      // but those references only need the ID, not the heavy source/target objects
+      delete input.from;
+      delete input.to;
+      delete input.__froms;
+      delete input.__tos;
+    }
+
+    const current = results.get(representation.id);
+    if (current) {
+      if (!current.has(input.__identifier)) {
+        current.set(input.__identifier, input);
+      }
+    } else {
+      results.set(representation.id, new Map([[input.__identifier, input]]));
+    }
+  };
+
   const baseJson = typeof data === 'string' ? JSON.parse(data) : data;
   const baseArray = Array.isArray(baseJson) ? baseJson : [baseJson];
   for (let index = 0; index < baseArray.length; index += 1) {
@@ -422,7 +452,7 @@ const jsonMappingExecution = async (context: AuthContext, user: AuthUser, data: 
                 inputNew.to = to;
                 inputNew.toType = toType;
                 inputNew.standard_id = generateStandardId(inputNew.entity_type, inputNew);
-                addResult(representation, results, inputNew);
+                processInput(representation, inputNew);
               }
             }
           } else {
@@ -433,26 +463,14 @@ const jsonMappingExecution = async (context: AuthContext, user: AuthUser, data: 
             } else {
               input.__identifier = uuidv4();
             }
-            addResult(representation, results, input);
+            processInput(representation, input);
           }
         }
       }
     }
     // endregion
   }
-  // Generate the final bundle
-  const objects = Array.from(results.values()).flat();
-  const stixObjects = objects.map((e) => {
-    try {
-      return convertStoreToStix_2_1(e as unknown as StoreCommon);
-    } catch (_err) {
-      logApp.error('JSON mapper convert error', { cause: e });
-    }
-    return null;
-  }).filter((elem) => isNotEmptyField(elem)) as StixObject[];
-  const bundleBuilder = new BundleBuilder();
-  bundleBuilder.addObjects(stixObjects);
-  return bundleBuilder.build();
+  return finalObjects;
 };
 
 export default jsonMappingExecution;

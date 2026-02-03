@@ -180,17 +180,22 @@ export const loadFile = async (
  * @param {AuthContext} context - The authentication context
  * @param {AuthUser} user - The user performing the deletion
  * @param {string} id - The file ID (S3 path) to delete
+ * @param {Object} opts - Options for deletion
+ * @param {boolean} opts.forceDelete - If true, proceeds with cleanup even if file not found (useful for retention manager)
  * @returns {Promise<LoadedFile | undefined>} The deleted file information
  * @throws {UnsupportedError} When attempting to delete non-draft files in draft mode
  */
-export const deleteFile = async (context: AuthContext, user: AuthUser, id: string) => {
+export const deleteFile = async (context: AuthContext, user: AuthUser, id: string, opts: { forceDelete?: boolean } = {}) => {
+  const { forceDelete = false } = opts;
   const draftContext = getDraftContext(context, user);
   if (draftContext && !isDraftFile(id, draftContext)) {
     throw UnsupportedError('Cannot delete non draft imports in draft');
   }
-  const up = await loadFile(context, user, id);
+  const up = await loadFile(context, user, id, { dontThrow: forceDelete });
+  // If file not found and not forcing, loadFile already threw
+  // If file not found and forcing, we still proceed to clean up any orphan data
   logApp.debug(`[FILE STORAGE] delete file ${id} by ${user.user_email}`);
-  // Delete in S3
+  // Delete in S3 (idempotent - won't fail if file doesn't exist)
   await deleteFileFromStorage(id);
   // Delete associated works
   await deleteWorkForFile(context, user, id);
@@ -720,17 +725,22 @@ export const deleteAllObjectFiles = async (context: AuthContext, user: AuthUser,
     const fromTemplateFilesPromise = allFilesForPaths(context, user, [fromTemplatePath]);
     const fromTemplateWorkPromise = deleteWorkForSource(fromTemplatePath);
 
-    const [importFiles, embeddedFiles, exportFiles, fromTemplateFiles, _, __, ___, ____] = await Promise.all([
+    // Also delete workbenches linked to this entity (files in import/pending with metaData.entity_id)
+    const pendingPath = `${IMPORT_STORAGE_PATH}/pending/`;
+    const pendingFilesPromise = allFilesForPaths(context, user, [pendingPath], { entity_id: element.internal_id });
+
+    const [importFiles, embeddedFiles, exportFiles, fromTemplateFiles, pendingFiles] = await Promise.all([
       importFilesPromise,
       embeddedFilesPromise,
       exportFilesPromise,
       fromTemplateFilesPromise,
+      pendingFilesPromise,
       importWorkPromise,
       embeddedWorkPromise,
       exportWorkPromise,
       fromTemplateWorkPromise,
     ]);
-    ids = [...importFiles, ...embeddedFiles, ...exportFiles, ...fromTemplateFiles].map((file) => file.id);
+    ids = [...importFiles, ...embeddedFiles, ...exportFiles, ...fromTemplateFiles, ...pendingFiles].map((file) => file.id);
   }
   logApp.debug('[FILE STORAGE] deleting all files with ids:', { ids });
   return deleteFiles(context, user, ids);

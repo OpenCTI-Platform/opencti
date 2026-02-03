@@ -646,6 +646,7 @@ class OpenCTIStix2:
                         # Prepare all files for upload during creation
                         files_to_upload = []
                         files_markings = []
+                        no_trigger_import = False
                         for file_obj in ext_ref_files:
                             data = None
                             if "data" in file_obj:
@@ -670,6 +671,9 @@ class OpenCTIStix2:
                                 files_markings.append(
                                     file_obj.get("object_marking_refs", None)
                                 )
+                                # Check if any file requires no trigger import
+                                if file_obj.get("no_trigger_import", False):
+                                    no_trigger_import = True
 
                         # Create external reference with all files attached
                         external_reference_id = self.opencti.external_reference.create(
@@ -683,6 +687,7 @@ class OpenCTIStix2:
                             ),
                             files=files_to_upload if files_to_upload else None,
                             filesMarkings=files_markings if files_markings else None,
+                            noTriggerImport=no_trigger_import,
                         )["id"]
 
                     external_references_ids.append(external_reference_id)
@@ -818,22 +823,26 @@ class OpenCTIStix2:
                 if generated_ref_id is None:
                     continue
                 else:
-                    # Prepare all files for direct upload during creation
-                    files_to_upload = []
-                    files_markings = []
+                    # Collect files from both x_opencti_files and extension
                     all_files = []
                     if "x_opencti_files" in external_reference:
-                        all_files = external_reference["x_opencti_files"]
-                    elif (
+                        all_files.extend(external_reference["x_opencti_files"])
+                    if (
                         self.opencti.get_attribute_in_extension(
                             "files", external_reference
                         )
                         is not None
                     ):
-                        all_files = self.opencti.get_attribute_in_extension(
-                            "files", external_reference
+                        all_files.extend(
+                            self.opencti.get_attribute_in_extension(
+                                "files", external_reference
+                            )
                         )
 
+                    # Prepare all files for direct upload during creation
+                    files_to_upload = []
+                    files_markings = []
+                    no_trigger_import = False
                     for file_obj in all_files:
                         data = None
                         if "data" in file_obj:
@@ -858,6 +867,9 @@ class OpenCTIStix2:
                             files_markings.append(
                                 file_obj.get("object_marking_refs", None)
                             )
+                            # Check if any file requires no trigger import
+                            if file_obj.get("no_trigger_import", False):
+                                no_trigger_import = True
 
                     external_reference_id = self.opencti.external_reference.create(
                         source_name=source_name,
@@ -870,6 +882,7 @@ class OpenCTIStix2:
                         ),
                         files=files_to_upload if files_to_upload else None,
                         filesMarkings=files_markings if files_markings else None,
+                        noTriggerImport=no_trigger_import,
                     )["id"]
 
                 external_references_ids.append(external_reference_id)
@@ -1122,6 +1135,7 @@ class OpenCTIStix2:
         # Prepare all files for direct upload during creation
         files_to_upload = []
         files_markings = []
+        no_trigger_import = False
         for file_obj in x_opencti_files:
             data = None
             if "data" in file_obj:
@@ -1140,6 +1154,9 @@ class OpenCTIStix2:
                     )
                 )
                 files_markings.append(file_obj.get("object_marking_refs", None))
+                # Check if any file requires no trigger import
+                if file_obj.get("no_trigger_import", False):
+                    no_trigger_import = True
 
         # Extra
         extras = {
@@ -1154,6 +1171,7 @@ class OpenCTIStix2:
             "sample_ids": sample_refs_ids,
             "files": files_to_upload if files_to_upload else None,
             "filesMarkings": files_markings if files_markings else None,
+            "noTriggerImport": no_trigger_import,
         }
 
         stix_helper = self.get_stix_helper().get(stix_object["type"])
@@ -1244,6 +1262,7 @@ class OpenCTIStix2:
         # Prepare all files for direct upload during creation
         files_to_upload = []
         files_markings = []
+        no_trigger_import = False
         for file_obj in x_opencti_files:
             data = None
             if "data" in file_obj:
@@ -1262,6 +1281,9 @@ class OpenCTIStix2:
                     )
                 )
                 files_markings.append(file_obj.get("object_marking_refs", None))
+                # Check if any file requires no trigger import
+                if file_obj.get("no_trigger_import", False):
+                    no_trigger_import = True
 
         # Extra
         extras = {
@@ -1277,6 +1299,7 @@ class OpenCTIStix2:
             "sample_ids": sample_refs_ids,
             "files": files_to_upload if files_to_upload else None,
             "filesMarkings": files_markings if files_markings else None,
+            "noTriggerImport": no_trigger_import,
         }
         upsert_operations = self.opencti.get_attribute_in_extension(
             "opencti_upsert_operations", stix_object
@@ -1325,6 +1348,7 @@ class OpenCTIStix2:
                 update=update,
                 files=extras.get("files"),
                 filesMarkings=extras.get("filesMarkings"),
+                noTriggerImport=extras.get("noTriggerImport", False),
                 upsert_operations=upsert_operations,
             )
         else:
@@ -1352,6 +1376,7 @@ class OpenCTIStix2:
                 update=update,
                 files=extras.get("files"),
                 filesMarkings=extras.get("filesMarkings"),
+                noTriggerImport=extras.get("noTriggerImport", False),
                 upsert_operations=upsert_operations,
             )
         if stix_observable_result is not None:

@@ -208,6 +208,7 @@ import {
   authorizedMembersActivationDate,
   confidence,
   creators as creatorsAttribute,
+  files,
   iAliasedIds,
   iAttributes,
   modified,
@@ -243,6 +244,7 @@ import { modules } from '../schema/module';
 import { doYield } from '../utils/eventloop-utils';
 import { ENTITY_TYPE_SECURITY_COVERAGE, RELATION_COVERED } from '../modules/securityCoverage/securityCoverage-types';
 import { findById as findDraftById } from '../modules/draftWorkspace/draftWorkspace-domain';
+import { isEnterpriseEditionFromSettings } from '../../src/enterprise-edition/ee';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -1467,6 +1469,12 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
     { concurrency: ES_MAX_CONCURRENCY },
   );
 
+  // Delete remaining files for source entities (workbenches linked via metaData.entity_id)
+  // Note: regular files were already moved by moveAllFilesFromEntityToAnother
+  for (let i = 0; i < sourceEntities.length; i += 1) {
+    await deleteAllObjectFiles(context, SYSTEM_USER, sourceEntities[i]);
+  }
+
   // Take care of relations deletions to prevent duplicate marking definitions.
   const elementToRemoves = [...sourceEntities, ...fromDeletions, ...toDeletions];
   // All not move relations will be deleted, so we need to remove impacted rel in entities.
@@ -2060,7 +2068,17 @@ export const generateUpdateMessage = async (context, user, entityType, inputs) =
     const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
     creators = creatorsIds.map((id) => platformUsers.get(id));
   }
-  return generateUpdatePatchMessage(patchElements, entityType, { members, creators });
+
+  // Extract file_markings from x_opencti_files updates to resolve marking names
+  const fileObjects = getKeyValuesFromPatchElements(patchElements, files.name);
+  const fileMarkingIds = R.uniq(fileObjects.flatMap((f) => f?.file_markings ?? []));
+  let markings = [];
+  if (fileMarkingIds.length > 0) {
+    const markingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+    markings = fileMarkingIds.map((id) => markingsMap.get(id)).filter((m) => m);
+  }
+
+  return generateUpdatePatchMessage(patchElements, entityType, { members, creators, markings });
 };
 
 const buildAttribute = async (context, user, key, array) => {
@@ -2377,7 +2395,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
       } else {
         // Special access check for RELATION_GRANTED_TO meta
         // If not supported, update must be rejected
-        const isUserCanManipulateGrantedRefs = isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && settings.valid_enterprise_edition === true;
+        const isUserCanManipulateGrantedRefs = isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && isEnterpriseEditionFromSettings(settings);
         if (relType === RELATION_GRANTED_TO && !isUserCanManipulateGrantedRefs) {
           throw ForbiddenAccess();
         }
@@ -2861,7 +2879,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
   }
 
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  const validEnterpriseEdition = settings.valid_enterprise_edition;
+  const validEnterpriseEdition = isEnterpriseEditionFromSettings(settings);
   // All inputs impacted by modifications (+inner)
   const inputs = await generateInputsForUpsert(context, user, resolvedElement, type, updatePatch, confidenceForUpsert, validEnterpriseEdition);
 
@@ -3376,6 +3394,7 @@ const internalCreateEntityRaw = async (context, user, rawInput, type, opts = {})
     // Process all files to upload
     if (filesToUpload.length > 0) {
       const isAutoExternal = entitySetting?.platform_entity_files_ref;
+      const noTriggerImport = resolvedInput.noTriggerImport ?? false;
       const path = `import/${type}/${dataEntity.element[ID_INTERNAL]}`;
       const uploadedFiles = [];
       for (let i = 0; i < filesToUpload.length; i += 1) {
@@ -3383,7 +3402,7 @@ const internalCreateEntityRaw = async (context, user, rawInput, type, opts = {})
         const { filename } = await fileInput;
         const key = `${path}/${filename}`;
         const meta = isAutoExternal ? { external_reference_id: generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, { url: `/storage/get/${key}` }) } : {};
-        const { upload: uploadedFile } = await uploadToStorage(context, user, path, fileInput, { entity: dataEntity.element, file_markings, meta });
+        const { upload: uploadedFile } = await uploadToStorage(context, user, path, fileInput, { entity: dataEntity.element, file_markings, meta, noTriggerImport });
         uploadedFiles.push(storeFileConverter(user, uploadedFile));
         // Add external references from files if necessary
         if (isAutoExternal) {

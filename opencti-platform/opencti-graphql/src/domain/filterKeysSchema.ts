@@ -50,6 +50,7 @@ import { ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/sti
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
 import { getEntityMetricsConfiguration } from '../modules/metrics/metrics-utils';
+import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
 
 export type FilterDefinition = {
   filterKey: string;
@@ -484,7 +485,7 @@ export const generateFilterKeysSchema = async () => {
   const filterKeysSchema: Map<string, Map<string, FilterDefinition>> = new Map();
   const context = executionContext('filterKeysSchema');
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  const isNotEnterpriseEdition = settings.valid_enterprise_edition !== true;
+  const isNotEnterpriseEdition = !isEnterpriseEditionFromSettings(settings);
   // A. build filterKeysSchema map for each entity type
   const registeredTypes = schemaAttributesDefinition.getRegisteredTypes();
   registeredTypes.forEach((type) => {

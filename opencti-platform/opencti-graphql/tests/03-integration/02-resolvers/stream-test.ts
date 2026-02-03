@@ -7,8 +7,6 @@ import { getGroupEntity } from '../../utils/domainQueryHelper';
 import { AMBER_GROUP, USER_CONNECTOR, USER_PARTICIPATE } from '../../utils/testQuery';
 import { MEMBER_ACCESS_RIGHT_VIEW } from '../../../src/utils/access';
 
-// TODO : find a way to mock EE ?
-
 describe('Stream resolver coverage', () => {
   let publicStreamId: string;
   let amberRestrictedStreamId: string;

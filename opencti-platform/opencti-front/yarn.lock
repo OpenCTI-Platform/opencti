@@ -5992,14 +5992,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:1.13.2":
-  version: 1.13.2
-  resolution: "axios@npm:1.13.2"
+"axios@npm:1.13.3":
+  version: 1.13.3
+  resolution: "axios@npm:1.13.3"
   dependencies:
     follow-redirects: "npm:^1.15.6"
     form-data: "npm:^4.0.4"
     proxy-from-env: "npm:^1.1.0"
-  checksum: 10c0/e8a42e37e5568ae9c7a28c348db0e8cf3e43d06fcbef73f0048669edfe4f71219664da7b6cc991b0c0f01c28a48f037c515263cb79be1f1ae8ff034cd813867b
+  checksum: 10c0/86f0770624d9f14a3f8f8738c8b8f7f7fbb7b0d4ad38757db1de2d71007a0311bc597661c5ff4b4a9ee6350c6956a7282e3a281fcdf7b5b32054e35a8801e2ce
   languageName: node
   linkType: hard
 
@@ -12268,7 +12268,7 @@ __metadata:
     "@vitest/coverage-v8": "npm:4.0.17"
     analytics: "npm:0.8.19"
     apexcharts: "npm:4.4.0"
-    axios: "npm:1.13.2"
+    axios: "npm:1.13.3"
     babel-plugin-relay: "npm:20.1.1"
     buffer: "npm:6.0.3"
     chokidar: "npm:5.0.0"
@@ -12321,13 +12321,13 @@ __metadata:
     prop-types: "npm:15.8.1"
     qrcode: "npm:1.5.4"
     ramda: "npm:0.32.0"
-    react: "npm:19.2.3"
+    react: "npm:19.2.4"
     react-apexcharts: "npm:1.7.0"
     react-color: "npm:2.19.3"
     react-compound-slider: "npm:3.4.0"
     react-cookie: "npm:8.0.1"
     react-csv: "npm:2.2.2"
-    react-dom: "npm:19.2.3"
+    react-dom: "npm:19.2.4"
     react-draggable: "npm:4.5.0"
     react-force-graph-2d: "npm:1.29.0"
     react-force-graph-3d: "npm:1.29.0"
@@ -13000,14 +13000,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-dom@npm:19.2.3":
-  version: 19.2.3
-  resolution: "react-dom@npm:19.2.3"
+"react-dom@npm:19.2.4":
+  version: 19.2.4
+  resolution: "react-dom@npm:19.2.4"
   dependencies:
     scheduler: "npm:^0.27.0"
   peerDependencies:
-    react: ^19.2.3
-  checksum: 10c0/dc43f7ede06f46f3acc16ee83107c925530de9b91d1d0b3824583814746ff4c498ea64fd65cd83aba363205268adff52e2827c582634ae7b15069deaeabc4892
+    react: ^19.2.4
+  checksum: 10c0/f0c63f1794dedb154136d4d0f59af00b41907f4859571c155940296808f4b94bf9c0c20633db75b5b2112ec13d8d7dd4f9bf57362ed48782f317b11d05a44f35
   languageName: node
   linkType: hard
 
@@ -13471,10 +13471,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react@npm:19.2.3":
-  version: 19.2.3
-  resolution: "react@npm:19.2.3"
-  checksum: 10c0/094220b3ba3a76c1b668f972ace1dd15509b157aead1b40391d1c8e657e720c201d9719537375eff08f5e0514748c0319063392a6f000e31303aafc4471f1436
+"react@npm:19.2.4":
+  version: 19.2.4
+  resolution: "react@npm:19.2.4"
+  checksum: 10c0/cd2c9ff67a720799cc3b38a516009986f7fc4cb8d3e15716c6211cf098d1357ee3e348ab05ad0600042bbb0fd888530ba92e329198c92eafa0994f5213396596
   languageName: node
   linkType: hard
 

@@ -143,12 +143,12 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
   };
   const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
   const ingestionUser = ingestion.user_id ? platformUsers.get(ingestion.user_id) : null;
-  const bundle = await jsonMappingExecution(context, ingestionUser || SYSTEM_USER, requestData, jsonMapperParsed);
+  let objects = await jsonMappingExecution(context, ingestionUser || SYSTEM_USER, requestData, jsonMapperParsed);
   let nextExecutionState = buildQueryObject(ingestion.query_attributes, { ...requestData, ...responseHeaders }, false);
   // region Try to paginate with next page style
   if (ingestion.pagination_with_sub_page && isNotEmptyField(ingestion.pagination_with_sub_page_attribute_path)) {
     let url = getValueFromPath(ingestion.pagination_with_sub_page_attribute_path, requestData);
-    while (isNotEmptyField(url) && (maxResults === 0 || (bundle.objects ?? []).length < maxResults)) {
+    while (isNotEmptyField(url) && (maxResults === 0 || objects.length < maxResults)) {
       logApp.info(`> Sub query: ${url}`);
       await wait(100); // Wait 100 ms between 2 calls
       const { data: paginationData } = await httpClient.call({
@@ -158,9 +158,9 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
       });
       const paginationVariables = buildQueryObject(ingestion.query_attributes, { ...paginationData, ...responseHeaders }, false);
       nextExecutionState = { ...nextExecutionState, ...paginationVariables };
-      const paginationBundle = await jsonMappingExecution(context, ingestionUser || SYSTEM_USER, paginationData, jsonMapperParsed);
-      if (paginationBundle.objects.length > 0) {
-        bundle.objects = bundle.objects.concat(paginationBundle.objects);
+      const paginationObjects = await jsonMappingExecution(context, ingestionUser || SYSTEM_USER, paginationData, jsonMapperParsed);
+      if (paginationObjects.length > 0) {
+        objects = objects.concat(paginationObjects);
       }
       url = getValueFromPath(ingestion.pagination_with_sub_page_attribute_path, paginationData);
     }
@@ -168,9 +168,9 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
   // endregion
   // In case of limitation, ensure to not return too many elements
   if (maxResults > 0) {
-    bundle.objects = bundle.objects.slice(0, maxResults);
+    objects = objects.slice(0, maxResults);
   }
-  return { bundle, variables, nextExecutionState };
+  return { objects, variables, nextExecutionState };
 };
 
 export const findById = async (context: AuthContext, user: AuthUser, ingestionId: string, removeCredentials = false) => {
@@ -341,11 +341,11 @@ export const testJsonIngestionMapping = async (context: AuthContext, _user: Auth
   if (input.authentication_value) {
     verifyIngestionAuthenticationContent(input.authentication_type, input.authentication_value);
   }
-  const { bundle, nextExecutionState } = await executeJsonQuery(context, input as BasicStoreEntityIngestionJson, { maxResults: 50 });
+  const { objects, nextExecutionState } = await executeJsonQuery(context, input as BasicStoreEntityIngestionJson, { maxResults: 50 });
   return {
-    objects: JSON.stringify(bundle.objects, null, 2),
-    nbRelationships: bundle.objects.filter((object: StixObject) => object.type === 'relationship').length,
-    nbEntities: bundle.objects.filter((object: StixObject) => object.type !== 'relationship').length,
+    objects: JSON.stringify(objects, null, 2),
+    nbRelationships: objects.filter((object: StixObject) => object.type === 'relationship').length,
+    nbEntities: objects.filter((object: StixObject) => object.type !== 'relationship').length,
     state: JSON.stringify(nextExecutionState),
   };
 };

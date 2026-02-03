@@ -641,10 +641,16 @@ export const jsonExecutor = async (context: AuthContext) => {
     if (isMustExecuteIteration(ingestion.last_execution_date, ingestion.scheduling_period)) {
       const { messages_number, messages_size } = await queueDetails(connectorIdFromIngestId(ingestion.id));
       if (messages_number === 0) { // If no more ingestion to do
-        const { bundle, variables, nextExecutionState } = await executeJsonQuery(context, ingestion);
-        logApp.info('pushBundleToConnectorQueue', bundle.objects.length);
+        const { objects, variables, nextExecutionState } = await executeJsonQuery(context, ingestion);
+        logApp.info('pushBundleToConnectorQueue', objects.length);
         // Push the bundle to absorption queue if required
-        if (bundle.objects.length > 0) {
+        if (objects.length > 0) {
+          const bundle: StixBundle = {
+            id: `bundle--${uuidv4()}`,
+            spec_version: '2.1',
+            type: 'bundle',
+            objects,
+          };
           await pushBundleToConnectorQueue(context, ingestion, bundle);
         }
         // Save new state for next execution

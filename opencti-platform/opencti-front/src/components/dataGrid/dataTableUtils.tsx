@@ -385,7 +385,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
               float: 'left',
               marginRight: 7,
               overflow: 'hidden',
-              whiteSpace: 'nowrap' }}
+              whiteSpace: 'nowrap',
+            }}
             >
               <Chip
                 key={type}

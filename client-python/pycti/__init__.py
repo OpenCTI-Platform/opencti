@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__version__ = "6.9.11"
+__version__ = "6.9.15"
 
 from .api.opencti_api_client import OpenCTIApiClient
 from .api.opencti_api_connector import OpenCTIApiConnector
@@ -72,9 +72,6 @@ from .utils.constants import (
     CustomObservableCryptocurrencyWallet,
     CustomObservableCryptographicKey,
     CustomObservableHostname,
-    CustomObservableICCID,
-    CustomObservableIMEI,
-    CustomObservableIMSI,
     CustomObservableMediaContent,
     CustomObservablePaymentCard,
     CustomObservablePersona,
@@ -177,9 +174,6 @@ __all__ = [
     "CustomObservableBankAccount",
     "CustomObservableCryptographicKey",
     "CustomObservableCryptocurrencyWallet",
-    "CustomObservableICCID",
-    "CustomObservableIMEI",
-    "CustomObservableIMSI",
     "CustomObservablePaymentCard",
     "CustomObservablePersona",
     "CustomObservablePhoneNumber",

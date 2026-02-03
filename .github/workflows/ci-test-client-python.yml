@@ -75,8 +75,18 @@ jobs:
           pip3 install -r requirements.txt --user
           pip3 install -r test-requirements.txt --user
           sleep 180
-          python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
+          python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --cov-report=xml:coverage.xml --drone
           '
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ${{ github.workspace }}/client-python/coverage.xml
+        flags: opencti-client-python
+        fail_ci_if_error: false
+        override_branch: ${{ github.head_ref || github.ref_name }}
+        override_commit: ${{ github.event.pull_request.head.sha || github.sha }}
 
     - name: Run pycti example tests
       run: |

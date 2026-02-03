@@ -2715,6 +2715,7 @@ input ExternalReferenceAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   external_id: String
   created: DateTime
   modified: DateTime
@@ -3139,6 +3140,7 @@ input AttackPatternAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -3288,6 +3290,7 @@ input CampaignAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -3490,6 +3493,7 @@ input NoteAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -3633,6 +3637,7 @@ input ObservedDataAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -3753,6 +3758,7 @@ input OpinionAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
 }
 
 input OpinionUserAddInput {
@@ -3906,6 +3912,7 @@ input ReportAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   authorized_members: [MemberAccessInput!]
   upsertOperations: [EditInput!]
 }
@@ -4022,6 +4029,7 @@ input CourseOfActionAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -4139,6 +4147,7 @@ input IdentityAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   update: Boolean
   upsertOperations: [EditInput!]
 }
@@ -4262,6 +4271,7 @@ input IndividualAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -4381,6 +4391,7 @@ input SectorAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -4502,6 +4513,7 @@ input SystemAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -4625,6 +4637,7 @@ input InfrastructureAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -4752,6 +4765,7 @@ input IntrusionSetAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -4866,6 +4880,7 @@ input LocationAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -4986,6 +5001,7 @@ input PositionAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -5105,6 +5121,7 @@ input CityAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -5219,6 +5236,7 @@ input CountryAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -5335,6 +5353,7 @@ input RegionAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -5474,6 +5493,7 @@ input MalwareAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -5691,6 +5711,7 @@ input ThreatActorGroupAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -5806,6 +5827,7 @@ input ToolAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -6016,6 +6038,7 @@ input VulnerabilityAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -6148,6 +6171,7 @@ input IncidentAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -6278,6 +6302,7 @@ input AutonomousSystemAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -6344,6 +6369,7 @@ input DirectoryAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -6402,6 +6428,7 @@ input DomainNameAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -6462,6 +6489,7 @@ input EmailAddrAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -6532,6 +6560,7 @@ input EmailMessageAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -6594,6 +6623,7 @@ input EmailMimePartTypeAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -6736,6 +6766,7 @@ input ArtifactAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -6815,6 +6846,7 @@ input StixFileAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -6927,6 +6959,7 @@ input X509CertificateAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -6988,6 +7021,7 @@ input IPv4AddrAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -7047,6 +7081,7 @@ input IPv6AddrAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -7105,6 +7140,7 @@ input MacAddrAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -7163,6 +7199,7 @@ input MutexAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -7244,6 +7281,7 @@ input NetworkTrafficAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -7344,6 +7382,7 @@ input ProcessAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -7425,6 +7464,7 @@ input SoftwareAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -7483,6 +7523,7 @@ input UrlAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -7568,6 +7609,7 @@ input UserAccountAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -7629,6 +7671,7 @@ input WindowsRegistryKeyAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   number_of_subkeys: Int
   upsertOperations: [EditInput!]
 }
@@ -7692,6 +7735,7 @@ input WindowsRegistryValueTypeAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -7750,6 +7794,7 @@ input CryptographicKeyAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -7808,6 +7853,7 @@ input CryptocurrencyWalletAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -7866,6 +7912,7 @@ input HostnameAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -7924,6 +7971,7 @@ input TextAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -7982,6 +8030,7 @@ input UserAgentAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -8044,6 +8093,7 @@ input BankAccountAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -8102,6 +8152,7 @@ input TrackingNumberAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -8160,6 +8211,7 @@ input CredentialAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -8218,6 +8270,7 @@ input PhoneNumberAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -8282,6 +8335,7 @@ input PaymentCardAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -8349,6 +8403,7 @@ input MediaContentAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -8410,6 +8465,7 @@ input PersonaAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -8486,169 +8542,8 @@ input SSHKeyAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
-}
-
-type IMEI implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
-  id: ID!
-  standard_id: String!
-  entity_type: String!
-  parent_types: [String!]!
-  metrics: [Metric]
-  representative: Representative!
-  x_opencti_stix_ids: [StixId]
-  is_inferred: Boolean!
-  spec_version: String!
-  created_at: DateTime!
-  updated_at: DateTime!
-  x_opencti_modified_at: DateTime
-  refreshed_at: DateTime
-  draftVersion: DraftVersion
-  x_opencti_inferences: [Inference]
-  createdBy: Identity
-  numberOfConnectedElement: Int!
-  objectMarking: [MarkingDefinition!]
-  objectOrganization: [Organization!]
-  objectLabel: [Label!]
-  externalReferences(first: Int): ExternalReferenceConnection
-  containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
-  reports(first: Int): ReportConnection
-  notes(first: Int): NoteConnection
-  opinions(first: Int): OpinionConnection
-  observedData(first: Int): ObservedDataConnection
-  groupings(first: Int): GroupingConnection
-  cases(first: Int): CaseConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup, filterMode: FilterMode): StixCoreRelationshipConnection
-  stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, filterMode: FilterMode, search: String): [Distribution]
-  stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup, filterMode: FilterMode): [Distribution]
-  opinions_metrics: OpinionsMetrics
-  x_opencti_score: Int
-  x_opencti_description: String
-  observable_value: String!
-  indicators(first: Int): IndicatorConnection
-  value: String
-  creators: [Creator!]
-  toStix(version: Version): String
-  importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext!]
-  connectors(onlyAlive: Boolean): [Connector]
-  jobs(first: Int): [Work]
-}
-
-input IMEIAddInput {
-  value: String
-  file: Upload
-}
-
-type ICCID implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
-  id: ID!
-  standard_id: String!
-  entity_type: String!
-  parent_types: [String!]!
-  metrics: [Metric]
-  representative: Representative!
-  x_opencti_stix_ids: [StixId]
-  is_inferred: Boolean!
-  spec_version: String!
-  created_at: DateTime!
-  updated_at: DateTime!
-  x_opencti_modified_at: DateTime
-  refreshed_at: DateTime
-  draftVersion: DraftVersion
-  x_opencti_inferences: [Inference]
-  createdBy: Identity
-  numberOfConnectedElement: Int!
-  objectMarking: [MarkingDefinition!]
-  objectOrganization: [Organization!]
-  objectLabel: [Label!]
-  externalReferences(first: Int): ExternalReferenceConnection
-  containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
-  reports(first: Int): ReportConnection
-  notes(first: Int): NoteConnection
-  opinions(first: Int): OpinionConnection
-  observedData(first: Int): ObservedDataConnection
-  groupings(first: Int): GroupingConnection
-  cases(first: Int): CaseConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup, filterMode: FilterMode): StixCoreRelationshipConnection
-  stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, filterMode: FilterMode, search: String): [Distribution]
-  stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup, filterMode: FilterMode): [Distribution]
-  opinions_metrics: OpinionsMetrics
-  x_opencti_score: Int
-  x_opencti_description: String
-  observable_value: String!
-  indicators(first: Int): IndicatorConnection
-  value: String
-  creators: [Creator!]
-  toStix(version: Version): String
-  importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext!]
-  connectors(onlyAlive: Boolean): [Connector]
-  jobs(first: Int): [Work]
-}
-
-input ICCIDAddInput {
-  value: String
-  file: Upload
-}
-
-type IMSI implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
-  id: ID!
-  standard_id: String!
-  entity_type: String!
-  parent_types: [String!]!
-  metrics: [Metric]
-  representative: Representative!
-  x_opencti_stix_ids: [StixId]
-  is_inferred: Boolean!
-  spec_version: String!
-  created_at: DateTime!
-  updated_at: DateTime!
-  x_opencti_modified_at: DateTime
-  refreshed_at: DateTime
-  draftVersion: DraftVersion
-  x_opencti_inferences: [Inference]
-  createdBy: Identity
-  numberOfConnectedElement: Int!
-  objectMarking: [MarkingDefinition!]
-  objectOrganization: [Organization!]
-  objectLabel: [Label!]
-  externalReferences(first: Int): ExternalReferenceConnection
-  containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
-  reports(first: Int): ReportConnection
-  notes(first: Int): NoteConnection
-  opinions(first: Int): OpinionConnection
-  observedData(first: Int): ObservedDataConnection
-  groupings(first: Int): GroupingConnection
-  cases(first: Int): CaseConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup, filterMode: FilterMode): StixCoreRelationshipConnection
-  stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, filterMode: FilterMode, search: String): [Distribution]
-  stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup, filterMode: FilterMode): [Distribution]
-  opinions_metrics: OpinionsMetrics
-  x_opencti_score: Int
-  x_opencti_description: String
-  observable_value: String!
-  indicators(first: Int): IndicatorConnection
-  value: String
-  creators: [Creator!]
-  toStix(version: Version): String
-  importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext!]
-  connectors(onlyAlive: Boolean): [Connector]
-  jobs(first: Int): [Work]
-}
-
-input IMSIAddInput {
-  value: String
-  file: Upload
 }
 
 interface BasicRelationship {
@@ -8725,11 +8620,11 @@ type StixObjectOrStixRelationshipRefEdge {
   node: StixObjectOrStixRelationship!
 }
 
-union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | SecurityCoverage | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | Task | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | EntitySetting | ManagerConfiguration | Creator | Group | Workspace | CsvMapper | Status | PublicDashboard | Pir | Theme | IMEI | ICCID | IMSI
+union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | SecurityCoverage | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | Task | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | EntitySetting | ManagerConfiguration | Creator | Group | Workspace | CsvMapper | Status | PublicDashboard | Pir | Theme
 
-union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | CsvMapper | PublicDashboard | Pir | SecurityCoverage | IMEI | ICCID | IMSI
+union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | CsvMapper | PublicDashboard | Pir | SecurityCoverage
 
-union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | Narrative | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | PublicDashboard | Theme | IMEI | ICCID | IMSI
+union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | Narrative | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | PublicDashboard | Theme
 
 enum StixRelationshipsOrdering {
   entity_type
@@ -9134,6 +9029,7 @@ input StixRefRelationshipAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
 }
 
 input StixRefRelationshipsAddInput {
@@ -10172,7 +10068,7 @@ type Mutation {
   vulnerabilityEdit(id: ID!): VulnerabilityEditMutations
   incidentAdd(input: IncidentAddInput!): Incident
   incidentEdit(id: ID!): IncidentEditMutations
-  stixCyberObservableAdd(type: String!, stix_id: StixId, x_opencti_score: Int, x_opencti_description: String, x_opencti_modified_at: DateTime, createIndicator: Boolean, createdBy: String, objectMarking: [String], objectLabel: [String], objectOrganization: [String], externalReferences: [String], clientMutationId: String, update: Boolean, upsertOperations: [EditInput!], AutonomousSystem: AutonomousSystemAddInput, Directory: DirectoryAddInput, DomainName: DomainNameAddInput, EmailAddr: EmailAddrAddInput, EmailMessage: EmailMessageAddInput, EmailMimePartType: EmailMimePartTypeAddInput, Artifact: ArtifactAddInput, StixFile: StixFileAddInput, X509Certificate: X509CertificateAddInput, IPv4Addr: IPv4AddrAddInput, IPv6Addr: IPv6AddrAddInput, MacAddr: MacAddrAddInput, Mutex: MutexAddInput, NetworkTraffic: NetworkTrafficAddInput, Process: ProcessAddInput, Software: SoftwareAddInput, Url: UrlAddInput, UserAccount: UserAccountAddInput, WindowsRegistryKey: WindowsRegistryKeyAddInput, WindowsRegistryValueType: WindowsRegistryValueTypeAddInput, CryptographicKey: CryptographicKeyAddInput, CryptocurrencyWallet: CryptocurrencyWalletAddInput, Hostname: HostnameAddInput, Text: TextAddInput, UserAgent: UserAgentAddInput, BankAccount: BankAccountAddInput, Credential: CredentialAddInput, TrackingNumber: TrackingNumberAddInput, PhoneNumber: PhoneNumberAddInput, PaymentCard: PaymentCardAddInput, MediaContent: MediaContentAddInput, Persona: PersonaAddInput, SSHKey: SSHKeyAddInput, IMEI: IMEIAddInput, ICCID: ICCIDAddInput, IMSI: IMSIAddInput): StixCyberObservable
+  stixCyberObservableAdd(type: String!, stix_id: StixId, x_opencti_score: Int, x_opencti_description: String, x_opencti_modified_at: DateTime, createIndicator: Boolean, createdBy: String, objectMarking: [String], objectLabel: [String], objectOrganization: [String], externalReferences: [String], clientMutationId: String, update: Boolean, upsertOperations: [EditInput!], AutonomousSystem: AutonomousSystemAddInput, Directory: DirectoryAddInput, DomainName: DomainNameAddInput, EmailAddr: EmailAddrAddInput, EmailMessage: EmailMessageAddInput, EmailMimePartType: EmailMimePartTypeAddInput, Artifact: ArtifactAddInput, StixFile: StixFileAddInput, X509Certificate: X509CertificateAddInput, IPv4Addr: IPv4AddrAddInput, IPv6Addr: IPv6AddrAddInput, MacAddr: MacAddrAddInput, Mutex: MutexAddInput, NetworkTraffic: NetworkTrafficAddInput, Process: ProcessAddInput, Software: SoftwareAddInput, Url: UrlAddInput, UserAccount: UserAccountAddInput, WindowsRegistryKey: WindowsRegistryKeyAddInput, WindowsRegistryValueType: WindowsRegistryValueTypeAddInput, CryptographicKey: CryptographicKeyAddInput, CryptocurrencyWallet: CryptocurrencyWalletAddInput, Hostname: HostnameAddInput, Text: TextAddInput, UserAgent: UserAgentAddInput, BankAccount: BankAccountAddInput, Credential: CredentialAddInput, TrackingNumber: TrackingNumberAddInput, PhoneNumber: PhoneNumberAddInput, PaymentCard: PaymentCardAddInput, MediaContent: MediaContentAddInput, Persona: PersonaAddInput, SSHKey: SSHKeyAddInput): StixCyberObservable
   stixCyberObservableEdit(id: ID!): StixCyberObservableEditMutations
   stixCyberObservablesExportAsk(input: StixCyberObservablesExportAskInput!): [File!]
   stixCyberObservablesExportPush(entity_id: String, entity_type: String!, file: Upload!, file_markings: [String]!, listFilters: String): Boolean
@@ -10582,6 +10478,7 @@ input ChannelAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -10722,6 +10619,7 @@ input LanguageAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
 }
 
 type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObject {
@@ -10839,6 +10737,7 @@ input EventAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -10968,6 +10867,7 @@ input GroupingAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   authorized_members: [MemberAccessInput!]
   upsertOperations: [EditInput!]
 }
@@ -11083,6 +10983,7 @@ input NarrativeAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   upsertOperations: [EditInput!]
@@ -11364,6 +11265,7 @@ input DataComponentAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   x_opencti_workflow_id: String
   x_opencti_modified_at: DateTime
   upsertOperations: [EditInput!]
@@ -11479,6 +11381,7 @@ input DataSourceAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   x_opencti_workflow_id: String
   x_opencti_modified_at: DateTime
   upsertOperations: [EditInput!]
@@ -11723,6 +11626,7 @@ input AdministrativeAreaAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -11840,6 +11744,7 @@ input TaskAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -12146,6 +12051,7 @@ input CaseIncidentAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   clientMutationId: String
   update: Boolean
   authorized_members: [MemberAccessInput!]
@@ -12288,6 +12194,7 @@ input CaseRfiAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   clientMutationId: String
   update: Boolean
   information_types: [String!]
@@ -12424,6 +12331,7 @@ input CaseRftAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   clientMutationId: String
   x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
@@ -12556,6 +12464,7 @@ input FeedbackAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   clientMutationId: String
   update: Boolean
   rating: Int
@@ -12847,6 +12756,7 @@ input MalwareAnalysisAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -13090,6 +13000,7 @@ input ThreatActorIndividualAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -13762,6 +13673,7 @@ input IndicatorAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   basedOn: [String!]
   upsertOperations: [EditInput!]
 }
@@ -13991,6 +13903,7 @@ input OrganizationAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -15121,6 +15034,7 @@ input SecurityPlatformAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -15250,6 +15164,7 @@ input SecurityCoverageAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   update: Boolean
   auto_enrichment_disable: Boolean!
   periodicity: String

@@ -244,7 +244,7 @@ describe('generateUpdatePatchMessage tests', () => {
     expect(message).toEqual('replaces `2025-10-21T15:26:27.168Z` in `Valid from`');
   });
   it('should generate message for attribute with object type update', () => {
-    const data = { creators: [], members: [] };
+    const data = { creators: [], members: [], markings: [] };
     const patchElements = [
       [
         'replace',
@@ -281,8 +281,37 @@ describe('generateUpdatePatchMessage tests', () => {
       ]
     ];
     const message = generateUpdatePatchMessage(patchElements, ENTITY_TYPE_INDICATOR, data);
-    expect(message).toEqual('replaces `\n'
-      + 'file_markings : []\n'
-      + 'id :...` in `Files`');
+    // File objects now display their 'name' property instead of serialized JSON
+    expect(message).toEqual('replaces `file1.json, file2.json` in `Files`');
+  });
+  it('should generate message for file update with markings', () => {
+    const markingId = 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9';
+    const data = {
+      creators: [],
+      members: [],
+      markings: [{ internal_id: markingId, definition: 'TLP:GREEN' }]
+    };
+    const patchElements = [
+      [
+        'add',
+        [
+          {
+            key: 'x_opencti_files',
+            value: [
+              {
+                file_markings: [markingId],
+                id: 'import/Report/abc123/secret-doc.pdf',
+                mime_type: 'application/pdf',
+                name: 'secret-doc.pdf',
+                version: '2025-11-12T15:28:21.073Z'
+              }
+            ]
+          }
+        ]
+      ]
+    ];
+    const message = generateUpdatePatchMessage(patchElements, ENTITY_TYPE_INDICATOR, data);
+    // File with markings should display filename with marking definition
+    expect(message).toEqual('adds `secret-doc.pdf (TLP:GREEN)` in `Files`');
   });
 });

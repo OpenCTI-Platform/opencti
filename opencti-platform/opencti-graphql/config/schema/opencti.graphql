@@ -2650,6 +2650,7 @@ input ExternalReferenceAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   external_id: String
   created: DateTime
   modified: DateTime
@@ -3305,6 +3306,7 @@ input AttackPatternAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 type AttackPatternForMatrix {
@@ -3519,6 +3521,7 @@ input CampaignAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -3901,6 +3904,7 @@ input NoteAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 input NoteUserAddInput {
@@ -4140,6 +4144,7 @@ input ObservedDataAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -4357,6 +4362,7 @@ input OpinionAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
 }
 input OpinionUserAddInput {
   stix_id: String
@@ -4606,6 +4612,7 @@ input ReportAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   authorized_members: [MemberAccessInput!]
   upsertOperations: [EditInput!]
 }
@@ -4792,6 +4799,7 @@ input CourseOfActionAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -4977,6 +4985,7 @@ input IdentityAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   update: Boolean
   upsertOperations: [EditInput!]
 }
@@ -5171,6 +5180,7 @@ input IndividualAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -5361,6 +5371,7 @@ input SectorAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -5553,6 +5564,7 @@ input SystemAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -5746,6 +5758,7 @@ input InfrastructureAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -5943,6 +5956,7 @@ input IntrusionSetAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -6126,6 +6140,7 @@ input LocationAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -6317,6 +6332,7 @@ input PositionAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -6507,6 +6523,7 @@ input CityAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -6691,6 +6708,7 @@ input CountryAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -6878,6 +6896,7 @@ input RegionAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -7086,6 +7105,7 @@ input MalwareAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -7451,6 +7471,7 @@ input ThreatActorGroupAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -7636,6 +7657,7 @@ input ToolAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -7924,6 +7946,7 @@ input VulnerabilityAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -8126,6 +8149,7 @@ input IncidentAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -8401,6 +8425,7 @@ input AutonomousSystemAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -8540,6 +8565,7 @@ input DirectoryAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -8671,6 +8697,7 @@ input DomainNameAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -8804,6 +8831,7 @@ input EmailAddrAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -8947,6 +8975,7 @@ input EmailMessageAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -9082,6 +9111,7 @@ input EmailMimePartTypeAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 ############## HashedObservable
@@ -9366,6 +9396,7 @@ input ArtifactAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberObservable & HashedObservable {
@@ -9519,6 +9550,7 @@ input StixFileAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 type X509Certificate implements BasicObject & StixObject & StixCoreObject & StixCyberObservable & HashedObservable {
@@ -9707,6 +9739,7 @@ input X509CertificateAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -9841,6 +9874,7 @@ input IPv4AddrAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -9973,6 +10007,7 @@ input IPv6AddrAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -10104,6 +10139,7 @@ input MacAddrAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -10235,6 +10271,7 @@ input MutexAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -10389,6 +10426,7 @@ input NetworkTrafficAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -10566,6 +10604,7 @@ input ProcessAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 type Software implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -10718,6 +10757,7 @@ input SoftwareAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -10849,6 +10889,7 @@ input UrlAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -11007,6 +11048,7 @@ input UserAccountAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -11141,6 +11183,7 @@ input WindowsRegistryKeyAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   number_of_subkeys: Int
   upsertOperations: [EditInput!]
 }
@@ -11277,6 +11320,7 @@ input WindowsRegistryValueTypeAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 type CryptographicKey implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -11408,6 +11452,7 @@ input CryptographicKeyAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -11539,6 +11584,7 @@ input CryptocurrencyWalletAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -11670,6 +11716,7 @@ input HostnameAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -11801,6 +11848,7 @@ input TextAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -11932,6 +11980,7 @@ input UserAgentAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -12068,6 +12117,7 @@ input BankAccountAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 type TrackingNumber implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -12202,6 +12252,7 @@ input TrackingNumberAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 type Credential implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -12336,6 +12387,7 @@ input CredentialAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -12467,6 +12519,7 @@ input PhoneNumberAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -12604,6 +12657,7 @@ input PaymentCardAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -12744,6 +12798,7 @@ input MediaContentAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 type Persona implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -12877,6 +12932,7 @@ input PersonaAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
 }
 
@@ -13023,397 +13079,8 @@ input SSHKeyAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
   upsertOperations: [EditInput!]
-}
-type IMEI implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
-  id: ID! # internal_id
-  standard_id: String!
-  entity_type: String!
-  parent_types: [String!]!
-  metrics:[Metric]
-  # StixObject
-  representative: Representative!
-  x_opencti_stix_ids: [StixId]
-  is_inferred: Boolean!
-  spec_version: String!
-  created_at: DateTime!
-  updated_at: DateTime!
-  x_opencti_modified_at: DateTime
-  refreshed_at: DateTime
-  draftVersion: DraftVersion
-  # inferences
-  x_opencti_inferences: [Inference]
-  # StixCoreObject
-  createdBy: Identity
-  numberOfConnectedElement: Int!
-  objectMarking: [MarkingDefinition!]
-  objectOrganization: [Organization!]
-  objectLabel: [Label!]
-  externalReferences(first: Int): ExternalReferenceConnection
-  containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
-  reports(first: Int): ReportConnection
-  notes(first: Int): NoteConnection
-  opinions(first: Int): OpinionConnection
-  observedData(first: Int): ObservedDataConnection
-  groupings(first: Int): GroupingConnection
-  cases(first: Int): CaseConnection
-  stixCoreRelationships(
-    first: Int
-    after: ID
-    orderBy: StixCoreRelationshipsOrdering
-    orderMode: OrderingMode
-    fromId: StixRef
-    toId: StixRef
-    fromTypes: [String]
-    toTypes: [String]
-    relationship_type: String
-    startTimeStart: DateTime
-    startTimeStop: DateTime
-    stopTimeStart: DateTime
-    stopTimeStop: DateTime
-    firstSeenStart: DateTime
-    firstSeenStop: DateTime
-    lastSeenStart: DateTime
-    lastSeenStop: DateTime
-    confidences: [Int]
-    search: String
-    filters: FilterGroup
-    filterMode: FilterMode
-  ): StixCoreRelationshipConnection
-  stixCoreObjectsDistribution(
-    relationship_type: [String]
-    toTypes: [String]
-    field: String!
-    startDate: DateTime
-    endDate: DateTime
-    dateAttribute: String
-    operation: StatsOperation!
-    limit: Int
-    order: String
-    types: [String]
-    filters: FilterGroup
-    filterMode: FilterMode
-    search: String
-  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
-  stixCoreRelationshipsDistribution(
-    field: String!
-    operation: StatsOperation!
-    startDate: DateTime
-    endDate: DateTime
-    dateAttribute: String
-    isTo: Boolean
-    limit: Int
-    order: String
-    elementWithTargetTypes: [String]
-    fromId: [String]
-    fromRole: String
-    fromTypes: [String]
-    toId: [String]
-    toRole: String
-    toTypes: [String]
-    relationship_type: [String]
-    confidences: [Int]
-    search: String
-    filters: FilterGroup
-    filterMode: FilterMode
-  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
-  opinions_metrics: OpinionsMetrics
-  # StixCyberObservable
-  x_opencti_score: Int
-  x_opencti_description: String
-  observable_value: String!
-  indicators(first: Int): IndicatorConnection
-  # IMEI Number
-  value: String
-  # Technical
-  creators: [Creator!]
-  toStix(version: Version): String
-  importFiles(
-    first: Int
-    prefixMimeType: String
-    after: ID
-    orderBy: FileOrdering
-    orderMode: OrderingMode
-    search: String
-    filters: FilterGroup
-  ): FileConnection
-  pendingFiles(
-    first: Int
-    after: ID
-    orderBy: FileOrdering
-    orderMode: OrderingMode
-    search: String
-    filters: FilterGroup
-  ): FileConnection
-  exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext!]
-  connectors(onlyAlive: Boolean): [Connector]
-  jobs(first: Int): [Work]
-}
-input IMEIAddInput {
-  value: String
-  file: Upload
-}
-type ICCID implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
-  id: ID! # internal_id
-  standard_id: String!
-  entity_type: String!
-  parent_types: [String!]!
-  metrics:[Metric]
-  # StixObject
-  representative: Representative!
-  x_opencti_stix_ids: [StixId]
-  is_inferred: Boolean!
-  spec_version: String!
-  created_at: DateTime!
-  updated_at: DateTime!
-  x_opencti_modified_at: DateTime
-  refreshed_at: DateTime
-  draftVersion: DraftVersion
-  # inferences
-  x_opencti_inferences: [Inference]
-  # StixCoreObject
-  createdBy: Identity
-  numberOfConnectedElement: Int!
-  objectMarking: [MarkingDefinition!]
-  objectOrganization: [Organization!]
-  objectLabel: [Label!]
-  externalReferences(first: Int): ExternalReferenceConnection
-  containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
-  reports(first: Int): ReportConnection
-  notes(first: Int): NoteConnection
-  opinions(first: Int): OpinionConnection
-  observedData(first: Int): ObservedDataConnection
-  groupings(first: Int): GroupingConnection
-  cases(first: Int): CaseConnection
-  stixCoreRelationships(
-    first: Int
-    after: ID
-    orderBy: StixCoreRelationshipsOrdering
-    orderMode: OrderingMode
-    fromId: StixRef
-    toId: StixRef
-    fromTypes: [String]
-    toTypes: [String]
-    relationship_type: String
-    startTimeStart: DateTime
-    startTimeStop: DateTime
-    stopTimeStart: DateTime
-    stopTimeStop: DateTime
-    firstSeenStart: DateTime
-    firstSeenStop: DateTime
-    lastSeenStart: DateTime
-    lastSeenStop: DateTime
-    confidences: [Int]
-    search: String
-    filters: FilterGroup
-    filterMode: FilterMode
-  ): StixCoreRelationshipConnection
-  stixCoreObjectsDistribution(
-    relationship_type: [String]
-    toTypes: [String]
-    field: String!
-    startDate: DateTime
-    endDate: DateTime
-    dateAttribute: String
-    operation: StatsOperation!
-    limit: Int
-    order: String
-    types: [String]
-    filters: FilterGroup
-    filterMode: FilterMode
-    search: String
-  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
-  stixCoreRelationshipsDistribution(
-    field: String!
-    operation: StatsOperation!
-    startDate: DateTime
-    endDate: DateTime
-    dateAttribute: String
-    isTo: Boolean
-    limit: Int
-    order: String
-    elementWithTargetTypes: [String]
-    fromId: [String]
-    fromRole: String
-    fromTypes: [String]
-    toId: [String]
-    toRole: String
-    toTypes: [String]
-    relationship_type: [String]
-    confidences: [Int]
-    search: String
-    filters: FilterGroup
-    filterMode: FilterMode
-  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
-  opinions_metrics: OpinionsMetrics
-  # StixCyberObservable
-  x_opencti_score: Int
-  x_opencti_description: String
-  observable_value: String!
-  indicators(first: Int): IndicatorConnection
-  # ICCID Number
-  value: String
-  # Technical
-  creators: [Creator!]
-  toStix(version: Version): String
-  importFiles(
-    first: Int
-    prefixMimeType: String
-    after: ID
-    orderBy: FileOrdering
-    orderMode: OrderingMode
-    search: String
-    filters: FilterGroup
-  ): FileConnection
-  pendingFiles(
-    first: Int
-    after: ID
-    orderBy: FileOrdering
-    orderMode: OrderingMode
-    search: String
-    filters: FilterGroup
-  ): FileConnection
-  exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext!]
-  connectors(onlyAlive: Boolean): [Connector]
-  jobs(first: Int): [Work]
-}
-input ICCIDAddInput {
-  value: String
-  file: Upload
-}
-type IMSI implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
-  id: ID! # internal_id
-  standard_id: String!
-  entity_type: String!
-  parent_types: [String!]!
-  metrics:[Metric]
-  # StixObject
-  representative: Representative!
-  x_opencti_stix_ids: [StixId]
-  is_inferred: Boolean!
-  spec_version: String!
-  created_at: DateTime!
-  updated_at: DateTime!
-  x_opencti_modified_at: DateTime
-  refreshed_at: DateTime
-  draftVersion: DraftVersion
-  # inferences
-  x_opencti_inferences: [Inference]
-  # StixCoreObject
-  createdBy: Identity
-  numberOfConnectedElement: Int!
-  objectMarking: [MarkingDefinition!]
-  objectOrganization: [Organization!]
-  objectLabel: [Label!]
-  externalReferences(first: Int): ExternalReferenceConnection
-  containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
-  reports(first: Int): ReportConnection
-  notes(first: Int): NoteConnection
-  opinions(first: Int): OpinionConnection
-  observedData(first: Int): ObservedDataConnection
-  groupings(first: Int): GroupingConnection
-  cases(first: Int): CaseConnection
-  stixCoreRelationships(
-    first: Int
-    after: ID
-    orderBy: StixCoreRelationshipsOrdering
-    orderMode: OrderingMode
-    fromId: StixRef
-    toId: StixRef
-    fromTypes: [String]
-    toTypes: [String]
-    relationship_type: String
-    startTimeStart: DateTime
-    startTimeStop: DateTime
-    stopTimeStart: DateTime
-    stopTimeStop: DateTime
-    firstSeenStart: DateTime
-    firstSeenStop: DateTime
-    lastSeenStart: DateTime
-    lastSeenStop: DateTime
-    confidences: [Int]
-    search: String
-    filters: FilterGroup
-    filterMode: FilterMode
-  ): StixCoreRelationshipConnection
-  stixCoreObjectsDistribution(
-    relationship_type: [String]
-    toTypes: [String]
-    field: String!
-    startDate: DateTime
-    endDate: DateTime
-    dateAttribute: String
-    operation: StatsOperation!
-    limit: Int
-    order: String
-    types: [String]
-    filters: FilterGroup
-    filterMode: FilterMode
-    search: String
-  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
-  stixCoreRelationshipsDistribution(
-    field: String!
-    operation: StatsOperation!
-    startDate: DateTime
-    endDate: DateTime
-    dateAttribute: String
-    isTo: Boolean
-    limit: Int
-    order: String
-    elementWithTargetTypes: [String]
-    fromId: [String]
-    fromRole: String
-    fromTypes: [String]
-    toId: [String]
-    toRole: String
-    toTypes: [String]
-    relationship_type: [String]
-    confidences: [Int]
-    search: String
-    filters: FilterGroup
-    filterMode: FilterMode
-  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
-  opinions_metrics: OpinionsMetrics
-  # StixCyberObservable
-  x_opencti_score: Int
-  x_opencti_description: String
-  observable_value: String!
-  indicators(first: Int): IndicatorConnection
-  # IMSI Number
-  value: String
-  # Technical
-  creators: [Creator!]
-  toStix(version: Version): String
-  importFiles(
-    first: Int
-    prefixMimeType: String
-    after: ID
-    orderBy: FileOrdering
-    orderMode: OrderingMode
-    search: String
-    filters: FilterGroup
-  ): FileConnection
-  pendingFiles(
-    first: Int
-    after: ID
-    orderBy: FileOrdering
-    orderMode: OrderingMode
-    search: String
-    filters: FilterGroup
-  ): FileConnection
-  exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext!]
-  connectors(onlyAlive: Boolean): [Connector]
-  jobs(first: Int): [Work]
-}
-input IMSIAddInput {
-  value: String
-  file: Upload
 }
 ###### RELATIONSHIPS
 
@@ -13584,9 +13251,6 @@ union StixObjectOrStixRelationshipOrCreator =
   | PublicDashboard
   | Pir
   | Theme
-  | IMEI
-  | ICCID
-  | IMSI
 union StixObjectOrStixRelationship =
   MarkingDefinition
   | Label
@@ -13675,9 +13339,6 @@ union StixObjectOrStixRelationship =
   | PublicDashboard
   | Pir
   | SecurityCoverage
-  | IMEI
-  | ICCID
-  | IMSI
 union StixCoreObjectOrStixCoreRelationship =
 #### Stix Core Objects
 ## Stix Domain Objects
@@ -13759,9 +13420,6 @@ union StixCoreObjectOrStixCoreRelationship =
   | Workspace
   | PublicDashboard
   | Theme
-  | IMEI
-  | ICCID
-  | IMSI
 
 enum StixRelationshipsOrdering {
   entity_type
@@ -14196,6 +13854,7 @@ input StixRefRelationshipAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: Boolean
 }
 input StixRefRelationshipsAddInput {
   relationship_type: String!
@@ -16188,9 +15847,6 @@ type Mutation {
     MediaContent: MediaContentAddInput
     Persona: PersonaAddInput
     SSHKey: SSHKeyAddInput
-    IMEI: IMEIAddInput
-    ICCID: ICCIDAddInput
-    IMSI: IMSIAddInput
   ): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   stixCyberObservableEdit(id: ID!): StixCyberObservableEditMutations @auth
   stixCyberObservablesExportAsk(input: StixCyberObservablesExportAskInput!): [File!] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
