@@ -158,6 +158,11 @@ const DataTableFilters = ({
                 helpers.handleChangeView(value);
               }
             }}
+            sx={{
+              '&:empty': {
+                display: 'none',
+              },
+            }}
           >
             {additionalToggleButtons && [...additionalToggleButtons]}
             {!exportDisabled && (

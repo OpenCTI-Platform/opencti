@@ -26,6 +26,7 @@ import Security from '../../../utils/Security';
 import { EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from '../../../utils/hooks/useGranted';
 import type { Theme } from '../../../components/Theme';
 import FormButtonContainer from '../../../components/common/form/FormButtonContainer';
+import IconButton from '../../../components/common/button/IconButton';
 
 const workspaceMutation = graphql`
   mutation WorkspaceCreationMutation($input: WorkspaceAddInput!) {
@@ -123,20 +124,19 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
   const createDashboardButton = (props: { onOpen: () => void }) => (
     <Security needs={[EXPLORE_EXUPDATE]}>
       <>
-        <ToggleButton
+        <IconButton
           value="import"
-          size="small"
+          size="default"
+          variant="secondary"
           onClick={() => inputRef.current?.click()}
-          sx={{ marginLeft: theme.spacing(1) }}
           data-testid="ImportDashboard"
           title={t_i18n('Import dashboard')}
         >
           <FileUploadOutlined fontSize="small" color="primary" />
-        </ToggleButton>
+        </IconButton>
         {isXTMHubAccessible && isNotEmptyField(importFromHubUrl) && (
           <Button
             gradient
-            sx={{ marginLeft: theme.spacing(1) }}
             href={importFromHubUrl}
             target="_blank"
             title={t_i18n('Import from Hub')}
