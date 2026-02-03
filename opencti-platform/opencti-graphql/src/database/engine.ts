@@ -3091,7 +3091,7 @@ const elRepaginate = async <T extends BasicStoreBase> (
         const callbackResult = await callback(elements, total);
         continueProcess = callbackResult === true || callbackResult === undefined;
       } else {
-        pushAll<any>(listing, elements);
+        pushAll<T | BasicNodeEdge<T>>(listing, elements);
       }
       emitSize += elements.length;
     }
