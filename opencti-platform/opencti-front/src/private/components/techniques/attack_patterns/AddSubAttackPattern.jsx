@@ -9,6 +9,7 @@ import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
 import AddSubAttackPatternsLines, { addSubAttackPatternsLinesQuery } from './AddSubAttackPatternsLines';
 import AttackPatternCreation from './AttackPatternCreation';
+import { Stack } from '@mui/material';
 
 class AddSubAttackPattern extends Component {
   constructor(props) {
@@ -46,8 +47,9 @@ class AddSubAttackPattern extends Component {
           open={this.state.open}
           onClose={this.handleClose.bind(this)}
           title={t('Add sub attack patterns')}
-          header={(
-            <>
+        >
+          <Stack gap={2}>
+            <Stack direction="row" justifyContent="space-between">
               <SearchInput
                 variant="inDrawer"
                 onSubmit={this.handleSearch.bind(this)}
@@ -58,10 +60,7 @@ class AddSubAttackPattern extends Component {
                 inputValue={this.state.search}
                 paginationOptions={paginationOptions}
               />
-            </>
-          )}
-        >
-          <>
+            </Stack>
             <QueryRenderer
               query={addSubAttackPatternsLinesQuery}
               variables={{
@@ -80,7 +79,7 @@ class AddSubAttackPattern extends Component {
                 );
               }}
             />
-          </>
+          </Stack>
         </Drawer>
       </>
     );

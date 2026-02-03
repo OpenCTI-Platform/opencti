@@ -11,6 +11,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { DataSourceDataComponents_dataSource$data } from './__generated__/DataSourceDataComponents_dataSource.graphql';
 import { AddDataComponentsLinesToDataSourceQuery } from './__generated__/AddDataComponentsLinesToDataSourceQuery.graphql';
 import DataComponentCreation from '../data_components/DataComponentCreation';
+import { Stack } from '@mui/material';
 
 const AddDataComponents: FunctionComponent<{
   dataSource: DataSourceDataComponents_dataSource$data;
@@ -49,31 +50,31 @@ const AddDataComponents: FunctionComponent<{
         open={open}
         onClose={handleClose}
         title={t_i18n('Add data components')}
-        header={(
-          <>
+      >
+        <Stack gap={2}>
+          <Stack direction="row" justifyContent="space-between">
             <SearchInput
               variant="inDrawer"
               onSubmit={handleSearch}
             />
             <DataComponentCreation
-              display={open}
               contextual={true}
+              display={open}
               inputValue={search}
               paginationOptions={paginationOptions}
             />
-          </>
-        )}
-      >
-        {queryRef && (
-          <React.Suspense
-            fallback={<Loader variant={LoaderVariant.inElement} />}
-          >
-            <AddDataComponentsLines
-              dataSource={dataSource}
-              queryRef={queryRef}
-            />
-          </React.Suspense>
-        )}
+          </Stack>
+          {queryRef && (
+            <React.Suspense
+              fallback={<Loader variant={LoaderVariant.inElement} />}
+            >
+              <AddDataComponentsLines
+                dataSource={dataSource}
+                queryRef={queryRef}
+              />
+            </React.Suspense>
+          )}
+        </Stack>
       </Drawer>
     </div>
   );

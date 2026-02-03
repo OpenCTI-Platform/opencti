@@ -15,6 +15,7 @@ import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import SearchInput from '../../../../components/SearchInput';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import { Stack } from '@mui/material';
 
 interface AddThreatActorIndividualDemographicComponentProps {
   threatActorIndividual: ThreatActorIndividual_ThreatActorIndividual$data;
@@ -57,17 +58,9 @@ const AddThreatActorIndividualDemographicComponent: FunctionComponent<
         open={open}
         onClose={handleClose}
         title={title}
-        header={(
-          <div
-            style={{
-              marginLeft: 'auto',
-              marginRight: '20px',
-              display: 'flex',
-              flexWrap: 'wrap',
-              justifyContent: 'flex-end',
-              alignItems: 'flex-end',
-            }}
-          >
+      >
+        <Stack gap={2}>
+          <Stack direction="row" justifyContent="space-between">
             <SearchInput
               variant="inDrawer"
               onSubmit={onSearch}
@@ -75,14 +68,13 @@ const AddThreatActorIndividualDemographicComponent: FunctionComponent<
             <CountryCreation
               paginationOptions={paginationOptions}
             />
-          </div>
-        )}
-      >
-        <AddThreatActorIndividualDemographicLines
-          threatActorIndividual={threatActorIndividual}
-          fragmentKey={data}
-          relType={relType}
-        />
+          </Stack>
+          <AddThreatActorIndividualDemographicLines
+            threatActorIndividual={threatActorIndividual}
+            fragmentKey={data}
+            relType={relType}
+          />
+        </Stack>
       </Drawer>
     </div>
   );

@@ -9,6 +9,7 @@ import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
 import AddCoursesOfActionLines, { addCoursesOfActionLinesQuery } from './AddCoursesOfActionLines';
 import CourseOfActionCreation from '../courses_of_action/CourseOfActionCreation';
+import { Stack } from '@mui/material';
 
 class AddCoursesOfAction extends Component {
   constructor(props) {
@@ -46,8 +47,9 @@ class AddCoursesOfAction extends Component {
           open={this.state.open}
           onClose={this.handleClose.bind(this)}
           title={t('Add courses of action')}
-          header={(
-            <>
+        >
+          <Stack gap={2}>
+            <Stack direction="row" justifyContent="space-between">
               <SearchInput
                 variant="inDrawer"
                 onSubmit={this.handleSearch.bind(this)}
@@ -58,25 +60,24 @@ class AddCoursesOfAction extends Component {
                 inputValue={this.state.search}
                 paginationOptions={paginationOptions}
               />
-            </>
-          )}
-        >
-          <QueryRenderer
-            query={addCoursesOfActionLinesQuery}
-            variables={{
-              search: this.state.search,
-              count: 20,
-            }}
-            render={({ props }) => {
-              return (
-                <AddCoursesOfActionLines
-                  attackPattern={attackPattern}
-                  attackPatternCoursesOfAction={attackPatternCoursesOfAction}
-                  data={props}
-                />
-              );
-            }}
-          />
+            </Stack>
+            <QueryRenderer
+              query={addCoursesOfActionLinesQuery}
+              variables={{
+                search: this.state.search,
+                count: 20,
+              }}
+              render={({ props }) => {
+                return (
+                  <AddCoursesOfActionLines
+                    attackPattern={attackPattern}
+                    attackPatternCoursesOfAction={attackPatternCoursesOfAction}
+                    data={props}
+                  />
+                );
+              }}
+            />
+          </Stack>
         </Drawer>
       </>
     );
