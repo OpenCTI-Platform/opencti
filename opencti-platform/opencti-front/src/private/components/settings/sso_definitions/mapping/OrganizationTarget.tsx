@@ -6,9 +6,7 @@ import { searchObjectOrganizationFieldQuery as organizationsQuery } from '@compo
 import TargetAutocomplete from '@components/settings/sso_definitions/mapping/TargetAutocomplete';
 import { SSODefinitionFormValues } from '@components/settings/sso_definitions/SSODefinitionForm';
 import { getGroupOrOrganizationMapping } from '@components/settings/sso_definitions/utils/GroupOrOrganizationMapping';
-import {
-  ObjectOrganizationFieldQuery$data
-} from '@components/common/form/__generated__/ObjectOrganizationFieldQuery.graphql';
+import { ObjectOrganizationFieldQuery$data } from '@components/common/form/__generated__/ObjectOrganizationFieldQuery.graphql';
 
 type OrganizationTargetProps = {
   index: number;
@@ -34,7 +32,6 @@ const OrganizationTarget = ({ index, isEditionMode, updateField }: OrganizationT
     fetchQuery(organizationsQuery, { orderBy: 'name', orderMode: 'asc' })
       .toPromise()
       .then((data) => {
-        console.log('data : ', data);
         const dataGroups = (data as ObjectOrganizationFieldQuery$data).organizations?.edges ?? [];
         const newOptions = dataGroups.map((item) => item?.node.name ?? '').filter((item) => item);
         setOptions(newOptions);
