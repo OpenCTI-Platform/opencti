@@ -1,5 +1,5 @@
+import type { Context, Event, State, TriggerResult } from '../types/workflow-types';
 import { StateMachine } from './workflow-engine';
-import type { Context, Event, State, TriggerResult } from './workflow-types';
 
 /**
  * Audit record of a state transition attempt.

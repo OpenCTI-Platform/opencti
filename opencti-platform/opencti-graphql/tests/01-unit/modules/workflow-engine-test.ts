@@ -1,6 +1,6 @@
-import { describe, it, expect, vi } from 'vitest';
-import { WorkflowDefinition } from '../../../src/modules/workflow/workflow-definition';
-import { WorkflowInstance } from '../../../src/modules/workflow/workflow-instance';
+import { describe, expect, it, vi } from 'vitest';
+import { WorkflowDefinition } from '../../../src/modules/workflow/engine/workflow-definition';
+import { WorkflowInstance } from '../../../src/modules/workflow/engine/workflow-instance';
 
 describe('Workflow Engine', () => {
   it('should transition between states correctly', async () => {

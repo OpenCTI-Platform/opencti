@@ -1,5 +1,5 @@
-import { BYPASS } from '../../utils/access';
-import type { Context } from './workflow-types';
+import { BYPASS } from '../../../utils/access';
+import type { Context } from '../types/workflow-types';
 
 export type ConditionFunction<TContext extends Context = Context> = (ctx: TContext, params?: any) => Promise<boolean> | boolean;
 

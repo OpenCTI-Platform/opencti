@@ -1,12 +1,12 @@
-import { FunctionalError } from '../../config/errors';
-import { createEntity, createRelation, updateAttribute } from '../../database/middleware';
-import { fullRelationsList, storeLoadById } from '../../database/middleware-loader';
-import { findById as findStatusById } from '../../domain/status';
-import { RELATION_HAS_WORKFLOW } from '../../schema/internalRelationship';
-import type { AuthContext, AuthUser } from '../../types/user';
-import { findByType as findEntitySettingByType } from '../entitySetting/entitySetting-domain';
-import { WorkflowFactory } from './workflow-factory';
-import { ENTITY_TYPE_WORKFLOW_DEFINITION, ENTITY_TYPE_WORKFLOW_INSTANCE, type TriggerResult } from './workflow-types';
+import { FunctionalError } from '../../../config/errors';
+import { createEntity, createRelation, updateAttribute } from '../../../database/middleware';
+import { fullRelationsList, storeLoadById } from '../../../database/middleware-loader';
+import { findById as findStatusById } from '../../../domain/status';
+import { RELATION_HAS_WORKFLOW } from '../../../schema/internalRelationship';
+import type { AuthContext, AuthUser } from '../../../types/user';
+import { findByType as findEntitySettingByType } from '../../entitySetting/entitySetting-domain';
+import { WorkflowFactory } from '../engine/workflow-factory';
+import { ENTITY_TYPE_WORKFLOW_DEFINITION, ENTITY_TYPE_WORKFLOW_INSTANCE, type TriggerResult } from '../types/workflow-types';
 
 const getWorkflowConfig = async (context: AuthContext, user: AuthUser, targetType: string) => {
   return findEntitySettingByType(context, user, targetType);

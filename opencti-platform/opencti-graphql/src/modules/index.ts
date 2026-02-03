@@ -153,5 +153,5 @@ import './form/form-graphql';
 import './xtm/hub/xtm-hub-graphql';
 import './metrics/metrics-graphql';
 import './singleSignOn/singleSignOn-graphql';
-import './workflow/workflow-graphql';
+import './workflow/api/workflow-graphql';
 // endregion

@@ -1,4 +1,8 @@
+import { loadCreators } from '../../database/members';
+import { findById as findWorkById, worksForDraft } from '../../domain/work';
 import type { Resolvers } from '../../generated/graphql';
+import { getAuthorizedMembers } from '../../utils/authorizedMembers';
+import { getWorkflowInstance } from '../workflow/domain/workflow-domain';
 import {
   addDraftWorkspace,
   deleteDraftWorkspace,
@@ -14,10 +18,6 @@ import {
   listDraftSightingRelations,
   validateDraftWorkspace,
 } from './draftWorkspace-domain';
-import { findById as findWorkById, worksForDraft } from '../../domain/work';
-import { getAuthorizedMembers } from '../../utils/authorizedMembers';
-import { loadCreators } from '../../database/members';
-import { getWorkflowInstance } from '../workflow/workflow-domain';
 
 const draftWorkspaceResolvers: Resolvers = {
   Query: {

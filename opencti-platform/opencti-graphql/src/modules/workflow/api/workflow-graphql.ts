@@ -1,4 +1,4 @@
-import { registerGraphqlSchema } from '../../graphql/schema';
+import { registerGraphqlSchema } from '../../../graphql/schema';
 import workflowTypeDefs from './workflow.graphql';
 import workflowResolvers from './workflow-resolvers';
 

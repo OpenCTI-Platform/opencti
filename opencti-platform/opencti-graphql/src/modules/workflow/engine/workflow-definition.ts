@@ -1,4 +1,4 @@
-import type { ConditionValidator, Context, Event, SideEffect, State, StateDefinition, Transition } from './workflow-types';
+import type { ConditionValidator, Context, Event, SideEffect, State, StateDefinition, Transition } from '../types/workflow-types';
 
 /**
  * Represents a stateless definition of a workflow graph.

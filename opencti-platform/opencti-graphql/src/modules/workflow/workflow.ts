@@ -1,3 +1,3 @@
-import './workflow-definition-entity';
-import './workflow-graphql';
-import './workflow-instance-entity';
+import './storage/workflow-definition-entity';
+import './storage/workflow-instance-entity';
+import './api/workflow-graphql';

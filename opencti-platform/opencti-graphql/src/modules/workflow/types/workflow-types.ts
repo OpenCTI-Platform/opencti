@@ -11,42 +11,8 @@ export const ENTITY_TYPE_WORKFLOW_DEFINITION = 'WorkflowDefinition';
 export const ENTITY_TYPE_WORKFLOW_INSTANCE = 'WorkflowInstance';
 
 /**
- * Serialization models for the database
+ * Execution Engine Types
  */
-export interface WorkflowActionConfig {
-  type: string;
-  params?: string;
-  mode: 'sync' | 'async';
-}
-
-export interface WorkflowConditionConfig {
-  field?: string;
-  operator?: string;
-  value?: any;
-  type?: string;
-}
-
-export interface WorkflowSerializedState {
-  name: string;
-  onEnter?: WorkflowActionConfig[];
-  onExit?: WorkflowActionConfig[];
-}
-
-export interface WorkflowSerializedTransition {
-  from: string;
-  to: string;
-  event: string;
-  actions?: WorkflowActionConfig[];
-  conditions?: WorkflowConditionConfig[];
-}
-
-export interface WorkflowDefinitionData {
-  id: string;
-  name: string;
-  initialState: string;
-  states: WorkflowSerializedState[];
-  transitions: WorkflowSerializedTransition[];
-}
 
 /**
  * Represents a status or position in the workflow graph.
@@ -62,6 +28,9 @@ export type Event = string;
  * Information available during workflow execution (conditions and side effects).
  */
 export interface Context {
+  user?: any;
+  entity?: any;
+  context?: any;
   [key: string]: any;
 }
 
@@ -78,16 +47,6 @@ export type ConditionValidator<TContext extends Context = Context> = (
 export type SideEffect<TContext extends Context = Context> = (
   context: TContext,
 ) => void | Promise<void>;
-
-/**
- * Result of a transition attempt.
- */
-export interface TriggerResult {
-  success: boolean;
-  reason?: string;
-  newState?: string;
-  status?: any;
-}
 
 /**
  * Definition of a path between two states.
@@ -120,4 +79,50 @@ export interface MachineDefinition<TContext extends Context = Context> {
   ): Transition<TContext> | undefined;
   getTransitions(currentState: State): Transition<TContext>[];
   getStateDefinition(state: State): StateDefinition<TContext> | undefined;
+}
+
+/**
+ * Result of a transition attempt.
+ */
+export interface TriggerResult {
+  success: boolean;
+  reason?: string;
+  newState?: string;
+  status?: any;
+}
+
+/**
+ * Serialization models for the database
+ */
+export interface WorkflowActionConfig {
+  type: string;
+  params?: string;
+  mode: 'sync' | 'async';
+}
+
+export interface WorkflowConditionConfig {
+  field?: string;
+  operator?: string;
+  value?: any;
+  type?: string;
+}
+
+export interface WorkflowSerializedState {
+  name: string;
+  onEnter?: WorkflowActionConfig[];
+  onExit?: WorkflowActionConfig[];
+}
+
+export interface WorkflowSerializedTransition {
+  from: string;
+  to: string;
+  event: string;
+  actions?: WorkflowActionConfig[];
+  conditions?: WorkflowConditionConfig[];
+}
+
+export interface WorkflowDefinitionData {
+  initialState: string;
+  states: WorkflowSerializedState[];
+  transitions: WorkflowSerializedTransition[];
 }
