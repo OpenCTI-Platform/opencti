@@ -898,15 +898,15 @@ describe('Migration of SSO environment test coverage', () => {
       });
     });
   });
-  describe.todo('Dry run of CERT migrations', () => {
+  describe('Dry run of CERT migrations', () => {
     it('should CERT minimal configuration works', async () => {
+      if (!MIGRATED_STRATEGY.some((strat) => strat === EnvStrategyType.STRATEGY_CERT)) {
+        return;
+      }
       const configuration = {
         cert_minimal: {
           identifier: 'cert_minimal',
           strategy: 'ClientCertStrategy',
-          config: {
-
-          },
         },
       };
 
@@ -917,43 +917,28 @@ describe('Migration of SSO environment test coverage', () => {
       expect(minimalCERTConfiguration.strategy).toBe('ClientCertStrategy');
       expect(minimalCERTConfiguration.label).toBe('cert_minimal');
       expect(minimalCERTConfiguration.enabled).toBeTruthy();
-      expect(minimalCERTConfiguration.configuration).toStrictEqual([
-
-      ]);
     });
-
-    it('should CERT with several CERT config works', async () => {
+    it('should CERT configuration disabled works', async () => {
+      if (!MIGRATED_STRATEGY.some((strat) => strat === EnvStrategyType.STRATEGY_CERT)) {
+        return;
+      }
       const configuration = {
-        cert_1: {
-          identifier: 'cert_1',
+        cert_minimal: {
+          identifier: 'cert_minimal',
           strategy: 'ClientCertStrategy',
           config: {
-
-          },
-        },
-        cert_2: {
-          identifier: 'cert_2',
-          strategy: 'ClientCertStrategy',
-          config: {
-
+            disabled: true,
           },
         },
       };
 
-      const multiOicConfigurations = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
+      const result = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
 
-      expect(multiOicConfigurations[0].strategy).toBe('ClientCertStrategy');
-      expect(multiOicConfigurations[0].label).toBe('cert_1');
-      expect(multiOicConfigurations[0].enabled).toBeTruthy();
-      expect(multiOicConfigurations[0].configuration).toStrictEqual([
+      const minimalCERTConfiguration = result[0];
 
-      ]);
-      expect(multiOicConfigurations[1].strategy).toBe('ClientCertStrategy');
-      expect(multiOicConfigurations[1].label).toBe('cert_2');
-      expect(multiOicConfigurations[1].enabled).toBeTruthy();
-      expect(multiOicConfigurations[1].configuration).toStrictEqual([
-
-      ]);
+      expect(minimalCERTConfiguration.strategy).toBe('ClientCertStrategy');
+      expect(minimalCERTConfiguration.label).toBe('cert_minimal');
+      expect(minimalCERTConfiguration.enabled).toBeFalsy();
     });
   });
   describe('Actual run of migrations', () => {
