@@ -373,6 +373,35 @@ const ThemeDark = (
         },
       },
     },
+    MuiToggleButtonGroup: {
+      defaultProps: {
+        size: 'small',
+      },
+      styleOverrides: {
+        root: {
+          '& .MuiTouchRipple-root': {
+            display: 'none',
+          },
+          '& .MuiToggleButton-root': {
+            border: '1px solid #2B3447',
+            color: primary,
+
+            '&:focus-visible': {
+              outline: 'none',
+              boxShadow: '0 0 0 2px #BDFFED',
+            },
+
+            '&.Mui-selected': {
+              backgroundColor: hexToRGB(primary || THEME_DARK_DEFAULT_PRIMARY, 0.25),
+            },
+
+            '&:hover:not(.Mui-selected)': {
+              backgroundColor: hexToRGB(primary || THEME_DARK_DEFAULT_PRIMARY, 0.15),
+            },
+          },
+        },
+      },
+    },
     MuiTooltip: {
       styleOverrides: {
         tooltip: {

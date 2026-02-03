@@ -374,6 +374,35 @@ const ThemeLight = (
         },
       },
     },
+    MuiToggleButtonGroup: {
+      defaultProps: {
+        size: 'small',
+      },
+      styleOverrides: {
+        root: {
+          '& .MuiTouchRipple-root': {
+            display: 'none',
+          },
+          '& .MuiToggleButton-root': {
+            border: '1px solid #D2D2D2',
+            color: primary,
+
+            '&:focus-visible': {
+              outline: 'none',
+              boxShadow: '0 0 0 2px #74E9CA',
+            },
+
+            '&.Mui-selected': {
+              backgroundColor: hexToRGB(primary || THEME_LIGHT_DEFAULT_PRIMARY, 0.25),
+            },
+
+            '&:hover:not(.Mui-selected)': {
+              backgroundColor: hexToRGB(primary || THEME_LIGHT_DEFAULT_PRIMARY, 0.15),
+            },
+          },
+        },
+      },
+    },
     MuiTooltip: {
       styleOverrides: {
         tooltip: {
