@@ -379,6 +379,7 @@ const ThemeDark = (
       },
       styleOverrides: {
         root: {
+          height: 36,
           '& .MuiTouchRipple-root': {
             display: 'none',
           },

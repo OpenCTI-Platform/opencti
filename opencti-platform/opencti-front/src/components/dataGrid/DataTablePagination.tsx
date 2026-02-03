@@ -142,6 +142,7 @@ const DataTablePagination = ({
         borderRadius: 1,
         border: 1,
         borderColor: 'divider',
+        height: 36,
       }}
     >
       <ButtonGroup
