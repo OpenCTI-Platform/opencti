@@ -49,6 +49,7 @@ const ExternalReferenceComponent: FunctionComponent<
             <ExternalReferenceEdition externalReferenceId={externalReference.id} />
           </Security>
         )}
+        enableEnrollPlaybook={true}
       />
       <Grid
         container={true}
