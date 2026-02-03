@@ -10764,6 +10764,11 @@ enum WorkflowActionMode {
   async
 }
 
+enum WorkflowActionMode {
+  sync
+  async
+}
+
 type WorkflowActionConfig {
   type: String!
   params: String
