@@ -104,6 +104,6 @@ describe('Array utilities: pushAll', () => {
     const result = pushAll(arr, arr);
 
     expect(arr).toEqual([1, 2, 3, 1, 2, 3]);
-    expect(result).toEqual(0);
+    expect(result).toEqual(6);
   });
 });
