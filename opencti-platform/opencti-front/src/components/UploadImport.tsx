@@ -2,9 +2,7 @@ import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import ImportFilesDialog from '@components/common/files/import_files/ImportFilesDialog';
 import { FileUploadOutlined } from '@mui/icons-material';
-import { Theme } from '@mui/material/styles/createTheme';
 import Tooltip from '@mui/material/Tooltip';
-import { useTheme } from '@mui/styles';
 import React, { useState } from 'react';
 import { useGetCurrentUserAccessRight } from '../utils/authorizedMembers';
 import useDraftContext from '../utils/hooks/useDraftContext';
@@ -23,11 +21,9 @@ const UploadImport = ({
   size = 'default',
   variant = 'icon',
   fontSize = 'medium',
-  style,
   onSuccess,
   entityId,
 }: UploadImportProps) => {
-  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const title = t_i18n('Import data');
   const [openImportFilesDialog, setOpenImportFilesDialog] = useState(false);

@@ -17,7 +17,6 @@ import {
   Tooltip,
 } from '@mui/material';
 import { AddTaskOutlined, AssistantOutlined } from '@mui/icons-material';
-import { useTheme } from '@mui/styles';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import { stixCoreRelationshipCreationMutation } from '../stix_core_relationships/StixCoreRelationshipCreation';
@@ -35,7 +34,6 @@ const StixCoreObjectsSuggestionsComponent = (props) => {
     onApplied,
     containerHeaderObjectsQuery,
   } = props;
-  const theme = useTheme();
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
   const [displaySuggestions, setDisplaySuggestions] = useState(false);
   const [selectedEntity, setSelectedEntity] = useState({});

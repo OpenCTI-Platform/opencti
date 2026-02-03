@@ -1,32 +1,29 @@
-import React, { BaseSyntheticEvent, useContext, useRef } from 'react';
-import { Field, Form, Formik } from 'formik';
 import Button from '@common/button/Button';
-import * as Yup from 'yup';
-import { graphql } from 'react-relay';
 import { FileUploadOutlined } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
-import { useTheme } from '@mui/styles';
-import ToggleButton from '@mui/material/ToggleButton';
+import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
-import { WorkspacesLinesPaginationQuery$variables } from './__generated__/WorkspacesLinesPaginationQuery.graphql';
-import { WorkspaceCreationImportMutation } from './__generated__/WorkspaceCreationImportMutation.graphql';
-import VisuallyHiddenInput from '../common/VisuallyHiddenInput';
-import Drawer from '../common/drawer/Drawer';
+import { BaseSyntheticEvent, useContext, useRef } from 'react';
+import { graphql } from 'react-relay';
+import { useNavigate } from 'react-router-dom';
+import * as Yup from 'yup';
+import CreateEntityControlledDial from '../../../components/CreateEntityControlledDial';
+import TextField from '../../../components/TextField';
+import IconButton from '../../../components/common/button/IconButton';
+import FormButtonContainer from '../../../components/common/form/FormButtonContainer';
+import MarkdownField from '../../../components/fields/MarkdownField';
 import { useFormatter } from '../../../components/i18n';
 import { handleError, handleErrorInForm } from '../../../relay/environment';
-import TextField from '../../../components/TextField';
-import MarkdownField from '../../../components/fields/MarkdownField';
 import { resolveLink } from '../../../utils/Entity';
-import { insertNode } from '../../../utils/store';
-import useApiMutation from '../../../utils/hooks/useApiMutation';
-import CreateEntityControlledDial from '../../../components/CreateEntityControlledDial';
-import { isNotEmptyField } from '../../../utils/utils';
-import { UserContext } from '../../../utils/hooks/useAuth';
 import Security from '../../../utils/Security';
+import useApiMutation from '../../../utils/hooks/useApiMutation';
+import { UserContext } from '../../../utils/hooks/useAuth';
 import { EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from '../../../utils/hooks/useGranted';
-import type { Theme } from '../../../components/Theme';
-import FormButtonContainer from '../../../components/common/form/FormButtonContainer';
-import IconButton from '../../../components/common/button/IconButton';
+import { insertNode } from '../../../utils/store';
+import { isNotEmptyField } from '../../../utils/utils';
+import VisuallyHiddenInput from '../common/VisuallyHiddenInput';
+import Drawer from '../common/drawer/Drawer';
+import { WorkspaceCreationImportMutation } from './__generated__/WorkspaceCreationImportMutation.graphql';
+import { WorkspacesLinesPaginationQuery$variables } from './__generated__/WorkspacesLinesPaginationQuery.graphql';
 
 const workspaceMutation = graphql`
   mutation WorkspaceCreationMutation($input: WorkspaceAddInput!) {
@@ -59,7 +56,6 @@ interface WorkspaceCreationProps {
 }
 
 const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) => {
-  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const { settings, isXTMHubAccessible } = useContext(UserContext);
