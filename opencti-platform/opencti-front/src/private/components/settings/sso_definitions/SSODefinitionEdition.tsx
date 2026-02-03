@@ -101,7 +101,7 @@ const SSODefinitionEdition = ({
       const newEntry = {
         key: field,
         value: Array.isArray(value) ? JSON.stringify(value) : String(value),
-        type: typeof value,
+        type: Array.isArray(value) ? 'array' : typeof value,
       };
       if (foundIndex === -1) {
         configurations.push(newEntry);

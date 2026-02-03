@@ -3,7 +3,8 @@
 ## Docker compose part
 
 ```
-docker composer up -d
+docker compose up -d
+podman compose up -d
 ```
 
 Will start:
@@ -39,12 +40,14 @@ Optionally additional services can be started:
 ### Opensearch + opensearch dashboard instead of elasticsearch + kibana
 
 ```
-docker composer --profile opensearch up -d
+docker compose --profile opensearch up -d
+podman compose --profile opensearch up -d
 ```
 
 You need to stop elasticsearch and kibana that are in the default setup:
 ```
-docker composer opencti-dev-elasticsearch opencti-dev-kibana stop
+docker compose opencti-dev-elasticsearch opencti-dev-kibana stop
+podman compose opencti-dev-elasticsearch opencti-dev-kibana stop
 ```
 
 In opencti configuration you can now setup OpenSearch:
@@ -71,7 +74,8 @@ Dashboard on [http://localhost:5602](http://localhost:5602).
 In docker-compose file `opencti-mokapi`
 
 ```
-docker composer --profile mockapi up -d
+docker compose --profile mockapi up -d
+podman compose --profile mockapi up -d
 ```
 
 `development.json` configuration, be carefully that **identifier** matches the one in database (here oiccyberark).
