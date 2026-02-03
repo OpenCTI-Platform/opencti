@@ -3,6 +3,7 @@ import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreEntity } from '../types/store';
 import { loadThroughDenormalized } from '../resolvers/stix';
 import { INPUT_ASSIGNEE, INPUT_PARTICIPANT } from '../schema/general';
+import type { Creator } from '../generated/graphql';
 
 export const loadCreators = async (
   context: AuthContext,
@@ -20,9 +21,14 @@ export const loadCreator = async (
   context: AuthContext,
   user: AuthUser,
   userIdToLoad?: string,
-) => {
+): Promise<Creator> => {
   const realUser = await context.batch?.creatorBatchLoader.load(userIdToLoad);
-  if (!realUser) return null;
+  if (!realUser) {
+    return {
+      ...SYSTEM_USER,
+      representative: { main: SYSTEM_USER.name },
+    };
+  }
   const filteredUser = await filterMembersUsersWithUsersOrgs(context, user, [realUser]);
   return filteredUser[0];
 };
