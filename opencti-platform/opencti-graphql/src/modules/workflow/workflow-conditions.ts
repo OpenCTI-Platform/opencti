@@ -5,10 +5,10 @@ export type ConditionFunction<TContext extends Context = Context> = (ctx: TConte
 
 export const ConditionRegistry: Record<string, ConditionFunction> = {
   // generic conditions examples:
-  'is-admin': (ctx) => {
+  isAdmin: (ctx) => {
     return ctx.user.capabilities?.some((c: any) => c?.name === BYPASS) || false;
   },
-  'has-capability': (ctx, params) => {
+  hasCapability: (ctx, params) => {
     const capability = params?.capability;
     return ctx.user?.capabilities?.some((c: any) => c.name === capability) || false;
   },

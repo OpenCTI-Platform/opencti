@@ -1,10 +1,12 @@
+import type { WorkflowActionMode } from '../../generated/graphql';
+
 /**
  * Serialized configuration for a side effect action.
  */
 export interface ActionConfig {
   type: string;
   params?: any;
-  mode: 'sync' | 'async';
+  mode: WorkflowActionMode;
 }
 
 /**

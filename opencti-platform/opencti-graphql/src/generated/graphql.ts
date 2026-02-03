@@ -35761,10 +35761,15 @@ export type WorkTracking = {
 
 export type WorkflowActionConfig = {
   __typename?: 'WorkflowActionConfig';
-  mode: Scalars['String']['output'];
+  mode: WorkflowActionMode;
   params?: Maybe<Scalars['String']['output']>;
   type: Scalars['String']['output'];
 };
+
+export enum WorkflowActionMode {
+  Async = 'async',
+  Sync = 'sync'
+}
 
 export type WorkflowConditionConfig = {
   __typename?: 'WorkflowConditionConfig';
@@ -38063,6 +38068,7 @@ export type ResolversTypes = ResolversObject<{
   WorkMessage: ResolverTypeWrapper<WorkMessage>;
   WorkTracking: ResolverTypeWrapper<WorkTracking>;
   WorkflowActionConfig: ResolverTypeWrapper<WorkflowActionConfig>;
+  WorkflowActionMode: WorkflowActionMode;
   WorkflowConditionConfig: ResolverTypeWrapper<WorkflowConditionConfig>;
   WorkflowInstance: ResolverTypeWrapper<Omit<WorkflowInstance, 'allowedTransitions'> & { allowedTransitions: Array<ResolversTypes['WorkflowTransition']> }>;
   WorkflowSchema: ResolverTypeWrapper<WorkflowSchema>;
@@ -49735,7 +49741,7 @@ export type WorkTrackingResolvers<ContextType = any, ParentType extends Resolver
 }>;
 
 export type WorkflowActionConfigResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowActionConfig'] = ResolversParentTypes['WorkflowActionConfig']> = ResolversObject<{
-  mode?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  mode?: Resolver<ResolversTypes['WorkflowActionMode'], ParentType, ContextType>;
   params?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
