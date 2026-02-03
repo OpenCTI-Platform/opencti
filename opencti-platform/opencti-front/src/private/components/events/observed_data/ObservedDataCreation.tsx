@@ -165,7 +165,6 @@ export const ObservedDataCreationForm: FunctionComponent<
         <Form>
           <StixCoreObjectsField
             name="objects"
-            style={fieldSpacingContainerStyle}
             required={(mandatoryAttributes.includes('objects'))}
           />
           <Field

@@ -345,6 +345,7 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
               <Tabs value={currentTab} onChange={handleChangeTab}>
                 <Tab
                   id="create-overview"
+                  sx={{ textTransform: 'capitalize' }}
                   label={(
                     <ErrorBadge
                       badgeContent={Object.keys(errors).length}
