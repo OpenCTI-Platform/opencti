@@ -231,6 +231,7 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
             )}
             <ToggleButtonGroup
               size="small"
+              color="primary"
               value="graph"
               exclusive={true}
               onChange={(_, value) => {

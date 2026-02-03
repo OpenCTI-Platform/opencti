@@ -109,8 +109,6 @@ const DataTableFilters = ({
     },
   };
 
-  console.log('current view ', currentView);
-
   return (
     <ExportContext.Provider value={{ selectedIds: Object.keys(selectedElements) }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>

@@ -132,24 +132,21 @@ const JsonMappers = () => {
               numberOfElements={viewStorage.numberOfElements}
               createButton={(
                 <>
-                  <>
-                    <ToggleButton
-                      value="import"
-                      size="small"
-                      onClick={() => inputFileRef.current?.click()}
-                      data-testid="ImporJsonMapper"
-                      title={t_i18n('Import a JSON mapper')}
-                    >
-                      <FileUploadOutlined fontSize="small" color="primary" />
-                    </ToggleButton>
-                    <Button
-                      disableElevation
-                      sx={{ marginLeft: 1 }}
-                      onClick={() => setOpen(true)}
-                    >
-                      {t_i18n('Create a JSON mapper')}
-                    </Button>
-                  </>
+                  <ToggleButton
+                    value="import"
+                    size="small"
+                    onClick={() => inputFileRef.current?.click()}
+                    data-testid="ImporJsonMapper"
+                    title={t_i18n('Import a JSON mapper')}
+                  >
+                    <FileUploadOutlined fontSize="small" color="primary" />
+                  </ToggleButton>
+                  <Button
+                    disableElevation
+                    onClick={() => setOpen(true)}
+                  >
+                    {t_i18n('Create a JSON mapper')}
+                  </Button>
                 </>
               )}
             >

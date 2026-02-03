@@ -181,7 +181,6 @@ const CsvMappers = () => {
                     </ToggleButton>
                     <Button
                       disableElevation
-                      sx={{ marginLeft: 1 }}
                       onClick={() => setOpen(true)}
                     >
                       {t_i18n('Create a CSV mapper')}

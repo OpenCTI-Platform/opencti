@@ -415,6 +415,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
                   >
                     <ToggleButtonGroup
                       size="small"
+                      color="primary"
                       exclusive={true}
                       value={currentView}
                     >
