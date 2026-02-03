@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
-import { ManageSearchOutlined, Search, TuneOutlined } from '@mui/icons-material';
+import { ManageSearchOutlined, Search, TuneOutlined, StarOutlined, WavesOutlined } from '@mui/icons-material';
 import { LogoXtmOneIcon } from 'filigran-icon';
 import IconButton from '@common/button/IconButton';
 import { Link, useLocation } from 'react-router-dom';
@@ -158,6 +158,8 @@ const SearchInput = (props) => {
   const [displayEEDialog, setDisplayEEDialog] = useState(false);
   const [searchValue, setSearchValue] = useState(keyword);
   const [askAI, setAskAI] = useState(false);
+  const [wildcardSearch, setWildcardSearch] = useState(false);
+  const [fuzzySearch, setFuzzySearch] = useState(false);
 
   useEffect(() => {
     if (keyword !== searchValue) {
@@ -226,6 +228,7 @@ const SearchInput = (props) => {
         slotProps={{
           input: {
             startAdornment: (
+            <div>
               <Search
                 fontSize="small"
                 sx={{
@@ -233,6 +236,25 @@ const SearchInput = (props) => {
                   mr: 0.5,
                 }}
               />
+                <Tooltip title={t_i18n('Wildcard search')}>
+                <IconButton
+                    onClick={() => setWildcardSearch(!wildcardSearch)}
+                    size="medium"
+                    color={wildcardSearch ? 'primary' : 'inherit'}
+                >
+                    <StarOutlined fontSize="medium" />
+                </IconButton>
+            </Tooltip>
+                <Tooltip title={t_i18n('Fuzzy search')}>
+                    <IconButton
+                        onClick={() => setFuzzySearch(!fuzzySearch)}
+                        size="medium"
+                        color={fuzzySearch ? 'primary' : 'inherit'}
+                    >
+                        <WavesOutlined fontSize="medium" />
+                    </IconButton>
+                </Tooltip>
+            </div>
             ),
 
             endAdornment: variant === 'topBar' ? (

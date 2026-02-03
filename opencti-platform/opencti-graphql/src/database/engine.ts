@@ -2078,13 +2078,14 @@ const BASE_SEARCH_ATTRIBUTES = [
 
 type ProcessSearchArgs = {
   useWildcardPrefix?: boolean;
+  useFuzzySearch?: boolean;
   historyFiltering?: boolean;
 };
 function processSearch(
   search: string,
   args: ProcessSearchArgs,
 ): { exactSearch: string[]; querySearch: string[] } {
-  const { useWildcardPrefix = ES_DEFAULT_WILDCARD_PREFIX } = args;
+  const { useWildcardPrefix = ES_DEFAULT_WILDCARD_PREFIX, useFuzzySearch = ES_DEFAULT_FUZZY } = args;
   let decodedSearch;
   try {
     decodedSearch = decodeURIComponent(refang(search))
@@ -2110,7 +2111,7 @@ function processSearch(
     const cleanElement = specialElasticCharsEscape(partialElement);
     if (isNotEmptyField(cleanElement)) {
       querySearch.push(`${useWildcardPrefix ? '*' : ''}${cleanElement}*`);
-      if (ES_DEFAULT_FUZZY) {
+      if (useFuzzySearch) {
         querySearch.push(`${cleanElement}~`);
       }
     }
