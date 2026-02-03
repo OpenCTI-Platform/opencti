@@ -1909,7 +1909,12 @@ class StixCoreObject:
                         }
                     """
                 result = self.opencti.query(
-                    query, {"elementId": element_id, "ruleId": rule_id, "executionId": execution_id}
+                    query,
+                    {
+                        "elementId": element_id,
+                        "ruleId": rule_id,
+                        "executionId": execution_id,
+                    },
                 )
                 rule_apply_complete = result["data"]["ruleApplyAsync"]
                 self.opencti.app_logger.info(
