@@ -29,7 +29,6 @@ import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type { BasicConnection, BasicStoreCommon, BasicStoreEntity, BasicStoreRelation } from '../types/store';
 import type { AuthContext, AuthUser, UserRole } from '../types/user';
 import { ID_SUBFILTER, INSTANCE_REGARDING_OF, RELATION_INFERRED_SUBFILTER, RELATION_TYPE_SUBFILTER } from './filtering/filtering-constants';
-import { getConfigurationAdminEmail } from '../modules/singleSignOn/providers-configuration';
 
 export const DEFAULT_INVALID_CONF_VALUE = 'ChangeMe';
 
@@ -583,10 +582,6 @@ export const INTERNAL_USERS_WITHOUT_REDACTED = {
 
 export const isInternalUser = (user: AuthUser): boolean => {
   return INTERNAL_USERS[user.id] !== undefined;
-};
-
-export const isConfigurationAdminUser = (user: AuthUser): boolean => {
-  return user.user_email === getConfigurationAdminEmail();
 };
 
 export const isBypassUser = (user: AuthUser): boolean => {

@@ -21,8 +21,11 @@ import nconf from 'nconf';
 import { parseSingleSignOnRunConfiguration } from './singleSignOn-migration';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import { unregisterStrategy } from './singleSignOn-providers';
-import { EnvStrategyType, isAuthenticationEditionLocked, isAuthenticationForcedFromEnv } from './providers-configuration';
-import { isConfigurationAdminUser } from '../../utils/access';
+import { EnvStrategyType, getConfigurationAdminEmail, isAuthenticationEditionLocked, isAuthenticationForcedFromEnv } from './providers-configuration';
+
+export const isConfigurationAdminUser = (user: AuthUser): boolean => {
+  return user.user_email === getConfigurationAdminEmail();
+};
 
 const toEnv = (newStrategyType: StrategyType) => {
   switch (newStrategyType) {
