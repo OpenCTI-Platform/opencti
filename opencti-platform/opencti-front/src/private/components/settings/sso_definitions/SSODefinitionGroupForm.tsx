@@ -33,6 +33,7 @@ const SSODefinitionGroupForm = ({ isEditionMode, selectedStrategy, updateField }
         label={t_i18n('Attribute in token')}
         style={fieldSpacingContainerStyle}
         fullWidth
+        helperText={t_i18n('To create a list of values, add a comma between each value of your list (ex: value1, value2)')}
       />
     );
   };

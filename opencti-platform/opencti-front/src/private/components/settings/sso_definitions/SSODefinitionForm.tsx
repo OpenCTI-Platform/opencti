@@ -23,6 +23,8 @@ import IconButton from '@common/button/IconButton';
 import { Add, Delete } from '@mui/icons-material';
 import SelectField from 'src/components/fields/SelectField';
 import MenuItem from '@mui/material/MenuItem';
+import Tooltip from '@mui/material/Tooltip';
+import { InformationOutline } from 'mdi-material-ui';
 
 interface SSODefinitionFormProps {
   onCancel: () => void;
@@ -398,6 +400,13 @@ const SSODefinitionForm = ({
                   <>
                     <div style={{ display: 'flex', alignItems: 'center', marginTop: 20 }}>
                       <Typography variant="h2">{t_i18n('Add more fields')}</Typography>
+                      <Tooltip title={t_i18n('For array type, to create a list of values, add a comma between each value of your list (ex: value1, value2)')}>
+                        <InformationOutline
+                          fontSize="small"
+                          color="primary"
+                          style={{ cursor: 'default', marginLeft: '10px', marginBottom: 12 }}
+                        />
+                      </Tooltip>
                       <IconButton
                         color="primary"
                         aria-label="Add"
