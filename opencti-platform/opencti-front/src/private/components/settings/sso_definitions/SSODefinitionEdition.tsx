@@ -89,10 +89,12 @@ const SSODefinitionEdition = ({
 
   const onEdit = (field: SSOEditionFormInputKeys, value: unknown) => {
     const configurationKeyList = getSSOConfigList(selectedStrategy ?? '');
+    console.log('onEdit - configurationKeyList:', configurationKeyList);
     const groupManagementKeyList = ['group_attribute', 'groups_attributes', 'group_attributes', 'groups_path', 'groups_scope', 'groups_mapping', 'groups_token_reference', 'groups_read_userinfo'];
     const organizationsManagementKeyList = ['organizations_path', 'organizations_mapping', 'organizations_scope', 'organizations_token_reference', 'organizations_read_userinfo'];
 
     const input: { key: string; value: unknown[] } = { key: field, value: [value] };
+    console.log('onEdit - input:', input);
 
     if (configurationKeyList.includes(field)) {
       input.key = 'configuration';
