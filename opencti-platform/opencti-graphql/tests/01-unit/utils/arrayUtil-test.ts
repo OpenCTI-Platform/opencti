@@ -142,7 +142,7 @@ describe('Array utilities: unshiftAll', () => {
     const result = unshiftAll(target, source);
 
     expect(target).toEqual([]);
-    expect(result).toEqual(6);
+    expect(result).toEqual(0);
   });
 
   it('should handle same target and source', () => {
