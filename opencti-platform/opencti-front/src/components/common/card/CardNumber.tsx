@@ -37,45 +37,47 @@ const CardNumber = ({
 
   return (
     <Card sx={{ paddingY: 2 }}>
-      <Stack direction="row" alignItems="start">
-        <Stack direction="row" alignItems="start" gap={1} flex={1}>
-          <Typography
-            color={theme.palette.text.light}
-            variant="body2"
-            gutterBottom
+      <Stack height="100%" justifyContent="space-between">
+        <Stack direction="row" alignItems="start">
+          <Stack direction="row" alignItems="start" gap={1} flex={1}>
+            <Typography
+              color={theme.palette.text.light}
+              variant="body2"
+              gutterBottom
+            >
+              {label}
+            </Typography>
+            {diffValue !== undefined && diffLabel && (
+              <NumberDifference
+                value={diffValue}
+                description={diffLabel}
+              />
+            )}
+          </Stack>
+          {action}
+        </Stack>
+
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+        >
+          <div
+            data-testid={`card-number-${label}`}
+            style={valueStyle}
           >
-            {label}
-          </Typography>
-          {diffValue !== undefined && diffLabel && (
-            <NumberDifference
-              value={diffValue}
-              description={diffLabel}
+            {n(value)}
+          </div>
+          {entityType && (
+            <ItemIcon
+              type={entityType}
+              size="large"
+              color={theme.palette.text.secondary}
+              style={{ opacity: 0.35 }}
             />
           )}
+          {icon}
         </Stack>
-        {action}
-      </Stack>
-
-      <Stack
-        direction="row"
-        justifyContent="space-between"
-        alignItems="center"
-      >
-        <div
-          data-testid={`card-number-${label}`}
-          style={valueStyle}
-        >
-          {n(value)}
-        </div>
-        {entityType && (
-          <ItemIcon
-            type={entityType}
-            size="large"
-            color={theme.palette.text.secondary}
-            style={{ opacity: 0.35 }}
-          />
-        )}
-        {icon}
       </Stack>
     </Card>
   );
