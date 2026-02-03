@@ -392,7 +392,7 @@ const StixCoreRelationshipCreationFromEntityList = ({
       ) : (
         <div>
           {nodes.length > 0 ? (
-            <List>
+            <List sx={{ py: 0 }}>
               {availableDatas.edges
                 .filter((edge) => edge.node.id !== entity.id)
                 .map((edge) => {
@@ -406,6 +406,7 @@ const StixCoreRelationshipCreationFromEntityList = ({
                     );
                   return (
                     <ListItemButton
+                      dense
                       key={node.id}
                       divider={true}
                       onClick={() => toggle(node, alreadyAdded)}
