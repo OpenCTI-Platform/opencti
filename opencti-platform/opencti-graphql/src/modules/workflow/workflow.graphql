@@ -1,7 +1,12 @@
+enum WorkflowActionMode {
+  sync
+  async
+}
+
 type WorkflowActionConfig {
     type: String!
     params: String
-    mode: String!
+    mode: WorkflowActionMode!
 }
 
 type WorkflowConditionConfig {

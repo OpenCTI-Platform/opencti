@@ -10750,10 +10750,15 @@ type Mutation {
   triggerWorkflowEvent(entityId: String!, eventName: String!): WorkflowTriggerResult!
 }
 
+enum WorkflowActionMode {
+  sync
+  async
+}
+
 type WorkflowActionConfig {
   type: String!
   params: String
-  mode: String!
+  mode: WorkflowActionMode!
 }
 
 type WorkflowConditionConfig {

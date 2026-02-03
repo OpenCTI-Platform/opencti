@@ -16,7 +16,7 @@ export const ENTITY_TYPE_WORKFLOW_INSTANCE = 'WorkflowInstance';
 export interface WorkflowActionConfig {
   type: string;
   params?: string;
-  mode: 'sequential' | 'parallel';
+  mode: 'sync' | 'async';
 }
 
 export interface WorkflowConditionConfig {
