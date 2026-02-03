@@ -12,6 +12,7 @@ import Filters from '../lists/Filters';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import useAuth, { FilterDefinition, UserContext } from '../../../../utils/hooks/useAuth';
 import { Filter, FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
+import { Stack } from '@mui/material';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -20,11 +21,6 @@ const useStyles = makeStyles(() => ({
     zIndex: 1,
     display: 'flex',
     overflow: 'hidden',
-  },
-  divider: {
-    marginTop: 3,
-    height: 50,
-    margin: '0 5px',
   },
 }));
 
@@ -71,9 +67,11 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
       sub.unsubscribe();
     };
   });
+
   const handleAddFilter = (key: string, id: string | null, op = 'eq', event?: SyntheticEvent) => {
     handleAddTimeLineFilter(filterKeysSchema, key, id, op, event);
   };
+
   return (
     <UserContext.Consumer>
       {({ bannerSettings }) => (
@@ -81,12 +79,14 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
           anchor="bottom"
           variant="permanent"
           classes={{ paper: classes.bottomNav }}
-          PaperProps={{
-            variant: 'elevation',
-            elevation: 1,
-            style: {
-              paddingLeft: navOpen ? 185 : 60,
-              bottom: bannerSettings?.bannerHeightNumber,
+          slotProps={{
+            paper: {
+              variant: 'elevation',
+              elevation: 1,
+              style: {
+                paddingLeft: navOpen ? 185 : 60,
+                bottom: bannerSettings?.bannerHeightNumber,
+              },
             },
           }}
         >
@@ -95,13 +95,15 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
               height: 'auto',
               maxHeight: 108,
               transition: 'min-height 0.2s linear',
-              paddingTop: 3,
-
+              paddingLeft: 8,
             }}
           >
-            <div
-              style={{
-                display: 'flex',
+            <Stack
+              direction="row"
+              alignItems="center"
+              gap={1}
+              sx={{
+                minHeight: 50,
               }}
             >
               <Tooltip
@@ -136,16 +138,20 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
                   </IconButton>
                 </span>
               </Tooltip>
-              <Divider className={classes.divider} orientation="vertical" />
-              <div style={{ flexGrow: 0, margin: '9px 10px 0 10px' }}>
+
+              <Divider orientation="vertical" flexItem sx={{ ml: 0.5, mr: 0.5 }} />
+
+              <div style={{ flexGrow: 0 }}>
                 <SearchInput
                   variant="thin"
                   onSubmit={handleTimeLineSearch}
                   keyword={timeLineSearchTerm}
                 />
               </div>
-              <Divider className={classes.divider} orientation="vertical" />
-              <div style={{ paddingTop: 4 }}>
+
+              <Divider orientation="vertical" flexItem sx={{ ml: 0.5, mr: 0.5 }} />
+
+              <div style={{ paddingTop: 0 }}>
                 <Filters
                   availableFilterKeys={[
                     'entity_type',
@@ -175,7 +181,7 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
                   ]}
                 />
               </div>
-            </div>
+            </Stack>
           </div>
         </Drawer>
       )}

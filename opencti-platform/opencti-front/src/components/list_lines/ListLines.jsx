@@ -258,7 +258,7 @@ class ListLines extends Component {
             )}
             <div className={classes.filler} />
 
-            <div className={classes.views}>
+            <div className={classes.views} style={{ display: 'flex', gap: 8 }}>
 
               {numberOfElements && (
                 <div
@@ -277,7 +277,7 @@ class ListLines extends Component {
                 || typeof handleExportCsv === 'function') && (
                 <ToggleButtonGroup
                   size="small"
-                  color="secondary"
+                  color="primary"
                   value={(!enableEntitiesView && currentView === 'entities') ? 'relationships' : currentView || 'lines'}
                   exclusive={true}
                   onChange={(_, value) => {
@@ -289,7 +289,6 @@ class ListLines extends Component {
                       handleChangeView(value);
                     }
                   }}
-                  style={{ margin: '0 0 0 5px' }}
                 >
                   {typeof handleChangeView === 'function' && !disableCards && (
                     <ToggleButton value="cards" aria-label="cards">
@@ -314,11 +313,11 @@ class ListLines extends Component {
                     </ToggleButton>
                   )}
                   {(enableEntitiesView || (!enableEntitiesView && currentView === 'entities') || currentView === 'relationships') && (
-                    <ToggleButton
-                      value="relationships"
-                      aria-label="relationships"
-                    >
-                      <Tooltip title={t('Relationships view')}>
+                    <Tooltip title={t('Relationships view')}>
+                      <ToggleButton
+                        value="relationships"
+                        aria-label="relationships"
+                      >
                         <RelationManyToMany
                           fontSize="small"
                           color={
@@ -327,30 +326,31 @@ class ListLines extends Component {
                               : 'primary'
                           }
                         />
-                      </Tooltip>
-                    </ToggleButton>
+                      </ToggleButton>
+                    </Tooltip>
                   )}
+
                   {typeof handleChangeView === 'function' && !enableEntitiesView && currentView !== 'relationships' && currentView !== 'entities' && (
                     <Tooltip title={t('Lines view')}>
                       <ToggleButton value="lines" aria-label="lines">
-                        <FiligranIcon icon={ListViewIcon} color="secondary" size="small" />
+                        <FiligranIcon icon={ListViewIcon} size="small" />
                       </ToggleButton>
                     </Tooltip>
                   )}
                   {typeof handleChangeView === 'function' && enableGraph && (
-                    <ToggleButton value="graph" aria-label="graph">
-                      <Tooltip title={t('Graph view')}>
-                        <VectorPolygon fontSize="small" color="primary" />
-                      </Tooltip>
-                    </ToggleButton>
+                    <Tooltip title={t('Graph view')}>
+                      <ToggleButton value="graph" aria-label="graph">
+                        <VectorPolygon fontSize="small" />
+                      </ToggleButton>
+                    </Tooltip>
                   )}
                   {typeof handleChangeView === 'function'
                     && enableNestedView && (
-                    <ToggleButton value="nested" aria-label="nested">
-                      <Tooltip title={t('Nested view')}>
-                        <FormatListGroup fontSize="small" color="primary" />
-                      </Tooltip>
-                    </ToggleButton>
+                    <Tooltip title={t('Nested view')}>
+                      <ToggleButton value="nested" aria-label="nested">
+                        <FormatListGroup fontSize="small" />
+                      </ToggleButton>
+                    </Tooltip>
                   )}
                   {typeof handleChangeView === 'function'
                     && enableContextualView && (
@@ -372,45 +372,43 @@ class ListLines extends Component {
                   {typeof handleChangeView === 'function' && enableSubEntityLines && (
                     <Tooltip title={t('Sub entity lines view')}>
                       <ToggleButton value="subEntityLines" aria-label="subEntityLines">
-                        <FiligranIcon icon={SublistViewIcon} color="primary" size="small" />
+                        <FiligranIcon icon={SublistViewIcon} size="small" />
                       </ToggleButton>
                     </Tooltip>
                   )}
                   {handleSwitchRedirectionMode && (
-                    <ToggleButton
-                      size="small"
-                      value="settings"
-                      aria-label="settings"
-                    >
-                      <Tooltip title={t('List settings')}>
-                        <SettingsOutlined fontSize="small" color="primary" />
-                      </Tooltip>
-                    </ToggleButton>
+                    <Tooltip title={t('List settings')}>
+                      <ToggleButton
+                        size="small"
+                        value="settings"
+                        aria-label="settings"
+                      >
+                        <SettingsOutlined fontSize="small" />
+                      </ToggleButton>
+                    </Tooltip>
                   )}
                   {typeof handleToggleExports === 'function'
                     && !exportDisabled && (
-                    <ToggleButton value="export" aria-label="export">
-                      <Tooltip title={t('Open export panel')}>
+                    <Tooltip title={t('Open export panel')}>
+                      <ToggleButton value="export" aria-label="export">
                         <FileDownloadOutlined
                           fontSize="small"
-                          color={openExports ? 'secondary' : 'primary'}
                         />
-                      </Tooltip>
-                    </ToggleButton>
+                      </ToggleButton>
+                    </Tooltip>
                   )}
                   {typeof handleExportCsv === 'function' && !exportDisabled && (
-                    <ToggleButton
-                      value="export-csv"
-                      onClick={() => handleExportCsv()}
-                      aria-label="export"
-                    >
-                      <Tooltip title={t('Export first 5000 rows in CSV')}>
+                    <Tooltip title={t('Export first 5000 rows in CSV')}>
+                      <ToggleButton
+                        value="export-csv"
+                        onClick={() => handleExportCsv()}
+                        aria-label="export"
+                      >
                         <FileDelimitedOutline
                           fontSize="small"
-                          color="primary"
                         />
-                      </Tooltip>
-                    </ToggleButton>
+                      </ToggleButton>
+                    </Tooltip>
                   )}
                   {typeof handleToggleExports === 'function'
                     && exportDisabled && (

@@ -201,7 +201,6 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
         <Box sx={{
           display: 'flex',
           justifyContent: 'space-between',
-          marginTop: '-10px',
           paddingBottom: '10px',
         }}
         >
@@ -232,7 +231,6 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
             )}
             <ToggleButtonGroup
               size="small"
-              color="secondary"
               value="graph"
               exclusive={true}
               onChange={(_, value) => {

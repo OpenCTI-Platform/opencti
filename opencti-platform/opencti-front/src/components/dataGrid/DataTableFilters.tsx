@@ -148,7 +148,7 @@ const DataTableFilters = ({
 
           <ToggleButtonGroup
             size="small"
-            color="secondary"
+            color="primary"
             value={currentView || 'lines'}
             exclusive={true}
             onChange={(_, value) => {

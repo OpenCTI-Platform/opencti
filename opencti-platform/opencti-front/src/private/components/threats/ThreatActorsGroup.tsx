@@ -95,12 +95,14 @@ const ThreatActorsGroup = () => {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         handleChangeView={helpers.handleChangeView}
+        additionalHeaderButtons={[
+          <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE]}>
+            <StixCoreObjectForms entityType="Threat-Actor-Group" />
+          </Security>,
+        ]}
         createButton={(
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <div style={{ display: 'flex' }}>
-              <StixCoreObjectForms entityType="Threat-Actor-Group" />
-              <ThreatActorGroupCreation paginationOptions={queryPaginationOptions} />
-            </div>
+            <ThreatActorGroupCreation paginationOptions={queryPaginationOptions} />
           </Security>
         )}
       >
@@ -170,24 +172,26 @@ const ThreatActorsGroup = () => {
             preloadedPaginationProps={preloadedPaginationProps}
             lineFragment={ThreatActorGroupCardFragment}
             exportContext={{ entity_type: 'Threat-Actor-Group' }}
+            additionalHeaderButtons={[
+              <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE]}>
+                <StixCoreObjectForms entityType="Threat-Actor-Group" />
+              </Security>,
+            ]}
             additionalToggleButtons={[
-              <ToggleButton key="cards" value="cards" aria-label="cards">
-                <Tooltip title={t_i18n('Cards view')}>
-                  <ViewModuleOutlined fontSize="small" color="primary" />
-                </Tooltip>
-              </ToggleButton>,
-              <ToggleButton key="lines" value="lines" aria-label="lines">
-                <Tooltip title={t_i18n('Lines view')}>
-                  <ViewListOutlined color="secondary" fontSize="small" />
-                </Tooltip>
-              </ToggleButton>,
+              <Tooltip key="cards" title={t_i18n('Cards view')}>
+                <ToggleButton value="cards" aria-label="cards">
+                  <ViewModuleOutlined fontSize="small" />
+                </ToggleButton>
+              </Tooltip>,
+              <Tooltip key="lines" title={t_i18n('Lines view')}>
+                <ToggleButton value="lines" aria-label="lines">
+                  <ViewListOutlined fontSize="small" />
+                </ToggleButton>
+              </Tooltip>,
             ]}
             createButton={(
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <div style={{ display: 'flex' }}>
-                  <StixCoreObjectForms entityType="Threat-Actor-Group" />
-                  <ThreatActorGroupCreation paginationOptions={queryPaginationOptions} />
-                </div>
+                <ThreatActorGroupCreation paginationOptions={queryPaginationOptions} />
               </Security>
             )}
           />
