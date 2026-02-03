@@ -17,8 +17,8 @@ Will start:
 Optionally additional services can be started:
 - [Keycloak as OpenID and SAML providers](#keycloak-as-openid-and-saml-idp)
 - [Opensearch instead of elasticsearch](#opensearch--opensearch-dashboard-instead-of-elasticsearch--kibana)
-- [A mock as LDAP provider](#cyberark-mock)
-- [A mock as Cyber Ark provider](#ldap-mock)
+- [A mock as LDAP provider](#ldap-mock)
+- [A mock as Cyber Ark provider](#cyberark-mock)
 
 ### Fake SMTP server
 
