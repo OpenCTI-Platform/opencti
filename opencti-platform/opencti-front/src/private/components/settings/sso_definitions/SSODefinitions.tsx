@@ -109,7 +109,7 @@ const SSODefinitions = () => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('SSO Definitions | Security | Settings'));
+  setTitle(t_i18n('Authentication Definitions | Security | Settings'));
   const initialValues = {
     searchTerm: '',
     sortBy: 'name',
@@ -143,8 +143,8 @@ const SSODefinitions = () => {
       label: t_i18n('Enabled'),
       percentWidth: 25,
       render: (node: { enabled: boolean }) => (
-        node.enabled ? <ItemBoolean label="True" status={true} />
-          : <ItemBoolean label="False" status={false} />
+        node.enabled ? <ItemBoolean label={t_i18n('True')} status={true} />
+          : <ItemBoolean label={t_i18n('False')} status={false} />
       ) },
     label: {
       label: t_i18n('Login Button Name'),
@@ -175,7 +175,7 @@ const SSODefinitions = () => {
       <Breadcrumbs elements={[
         { label: t_i18n('Settings') },
         { label: t_i18n('Security') },
-        { label: t_i18n('SSO definitions'), current: true }]}
+        { label: t_i18n('Authentication definitions'), current: true }]}
       />
       <AccessesMenu />
       {!isEnterpriseEdition ? (
@@ -191,12 +191,6 @@ const SSODefinitions = () => {
               contextFilters={contextFilters}
               lineFragment={ssoDefinitionsLineFragment}
               preloadedPaginationProps={preloadedPaginationProps}
-              // actions={(ssoDefinition) => (
-              //   <SSODefinitionPopover
-              //     ssoDefinition={ssoDefinition}
-              //     paginationOptions={queryPaginationOptions}
-              //   />
-              // )}
               entityTypes={['SingleSignOn']}
               searchContextFinal={{ entityTypes: ['SingleSignOn'] }}
               disableToolBar

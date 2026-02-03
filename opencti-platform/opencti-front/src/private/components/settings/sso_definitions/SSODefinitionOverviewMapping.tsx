@@ -236,9 +236,9 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
 
             <Grid size={{ xs: 12, md: 6 }} sx={{ display: 'flex', alignItems: 'center' }}>
               {valueIsTrue
-                ? <ItemBoolean label="True" status={true} />
+                ? <ItemBoolean label={t_i18n('True')} status={true} />
                 : valueIsFalse
-                  ? <ItemBoolean label="False" status={false} />
+                  ? <ItemBoolean label={t_i18n('False')} status={false} />
                   : row.value ? renderValue(row.value) : EMPTY_VALUE}
             </Grid>
 

@@ -127,7 +127,7 @@ const CreateSplitControlledDial: FunctionComponent<CreateSplitControlledDialProp
                           handleMenuItemClick(event, index)
                         }
                       >
-                        {option}
+                        {t_i18n(option)}
                       </MenuItem>
                     ))}
                   </MenuList>
