@@ -2010,7 +2010,7 @@ export const elGenerateFullTextSearchShould = (search: string, args: ProcessSear
   const { exactSearch, querySearch } = processSearch(search, args);
   // Return the elastic search engine expected bool should terms
   // Build the search for all exact match (between double quotes)
-  const shouldSearch: unknown[] = [];
+  const shouldSearch: any[] = [];
   const cleanExactSearch = R.uniq(exactSearch.map((e) => e.replace(/"|http?:/g, '')));
   pushAll(shouldSearch, cleanExactSearch.map((ex) => [
     {
@@ -2090,7 +2090,7 @@ export const elGenerateFieldTextSearchShould = (
 ) => {
   const { exactSearch, querySearch } = processSearch(search, args);
   const cleanExactSearch = R.uniq(exactSearch.map((e) => e.replace(/"|http?:/g, '')));
-  const shouldSearch: unknown[] = [];
+  const shouldSearch: any[] = [];
   pushAll(shouldSearch, cleanExactSearch.map((ex) => [
     {
       multi_match: {
