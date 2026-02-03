@@ -900,6 +900,9 @@ describe('Migration of SSO environment test coverage', () => {
   });
   describe('Dry run of CERT migrations', () => {
     it('should CERT minimal configuration works', async () => {
+      if (!MIGRATED_STRATEGY.some((strat) => strat === EnvStrategyType.STRATEGY_CERT)) {
+        return;
+      }
       const configuration = {
         cert_minimal: {
           identifier: 'cert_minimal',
@@ -914,6 +917,28 @@ describe('Migration of SSO environment test coverage', () => {
       expect(minimalCERTConfiguration.strategy).toBe('ClientCertStrategy');
       expect(minimalCERTConfiguration.label).toBe('cert_minimal');
       expect(minimalCERTConfiguration.enabled).toBeTruthy();
+    });
+    it('should CERT configuration disabled works', async () => {
+      if (!MIGRATED_STRATEGY.some((strat) => strat === EnvStrategyType.STRATEGY_CERT)) {
+        return;
+      }
+      const configuration = {
+        cert_minimal: {
+          identifier: 'cert_minimal',
+          strategy: 'ClientCertStrategy',
+          config: {
+            disabled: true,
+          },
+        },
+      };
+
+      const result = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
+
+      const minimalCERTConfiguration = result[0];
+
+      expect(minimalCERTConfiguration.strategy).toBe('ClientCertStrategy');
+      expect(minimalCERTConfiguration.label).toBe('cert_minimal');
+      expect(minimalCERTConfiguration.enabled).toBeFalsy();
     });
   });
   describe('Actual run of migrations', () => {
