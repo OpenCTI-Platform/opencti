@@ -376,7 +376,7 @@ const StixCoreRelationships: FunctionComponent<StixCoreRelationshipsProps> = (
             lineFragment={stixCoreRelationshipsFragment}
             preloadedPaginationProps={preloadedPaginationProps}
             exportContext={{ entity_type: 'stix-core-relationship' }}
-            additionalHeaderButtons={[...viewButtons]}
+            additionalToggleButtons={[...viewButtons]}
           />
         )}
       </div>

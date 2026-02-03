@@ -1,5 +1,5 @@
 import Button from '@common/button/Button';
-import { Box, Tooltip } from '@mui/material';
+import { Box, Stack, Tooltip } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
 import { useTheme } from '@mui/material/styles';
 import { truncate } from '../../../../utils/String';
@@ -46,7 +46,7 @@ const StixSightingRelationshipHeader = ({
           </TitleMainEntity>
         </Tooltip>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center' }}>
+      <Stack direction="row" alignItems="center" gap={1}>
         {canDelete && (
           <PopoverMenu>
             {({ closeMenu }) => (
@@ -67,13 +67,12 @@ const StixSightingRelationshipHeader = ({
             <Button
               aria-label={t_i18n('Update')}
               onClick={onOpenEdit}
-              style={{ marginLeft: theme.spacing(0.5) }}
             >
               {t_i18n('Update')}
             </Button>
           </Security>
         )}
-      </div>
+      </Stack>
     </div>
   );
 };

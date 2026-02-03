@@ -1,12 +1,10 @@
 import Button, { ButtonVariant } from '@common/button/Button';
 import React, { FunctionComponent } from 'react';
-import { useTheme } from '@mui/styles';
-import { Theme } from '@mui/material/styles/createTheme';
 import { DrawerControlledDialProps } from '../private/components/common/drawer/Drawer';
-import { useFormatter } from './i18n';
-import useDraftContext from '../utils/hooks/useDraftContext';
 import { useGetCurrentUserAccessRight } from '../utils/authorizedMembers';
+import useDraftContext from '../utils/hooks/useDraftContext';
 import { ButtonSize } from './common/button/Button.types';
+import { useFormatter } from './i18n';
 
 interface CreateEntityControlledDialProps extends DrawerControlledDialProps {
   entityType: string;
@@ -20,9 +18,7 @@ const CreateEntityControlledDial: FunctionComponent<CreateEntityControlledDialPr
   entityType,
   size = 'default',
   variant = 'primary',
-  style,
 }) => {
-  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const valueString = entityType ? t_i18n(`entity_${entityType}`) : t_i18n('Entity');
   const buttonValue = t_i18n('', {
@@ -34,7 +30,9 @@ const CreateEntityControlledDial: FunctionComponent<CreateEntityControlledDialPr
   const currentAccessRight = useGetCurrentUserAccessRight(draftContext?.currentUserAccessRight);
   const canDisplayButton = !draftContext || currentAccessRight.canEdit;
 
-  return canDisplayButton ? (
+  if (!canDisplayButton) return;
+
+  return (
     <Button
       onClick={onOpen}
       size={size}
@@ -42,12 +40,9 @@ const CreateEntityControlledDial: FunctionComponent<CreateEntityControlledDialPr
       aria-label={buttonValue}
       title={buttonValue}
       data-testid={`create-${entityType.toLowerCase()}-button`}
-      sx={style ?? { marginLeft: theme.spacing(1) }}
     >
       {buttonValue}
     </Button>
-  ) : (
-    <></>
   );
 };
 

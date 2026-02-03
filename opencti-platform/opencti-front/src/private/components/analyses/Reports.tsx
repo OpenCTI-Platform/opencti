@@ -217,12 +217,14 @@ const Reports: FunctionComponent = () => {
           lineFragment={reportLineFragment}
           exportContext={{ entity_type: 'Report' }}
           redirectionModeEnabled
+          additionalHeaderButtons={[
+            <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE]}>
+              <StixCoreObjectForms entityType="Report" />
+            </Security>,
+          ]}
           createButton={(
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                <StixCoreObjectForms entityType="Report" />
-                <ReportCreation paginationOptions={queryPaginationOptions} />
-              </div>
+              <ReportCreation paginationOptions={queryPaginationOptions} />
             </Security>
           )}
         />

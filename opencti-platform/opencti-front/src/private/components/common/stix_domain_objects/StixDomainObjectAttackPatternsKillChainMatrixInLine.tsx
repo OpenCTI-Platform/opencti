@@ -129,7 +129,7 @@ const StixDomainObjectAttackPatternsKillChainMatrixInline: FunctionComponent<Sti
             preloadedPaginationProps={preloadedPaginationProps}
             lineFragment={stixDomainObjectAttackPatternsKillChainContainerLineFragment}
             exportContext={{ entity_type: 'Attack-Pattern' }}
-            additionalHeaderButtons={[...viewButtons]}
+            additionalToggleButtons={[...viewButtons]}
           />
         )}
       </div>

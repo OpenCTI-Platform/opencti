@@ -173,7 +173,7 @@ const ThreatActorsIndividual = () => {
             preloadedPaginationProps={preloadedPaginationProps}
             lineFragment={ThreatActorIndividualCardFragment}
             exportContext={{ entity_type: 'Threat-Actor-Individual' }}
-            additionalHeaderButtons={[
+            additionalToggleButtons={[
               <ToggleButton key="cards" value="cards" aria-label="cards">
                 <Tooltip title={t_i18n('Cards view')}>
                   <ViewModuleOutlined fontSize="small" color="primary" />

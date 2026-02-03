@@ -28,6 +28,7 @@ type DataTableInternalFiltersProps = Pick<DataTableProps,
     availableRelationshipTypes?: string[];
     searchContextFinal?: FilterSearchContext;
     additionalHeaderButtons?: ReactNode[];
+    additionalToggleButtons?: ReactNode[];
     currentView?: string;
     exportContext?: { entity_type: string; entity_id?: string };
   };
@@ -42,6 +43,7 @@ const DataTableInternalFilters = ({
   availableRelationshipTypes,
   searchContextFinal,
   additionalHeaderButtons,
+  additionalToggleButtons,
   currentView,
   exportContext,
 }: DataTableInternalFiltersProps) => {
@@ -89,6 +91,7 @@ const DataTableInternalFilters = ({
               exportContext={exportContext}
               paginationOptions={paginationOptions}
               additionalHeaderButtons={additionalHeaderButtons}
+              additionalToggleButtons={additionalToggleButtons}
               currentView={currentView}
             />
           )}
@@ -227,6 +230,7 @@ const DataTable = (props: OCTIDataTableProps) => {
     contextFilters,
     handleCopy,
     additionalHeaderButtons,
+    additionalToggleButtons,
     currentView,
     hideSearch,
     hideFilters,
@@ -270,6 +274,7 @@ const DataTable = (props: OCTIDataTableProps) => {
             entityTypes={entityTypes}
             contextFilters={contextFilters}
             additionalHeaderButtons={additionalHeaderButtons}
+            additionalToggleButtons={additionalToggleButtons}
             availableEntityTypes={availableEntityTypes}
             availableRelationFilterTypes={availableRelationFilterTypes}
             hideFilters={hideFilters}

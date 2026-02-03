@@ -183,6 +183,7 @@ export interface DataTableFiltersProps {
   paginationOptions: any;
   currentView?: string;
   additionalHeaderButtons?: ReactNode[];
+  additionalToggleButtons?: ReactNode[];
 }
 
 export interface DataTableHeadersProps {

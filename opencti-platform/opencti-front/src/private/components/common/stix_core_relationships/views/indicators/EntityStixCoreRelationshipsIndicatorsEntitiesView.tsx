@@ -261,7 +261,7 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={entityStixCoreRelationshipsIndicatorsEntitiesViewLineFragment}
           exportContext={{ entity_id: entityId, entity_type: 'Indicator' }}
-          additionalHeaderButtons={[...viewButtons]}
+          additionalToggleButtons={[...viewButtons]}
         />
       )}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>

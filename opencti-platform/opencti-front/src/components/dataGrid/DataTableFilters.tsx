@@ -1,26 +1,25 @@
 import Filters from '@components/common/lists/Filters';
-import React from 'react';
-import Tooltip from '@mui/material/Tooltip';
-import { FileDownloadOutlined } from '@mui/icons-material';
-import ToggleButton from '@mui/material/ToggleButton';
-import StixDomainObjectsExports from '@components/common/stix_domain_objects/StixDomainObjectsExports';
-import StixCoreRelationshipsExports from '@components/common/stix_core_relationships/StixCoreRelationshipsExports';
 import StixCoreObjectsExports from '@components/common/stix_core_objects/StixCoreObjectsExports';
+import StixCoreRelationshipsExports from '@components/common/stix_core_relationships/StixCoreRelationshipsExports';
+import StixDomainObjectsExports from '@components/common/stix_domain_objects/StixDomainObjectsExports';
 import StixCyberObservablesExports from '@components/observations/stix_cyber_observables/StixCyberObservablesExports';
-import { ToggleButtonGroup } from '@mui/material';
-import { useTheme } from '@mui/styles';
+import { FileDownloadOutlined } from '@mui/icons-material';
+import { Stack, ToggleButtonGroup } from '@mui/material';
 import { Theme } from '@mui/material/styles/createTheme';
+import ToggleButton from '@mui/material/ToggleButton';
+import Tooltip from '@mui/material/Tooltip';
+import { useTheme } from '@mui/styles';
+import { ExportContext } from '../../utils/ExportContextProvider';
+import { isFilterGroupNotEmpty } from '../../utils/filters/filtersUtils';
+import useEntityToggle from '../../utils/hooks/useEntityToggle';
+import { KNOWLEDGE_KNGETEXPORT } from '../../utils/hooks/useGranted';
+import Security from '../../utils/Security';
+import { export_max_size } from '../../utils/utils';
 import FilterIconButton from '../FilterIconButton';
 import { useFormatter } from '../i18n';
-import { DataTableDisplayFiltersProps, DataTableFiltersProps, DataTableVariant } from './dataTableTypes';
-import { export_max_size } from '../../utils/utils';
-import useEntityToggle from '../../utils/hooks/useEntityToggle';
-import Security from '../../utils/Security';
-import { KNOWLEDGE_KNGETEXPORT } from '../../utils/hooks/useGranted';
-import { ExportContext } from '../../utils/ExportContextProvider';
-import DataTablePagination from './DataTablePagination';
-import { isFilterGroupNotEmpty } from '../../utils/filters/filtersUtils';
 import { useDataTableContext } from './components/DataTableContext';
+import DataTablePagination from './DataTablePagination';
+import { DataTableDisplayFiltersProps, DataTableFiltersProps, DataTableVariant } from './dataTableTypes';
 
 export const DataTableDisplayFilters = ({
   availableFilterKeys,
@@ -67,6 +66,7 @@ const DataTableFilters = ({
   exportContext,
   currentView,
   additionalHeaderButtons,
+  additionalToggleButtons,
 }: DataTableFiltersProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
@@ -92,8 +92,6 @@ const DataTableFilters = ({
       && numberOfElements.number > export_max_size)));
 
   const hasFilters = availableFilterKeys && availableFilterKeys.length > 0;
-
-  const hasToggleGroup = additionalHeaderButtons || redirectionModeEnabled || !exportDisabled;
 
   const exportFilterGroups = [];
   if (isFilterGroupNotEmpty(contextFilters)) {
@@ -138,7 +136,7 @@ const DataTableFilters = ({
             />
           )}
         </div>
-        <div style={{ display: 'flex' }}>
+        <div style={{ display: 'flex', gap: '8px' }}>
           {(variant === DataTableVariant.default) && (
             <DataTablePagination
               page={page}
@@ -147,15 +145,12 @@ const DataTableFilters = ({
               redirectionModeEnabled={redirectionModeEnabled}
             />
           )}
+
           <ToggleButtonGroup
             size="small"
             color="secondary"
             value={currentView || 'lines'}
             exclusive={true}
-            sx={hasToggleGroup
-              ? { marginLeft: 1, gap: 1 }
-              : undefined
-            }
             onChange={(_, value) => {
               if (value && value === 'export') {
                 helpers.handleToggleExports();
@@ -164,18 +159,34 @@ const DataTableFilters = ({
               }
             }}
           >
-            {additionalHeaderButtons && [...additionalHeaderButtons]}
+            {additionalToggleButtons && [...additionalToggleButtons]}
             {!exportDisabled && (
               <ToggleButton value="export" aria-label="export">
                 <Tooltip title={t_i18n('Open export panel')}>
                   <FileDownloadOutlined
                     fontSize="small"
-                    color={openExports ? 'secondary' : 'primary'}
                   />
                 </Tooltip>
               </ToggleButton>
             )}
           </ToggleButtonGroup>
+
+          {
+            additionalHeaderButtons && (
+              <Stack
+                direction="row"
+                gap={1}
+                sx={{
+                  '&:empty': {
+                    display: 'none',
+                  },
+                }}
+              >
+                {[...additionalHeaderButtons]}
+              </Stack>
+            )
+          }
+
           {createButton}
         </div>
       </div>
