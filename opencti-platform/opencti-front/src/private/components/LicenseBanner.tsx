@@ -32,10 +32,6 @@ interface ContactUsInput {
   message: string;
 }
 
-const contactUsValidation = (t_i18n: (s: string) => string) => Yup.object().shape({
-  message: Yup.string().required(t_i18n('This field is required')),
-});
-
 interface BannerInfo {
   message: React.ReactNode;
   bannerColor: TopBannerColor;
@@ -112,6 +108,10 @@ const LicenseBanner = () => {
     message: t_i18n('Please contact me about the OpenCTI free trial'),
   };
 
+  const contactUsValidation = Yup.object().shape({
+    message: Yup.string().required(t_i18n('This field is required')),
+  });
+
   return (
     <>
       <TopBanner
@@ -128,7 +128,7 @@ const LicenseBanner = () => {
         <DialogTitle>{t_i18n('Thank you!')}</DialogTitle>
         <Formik<ContactUsInput>
           initialValues={initialValues}
-          validationSchema={contactUsValidation(t_i18n)}
+          validationSchema={contactUsValidation}
           onSubmit={onSubmit}
         >
           {({ submitForm, isSubmitting }) => (
