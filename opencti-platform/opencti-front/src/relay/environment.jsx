@@ -1,22 +1,28 @@
-import { Environment, Observable, RecordSource, Store } from 'relay-runtime';
-import { Subject, timer } from 'rxjs';
-import { debounce } from 'rxjs/operators';
-import React, { Component } from 'react';
-import { commitLocalUpdate as CLU, commitMutation as CM, fetchQuery as FQ, QueryRenderer as QR, requestSubscription as RS } from 'react-relay';
-import * as PropTypes from 'prop-types';
-import { urlMiddleware, RelayNetworkLayer } from 'react-relay-network-modern';
-import * as R from 'ramda';
-import { createClient } from 'graphql-ws';
-import uploadMiddleware from './uploadMiddleware';
+import { Environment, Observable, RecordSource, Store } from "relay-runtime";
+import { Subject, timer } from "rxjs";
+import { debounce } from "rxjs/operators";
+import React, { Component } from "react";
+import {
+  commitLocalUpdate as CLU,
+  commitMutation as CM,
+  fetchQuery as FQ,
+  QueryRenderer as QR,
+  requestSubscription as RS,
+} from "react-relay";
+import * as PropTypes from "prop-types";
+import { urlMiddleware, RelayNetworkLayer } from "react-relay-network-modern";
+import * as R from "ramda";
+import { createClient } from "graphql-ws";
+import uploadMiddleware from "./uploadMiddleware";
 
 // Service bus
 const MESSENGER$ = new Subject().pipe(debounce(() => timer(500)));
 export const MESSAGING$ = {
   messages: MESSENGER$,
-  notifyError: (text) => MESSENGER$.next([{ type: 'error', text }]),
+  notifyError: (text) => MESSENGER$.next([{ type: "error", text }]),
   notifyRelayError: (error) => {
     const messages = (error.res.errors ?? []).map((e) => ({
-      type: 'error',
+      type: "error",
       text: e.message,
       fullError: e,
     }));
@@ -24,14 +30,14 @@ export const MESSAGING$ = {
   },
   notifyCustomRelayError: (error, errorMessageMap) => {
     const messages = (error.res.errors ?? []).map((e) => ({
-      type: 'error',
+      type: "error",
       text: errorMessageMap[e.name] ?? e.message,
       fullError: e,
     }));
     MESSENGER$.next(messages);
   },
-  notifySuccess: (text) => MESSENGER$.next([{ type: 'message', text }]),
-  notifyNLQ: (text) => MESSENGER$.next([{ type: 'nlq', text }]),
+  notifySuccess: (text) => MESSENGER$.next([{ type: "message", text }]),
+  notifyNLQ: (text) => MESSENGER$.next([{ type: "nlq", text }]),
   toggleNav: new Subject(),
   redirect: new Subject(),
 };
@@ -46,16 +52,33 @@ export class ApplicationError extends Error {
 
 // Network
 const isEmptyPath = R.isNil(window.BASE_PATH) || R.isEmpty(window.BASE_PATH);
-const contextPath = isEmptyPath || window.BASE_PATH === '/' ? '' : window.BASE_PATH;
-export const APP_BASE_PATH = isEmptyPath || contextPath.startsWith('/') ? contextPath : `/${contextPath}`;
+const contextPath =
+  isEmptyPath || window.BASE_PATH === "/" ? "" : window.BASE_PATH;
+export const APP_BASE_PATH =
+  isEmptyPath || contextPath.startsWith("/") ? contextPath : `/${contextPath}`;
+
+// Backend URL - use BACK_END_URL if provided (for cross-origin API calls), otherwise use same origin
+const isEmptyBackEndUrl =
+  R.isNil(window.BACK_END_URL) || R.isEmpty(window.BACK_END_URL);
+const backEndUrl = isEmptyBackEndUrl
+  ? ""
+  : window.BACK_END_URL.replace(/\/$/, ""); // Remove trailing slash
+export const API_BASE_URL = `${backEndUrl}${APP_BASE_PATH}`;
 
 export const fileUri = (fileImport) => `${APP_BASE_PATH}${fileImport}`; // No slash here, will be replace by the builder
 
 // Create Network
 let subscriptionClient;
 const loc = window.location;
-const isSecure = loc.protocol === 'https:' ? 's' : '';
-const subscriptionUrl = `ws${isSecure}://${loc.host}${APP_BASE_PATH}/graphql`;
+const isSecure = loc.protocol === "https:" ? "s" : "";
+// For WebSocket, use backend URL if provided, otherwise use current host
+const wsHost = isEmptyBackEndUrl ? loc.host : new URL(backEndUrl).host;
+const wsProtocol = isEmptyBackEndUrl
+  ? `ws${isSecure}`
+  : backEndUrl.startsWith("https")
+    ? "wss"
+    : "ws";
+const subscriptionUrl = `${wsProtocol}://${wsHost}${APP_BASE_PATH}/graphql`;
 const subscribeFn = (request, variables) => {
   if (!subscriptionClient) {
     // Lazy creation of the subscription client to connect only after auth
@@ -64,16 +87,19 @@ const subscribeFn = (request, variables) => {
     });
   }
   return Observable.create((sink) => {
-    return subscriptionClient.subscribe({
-      query: request.text,
-      operationName: request.name,
-      variables,
-    }, sink);
+    return subscriptionClient.subscribe(
+      {
+        query: request.text,
+        operationName: request.name,
+        variables,
+      },
+      sink,
+    );
   });
 };
 const fetchMiddleware = urlMiddleware({
-  url: `${APP_BASE_PATH}/graphql`,
-  credentials: 'same-origin',
+  url: `${API_BASE_URL}/graphql`,
+  credentials: isEmptyBackEndUrl ? "same-origin" : "include", // Use 'include' for cross-origin requests
   // --- to add when we enable csrfPrevention in ApolloServer ---
   // headers: (request) => {
   //   return { 'x-apollo-operation-name': request.operation.operationKind };
@@ -113,13 +139,14 @@ QueryRenderer.propTypes = {
   query: PropTypes.object,
 };
 
-const buildErrorMessages = (error) => R.map(
-  (e) => ({
-    type: 'error',
-    text: R.pathOr(e.message, ['data', 'reason'], e),
-  }),
-  error.res.errors,
-);
+const buildErrorMessages = (error) =>
+  R.map(
+    (e) => ({
+      type: "error",
+      text: R.pathOr(e.message, ["data", "reason"], e),
+    }),
+    error.res.errors,
+  );
 
 export const defaultCommitMutation = {
   updater: undefined,
@@ -134,11 +161,13 @@ export const relayErrorHandling = (error, setSubmitting, onError) => {
   if (setSubmitting) setSubmitting(false);
   if (error && error.res && error.res.errors) {
     const authRequired = R.filter(
-      (e) => R.pathOr(e.message, ['data', 'type'], e) === 'authentication',
+      (e) => R.pathOr(e.message, ["data", "type"], e) === "authentication",
       error.res.errors,
     );
     if (!R.isEmpty(authRequired)) {
-      MESSAGING$.notifyError('Unauthorized action, please refresh your browser');
+      MESSAGING$.notifyError(
+        "Unauthorized action, please refresh your browser",
+      );
     } else if (onError) {
       const messages = buildErrorMessages(error);
       MESSAGING$.messages.next(messages);
@@ -155,7 +184,7 @@ export const extractSimpleError = (error) => {
     const messages = buildErrorMessages(error);
     return messages[0].text;
   }
-  return 'Unknown error';
+  return "Unknown error";
 };
 
 // Relay functions
@@ -168,15 +197,16 @@ export const commitMutation = ({
   onCompleted,
   onError,
   setSubmitting,
-}) => CM(environment, {
-  mutation,
-  variables,
-  updater,
-  optimisticUpdater,
-  optimisticResponse,
-  onCompleted,
-  onError: (error) => relayErrorHandling(error, setSubmitting, onError),
-});
+}) =>
+  CM(environment, {
+    mutation,
+    variables,
+    updater,
+    optimisticUpdater,
+    optimisticResponse,
+    onCompleted,
+    onError: (error) => relayErrorHandling(error, setSubmitting, onError),
+  });
 
 export const requestSubscription = (args) => RS(environment, args);
 
@@ -189,13 +219,13 @@ export const handleErrorInForm = (error, setErrors) => {
   if (formattedError.data && formattedError.data.field) {
     setErrors({
       [formattedError.data.field]:
-      formattedError.data.message || formattedError.data.reason,
+        formattedError.data.message || formattedError.data.reason,
     });
   } else {
     const messages = R.map(
       (e) => ({
-        type: 'error',
-        text: R.pathOr(e.message, ['data', 'reason'], e),
+        type: "error",
+        text: R.pathOr(e.message, ["data", "reason"], e),
       }),
       error.res.errors,
     );
@@ -207,8 +237,8 @@ export const handleError = (error) => {
   if (error && error.res && error.res.errors) {
     const messages = R.map(
       (e) => ({
-        type: 'error',
-        text: R.pathOr((e.message), ['data', 'message'], e),
+        type: "error",
+        text: R.pathOr(e.message, ["data", "message"], e),
       }),
       error.res.errors,
     );

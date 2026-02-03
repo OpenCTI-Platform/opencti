@@ -1,39 +1,51 @@
-import https from 'node:https';
-import http from 'node:http';
-import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.mjs';
+import https from "node:https";
+import http from "node:http";
+import graphqlUploadExpress from "graphql-upload/graphqlUploadExpress.mjs";
 // eslint-disable-next-line import/extensions
-import nconf from 'nconf';
-import express from 'express';
-import { expressMiddleware } from '@as-integrations/express5';
-import { json } from 'body-parser';
-import cors from 'cors';
-import { WebSocketServer } from 'ws';
-import { useServer } from 'graphql-ws/lib/use/ws';
-import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
-import passport from 'passport/lib';
-import conf, { basePath, booleanConf, loadCert, logApp, PORT } from '../config/conf';
-import createApp from './httpPlatform';
-import createApolloServer from '../graphql/graphql';
-import { isStrategyActivated, StrategyType } from '../config/providers-configuration';
-import { applicationSession } from '../database/session';
-import { executionContext, SYSTEM_USER } from '../utils/access';
-import { userEditField } from '../domain/user';
-import { DraftLockedError, ForbiddenAccess } from '../config/errors';
-import { getEntitiesMapFromCache } from '../database/cache';
-import { ENTITY_TYPE_USER } from '../schema/internalObject';
-import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
-import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
-import { createAuthenticatedContext } from './httpAuthenticatedContext';
+import nconf from "nconf";
+import express from "express";
+import { expressMiddleware } from "@as-integrations/express5";
+import { json } from "body-parser";
+import cors from "cors";
+import { WebSocketServer } from "ws";
+import { useServer } from "graphql-ws/lib/use/ws";
+import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
+import passport from "passport/lib";
+import conf, {
+  basePath,
+  booleanConf,
+  loadCert,
+  logApp,
+  PORT,
+} from "../config/conf";
+import createApp from "./httpPlatform";
+import createApolloServer from "../graphql/graphql";
+import {
+  isStrategyActivated,
+  StrategyType,
+} from "../config/providers-configuration";
+import { applicationSession } from "../database/session";
+import { executionContext, SYSTEM_USER } from "../utils/access";
+import { userEditField } from "../domain/user";
+import { DraftLockedError, ForbiddenAccess } from "../config/errors";
+import { getEntitiesMapFromCache } from "../database/cache";
+import { ENTITY_TYPE_USER } from "../schema/internalObject";
+import { DRAFT_STATUS_OPEN } from "../modules/draftWorkspace/draftStatuses";
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from "../modules/draftWorkspace/draftWorkspace-types";
+import { createAuthenticatedContext } from "./httpAuthenticatedContext";
 
 const MIN_20 = 20 * 60 * 1000;
-const REQ_TIMEOUT = conf.get('app:request_timeout');
-const CERT_KEY_PATH = conf.get('app:https_cert:key');
-const CERT_KEY_CERT = conf.get('app:https_cert:crt');
-const CA_CERTS = conf.get('app:https_cert:ca');
-const rejectUnauthorized = booleanConf('app:https_cert:reject_unauthorized', true);
+const REQ_TIMEOUT = conf.get("app:request_timeout");
+const CERT_KEY_PATH = conf.get("app:https_cert:key");
+const CERT_KEY_CERT = conf.get("app:https_cert:crt");
+const CA_CERTS = conf.get("app:https_cert:ca");
+const rejectUnauthorized = booleanConf(
+  "app:https_cert:reject_unauthorized",
+  true,
+);
 
 const createHttpServer = async () => {
-  logApp.info('[INIT] Configuring HTTP/HTTPS server');
+  logApp.info("[INIT] Configuring HTTP/HTTPS server");
   const app = express();
   app.use(applicationSession.session);
   app.use(passport.initialize({}));
@@ -41,21 +53,31 @@ const createHttpServer = async () => {
   let httpServer;
   if (CERT_KEY_PATH && CERT_KEY_CERT) {
     try {
-      logApp.info('[INIT] Configuring SSL for HTTPS server.');
+      logApp.info("[INIT] Configuring SSL for HTTPS server.");
       const key = loadCert(CERT_KEY_PATH);
       const cert = loadCert(CERT_KEY_CERT);
       const ca = CA_CERTS.map((path) => loadCert(path));
       const requestCert = isStrategyActivated(StrategyType.STRATEGY_CERT);
-      const passphrase = conf.get('app:https_cert:passphrase');
-      const options = { key, cert, passphrase, requestCert, rejectUnauthorized, ca };
+      const passphrase = conf.get("app:https_cert:passphrase");
+      const options = {
+        key,
+        cert,
+        passphrase,
+        requestCert,
+        rejectUnauthorized,
+        ca,
+      };
       httpServer = https.createServer(options, app);
-      logApp.info('[INIT] HTTPS server initialization done.');
+      logApp.info("[INIT] HTTPS server initialization done.");
     } catch (e) {
-      logApp.error('[INIT] HTTPS server cannot start, please verify app.https_cert and other configurations', { cause: e });
+      logApp.error(
+        "[INIT] HTTPS server cannot start, please verify app.https_cert and other configurations",
+        { cause: e },
+      );
     }
   } else {
     httpServer = http.createServer(app);
-    logApp.info('[INIT] HTTP server initialization done.');
+    logApp.info("[INIT] HTTP server initialization done.");
   }
   httpServer.setTimeout(REQ_TIMEOUT || MIN_20);
   // subscriptionServer
@@ -63,43 +85,51 @@ const createHttpServer = async () => {
     server: httpServer,
     path: `${basePath}/graphql`,
   });
-  wsServer.on('error', (e) => {
+  wsServer.on("error", (e) => {
     throw e;
   });
-  const serverCleanup = useServer({
-    schema,
-    context: async (ctx) => {
-      const req = ctx.extra.request;
-      const webSocket = ctx.extra.socket;
-      // This will be run every time the client sends a subscription request
-      const wsSession = await new Promise((resolve) => {
-        // use same session parser as normal gql queries
-        const { session } = applicationSession;
-        session(req, {}, () => {
-          if (req.session) {
-            resolve(req.session);
-          }
-          return false;
+  const serverCleanup = useServer(
+    {
+      schema,
+      context: async (ctx) => {
+        const req = ctx.extra.request;
+        const webSocket = ctx.extra.socket;
+        // This will be run every time the client sends a subscription request
+        const wsSession = await new Promise((resolve) => {
+          // use same session parser as normal gql queries
+          const { session } = applicationSession;
+          session(req, {}, () => {
+            if (req.session) {
+              resolve(req.session);
+            }
+            return false;
+          });
         });
-      });
-      // We have a good session. attach to context
-      if (wsSession?.user) {
-        const context = executionContext('api');
-        const origin = {
-          socket: 'subscription',
-          ip: webSocket._socket.remoteAddress,
-          user_id: wsSession.user?.id,
-          group_ids: wsSession.user?.groups?.map((g) => g.internal_id) ?? [],
-          organization_ids: wsSession.user?.organizations?.map((o) => o.internal_id) ?? [],
-        };
-        const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
-        const logged = platformUsers.get(wsSession?.user.id);
-        context.user = { ...wsSession?.user, ...logged, origin };
-        return context;
-      }
-      throw ForbiddenAccess('User must be authenticated');
+        // We have a good session. attach to context
+        if (wsSession?.user) {
+          const context = executionContext("api");
+          const origin = {
+            socket: "subscription",
+            ip: webSocket._socket.remoteAddress,
+            user_id: wsSession.user?.id,
+            group_ids: wsSession.user?.groups?.map((g) => g.internal_id) ?? [],
+            organization_ids:
+              wsSession.user?.organizations?.map((o) => o.internal_id) ?? [],
+          };
+          const platformUsers = await getEntitiesMapFromCache(
+            context,
+            SYSTEM_USER,
+            ENTITY_TYPE_USER,
+          );
+          const logged = platformUsers.get(wsSession?.user.id);
+          context.user = { ...wsSession?.user, ...logged, origin };
+          return context;
+        }
+        throw ForbiddenAccess("User must be authenticated");
+      },
     },
-  }, wsServer);
+    wsServer,
+  );
 
   apolloServer.addPlugin(ApolloServerPluginDrainHttpServer({ httpServer }));
   apolloServer.addPlugin({
@@ -124,35 +154,63 @@ const createHttpServer = async () => {
     },
   });
   await apolloServer.start();
-  const requestSizeLimit = nconf.get('app:max_payload_body_size') || '50mb';
+  const requestSizeLimit = nconf.get("app:max_payload_body_size") || "50mb";
   app.use(express.json({ limit: requestSizeLimit }));
   app.use(graphqlUploadExpress());
   app.use(
     `${basePath}/graphql`,
-    cors({ origin: basePath }),
+    cors({
+      origin: "*",
+    }),
     json(),
     expressMiddleware(apolloServer, {
       app,
       path: `${basePath}/graphql`,
       context: async ({ req, res }) => {
-        const executeContext = await createAuthenticatedContext(req, res, 'api');
+        const executeContext = await createAuthenticatedContext(
+          req,
+          res,
+          "api",
+        );
         // When context is in draft, we need to check draft status: if draft is not in an open status, it means that it is no longer possible to execute requests in this draft
         if (executeContext.draft_context) {
-          const draftWorkspaces = await getEntitiesMapFromCache(executeContext, SYSTEM_USER, ENTITY_TYPE_DRAFT_WORKSPACE);
-          const draftWorkspace = draftWorkspaces.get(executeContext.draft_context);
+          const draftWorkspaces = await getEntitiesMapFromCache(
+            executeContext,
+            SYSTEM_USER,
+            ENTITY_TYPE_DRAFT_WORKSPACE,
+          );
+          const draftWorkspace = draftWorkspaces.get(
+            executeContext.draft_context,
+          );
           if (!draftWorkspace) {
-            if (executeContext.user.draft_context === executeContext.draft_context) {
+            if (
+              executeContext.user.draft_context === executeContext.draft_context
+            ) {
               // If user is stuck in an invalid draft, remove draft context from user
-              await userEditField(executeContext, executeContext.user, executeContext.user.id, [{ key: 'draft_context', value: '' }]);
+              await userEditField(
+                executeContext,
+                executeContext.user,
+                executeContext.user.id,
+                [{ key: "draft_context", value: "" }],
+              );
             }
-            throw DraftLockedError('Could not find draft workspace');
+            throw DraftLockedError("Could not find draft workspace");
           }
           if (draftWorkspace.draft_status !== DRAFT_STATUS_OPEN) {
-            if (executeContext.user.draft_context === executeContext.draft_context) {
+            if (
+              executeContext.user.draft_context === executeContext.draft_context
+            ) {
               // If user is stuck in an invalid draft, remove draft context from user
-              await userEditField(executeContext, executeContext.user, executeContext.user.id, [{ key: 'draft_context', value: '' }]);
+              await userEditField(
+                executeContext,
+                executeContext.user,
+                executeContext.user.id,
+                [{ key: "draft_context", value: "" }],
+              );
             }
-            throw DraftLockedError('Can not execute request in a draft not in an open state');
+            throw DraftLockedError(
+              "Can not execute request in a draft not in an open state",
+            );
           }
         }
         return executeContext;
@@ -167,17 +225,19 @@ const listenServer = async () => {
   return new Promise((resolve, reject) => {
     try {
       const serverPromise = createHttpServer();
-      serverPromise.then(({ httpServer, sseMiddleware }) => {
-        httpServer.on('close', () => {
-          sseMiddleware.shutdown();
+      serverPromise
+        .then(({ httpServer, sseMiddleware }) => {
+          httpServer.on("close", () => {
+            sseMiddleware.shutdown();
+          });
+          const server = httpServer.listen(PORT);
+          resolve({ server });
+        })
+        .catch((reason) => {
+          logApp.error("Http listen server error", { cause: reason });
         });
-        const server = httpServer.listen(PORT);
-        resolve({ server });
-      }).catch((reason) => {
-        logApp.error('Http listen server error', { cause: reason });
-      });
     } catch (e) {
-      logApp.error('Http listen server fail', { cause: e });
+      logApp.error("Http listen server fail", { cause: e });
       reject(e);
     }
   });
@@ -188,7 +248,7 @@ const stopServer = async ({ server }) => {
     server.close(() => {
       resolve();
     });
-    server.emit('close'); // force server close
+    server.emit("close"); // force server close
   });
 };
 

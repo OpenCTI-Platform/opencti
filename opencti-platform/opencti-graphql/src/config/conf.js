@@ -1,17 +1,17 @@
-import { lstatSync, readFileSync, existsSync } from 'node:fs';
-import path from 'node:path';
-import nconf from 'nconf';
-import * as R from 'ramda';
-import { isEmpty } from 'ramda';
-import winston, { format } from 'winston';
-import ipaddr from 'ipaddr.js';
-import DailyRotateFile from 'winston-daily-rotate-file';
-import { HttpsProxyAgent } from 'https-proxy-agent';
-import { HttpProxyAgent } from 'http-proxy-agent';
-import { v4 as uuid } from 'uuid';
-import { GraphQLError } from 'graphql/index';
-import * as O from '../schema/internalObject';
-import * as M from '../schema/stixMetaObject';
+import { lstatSync, readFileSync, existsSync } from "node:fs";
+import path from "node:path";
+import nconf from "nconf";
+import * as R from "ramda";
+import { isEmpty } from "ramda";
+import winston, { format } from "winston";
+import ipaddr from "ipaddr.js";
+import DailyRotateFile from "winston-daily-rotate-file";
+import { HttpsProxyAgent } from "https-proxy-agent";
+import { HttpProxyAgent } from "http-proxy-agent";
+import { v4 as uuid } from "uuid";
+import { GraphQLError } from "graphql/index";
+import * as O from "../schema/internalObject";
+import * as M from "../schema/stixMetaObject";
 import {
   ABSTRACT_INTERNAL_OBJECT,
   ABSTRACT_STIX_CORE_OBJECT,
@@ -20,82 +20,93 @@ import {
   ABSTRACT_STIX_DOMAIN_OBJECT,
   ABSTRACT_STIX_OBJECT,
   ABSTRACT_STIX_REF_RELATIONSHIP,
-} from '../schema/general';
-import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
-import pjson from '../../package.json';
-import { ENTITY_TYPE_DECAY_RULE } from '../modules/decayRule/decayRule-types';
-import { ENTITY_TYPE_DECAY_EXCLUSION_RULE } from '../modules/decayRule/exclusions/decayExclusionRule-types';
-import { ENTITY_TYPE_NOTIFICATION, ENTITY_TYPE_TRIGGER, NOTIFICATION_NUMBER } from '../modules/notification/notification-types';
-import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
-import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
-import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfiguration/managerConfiguration-types';
-import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
-import { ENTITY_TYPE_NOTIFIER } from '../modules/notifier/notifier-types';
-import { UNKNOWN_ERROR, UnknownError, UnsupportedError } from './errors';
-import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
-import { AI_BUS } from '../modules/ai/ai-types';
-import { SUPPORT_BUS } from '../modules/support/support-types';
-import { ENTITY_TYPE_EXCLUSION_LIST } from '../modules/exclusionList/exclusionList-types';
-import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../modules/fintelTemplate/fintelTemplate-types';
-import { ENTITY_TYPE_DISSEMINATION_LIST } from '../modules/disseminationList/disseminationList-types';
-import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
-import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
-import { ENTITY_TYPE_FINTEL_DESIGN } from '../modules/fintelDesign/fintelDesign-types';
-import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
+} from "../schema/general";
+import { STIX_SIGHTING_RELATIONSHIP } from "../schema/stixSightingRelationship";
+import pjson from "../../package.json";
+import { ENTITY_TYPE_DECAY_RULE } from "../modules/decayRule/decayRule-types";
+import { ENTITY_TYPE_DECAY_EXCLUSION_RULE } from "../modules/decayRule/exclusions/decayExclusionRule-types";
+import {
+  ENTITY_TYPE_NOTIFICATION,
+  ENTITY_TYPE_TRIGGER,
+  NOTIFICATION_NUMBER,
+} from "../modules/notification/notification-types";
+import { ENTITY_TYPE_VOCABULARY } from "../modules/vocabulary/vocabulary-types";
+import { ENTITY_TYPE_ENTITY_SETTING } from "../modules/entitySetting/entitySetting-types";
+import { ENTITY_TYPE_MANAGER_CONFIGURATION } from "../modules/managerConfiguration/managerConfiguration-types";
+import { ENTITY_TYPE_WORKSPACE } from "../modules/workspace/workspace-types";
+import { ENTITY_TYPE_NOTIFIER } from "../modules/notifier/notifier-types";
+import { UNKNOWN_ERROR, UnknownError, UnsupportedError } from "./errors";
+import { ENTITY_TYPE_PUBLIC_DASHBOARD } from "../modules/publicDashboard/publicDashboard-types";
+import { AI_BUS } from "../modules/ai/ai-types";
+import { SUPPORT_BUS } from "../modules/support/support-types";
+import { ENTITY_TYPE_EXCLUSION_LIST } from "../modules/exclusionList/exclusionList-types";
+import { ENTITY_TYPE_FINTEL_TEMPLATE } from "../modules/fintelTemplate/fintelTemplate-types";
+import { ENTITY_TYPE_DISSEMINATION_LIST } from "../modules/disseminationList/disseminationList-types";
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from "../modules/draftWorkspace/draftWorkspace-types";
+import { ENTITY_TYPE_PIR } from "../modules/pir/pir-types";
+import { ENTITY_TYPE_FINTEL_DESIGN } from "../modules/fintelDesign/fintelDesign-types";
+import { ENTITY_TYPE_EMAIL_TEMPLATE } from "../modules/emailTemplate/emailTemplate-types";
 
 // https://golang.org/src/crypto/x509/root_linux.go
 const LINUX_CERTFILES = [
-  '/etc/ssl/certs/ca-certificates.crt', // Debian/Ubuntu/Gentoo etc.
-  '/etc/pki/tls/certs/ca-bundle.crt', // Fedora/RHEL 6
-  '/etc/ssl/ca-bundle.pem', // OpenSUSE
-  '/etc/pki/tls/cacert.pem', // OpenELEC
-  '/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem', // CentOS/RHEL 7
-  '/etc/ssl/cert.pem',
+  "/etc/ssl/certs/ca-certificates.crt", // Debian/Ubuntu/Gentoo etc.
+  "/etc/pki/tls/certs/ca-bundle.crt", // Fedora/RHEL 6
+  "/etc/ssl/ca-bundle.pem", // OpenSUSE
+  "/etc/pki/tls/cacert.pem", // OpenELEC
+  "/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem", // CentOS/RHEL 7
+  "/etc/ssl/cert.pem",
 ];
 
-const DEFAULT_ENV = 'production';
-export const OPENCTI_SESSION = 'opencti_session';
+const DEFAULT_ENV = "production";
+export const OPENCTI_SESSION = "opencti_session";
 export const PLATFORM_VERSION = pjson.version;
-const LOG_APP = 'APP';
-const LOG_AUDIT = 'AUDIT';
+const LOG_APP = "APP";
+const LOG_AUDIT = "AUDIT";
 
 export const booleanConf = (key, defaultValue = true) => {
   const configValue = nconf.get(key);
   if (R.isEmpty(configValue) || R.isNil(configValue)) {
     return defaultValue;
   }
-  return configValue === true || configValue === 'true';
+  return configValue === true || configValue === "true";
 };
 
 // Environment from NODE_ENV environment variable
-nconf.env({ separator: '__', lowerCase: true, parseValues: true });
+nconf.env({ separator: "__", lowerCase: true, parseValues: true });
 
 // Environment from "-e" command line parameter
-nconf.add('argv', {
+nconf.add("argv", {
   e: {
-    alias: 'env',
-    describe: 'Execution environment',
+    alias: "env",
+    describe: "Execution environment",
   },
   c: {
-    alias: 'conf',
-    describe: 'Configuration file',
+    alias: "conf",
+    describe: "Configuration file",
   },
 });
 
 const { timestamp } = format;
 const currentPath = process.env.INIT_CWD || process.cwd();
 const resolvePath = (relativePath) => path.join(currentPath, relativePath);
-export const environment = nconf.get('env') || nconf.get('node_env') || process.env.NODE_ENV || DEFAULT_ENV;
+export const environment =
+  nconf.get("env") ||
+  nconf.get("node_env") ||
+  process.env.NODE_ENV ||
+  DEFAULT_ENV;
 const resolveEnvFile = (env) => {
-  const filePath = path.join(resolvePath('config'), `${env.toLowerCase()}.json`);
-  if (env.toLowerCase() === 'dev' && !existsSync(filePath)) {
-    return path.join(resolvePath('config'), 'development.json');
+  const filePath = path.join(
+    resolvePath("config"),
+    `${env.toLowerCase()}.json`,
+  );
+  if (env.toLowerCase() === "dev" && !existsSync(filePath)) {
+    return path.join(resolvePath("config"), "development.json");
   }
   return filePath;
 };
-export const DEV_MODE = environment !== 'production';
-const externalConfigurationFile = nconf.get('conf');
-export const NODE_INSTANCE_ID = nconf.get('app:node_identifier') || uuid();
+export const DEV_MODE = environment !== "production";
+const externalConfigurationFile = nconf.get("conf");
+export const NODE_INSTANCE_ID = nconf.get("app:node_identifier") || uuid();
 export const PLATFORM_INSTANCE_ID = `platform:instance:${NODE_INSTANCE_ID}`;
 
 let configurationFile;
@@ -106,21 +117,29 @@ if (externalConfigurationFile) {
 }
 
 nconf.file(environment, configurationFile);
-nconf.file('default', resolveEnvFile('default'));
+nconf.file("default", resolveEnvFile("default"));
 
 // Setup SSO/SAML auth_payload_body_size
 // Default limit is '100kb' based on https://expressjs.com/en/resources/middleware/body-parser.html
-export const AUTH_PAYLOAD_BODY_SIZE = nconf.get('app:auth_payload_body_size') ?? null;
+export const AUTH_PAYLOAD_BODY_SIZE =
+  nconf.get("app:auth_payload_body_size") ?? null;
 
 // Setup application logApp
-const appLogLevel = nconf.get('app:app_logs:logs_level');
-const appLogFileTransport = booleanConf('app:app_logs:logs_files', true);
-const appLogConsoleTransport = booleanConf('app:app_logs:logs_console', true);
-export const appLogLevelMaxDepthSize = nconf.get('app:app_logs:control:max_depth_size') ?? 10;
-export const appLogLevelMaxDepthKeys = nconf.get('app:app_logs:control:max_depth_keys') ?? 100;
-export const appLogLevelMaxArraySize = nconf.get('app:app_logs:control:max_array_size') ?? 50;
-export const appLogLevelMaxStringSize = nconf.get('app:app_logs:control:max_string_size') ?? 5000;
-export const appLogExtendedErrors = booleanConf('app:app_logs:extended_error_message', false);
+const appLogLevel = nconf.get("app:app_logs:logs_level");
+const appLogFileTransport = booleanConf("app:app_logs:logs_files", true);
+const appLogConsoleTransport = booleanConf("app:app_logs:logs_console", true);
+export const appLogLevelMaxDepthSize =
+  nconf.get("app:app_logs:control:max_depth_size") ?? 10;
+export const appLogLevelMaxDepthKeys =
+  nconf.get("app:app_logs:control:max_depth_keys") ?? 100;
+export const appLogLevelMaxArraySize =
+  nconf.get("app:app_logs:control:max_array_size") ?? 50;
+export const appLogLevelMaxStringSize =
+  nconf.get("app:app_logs:control:max_string_size") ?? 5000;
+export const appLogExtendedErrors = booleanConf(
+  "app:app_logs:extended_error_message",
+  false,
+);
 export const extendedErrors = (metaExtension) => {
   if (appLogExtendedErrors) {
     return metaExtension;
@@ -131,18 +150,33 @@ const convertErrorObject = (error, acc, current_depth) => {
   if (error instanceof GraphQLError) {
     const extensions = error.extensions ?? {};
     const extensionsData = extensions.data ?? {};
-    const attributes = prepareLogMetadataComplexityWrapper(extensionsData, acc, current_depth);
-    return { name: extensions.code ?? error.name, code: extensions.code, message: error.message, stack: error.stack, attributes };
+    const attributes = prepareLogMetadataComplexityWrapper(
+      extensionsData,
+      acc,
+      current_depth,
+    );
+    return {
+      name: extensions.code ?? error.name,
+      code: extensions.code,
+      message: error.message,
+      stack: error.stack,
+      attributes,
+    };
   }
   if (error instanceof Error) {
-    return { name: error.name, code: UNKNOWN_ERROR, message: error.message, stack: error.stack };
+    return {
+      name: error.name,
+      code: UNKNOWN_ERROR,
+      message: error.message,
+      stack: error.stack,
+    };
   }
   return error;
 };
 const prepareLogMetadataComplexityWrapper = (obj, acc, current_depth = 0) => {
   const maxDepth = current_depth > appLogLevelMaxDepthSize;
   const maxKeys = acc.current_nb_key > appLogLevelMaxDepthKeys;
-  const isAKeyFunction = typeof obj === 'function';
+  const isAKeyFunction = typeof obj === "function";
   if (obj !== null) {
     // If complexity is too much or function found.
     // return null value
@@ -156,17 +190,21 @@ const prepareLogMetadataComplexityWrapper = (obj, acc, current_depth = 0) => {
       // Recursively process each item in the truncated array
       const processedArray = [];
       for (let i = 0; i < limitedArray.length; i += 1) {
-        const cleanItem = prepareLogMetadataComplexityWrapper(limitedArray[i], acc, current_depth);
+        const cleanItem = prepareLogMetadataComplexityWrapper(
+          limitedArray[i],
+          acc,
+          current_depth,
+        );
         if (cleanItem) {
           processedArray[i] = cleanItem;
         }
       }
       return processedArray;
     }
-    if (typeof obj === 'string' && obj.length > appLogLevelMaxStringSize) {
+    if (typeof obj === "string" && obj.length > appLogLevelMaxStringSize) {
       return `${obj.substring(0, appLogLevelMaxStringSize - 3)}...`;
     }
-    if (typeof obj === 'object') {
+    if (typeof obj === "object") {
       const workingObject = convertErrorObject(obj, acc, current_depth);
       // Create a new object to hold the processed properties
       const limitedObject = {};
@@ -175,7 +213,11 @@ const prepareLogMetadataComplexityWrapper = (obj, acc, current_depth = 0) => {
       for (let i = 0; i < keys.length; i += 1) {
         acc.current_nb_key += 1;
         const key = keys[i];
-        limitedObject[key] = prepareLogMetadataComplexityWrapper(workingObject[key], acc, newDepth);
+        limitedObject[key] = prepareLogMetadataComplexityWrapper(
+          workingObject[key],
+          acc,
+          newDepth,
+        );
         // If data is null, remove the key
         if (!limitedObject[key]) {
           delete limitedObject[key];
@@ -194,20 +236,20 @@ export const prepareLogMetadata = (obj, extra = {}) => {
 };
 
 const appLogTransports = [];
-const logsDirname = nconf.get('app:app_logs:logs_directory');
+const logsDirname = nconf.get("app:app_logs:logs_directory");
 if (appLogFileTransport) {
-  const maxFiles = nconf.get('app:app_logs:logs_max_files');
+  const maxFiles = nconf.get("app:app_logs:logs_max_files");
   appLogTransports.push(
     new DailyRotateFile({
-      filename: 'error.log',
+      filename: "error.log",
       dirname: logsDirname,
-      level: 'error',
+      level: "error",
       maxFiles,
     }),
   );
   appLogTransports.push(
     new DailyRotateFile({
-      filename: 'opencti.log',
+      filename: "opencti.log",
       dirname: logsDirname,
       maxFiles,
     }),
@@ -218,37 +260,56 @@ if (appLogConsoleTransport) {
 }
 
 const migrationLogger = winston.createLogger({
-  level: 'debug',
-  format: format.combine(timestamp(), format.errors({ stack: true }), format.json()),
+  level: "debug",
+  format: format.combine(
+    timestamp(),
+    format.errors({ stack: true }),
+    format.json(),
+  ),
   transports: appLogTransports,
 });
 
 const appLogger = winston.createLogger({
   level: appLogLevel,
-  format: format.combine(timestamp(), format.errors({ stack: true }), format.json()),
+  format: format.combine(
+    timestamp(),
+    format.errors({ stack: true }),
+    format.json(),
+  ),
   transports: appLogTransports,
 });
 
 // Setup audit log logApp
-const auditLogFileTransport = booleanConf('app:audit_logs:logs_files', true);
-const auditLogConsoleTransport = booleanConf('app:audit_logs:logs_console', true);
-export const auditRequestHeaderToKeep = nconf.get('app:audit_logs:trace_request_headers') ?? ['user-agent', 'x-forwarded-for'];
+const auditLogFileTransport = booleanConf("app:audit_logs:logs_files", true);
+const auditLogConsoleTransport = booleanConf(
+  "app:audit_logs:logs_console",
+  true,
+);
+export const auditRequestHeaderToKeep = nconf.get(
+  "app:audit_logs:trace_request_headers",
+) ?? ["user-agent", "x-forwarded-for"];
 
 // Gather all request header that are configured to be added to audit or activity logs.
 export const getRequestAuditHeaders = (req) => {
-  const sourceIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-  const allHeadersRequested = R.mergeAll((auditRequestHeaderToKeep).map((header) => ({ [header]: req.header(header) })));
+  const sourceIp = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+  const allHeadersRequested = R.mergeAll(
+    auditRequestHeaderToKeep.map((header) => ({
+      [header]: req.header(header),
+    })),
+  );
   return { ...allHeadersRequested, ip: sourceIp };
 };
 
-export const auditLogTypes = nconf.get('app:audit_logs:logs_in_transports') ?? ['administration'];
+export const auditLogTypes = nconf.get("app:audit_logs:logs_in_transports") ?? [
+  "administration",
+];
 const auditLogTransports = [];
 if (auditLogFileTransport) {
-  const dirname = nconf.get('app:audit_logs:logs_directory');
-  const maxFiles = nconf.get('app:audit_logs:logs_max_files');
+  const dirname = nconf.get("app:audit_logs:logs_directory");
+  const maxFiles = nconf.get("app:audit_logs:logs_max_files");
   auditLogTransports.push(
     new DailyRotateFile({
-      filename: 'audit.log',
+      filename: "audit.log",
       dirname,
       maxFiles,
     }),
@@ -258,38 +319,50 @@ if (auditLogConsoleTransport) {
   auditLogTransports.push(new winston.transports.Console());
 }
 const auditLogger = winston.createLogger({
-  level: 'info',
-  format: format.combine(timestamp(), format.errors({ stack: true }), format.json()),
+  level: "info",
+  format: format.combine(
+    timestamp(),
+    format.errors({ stack: true }),
+    format.json(),
+  ),
   transports: auditLogTransports,
 });
 
 // Setup support logs
-export const SUPPORT_LOG_RELATIVE_LOCAL_DIR = '.support';
-export const SUPPORT_LOG_FILE_PREFIX = 'support';
+export const SUPPORT_LOG_RELATIVE_LOCAL_DIR = ".support";
+export const SUPPORT_LOG_FILE_PREFIX = "support";
 const supportLogger = winston.createLogger({
-  level: 'warn',
-  format: format.combine(timestamp(), format.errors({ stack: true }), format.json()),
-  transports: [new DailyRotateFile({
-    filename: SUPPORT_LOG_FILE_PREFIX,
-    dirname: SUPPORT_LOG_RELATIVE_LOCAL_DIR,
-    maxFiles: 3,
-    maxSize: '10m',
-    level: 'warn',
-  })],
+  level: "warn",
+  format: format.combine(
+    timestamp(),
+    format.errors({ stack: true }),
+    format.json(),
+  ),
+  transports: [
+    new DailyRotateFile({
+      filename: SUPPORT_LOG_FILE_PREFIX,
+      dirname: SUPPORT_LOG_RELATIVE_LOCAL_DIR,
+      maxFiles: 3,
+      maxSize: "10m",
+      level: "warn",
+    }),
+  ],
 });
 
 // Setup telemetry logs
-export const TELEMETRY_LOG_RELATIVE_LOCAL_DIR = './telemetry';
-export const TELEMETRY_LOG_FILE_PREFIX = 'telemetry';
-const telemetryLogTransports = [new DailyRotateFile({
-  dirname: TELEMETRY_LOG_RELATIVE_LOCAL_DIR,
-  filename: TELEMETRY_LOG_FILE_PREFIX,
-  maxFiles: 3,
-  maxSize: '1m',
-  level: 'info',
-})];
+export const TELEMETRY_LOG_RELATIVE_LOCAL_DIR = "./telemetry";
+export const TELEMETRY_LOG_FILE_PREFIX = "telemetry";
+const telemetryLogTransports = [
+  new DailyRotateFile({
+    dirname: TELEMETRY_LOG_RELATIVE_LOCAL_DIR,
+    filename: TELEMETRY_LOG_FILE_PREFIX,
+    maxFiles: 3,
+    maxSize: "1m",
+    level: "info",
+  }),
+];
 const telemetryLogger = winston.createLogger({
-  level: 'info',
+  level: "info",
   format: format.printf((info) => {
     return `${info.message}`;
   }),
@@ -298,7 +371,7 @@ const telemetryLogger = winston.createLogger({
 
 export const logS3Debug = {
   debug: (message, detail) => {
-    logApp._log('info', message, { detail });
+    logApp._log("info", message, { detail });
   },
   info: (_message, _detail) => {},
   warn: (_message, _detail) => {},
@@ -306,24 +379,27 @@ export const logS3Debug = {
 };
 
 export const logMigration = {
-  info: (message) => migrationLogger.log('info', message),
+  info: (message) => migrationLogger.log("info", message),
 };
 
 export const logApp = {
   _log: (level, message, meta = {}) => {
     if (appLogTransports.length > 0 && appLogger.isLevelEnabled(level)) {
-      const data = prepareLogMetadata(meta, { category: LOG_APP, source: 'backend' });
+      const data = prepareLogMetadata(meta, {
+        category: LOG_APP,
+        source: "backend",
+      });
       appLogger.log(level, message, data);
       // Only add in support package starting warn level
-      if (appLogger.isLevelEnabled('warn')) {
+      if (appLogger.isLevelEnabled("warn")) {
         supportLogger.log(level, message, data);
       }
     }
   },
-  debug: (message, meta = {}) => logApp._log('debug', message, meta),
-  info: (message, meta = {}) => logApp._log('info', message, meta),
-  warn: (message, meta = {}) => logApp._log('warn', message, meta),
-  error: (message, meta = {}) => logApp._log('error', message, meta),
+  debug: (message, meta = {}) => logApp._log("debug", message, meta),
+  info: (message, meta = {}) => logApp._log("info", message, meta),
+  warn: (message, meta = {}) => logApp._log("warn", message, meta),
+  error: (message, meta = {}) => logApp._log("error", message, meta),
   query: (options, errCallback) => appLogger.query(options, errCallback),
 };
 
@@ -331,37 +407,60 @@ export const logAudit = {
   _log: (level, user, operation, meta = {}) => {
     if (auditLogTransports.length > 0) {
       const metaUser = { email: user.user_email, ...user.origin };
-      const logMeta = isEmpty(meta) ? { auth: metaUser } : { resource: meta, auth: metaUser };
-      const data = prepareLogMetadata(logMeta, { category: LOG_AUDIT, source: 'backend' });
+      const logMeta = isEmpty(meta)
+        ? { auth: metaUser }
+        : { resource: meta, auth: metaUser };
+      const data = prepareLogMetadata(logMeta, {
+        category: LOG_AUDIT,
+        source: "backend",
+      });
       auditLogger.log(level, operation, data);
     }
   },
-  info: (user, operation, meta = {}) => logAudit._log('info', user, operation, meta),
-  error: (user, operation, meta = {}) => logAudit._log('error', user, operation, meta),
+  info: (user, operation, meta = {}) =>
+    logAudit._log("info", user, operation, meta),
+  error: (user, operation, meta = {}) =>
+    logAudit._log("error", user, operation, meta),
 };
 
 export const logFrontend = {
   _log: (level, message, meta = {}) => {
-    const data = prepareLogMetadata(meta, { category: LOG_APP, source: 'frontend' });
+    const data = prepareLogMetadata(meta, {
+      category: LOG_APP,
+      source: "frontend",
+    });
     appLogger.log(level, message, data);
     supportLogger.log(level, message, data);
   },
-  error: (message, meta = {}) => logFrontend._log('error', message, meta),
+  error: (message, meta = {}) => logFrontend._log("error", message, meta),
 };
 
 export const logTelemetry = {
   log: (message) => {
-    telemetryLogger.log('info', message);
+    telemetryLogger.log("info", message);
   },
 };
 
-export const PORT = nconf.get('app:port');
-const BasePathConfig = nconf.get('app:base_path')?.trim() ?? '';
-const AppBasePath = BasePathConfig.endsWith('/') ? BasePathConfig.slice(0, -1) : BasePathConfig;
-export const basePath = isEmpty(AppBasePath) || AppBasePath.startsWith('/') ? AppBasePath : `/${AppBasePath}`;
+export const PORT = nconf.get("app:port");
+const BasePathConfig = nconf.get("app:base_path")?.trim() ?? "";
+const AppBasePath = BasePathConfig.endsWith("/")
+  ? BasePathConfig.slice(0, -1)
+  : BasePathConfig;
+export const basePath =
+  isEmpty(AppBasePath) || AppBasePath.startsWith("/")
+    ? AppBasePath
+    : `/${AppBasePath}`;
 
-const BasePathUrl = nconf.get('app:base_url')?.trim() ?? '';
-const baseUrl = BasePathUrl.endsWith('/') ? BasePathUrl.slice(0, -1) : BasePathUrl;
+// Backend URL for frontend cross-origin API calls (injected at runtime via Docker)
+const BackEndUrlConfig = nconf.get("app:back_end_url")?.trim() ?? "";
+export const backEndUrl = BackEndUrlConfig.endsWith("/")
+  ? BackEndUrlConfig.slice(0, -1)
+  : BackEndUrlConfig;
+
+const BasePathUrl = nconf.get("app:base_url")?.trim() ?? "";
+const baseUrl = BasePathUrl.endsWith("/")
+  ? BasePathUrl.slice(0, -1)
+  : BasePathUrl;
 
 export const getBaseUrl = (req) => {
   // If base url is defined, take it in priority
@@ -371,9 +470,9 @@ export const getBaseUrl = (req) => {
   }
   // If no base url, try to infer the uri from the request
   if (req) {
-    const [, port] = req.headers.host ? req.headers.host.split(':') : [];
-    const isCustomPort = port !== '80' && port !== '443';
-    const httpPort = isCustomPort && port ? `:${port}` : '';
+    const [, port] = req.headers.host ? req.headers.host.split(":") : [];
+    const isCustomPort = port !== "80" && port !== "443";
+    const httpPort = isCustomPort && port ? `:${port}` : "";
     return `${req.protocol}://${req.hostname}${httpPort}${basePath}`;
   }
   // If no base url and no request, send only the base path
@@ -381,17 +480,23 @@ export const getBaseUrl = (req) => {
 };
 
 export const getChatbotUrl = (req) => {
-  if (baseUrl && !baseUrl.includes('localhost') && !baseUrl.includes('127.0.0.1')) {
+  if (
+    baseUrl &&
+    !baseUrl.includes("localhost") &&
+    !baseUrl.includes("127.0.0.1")
+  ) {
     // Always append base path to the uri
     return baseUrl + basePath;
   }
   if (req) {
-    const [hostname, port] = req.headers.host ? req.headers.host.split(':') : [];
-    const isCustomPort = port !== '80' && port !== '443';
+    const [hostname, port] = req.headers.host
+      ? req.headers.host.split(":")
+      : [];
+    const isCustomPort = port !== "80" && port !== "443";
     const httpPort = isCustomPort && port ? `:${port}` : `:${PORT}`;
     return `${req.protocol}://${hostname}${httpPort}${basePath}`;
   }
-  throw UnknownError('Missing request for chatbot');
+  throw UnknownError("Missing request for chatbot");
 };
 
 export const configureCA = (certificates) => {
@@ -405,10 +510,12 @@ export const configureCA = (certificates) => {
         return { ca: [readFileSync(cert)] };
       }
     } catch (err) {
-      if (err.code === 'ENOENT') {
+      if (err.code === "ENOENT") {
         // For this error, try the next one.
       } else {
-        throw UnknownError('Configuration failure of the CA certificate', { cause: err });
+        throw UnknownError("Configuration failure of the CA certificate", {
+          cause: err,
+        });
       }
     }
   }
@@ -420,21 +527,22 @@ export const loadCert = (cert) => {
   if (!cert) {
     return undefined;
   }
-  if (cert.startsWith('-----BEGIN')) {
+  if (cert.startsWith("-----BEGIN")) {
     return cert;
   }
   return readFileSync(cert);
 };
 
 const escapeRegex = (string) => {
-  return string.replace(/[/\-\\^$*+?.()|[\]{}]/g, '\\$&');
+  return string.replace(/[/\-\\^$*+?.()|[\]{}]/g, "\\$&");
 };
 export const isUriProxyExcluded = (hostname, exclusions) => {
   for (let index = 0; index < exclusions.length; index += 1) {
     const exclusion = exclusions[index];
-    if (exclusion.includes('*')) { // Test regexp
-      const pattern = escapeRegex(exclusion).replaceAll('\\*', '.*');
-      const regexp = new RegExp(pattern, 'g');
+    if (exclusion.includes("*")) {
+      // Test regexp
+      const pattern = escapeRegex(exclusion).replaceAll("\\*", ".*");
+      const regexp = new RegExp(pattern, "g");
       const isRegexpMatch = regexp.test(hostname);
       if (isRegexpMatch) {
         return true;
@@ -460,26 +568,30 @@ export const isUriProxyExcluded = (hostname, exclusions) => {
   return false;
 };
 export const getPlatformHttpProxies = () => {
-  const http = nconf.get('http_proxy');
-  const https = nconf.get('https_proxy');
-  const exclusions = (nconf.get('no_proxy') ?? '').split(',');
-  const proxyCA = nconf.get('https_proxy_ca').map((caPath) => loadCert(caPath));
+  const http = nconf.get("http_proxy");
+  const https = nconf.get("https_proxy");
+  const exclusions = (nconf.get("no_proxy") ?? "").split(",");
+  const proxyCA = nconf.get("https_proxy_ca").map((caPath) => loadCert(caPath));
   // To prevent any configuration clash with node, we reset the proxy env variables
-  process.env.HTTP_PROXY = '';
-  process.env.HTTPS_PROXY = '';
-  process.env.NO_PROXY = '';
+  process.env.HTTP_PROXY = "";
+  process.env.HTTPS_PROXY = "";
+  process.env.NO_PROXY = "";
   const proxies = {};
   if (https) {
-    proxies['https:'] = {
-      build: () => new HttpsProxyAgent(https, {
-        rejectUnauthorized: booleanConf('https_proxy_reject_unauthorized', false),
-        ...configureCA(proxyCA),
-      }),
+    proxies["https:"] = {
+      build: () =>
+        new HttpsProxyAgent(https, {
+          rejectUnauthorized: booleanConf(
+            "https_proxy_reject_unauthorized",
+            false,
+          ),
+          ...configureCA(proxyCA),
+        }),
       isExcluded: (hostname) => isUriProxyExcluded(hostname, exclusions),
     };
   }
   if (http) {
-    proxies['http:'] = {
+    proxies["http:"] = {
       build: () => new HttpProxyAgent(http),
       isExcluded: (hostname) => isUriProxyExcluded(hostname, exclusions),
     };
@@ -502,52 +614,96 @@ export const getPlatformHttpProxyAgent = (uri) => {
 };
 
 // General
-export const ENABLED_API = booleanConf('app:enabled', true);
-export const ENABLED_UI = booleanConf('app:enabled_ui', true);
+export const ENABLED_API = booleanConf("app:enabled", true);
+export const ENABLED_UI = booleanConf("app:enabled_ui", true);
 
 // Playground
-export const ENABLED_DEMO_MODE = booleanConf('demo_mode', false);
-export const PLAYGROUND_INTROSPECTION_DISABLED = DEV_MODE ? false : (!ENABLED_UI || booleanConf('app:graphql:playground:force_disabled_introspection', true));
-export const PLAYGROUND_ENABLED = ENABLED_UI && booleanConf('app:graphql:playground:enabled', true);
-export const GRAPHQL_ARMOR_DISABLED = booleanConf('app:graphql:armor_protection:disabled', true);
+export const ENABLED_DEMO_MODE = booleanConf("demo_mode", false);
+export const PLAYGROUND_INTROSPECTION_DISABLED = DEV_MODE
+  ? false
+  : !ENABLED_UI ||
+    booleanConf("app:graphql:playground:force_disabled_introspection", true);
+export const PLAYGROUND_ENABLED =
+  ENABLED_UI && booleanConf("app:graphql:playground:enabled", true);
+export const GRAPHQL_ARMOR_DISABLED = booleanConf(
+  "app:graphql:armor_protection:disabled",
+  true,
+);
 
 // Default activated managers
-export const ENABLED_TRACING = booleanConf('app:telemetry:tracing:enabled', false);
-export const ENABLED_METRICS = booleanConf('app:telemetry:metrics:enabled', false);
-export const ENABLED_NOTIFICATION_MANAGER = booleanConf('notification_manager:enabled', true);
-export const ENABLED_PUBLISHER_MANAGER = booleanConf('publisher_manager:enabled', true);
-export const ENABLED_CONNECTOR_MANAGER = booleanConf('connector_manager:enabled', true);
-export const ENABLED_FILE_INDEX_MANAGER = booleanConf('file_index_manager:enabled', true);
+export const ENABLED_TRACING = booleanConf(
+  "app:telemetry:tracing:enabled",
+  false,
+);
+export const ENABLED_METRICS = booleanConf(
+  "app:telemetry:metrics:enabled",
+  false,
+);
+export const ENABLED_NOTIFICATION_MANAGER = booleanConf(
+  "notification_manager:enabled",
+  true,
+);
+export const ENABLED_PUBLISHER_MANAGER = booleanConf(
+  "publisher_manager:enabled",
+  true,
+);
+export const ENABLED_CONNECTOR_MANAGER = booleanConf(
+  "connector_manager:enabled",
+  true,
+);
+export const ENABLED_FILE_INDEX_MANAGER = booleanConf(
+  "file_index_manager:enabled",
+  true,
+);
 
 // Default deactivated managers
-export const ENABLED_EXPIRED_MANAGER = booleanConf('expiration_scheduler:enabled', false);
-export const ENABLED_TASK_SCHEDULER = booleanConf('task_scheduler:enabled', false);
-export const ENABLED_SYNC_MANAGER = booleanConf('sync_manager:enabled', false);
-export const ENABLED_INGESTION_MANAGER = booleanConf('ingestion_manager:enabled', false);
-export const ENABLED_RULE_ENGINE = booleanConf('rule_engine:enabled', false);
-export const ENABLED_HISTORY_MANAGER = booleanConf('history_manager:enabled', false);
-export const ENABLED_PLAYBOOK_MANAGER = booleanConf('playbook_manager:enabled', false);
+export const ENABLED_EXPIRED_MANAGER = booleanConf(
+  "expiration_scheduler:enabled",
+  false,
+);
+export const ENABLED_TASK_SCHEDULER = booleanConf(
+  "task_scheduler:enabled",
+  false,
+);
+export const ENABLED_SYNC_MANAGER = booleanConf("sync_manager:enabled", false);
+export const ENABLED_INGESTION_MANAGER = booleanConf(
+  "ingestion_manager:enabled",
+  false,
+);
+export const ENABLED_RULE_ENGINE = booleanConf("rule_engine:enabled", false);
+export const ENABLED_HISTORY_MANAGER = booleanConf(
+  "history_manager:enabled",
+  false,
+);
+export const ENABLED_PLAYBOOK_MANAGER = booleanConf(
+  "playbook_manager:enabled",
+  false,
+);
 
 // Default Accounts management
-export const ACCOUNT_STATUS_ACTIVE = 'Active';
-export const ACCOUNT_STATUS_EXPIRED = 'Expired';
+export const ACCOUNT_STATUS_ACTIVE = "Active";
+export const ACCOUNT_STATUS_EXPIRED = "Expired";
 export const computeAccountStatusChoices = () => {
-  const statusesDefinition = nconf.get('app:locked_account_statuses');
+  const statusesDefinition = nconf.get("app:locked_account_statuses");
   return {
-    [ACCOUNT_STATUS_ACTIVE]: 'All good folks',
-    [ACCOUNT_STATUS_EXPIRED]: 'Your account has expired. If you would like to reactivate your account, please contact your administrator.',
+    [ACCOUNT_STATUS_ACTIVE]: "All good folks",
+    [ACCOUNT_STATUS_EXPIRED]:
+      "Your account has expired. If you would like to reactivate your account, please contact your administrator.",
     ...statusesDefinition,
   };
 };
 export const ACCOUNT_STATUSES = computeAccountStatusChoices();
 export const computeDefaultAccountStatus = () => {
-  const defaultConf = nconf.get('app:account_statuses_default');
+  const defaultConf = nconf.get("app:account_statuses_default");
   if (defaultConf) {
     const accountStatus = ACCOUNT_STATUSES[defaultConf];
     if (accountStatus) {
       return defaultConf;
     }
-    throw UnsupportedError('Invalid default_initialize_account_status configuration', { default: defaultConf, statuses: ACCOUNT_STATUSES });
+    throw UnsupportedError(
+      "Invalid default_initialize_account_status configuration",
+      { default: defaultConf, statuses: ACCOUNT_STATUSES },
+    );
   }
   return ACCOUNT_STATUS_ACTIVE;
 };
@@ -561,12 +717,17 @@ export const setStoppingState = (state) => {
 };
 
 // Feature flags can be enabled in the configuration file
-export const ENABLED_FEATURE_FLAGS = nconf.get('app:enabled_dev_features') ?? [];
+export const ENABLED_FEATURE_FLAGS =
+  nconf.get("app:enabled_dev_features") ?? [];
 // a special flag name allows to enable all feature flags at once
-export const FEATURE_FLAG_ALL = '*';
-export const isFeatureEnabled = (feature) => ENABLED_FEATURE_FLAGS.includes(FEATURE_FLAG_ALL) || ENABLED_FEATURE_FLAGS.includes(feature);
+export const FEATURE_FLAG_ALL = "*";
+export const isFeatureEnabled = (feature) =>
+  ENABLED_FEATURE_FLAGS.includes(FEATURE_FLAG_ALL) ||
+  ENABLED_FEATURE_FLAGS.includes(feature);
 
-export const REDIS_PREFIX = nconf.get('redis:namespace') ? `${nconf.get('redis:namespace')}:` : '';
+export const REDIS_PREFIX = nconf.get("redis:namespace")
+  ? `${nconf.get("redis:namespace")}:`
+  : "";
 export const TOPIC_PREFIX = `${REDIS_PREFIX}_OPENCTI_DATA_`;
 export const TOPIC_CONTEXT_PREFIX = `${REDIS_PREFIX}_OPENCTI_CONTEXT_`;
 export const BUS_TOPICS = {

@@ -33,7 +33,7 @@ FROM base AS front-builder
 WORKDIR /opt/opencti-build/opencti-front
 
 COPY opencti-front/package.json opencti-front/yarn.lock ../.yarnrc.yml ./
-COPY opencti-front/.yarn ./.yarn
+# COPY opencti-front/.yarn ./.yarn
 COPY opencti-front/packages ./packages
 RUN set -ex; \
     apk add --no-cache git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre \

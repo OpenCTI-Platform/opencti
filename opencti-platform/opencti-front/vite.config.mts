@@ -1,8 +1,8 @@
-import { createLogger, defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import * as path from 'node:path';
-import relay from 'vite-plugin-relay';
-import { viteStaticCopy } from 'vite-plugin-static-copy';
+import { createLogger, defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import * as path from "node:path";
+import relay from "vite-plugin-relay";
+import { viteStaticCopy } from "vite-plugin-static-copy";
 
 // to avoid multiple reload when discovering new dependencies after a going on a lazy (not precedently) loaded route we pre optmize these dependencies
 const depsToOptimize = [
@@ -168,22 +168,22 @@ const depsToOptimize = [
   "use-analytics",
   "uuid",
   "d3-scale",
-  "react-compound-slider"
- ];
+  "react-compound-slider",
+];
 
 const logger = createLogger();
 const loggerError = logger.error;
 
 logger.error = (msg, options) => {
   // Ignore jsx syntax error as it taken into account in a custom plugin
-  if (msg.includes('The JSX syntax extension is not currently enabled')) return
-  loggerError(msg, options)
+  if (msg.includes("The JSX syntax extension is not currently enabled")) return;
+  loggerError(msg, options);
 };
 
 const basePath = "";
 
 const backProxy = (ws = false) => ({
-  target: process.env.BACK_END_URL ?? 'http://localhost:4000',
+  target: process.env.BACK_END_URL ?? "http://localhost:4000",
   changeOrigin: true,
   ws,
 });
@@ -191,20 +191,20 @@ const backProxy = (ws = false) => ({
 // https://vitejs.dev/config/
 export default defineConfig({
   build: {
-    target: ['chrome58'],
+    target: ["chrome58"],
   },
 
   resolve: {
     alias: {
-      '@components': path.resolve(__dirname, './src/private/components'),
-      'src': path.resolve(__dirname, './src'),
+      "@components": path.resolve(__dirname, "./src/private/components"),
+      src: path.resolve(__dirname, "./src"),
     },
-    extensions: ['.tsx', '.jsx', '.ts', '.js', '.json'],
+    extensions: [".tsx", ".jsx", ".ts", ".js", ".json"],
   },
 
   optimizeDeps: {
     include: depsToOptimize,
-    exclude: ['@filigran/chatbot']
+    exclude: ["@filigran/chatbot"],
   },
 
   customLogger: logger,
@@ -213,45 +213,54 @@ export default defineConfig({
     viteStaticCopy({
       targets: [
         {
-          src: 'src/static/ext/*',
-          dest: 'static/ext'
-        }
-      ]
+          src: "src/static/ext/*",
+          dest: "static/ext",
+        },
+      ],
     }),
     {
-      name: 'html-transform',
+      name: "html-transform",
       enforce: "pre",
-      apply: 'serve',
+      apply: "serve",
       transformIndexHtml(html) {
-        return html.replace(/%BASE_PATH%/g, basePath)
-          .replace(/%APP_SCRIPT_SNIPPET%/g,  '')
+        const backEndUrl = process.env.BACK_END_URL ?? "";
+        return html
+          .replace(/%BASE_PATH%/g, basePath)
+          .replace(/%BACK_END_URL%/g, backEndUrl)
+          .replace(/%APP_SCRIPT_SNIPPET%/g, "")
           .replace(/%APP_TITLE%/g, "OpenCTI Dev")
           .replace(/%APP_DESCRIPTION%/g, "OpenCTI Development platform")
           .replace(/%APP_FAVICON%/g, `${basePath}/static/ext/favicon.png`)
-          .replace(/%APP_MANIFEST%/g, `${basePath}/static/ext/manifest.json`)
-      }
+          .replace(/%APP_MANIFEST%/g, `${basePath}/static/ext/manifest.json`);
+      },
     },
     react(),
-    relay
+    relay,
   ],
 
   server: {
     port: 3000,
     warmup: {
-      clientFiles: ['./lang/front/*', './src/static/*', './src/app.tsx', './src/front.tsx', './src/util/hooks/*']
+      clientFiles: [
+        "./lang/front/*",
+        "./src/static/*",
+        "./src/app.tsx",
+        "./src/front.tsx",
+        "./src/util/hooks/*",
+      ],
     },
     proxy: {
-      '/logout': backProxy(),
-      '/stream': backProxy(),
-      '/storage': backProxy(),
-      '/schema': backProxy(),
-      '^/.*/embedded/.*': backProxy(),
-      '/taxii2': backProxy(),
-      '/feeds': backProxy(),
-      '/graphql': backProxy(true),
-      '/auth': backProxy(),
-      '/static/flags': backProxy(),
-      '/chatbot': backProxy(),
+      "/logout": backProxy(),
+      "/stream": backProxy(),
+      "/storage": backProxy(),
+      "/schema": backProxy(),
+      "^/.*/embedded/.*": backProxy(),
+      "/taxii2": backProxy(),
+      "/feeds": backProxy(),
+      "/graphql": backProxy(true),
+      "/auth": backProxy(),
+      "/static/flags": backProxy(),
+      "/chatbot": backProxy(),
     },
   },
 });

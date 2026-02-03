@@ -1,38 +1,41 @@
 const esbuild = require("esbuild");
-const { cp, rename, rm, readdir, writeFile } = require("node:fs/promises")
+const { cp, rename, rm, readdir, writeFile } = require("node:fs/promises");
 const { RelayPlugin } = require("../plugin/esbuild-relay");
 
 // Define args options
-const keep = process.argv.slice(2).includes('--keep');
+const keep = process.argv.slice(2).includes("--keep");
 
 const buildPath = "./builder/prod/build";
 
 (async () => {
   await esbuild.build({
-      logLevel: "info",
-      plugins: [RelayPlugin],
-      entryPoints: ["src/front.tsx"],
-      publicPath: '/',
-      bundle: true,
-      loader: {
-        ".js": "jsx",
-        ".svg": "file",
-        ".png": "file",
-        ".woff": "dataurl",
-        ".woff2": "dataurl",
-        ".ttf": "dataurl",
-        ".eot": "dataurl",
-      },
-      assetNames: keep ? "[dir]/[name]" : "[dir]/[name]-[hash]",
-      entryNames: keep ? "static/[ext]/[name]" : "static/[ext]/[name]-[hash]",
-      target: ["chrome58"],
-      minify: true,
-      keepNames: true,
-      sourcemap: keep,
-      outdir: "builder/prod/build",
-    });
+    logLevel: "info",
+    plugins: [RelayPlugin],
+    entryPoints: ["src/front.tsx"],
+    publicPath: "/",
+    bundle: true,
+    loader: {
+      ".js": "jsx",
+      ".svg": "file",
+      ".png": "file",
+      ".woff": "dataurl",
+      ".woff2": "dataurl",
+      ".ttf": "dataurl",
+      ".eot": "dataurl",
+    },
+    assetNames: keep ? "[dir]/[name]" : "[dir]/[name]-[hash]",
+    entryNames: keep ? "static/[ext]/[name]" : "static/[ext]/[name]-[hash]",
+    target: ["chrome58"],
+    minify: true,
+    keepNames: true,
+    sourcemap: keep,
+    outdir: "builder/prod/build",
+  });
   // Copy public files to build
-  await cp("./src/static/ext",  `${buildPath}/static/ext`, { recursive: true, overwrite: true });
+  await cp("./src/static/ext", `${buildPath}/static/ext`, {
+    recursive: true,
+    overwrite: true,
+  });
 
   // Generate index.html
   const cssImport = (await readdir(`${buildPath}/static/css`))
@@ -40,7 +43,9 @@ const buildPath = "./builder/prod/build";
     .join("\n");
 
   const jsImport = (await readdir(`${buildPath}/static/js`))
-    .map((f) => `<script defer="defer" src="%BASE_PATH%/static/js/${f}"></script>`)
+    .map(
+      (f) => `<script defer="defer" src="%BASE_PATH%/static/js/${f}"></script>`,
+    )
     .join("\n");
 
   const indexHtml = `
@@ -54,7 +59,7 @@ const buildPath = "./builder/prod/build";
             <link id="favicon" rel="shortcut icon" href="%APP_FAVICON%">
             <link id="manifest" rel="manifest" href="%APP_MANIFEST%">
             %APP_SCRIPT_SNIPPET%
-            <script>window.BASE_PATH = "%BASE_PATH%"</script>
+            <script>window.BASE_PATH = "%BASE_PATH%"; window.BACK_END_URL = "%BACK_END_URL%";</script>
             ${jsImport}
             ${cssImport}
             <title>%APP_TITLE%</title>
@@ -68,7 +73,7 @@ const buildPath = "./builder/prod/build";
 
   // Move build directory to api public directory
   if (!keep) {
-    await rm("../opencti-graphql/public/", {recursive: true, force: true});
+    await rm("../opencti-graphql/public/", { recursive: true, force: true });
     await rename(buildPath, "../opencti-graphql/public/");
   }
 })();
