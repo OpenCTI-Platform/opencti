@@ -1,5 +1,7 @@
 # coding: utf-8
 import json
+import time
+import uuid
 
 
 class StixCoreObject:
@@ -1894,22 +1896,27 @@ class StixCoreObject:
         """
         rule_id = kwargs.get("rule_id", None)
         element_id = kwargs.get("element_id", None)
+        execution_id = str(uuid.uuid4())
+        rule_apply_complete = False
         if element_id is not None and rule_id is not None:
-            self.opencti.app_logger.info(
-                "Apply rule stix_core_object", {"id": element_id}
-            )
-            query = """
-                    mutation StixCoreApplyRule($elementId: ID!, $ruleId: ID!) {
-                        ruleApplyAsync(elementId: $elementId, ruleId: $ruleId){
-                            id
+            while not rule_apply_complete:
+                self.opencti.app_logger.info(
+                    "Apply rule async stix_core_object", {"id": element_id}
+                )
+                query = """
+                        mutation StixCoreApplyRule($elementId: ID!, $ruleId: ID!, $executionId: ID!) {
+                            ruleApplyAsync(elementId: $elementId, ruleId: $ruleId, executionId: $executionId)
                         }
-                    }
-                """
-            result = self.opencti.query(
-                query, {"elementId": element_id, "ruleId": rule_id}
-            )
-            work_id = result["data"]["ruleApplyAsync"]["id"]
-            self.opencti.work.wait_for_work_to_finish(work_id)
+                    """
+                result = self.opencti.query(
+                    query, {"elementId": element_id, "ruleId": rule_id, "executionId": execution_id}
+                )
+                rule_apply_complete = result["data"]["ruleApplyAsync"]
+                self.opencti.app_logger.info(
+                    "Apply rule async stix_core_object complete", {"id": element_id}
+                )
+                if not rule_apply_complete:
+                    time.sleep(10)
         else:
             self.opencti.app_logger.error(
                 "[stix_core_object] Cannot apply rule, missing parameters: id"

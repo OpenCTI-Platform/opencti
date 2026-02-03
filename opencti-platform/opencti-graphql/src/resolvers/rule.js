@@ -16,7 +16,7 @@ const ruleResolvers = {
     ruleSetActivation: (_, { id, enable }, context) => setRuleActivation(context, context.user, id, enable),
     ruleManagerClean: (_, { eventId }, context) => cleanRuleManager(context, context.user, eventId),
     ruleApply: (_, { elementId, ruleId }, context) => ruleApply(context, context.user, elementId, ruleId),
-    ruleApplyAsync: (_, { elementId, ruleId }, context) => ruleApplyAsync(context, context.user, elementId, ruleId),
+    ruleApplyAsync: (_, { elementId, ruleId, executionId }, context) => ruleApplyAsync(context, context.user, elementId, ruleId, executionId),
     ruleClear: (_, { elementId, ruleId }, context) => ruleClear(context, context.user, elementId, ruleId),
     rulesRescan: (_, { elementId }, context) => rulesRescan(context, context.user, elementId),
   },

@@ -506,7 +506,19 @@ export const redisInitializeWork = async (workId: string) => {
   });
 };
 // endregion
-
+// region async calls tracking
+const ASYNC_CALL_TTL = 3600;
+const ASYNC_CALL_KEY_PREFIX = 'async_status_';
+export const redisInitializeAsyncCall = async (asyncCallId: string) => {
+  await getClientBase().setex(ASYNC_CALL_KEY_PREFIX + asyncCallId, ASYNC_CALL_TTL, '0');
+};
+export const redisGetAsyncCall = async (asyncCallId: string) => {
+  return getClientBase().get(ASYNC_CALL_KEY_PREFIX + asyncCallId);
+};
+export const redisFinishAsyncCall = async (asyncCallId: string) => {
+  await getClientBase().setex(ASYNC_CALL_KEY_PREFIX + asyncCallId, ASYNC_CALL_TTL, '1');
+};
+// endregion
 // region cluster handling
 const CLUSTER_LIST_KEY = 'platform_cluster';
 const CLUSTER_NODE_EXPIRE = 2 * 60; // 2 minutes
