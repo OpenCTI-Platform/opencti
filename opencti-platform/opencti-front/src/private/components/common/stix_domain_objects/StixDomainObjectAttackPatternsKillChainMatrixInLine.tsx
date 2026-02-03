@@ -130,7 +130,7 @@ const StixDomainObjectAttackPatternsKillChainMatrixInline: FunctionComponent<Sti
             lineFragment={stixDomainObjectAttackPatternsKillChainContainerLineFragment}
             exportContext={{ entity_type: 'Attack-Pattern' }}
             currentView={currentView}
-            additionalToggleButtons={[...viewButtons]}
+            additionalHeaderToggleButtons={[...viewButtons]}
           />
         )}
       </div>

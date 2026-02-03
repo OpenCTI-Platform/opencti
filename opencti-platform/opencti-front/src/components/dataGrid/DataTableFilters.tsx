@@ -66,7 +66,7 @@ const DataTableFilters = ({
   exportContext,
   currentView,
   additionalHeaderButtons,
-  additionalToggleButtons,
+  additionalHeaderToggleButtons: additionalToggleButtons,
 }: DataTableFiltersProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();

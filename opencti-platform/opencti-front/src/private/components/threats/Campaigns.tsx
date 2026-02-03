@@ -169,7 +169,7 @@ const Campaigns = () => {
             preloadedPaginationProps={preloadedPaginationProps}
             lineFragment={CampaignCardFragment}
             exportContext={{ entity_type: 'Campaign' }}
-            additionalToggleButtons={[
+            additionalHeaderToggleButtons={[
               <ToggleButton key="cards" value="cards" aria-label="cards">
                 <Tooltip title={t_i18n('Cards view')}>
                   <ViewModuleOutlined fontSize="small" />

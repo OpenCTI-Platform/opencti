@@ -177,7 +177,7 @@ const ThreatActorsGroup = () => {
                 <StixCoreObjectForms entityType="Threat-Actor-Group" />
               </Security>,
             ]}
-            additionalToggleButtons={[
+            additionalHeaderToggleButtons={[
               <Tooltip key="cards" title={t_i18n('Cards view')}>
                 <ToggleButton value="cards" aria-label="cards">
                   <ViewModuleOutlined fontSize="small" />

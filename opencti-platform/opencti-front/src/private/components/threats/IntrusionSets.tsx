@@ -165,7 +165,7 @@ const IntrusionSets = () => {
             preloadedPaginationProps={preloadedPaginationProps}
             lineFragment={IntrusionSetCardFragment}
             exportContext={{ entity_type: 'Intrusion-Set' }}
-            additionalToggleButtons={[
+            additionalHeaderToggleButtons={[
               <ToggleButton key="cards" value="cards" aria-label="cards">
                 <Tooltip title={t_i18n('Cards view')}>
                   <ViewModuleOutlined fontSize="small" />

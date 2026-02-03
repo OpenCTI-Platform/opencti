@@ -257,7 +257,7 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
           lineFragment={entityStixCoreRelationshipsIndicatorsEntitiesViewLineFragment}
           exportContext={{ entity_id: entityId, entity_type: 'Indicator' }}
           currentView={currentView}
-          additionalToggleButtons={[...viewButtons]}
+          additionalHeaderToggleButtons={[...viewButtons]}
         />
       )}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
