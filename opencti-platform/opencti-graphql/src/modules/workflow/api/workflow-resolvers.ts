@@ -1,4 +1,4 @@
-import type { AuthContext } from '../../types/user';
+import type { AuthContext } from '../../../types/user';
 import {
   deleteWorkflowDefinition,
   getAllowedNextStatuses,
@@ -7,7 +7,7 @@ import {
   getWorkflowInstance,
   setWorkflowDefinition,
   triggerWorkflowEvent,
-} from './workflow-domain';
+} from '../domain/workflow-domain';
 
 const workflowResolvers = {
   Query: {

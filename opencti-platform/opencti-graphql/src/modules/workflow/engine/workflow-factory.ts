@@ -1,7 +1,7 @@
+import { ActionRegistry } from '../registry/workflow-actions';
+import { ConditionRegistry } from '../registry/workflow-conditions';
 import type { ActionConfig, ConditionConfig, WorkflowSchema } from './workflow-schema';
-import { ActionRegistry } from './workflow-actions';
-import { ConditionRegistry } from './workflow-conditions';
-import type { ConditionValidator, Context, SideEffect } from './workflow-types';
+import type { ConditionValidator, Context, SideEffect } from '../types/workflow-types';
 import { WorkflowDefinition } from './workflow-definition';
 import { WorkflowInstance } from './workflow-instance';
 

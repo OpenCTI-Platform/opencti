@@ -1,6 +1,6 @@
-import { logApp } from '../../config/conf';
-import { validateDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
-import type { Context } from './workflow-types';
+import { logApp } from '../../../config/conf';
+import { validateDraftWorkspace } from '../../draftWorkspace/draftWorkspace-domain';
+import type { Context } from '../types/workflow-types';
 
 export type ActionFunction<TContext extends Context = Context> = (ctx: TContext, params?: any) => Promise<void> | void;
 

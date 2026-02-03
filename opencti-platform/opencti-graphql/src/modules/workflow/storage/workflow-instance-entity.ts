@@ -1,7 +1,7 @@
-import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
-import convertWorkflowToStix from './workflow-converter';
-import { ENTITY_TYPE_WORKFLOW_INSTANCE } from './workflow-types';
+import { ABSTRACT_INTERNAL_OBJECT } from '../../../schema/general';
+import { type ModuleDefinition, registerDefinition } from '../../../schema/module';
+import convertWorkflowToStix from '../engine/workflow-converter';
+import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../types/workflow-types';
 
 const WORKFLOW_INSTANCE_DEFINITION: ModuleDefinition<any, any> = {
   type: {

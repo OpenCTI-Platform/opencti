@@ -1,4 +1,4 @@
-import type { Context, Event, MachineDefinition, State, TriggerResult } from './workflow-types';
+import type { Context, Event, MachineDefinition, State, TriggerResult } from '../types/workflow-types';
 
 /**
  * Stateful execution engine for a workflow definition.

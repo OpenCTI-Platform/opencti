@@ -1,4 +1,4 @@
-import type { WorkflowActionMode } from '../../generated/graphql';
+import type { WorkflowActionMode } from '../../../generated/graphql';
 
 /**
  * Serialized configuration for a side effect action.
