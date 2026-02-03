@@ -1,6 +1,6 @@
 # Tool usefully for development purpose
 
-## Docker compose part
+## docker compose / podman compose part
 
 ```
 docker compose up -d
@@ -22,7 +22,7 @@ Optionally additional services can be started:
 
 ### Fake SMTP server
 
-`development.json` configuration:
+In `development.json` configuration:
 
 ```json
 {
