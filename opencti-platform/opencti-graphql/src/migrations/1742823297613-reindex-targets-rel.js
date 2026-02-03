@@ -7,6 +7,7 @@ import { elBulk, elList } from '../database/engine';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { RELATION_TARGETS } from '../schema/stixCoreRelationship';
 import { fullRelationsList } from '../database/middleware-loader';
+import { pushAll } from '../utils/arrayUtil';
 
 export const MIGRATION_MAX_BULK_OPERATIONS = conf.get('migrations:reindex_targets_rel:max_bulk_operations') || 1000;
 export const MIGRATION_BULK_TIMEOUT = conf.get('migrations:reindex_targets_rel:bulk_timeout') || '30m';
@@ -35,7 +36,7 @@ export const up = async (next) => {
           },
         },
       ];
-      bulkOperationsTargets.push(...updateQuery);
+      pushAll(bulkOperationsTargets, updateQuery);
       currentProcessingLocations += 1;
     }
   };

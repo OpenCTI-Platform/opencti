@@ -11,6 +11,7 @@ import loggerPlugin from './loggerPlugin';
 import telemetryPlugin from './telemetryPlugin';
 import tracingPlugin from './tracingPlugin';
 import httpResponsePlugin from './httpResponsePlugin';
+import { pushAll } from '../utils/arrayUtil';
 
 const createApolloServer = () => {
   const schema = createSchema();
@@ -62,8 +63,8 @@ const createApolloServer = () => {
       },
     });
     const protection = armor.protect();
-    apolloPlugins.push(...protection.plugins);
-    apolloValidationRules.push(...protection.validationRules);
+    pushAll(apolloPlugins, protection.plugins);
+    pushAll(apolloValidationRules, protection.validationRules);
   }
 
   const secureIntrospectionPlugin = {

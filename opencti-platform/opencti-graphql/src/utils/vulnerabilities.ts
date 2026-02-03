@@ -2,6 +2,7 @@ import { Cvss2, Cvss3P1, Cvss4P0 } from 'ae-cvss-calculator';
 import { isNotEmptyField, isEmptyField } from '../database/utils';
 import { FunctionalError } from '../config/errors';
 import type { Vulnerability } from '../generated/graphql';
+import { pushAll } from './arrayUtil';
 
 // --- Types ---
 
@@ -542,18 +543,18 @@ export const updateCvssVector = (
 };
 
 export const generateVulnerabilitiesUpdates = (initial: Vulnerability, updates: CvssFieldUpdate[]) => {
-  const newUpdates = [];
+  const newUpdates: CvssFieldUpdate[] = [];
   if (updates.some((e) => e.key === 'x_opencti_cvss_v2_vector_string')) {
     const vectorUpdate = updates.filter((e) => e.key === 'x_opencti_cvss_v2_vector_string').at(0);
     const vector = vectorUpdate?.value?.at(0) as string;
     if (!isValidCvssVector('cvss2', vector)) {
       throw FunctionalError('This is not a valid CVSS2 vector', { vector });
     }
-    newUpdates.push(...parseCvssVector('cvss2', vector) as CvssFieldUpdate[]);
+    pushAll(newUpdates, parseCvssVector('cvss2', vector) as CvssFieldUpdate[]);
   } else if (updates.some((e) => e.key.startsWith('x_opencti_cvss_v2_'))) {
     const updatedVectorParts = updates.filter((e) => e.key.startsWith('x_opencti_cvss_v2_') && !e.key.includes('base') && !e.key.includes('temporal'));
     if (updatedVectorParts.length > 0) {
-      newUpdates.push(...updateCvssVector('cvss2', initial.x_opencti_cvss_v2_vector_string, updatedVectorParts, initial.x_opencti_cvss_v2_base_score) as CvssFieldUpdate[]);
+      pushAll(newUpdates, updateCvssVector('cvss2', initial.x_opencti_cvss_v2_vector_string, updatedVectorParts, initial.x_opencti_cvss_v2_base_score) as CvssFieldUpdate[]);
     }
   }
   if (updates.some((e) => e.key === 'x_opencti_cvss_vector_string')) {
@@ -563,7 +564,7 @@ export const generateVulnerabilitiesUpdates = (initial: Vulnerability, updates: 
       throw FunctionalError('This is not a valid CVSS3 vector', { vector });
     }
     const initialScore = updates.find((item) => item.key === 'x_opencti_cvss_base_score')?.value?.at?.(0);
-    newUpdates.push(...parseCvssVector('cvss3', vector, initialScore === undefined ? undefined : Number(initialScore)) as CvssFieldUpdate[]);
+    pushAll(newUpdates, parseCvssVector('cvss3', vector, initialScore === undefined ? undefined : Number(initialScore)) as CvssFieldUpdate[]);
   } else if (updates.some((e) => e.key.startsWith('x_opencti_cvss_'))) {
     let baseScore = initial.x_opencti_cvss_base_score;
     if (updates.some((e) => e.key === 'x_opencti_cvss_base_score')) {
@@ -572,7 +573,7 @@ export const generateVulnerabilitiesUpdates = (initial: Vulnerability, updates: 
     }
     const updatedVectorParts = updates.filter((e) => e.key.startsWith('x_opencti_cvss_') && !e.key.includes('base') && !e.key.includes('temporal') && !e.key.startsWith('x_opencti_cvss_v'));
     if (updatedVectorParts.length > 0) {
-      newUpdates.push(...updateCvssVector('cvss3', initial.x_opencti_cvss_vector_string, updatedVectorParts, baseScore) as CvssFieldUpdate[]);
+      pushAll(newUpdates, updateCvssVector('cvss3', initial.x_opencti_cvss_vector_string, updatedVectorParts, baseScore) as CvssFieldUpdate[]);
     }
   }
   if (updates.some((e) => e.key === 'x_opencti_cvss_v4_vector_string')) {
@@ -581,7 +582,7 @@ export const generateVulnerabilitiesUpdates = (initial: Vulnerability, updates: 
     if (!isValidCvssVector('cvss4', vector)) {
       throw FunctionalError('This is not a valid CVSS4 vector', { vector });
     }
-    newUpdates.push(...parseCvssVector('cvss4', vector) as CvssFieldUpdate[]);
+    pushAll(newUpdates, parseCvssVector('cvss4', vector) as CvssFieldUpdate[]);
   } else if (updates.some((e) => e.key.startsWith('x_opencti_cvss_v4_'))) {
     let baseScore = initial.x_opencti_cvss_v4_base_score;
     if (updates.some((e) => e.key === 'x_opencti_cvss_v4_base_score')) {
@@ -590,7 +591,7 @@ export const generateVulnerabilitiesUpdates = (initial: Vulnerability, updates: 
     }
     const updatedVectorParts = updates.filter((e) => e.key.startsWith('x_opencti_cvss_v4_') && !e.key.includes('base'));
     if (updatedVectorParts.length > 0) {
-      newUpdates.push(...updateCvssVector('cvss4', initial.x_opencti_cvss_v4_vector_string, updatedVectorParts, baseScore) as CvssFieldUpdate[]);
+      pushAll(newUpdates, updateCvssVector('cvss4', initial.x_opencti_cvss_v4_vector_string, updatedVectorParts, baseScore) as CvssFieldUpdate[]);
     }
   }
   return newUpdates;

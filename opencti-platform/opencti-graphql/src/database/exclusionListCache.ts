@@ -9,6 +9,7 @@ import { logApp, PLATFORM_INSTANCE_ID } from '../config/conf';
 import { redisGetExclusionListCache, redisSetExclusionListCache, redisUpdateExclusionListStatus } from './redis';
 import { FunctionalError } from '../config/errors';
 import type { HashInput } from '../generated/graphql';
+import { pushAll } from '../utils/arrayUtil';
 
 export interface ExclusionListCacheItem {
   id: string;
@@ -71,7 +72,7 @@ export const buildCacheFromAllExclusionLists = async (context: AuthContext) => {
     try {
       const currentExclusionFileContent = await getFileContent(currentExclusionList.file_id);
       const currentExclusionListCacheItem = await buildExclusionListCacheItem(currentExclusionList, currentExclusionFileContent);
-      builtCache.push(...currentExclusionListCacheItem);
+      pushAll(builtCache, currentExclusionListCacheItem);
     } catch (e) {
       logApp.error('[OPENCTI-MODULE][EXCLUSION-BUILD-MANAGER] Exclusion list could not be built properly.', { cause: e, exclusionList: currentExclusionList });
     }

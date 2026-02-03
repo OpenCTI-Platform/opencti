@@ -56,6 +56,7 @@ import { type BasicStoreEntityPir, ENTITY_TYPE_PIR } from '../modules/pir/pir-ty
 import { fromB64 } from '../utils/base64';
 import type { BasicStoreEntityDecayExclusionRule } from '../modules/decayRule/exclusions/decayExclusionRule-types';
 import { ENTITY_TYPE_DECAY_EXCLUSION_RULE } from '../modules/decayRule/exclusions/decayExclusionRule-types';
+import { pushAll } from '../utils/arrayUtil';
 
 const ADDS_TOPIC = `${TOPIC_PREFIX}*ADDED_TOPIC`;
 const EDITS_TOPIC = `${TOPIC_PREFIX}*EDIT_TOPIC`;
@@ -76,23 +77,23 @@ const workflowStatuses = (context: AuthContext) => {
 // extract the filters of the instance in case of resolved filters cache update
 export const extractResolvedFiltersFromInstance = (instance: BasicStoreCommon) => {
   const initialFilterGroup = JSON.stringify(emptyFilterGroup);
-  const filteringIds = []; // will contain the ids that are in the instance filters values
+  const filteringIds: string[] = []; // will contain the ids that are in the instance filters values
   if (instance.entity_type === ENTITY_TYPE_STREAM_COLLECTION) {
     const streamFilterIds = extractFilterGroupValuesToResolveForCache(
       JSON.parse((instance as BasicStreamEntity).filters ?? initialFilterGroup),
     );
-    filteringIds.push(...streamFilterIds);
+    pushAll(filteringIds, streamFilterIds);
   } else if (instance.entity_type === ENTITY_TYPE_TRIGGER) {
     const triggerFilterIds = extractFilterGroupValuesToResolveForCache(
       JSON.parse((instance as BasicTriggerEntity).filters ?? initialFilterGroup),
     );
-    filteringIds.push(...triggerFilterIds);
+    pushAll(filteringIds, triggerFilterIds);
   } else if (instance.entity_type === ENTITY_TYPE_CONNECTOR) {
     const connFilters = (instance as BasicStoreEntityConnector).connector_trigger_filters?.length > 0
       ? (instance as BasicStoreEntityConnector).connector_trigger_filters
       : initialFilterGroup;
     const connFilterIds = extractFilterGroupValuesToResolveForCache(JSON.parse(connFilters));
-    filteringIds.push(...connFilterIds);
+    pushAll(filteringIds, connFilterIds);
   } else if (instance.entity_type === ENTITY_TYPE_PLAYBOOK) {
     const definition = JSON.parse((instance as BasicStoreEntityPlaybook).playbook_definition) as ComponentDefinition;
     const configurations = definition.nodes.map((n) => JSON.parse(n.configuration));
@@ -107,16 +108,18 @@ export const extractResolvedFiltersFromInstance = (instance: BasicStoreCommon) =
       .map((config) => config.inPirFilters)
       .map((f) => (f ?? []).map((i: { value: string }) => i.value))
       .flat();
-    filteringIds.push(...playbookFilterIds, ...playbookInPirFilterIds);
+    pushAll(filteringIds, playbookFilterIds);
+    pushAll(filteringIds, playbookInPirFilterIds);
   } else if (instance.entity_type === ENTITY_TYPE_PIR) {
     const pirFilterIds = extractFilterGroupValuesToResolveForCache(JSON.parse((instance as BasicStoreEntityPir).pir_filters));
     const pirCriteriaIds = (instance as BasicStoreEntityPir).pir_criteria
       .map((c) => extractFilterGroupValuesToResolveForCache(JSON.parse(c.filters)))
       .flat();
-    filteringIds.push(...pirFilterIds, ...pirCriteriaIds);
+    pushAll(filteringIds, pirFilterIds);
+    pushAll(filteringIds, pirCriteriaIds);
   } else if (instance.entity_type === ENTITY_TYPE_DECAY_EXCLUSION_RULE) {
     const decayExclusionRuleIds = extractFilterGroupValuesToResolveForCache(JSON.parse((instance as BasicStoreEntityDecayExclusionRule).decay_exclusion_filters));
-    filteringIds.push(...decayExclusionRuleIds);
+    pushAll(filteringIds, decayExclusionRuleIds);
   } else {
     throw FunctionalError(
       'Resolved filters are only saved in cache for streams, triggers, connectors and playbooks, not for this entity type',
@@ -228,7 +231,7 @@ const platformUsers = (context: AuthContext) => {
     const userIds = users.map((u) => u.internal_id);
     const refreshValues = (values ?? []).filter((user) => !userIds.includes(user.internal_id));
     const reloadedUsers = await loadUsers(userIds);
-    refreshValues.push(...reloadedUsers);
+    pushAll(refreshValues, reloadedUsers);
     return refreshValues;
   };
   const addUser = async (values: AuthUser[] | null, instance: BasicStoreCommon) => {

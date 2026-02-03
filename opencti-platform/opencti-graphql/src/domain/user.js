@@ -91,6 +91,7 @@ import { doYield } from '../utils/eventloop-utils';
 import { sanitizeUser } from '../utils/templateContextSanitizer';
 import { safeRender } from '../utils/safeEjs.client';
 import { totp } from '../utils/totp';
+import { pushAll } from '../utils/arrayUtil';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -369,7 +370,7 @@ export const computeAvailableMarkings = (userMarkings, allMarkings) => {
       const lowerMatchingMarkings = R.filter((m) => {
         return userMarking.id !== m.id && m.definition_type === type && m.x_opencti_order <= order;
       }, allMarkings);
-      computedMarkings.push(...lowerMatchingMarkings);
+      pushAll(computedMarkings, lowerMatchingMarkings);
     } else {
       const error = { marking: userMarking, available_markings: allMarkings };
       throw UnsupportedError('[ACCESS] USER MARKING INACCESSIBLE', { error });
