@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
 import IconButton from '@common/button/IconButton';
 import { Add } from '@mui/icons-material';
 import inject18n from '../../../../components/i18n';
@@ -10,38 +9,6 @@ import { QueryRenderer } from '../../../../relay/environment';
 import AddSoftwaresLines, { addSoftwaresLinesQuery } from './AddSoftwaresLines';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
 import Drawer from '../../common/drawer/Drawer';
-
-const styles = (theme) => ({
-  title: {
-    float: 'left',
-  },
-  search: {
-    marginLeft: 'auto',
-    marginRight: ' 20px',
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  container: {
-    padding: 0,
-  },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.grey[700],
-  },
-  avatar: {
-    width: 24,
-    height: 24,
-  },
-});
 
 class AddSoftwares extends Component {
   constructor(props) {
@@ -62,7 +29,7 @@ class AddSoftwares extends Component {
   }
 
   render() {
-    const { t, classes, vulnerability, vulnerabilitySoftwares, relationshipType } = this.props;
+    const { t, vulnerability, vulnerabilitySoftwares, relationshipType } = this.props;
     const paginationOptions = {
       search: this.state.search,
     };
@@ -79,14 +46,15 @@ class AddSoftwares extends Component {
           open={this.state.open}
           onClose={this.handleClose.bind(this)}
           title={t('Add software')}
-          header={(
-            <div className={classes.search}>
+          subHeader={{
+            left: [(
               <SearchInput
                 variant="inDrawer"
                 onSubmit={this.handleSearch.bind(this)}
+                key="leftInput"
               />
-            </div>
-          )}
+            )],
+          }}
         >
           <QueryRenderer
             query={addSoftwaresLinesQuery}
@@ -124,4 +92,4 @@ AddSoftwares.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(AddSoftwares);
+export default compose(inject18n)(AddSoftwares);

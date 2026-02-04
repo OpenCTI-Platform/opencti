@@ -567,12 +567,15 @@ class StixCoreRelationshipCreationFromRelation extends Component {
           open={open}
           onClose={this.handleClose.bind(this)}
           title={t('Create a relationship')}
-          header={(
-            <SearchInput
-              variant="inDrawer"
-              onSubmit={this.handleSearch.bind(this)}
-            />
-          )}
+          subHeader={{
+            left: [(
+              <SearchInput
+                variant="inDrawer"
+                onSubmit={this.handleSearch.bind(this)}
+                key="leftInput"
+              />
+            )],
+          }}
         >
           <QueryRenderer
             query={stixCoreRelationshipCreationFromRelationQuery}
