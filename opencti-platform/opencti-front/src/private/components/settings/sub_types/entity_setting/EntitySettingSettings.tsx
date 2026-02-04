@@ -137,7 +137,7 @@ const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProp
                   }
                 />
               )}
-              label={<Typography variant="body2">{t_i18n('Hide in the platform')}</Typography>}
+              label={t_i18n('Hide in the platform')}
             />
           </FormGroup>
         </div>
@@ -184,7 +184,7 @@ const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProp
                   }
                 />
               )}
-              label={<Typography variant="body2">{t_i18n('Create external reference at upload')}</Typography>}
+              label={t_i18n('Create external reference at upload')}
             />
           </FormGroup>
         </div>
@@ -222,7 +222,7 @@ const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProp
                   }
                 />
               )}
-              label={<Typography variant="body2">{t_i18n('Enforce references')}</Typography>}
+              label={t_i18n('Enforce references')}
             />
           </FormGroup>
         </Box>
