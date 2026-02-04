@@ -89,6 +89,8 @@ export const searchStixCoreObjectsLinesFragment = graphql`
   @argumentDefinitions(
     types: { type: "[String]" }
     search: { type: "String" }
+    useWildcardPrefix: { type: "Boolean" }
+    useFuzzySearch: { type: "Boolean" }
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
     orderBy: { type: "StixCoreObjectsOrdering", defaultValue: name }
@@ -99,6 +101,8 @@ export const searchStixCoreObjectsLinesFragment = graphql`
     globalSearch(
       types: $types
       search: $search
+      useWildcardPrefix: $useWildcardPrefix
+      useFuzzySearch: $useFuzzySearch
       first: $count
       after: $cursor
       orderBy: $orderBy
