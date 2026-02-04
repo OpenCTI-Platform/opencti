@@ -423,14 +423,12 @@ describe('platformCrypto: JWT signing and verification', () => {
     const factory = createCryptoKeyFactory(testSeed);
     const keyPair = await factory.deriveEd25519KeyPair(['test', 'jwt-expired'], 1);
 
+    // Create a token that already expired 1 hour ago
     const jwt = new SignJWT({ sub: 'user123' })
-      .setIssuedAt()
-      .setExpirationTime('0s'); // Already expired
+      .setIssuedAt(Math.floor(Date.now() / 1000) - 3600) // Issued 1 hour ago
+      .setExpirationTime(Math.floor(Date.now() / 1000) - 1); // Expired 1 second ago
 
     const token = await keyPair.signJwt(jwt);
-
-    // Wait a bit to ensure expiration
-    await new Promise((resolve) => setTimeout(resolve, 100));
 
     await expect(keyPair.verifyJwt(token)).rejects.toThrow();
   });
