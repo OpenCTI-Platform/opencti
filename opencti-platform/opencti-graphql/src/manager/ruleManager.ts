@@ -10,7 +10,7 @@ import { createEntity, patchAttribute, stixLoadById, storeLoadByIdWithRefs } fro
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, isNotEmptyField, READ_DATA_INDICES } from '../database/utils';
 import { ABSTRACT_STIX_RELATIONSHIP, OPENCTI_NAMESPACE, RULE_PREFIX } from '../schema/general';
 import { ENTITY_TYPE_RULE_MANAGER } from '../schema/internalObject';
-import {ALREADY_DELETED_ERROR, FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR} from '../config/errors';
+import { ALREADY_DELETED_ERROR, FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR } from '../config/errors';
 import { getParentTypes } from '../schema/schemaUtils';
 import { isBasicRelationship, isStixRelationship } from '../schema/stixRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
@@ -32,7 +32,7 @@ import { isStixObject } from '../schema/stixCoreObject';
 import { buildCreateEvent, EVENT_CURRENT_VERSION, LIVE_STREAM_NAME, type StreamProcessor } from '../database/stream/stream-utils';
 import jsonCanonicalize from 'canonicalize';
 import { v5 as uuidv5 } from 'uuid';
-import {getDraftContext} from "../utils/draftContext";
+import { getDraftContext } from '../utils/draftContext';
 
 import { pushAll } from '../utils/arrayUtil';
 
