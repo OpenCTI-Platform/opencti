@@ -157,7 +157,7 @@ const ThemeDark = (
         border2: '#1C253A',
       },
       gradient: {
-        background: 'linear-gradient(100.35deg, #070D19 0%, #0C1524 100%)',
+        background: 'linear-gradient(100.35deg, #070D19 0%, #08101d 100%)',
         ia: 'linear-gradient(90deg, #D6C2FA 0.67%, #B286FF 100.67%)',
         focus: 'linear-gradient(90deg, #0FBCFF -3.68%, #00F1BD 106.62%)',
       },
