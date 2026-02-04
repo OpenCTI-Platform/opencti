@@ -17,6 +17,8 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import Card from '../../../../components/common/card/Card';
 import useHelper from '../../../../utils/hooks/useHelper';
+import SubTypeStatusPopover from './SubTypeWorkflowPopover';
+import { StatusScopeEnum } from '../../../../utils/statusConstants';
 
 const entitySettingSubscription = graphql`
   subscription SubTypeOverviewEntitySettingSubscription($id: ID!) {
@@ -54,7 +56,7 @@ const SubTypeOverview = () => {
 
   const hasTemplates = subType.settings?.availableSettings.includes('templates');
 
-  const hasRequestAccessConfig = subType.settings?.requestAccessConfiguration && isEnterpriseEdition && subType.settings?.availableSettings.includes('request_access_workflow');
+  const hasRequestAccessConfig = true; // subType.settings?.requestAccessConfiguration && isEnterpriseEdition && subType.settings?.availableSettings.includes('request_access_workflow');
 
   const { isFeatureEnable } = useHelper();
   const isDraftWorkflowFeatureEnabled = isFeatureEnable('DRAFT_WORKFLOW');
@@ -78,7 +80,11 @@ const SubTypeOverview = () => {
             <div style={{ display: 'flex' }}>
               <Grid item xs={hasRequestAccessConfig ? 6 : 12}>
                 {subType.settings?.availableSettings.includes('workflow_configuration')
-                  && <GlobalWorkflowSettings data={subType} subTypeId={subType.id} workflowEnabled={subType.workflowEnabled ?? false} />
+                  && (
+                    <Card padding="none" title="global workflow" action={<SubTypeStatusPopover subTypeId={subType.id} scope={StatusScopeEnum.GLOBAL} />}>
+                      <GlobalWorkflowSettings data={subType} subTypeId={subType.id} workflowEnabled={subType.workflowEnabled ?? false} />
+                    </Card>
+                  )
                 }
               </Grid>
               {hasRequestAccessConfig && (

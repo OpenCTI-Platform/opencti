@@ -2,7 +2,7 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Switch from '@mui/material/Switch';
 import Grid from '@mui/material/Grid';
-import { Box, Tooltip } from '@mui/material';
+import { Box, Tooltip, Typography } from '@mui/material';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import { InformationOutline } from 'mdi-material-ui';
@@ -137,7 +137,7 @@ const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProp
                   }
                 />
               )}
-              label={t_i18n('Hide in the platform')}
+              label={<Typography variant="body2">{t_i18n('Hide in the platform')}</Typography>}
             />
           </FormGroup>
         </div>
@@ -184,7 +184,7 @@ const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProp
                   }
                 />
               )}
-              label={t_i18n('Create external reference at upload')}
+              label={<Typography variant="body2">{t_i18n('Create external reference at upload')}</Typography>}
             />
           </FormGroup>
         </div>
@@ -222,7 +222,7 @@ const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProp
                   }
                 />
               )}
-              label={t_i18n('Enforce references')}
+              label={<Typography variant="body2">{t_i18n('Enforce references')}</Typography>}
             />
           </FormGroup>
         </Box>

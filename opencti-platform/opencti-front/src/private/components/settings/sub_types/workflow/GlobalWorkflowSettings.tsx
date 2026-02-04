@@ -41,13 +41,13 @@ const GlobalWorkflowSettings = ({ subTypeId, data, workflowEnabled }: GlobalWork
   }));
   return (
     <>
-      <Label action={(
+      {/* <Label action={(
         <SubTypeStatusPopover subTypeId={subTypeId} scope={StatusScopeEnum.GLOBAL} />
       )}
       >
         {t_i18n('Global Workflow')}
 
-      </Label>
+      </Label> */}
       <ItemStatusTemplate
         statuses={statusList}
         disabled={!workflowEnabled}

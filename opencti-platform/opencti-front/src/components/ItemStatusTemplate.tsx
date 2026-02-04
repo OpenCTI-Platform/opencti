@@ -4,6 +4,8 @@ import { ArrowRightAltOutlined } from '@mui/icons-material';
 import Box from '@mui/material/Box';
 import { useFormatter } from './i18n';
 import { hexToRGB } from '../utils/Colors';
+import Tag from './common/tag/Tag';
+import { Stack } from '@mui/material';
 
 export interface StatusTemplateType {
   id: string;
@@ -42,54 +44,26 @@ const ItemStatusTemplate = ({ statuses, disabled }: ItemStatusTemplateProps) => 
   }
 
   const statusByOrder = Object.values(Object.groupBy(statuses, ({ order }) => order));
+
   return (
-    <div style={{
-      display: 'inline-flex',
-      flexWrap: 'wrap',
-      alignItems: 'center',
-    }}
-    >
-      {statusByOrder.map((statusesForIndex, order) => (
-        <div
-          key={`statuses-order-${order}`}
-          style={{ display: 'inline-flex', alignItems: 'center', marginBottom: 8 }}
-        >
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {
-              statusesForIndex?.map((status) => (
-                <div key={status.id}>
-                  <Chip
-                    variant="outlined"
-                    label={status.template?.name}
-                    style={{
-                      fontSize: 12,
-                      lineHeight: '12px',
-                      height: 25,
-                      marginRight: 7,
-                      textTransform: 'uppercase',
-                      borderRadius: 4,
-                      width: 100,
-                      color: status.template?.color,
-                      borderColor: status.template?.color,
-                      backgroundColor: hexToRGB(
-                        status.template?.color ?? '#000000',
-                      ),
-                    }}
-                  />
-                </div>
-              ))
-            }
-          </div>
-          {
-            order < statusByOrder.length - 1 && (
-              <Box sx={{ display: 'flex', marginRight: 1 }}>
-                <ArrowRightAltOutlined />
-              </Box>
-            )
-          }
-        </div>
+    <Stack direction="row" alignItems="center" gap={1} flexWrap="wrap">
+      {statusByOrder.map((statusesForIndex, index) => (
+        <React.Fragment key={`statuses-order-${index}`}>
+          <Stack direction="column" gap={1}>
+            {statusesForIndex?.map((status) => (
+              <Tag
+                key={status.id}
+                label={status.template?.name}
+                color={hexToRGB(status.template?.color ?? '#000000')}
+              />
+            ))}
+          </Stack>
+          {index < statusByOrder.length - 1 && (
+            <ArrowRightAltOutlined />
+          )}
+        </React.Fragment>
       ))}
-    </div>
+    </Stack>
   );
 };
 export default ItemStatusTemplate;
