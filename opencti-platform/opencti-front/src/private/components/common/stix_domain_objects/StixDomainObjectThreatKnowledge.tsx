@@ -278,7 +278,10 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
                     diffValue={difference}
                     icon={(
                       <DescriptionOutlined
-                        style={{ color: theme.palette.text.secondary }}
+                        style={{
+                          color: theme.palette.text.secondary,
+                          opacity: 0.35,
+                        }}
                         fontSize="large"
                       />
                     )}
@@ -323,8 +326,22 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
                     diffLabel={t_i18n('30 days')}
                     diffValue={difference}
                     icon={displayObservablesStats
-                      ? <HexagonMultipleOutline style={{ color: theme.palette.text.secondary }} fontSize="large" />
-                      : <ShieldSearch style={{ color: theme.palette.text.secondary }} fontSize="large" />
+                      ? (
+                          <HexagonMultipleOutline
+                            style={{
+                              color: theme.palette.text.secondary,
+                              opacity: 0.35 }}
+                            fontSize="large"
+                          />
+                        )
+                      : (
+                          <ShieldSearch
+                            style={{
+                              color: theme.palette.text.secondary,
+                              opacity: 0.35 }}
+                            fontSize="large"
+                          />
+                        )
                     }
                   />
                 );
@@ -362,7 +379,10 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
                     diffValue={difference}
                     icon={(
                       <DeviceHubOutlined
-                        style={{ color: theme.palette.text.secondary }}
+                        style={{
+                          color: theme.palette.text.secondary,
+                          opacity: 0.35,
+                        }}
                         fontSize="large"
                       />
                     )}
