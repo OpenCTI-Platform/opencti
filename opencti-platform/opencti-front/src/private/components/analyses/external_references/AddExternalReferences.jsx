@@ -12,7 +12,6 @@ import Drawer from '../../common/drawer/Drawer';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
 import AddExternalReferencesLines, { addExternalReferencesLinesQuery } from './AddExternalReferencesLines';
-import { Stack } from '@mui/material';
 
 const AddExternalReferences = ({
   stixCoreObjectOrStixCoreRelationshipId,
@@ -56,82 +55,83 @@ const AddExternalReferences = ({
         title={t_i18n('Add external references')}
         open={open}
         onClose={handleClose}
-      >
-        <Stack gap={2}>
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-          >
-            <SearchInput
-              variant="inDrawer"
-              onSubmit={handleSearch}
-            />
+        subHeader={{
+          right: [(
             <Button
               onClick={() => setDialogOpen(true)}
+              key="rightButton"
             >
               {t_i18n('Create')} {t_i18n('entity_External-Reference')}
             </Button>
-          </Stack>
-          <QueryRenderer
-            query={addExternalReferencesLinesQuery}
-            variables={paginationOptions}
-            render={({ props }) => {
-              if (props) {
-                return (
-                  <AddExternalReferencesLines
-                    stixCoreObjectOrStixCoreRelationshipId={
-                      stixCoreObjectOrStixCoreRelationshipId
-                    }
-                    stixCoreObjectOrStixCoreRelationshipReferences={
-                      stixCoreObjectOrStixCoreRelationshipReferences
-                    }
-                    data={props}
-                    paginationOptions={paginationOptions}
-                    open={false}
-                    openContextual={dialogOpen}
-                    handleCloseContextual={() => setDialogOpen(false)}
-                    search={search}
-                  />
-                );
-              }
+          )],
+          left: [(
+            <SearchInput
+              variant="inDrawer"
+              onSubmit={handleSearch}
+              key="leftInput"
+            />
+          )],
+        }}
+      >
+        <QueryRenderer
+          query={addExternalReferencesLinesQuery}
+          variables={paginationOptions}
+          render={({ props }) => {
+            if (props) {
               return (
-                <List>
-                  {Array.from(Array(20), (e, i) => (
-                    <ListItem key={i} divider={true}>
-                      <ListItemIcon>
+                <AddExternalReferencesLines
+                  stixCoreObjectOrStixCoreRelationshipId={
+                    stixCoreObjectOrStixCoreRelationshipId
+                  }
+                  stixCoreObjectOrStixCoreRelationshipReferences={
+                    stixCoreObjectOrStixCoreRelationshipReferences
+                  }
+                  data={props}
+                  paginationOptions={paginationOptions}
+                  open={false}
+                  openContextual={dialogOpen}
+                  handleCloseContextual={() => setDialogOpen(false)}
+                  search={search}
+                />
+              );
+            }
+            return (
+              <List>
+                {Array.from(Array(20), (e, i) => (
+                  <ListItem key={i} divider={true}>
+                    <ListItemIcon>
+                      <Skeleton
+                        animation="wave"
+                        variant="circular"
+                        width={30}
+                        height={30}
+                      />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={(
                         <Skeleton
                           animation="wave"
-                          variant="circular"
-                          width={30}
-                          height={30}
+                          variant="rectangular"
+                          width="90%"
+                          height={15}
+                          style={{ marginBottom: 10 }}
                         />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={(
-                          <Skeleton
-                            animation="wave"
-                            variant="rectangular"
-                            width="90%"
-                            height={15}
-                            style={{ marginBottom: 10 }}
-                          />
-                        )}
-                        secondary={(
-                          <Skeleton
-                            animation="wave"
-                            variant="rectangular"
-                            width="90%"
-                            height={15}
-                          />
-                        )}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              );
-            }}
-          />
-        </Stack>
+                      )}
+                      secondary={(
+                        <Skeleton
+                          animation="wave"
+                          variant="rectangular"
+                          width="90%"
+                          height={15}
+                        />
+                      )}
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            );
+          }}
+        />
       </Drawer>
     </>
   );

@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Dialog, DialogContent, DialogTitle, IconButton, List, ListItem, ListItemIcon, ListItemText, Skeleton, Stack } from '@mui/material';
+import { Dialog, DialogContent, DialogTitle, IconButton, List, ListItem, ListItemIcon, ListItemText, Skeleton } from '@mui/material';
 import Button from '@common/button/Button';
 import { Add } from '@mui/icons-material';
 import Drawer from '@components/common/drawer/Drawer';
@@ -71,81 +71,83 @@ const AddNotesFunctionalComponent: FunctionComponent<AddNotesFunctionalComponent
         open={open}
         onClose={handleClose}
         title={t_i18n('Add notes')}
-      >
-        <Stack gap={2}>
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-          >
-            <SearchInput
-              variant="noAnimation"
-              onSubmit={handleSearch}
-            />
+        subHeader={{
+          right: [(
             <Button
               onClick={handleDialogOpen}
+              key="rightButton"
             >
               {t_i18n('Create')} {t_i18n('entity_Note')}
             </Button>
-          </Stack>
-          <QueryRenderer
-            query={addNotesLinesQuery}
-            variables={{
-              search,
-              count: 20,
-            }}
-            render={({ props }: { props: AddNotesLinesQuery$data }) => {
-              if (props) {
-                return (
-                  <AddNotesLines
-                    stixCoreObjectOrStixCoreRelationshipId={
-                      stixCoreObjectOrStixCoreRelationshipId
-                    }
-                    stixCoreObjectOrStixCoreRelationshipNotes={
-                      stixCoreObjectOrStixCoreRelationshipNotes.notes?.edges ?? []
-                    }
-                    data={props}
-                    paginationOptions={paginationOptions}
-                  />
-                );
-              }
+
+          )],
+          left: [(
+            <SearchInput
+              variant="noAnimation"
+              onSubmit={handleSearch}
+              key="leftInput"
+            />
+          )],
+        }}
+      >
+        <QueryRenderer
+          query={addNotesLinesQuery}
+          variables={{
+            search,
+            count: 20,
+          }}
+          render={({ props }: { props: AddNotesLinesQuery$data }) => {
+            if (props) {
               return (
-                <List>
-                  {Array.from(Array(20), (_, i) => (
-                    <ListItem key={i} divider={true}>
-                      <ListItemIcon>
+                <AddNotesLines
+                  stixCoreObjectOrStixCoreRelationshipId={
+                    stixCoreObjectOrStixCoreRelationshipId
+                  }
+                  stixCoreObjectOrStixCoreRelationshipNotes={
+                    stixCoreObjectOrStixCoreRelationshipNotes.notes?.edges ?? []
+                  }
+                  data={props}
+                  paginationOptions={paginationOptions}
+                />
+              );
+            }
+            return (
+              <List>
+                {Array.from(Array(20), (_, i) => (
+                  <ListItem key={i} divider={true}>
+                    <ListItemIcon>
+                      <Skeleton
+                        animation="wave"
+                        variant="circular"
+                        width={30}
+                        height={30}
+                      />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={(
                         <Skeleton
                           animation="wave"
-                          variant="circular"
-                          width={30}
-                          height={30}
+                          variant="rectangular"
+                          width="90%"
+                          height={15}
+                          style={{ marginBottom: 10 }}
                         />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={(
-                          <Skeleton
-                            animation="wave"
-                            variant="rectangular"
-                            width="90%"
-                            height={15}
-                            style={{ marginBottom: 10 }}
-                          />
-                        )}
-                        secondary={(
-                          <Skeleton
-                            animation="wave"
-                            variant="rectangular"
-                            width="90%"
-                            height={15}
-                          />
-                        )}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              );
-            }}
-          />
-        </Stack>
+                      )}
+                      secondary={(
+                        <Skeleton
+                          animation="wave"
+                          variant="rectangular"
+                          width="90%"
+                          height={15}
+                        />
+                      )}
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            );
+          }}
+        />
       </Drawer>
       <Dialog
         open={dialogOpen}

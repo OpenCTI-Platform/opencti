@@ -11,7 +11,6 @@ import { QueryRenderer } from '../../../../relay/environment';
 import AddLocationsLines, { addLocationsLinesQuery } from './AddLocationsLines';
 import LocationCreation from '../../common/location/LocationCreation';
 import { insertNode } from '../../../../utils/store';
-import { Stack } from '@mui/material';
 
 const styles = () => ({
   search: {
@@ -62,38 +61,42 @@ class AddLocations extends Component {
           open={this.state.open}
           onClose={this.handleClose.bind(this)}
           title={t('Add locations')}
-        >
-          <Stack gap={2}>
-            <Stack gap={1} direction="row" justifyContent="space-between">
-              <SearchInput
-                variant="inDrawer"
-                onSubmit={this.handleSearch.bind(this)}
-              />
+          subHeader={{
+            right: [(
               <LocationCreation
                 display={this.state.open}
                 contextual={true}
                 inputValue={this.state.search}
                 paginationOptions={paginationOptions}
                 updater={updater}
+                key="rightButton"
               />
-            </Stack>
-            <QueryRenderer
-              query={addLocationsLinesQuery}
-              variables={{
-                search: this.state.search,
-                count: 20,
-              }}
-              render={({ props }) => {
-                return (
-                  <AddLocationsLines
-                    intrusionSet={intrusionSet}
-                    intrusionSetLocations={intrusionSetLocations}
-                    data={props}
-                  />
-                );
-              }}
-            />
-          </Stack>
+            )],
+            left: [(
+              <SearchInput
+                variant="inDrawer"
+                onSubmit={this.handleSearch.bind(this)}
+                key="leftInput"
+              />
+            )],
+          }}
+        >
+          <QueryRenderer
+            query={addLocationsLinesQuery}
+            variables={{
+              search: this.state.search,
+              count: 20,
+            }}
+            render={({ props }) => {
+              return (
+                <AddLocationsLines
+                  intrusionSet={intrusionSet}
+                  intrusionSetLocations={intrusionSetLocations}
+                  data={props}
+                />
+              );
+            }}
+          />
         </Drawer>
       </>
     );
