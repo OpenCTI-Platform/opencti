@@ -1,5 +1,6 @@
 import type { AuthContext, AuthUser } from '../../types/user';
 import {
+  type ConfigurationTypeInput,
   type EditInput,
   FilterMode,
   FilterOperator,
@@ -26,6 +27,48 @@ import { EnvStrategyType, getConfigurationAdminEmail, isAuthenticationEditionLoc
 export const isConfigurationAdminUser = (user: AuthUser): boolean => {
   return user.user_email === getConfigurationAdminEmail();
 };
+
+// Encryption region
+
+// Warn: if you change this list, you will need to write a migration on existing SSO entities
+export const AUTH_SECRET_LIST = [
+  'client_secret', // OpenID
+  'bind_credentials', // LDAP
+  'privateKey', // SAML
+  'decryptionPvk', // SAML
+];
+
+export const encryptAuthValue = async (value: string) => {
+  // TODO
+  // const authenticationAesKey = await factory.deriveAesKey(['elastic', 'authentication'], 1); => need to be done only once maybe ?
+  // const encrypted = await authenticationAesKey.encrypt(value);
+  return '***' + value;
+};
+
+export const decryptAuthValue = async (value: string) => {
+  // TODO
+  // const authenticationAesKey = await factory.deriveAesKey(['elastic', 'authentication'], 1); => need to be done only once maybe ?
+  // const clear = await authenticationAesKey.decrypt(value);
+  return value.substring(3);
+};
+
+const encryptConfigurationSecrets = async (configurationWithClear: ConfigurationTypeInput[]) => {
+  const configurationWithSecrets: ConfigurationTypeInput[] = [];
+  if (configurationWithClear) {
+    for (let i = 0; i < configurationWithClear?.length; i++) {
+      const currentConfig = configurationWithClear[i];
+      if (AUTH_SECRET_LIST.some((key) => key === currentConfig.key)) {
+        const encryptedValue = await encryptAuthValue(currentConfig.value);
+        configurationWithSecrets.push({ key: currentConfig.key, value: encryptedValue, type: 'secret' });
+      } else {
+        configurationWithSecrets.push(currentConfig);
+      }
+    }
+  }
+  return configurationWithSecrets;
+};
+
+// End Encryption region
 
 const toEnv = (newStrategyType: StrategyType) => {
   switch (newStrategyType) {
@@ -80,7 +123,7 @@ export const findSingleSignOnPaginated = async (context: AuthContext, user: Auth
 // For migration purpose, we need to be able to create an SSO enabled, but not start it immediately
 export const internalAddSingleSignOn = async (context: AuthContext, user: AuthUser, input: SingleSignOnAddInput, skipRegister: boolean) => {
   const defaultOps = { created_at: now(), updated_at: now() };
-  const singleSignOnInput = { ...input, ...defaultOps };
+
   if (input.strategy === StrategyType.LocalStrategy) {
     const filters = {
       mode: FilterMode.And,
@@ -92,6 +135,14 @@ export const internalAddSingleSignOn = async (context: AuthContext, user: AuthUs
       throw FunctionalError('Local Strategy already exists in database');
     }
   }
+  let configurationWithSecrets: ConfigurationTypeInput[] = [];
+  if (input.configuration) {
+    configurationWithSecrets = await encryptConfigurationSecrets(input.configuration);
+  }
+
+  // Overriding configuration
+  const singleSignOnInput = { ...input, ...defaultOps, configuration: configurationWithSecrets };
+
   const created: BasicStoreEntitySingleSignOn = await createEntity(
     context,
     user,
@@ -132,7 +183,22 @@ export const fieldPatchSingleSignOn = async (context: AuthContext, user: AuthUse
     throw FunctionalError(`Single sign on ${id} cannot be found`);
   }
 
-  const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_SINGLE_SIGN_ON, input);
+  const finalInput: EditInput[] = [];
+  for (let i = 0; i < input.length; i++) {
+    // What about object_path ???
+    const currentInput = input[i];
+    if (currentInput.key === 'configuration') {
+      const configurationEncrypted = await encryptConfigurationSecrets(currentInput.value[0]);
+      const overrideEditInput: EditInput = {
+        key: 'configuration', value: [configurationEncrypted],
+      };
+      finalInput.push(overrideEditInput);
+    } else {
+      finalInput.push(currentInput);
+    }
+  }
+
+  const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_SINGLE_SIGN_ON, finalInput);
   const singleSignOnEntityAfterUpdate: BasicStoreEntitySingleSignOn = element;
   await publishUserAction({
     user,

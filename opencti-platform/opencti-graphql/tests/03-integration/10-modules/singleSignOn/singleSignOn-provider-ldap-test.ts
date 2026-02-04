@@ -17,7 +17,7 @@ describe('LDAP Single sign on Provider coverage tests', () => {
           { key: 'searchFilter', type: 'string', value: 'mail={{username}}' },
         ],
       };
-      const ssoConfiguration: any = convertKeyValueToJsConfiguration(ssoEntity as BasicStoreEntitySingleSignOn);
+      const ssoConfiguration: any = await convertKeyValueToJsConfiguration(ssoEntity as BasicStoreEntitySingleSignOn);
 
       const result = computeLdapUserInfo(ssoConfiguration, ldapProfile);
       expect(result.email).toBe('ldap1@opencti.io');
@@ -42,7 +42,7 @@ describe('LDAP Single sign on Provider coverage tests', () => {
           { key: 'mail_attribute', type: 'string', value: 'theMail' },
         ],
       };
-      const ssoConfiguration: any = convertKeyValueToJsConfiguration(ssoEntity as BasicStoreEntitySingleSignOn);
+      const ssoConfiguration: any = await convertKeyValueToJsConfiguration(ssoEntity as BasicStoreEntitySingleSignOn);
 
       const result = computeLdapUserInfo(ssoConfiguration, ldapProfile);
       expect(result.email).toBe('samltestuser1@opencti.io');

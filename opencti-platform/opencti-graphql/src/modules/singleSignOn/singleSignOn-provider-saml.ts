@@ -38,9 +38,7 @@ export const buildSAMLOptions = async (ssoEntity: BasicStoreEntitySingleSignOn) 
     const ssoOtherOptions: any = {};
     for (let i = 0; i < ssoEntity.configuration.length; i++) {
       const currentConfig = ssoEntity.configuration[i];
-      if (isNotEmptyField(currentConfig.value)) {
-        ssoOtherOptions[currentConfig.key] = parseValueAsType(currentConfig.value, currentConfig.type);
-      }
+      ssoOtherOptions[currentConfig.key] = await parseValueAsType(currentConfig);
     }
     return { ...ssoOptions, ...ssoOtherOptions } as PassportSamlConfig;
   } else {
@@ -106,7 +104,7 @@ export const registerSAMLStrategy = async (ssoEntity: BasicStoreEntitySingleSign
   logAuthInfo('Configuring SAML', EnvStrategyType.STRATEGY_SAML, { id: ssoEntity.id, identifier: ssoEntity.identifier, providerRef });
   const providerName = ssoEntity?.label || ssoEntity?.identifier || ssoEntity.id;
   const samlOptions: PassportSamlConfig = await buildSAMLOptions(ssoEntity);
-  const ssoConfiguration: any = convertKeyValueToJsConfiguration(ssoEntity);
+  const ssoConfiguration: any = await convertKeyValueToJsConfiguration(ssoEntity);
 
   const samlLoginCallback: VerifyWithoutRequest = (profile, done) => {
     const groupsManagement = ssoEntity.groups_management;

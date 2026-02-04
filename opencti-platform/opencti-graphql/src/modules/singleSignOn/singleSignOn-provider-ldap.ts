@@ -60,7 +60,7 @@ export const registerLDAPStrategy = async (ssoEntity: BasicStoreEntitySingleSign
 
   logAuthInfo('Configuring LDAP', EnvStrategyType.STRATEGY_LDAP, { id: ssoEntity.id, identifier: ssoEntity.identifier, providerRef });
 
-  const ssoConfiguration: any = convertKeyValueToJsConfiguration(ssoEntity);
+  const ssoConfiguration: any = await convertKeyValueToJsConfiguration(ssoEntity);
   const providerName = ssoConfiguration?.label || providerRef;
 
   const allowSelfSigned = ssoConfiguration.allow_self_signed || ssoConfiguration.allow_self_signed === 'true';

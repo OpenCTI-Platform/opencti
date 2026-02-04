@@ -38,6 +38,11 @@ export const SINGLE_SIGN_ON_CREATE = gql`
             name
             strategy
             enabled
+            configuration {
+                key
+                value
+                type
+            }
         }
     }
 `;
@@ -82,8 +87,9 @@ describe('Single Sign On', () => {
       identifier: 'test1',
       configuration: [
         { key: 'callbackUrl', value: 'http://myopencti/auth/samlTestDomain/callback', type: 'string' },
-        { key: 'idpCert', value: '21341234', type: 'string' },
+        { key: 'cert', value: '21341234', type: 'string' },
         { key: 'issuer', value: 'issuer', type: 'string' },
+        { key: 'privateKey', value: 'myPK', type: 'string' },
       ],
     };
     it('should not create single sign on entity without SETAUTH capa', async () => {
@@ -102,7 +108,18 @@ describe('Single Sign On', () => {
       expect(singleSignOn?.data?.singleSignOnAdd.name).toBe('test name 1');
       createdSingleSignOn1Id = singleSignOn?.data?.singleSignOnAdd.id;
       createdSingleSighOns.push(createdSingleSignOn1Id);
+
+      const configurationData: ConfigurationTypeInput[] = singleSignOn?.data?.singleSignOnAdd?.configuration as ConfigurationTypeInput[];
+      const certData = configurationData.find((config) => config.key === 'cert');
+      expect(certData).toBe('21341234');
+      const callbackUrlData = configurationData.find((config) => config.key === 'callbackUrl');
+      expect(callbackUrlData).toBe('http://myopencti/auth/samlTestDomain/callback');
+      const issuerData = configurationData.find((config) => config.key === 'issuer');
+      expect(issuerData).toBe('issuer');
+      const privateKeyData = configurationData.find((config) => config.key === 'privateKey');
+      expect(privateKeyData).not.toBe('myPK'); // should be encrypted
     });
+
     it('should create another single sign on entity', async () => {
       const createInput2: SingleSignOnAddInput = {
         name: 'test name 2',

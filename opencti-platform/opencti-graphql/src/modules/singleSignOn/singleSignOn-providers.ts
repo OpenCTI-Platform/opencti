@@ -3,7 +3,7 @@ import { logApp } from '../../config/conf';
 import LocalStrategy from 'passport-local';
 import { login } from '../../domain/user';
 import { addUserLoginCount } from '../../manager/telemetryManager';
-import { logAuthError, logAuthInfo } from './singleSignOn-domain';
+import { decryptAuthValue, logAuthError, logAuthInfo } from './singleSignOn-domain';
 import {
   AuthType,
   EnvStrategyType,
@@ -13,7 +13,7 @@ import {
   LOCAL_STRATEGY_IDENTIFIER,
   type ProviderConfiguration,
 } from './providers-configuration';
-import type { BasicStoreEntitySingleSignOn } from './singleSignOn-types';
+import type { BasicStoreEntitySingleSignOn, ConfigurationType } from './singleSignOn-types';
 import { AuthenticationFailure, ConfigurationError } from '../../config/errors';
 import { isNotEmptyField } from '../../database/utils';
 import { registerAuthenticationProvider, unregisterAuthenticationProvider } from './providers-initialization';
@@ -22,25 +22,33 @@ import { registerLDAPStrategy } from './singleSignOn-provider-ldap';
 import { GraphQLError } from 'graphql/index';
 import { registerOpenIdStrategy } from './singleSignOn-provider-openid';
 
-export const parseValueAsType = (value: string, type: string) => {
-  if (type.toLowerCase() === 'number') {
-    return +value;
-  } else if (type.toLowerCase() === 'boolean') {
-    return value === 'true';
-  } else if (type.toLowerCase() === 'array') {
-    return JSON.parse(value);
+export const parseValueAsType = async (config: ConfigurationType) => {
+  if (isNotEmptyField(config.value) && isNotEmptyField(config.key) && isNotEmptyField(config.type)) {
+    if (config.type.toLowerCase() === 'number') {
+      return +config.value;
+    } else if (config.type.toLowerCase() === 'boolean') {
+      return config.value === 'true';
+    } else if (config.type.toLowerCase() === 'array') {
+      return JSON.parse(config.value);
+    } else if (config.type.toLowerCase() === 'string') {
+      return config.value;
+    } else if (config.type.toLowerCase() === 'secret') {
+      return await decryptAuthValue(config.value);
+    } else {
+      logApp.error('Authentication configuration cannot be parsed, unknown type. Ignored', { key: config.key, type: config.type });
+    }
   } else {
-    return value;
+    logApp.error('Authentication configuration cannot be parsed, key, type or value is empty. Ignored', { key: config.key, type: config.type });
   }
 };
 
-export const convertKeyValueToJsConfiguration = (ssoEntity: BasicStoreEntitySingleSignOn) => {
+export const convertKeyValueToJsConfiguration = async (ssoEntity: BasicStoreEntitySingleSignOn) => {
   if (ssoEntity.configuration) {
     const ssoConfiguration: any = {};
     for (let i = 0; i < ssoEntity.configuration.length; i++) {
       const currentConfig = ssoEntity.configuration[i];
       if (isNotEmptyField(currentConfig.value)) {
-        ssoConfiguration[currentConfig.key] = parseValueAsType(currentConfig.value, currentConfig.type);
+        ssoConfiguration[currentConfig.key] = await parseValueAsType(currentConfig);
       }
     }
     return ssoConfiguration;
