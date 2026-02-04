@@ -6,6 +6,7 @@ import type { JWTVerifyOptions } from 'jose';
 import { importJWK, type JWK, jwtVerify, SignJWT } from 'jose';
 import { enrichWithRemoteCredentials } from '../config/credentials';
 import { confNameToEnvName } from '../config/conf';
+import { ConfigurationError, UnsupportedError } from '../config/errors';
 
 const hkdfAsync = promisify(crypto.hkdf);
 const toHex = (buffer: Buffer) => buffer.toString('hex');
@@ -13,7 +14,7 @@ const zeroBuffer = Buffer.alloc(0);
 
 export const createCryptoKeyFactory = (seed: Buffer) => {
   if (seed.length < 32) {
-    throw new Error(`Seed must have at least 32 bytes ${JSON.stringify({ seedLength: seed.length })}`);
+    throw ConfigurationError('Seed must have at least 32 bytes', { seedLength: seed.length });
   }
 
   const deriveBytes = async (
@@ -22,15 +23,15 @@ export const createCryptoKeyFactory = (seed: Buffer) => {
     length: number,
   ): Promise<Buffer> => {
     if (!(derivationPath.length > 0 && derivationPath.every((s) => s !== '' && !s.includes(':')))) {
-      throw new Error(`Invalid derivation path ${JSON.stringify({ derivationPath })}`);
+      throw UnsupportedError('Invalid derivation path', { derivationPath });
     }
 
     if (derivationPathVersion <= 0) {
-      throw new Error(`Version must be positive ${JSON.stringify({ version: derivationPathVersion })}`);
+      throw UnsupportedError('Version must be positive', { version: derivationPathVersion });
     }
 
     if (length <= 0) {
-      throw new Error(`Length must be positive ${JSON.stringify({ length })}`);
+      throw UnsupportedError('Length must be positive', { length });
     }
 
     const fullDerivationPath = `${derivationPath.join(':')}::v${derivationPathVersion}`;
@@ -86,28 +87,19 @@ export const createCryptoKeyFactory = (seed: Buffer) => {
     const decrypt = async (data: Buffer, aad?: Buffer | undefined) => {
       const receivedLength = data.length;
       if (data.length < minLength) {
-        throw new Error(`Unsupported encrypted data ${JSON.stringify({
-          expectedMinimumLength: minLength,
-          receivedLength,
-        })}`);
+        throw UnsupportedError('Unsupported encrypted data', { expectedMinimumLength: minLength, receivedLength });
       }
 
       let i = 0;
       const receivedVersion = data[i++];
       if (receivedVersion !== encodingVersion) {
-        throw new Error(`Unsupported encrypted data encoding version ${JSON.stringify({
-          expectedVersion: encodingVersion,
-          receivedVersion,
-        })}`);
+        throw UnsupportedError('Unsupported encrypted data encoding version', { expectedVersion: encodingVersion, receivedVersion });
       }
 
       const receivedKid = data.subarray(i, i + kid.length);
       i += kid.length;
       if (!receivedKid.equals(kid)) {
-        throw new Error(`Invalid kid for decryption ${JSON.stringify({
-          expectedKid: toHex(kid),
-          receivedKid: toHex(receivedKid),
-        })}`);
+        throw UnsupportedError('Invalid kid for decryption', { expectedKid: toHex(kid), receivedKid: toHex(receivedKid) });
       }
 
       const iv = data.subarray(i, i + ivLength);
@@ -151,28 +143,19 @@ export const createCryptoKeyFactory = (seed: Buffer) => {
     const verify = async (data: Buffer, signature: Buffer) => {
       const receivedLength = signature.length;
       if (signature.length < minLength) {
-        throw new Error(`Invalid signature format ${JSON.stringify({
-          expectedMinimumLength: minLength,
-          receivedLength,
-        })}`);
+        throw UnsupportedError('Invalid signature format', { expectedMinimumLength: minLength, receivedLength });
       }
 
       let i = 0;
       const receivedVersion = signature[i++];
       if (receivedVersion !== encodingVersion) {
-        throw new Error(`Unsupported signature encoding version ${JSON.stringify({
-          expectedVersion: encodingVersion,
-          receivedVersion,
-        })}`);
+        throw UnsupportedError('Unsupported signature encoding version', { expectedVersion: encodingVersion, receivedVersion });
       }
 
       const receivedKid = signature.subarray(i, i + kid.length);
       i += kid.length;
       if (!receivedKid.equals(kid)) {
-        throw new Error(`Invalid kid for signature verification ${JSON.stringify({
-          expectedKid: toHex(kid),
-          receivedKid: toHex(receivedKid),
-        })}`);
+        throw UnsupportedError('Invalid kid for signature verification', { expectedKid: toHex(kid), receivedKid: toHex(receivedKid) });
       }
 
       return await ed25519.verifyAsync(signature.subarray(i), data, publicKey);
@@ -232,7 +215,7 @@ const createPlatformCrypto = async () => {
   const seed = master_seed ? Buffer.from(master_seed, 'base64') : masterSeedEnvBuffer;
 
   if (seed.length < 32) {
-    throw new Error(`${masterSeedConfName} configuration is missing or invalid, please provide at least 32 bytes of base64-encoded data by using 'openssl rand -base64 32' command ${JSON.stringify({ seedLength: seed.length })}`);
+    throw ConfigurationError(`${masterSeedConfName} configuration is missing or invalid, please provide at least 32 bytes of base64-encoded data by using 'openssl rand -base64 32' command`, { seedLength: seed.length });
   }
 
   const promise = createCryptoKeyFactory(Buffer.from(seed)); // send a private copy of the seed
