@@ -16,15 +16,6 @@ const CERTConfig = ({ updateField }: CERTConfigProps) => {
       <Field
         component={TextField}
         variant="standard"
-        name="label"
-        onSubmit={updateField}
-        label={t_i18n('Label')}
-        fullWidth
-        style={{ marginTop: 20 }}
-      />
-      <Field
-        component={TextField}
-        variant="standard"
         name="description"
         onSubmit={updateField}
         label={t_i18n('Description')}

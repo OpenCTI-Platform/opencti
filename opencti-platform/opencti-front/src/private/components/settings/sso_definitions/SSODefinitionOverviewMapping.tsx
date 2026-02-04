@@ -277,7 +277,7 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
     getGroupsRows(),
     getOrganizationsRows(),
   ];
-
+  const selectedCert = strategy === 'ClientCertStrategy';
   return (
     <div style={{ paddingRight: '200px' }}>
       <AccessesMenu />
@@ -288,8 +288,8 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
             onChange={(event, value) => setCurrentTab(value)}
           >
             <Tab label={t_i18n('SSO configuration')} sx={{ textTransform: 'none' }} />
-            <Tab label={t_i18n('Groups configuration')} disabled={!rowsByTab} />
-            <Tab label={t_i18n('Organizations configuration')} />
+            <Tab label={t_i18n('Groups configuration')} disabled={selectedCert} />
+            <Tab label={t_i18n('Organizations configuration')} disabled={selectedCert} />
           </Tabs>
         </Box>
         {renderRows(rowsByTab[currentTab])}
