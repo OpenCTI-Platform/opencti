@@ -99,6 +99,7 @@ import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndiv
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../modules/securityPlatform/securityPlatform-types';
+import { pushAll } from '../utils/arrayUtil';
 
 const MAX_TRANSIENT_STIX_IDS = 200;
 export const STIX_SPEC_VERSION = '2.1';
@@ -1291,11 +1292,11 @@ export const isRelationBuiltin = (instance: StoreRelation): boolean => {
   const definitions = stixCoreRelationshipsMapping[`${instance.fromType}_${instance.toType}`] ?? [];
   // check from toType parent observables
   if (isStixCyberObservable(instance.toType)) {
-    definitions.push(...(stixCoreRelationshipsMapping[`${instance.fromType}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`] ?? []));
+    pushAll(definitions, (stixCoreRelationshipsMapping[`${instance.fromType}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`] ?? []));
   }
   // check from fromType parent observables
   if (isStixCyberObservable(instance.fromType)) {
-    definitions.push(...(stixCoreRelationshipsMapping[`${ABSTRACT_STIX_CYBER_OBSERVABLE}_${instance.toType}`] ?? []));
+    pushAll(definitions, (stixCoreRelationshipsMapping[`${ABSTRACT_STIX_CYBER_OBSERVABLE}_${instance.toType}`] ?? []));
   }
   // If definition found, check if the relation is build int
   if (definitions) {

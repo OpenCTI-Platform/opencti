@@ -57,6 +57,7 @@ import { ENTITY_TYPE_PIR } from '../../modules/pir/pir-types';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { ENTITY_TYPE_STATUS } from '../../schema/internalObject';
 import { IDS_ATTRIBUTES } from '../../domain/attribute-utils';
+import { pushAll } from '../arrayUtil';
 
 export const adaptFilterToRegardingOfFilterKey = async (
   context: AuthContext,
@@ -128,7 +129,7 @@ export const adaptFilterToRegardingOfFilterKey = async (
     }) as BasicStoreBase[];
     if (relatedEntities.length > 0) {
       const relatedIds = relatedEntities.map((n) => n.id);
-      ids.push(...relatedIds);
+      pushAll(ids, relatedIds);
     } else {
       ids.push('<invalid id>'); // To force empty result in the query result
     }
@@ -468,7 +469,7 @@ const adaptFilterToFromOrToFilterKeys = (filter: Filter) => {
 const adaptFilterToFromToIdsFilterKeys = async (context: AuthContext, user: AuthUser, filter: Filter) => {
   const filterKey = filter.key[0];
   const isDynamic = filterKey === RELATION_DYNAMIC_FROM_FILTER || filterKey === RELATION_DYNAMIC_TO_FILTER;
-  const dynamicIds = [];
+  const dynamicIds: string[] = [];
   if (isDynamic) {
     const computedIndices = computeQueryIndices([], [ABSTRACT_STIX_OBJECT]);
     const targetEntities = await elPaginate(context, user, computedIndices, {
@@ -480,9 +481,9 @@ const adaptFilterToFromToIdsFilterKeys = async (context: AuthContext, user: Auth
     }) as BasicStoreBase[];
     if (targetEntities.length > 0) {
       const relatedIds = targetEntities.map((n) => n.id);
-      dynamicIds.push(...relatedIds);
+      pushAll(dynamicIds, relatedIds);
     }
-  };
+  }
 
   const side = filterKey === RELATION_FROM_FILTER || filterKey === RELATION_DYNAMIC_FROM_FILTER ? 'from' : 'to';
   const nested = [

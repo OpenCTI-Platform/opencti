@@ -3,6 +3,7 @@ import gql from 'graphql-tag';
 import { ADMIN_USER, testContext, queryAsAdmin, securityQuery } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
 import { taskQuery } from '../../../src/manager/taskManager';
+import { pushAll } from '../../../src/utils/arrayUtil';
 
 const LIST_QUERY = gql`
   query externalReferences(
@@ -104,8 +105,8 @@ describe('ExternalReference resolver standard behavior', () => {
       filterGroups: [{
         mode: 'and',
         filters: [{ key: ['source_name'], values: ['ExternalReferenceForTest'], operator: 'starts_with', mode: 'or' }],
-        filterGroups: []
-      }]
+        filterGroups: [],
+      }],
     };
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10, filters: myFilter } });
     expect(queryResult.data.externalReferences.edges.length).toEqual(1);
@@ -120,7 +121,7 @@ describe('ExternalReference resolver standard behavior', () => {
 
     const elements = [];
     await taskQuery(testContext, ADMIN_USER, task, (results) => {
-      elements.push(...results);
+      pushAll(elements, results);
     });
 
     expect(elements.length).toBe(1);

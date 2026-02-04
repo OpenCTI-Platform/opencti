@@ -6,6 +6,7 @@ import { BULK_TIMEOUT, elBulk, elList, ES_MAX_CONCURRENCY, MAX_BULK_OPERATIONS }
 import { generateStandardId } from '../schema/identifier';
 import { logApp } from '../config/conf';
 import { executionContext, SYSTEM_USER } from '../utils/access';
+import { pushAll } from '../utils/arrayUtil';
 
 export const up = async (next) => {
   const context = executionContext('migration');
@@ -22,7 +23,7 @@ export const up = async (next) => {
         ];
       })
       .flat();
-    bulkOperations.push(...op);
+    pushAll(bulkOperations, op);
   };
   const opts = { types: [ENTITY_TYPE_IDENTITY_SYSTEM], callback };
   await elList(context, SYSTEM_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, opts);

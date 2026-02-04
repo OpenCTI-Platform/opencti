@@ -107,6 +107,7 @@ import { applyOperationFieldPatch, convertMembersToUsers, extractBundleBaseEleme
 import { PLAYBOOK_DATA_STREAM_PIR } from './components/data-stream-pir-component';
 import { convertStoreToStix_2_1 } from '../../database/stix-2-1-converter';
 import { ENTITY_TYPE_SECURITY_COVERAGE, INPUT_COVERED, type StixSecurityCoverage, type StoreEntitySecurityCoverage } from '../securityCoverage/securityCoverage-types';
+import { pushAll } from '../../utils/arrayUtil';
 
 // region built in playbook components
 interface LoggerConfiguration {
@@ -450,7 +451,7 @@ export const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfigurat
         (prevObj) => !existingIds.has(prevObj.id),
       );
       if (missingObjects.length > 0) {
-        enrichedObjects.push(...missingObjects);
+        pushAll(enrichedObjects, missingObjects);
       }
       stixBundle.objects = enrichedObjects;
       return { output_port: 'out', bundle: stixBundle };
@@ -627,7 +628,7 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
       }
       if (STIX_DOMAIN_OBJECT_CONTAINER_CASES.includes(container_type) && caseTemplates.length > 0) {
         const tasks = await createTaskFromCaseTemplates(caseTemplates, (container as StixContainer));
-        bundle.objects.push(...tasks);
+        pushAll(bundle.objects, tasks);
       }
       bundle.objects.push(container);
     }
@@ -1174,7 +1175,7 @@ export const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfig
       if (attributeType === 'boolean') return value.toLowerCase() === 'true';
       return value;
     };
-    const patchOperations = [];
+    const patchOperations: jsonpatch.Operation[] = [];
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const element = bundle.objects[index];
       if (all || element.id === dataInstanceId) {
@@ -1248,7 +1249,7 @@ export const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfig
           if (id) {
             applyOperationFieldPatch(element, operationObject);
           }
-          patchOperations.push(...elementOperations.map((e) => e.patchOperation));
+          pushAll(patchOperations, elementOperations.map((e) => e.patchOperation));
         }
       }
     }
@@ -1321,7 +1322,7 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
         const targetIds = R.uniq(basedOnRelations.map((relation) => relation.fromId));
         if (targetIds.length > 0) {
           const indicators = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, targetIds);
-          bundle.objects.push(...indicators);
+          pushAll(bundle.objects, indicators);
           return { output_port: 'out', bundle };
         }
       }
@@ -1336,7 +1337,7 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
         const targetIds = R.uniq(basedOnRelations.map((relation) => relation.fromId));
         if (targetIds.length > 0) {
           const observables = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, targetIds);
-          bundle.objects.push(...observables);
+          pushAll(bundle.objects, observables);
           return { output_port: 'out', bundle };
         }
       }
@@ -1367,7 +1368,7 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
               return { ...data.element, first_seen, last_seen };
             });
           if (elementsToPatch.length > 0) {
-            bundle.objects.push(...elementsToPatch);
+            pushAll(bundle.objects, elementsToPatch);
             return { output_port: 'out', bundle };
           }
         }
@@ -1378,17 +1379,17 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
       if (isStixDomainObjectContainer(type)) {
         // Handle first seen synchro for reports creation / modification
         const container = baseData as StixContainer;
-        const objectRefsToResolve = [];
+        const objectRefsToResolve: string[] = [];
         const objectRefsWithoutMetas = container.object_refs?.filter((o) => !o.startsWith('relationship-meta'));
         if (objectRefsWithoutMetas && objectRefsWithoutMetas.length > 0) {
-          objectRefsToResolve.push(...objectRefsWithoutMetas);
+          pushAll(objectRefsToResolve, objectRefsWithoutMetas);
         }
         if (inferences && container.extensions[STIX_EXT_OCTI].object_refs_inferred && container.extensions[STIX_EXT_OCTI].object_refs_inferred.length > 0) {
-          objectRefsToResolve.push(...container.extensions[STIX_EXT_OCTI].object_refs_inferred);
+          pushAll(objectRefsToResolve, container.extensions[STIX_EXT_OCTI].object_refs_inferred);
         }
         const elements = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, objectRefsToResolve);
         if (elements.length > 0) {
-          bundle.objects.push(...elements);
+          pushAll(bundle.objects, elements);
           return { output_port: 'out', bundle };
         }
       }
@@ -1403,7 +1404,7 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
       const containersToResolve = containers.map((container) => container.id);
       const elements = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, containersToResolve);
       if (elements.length > 0) {
-        bundle.objects.push(...elements);
+        pushAll(bundle.objects, elements);
         return { output_port: 'out', bundle };
       }
     }
@@ -1427,7 +1428,7 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
       }
       const elements = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, idsToResolve);
       if (elements.length > 0) {
-        bundle.objects.push(...elements);
+        pushAll(bundle.objects, elements);
         return { output_port: 'out', bundle };
       }
     }
@@ -1544,7 +1545,7 @@ const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndicatorConf
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
     const observables = [baseData];
     if (all) {
-      observables.push(...bundle.objects);
+      pushAll(observables, bundle.objects);
     }
     const { type: baseDataType, id } = baseData.extensions[STIX_EXT_OCTI];
     const isBaseDataAContainer = isStixDomainObjectContainer(baseDataType);
@@ -1728,7 +1729,7 @@ const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndicatorConf
       }
     }
     if (objectsToPush.length > 0) {
-      bundle.objects.push(...objectsToPush);
+      pushAll(bundle.objects, objectsToPush);
       return { output_port: 'out', bundle: { ...bundle, objects: bundle.objects.map((n) => (n.id === baseData.id ? baseData : n)) } };
     }
     return { output_port: 'unmodified', bundle };
@@ -1761,7 +1762,7 @@ const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObservableCo
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
     const indicators = [baseData];
     if (all) {
-      indicators.push(...bundle.objects);
+      pushAll(indicators, bundle.objects);
     }
     const { type: baseDataType } = baseData.extensions[STIX_EXT_OCTI];
     const isBaseDataAContainer = isStixDomainObjectContainer(baseDataType);
@@ -1849,7 +1850,7 @@ const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObservableCo
       }
     }
     if (objectsToPush.length > 0) {
-      bundle.objects.push(...objectsToPush);
+      pushAll(bundle.objects, objectsToPush);
       return { output_port: 'out', bundle: { ...bundle, objects: bundle.objects.map((n) => (n.id === baseData.id ? baseData : n)) } };
     }
     return { output_port: 'unmodified', bundle };

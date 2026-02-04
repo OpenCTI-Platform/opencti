@@ -29,6 +29,7 @@ import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type { BasicConnection, BasicStoreCommon, BasicStoreEntity, BasicStoreRelation } from '../types/store';
 import type { AuthContext, AuthUser, UserRole } from '../types/user';
 import { ID_SUBFILTER, INSTANCE_REGARDING_OF, RELATION_INFERRED_SUBFILTER, RELATION_TYPE_SUBFILTER } from './filtering/filtering-constants';
+import { pushAll } from './arrayUtil';
 
 export const DEFAULT_INVALID_CONF_VALUE = 'ChangeMe';
 
@@ -629,15 +630,15 @@ export const computeUserMemberAccessIds = (user: AuthUser) => {
   const memberAccessIds = [user.id];
   if (user.organizations) {
     const userOrganizationsIds = user.organizations.map((org) => org.internal_id);
-    memberAccessIds.push(...userOrganizationsIds);
+    pushAll(memberAccessIds, userOrganizationsIds);
   }
   if (user.groups) {
     const userGroupsIds = user.groups.map((group) => group.internal_id);
-    memberAccessIds.push(...userGroupsIds);
+    pushAll(memberAccessIds, userGroupsIds);
   }
   if (user.roles) {
     const userRolesIds = user.roles.map((role) => role.internal_id);
-    memberAccessIds.push(...userRolesIds);
+    pushAll(memberAccessIds, userRolesIds);
   }
   return memberAccessIds;
 };

@@ -17,6 +17,7 @@ import { builtInOv, openVocabularies } from '../modules/vocabulary/vocabulary-ut
 import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 import { addVocabulary } from '../modules/vocabulary/vocabulary-domain';
 import { logApp } from '../config/conf';
+import { pushAll } from '../utils/arrayUtil';
 
 const message = '[MIGRATION] Threat-actors to group and individual';
 
@@ -90,7 +91,7 @@ const createIndividualThreatCategories = async (context) => {
     const groupExistingVocabs = (vocabsFromGroup ?? []).map((v) => ({ key: v.name, description: v.description, aliases: v.aliases }));
     const groupVocabToMaintains = groupExistingVocabs.filter((g) => !individualVocabKeys.includes(g.key));
     logApp.info(`${message} > Create ${groupVocabToMaintains.length} vocabularies for category ${individual}`);
-    vocabularies.push(...groupVocabToMaintains);
+    pushAll(vocabularies, groupVocabToMaintains);
     for (let i = 0; i < vocabularies.length; i += 1) {
       const { key, description, aliases } = vocabularies[i];
       const data = {
