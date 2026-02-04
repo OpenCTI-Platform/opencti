@@ -13,6 +13,7 @@ import Card from '@common/card/Card';
 import Label from '../../../../components/common/label/Label';
 import Tag from '../../../../components/common/tag/Tag';
 import TextList from '../../../../components/common/text/TextList';
+import { Stack } from '@mui/material';
 
 class ThreatActorGroupDetailsComponent extends Component {
   render() {
@@ -36,15 +37,17 @@ class ThreatActorGroupDetailsComponent extends Component {
                   {t('Threat actor types')}
                 </Label>
                 <FieldOrEmpty source={threatActorGroup.threat_actor_types}>
-                  {threatActorGroup.threat_actor_types
-                    && threatActorGroup.threat_actor_types.map(
-                      (threatActorGroupType) => (
-                        <Tag
-                          key={threatActorGroupType}
-                          label={threatActorGroupType}
-                        />
-                      ),
-                    )}
+                  <Stack direction="row" flexWrap="wrap" gap={1}>
+                    {threatActorGroup.threat_actor_types
+                      && threatActorGroup.threat_actor_types.map(
+                        (threatActorGroupType) => (
+                          <Tag
+                            key={threatActorGroupType}
+                            label={threatActorGroupType}
+                          />
+                        ),
+                      )}
+                  </Stack>
                 </FieldOrEmpty>
                 <Label
                   sx={{ marginTop: 2 }}

@@ -16,6 +16,7 @@ import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
 import Tag from '@common/tag/Tag';
 import TextList from '../../../../components/common/text/TextList';
+import { Stack } from '@mui/material';
 
 const ThreatActorIndividualDetailsFragment = graphql`
   fragment ThreatActorIndividualDetails_ThreatActorIndividual on ThreatActorIndividual
@@ -104,12 +105,14 @@ const ThreatActorIndividualDetails: FunctionComponent<
                 {t_i18n('Threat actor types')}
               </Label>
               <FieldOrEmpty source={data.threat_actor_types}>
-                {data.threat_actor_types?.map((threatActorIndividualType) => threatActorIndividualType && (
-                  <Tag
-                    key={threatActorIndividualType}
-                    label={threatActorIndividualType}
-                  />
-                ))}
+                <Stack direction="row" flexWrap="wrap" gap={1}>
+                  {data.threat_actor_types?.map((threatActorIndividualType) => threatActorIndividualType && (
+                    <Tag
+                      key={threatActorIndividualType}
+                      label={threatActorIndividualType}
+                    />
+                  ))}
+                </Stack>
               </FieldOrEmpty>
               <Label
                 sx={{ marginTop: 2 }}

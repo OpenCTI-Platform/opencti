@@ -9,6 +9,7 @@ import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import Label from '../../../../components/common/label/Label';
+import { Stack } from '@mui/material';
 
 class EventDetailsComponent extends Component {
   render() {
@@ -28,11 +29,11 @@ class EventDetailsComponent extends Component {
                 {t('Event types')}
               </Label>
               <FieldOrEmpty source={event.event_types}>
-                {event.event_types?.map((eventType) => (
-                  <div key={`event_type_ov_${eventType}`} style={{ marginBottom: 10 }}>
+                <Stack direction="row" gap={1} flexWrap="wrap">
+                  {event.event_types?.map((eventType) => (
                     <ItemOpenVocab key="type" small={true} type="event_type_ov" value={eventType} />
-                  </div>
-                ))}
+                  ))}
+                </Stack>
               </FieldOrEmpty>
             </Grid>
             <Grid item xs={6}>

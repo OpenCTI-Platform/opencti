@@ -11,6 +11,7 @@ import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import Tag from '../../../../components/common/tag/Tag';
+import { Stack } from '@mui/material';
 
 const CaseRftDetailsFragment = graphql`
   fragment CaseRftDetails_case on CaseRft {
@@ -72,12 +73,14 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
               {t_i18n('Takedown type')}
             </Label>
             <FieldOrEmpty source={takedownTypes}>
-              {takedownTypes.map((takedownType) => (
-                <Tag
-                  key={takedownType}
-                  label={takedownType}
-                />
-              ))}
+              <Stack direction="row" flexWrap="wrap" gap={1}>
+                {takedownTypes.map((takedownType) => (
+                  <Tag
+                    key={takedownType}
+                    label={takedownType}
+                  />
+                ))}
+              </Stack>
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>

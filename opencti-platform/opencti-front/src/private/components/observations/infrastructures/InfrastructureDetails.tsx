@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import Tag from '../../../../components/common/tag/Tag';
-import { List } from '@mui/material';
+import { Stack } from '@mui/material';
 import StixCoreObjectsDonut from '../../common/stix_core_objects/StixCoreObjectsDonut';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
@@ -82,16 +82,16 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
               {t_i18n('Infrastructure types')}
             </Label>
             <FieldOrEmpty source={infrastructureTypes}>
-              {infrastructureTypes.length > 0 && (
-                <List>
-                  {infrastructureTypes.map((infrastructureType) => (
+              <Stack direction="row" flexWrap="wrap" gap={1}>
+                {infrastructureTypes.length > 0
+                  && infrastructureTypes.map((infrastructureType) => (
                     <Tag
                       key={infrastructureType}
                       label={infrastructureType}
                     />
-                  ))}
-                </List>
-              )}
+                  ),
+                  )}
+              </Stack>
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>

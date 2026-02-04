@@ -4,13 +4,14 @@ import { compose } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Grid from '@mui/material/Grid';
-import Chip from '@mui/material/Chip';
 import Card from '@common/card/Card';
 import inject18n from '../../../../components/i18n';
 import ItemLikelihood from '../../../../components/ItemLikelihood';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import Label from '../../../../components/common/label/Label';
+import Tag from '@common/tag/Tag';
+import { Stack } from '@mui/material';
 
 const styles = (theme) => ({
   chip: {
@@ -26,7 +27,7 @@ const styles = (theme) => ({
 
 class NoteDetailsComponent extends Component {
   render() {
-    const { t, classes, note } = this.props;
+    const { t, note } = this.props;
     return (
       <div style={{ height: '100%' }}>
         <Card title={t('Entity details')}>
@@ -55,14 +56,14 @@ class NoteDetailsComponent extends Component {
                 {t('Note types')}
               </Label>
               <FieldOrEmpty source={note.note_types}>
-                {note.note_types?.map((noteType) => (
-                  <Chip
-                    key={noteType}
-                    classes={{ root: classes.chip }}
-                    label={noteType}
-                    color="primary"
-                  />
-                ))}
+                <Stack direction="row" flexWrap="wrap" gap={1}>
+                  {note.note_types?.map((noteType) => (
+                    <Tag
+                      key={noteType}
+                      label={noteType}
+                    />
+                  ))}
+                </Stack>
               </FieldOrEmpty>
               <Label
                 sx={{ marginTop: 2 }}

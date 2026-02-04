@@ -11,6 +11,7 @@ import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import Tag from '../../../../components/common/tag/Tag';
+import { Stack } from '@mui/material';
 
 const CaseRfiDetailsFragment = graphql`
   fragment CaseRfiDetails_case on CaseRfi {
@@ -72,12 +73,14 @@ const CaseRfiDetails: FunctionComponent<CaseRfiDetailsProps> = ({
               {t_i18n('Information type')}
             </Label>
             <FieldOrEmpty source={informationTypes}>
-              {informationTypes.map((informationType) => (
-                <Tag
-                  key={informationType}
-                  label={informationType}
-                />
-              ))}
+              <Stack direction="row" flexWrap="wrap" gap={1}>
+                {informationTypes.map((informationType) => (
+                  <Tag
+                    key={informationType}
+                    label={informationType}
+                  />
+                ))}
+              </Stack>
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>

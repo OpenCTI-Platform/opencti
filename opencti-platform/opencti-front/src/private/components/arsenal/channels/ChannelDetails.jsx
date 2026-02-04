@@ -1,13 +1,13 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
-import Chip from '@mui/material/Chip';
+import { Stack } from '@mui/material';
 import Card from '@common/card/Card';
 import { useFormatter } from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
-import { useTheme } from '@mui/styles';
 import Label from '../../../../components/common/label/Label';
+import Tag from '@common/tag/Tag';
 
 const ChannelDetailsFragment = graphql`
   fragment ChannelDetails_channel on Channel {
@@ -21,7 +21,6 @@ export const ChannelDetails = ({
   channelData,
 }) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme();
   const channel = useFragment(ChannelDetailsFragment, channelData);
   return (
     <Card title={t_i18n('Details')}>
@@ -37,21 +36,14 @@ export const ChannelDetails = ({
             {t_i18n('Channel types')}
           </Label>
           <FieldOrEmpty source={channel.channel_types}>
-            {channel.channel_types?.map((channelType) => (
-              <Chip
-                key={channelType}
-                label={channelType}
-                style={{
-                  fontSize: 12,
-                  lineHeight: '12px',
-                  backgroundColor: theme.palette.background.accent,
-                  color: theme.palette.text.primary,
-                  textTransform: 'uppercase',
-                  borderRadius: 4,
-                  margin: '0 5px 5px 0',
-                }}
-              />
-            ))}
+            <Stack direction="row" gap={1} flexWrap="wrap">
+              {channel.channel_types?.map((channelType) => (
+                <Tag
+                  key={channelType}
+                  label={channelType}
+                />
+              ))}
+            </Stack>
           </FieldOrEmpty>
         </Grid>
       </Grid>

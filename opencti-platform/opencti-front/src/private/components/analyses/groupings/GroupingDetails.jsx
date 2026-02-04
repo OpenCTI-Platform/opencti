@@ -2,8 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
-import Chip from '@mui/material/Chip';
 import Grid from '@mui/material/Grid';
 import Divider from '@mui/material/Divider';
 import Card from '@common/card/Card';
@@ -13,61 +11,10 @@ import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import Label from '../../../../components/common/label/Label';
-
-const styles = (theme) => ({
-  chip: {
-    fontSize: 12,
-    lineHeight: '12px',
-    backgroundColor: theme.palette.background.accent,
-    color: theme.palette.text.primary,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-    margin: '0 5px 5px 0',
-  },
-  item: {
-    height: 50,
-    minHeight: 50,
-    maxHeight: 50,
-    paddingRight: 0,
-  },
-  itemText: {
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
-  itemIcon: {
-    marginRight: 0,
-    color: theme.palette.primary.main,
-  },
-  itemIconDisabled: {
-    marginRight: 0,
-    color: theme.palette.grey[700],
-  },
-  buttonExpand: {
-    position: 'absolute',
-    left: 0,
-    bottom: 0,
-    width: '100%',
-    height: 25,
-    color: theme.palette.primary.main,
-    backgroundColor:
-      theme.palette.mode === 'dark'
-        ? 'rgba(255, 255, 255, .1)'
-        : 'rgba(0, 0, 0, .1)',
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
-    '&:hover': {
-      backgroundColor:
-        theme.palette.mode === 'dark'
-          ? 'rgba(255, 255, 255, .2)'
-          : 'rgba(0, 0, 0, .2)',
-    },
-  },
-});
+import Tag from '@common/tag/Tag';
 
 const GroupingDetailsComponent = (props) => {
-  const { t, classes, grouping } = props;
+  const { t, grouping } = props;
   const [height, setHeight] = useState(0);
   const ref = useRef(null);
   useEffect(() => {
@@ -112,7 +59,7 @@ const GroupingDetailsComponent = (props) => {
             <Label sx={{ marginTop: 2 }}>
               {t('Context')}
             </Label>
-            <Chip classes={{ root: classes.chip }} label={grouping.context} />
+            <Tag label={grouping.context} />
           </Grid>
           <Grid item xs={6} style={{ minHeight: 200, maxHeight: height }}>
             <StixRelationshipsHorizontalBars
@@ -166,4 +113,4 @@ const GroupingDetails = createFragmentContainer(GroupingDetailsComponent, {
 `,
 });
 
-export default R.compose(inject18n, withStyles(styles))(GroupingDetails);
+export default R.compose(inject18n)(GroupingDetails);

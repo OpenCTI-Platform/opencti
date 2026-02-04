@@ -27,6 +27,7 @@ import ExternalLinkPopover from '../../../../components/ExternalLinkPopover';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
 import { EMPTY_VALUE } from '../../../../utils/String';
+import { Stack } from '@mui/material';
 
 const securityCoverageDetailsFragment = graphql`
   fragment SecurityCoverageDetails_securityCoverage on SecurityCoverage {
@@ -83,25 +84,27 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
             <ExpandableMarkdown source={data.description} limit={300} />
           </Grid>
           <Grid item xs={12}>
-            <Label>
-              {t_i18n('Coverage information')}
-            </Label>
-            {isNotEmptyField(data.external_uri) && (
-              <Button
-                startIcon={(
-                  <img
-                    style={{ width: 20 }}
-                    src={fileUri(theme.palette.mode === 'dark' ? obasDark : obasLight)}
-                    alt="OBAS"
-                  />
-                )}
-                variant="secondary"
-                onClick={() => setDisplayExternalLink(true)}
-                title={data.external_uri} // tooltip on hover
-              >
-                {t_i18n('Exposure validation')}
-              </Button>
-            )}
+            <Stack direction="row" gap={1} mb={1} alignItems="center">
+              <Label>
+                {t_i18n('Coverage information')}
+              </Label>
+              {isNotEmptyField(data.external_uri) && (
+                <Button
+                  startIcon={(
+                    <img
+                      style={{ width: 20 }}
+                      src={fileUri(theme.palette.mode === 'dark' ? obasDark : obasLight)}
+                      alt="OBAS"
+                    />
+                  )}
+                  variant="secondary"
+                  onClick={() => setDisplayExternalLink(true)}
+                  title={data.external_uri} // tooltip on hover
+                >
+                  {t_i18n('Exposure validation')}
+                </Button>
+              )}
+            </Stack>
             <Paper variant="outlined" sx={{ padding: 2 }}>
               <SecurityCoverageInformation coverage_information={data.coverage_information ?? []} variant="details" />
             </Paper>

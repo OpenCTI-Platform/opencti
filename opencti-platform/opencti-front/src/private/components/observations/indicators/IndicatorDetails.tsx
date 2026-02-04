@@ -1,14 +1,7 @@
 import React, { FunctionComponent, useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import Grid from '@mui/material/Grid';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import { SettingsApplications, TroubleshootOutlined } from '@mui/icons-material';
-import ListItemText from '@mui/material/ListItemText';
-import Chip from '@mui/material/Chip';
-import Divider from '@mui/material/Divider';
-import makeStyles from '@mui/styles/makeStyles';
+import { TroubleshootOutlined } from '@mui/icons-material';
 import { IndicatorDetails_indicator$data } from '@components/observations/indicators/__generated__/IndicatorDetails_indicator.graphql';
 import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
@@ -24,26 +17,13 @@ import ExpandablePre from '../../../../components/ExpandablePre';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import StixCoreObjectKillChainPhasesView from '../../common/stix_core_objects/StixCoreObjectKillChainPhasesView';
 import { useFormatter } from '../../../../components/i18n';
-import type { Theme } from '../../../../components/Theme';
 import Transition from '../../../../components/Transition';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
 import { Stack } from '@mui/material';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  chip: {
-    fontSize: 12,
-    lineHeight: '12px',
-    backgroundColor: theme.palette.background.accent,
-    borderRadius: 4,
-    color: theme.palette.primary.text?.primary,
-    textTransform: 'uppercase',
-    margin: '0 5px 5px 0',
-  },
-}));
+import Tag from '@common/tag/Tag';
+import TextList from '@common/text/TextList';
 
 interface IndicatorDetailsComponentProps {
   indicator: IndicatorDetails_indicator$data;
@@ -54,7 +34,6 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
 }) => {
   const { t_i18n, fldt } = useFormatter();
   const [isLifecycleOpen, setIsLifecycleOpen] = useState(false);
-  const classes = useStyles();
   const onDecayLifecycleClose = () => {
     setIsLifecycleOpen(false);
   };
@@ -75,10 +54,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
             <Label>
               {t_i18n('Valid from')}
             </Label>
-            <Chip
-              classes={{ root: classes.chip }}
-              label={fldt(indicator.valid_from)}
-            />
+            {fldt(indicator.valid_from)}
             <Label
               sx={{ mt: 2 }}
               action={indicator.decay_applied_rule && (
@@ -146,10 +122,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
             <Label>
               {t_i18n('Valid until')}
             </Label>
-            <Chip
-              classes={{ root: classes.chip }}
-              label={fldt(indicator.valid_until)}
-            />
+            {fldt(indicator.valid_until)}
             <Label
               sx={{ marginTop: 2 }}
             >
@@ -174,13 +147,14 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
               {t_i18n('Indicator types')}
             </Label>
             <FieldOrEmpty source={indicator.indicator_types}>
-              {indicator.indicator_types?.map((indicatorType) => (
-                <Chip
-                  key={indicatorType}
-                  classes={{ root: classes.chip }}
-                  label={indicatorType}
-                />
-              ))}
+              <Stack direction="row" flexWrap="wrap" gap={1}>
+                {indicator.indicator_types?.map((indicatorType) => (
+                  <Tag
+                    key={indicatorType}
+                    label={indicatorType}
+                  />
+                ))}
+              </Stack>
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={4}>
@@ -190,8 +164,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
               {t_i18n('Main observable type')}
             </Label>
             <FieldOrEmpty source={indicator.x_opencti_main_observable_type}>
-              <Chip
-                classes={{ root: classes.chip }}
+              <Tag
                 label={indicator.x_opencti_main_observable_type}
               />
             </FieldOrEmpty>
@@ -202,24 +175,9 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
             >
               {t_i18n('Platforms')}
             </Label>
-            <FieldOrEmpty source={indicator.x_mitre_platforms}>
-              <List>
-                {indicator.x_mitre_platforms?.map(
-                  (platform) =>
-                    platform && (
-                      <ListItem key={platform} dense={true} divider={true}>
-                        <ListItemIcon>
-                          <SettingsApplications />
-                        </ListItemIcon>
-                        <ListItemText primary={platform} />
-                      </ListItem>
-                    ),
-                )}
-              </List>
-            </FieldOrEmpty>
+            <TextList list={indicator.x_mitre_platforms} />
           </Grid>
         </Grid>
-        <Divider />
         <IndicatorObservables indicator={indicator} />
       </Card>
     </Box>
