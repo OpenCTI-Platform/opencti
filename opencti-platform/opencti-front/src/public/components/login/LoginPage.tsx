@@ -9,18 +9,20 @@ import AlertFlashError from './AlertFlashError';
 import ConsentMessage from './ConsentMessage';
 import LoginLayout from './LoginLayout';
 import Card from '../../../components/common/card/Card';
-import { Stack } from '@mui/material';
+import { Stack, Typography } from '@mui/material';
 import LoginMarkdown from './LoginMarkdown';
 import AlertValidateOtp from './AlertValidateOtp';
 import AlertChangePwd from './AlertChangePwd';
 import { useLoginContext } from './loginContext';
 import AlertMfa from './AlertMfa';
+import { useFormatter } from '../../../components/i18n';
 
 interface LoginPageProps {
   settings: LoginRootPublicQuery$data['publicSettings'];
 }
 
 const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
+  const { t_i18n } = useFormatter();
   const { resetPwdStep } = useLoginContext();
   const [checked, setChecked] = useState(false);
 
@@ -57,7 +59,15 @@ const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
         <AlertChangePwd />
         <AlertMfa />
 
-        {consentOk && (
+        {providers.length === 0 && (
+          <Card>
+            <Typography textAlign="center" variant="body2">
+              {t_i18n('No authentication provider available')}
+            </Typography>
+          </Card>
+        )}
+
+        {consentOk && providers.length > 0 && (
           <Card
             sx={{
               display: 'flex',
@@ -69,10 +79,13 @@ const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
                 {loginMessage}
               </LoginMarkdown>
             )}
-            <div style={{ minHeight: 170 }}>
-              {!!resetPwdStep && <ResetPassword />}
-              {showLoginForm && <LoginForm />}
-            </div>
+
+            {(showLoginForm || !!resetPwdStep) && (
+              <div style={{ minHeight: 170 }}>
+                {!!resetPwdStep && <ResetPassword />}
+                {showLoginForm && <LoginForm />}
+              </div>
+            )}
           </Card>
         )}
 

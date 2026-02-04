@@ -2655,6 +2655,7 @@
   "No active connectors": "アクティブ・コネクターなし",
   "No active forms found matching your criteria": "条件に合うフォームが見つかりません",
   "No AI Intelligence.": "AI知能なし",
+  "No authentication provider available": "認証プロバイダーが利用できない",
   "No available options": "利用可能なオプションはありません",
   "No available playbooks for this entity": "このエンティティで利用可能なプレイブックはありません",
   "No available public CSV feeds on this platform": "このプラットフォームで利用可能な公開CSVフィードはありません",
