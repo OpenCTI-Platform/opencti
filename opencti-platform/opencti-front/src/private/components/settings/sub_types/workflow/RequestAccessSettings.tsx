@@ -12,6 +12,7 @@ import { StatusScopeEnum } from '../../../../../utils/statusConstants';
 import ItemStatusTemplate from '../../../../../components/ItemStatusTemplate';
 import { RequestAccessSettings_requestAccess$key } from './__generated__/RequestAccessSettings_requestAccess.graphql';
 import type { Theme } from '../../../../../components/Theme';
+import { Stack } from '@mui/material';
 
 const requestAccessSettingsFragment = graphql`
   fragment RequestAccessSettings_requestAccess on SubType {
@@ -59,10 +60,12 @@ const RequestAccessSettings = ({ subTypeId, data, dataConfiguration }: RequestAc
   return (
     <>
       <div>
-        <Typography variant="h3" gutterBottom={true}>
-          {t_i18n('Specific Workflow for Request Access')}
+        <Stack direction="row" alignItems="center" gap={1}>
+          <Typography variant="h3" sx={{ marginBottom: 0 }}>
+            {t_i18n('Specific Workflow for Request Access')}
+          </Typography>
           <SubTypeStatusPopover subTypeId={subTypeId} scope={StatusScopeEnum.REQUEST_ACCESS} />
-        </Typography>
+        </Stack>
         <ItemStatusTemplate
           statuses={statusList}
           disabled={requestAccessWorkflowDisabled}

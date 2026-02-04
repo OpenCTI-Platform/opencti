@@ -2,7 +2,7 @@ import React, { FunctionComponent, useState } from 'react';
 import IconButton from '@common/button/IconButton';
 import { Edit } from '@mui/icons-material';
 import { InformationOutline } from 'mdi-material-ui';
-import { Tooltip } from '@mui/material';
+import { Stack, Tooltip } from '@mui/material';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import SubTypeWorkflowDrawer, { subTypeWorkflowDrawerEditionQuery } from './SubTypeWorkflowDrawer';
@@ -26,25 +26,28 @@ const SubTypeStatusPopover: FunctionComponent<SubTypeStatusPopoverProps> = ({ su
   const requestAccessScope = scope === 'REQUEST_ACCESS';
   return (
     <>
-      <IconButton
-        color="primary"
-        aria-label="Workflow"
-        onClick={handleOpenUpdate}
-        aria-haspopup="true"
-      >
-        <Edit fontSize="small" />
-      </IconButton>
-      {requestAccessScope && (
-        <Tooltip
-          title={t_i18n('RFI of type "request access" are subject to a specific workflow, that you can configure here. Request Access cases have 2 actions, Validate and Decline, that change the status automatically according to your configuration. Only specific groups of users are authorized to validate and decline Request Access cases.')}
+      <Stack direction="row" alignItems="center" gap={1}>
+        {requestAccessScope && (
+          <Tooltip
+            title={t_i18n('RFI of type "request access" are subject to a specific workflow, that you can configure here. Request Access cases have 2 actions, Validate and Decline, that change the status automatically according to your configuration. Only specific groups of users are authorized to validate and decline Request Access cases.')}
+          >
+            <InformationOutline
+              fontSize="small"
+              color="primary"
+            />
+          </Tooltip>
+        )}
+
+        <IconButton
+          color="primary"
+          aria-label="Workflow"
+          onClick={handleOpenUpdate}
+          aria-haspopup="true"
         >
-          <InformationOutline
-            fontSize="small"
-            color="primary"
-            style={{ cursor: 'default', margin: '-2px 0 -6px 0' }}
-          />
-        </Tooltip>
-      )}
+          <Edit fontSize="small" />
+        </IconButton>
+      </Stack>
+
       {queryRef && (
         <React.Suspense
           fallback={<Loader variant={LoaderVariant.inElement} />}

@@ -1,10 +1,8 @@
 import SubTypeStatusPopover from '@components/settings/sub_types/SubTypeWorkflowPopover';
 import { graphql, useFragment } from 'react-relay';
-import { useFormatter } from '../../../../../components/i18n';
-import { StatusScopeEnum } from '../../../../../utils/statusConstants';
 import ItemStatusTemplate from '../../../../../components/ItemStatusTemplate';
+import { StatusScopeEnum } from '../../../../../utils/statusConstants';
 import { GlobalWorkflowSettings_global$key } from './__generated__/GlobalWorkflowSettings_global.graphql';
-import Label from '../../../../../components/common/label/Label';
 
 const globalWorkflowSettingsFragment = graphql`
     fragment GlobalWorkflowSettings_global on SubType {
@@ -28,8 +26,8 @@ interface GlobalWorkflowSettingsProps {
 }
 
 const GlobalWorkflowSettings = ({ subTypeId, data, workflowEnabled }: GlobalWorkflowSettingsProps) => {
-  const { t_i18n } = useFormatter();
   const statusesData = useFragment(globalWorkflowSettingsFragment, data);
+
   const statusList = statusesData.statuses.map((statusData) => ({
     id: statusData.id,
     order: statusData.order,
@@ -39,20 +37,18 @@ const GlobalWorkflowSettings = ({ subTypeId, data, workflowEnabled }: GlobalWork
       name: statusData.template?.name ?? 'unknown',
     },
   }));
-  return (
-    <>
-      {/* <Label action={(
-        <SubTypeStatusPopover subTypeId={subTypeId} scope={StatusScopeEnum.GLOBAL} />
-      )}
-      >
-        {t_i18n('Global Workflow')}
 
-      </Label> */}
-      <ItemStatusTemplate
-        statuses={statusList}
-        disabled={!workflowEnabled}
-      />
-    </>
+  return (
+    <ItemStatusTemplate
+      statuses={statusList}
+      disabled={!workflowEnabled}
+      actionComponent={(
+        <SubTypeStatusPopover
+          subTypeId={subTypeId}
+          scope={StatusScopeEnum.GLOBAL}
+        />
+      )}
+    />
   );
 };
 

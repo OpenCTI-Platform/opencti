@@ -1,11 +1,9 @@
-import React from 'react';
-import Chip from '@mui/material/Chip';
 import { ArrowRightAltOutlined } from '@mui/icons-material';
-import Box from '@mui/material/Box';
-import { useFormatter } from './i18n';
+import { Stack } from '@mui/material';
+import React, { ReactElement } from 'react';
 import { hexToRGB } from '../utils/Colors';
 import Tag from './common/tag/Tag';
-import { Stack } from '@mui/material';
+import { useFormatter } from './i18n';
 
 export interface StatusTemplateType {
   id: string;
@@ -22,24 +20,15 @@ export interface StatusType {
 interface ItemStatusTemplateProps {
   statuses: StatusType[];
   disabled: boolean;
+  actionComponent?: ReactElement;
 }
 
-const ItemStatusTemplate = ({ statuses, disabled }: ItemStatusTemplateProps) => {
+const ItemStatusTemplate = ({ statuses, disabled, actionComponent }: ItemStatusTemplateProps) => {
   const { t_i18n } = useFormatter();
 
   if (disabled) {
     return (
-      <Chip
-        style={{ fontSize: 12,
-          lineHeight: '12px',
-          height: 25,
-          marginRight: 7,
-          textTransform: 'uppercase',
-          borderRadius: 4,
-          width: 100 }}
-        variant="outlined"
-        label={t_i18n('Disabled')}
-      />
+      <Tag label={t_i18n('Disabled')} disabled />
     );
   }
 
@@ -63,6 +52,7 @@ const ItemStatusTemplate = ({ statuses, disabled }: ItemStatusTemplateProps) => 
           )}
         </React.Fragment>
       ))}
+      {actionComponent}
     </Stack>
   );
 };
