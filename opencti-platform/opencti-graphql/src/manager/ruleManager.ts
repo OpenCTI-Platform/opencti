@@ -10,7 +10,7 @@ import { createEntity, patchAttribute, stixLoadById, storeLoadByIdWithRefs } fro
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, isNotEmptyField, READ_DATA_INDICES } from '../database/utils';
 import { ABSTRACT_STIX_RELATIONSHIP, OPENCTI_NAMESPACE, RULE_PREFIX } from '../schema/general';
 import { ENTITY_TYPE_RULE_MANAGER } from '../schema/internalObject';
-import { ALREADY_DELETED_ERROR, FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
+import {ALREADY_DELETED_ERROR, FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR} from '../config/errors';
 import { getParentTypes } from '../schema/schemaUtils';
 import { isBasicRelationship, isStixRelationship } from '../schema/stixRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
@@ -32,6 +32,7 @@ import { isStixObject } from '../schema/stixCoreObject';
 import { buildCreateEvent, EVENT_CURRENT_VERSION, LIVE_STREAM_NAME, type StreamProcessor } from '../database/stream/stream-utils';
 import jsonCanonicalize from 'canonicalize';
 import { v5 as uuidv5 } from 'uuid';
+import {getDraftContext} from "../utils/draftContext";
 
 import { pushAll } from '../utils/arrayUtil';
 
@@ -379,31 +380,46 @@ export const ruleApplyAsync = async (context: AuthContext, user: AuthUser, eleme
   }
   const dataCanonicalize = jsonCanonicalize({ elementId, ruleId, executionId }) as string;
   const ruleApplyId = uuidv5(dataCanonicalize, OPENCTI_NAMESPACE);
-  const currentAsyncCall = await redisGetAsyncCall(ruleApplyId);
-  if (currentAsyncCall) {
-    return currentAsyncCall !== '0';
-  }
-  await redisInitializeAsyncCall(ruleApplyId);
-  const timeoutPromise = new Promise((_, reject) =>
-    setTimeout(() => reject(new Error('Timeout')), 10000),
-  );
-  const ruleApplyPromise = ruleApply(context, user, elementId, ruleId);
+  let lock;
   try {
-    await Promise.race([ruleApplyPromise, timeoutPromise]);
-    // If rule apply promise is the first to finish, we move the work to complete here
-    await redisFinishAsyncCall(ruleApplyId);
-    return true;
-  } catch {
-    // If timeout promise is the first to finish, we do not await the rule apply but instead we return the ongoing work
-    // The work will be moved to complete when the rule apply is finished
-    ruleApplyPromise.catch((err) => {
-      logApp.error('[OPENCTI] Error during rule apply', { cause: err });
-    }).finally(async () => {
+    // Try to get the lock in redis
+    lock = await lockResources(ruleApplyId, { draftId: getDraftContext(context, user) });
+    const currentAsyncCall = await redisGetAsyncCall(ruleApplyId);
+    if (currentAsyncCall) {
+      return currentAsyncCall !== '0';
+    }
+    await redisInitializeAsyncCall(ruleApplyId);
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Timeout')), 10000),
+    );
+    const ruleApplyPromise = ruleApply(context, user, elementId, ruleId);
+    try {
+      await Promise.race([ruleApplyPromise, timeoutPromise]);
+      // If rule apply promise is the first to finish, we move the work to complete here
       await redisFinishAsyncCall(ruleApplyId);
-    });
-  }
+      return true;
+    } catch {
+      // If timeout promise is the first to finish, we do not await the rule apply but instead we return the ongoing work
+      // The work will be moved to complete when the rule apply is finished
+      ruleApplyPromise.catch((err) => {
+        logApp.error('[OPENCTI] Error during rule apply', { cause: err });
+      }).finally(async () => {
+        await redisFinishAsyncCall(ruleApplyId);
+      });
+    }
 
-  return false;
+    return false;
+  } catch (err: any) {
+    if (err.name === TYPE_LOCK_ERROR) {
+      const currentAsyncCall = await redisGetAsyncCall(ruleApplyId);
+      if (currentAsyncCall) {
+        return currentAsyncCall !== '0';
+      }
+    }
+    throw err;
+  } finally {
+    if (lock) await lock.unlock();
+  }
 };
 
 export const ruleClear = async (context: AuthContext, user: AuthUser, elementId: string, ruleId: string) => {
