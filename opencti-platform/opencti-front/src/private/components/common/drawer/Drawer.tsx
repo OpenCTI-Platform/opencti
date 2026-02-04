@@ -70,7 +70,7 @@ interface DrawerProps {
   header?: React.ReactElement;
   subHeader?: {
     right?: React.ReactElement[];
-    left: React.ReactElement[];
+    left?: React.ReactElement[];
   };
   controlledDial?: DrawerControlledDialType;
   containerStyle?: CSSProperties;
