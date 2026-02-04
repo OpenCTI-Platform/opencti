@@ -98,12 +98,14 @@ const ThreatActorsIndividual = () => {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         handleChangeView={helpers.handleChangeView}
+        additionalHeaderButtons={[
+          <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE]}>
+            <StixCoreObjectForms entityType="Threat-Actor-Individual" />
+          </Security>,
+        ]}
         createButton={(
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <div style={{ display: 'flex' }}>
-              <StixCoreObjectForms entityType="Threat-Actor-Individual" />
-              <ThreatActorIndividualCreation paginationOptions={queryPaginationOptions} />
-            </div>
+            <ThreatActorIndividualCreation paginationOptions={queryPaginationOptions} />
           </Security>
         )}
       >

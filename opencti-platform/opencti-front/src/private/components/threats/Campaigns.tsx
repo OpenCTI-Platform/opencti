@@ -92,12 +92,14 @@ const Campaigns = () => {
         paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
         handleChangeView={helpers.handleChangeView}
+        additionalHeaderButtons={[
+          <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE]}>
+            <StixCoreObjectForms entityType="Campaign" />
+          </Security>,
+        ]}
         createButton={(
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <div style={{ display: 'flex' }}>
-              <StixCoreObjectForms entityType="Campaign" />
-              <CampaignCreation paginationOptions={queryPaginationOptions} />
-            </div>
+            <CampaignCreation paginationOptions={queryPaginationOptions} />
           </Security>
         )}
       >
@@ -181,12 +183,14 @@ const Campaigns = () => {
                 </Tooltip>
               </ToggleButton>,
             ]}
+            additionalHeaderButtons={[
+              <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE]}>
+                <StixCoreObjectForms entityType="Campaign" />
+              </Security>,
+            ]}
             createButton={(
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <div style={{ display: 'flex' }}>
-                  <StixCoreObjectForms entityType="Campaign" />
-                  <CampaignCreation paginationOptions={queryPaginationOptions} />
-                </div>
+                <CampaignCreation paginationOptions={queryPaginationOptions} />
               </Security>
             )}
           />
