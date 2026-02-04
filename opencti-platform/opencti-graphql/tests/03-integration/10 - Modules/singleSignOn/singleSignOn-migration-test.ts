@@ -19,6 +19,7 @@ describe('Migration of SSO environment test coverage', () => {
       expect(result[0].enabled).toBeTruthy();
       expect(result.length).toBe(1);
     });
+
     it('should local disabled works', async () => {
       const configuration = {
         local: {
@@ -443,6 +444,8 @@ describe('Migration of SSO environment test coverage', () => {
             redirect_uris: ['http://localhost:4000/auth/oic/callback'],
             label: 'My test oic with Types',
             entry_point: 'http://localhost:7777/realms/master/protocol/oic',
+            default_scopes: ['myopenid', 'myemail', 'myprofile'],
+            logout_remote: false,
           },
         },
       };
@@ -460,6 +463,8 @@ describe('Migration of SSO environment test coverage', () => {
         { key: 'client_secret', type: 'string', value: 'youShallNotPass' },
         { key: 'redirect_uris', type: 'array', value: '["http://localhost:4000/auth/oic/callback"]' },
         { key: 'entry_point', type: 'string', value: 'http://localhost:7777/realms/master/protocol/oic' },
+        { key: 'default_scopes', type: 'array', value: '["myopenid","myemail","myprofile"]' },
+        { key: 'logout_remote', type: 'boolean', value: 'false' },
       ]);
     });
 
@@ -509,6 +514,57 @@ describe('Migration of SSO environment test coverage', () => {
         read_userinfo: false,
         token_reference: 'token',
         groups_scope: 'groupsScope',
+      });
+    });
+
+    it('should OpenId with organization mapping in configuration works', async () => {
+      if (!MIGRATED_STRATEGY.some((strat) => strat === EnvStrategyType.STRATEGY_OPENID)) {
+        return;
+      }
+      const configuration = {
+        oic_orgs: {
+          identifier: 'oic_orgs',
+          strategy: 'OpenIDConnectStrategy',
+          config: {
+            issuer: 'http://localhost:9999/realms/master',
+            client_id: 'oic_orgs',
+            client_secret: 'youShallNotPass',
+            redirect_uris: ['http://localhost:4000/auth/oic_orgs/callback'],
+            logout_remote: true,
+            prevent_default_groups: false,
+            organizations_management: {
+              organizations_path: [
+                'orgs',
+              ],
+              organizations_mapping: [
+                '/Filigran org:Filigran',
+              ],
+              read_userinfo: false,
+              token_reference: 'access_token2',
+            },
+          },
+        },
+      };
+
+      const result = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
+      const orgsOpenIdConfiguration = result[0];
+      expect(orgsOpenIdConfiguration.strategy).toBe('OpenIDConnectStrategy');
+      expect(orgsOpenIdConfiguration.label).toBe('oic_orgs');
+      expect(orgsOpenIdConfiguration.enabled).toBeTruthy();
+      expect(orgsOpenIdConfiguration.configuration).toStrictEqual([
+        { key: 'issuer', type: 'string', value: 'http://localhost:9999/realms/master' },
+        { key: 'client_id', type: 'string', value: 'oic_orgs' },
+        { key: 'client_secret', type: 'string', value: 'youShallNotPass' },
+        { key: 'redirect_uris', type: 'array', value: '["http://localhost:4000/auth/oic_orgs/callback"]' },
+        { key: 'logout_remote', type: 'boolean', value: 'true' },
+        { key: 'prevent_default_groups', type: 'boolean', value: 'false' },
+      ]);
+
+      expect(orgsOpenIdConfiguration.organizations_management).toStrictEqual({
+        organizations_mapping: ['/Filigran org:Filigran'],
+        organizations_path: ['orgs'],
+        read_userinfo: false,
+        token_reference: 'access_token2',
       });
     });
 

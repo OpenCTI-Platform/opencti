@@ -420,26 +420,25 @@ export const parseSingleSignOnRunConfiguration = async (context: AuthContext, us
     for (let i = 0; i < authenticationStrategiesInput.length; i++) {
       const currentAuthProvider = authenticationStrategiesInput[i];
       try {
-      const identifier = currentAuthProvider.identifier;
-
-      if (identifier && !isAuthenticationProviderMigrated(identifiersInDb, identifier)) {
-        logApp.info(`[SSO CONVERSION] creating new configuration for ${identifier}`);
-        const created = await internalAddSingleSignOn(context, user, currentAuthProvider, true);
-        const queryResult: SingleSignOnMigrationResult = {
-          enabled: created.enabled,
-          name: created.name,
-          label: created.label,
-          strategy: created.strategy,
-          description: created.description,
-          id: created.id,
-          configuration: created.configuration,
-          identifier: created.identifier,
-        };
-        authenticationStrategies.push(queryResult);
-      } else {
-        logApp.info(`[SSO CONVERSION] skipping ${currentAuthProvider.strategy} - ${identifier} as it's already in database.`, { auth_strategy_migrated: settings?.auth_strategy_migrated });
-      }
-} catch (error) {
+        const identifier = currentAuthProvider.identifier;
+        if (identifier && !isAuthenticationProviderMigrated(identifiersInDb, identifier)) {
+          logApp.info(`[SSO CONVERSION] creating new configuration for ${identifier}`);
+          const created = await internalAddSingleSignOn(context, user, currentAuthProvider, true);
+          const queryResult: SingleSignOnMigrationResult = {
+            enabled: created.enabled,
+            name: created.name,
+            label: created.label,
+            strategy: created.strategy,
+            description: created.description,
+            id: created.id,
+            configuration: created.configuration,
+            identifier: created.identifier,
+          };
+          authenticationStrategies.push(queryResult);
+        } else {
+          logApp.info(`[SSO CONVERSION] skipping ${currentAuthProvider.strategy} - ${identifier} as it's already in database.`);
+        }
+      } catch (error) {
         logApp.error(`[SSO CONVERSION] Error when trying to convert ${currentAuthProvider.identifier}`, { cause: error });
       }
     }
