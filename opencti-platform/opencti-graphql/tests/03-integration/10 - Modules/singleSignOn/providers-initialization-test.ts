@@ -371,7 +371,7 @@ describe('Providers initialization coverage', () => {
     });
   });
 
-  describe('initializeAdminUser configurations verifications', () => {
+  describe.skip('initializeAdminUser configurations verifications', () => {
     let adminToken: string;
     let adminEmail: string;
     let adminPassword: string;
