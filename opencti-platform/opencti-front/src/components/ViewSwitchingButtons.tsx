@@ -33,10 +33,9 @@ const ViewSwitchingButtons: FunctionComponent<ViewSwitchingButtonsProps> = ({
   return (
     <ToggleButtonGroup
       size="small"
-      color="secondary"
+      color="primary"
       exclusive={true}
       value={currentView}
-      style={{ margin: '0 0 0 5px' }}
     >
       {typeof handleChangeView === 'function' && !disableCards && (
         <Tooltip title={t_i18n('Cards view')}>
@@ -51,11 +50,6 @@ const ViewSwitchingButtons: FunctionComponent<ViewSwitchingButtonsProps> = ({
           <ToggleButton value="entities" aria-label="entities">
             <LibraryBooksOutlined
               fontSize="small"
-              color={
-                currentView === 'entities'
-                  ? 'secondary'
-                  : 'primary'
-              }
             />
           </ToggleButton>
         </Tooltip>
@@ -68,11 +62,6 @@ const ViewSwitchingButtons: FunctionComponent<ViewSwitchingButtonsProps> = ({
           >
             <RelationManyToMany
               fontSize="small"
-              color={
-                currentView === 'relationships' || !currentView
-                  ? 'secondary'
-                  : 'primary'
-              }
             />
           </ToggleButton>
         </Tooltip>

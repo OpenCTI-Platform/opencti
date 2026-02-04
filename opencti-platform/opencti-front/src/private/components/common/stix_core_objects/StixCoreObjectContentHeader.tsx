@@ -25,11 +25,11 @@ const StixCoreObjectContentHeader: FunctionComponent<StixCoreObjectContentHeader
 
   return (
     <div style={{
-      margin: '-65px 0 0 0',
+      margin: '-70px 0 0 0',
       float: 'right',
     }}
     >
-      <ToggleButtonGroup size="small" exclusive={true}>
+      <ToggleButtonGroup size="small" color="primary" exclusive={true}>
         {modes.includes('content') && (
           <Tooltip title={t_i18n('Content view')}>
             <ToggleButton
@@ -40,7 +40,6 @@ const StixCoreObjectContentHeader: FunctionComponent<StixCoreObjectContentHeader
             >
               <NewspaperOutlined
                 fontSize="small"
-                color={currentMode === 'content' ? 'primary' : 'inherit'}
               />
             </ToggleButton>
           </Tooltip>
@@ -56,7 +55,6 @@ const StixCoreObjectContentHeader: FunctionComponent<StixCoreObjectContentHeader
             >
               <DriveFileRenameOutlineOutlined
                 fontSize="small"
-                color={currentMode === 'editor' ? 'primary' : 'inherit'}
               />
             </ToggleButton>
           </Tooltip>
@@ -72,7 +70,6 @@ const StixCoreObjectContentHeader: FunctionComponent<StixCoreObjectContentHeader
             >
               <DifferenceOutlined
                 fontSize="small"
-                color={currentMode === 'mapping' ? 'primary' : 'inherit'}
               />
             </ToggleButton>
           </Tooltip>

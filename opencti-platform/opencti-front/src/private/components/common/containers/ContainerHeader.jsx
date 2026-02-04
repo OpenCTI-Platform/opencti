@@ -508,7 +508,7 @@ const ContainerHeader = (props) => {
     containerStyle = {
       position: 'absolute',
       display: 'flex',
-      top: 190 + bannerHeightNumber + settingsMessagesBannerHeight,
+      top: 196 + bannerHeightNumber + settingsMessagesBannerHeight,
       right: 24,
     };
   }
@@ -572,8 +572,40 @@ const ContainerHeader = (props) => {
           <HeaderMainEntityLayout
             title={title}
             hideTitle={knowledge}
-            titleRight={(
+            rightActions={(
               <>
+                {!knowledge && (
+                  <StixCoreObjectBackgroundTasks
+                    id={container.id}
+                    actionsFilter={['SHARE', 'UNSHARE', 'SHARE_MULTIPLE', 'UNSHARE_MULTIPLE']}
+                  />
+                )}
+                {displaySharing && (
+                  <>
+                    <StixCoreObjectSharing
+                      elementId={container.id}
+                      open={openSharing}
+                      variant="header"
+                      disabled={isSharingDisabled}
+                      handleClose={displaySharingButton ? undefined : handleCloseSharing}
+                      inContainer={true}
+                    />
+                  </>
+                )}
+                {displayAuthorizedMembers && (
+                  <FormAuthorizedMembersDialog
+                    id={container.id}
+                    owner={container.creators?.[0]}
+                    authorizedMembers={authorizedMembersToOptions(
+                      container.authorized_members,
+                    )}
+                    mutation={containerHeaderEditAuthorizedMembersMutation}
+                    open={openAccessRestriction}
+                    handleClose={displayAuthorizedMembersButton ? undefined : handleCloseAccessRestriction}
+                    canDeactivate={true}
+                  />
+                )}
+
                 {knowledge && (
                   <ExportButtons
                     domElementId="container"
@@ -587,7 +619,7 @@ const ContainerHeader = (props) => {
                 {
                   modes && (
                     <div id="container-view-buttons">
-                      <ToggleButtonGroup size="small" exclusive={true} style={{ marginLeft: theme.spacing(2) }}>
+                      <ToggleButtonGroup size="small" exclusive={true}>
                         {modes.includes('graph') && (
                           <Tooltip title={t_i18n('Graph view')}>
                             <ToggleButton
@@ -653,41 +685,7 @@ const ContainerHeader = (props) => {
                       </ToggleButtonGroup>
                     </div>
                   )}
-              </>
-            )}
-            rightActions={(
-              <>
-                {!knowledge && (
-                  <StixCoreObjectBackgroundTasks
-                    id={container.id}
-                    actionsFilter={['SHARE', 'UNSHARE', 'SHARE_MULTIPLE', 'UNSHARE_MULTIPLE']}
-                  />
-                )}
-                {displaySharing && (
-                  <>
-                    <StixCoreObjectSharing
-                      elementId={container.id}
-                      open={openSharing}
-                      variant="header"
-                      disabled={isSharingDisabled}
-                      handleClose={displaySharingButton ? undefined : handleCloseSharing}
-                      inContainer={true}
-                    />
-                  </>
-                )}
-                {displayAuthorizedMembers && (
-                  <FormAuthorizedMembersDialog
-                    id={container.id}
-                    owner={container.creators?.[0]}
-                    authorizedMembers={authorizedMembersToOptions(
-                      container.authorized_members,
-                    )}
-                    mutation={containerHeaderEditAuthorizedMembersMutation}
-                    open={openAccessRestriction}
-                    handleClose={displayAuthorizedMembersButton ? undefined : handleCloseAccessRestriction}
-                    canDeactivate={true}
-                  />
-                )}
+
                 {!knowledge && (
                   <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
                     <StixCoreObjectFileExport

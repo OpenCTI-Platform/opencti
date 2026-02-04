@@ -201,36 +201,31 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
   } as UsePreloadedPaginationFragment<EntityStixCoreRelationshipsIndicatorsEntitiesViewQuery>;
 
   const entitiesViewButton = (
-    <ToggleButton value="entities" aria-label="entities" onClick={() => storageHelpers.handleChangeView('entities')}>
-      <Tooltip title={t_i18n('Entities view')}>
+    <Tooltip title={t_i18n('Entities view')}>
+      <ToggleButton value="entities" aria-label="entities" onClick={() => storageHelpers.handleChangeView('entities')}>
         <LibraryBooksOutlined
           fontSize="small"
-          color={currentView === 'entities' ? 'secondary' : 'primary'}
         />
-      </Tooltip>
-    </ToggleButton>
+      </ToggleButton>
+    </Tooltip>
   );
   const relationshipsView = (
-    <ToggleButton value="relationships" aria-label="relationships" onClick={() => storageHelpers.handleChangeView('relationships')}>
-      <Tooltip title={t_i18n('Relationships view')}>
+    <Tooltip title={t_i18n('Relationships view')}>
+      <ToggleButton value="relationships" aria-label="relationships" onClick={() => storageHelpers.handleChangeView('relationships')}>
         <RelationManyToMany
           fontSize="small"
-          color={currentView === 'relationships' ? 'secondary' : 'primary'}
         />
-      </Tooltip>
-    </ToggleButton>
+      </ToggleButton>
+    </Tooltip>
   );
   const knowledgeFromRelatedContainersView = (
-    <ToggleButton value="contextual" aria-label="contextual" onClick={() => storageHelpers.handleChangeView('contextual')}>
-      <Tooltip
-        title={t_i18n('Knowledge from related containers view')}
-      >
+    <Tooltip title={t_i18n('Knowledge from related containers view')}>
+      <ToggleButton value="contextual" aria-label="contextual" onClick={() => storageHelpers.handleChangeView('contextual')}>
         <Group
           fontSize="small"
-          color={currentView === 'contextual' || !currentView ? 'secondary' : 'primary'}
         />
-      </Tooltip>
-    </ToggleButton>
+      </ToggleButton>
+    </Tooltip>
   );
 
   useInitCreateRelationshipContext({
@@ -261,7 +256,8 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={entityStixCoreRelationshipsIndicatorsEntitiesViewLineFragment}
           exportContext={{ entity_id: entityId, entity_type: 'Indicator' }}
-          additionalHeaderButtons={[...viewButtons]}
+          currentView={currentView}
+          additionalHeaderToggleButtons={[...viewButtons]}
         />
       )}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>

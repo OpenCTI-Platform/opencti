@@ -1,13 +1,11 @@
 import Button from '@common/button/Button';
 import { Add } from '@mui/icons-material';
 import { IconButton, Stack, Tooltip } from '@mui/material';
-import { useTheme } from '@mui/styles';
 import { FunctionComponent, Suspense, useState } from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import { DataColumns } from '../../../../components/list_lines';
 import ListLines from '../../../../components/list_lines/ListLines';
-import type { Theme } from '../../../../components/Theme';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { PaginationLocalStorage, usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
@@ -27,10 +25,8 @@ interface ControlledDialProps {
 }
 
 const ControlledDial = ({ onOpen, title }: ControlledDialProps) => {
-  const theme = useTheme<Theme>();
   return (
     <Button
-      style={{ marginLeft: theme.spacing(1) }}
       aria-label={title}
       onClick={() => onOpen()}
     >

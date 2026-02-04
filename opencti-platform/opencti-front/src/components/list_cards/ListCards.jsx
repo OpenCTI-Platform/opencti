@@ -20,6 +20,7 @@ import Security from '../../utils/Security';
 import { KNOWLEDGE_KNGETEXPORT } from '../../utils/hooks/useGranted';
 import FilterIconButton from '../FilterIconButton';
 import { export_max_size } from '../../utils/utils';
+import { Stack } from '@mui/material';
 
 const styles = (theme) => ({
   parameters: {
@@ -78,6 +79,7 @@ class ListCards extends Component {
       numberOfElements,
       helpers,
       createButton,
+      additionalHeaderButtons,
     } = this.props;
     const exportDisabled = numberOfElements && numberOfElements.number > export_max_size;
     const entityType = exportContext?.entity_type;
@@ -145,9 +147,9 @@ class ListCards extends Component {
                   </IconButton>
                 </div>
                 <div className={classes.filler} />
-                <div style={{ display: 'flex' }}>
+                <Stack direction="row" gap={1}>
                   {numberOfElements && (
-                    <div style={{ marginRight: '8px', alignSelf: 'center' }}>
+                    <div style={{ alignSelf: 'center' }}>
                       <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>{' '}
                       {t('entitie(s)')}
                     </div>
@@ -156,7 +158,6 @@ class ListCards extends Component {
                     || typeof handleToggleExports === 'function') && (
                     <ToggleButtonGroup
                       size="small"
-                      color="secondary"
                       value="cards"
                       exclusive={true}
                       onChange={(_, value) => {
@@ -168,29 +169,29 @@ class ListCards extends Component {
                       }}
                     >
                       {typeof handleChangeView === 'function' && (
-                        <ToggleButton value="cards" aria-label="cards">
-                          <Tooltip title={t('Cards view')}>
-                            <ViewModuleOutlined fontSize="small" />
-                          </Tooltip>
-                        </ToggleButton>
+                        <Tooltip title={t('Cards view')}>
+                          <ToggleButton value="cards" aria-label="cards">
+                            <ViewModuleOutlined fontSize="small" color="primary" />
+                          </ToggleButton>
+                        </Tooltip>
                       )}
                       {typeof handleChangeView === 'function' && (
-                        <ToggleButton value="lines" aria-label="lines">
-                          <Tooltip title={t('Lines view')}>
-                            <ViewListOutlined color="primary" fontSize="small" />
-                          </Tooltip>
-                        </ToggleButton>
+                        <Tooltip title={t('Lines view')}>
+                          <ToggleButton value="lines" aria-label="lines">
+                            <ViewListOutlined fontSize="small" color="primary" />
+                          </ToggleButton>
+                        </Tooltip>
                       )}
                       {typeof handleToggleExports === 'function'
                         && !exportDisabled && (
-                        <ToggleButton value="export" aria-label="export">
-                          <Tooltip title={t('Open export panel')}>
+                        <Tooltip title={t('Open export panel')}>
+                          <ToggleButton value="export" aria-label="export">
                             <FileDownloadOutlined
-                              color={openExports ? 'secondary' : 'primary'}
+                              color="primary"
                               fontSize="small"
                             />
-                          </Tooltip>
-                        </ToggleButton>
+                          </ToggleButton>
+                        </Tooltip>
                       )}
                       {typeof handleToggleExports === 'function'
                         && exportDisabled && (
@@ -215,8 +216,25 @@ class ListCards extends Component {
                       )}
                     </ToggleButtonGroup>
                   )}
+
+                  {
+                    additionalHeaderButtons && (
+                      <Stack
+                        direction="row"
+                        gap={1}
+                        sx={{
+                          '&:empty': {
+                            display: 'none',
+                          },
+                        }}
+                      >
+                        {[...additionalHeaderButtons]}
+                      </Stack>
+                    )
+                  }
+
                   {createButton}
-                </div>
+                </Stack>
               </div>
               <FilterIconButton
                 helpers={helpers}
@@ -271,6 +289,7 @@ ListCards.propTypes = {
   numberOfElements: PropTypes.object,
   helpers: PropTypes.object,
   createButton: PropTypes.object,
+  additionalHeaderButtons: PropTypes.arrayOf[React.ReactNode],
 };
 
 export default compose(inject18n, withStyles(styles))(ListCards);

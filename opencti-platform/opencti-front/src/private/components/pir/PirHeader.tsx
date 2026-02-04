@@ -84,14 +84,14 @@ const PirHeader = ({ data, editionData }: PirHeaderProps) => {
     <>
       <Breadcrumbs elements={breadcrumb} />
 
-      <Stack direction="row" alignItems="center" gap={0.5} marginBottom={3}>
+      <Stack direction="row" alignItems="center" gap={1} marginBottom={3}>
         <TitleMainEntity sx={{ flex: 1 }}>
           {name}
         </TitleMainEntity>
 
         <Security needs={[PIRAPI_PIRUPDATE]} hasAccess={canEdit}>
           <>
-            <div style={{ display: 'flex', gap: 4 }}>
+            <div style={{ display: 'flex', gap: 8 }}>
               <Security matchAll needs={[PIRAPI_PIRUPDATE, SETTINGS_SETACCESSES]} hasAccess={canManage}>
                 <FormAuthorizedMembersDialog
                   id={id}

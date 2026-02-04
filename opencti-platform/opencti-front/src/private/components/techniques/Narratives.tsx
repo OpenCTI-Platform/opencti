@@ -1,31 +1,31 @@
-import React, { FunctionComponent } from 'react';
+import FiligranIcon from '@components/common/FiligranIcon';
 import { NarrativeWithSubnarrativeLineDummy } from '@components/techniques/narratives/NarrativeWithSubnarrativeLine';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import { NarrativesLines_data$data } from '@components/techniques/narratives/__generated__/NarrativesLines_data.graphql';
+import { Stack } from '@mui/material';
 import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
-import { NarrativesLines_data$data } from '@components/techniques/narratives/__generated__/NarrativesLines_data.graphql';
 import { useTheme } from '@mui/styles';
 import { ListViewIcon, SublistViewIcon } from 'filigran-icon';
-import FiligranIcon from '@components/common/FiligranIcon';
+import React, { FunctionComponent } from 'react';
+import Breadcrumbs from '../../../components/Breadcrumbs';
+import SearchInput from '../../../components/SearchInput';
+import type { Theme } from '../../../components/Theme';
+import ViewSwitchingButtons from '../../../components/ViewSwitchingButtons';
+import DataTable from '../../../components/dataGrid/DataTable';
+import { useFormatter } from '../../../components/i18n';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
+import Security from '../../../utils/Security';
+import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
+import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
+import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import NarrativeCreation from './narratives/NarrativeCreation';
 import { narrativeLineFragment } from './narratives/NarrativeLine';
 import { narrativesLinesFragment, narrativesLinesQuery } from './narratives/NarrativesLines';
 import NarrativesWithSubnarrativesLines from './narratives/NarrativesWithSubnarrativesLines';
-import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
-import NarrativeCreation from './narratives/NarrativeCreation';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
-import { useFormatter } from '../../../components/i18n';
-import Breadcrumbs from '../../../components/Breadcrumbs';
 import { NarrativesLinesPaginationQuery, NarrativesLinesPaginationQuery$variables } from './narratives/__generated__/NarrativesLinesPaginationQuery.graphql';
-import SearchInput from '../../../components/SearchInput';
-import ViewSwitchingButtons from '../../../components/ViewSwitchingButtons';
-import DataTable from '../../../components/dataGrid/DataTable';
-import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
-import type { Theme } from '../../../components/Theme';
-import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY = 'narratives';
 
@@ -70,44 +70,32 @@ const Narratives: FunctionComponent = () => {
   const renderSubEntityLines = () => {
     return (
       <>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: theme.spacing(2),
-        }}
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+          sx={{ marginBottom: theme.spacing(2) }}
         >
           <SearchInput
             variant="small"
             onSubmit={helpers.handleSearch}
             keyword={searchTerm}
           />
-          <div style={{
-            marginTop: 0,
-            marginRight: 0,
-            display: 'flex',
-            alignItems: 'center',
-          }}
-          >
-            <ToggleButtonGroup
-              size="small"
-              color="secondary"
-              value={view || 'lines'}
-              exclusive={true}
-            >
-              <ViewSwitchingButtons
-                handleChangeView={helpers.handleChangeView}
-                disableCards={true}
-                currentView={view}
-                enableSubEntityLines={true}
-              />
-            </ToggleButtonGroup>
+
+          <Stack direction="row" gap={1}>
+            <ViewSwitchingButtons
+              handleChangeView={helpers.handleChangeView}
+              disableCards={true}
+              currentView={view}
+              enableSubEntityLines={true}
+            />
+
             <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
               <NarrativeCreation paginationOptions={queryPaginationOptions} />
             </Security>
-          </div>
-        </div>
-        <div className="clearfix" />
+          </Stack>
+        </Stack>
+
         {queryRef && (
           <React.Suspense
             fallback={(
@@ -178,7 +166,7 @@ const Narratives: FunctionComponent = () => {
             resolvePath={(data: NarrativesLines_data$data) => data.narratives?.edges?.map(({ node }) => node)}
             preloadedPaginationProps={preloadedPaginationProps}
             contextFilters={contextFilters}
-            additionalHeaderButtons={[
+            additionalHeaderToggleButtons={[
               (
                 <Tooltip key="lines" title={t_i18n('Lines view')}>
                   <ToggleButton

@@ -261,11 +261,11 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
       >
         <ViewColumnOutlined
           fontSize="small"
-          color={currentView === 'matrix' ? 'secondary' : 'primary'}
         />
       </ToggleButton>
     </Tooltip>
   );
+
   const matrixInLineViewButton = (
     <Tooltip title={t_i18n('Matrix in line view')} key="matrix-in-line">
       <ToggleButton value="matrix-in-line" aria-label="matrix-in-line" onClick={() => handleChangeView('matrix-in-line')}>
@@ -283,17 +283,18 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   const courseOfActionView = (
     <Tooltip title={t_i18n('Courses of action view')} key="courses-of-action">
       <ToggleButton value="courses-of-action" aria-label="courses-of-action" onClick={() => handleChangeView('courses-of-action')}>
-        <ProgressWrench fontSize="small" color={currentView === 'courses-of-action' ? 'secondary' : 'primary'} />
+        <ProgressWrench fontSize="small" />
       </ToggleButton>
     </Tooltip>
   );
   const relationshipsView = (
     <Tooltip title={t_i18n('Relationships view')} key="relationships">
       <ToggleButton value="relationships" aria-label="relationships" onClick={() => handleChangeView('relationships')}>
-        <RelationManyToMany fontSize="small" color={currentView === 'relationships' ? 'secondary' : 'primary'} />
+        <RelationManyToMany fontSize="small" />
       </ToggleButton>
     </Tooltip>
   );
+
   const viewButtons = [matrixViewButton, matrixInLineViewButton, killChainViewButton, courseOfActionView, relationshipsView];
 
   return (
@@ -407,8 +408,17 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
 
               {displayButtons
                 && (
-                  <div id="container-view-buttons">
-                    <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
+                  <Stack
+                    id="container-view-buttons"
+                    direction="row"
+                    gap={1}
+                  >
+                    <ToggleButtonGroup
+                      size="small"
+                      color="primary"
+                      exclusive={true}
+                      value={currentView}
+                    >
                       {[...viewButtons]}
                       {typeof handleToggleExports === 'function' && (
                         <Tooltip
@@ -435,20 +445,13 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
                       )}
                     </ToggleButtonGroup>
 
-                    <div
-                      style={{
-                        float: 'right',
-                        margin: '0 0 0 20px',
-                      }}
-                    >
-                      <ExportButtons
-                        domElementId="container"
-                        name={t_i18n('Attack patterns kill chain')}
-                        csvData={csvData}
-                        csvFileName={`${t_i18n('Attack pattern courses of action')}.csv`}
-                      />
-                    </div>
-                  </div>
+                    <ExportButtons
+                      domElementId="container"
+                      name={t_i18n('Attack patterns kill chain')}
+                      csvData={csvData}
+                      csvFileName={`${t_i18n('Attack pattern courses of action')}.csv`}
+                    />
+                  </Stack>
                 )}
 
             </Stack>

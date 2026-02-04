@@ -92,12 +92,14 @@ const Campaigns = () => {
         paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
         handleChangeView={helpers.handleChangeView}
+        additionalHeaderButtons={[
+          <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE]}>
+            <StixCoreObjectForms entityType="Campaign" />
+          </Security>,
+        ]}
         createButton={(
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <div style={{ display: 'flex' }}>
-              <StixCoreObjectForms entityType="Campaign" />
-              <CampaignCreation paginationOptions={queryPaginationOptions} />
-            </div>
+            <CampaignCreation paginationOptions={queryPaginationOptions} />
           </Security>
         )}
       >
@@ -169,24 +171,26 @@ const Campaigns = () => {
             preloadedPaginationProps={preloadedPaginationProps}
             lineFragment={CampaignCardFragment}
             exportContext={{ entity_type: 'Campaign' }}
-            additionalHeaderButtons={[
+            additionalHeaderToggleButtons={[
               <ToggleButton key="cards" value="cards" aria-label="cards">
                 <Tooltip title={t_i18n('Cards view')}>
-                  <ViewModuleOutlined fontSize="small" color="primary" />
+                  <ViewModuleOutlined fontSize="small" />
                 </Tooltip>
               </ToggleButton>,
               <ToggleButton key="lines" value="lines" aria-label="lines">
                 <Tooltip title={t_i18n('Lines view')}>
-                  <ViewListOutlined color="secondary" fontSize="small" />
+                  <ViewListOutlined fontSize="small" />
                 </Tooltip>
               </ToggleButton>,
             ]}
+            additionalHeaderButtons={[
+              <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE]}>
+                <StixCoreObjectForms entityType="Campaign" />
+              </Security>,
+            ]}
             createButton={(
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <div style={{ display: 'flex' }}>
-                  <StixCoreObjectForms entityType="Campaign" />
-                  <CampaignCreation paginationOptions={queryPaginationOptions} />
-                </div>
+                <CampaignCreation paginationOptions={queryPaginationOptions} />
               </Security>
             )}
           />

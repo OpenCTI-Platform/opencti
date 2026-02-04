@@ -309,7 +309,7 @@ const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({
           disableLineSelection
           removeSelectAll
           icon={(data: UserHistoryLine_node$data) => renderIcon(data.event_scope, data.context_data?.message, data.context_data?.commit)}
-          additionalHeaderButtons={[
+          additionalHeaderToggleButtons={[
             <Tooltip title={t_i18n('View all entities created by user')} key="entities">
               <IconButton
                 component={Link}

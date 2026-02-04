@@ -93,12 +93,14 @@ const IntrusionSets = () => {
         paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
         handleChangeView={helpers.handleChangeView}
+        additionalHeaderButtons={[
+          <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE]}>
+            <StixCoreObjectForms entityType="Intrusion-Set" />
+          </Security>,
+        ]}
         createButton={(
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <div style={{ display: 'flex' }}>
-              <StixCoreObjectForms entityType="Intrusion-Set" />
-              <IntrusionSetCreation paginationOptions={queryPaginationOptions} />
-            </div>
+            <IntrusionSetCreation paginationOptions={queryPaginationOptions} />
           </Security>
         )}
       >
@@ -165,24 +167,26 @@ const IntrusionSets = () => {
             preloadedPaginationProps={preloadedPaginationProps}
             lineFragment={IntrusionSetCardFragment}
             exportContext={{ entity_type: 'Intrusion-Set' }}
-            additionalHeaderButtons={[
+            additionalHeaderToggleButtons={[
               <ToggleButton key="cards" value="cards" aria-label="cards">
                 <Tooltip title={t_i18n('Cards view')}>
-                  <ViewModuleOutlined fontSize="small" color="primary" />
+                  <ViewModuleOutlined fontSize="small" />
                 </Tooltip>
               </ToggleButton>,
               <ToggleButton key="lines" value="lines" aria-label="lines">
                 <Tooltip title={t_i18n('Lines view')}>
-                  <ViewListOutlined color="secondary" fontSize="small" />
+                  <ViewListOutlined fontSize="small" />
                 </Tooltip>
               </ToggleButton>,
             ]}
+            additionalHeaderButtons={[
+              <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE]}>
+                <StixCoreObjectForms entityType="Intrusion-Set" />
+              </Security>,
+            ]}
             createButton={(
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <div style={{ display: 'flex' }}>
-                  <StixCoreObjectForms entityType="Intrusion-Set" />
-                  <IntrusionSetCreation paginationOptions={queryPaginationOptions} />
-                </div>
+                <IntrusionSetCreation paginationOptions={queryPaginationOptions} />
               </Security>
             )}
           />

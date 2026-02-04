@@ -1,13 +1,13 @@
-import React, { FunctionComponent, Suspense, useEffect, useState } from 'react';
-import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import { StixCoreObjectFormsFormsQuery, StixCoreObjectFormsFormsQuery$variables } from '@components/common/stix_core_objects/__generated__/StixCoreObjectFormsFormsQuery.graphql';
-import Tooltip from '@mui/material/Tooltip';
-import { AssignmentOutlined } from '@mui/icons-material';
 import StixCoreObjectFormSelector from '@components/common/stix_core_objects/StixCoreObjectFormSelector';
+import { AssignmentOutlined } from '@mui/icons-material';
+import Tooltip from '@mui/material/Tooltip';
+import { FunctionComponent, Suspense, useEffect, useState } from 'react';
+import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
+import IconButton from '../../../../components/common/button/IconButton';
 import { useFormatter } from '../../../../components/i18n';
-import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
-import { ToggleButton } from '@mui/material';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 // region types
 interface StixCoreObjectFormsProps {
@@ -39,18 +39,19 @@ const StixCoreObjectFormsComponent: FunctionComponent<StixCoreObjectFormsCompone
   const [isFormSelectorOpen, setIsFormSelectorOpen] = useState(false);
   const data = usePreloadedQuery(stixCoreObjectFormsFormsQuery, queryRef);
   const hasForms = (data?.forms?.edges?.length ?? 0) > 0;
+
   return (
     <>
       {hasForms && (
         <Tooltip title={t_i18n('Use a form to create')}>
-          <ToggleButton
-            size="small"
+          <IconButton
+            size="default"
+            variant="secondary"
             value="formIntake"
             onClick={() => setIsFormSelectorOpen(true)}
-            color="primary"
           >
             <AssignmentOutlined color="primary" />
-          </ToggleButton>
+          </IconButton>
         </Tooltip>
       )}
       <StixCoreObjectFormSelector data={data} open={isFormSelectorOpen} handleClose={() => setIsFormSelectorOpen(false)} />

@@ -207,12 +207,14 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={caseFragment}
           exportContext={{ entity_type: 'Case-Rft' }}
+          additionalHeaderButtons={[
+            <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE]}>
+              <StixCoreObjectForms entityType="Case-Rft" />
+            </Security>,
+          ]}
           createButton={(
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <div style={{ display: 'flex' }}>
-                <StixCoreObjectForms entityType="Case-Rft" />
-                <CaseRftCreation paginationOptions={queryPaginationOptions} />
-              </div>
+              <CaseRftCreation paginationOptions={queryPaginationOptions} />
             </Security>
           )}
         />

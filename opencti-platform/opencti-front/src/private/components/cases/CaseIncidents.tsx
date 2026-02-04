@@ -204,12 +204,14 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={caseIncidentFragment}
           exportContext={{ entity_type: 'Case-Incident' }}
+          additionalHeaderButtons={[
+            <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE]}>
+              <StixCoreObjectForms entityType="Case-Incident" />
+            </Security>,
+          ]}
           createButton={(
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <div style={{ display: 'flex' }}>
-                <StixCoreObjectForms entityType="Case-Incident" />
-                <CaseIncidentCreation paginationOptions={queryPaginationOptions} />
-              </div>
+              <CaseIncidentCreation paginationOptions={queryPaginationOptions} />
             </Security>
           )}
         />
