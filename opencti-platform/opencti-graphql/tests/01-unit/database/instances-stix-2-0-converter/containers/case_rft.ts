@@ -5,7 +5,7 @@ export const RFT_INSTANCE = {
   _id: 'ae110ba9-34a7-44ef-86b9-7b52def4b4aa',
   id: 'ae110ba9-34a7-44ef-86b9-7b52def4b4aa',
   sort: [
-    1750960528869
+    1750960528869,
   ],
   name: 'RFT STIX 2.0',
   description: 'description',
@@ -15,13 +15,13 @@ export const RFT_INSTANCE = {
   confidence: 100,
   created: '2025-06-26T17:54:43.000Z',
   takedown_types: [
-    'brand-abuse'
+    'brand-abuse',
   ],
   entity_type: 'Case-Rft',
   internal_id: 'ae110ba9-34a7-44ef-86b9-7b52def4b4aa',
   standard_id: 'case-rft--8456f0c2-0308-578b-b90c-1dd6e0440763',
   creator_id: [
-    '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
+    '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
   ],
   x_opencti_stix_ids: [],
   created_at: '2025-06-26T17:55:28.869Z',
@@ -36,7 +36,7 @@ export const RFT_INSTANCE = {
     'Stix-Core-Object',
     'Stix-Domain-Object',
     'Container',
-    'Case'
+    'Case',
   ],
   x_opencti_files: [
     {
@@ -45,7 +45,7 @@ export const RFT_INSTANCE = {
       version: '2025-06-26T17:55:28.870Z',
       mime_type: 'application/json',
       file_markings: [
-        '2cc876e4-ae90-497b-a4ae-16c762f0d03f'
+        '2cc876e4-ae90-497b-a4ae-16c762f0d03f',
       ],
       objectMarking: [
         {
@@ -53,48 +53,48 @@ export const RFT_INSTANCE = {
           _id: '2cc876e4-ae90-497b-a4ae-16c762f0d03f',
           id: '2cc876e4-ae90-497b-a4ae-16c762f0d03f',
           sort: [
-            1749546753947
+            1749546753947,
           ],
           entity_type: 'Marking-Definition',
           internal_id: '2cc876e4-ae90-497b-a4ae-16c762f0d03f',
           standard_id: 'marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34',
-          base_type: 'ENTITY'
-        }
-      ]
-    }
+          base_type: 'ENTITY',
+        },
+      ],
+    },
   ],
   i_attributes: [
     {
       updated_at: '2025-06-26T17:55:59.113Z',
       user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       confidence: 100,
-      name: 'content'
+      name: 'content',
     },
     {
       updated_at: '2025-06-26T17:56:21.251Z',
       user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       confidence: 100,
-      name: 'objects'
+      name: 'objects',
     },
     {
       updated_at: '2025-06-26T17:56:06.869Z',
       user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       confidence: 100,
-      name: 'content_mapping'
+      name: 'content_mapping',
     },
     {
       updated_at: '2025-06-26T17:56:37.719Z',
       user_id: '6a4b11e1-90ca-4e42-ba42-db7bc7f7d505',
       confidence: 100,
-      name: 'opinions_metrics'
-    }
+      name: 'opinions_metrics',
+    },
   ],
   content_mapping: 'eyJkaXNjbyB0ZWFtIHRocmVhdCBhY3RvciBncm91cCI6InRocmVhdC1hY3Rvci0tZmQ2YjBlNmYtOTZlMC01NjhkLWJhMjQtOGExNDBkMDQyOGNkIn0',
   opinions_metrics: {
     total: 1,
     min: 2,
     max: 2,
-    mean: 2
+    mean: 2,
   },
   'created-by': '0097209b-e5d7-43f2-b901-cf665df73f6b',
   createdBy: {
@@ -102,7 +102,7 @@ export const RFT_INSTANCE = {
     _id: '0097209b-e5d7-43f2-b901-cf665df73f6b',
     id: '0097209b-e5d7-43f2-b901-cf665df73f6b',
     sort: [
-      1749548300272
+      1749548300272,
     ],
     name: 'admin',
     contact_information: 'admin@opencti.io',
@@ -112,7 +112,7 @@ export const RFT_INSTANCE = {
     internal_id: '0097209b-e5d7-43f2-b901-cf665df73f6b',
     standard_id: 'identity--cfb1de38-c40a-5f51-81f3-35036a4e3b91',
     creator_id: [
-      '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
+      '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
     ],
     x_opencti_stix_ids: [],
     created_at: '2025-06-10T09:38:20.272Z',
@@ -128,7 +128,7 @@ export const RFT_INSTANCE = {
       'Stix-Object',
       'Stix-Core-Object',
       'Stix-Domain-Object',
-      'Identity'
+      'Identity',
     ],
     x_opencti_firstname: 'Admin',
     x_opencti_lastname: 'OpenCTI',
@@ -137,21 +137,21 @@ export const RFT_INSTANCE = {
         updated_at: '2025-06-10T09:38:28.303Z',
         user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
         confidence: 100,
-        name: 'x_opencti_firstname'
+        name: 'x_opencti_firstname',
       },
       {
         updated_at: '2025-06-10T09:38:28.303Z',
         user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
         confidence: 100,
-        name: 'x_opencti_lastname'
-      }
+        name: 'x_opencti_lastname',
+      },
     ],
     i_relation: {
       _index: 'opencti_stix_meta_relationships-000001',
       _id: '59067c25-c49f-4824-ae9c-8f939dcd8146',
       id: '59067c25-c49f-4824-ae9c-8f939dcd8146',
       sort: [
-        'relationship-meta--35d1f0f0-3c9a-4273-82b7-ff5740b6a982'
+        'relationship-meta--35d1f0f0-3c9a-4273-82b7-ff5740b6a982',
       ],
       base_type: 'RELATION',
       internal_id: '59067c25-c49f-4824-ae9c-8f939dcd8146',
@@ -169,11 +169,11 @@ export const RFT_INSTANCE = {
       toName: 'admin',
       toType: 'Individual',
       target_ref: 'identity--temporary',
-      relationship_type: 'created-by'
-    }
+      relationship_type: 'created-by',
+    },
   },
   'external-reference': [
-    '746847b8-f5d0-4c82-a7a2-70649ac9b135'
+    '746847b8-f5d0-4c82-a7a2-70649ac9b135',
   ],
   externalReferences: [
     {
@@ -181,7 +181,7 @@ export const RFT_INSTANCE = {
       _id: '746847b8-f5d0-4c82-a7a2-70649ac9b135',
       id: '746847b8-f5d0-4c82-a7a2-70649ac9b135',
       sort: [
-        1749547864832
+        1749547864832,
       ],
       x_opencti_stix_ids: [],
       source_name: 'capec',
@@ -195,7 +195,7 @@ export const RFT_INSTANCE = {
       internal_id: '746847b8-f5d0-4c82-a7a2-70649ac9b135',
       standard_id: 'external-reference--4a67461d-68b8-5a27-996f-a8e30578cb56',
       creator_id: [
-        '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
+        '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       ],
       created_at: '2025-06-10T09:31:04.832Z',
       updated_at: '2025-06-10T09:31:04.832Z',
@@ -203,14 +203,14 @@ export const RFT_INSTANCE = {
       parent_types: [
         'Basic-Object',
         'Stix-Object',
-        'Stix-Meta-Object'
+        'Stix-Meta-Object',
       ],
       i_relation: {
         _index: 'opencti_stix_meta_relationships-000001',
         _id: '29b60b32-9a49-48ec-9add-68ea6941e4b8',
         id: '29b60b32-9a49-48ec-9add-68ea6941e4b8',
         sort: [
-          'relationship-meta--386a2899-c082-41b9-a0bf-61191cdf3b67'
+          'relationship-meta--386a2899-c082-41b9-a0bf-61191cdf3b67',
         ],
         base_type: 'RELATION',
         internal_id: '29b60b32-9a49-48ec-9add-68ea6941e4b8',
@@ -228,12 +228,12 @@ export const RFT_INSTANCE = {
         toName: 'capec (CAPEC-163)',
         toType: 'External-Reference',
         target_ref: 'external-reference--temporary',
-        relationship_type: 'external-reference'
-      }
-    }
+        relationship_type: 'external-reference',
+      },
+    },
   ],
   'object-marking': [
-    '2cc876e4-ae90-497b-a4ae-16c762f0d03f'
+    '2cc876e4-ae90-497b-a4ae-16c762f0d03f',
   ],
   objectMarking: [
     {
@@ -241,7 +241,7 @@ export const RFT_INSTANCE = {
       _id: '2cc876e4-ae90-497b-a4ae-16c762f0d03f',
       id: '2cc876e4-ae90-497b-a4ae-16c762f0d03f',
       sort: [
-        1749546753947
+        1749546753947,
       ],
       definition_type: 'PAP',
       definition: 'PAP:CLEAR',
@@ -252,7 +252,7 @@ export const RFT_INSTANCE = {
       internal_id: '2cc876e4-ae90-497b-a4ae-16c762f0d03f',
       standard_id: 'marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34',
       creator_id: [
-        '6a4b11e1-90ca-4e42-ba42-db7bc7f7d505'
+        '6a4b11e1-90ca-4e42-ba42-db7bc7f7d505',
       ],
       x_opencti_stix_ids: [],
       created_at: '2025-06-10T09:12:33.947Z',
@@ -263,14 +263,14 @@ export const RFT_INSTANCE = {
       parent_types: [
         'Basic-Object',
         'Stix-Object',
-        'Stix-Meta-Object'
+        'Stix-Meta-Object',
       ],
       i_relation: {
         _index: 'opencti_stix_meta_relationships-000001',
         _id: '26cdbe2f-cf75-4f4a-b9f5-f6158efac9ce',
         id: '26cdbe2f-cf75-4f4a-b9f5-f6158efac9ce',
         sort: [
-          'relationship-meta--4ac04aca-d11d-4fd4-b3ff-09bbf6404ef0'
+          'relationship-meta--4ac04aca-d11d-4fd4-b3ff-09bbf6404ef0',
         ],
         base_type: 'RELATION',
         internal_id: '26cdbe2f-cf75-4f4a-b9f5-f6158efac9ce',
@@ -288,14 +288,14 @@ export const RFT_INSTANCE = {
         toName: 'PAP:CLEAR',
         toType: 'Marking-Definition',
         target_ref: 'marking-definition--temporary',
-        relationship_type: 'object-marking'
-      }
-    }
+        relationship_type: 'object-marking',
+      },
+    },
   ],
   object: [
     'c808561d-ed59-4d54-914a-5d090eceafd6',
     '5a3ff5f1-66ab-46c8-b5ce-67aebfaee6f5',
-    '2e4b754a-9990-4ddb-89a4-527f18368f9b'
+    '2e4b754a-9990-4ddb-89a4-527f18368f9b',
   ],
   objects: [
     {
@@ -303,7 +303,7 @@ export const RFT_INSTANCE = {
       _id: 'c808561d-ed59-4d54-914a-5d090eceafd6',
       id: 'c808561d-ed59-4d54-914a-5d090eceafd6',
       sort: [
-        1749548017333
+        1749548017333,
       ],
       x_opencti_score: 50,
       x_opencti_description: 'Basic credential',
@@ -313,10 +313,10 @@ export const RFT_INSTANCE = {
       internal_id: 'c808561d-ed59-4d54-914a-5d090eceafd6',
       standard_id: 'credential--4a194ac7-4aef-57d5-9a64-1312da4e604a',
       creator_id: [
-        '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
+        '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       ],
       x_opencti_stix_ids: [
-        'credential--8e0a834a-c233-5c50-8186-adde10a69f02'
+        'credential--8e0a834a-c233-5c50-8186-adde10a69f02',
       ],
       created_at: '2025-06-10T09:33:37.333Z',
       updated_at: '2025-06-10T09:33:37.345Z',
@@ -325,18 +325,18 @@ export const RFT_INSTANCE = {
         'Basic-Object',
         'Stix-Object',
         'Stix-Core-Object',
-        'Stix-Cyber-Observable'
+        'Stix-Cyber-Observable',
       ],
       modified: '2025-06-10T09:33:37.345Z',
       draft_ids: [
-        '2c0ff00c-f892-4f22-b863-58de30313461'
+        '2c0ff00c-f892-4f22-b863-58de30313461',
       ],
       i_relation: {
         _index: 'opencti_stix_meta_relationships-000001',
         _id: 'dedd7d82-8244-4ca4-90f0-a4f97ad426ca',
         id: 'dedd7d82-8244-4ca4-90f0-a4f97ad426ca',
         sort: [
-          'relationship-meta--85f73570-b2bd-46f7-b385-b3bc58fb78bd'
+          'relationship-meta--85f73570-b2bd-46f7-b385-b3bc58fb78bd',
         ],
         base_type: 'RELATION',
         internal_id: 'dedd7d82-8244-4ca4-90f0-a4f97ad426ca',
@@ -354,31 +354,31 @@ export const RFT_INSTANCE = {
         toName: 'azerty',
         toType: 'Credential',
         target_ref: 'credential--temporary',
-        relationship_type: 'object'
-      }
+        relationship_type: 'object',
+      },
     },
     {
       _index: 'opencti_stix_domain_objects-000001',
       _id: '5a3ff5f1-66ab-46c8-b5ce-67aebfaee6f5',
       id: '5a3ff5f1-66ab-46c8-b5ce-67aebfaee6f5',
       sort: [
-        1749547930988
+        1749547930988,
       ],
       x_opencti_stix_ids: [
-        'threat-actor--dfaa8d77-07e2-4e28-b2c8-92e9f7b04428'
+        'threat-actor--dfaa8d77-07e2-4e28-b2c8-92e9f7b04428',
       ],
       name: 'Disco Team Threat Actor Group',
       description: 'This organized threat actor group operates to create profit from all types of crime.',
       aliases: [
-        'Equipo del Discoteca'
+        'Equipo del Discoteca',
       ],
       threat_actor_types: [
-        'crime-syndicate'
+        'crime-syndicate',
       ],
       first_seen: '1970-01-01T00:00:00.000Z',
       last_seen: '5138-11-16T09:46:40.000Z',
       goals: [
-        'Steal Credit Card Information'
+        'Steal Credit Card Information',
       ],
       sophistication: 'expert',
       resource_level: 'organization',
@@ -395,12 +395,12 @@ export const RFT_INSTANCE = {
       internal_id: '5a3ff5f1-66ab-46c8-b5ce-67aebfaee6f5',
       standard_id: 'threat-actor--fd6b0e6f-96e0-568d-ba24-8a140d0428cd',
       creator_id: [
-        '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
+        '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       ],
       created_at: '2025-06-10T09:32:10.988Z',
       updated_at: '2025-06-10T09:32:11.003Z',
       i_aliases_ids: [
-        'threat-actor--e91d383c-d377-5e7b-8386-36cf8ce110f9'
+        'threat-actor--e91d383c-d377-5e7b-8386-36cf8ce110f9',
       ],
       base_type: 'ENTITY',
       parent_types: [
@@ -408,14 +408,14 @@ export const RFT_INSTANCE = {
         'Stix-Object',
         'Stix-Core-Object',
         'Stix-Domain-Object',
-        'Threat-Actor'
+        'Threat-Actor',
       ],
       i_relation: {
         _index: 'opencti_stix_meta_relationships-000001',
         _id: 'bf5deb4b-0a9c-48f8-8164-d270f0afca35',
         id: 'bf5deb4b-0a9c-48f8-8164-d270f0afca35',
         sort: [
-          'relationship-meta--90919caf-de10-434f-b9ee-4f71cea9e48c'
+          'relationship-meta--90919caf-de10-434f-b9ee-4f71cea9e48c',
         ],
         base_type: 'RELATION',
         internal_id: 'bf5deb4b-0a9c-48f8-8164-d270f0afca35',
@@ -433,18 +433,18 @@ export const RFT_INSTANCE = {
         toName: 'Disco Team Threat Actor Group',
         toType: 'Threat-Actor-Group',
         target_ref: 'threat-actor--temporary',
-        relationship_type: 'object'
-      }
+        relationship_type: 'object',
+      },
     },
     {
       _index: 'opencti_stix_domain_objects-000001',
       _id: '2e4b754a-9990-4ddb-89a4-527f18368f9b',
       id: '2e4b754a-9990-4ddb-89a4-527f18368f9b',
       sort: [
-        1749547951501
+        1749547951501,
       ],
       x_opencti_stix_ids: [
-        'incident--0b626d41-1d8d-4b96-86fa-ad49cea2cfd4'
+        'incident--0b626d41-1d8d-4b96-86fa-ad49cea2cfd4',
       ],
       name: 'A new incident',
       description: 'A test incident',
@@ -465,7 +465,7 @@ export const RFT_INSTANCE = {
       internal_id: '2e4b754a-9990-4ddb-89a4-527f18368f9b',
       standard_id: 'incident--8658860d-df08-5f41-bf41-106095e48085',
       creator_id: [
-        '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
+        '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       ],
       created_at: '2025-06-10T09:32:31.501Z',
       updated_at: '2025-06-10T09:34:51.852Z',
@@ -475,28 +475,28 @@ export const RFT_INSTANCE = {
         'Basic-Object',
         'Stix-Object',
         'Stix-Core-Object',
-        'Stix-Domain-Object'
+        'Stix-Domain-Object',
       ],
       opinions_metrics: {
         total: 1,
         min: 5,
         max: 5,
-        mean: 5
+        mean: 5,
       },
       i_attributes: [
         {
           updated_at: '2025-06-10T09:34:51.852Z',
           user_id: '6a4b11e1-90ca-4e42-ba42-db7bc7f7d505',
           confidence: 100,
-          name: 'opinions_metrics'
-        }
+          name: 'opinions_metrics',
+        },
       ],
       i_relation: {
         _index: 'opencti_stix_meta_relationships-000001',
         _id: 'cc5af488-5703-45b1-a380-ff18029fa924',
         id: 'cc5af488-5703-45b1-a380-ff18029fa924',
         sort: [
-          'relationship-meta--e713362c-12c2-4cb5-865b-c497e103dfef'
+          'relationship-meta--e713362c-12c2-4cb5-865b-c497e103dfef',
         ],
         base_type: 'RELATION',
         internal_id: 'cc5af488-5703-45b1-a380-ff18029fa924',
@@ -514,12 +514,12 @@ export const RFT_INSTANCE = {
         toName: 'A new incident',
         toType: 'Incident',
         target_ref: 'incident--temporary',
-        relationship_type: 'object'
-      }
-    }
+        relationship_type: 'object',
+      },
+    },
   ],
   'object-participant': [
-    '0ff0750e-4d91-425d-b44c-b69269dead0b'
+    '0ff0750e-4d91-425d-b44c-b69269dead0b',
   ],
   objectParticipant: [
     {
@@ -527,7 +527,7 @@ export const RFT_INSTANCE = {
       _id: '0ff0750e-4d91-425d-b44c-b69269dead0b',
       id: '0ff0750e-4d91-425d-b44c-b69269dead0b',
       sort: [
-        1750152527269
+        1750152527269,
       ],
       user_email: 'marie.flores@filigran.io',
       name: 'marie',
@@ -544,21 +544,21 @@ export const RFT_INSTANCE = {
       external: false,
       personal_notifiers: [
         'f4ee7b33-006a-4b0d-b57d-411ad288653d',
-        '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822'
+        '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822',
       ],
       confidence: 100,
       entity_type: 'User',
       internal_id: '0ff0750e-4d91-425d-b44c-b69269dead0b',
       standard_id: 'user--20e40687-5a83-5a19-ba58-ca14e88fdbd1',
       creator_id: [
-        '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
+        '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       ],
       created_at: '2025-06-17T09:28:47.269Z',
       updated_at: '2025-06-17T09:28:47.332Z',
       base_type: 'ENTITY',
       parent_types: [
         'Basic-Object',
-        'Internal-Object'
+        'Internal-Object',
       ],
       modified: '2025-06-17T09:28:47.332Z',
       i_relation: {
@@ -566,7 +566,7 @@ export const RFT_INSTANCE = {
         _id: 'c9e31e43-6fcc-469a-95bf-ac63a863f28a',
         id: 'c9e31e43-6fcc-469a-95bf-ac63a863f28a',
         sort: [
-          'relationship-meta--9937c60d-7a59-4187-a73b-870a163363a2'
+          'relationship-meta--9937c60d-7a59-4187-a73b-870a163363a2',
         ],
         base_type: 'RELATION',
         internal_id: 'c9e31e43-6fcc-469a-95bf-ac63a863f28a',
@@ -584,12 +584,12 @@ export const RFT_INSTANCE = {
         toName: 'marie',
         toType: 'User',
         target_ref: 'user--temporary',
-        relationship_type: 'object-participant'
-      }
-    }
+        relationship_type: 'object-participant',
+      },
+    },
   ],
   'object-label': [
-    'd6d10328-9d53-4da8-af37-fb859cbbc693'
+    'd6d10328-9d53-4da8-af37-fb859cbbc693',
   ],
   objectLabel: [
     {
@@ -597,7 +597,7 @@ export const RFT_INSTANCE = {
       _id: 'd6d10328-9d53-4da8-af37-fb859cbbc693',
       id: 'd6d10328-9d53-4da8-af37-fb859cbbc693',
       sort: [
-        1749547953634
+        1749547953634,
       ],
       x_opencti_stix_ids: [],
       value: 'ryuk',
@@ -607,7 +607,7 @@ export const RFT_INSTANCE = {
       internal_id: 'd6d10328-9d53-4da8-af37-fb859cbbc693',
       standard_id: 'label--66b4d95f-ba1a-54b3-b5a3-74c7fb93142b',
       creator_id: [
-        '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
+        '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       ],
       created_at: '2025-06-10T09:32:33.634Z',
       updated_at: '2025-06-10T09:32:33.634Z',
@@ -617,14 +617,14 @@ export const RFT_INSTANCE = {
       parent_types: [
         'Basic-Object',
         'Stix-Object',
-        'Stix-Meta-Object'
+        'Stix-Meta-Object',
       ],
       i_relation: {
         _index: 'opencti_stix_meta_relationships-000001',
         _id: '7ee75ec4-5eb4-4f09-8c5f-790a26f418c0',
         id: '7ee75ec4-5eb4-4f09-8c5f-790a26f418c0',
         sort: [
-          'relationship-meta--aa9732fa-7537-4676-af81-336ce2543701'
+          'relationship-meta--aa9732fa-7537-4676-af81-336ce2543701',
         ],
         base_type: 'RELATION',
         internal_id: '7ee75ec4-5eb4-4f09-8c5f-790a26f418c0',
@@ -642,12 +642,12 @@ export const RFT_INSTANCE = {
         toName: 'ryuk',
         toType: 'Label',
         target_ref: 'label--temporary',
-        relationship_type: 'object-label'
-      }
-    }
+        relationship_type: 'object-label',
+      },
+    },
   ],
   'object-assignee': [
-    '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
+    '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
   ],
   objectAssignee: [
     {
@@ -655,7 +655,7 @@ export const RFT_INSTANCE = {
       _id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       sort: [
-        1749546768092
+        1749546768092,
       ],
       internal_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       external: true,
@@ -669,46 +669,46 @@ export const RFT_INSTANCE = {
       password: '$2a$10$Xl2OL3QrDVbbvyUF2bedW.gEBvVBxIgIBXGDWeOuq9tygRELvoOh6',
       user_confidence_level: {
         max_confidence: 100,
-        overrides: []
+        overrides: [],
       },
       theme: 'default',
       language: 'en-us',
       personal_notifiers: [
         'f4ee7b33-006a-4b0d-b57d-411ad288653d',
-        '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822'
+        '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822',
       ],
       confidence: 100,
       entity_type: 'User',
       standard_id: 'user--12ea8141-dc6d-5031-9a1b-c28aeac7198b',
       creator_id: [
-        '6a4b11e1-90ca-4e42-ba42-db7bc7f7d505'
+        '6a4b11e1-90ca-4e42-ba42-db7bc7f7d505',
       ],
       created_at: '2025-06-10T09:12:48.092Z',
       updated_at: '2025-06-26T14:28:09.367Z',
       base_type: 'ENTITY',
       parent_types: [
         'Basic-Object',
-        'Internal-Object'
+        'Internal-Object',
       ],
       i_attributes: [
         {
           updated_at: '2025-06-10T09:38:27.289Z',
           user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
           confidence: 100,
-          name: 'language'
+          name: 'language',
         },
         {
           updated_at: '2025-06-26T14:28:09.377Z',
           user_id: '6a4b11e1-90ca-4e42-ba42-db7bc7f7d505',
           confidence: 100,
-          name: 'password'
+          name: 'password',
         },
         {
           updated_at: '2025-06-19T08:59:42.526Z',
           user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
           confidence: 100,
-          name: 'draft_context'
-        }
+          name: 'draft_context',
+        },
       ],
       draft_context: '',
       i_relation: {
@@ -716,7 +716,7 @@ export const RFT_INSTANCE = {
         _id: '109ab876-ad5b-4dd6-89b1-c8fb5ce07847',
         id: '109ab876-ad5b-4dd6-89b1-c8fb5ce07847',
         sort: [
-          'relationship-meta--fdc563ab-d5ba-447c-9d3c-c5f0662bcf86'
+          'relationship-meta--fdc563ab-d5ba-447c-9d3c-c5f0662bcf86',
         ],
         base_type: 'RELATION',
         internal_id: '109ab876-ad5b-4dd6-89b1-c8fb5ce07847',
@@ -734,10 +734,10 @@ export const RFT_INSTANCE = {
         toName: 'admin',
         toType: 'User',
         target_ref: 'user--temporary',
-        relationship_type: 'object-assignee'
-      }
-    }
-  ]
+        relationship_type: 'object-assignee',
+      },
+    },
+  ],
 } as unknown as StoreEntityCaseRft;
 
 export const EXPECTED_RFT = {
@@ -750,26 +750,26 @@ export const EXPECTED_RFT = {
   name: 'RFT STIX 2.0',
   description: 'description',
   takedown_types: [
-    'brand-abuse'
+    'brand-abuse',
   ],
   severity: 'medium',
   priority: 'P2',
   labels: [
-    'ryuk'
+    'ryuk',
   ],
   external_references: [
     {
       source_name: 'capec',
       description: 'spear phishing',
-      external_id: 'CAPEC-163'
-    }
+      external_id: 'CAPEC-163',
+    },
   ],
   x_opencti_id: 'ae110ba9-34a7-44ef-86b9-7b52def4b4aa',
   x_opencti_type: 'Case-Rft',
   type: 'x-opencti-case-rft',
   created_by_ref: 'identity--cfb1de38-c40a-5f51-81f3-35036a4e3b91',
   object_marking_refs: [
-    'marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34'
+    'marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34',
   ],
   object_refs: [
     'credential--4a194ac7-4aef-57d5-9a64-1312da4e604a',
