@@ -30,7 +30,7 @@ const CardNumber = ({
   const theme = useTheme<Theme>();
 
   const valueStyle = {
-    fontSize: 42,
+    fontSize: 32,
     lineHeight: 1,
     fontWeight: 600,
   };

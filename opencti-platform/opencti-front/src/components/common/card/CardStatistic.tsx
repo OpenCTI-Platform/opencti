@@ -18,7 +18,7 @@ const CardStatistic = ({
   const theme = useTheme<Theme>();
 
   const valueStyle = {
-    fontSize: 40,
+    fontSize: 32,
     lineHeight: 1,
     fontWeight: 600,
   };
