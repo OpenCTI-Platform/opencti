@@ -10,7 +10,6 @@ import AddDataSourcesLines, { addDataSourcesLinesQuery } from './AddDataSourcesL
 import { AddDataSourcesLinesQuery } from './__generated__/AddDataSourcesLinesQuery.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import { Stack } from '@mui/material';
 
 const AddDataSources: FunctionComponent<{ dataComponentId: string }> = ({
   dataComponentId,
@@ -49,31 +48,35 @@ const AddDataSources: FunctionComponent<{ dataComponentId: string }> = ({
         open={open}
         onClose={handleClose}
         title={t_i18n('Add data sources')}
-      >
-        <Stack gap={2}>
-          <Stack direction="row" justifyContent="space-between">
-            <SearchInput
-              variant="inDrawer"
-              onSubmit={handleSearch}
-            />
+        subHeader={{
+          right: [(
             <DataSourceCreation
               contextual={true}
               display={open}
               inputValue={search}
               paginationOptions={paginationOptions}
+              key="rightButton"
             />
-          </Stack>
-          {queryRef && (
-            <React.Suspense
-              fallback={<Loader variant={LoaderVariant.inElement} />}
-            >
-              <AddDataSourcesLines
-                dataComponentId={dataComponentId}
-                queryRef={queryRef}
-              />
-            </React.Suspense>
-          )}
-        </Stack>
+          )],
+          left: [(
+            <SearchInput
+              variant="inDrawer"
+              onSubmit={handleSearch}
+              key="leftInput"
+            />
+          )],
+        }}
+      >
+        {queryRef && (
+          <React.Suspense
+            fallback={<Loader variant={LoaderVariant.inElement} />}
+          >
+            <AddDataSourcesLines
+              dataComponentId={dataComponentId}
+              queryRef={queryRef}
+            />
+          </React.Suspense>
+        )}
       </Drawer>
     </div>
   );

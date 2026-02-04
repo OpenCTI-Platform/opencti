@@ -14,7 +14,6 @@ import { QueryRenderer } from '../../../../relay/environment';
 import Drawer from '../../common/drawer/Drawer';
 import StixCyberObservableCreation from '../stix_cyber_observables/StixCyberObservableCreation';
 import IndicatorAddObservablesLines, { indicatorAddObservablesLinesQuery } from './IndicatorAddObservablesLines';
-import { Stack } from '@mui/material';
 
 class IndicatorAddObservables extends Component {
   constructor(props) {
@@ -54,68 +53,71 @@ class IndicatorAddObservables extends Component {
           open={this.state.open}
           onClose={this.handleClose.bind(this)}
           title={t('Add observables')}
+          subHeader={{
+            left: [(
+              <SearchInput
+                variant="inDrawer"
+                onSubmit={this.handleSearch.bind(this)}
+                key="searchInput"
+              />
+            )],
+          }}
         >
-          <Stack gap={2}>
-            <SearchInput
-              variant="inDrawer"
-              onSubmit={this.handleSearch.bind(this)}
-            />
-            <QueryRenderer
-              query={indicatorAddObservablesLinesQuery}
-              variables={{
-                search: this.state.search,
-                orderBy: 'created_at',
-                orderMode: 'desc',
-                count: 50,
-              }}
-              render={({ props }) => {
-                if (props) {
-                  return (
-                    <IndicatorAddObservablesLines
-                      indicator={indicator}
-                      indicatorObservables={indicatorObservables}
-                      data={props}
-                    />
-                  );
-                }
+          <QueryRenderer
+            query={indicatorAddObservablesLinesQuery}
+            variables={{
+              search: this.state.search,
+              orderBy: 'created_at',
+              orderMode: 'desc',
+              count: 50,
+            }}
+            render={({ props }) => {
+              if (props) {
                 return (
-                  <List>
-                    {Array.from(Array(20), (e, i) => (
-                      <ListItem key={i} divider={true}>
-                        <ListItemIcon>
+                  <IndicatorAddObservablesLines
+                    indicator={indicator}
+                    indicatorObservables={indicatorObservables}
+                    data={props}
+                  />
+                );
+              }
+              return (
+                <List>
+                  {Array.from(Array(20), (e, i) => (
+                    <ListItem key={i} divider={true}>
+                      <ListItemIcon>
+                        <Skeleton
+                          animation="wave"
+                          variant="circular"
+                          width={30}
+                          height={30}
+                        />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={(
                           <Skeleton
                             animation="wave"
-                            variant="circular"
-                            width={30}
-                            height={30}
+                            variant="rectangular"
+                            width="90%"
+                            height={15}
+                            style={{ marginBottom: 10 }}
                           />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={(
-                            <Skeleton
-                              animation="wave"
-                              variant="rectangular"
-                              width="90%"
-                              height={15}
-                              style={{ marginBottom: 10 }}
-                            />
-                          )}
-                          secondary={(
-                            <Skeleton
-                              animation="wave"
-                              variant="rectangular"
-                              width="90%"
-                              height={15}
-                            />
-                          )}
-                        />
-                      </ListItem>
-                    ))}
-                  </List>
-                );
-              }}
-            />
-          </Stack>
+                        )}
+                        secondary={(
+                          <Skeleton
+                            animation="wave"
+                            variant="rectangular"
+                            width="90%"
+                            height={15}
+                          />
+                        )}
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              );
+            }}
+          />
         </Drawer>
         <StixCyberObservableCreation
           display={this.state.open}

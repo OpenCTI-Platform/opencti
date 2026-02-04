@@ -9,7 +9,6 @@ import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
 import AddSubAttackPatternsLines, { addSubAttackPatternsLinesQuery } from './AddSubAttackPatternsLines';
 import AttackPatternCreation from './AttackPatternCreation';
-import { Stack } from '@mui/material';
 
 class AddSubAttackPattern extends Component {
   constructor(props) {
@@ -47,39 +46,43 @@ class AddSubAttackPattern extends Component {
           open={this.state.open}
           onClose={this.handleClose.bind(this)}
           title={t('Add sub attack patterns')}
-        >
-          <Stack gap={2}>
-            <Stack direction="row" justifyContent="space-between">
-              <SearchInput
-                variant="inDrawer"
-                onSubmit={this.handleSearch.bind(this)}
-              />
+          subHeader={{
+            right: [(
               <AttackPatternCreation
                 display={this.state.open}
                 contextual={true}
                 inputValue={this.state.search}
                 paginationOptions={paginationOptions}
+                key="rightButton"
               />
-            </Stack>
-            <QueryRenderer
-              query={addSubAttackPatternsLinesQuery}
-              variables={{
-                search: this.state.search,
-                count: 20,
-              }}
-              render={({ props }) => {
-                return (
-                  <AddSubAttackPatternsLines
-                    attackPattern={attackPattern}
-                    attackPatternSubAttackPatterns={
-                      attackPatternSubAttackPatterns
-                    }
-                    data={props}
-                  />
-                );
-              }}
-            />
-          </Stack>
+            )],
+            left: [(
+              <SearchInput
+                variant="inDrawer"
+                onSubmit={this.handleSearch.bind(this)}
+                key="leftInput"
+              />
+            )],
+          }}
+        >
+          <QueryRenderer
+            query={addSubAttackPatternsLinesQuery}
+            variables={{
+              search: this.state.search,
+              count: 20,
+            }}
+            render={({ props }) => {
+              return (
+                <AddSubAttackPatternsLines
+                  attackPattern={attackPattern}
+                  attackPatternSubAttackPatterns={
+                    attackPatternSubAttackPatterns
+                  }
+                  data={props}
+                />
+              );
+            }}
+          />
         </Drawer>
       </>
     );

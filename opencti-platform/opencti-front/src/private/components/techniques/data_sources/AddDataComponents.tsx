@@ -11,7 +11,6 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { DataSourceDataComponents_dataSource$data } from './__generated__/DataSourceDataComponents_dataSource.graphql';
 import { AddDataComponentsLinesToDataSourceQuery } from './__generated__/AddDataComponentsLinesToDataSourceQuery.graphql';
 import DataComponentCreation from '../data_components/DataComponentCreation';
-import { Stack } from '@mui/material';
 
 const AddDataComponents: FunctionComponent<{
   dataSource: DataSourceDataComponents_dataSource$data;
@@ -50,31 +49,35 @@ const AddDataComponents: FunctionComponent<{
         open={open}
         onClose={handleClose}
         title={t_i18n('Add data components')}
-      >
-        <Stack gap={2}>
-          <Stack direction="row" justifyContent="space-between">
-            <SearchInput
-              variant="inDrawer"
-              onSubmit={handleSearch}
-            />
+        subHeader={{
+          right: [(
             <DataComponentCreation
               contextual={true}
               display={open}
               inputValue={search}
               paginationOptions={paginationOptions}
+              key="rightButton"
             />
-          </Stack>
-          {queryRef && (
-            <React.Suspense
-              fallback={<Loader variant={LoaderVariant.inElement} />}
-            >
-              <AddDataComponentsLines
-                dataSource={dataSource}
-                queryRef={queryRef}
-              />
-            </React.Suspense>
-          )}
-        </Stack>
+          )],
+          left: [(
+            <SearchInput
+              variant="inDrawer"
+              onSubmit={handleSearch}
+              key="leftInput"
+            />
+          )],
+        }}
+      >
+        {queryRef && (
+          <React.Suspense
+            fallback={<Loader variant={LoaderVariant.inElement} />}
+          >
+            <AddDataComponentsLines
+              dataSource={dataSource}
+              queryRef={queryRef}
+            />
+          </React.Suspense>
+        )}
       </Drawer>
     </div>
   );

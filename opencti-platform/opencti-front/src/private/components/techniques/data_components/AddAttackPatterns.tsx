@@ -12,7 +12,6 @@ import {
   AddAttackPatternsLinesToDataComponentQuery$variables,
 } from './__generated__/AddAttackPatternsLinesToDataComponentQuery.graphql';
 import AddAttackPatternsLines, { addAttackPatternsLinesQuery } from './AddAttackPatternsLines';
-import { Stack } from '@mui/material';
 
 const AddAttackPatterns: FunctionComponent<{
   dataComponent: DataComponentAttackPatterns_dataComponent$data;
@@ -51,23 +50,26 @@ const AddAttackPatterns: FunctionComponent<{
         open={open}
         onClose={handleClose}
         title={t_i18n('Add attack patterns')}
+        subHeader={{
+          left: [(
+            <SearchInput
+              variant="inDrawer"
+              onSubmit={handleSearch}
+              key="searchInput"
+            />
+          )],
+        }}
       >
-        <Stack gap={2}>
-          <SearchInput
-            variant="inDrawer"
-            onSubmit={handleSearch}
-          />
-          {queryRef && (
-            <React.Suspense
-              fallback={<Loader variant={LoaderVariant.inElement} />}
-            >
-              <AddAttackPatternsLines
-                dataComponent={dataComponent}
-                queryRef={queryRef}
-              />
-            </React.Suspense>
-          )}
-        </Stack>
+        {queryRef && (
+          <React.Suspense
+            fallback={<Loader variant={LoaderVariant.inElement} />}
+          >
+            <AddAttackPatternsLines
+              dataComponent={dataComponent}
+              queryRef={queryRef}
+            />
+          </React.Suspense>
+        )}
       </Drawer>
     </div>
   );

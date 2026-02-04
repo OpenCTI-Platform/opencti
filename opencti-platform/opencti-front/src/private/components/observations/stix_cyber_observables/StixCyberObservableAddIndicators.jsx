@@ -8,7 +8,6 @@ import { QueryRenderer } from '../../../../relay/environment';
 import Drawer from '../../common/drawer/Drawer';
 import IndicatorCreation from '../indicators/IndicatorCreation';
 import StixCyberObservableAddIndicatorsLines, { stixCyberObservableAddIndicatorsLinesQuery } from './StixCyberObservableAddIndicatorsLines';
-import { Stack } from '@mui/material';
 
 const styles = () => ({
   createButton: {
@@ -47,43 +46,45 @@ class StixCyberObservableAddIndicators extends Component {
           open={open}
           onClose={handleClose.bind(this)}
           title={t('Add indicators')}
+          subHeader={{
+            left: [(
+              <SearchInput
+                variant="inDrawer"
+                onSubmit={this.handleSearch.bind(this)}
+                key="searchInput"
+              />
+            )],
+          }}
         >
-          <Stack gap={2}>
-            <SearchInput
-              variant="inDrawer"
-              onSubmit={this.handleSearch.bind(this)}
-            />
-
-            <QueryRenderer
-              query={stixCyberObservableAddIndicatorsLinesQuery}
-              variables={{
-                search: this.state.search,
-                orderBy: 'created_at',
-                orderMode: 'desc',
-                count: 50,
-              }}
-              render={({ props }) => {
-                return (
-                  <div>
-                    <StixCyberObservableAddIndicatorsLines
-                      stixCyberObservable={stixCyberObservable}
-                      stixCyberObservableIndicators={
-                        stixCyberObservableIndicators
-                      }
-                      data={props}
+          <QueryRenderer
+            query={stixCyberObservableAddIndicatorsLinesQuery}
+            variables={{
+              search: this.state.search,
+              orderBy: 'created_at',
+              orderMode: 'desc',
+              count: 50,
+            }}
+            render={({ props }) => {
+              return (
+                <div>
+                  <StixCyberObservableAddIndicatorsLines
+                    stixCyberObservable={stixCyberObservable}
+                    stixCyberObservableIndicators={
+                      stixCyberObservableIndicators
+                    }
+                    data={props}
+                  />
+                  <div className={classes.createButton}>
+                    <IndicatorCreation
+                      display={open}
+                      contextual
+                      paginationOptions={paginationOptions}
                     />
-                    <div className={classes.createButton}>
-                      <IndicatorCreation
-                        display={open}
-                        contextual
-                        paginationOptions={paginationOptions}
-                      />
-                    </div>
                   </div>
-                );
-              }}
-            />
-          </Stack>
+                </div>
+              );
+            }}
+          />
         </Drawer>
       </>
     );

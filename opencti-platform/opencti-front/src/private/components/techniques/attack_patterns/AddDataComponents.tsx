@@ -10,7 +10,6 @@ import AddDataComponentsLines, { addDataComponentsLinesQuery } from './AddDataCo
 import { AddDataComponentsLinesQuery, AddDataComponentsLinesQuery$variables } from './__generated__/AddDataComponentsLinesQuery.graphql';
 import { AttackPatternDataComponents_attackPattern$data } from './__generated__/AttackPatternDataComponents_attackPattern.graphql';
 import DataComponentCreation from '../data_components/DataComponentCreation';
-import { Stack } from '@mui/material';
 
 const AddDataComponents: FunctionComponent<{
   attackPattern: AttackPatternDataComponents_attackPattern$data;
@@ -45,31 +44,35 @@ const AddDataComponents: FunctionComponent<{
         open={open}
         onClose={handleClose}
         title={t_i18n('Add data components')}
-      >
-        <Stack gap={2}>
-          <Stack direction="row" justifyContent="space-between">
-            <SearchInput
-              variant="inDrawer"
-              onSubmit={handleSearch}
-            />
+        subHeader={{
+          right: [(
             <DataComponentCreation
               contextual={true}
               display={open}
               inputValue={search}
               paginationOptions={paginationOptions}
+              key="rightButton"
             />
-          </Stack>
-          {queryRef && (
-            <React.Suspense
-              fallback={<Loader variant={LoaderVariant.inElement} />}
-            >
-              <AddDataComponentsLines
-                attackPattern={attackPattern}
-                queryRef={queryRef}
-              />
-            </React.Suspense>
-          )}
-        </Stack>
+          )],
+          left: [(
+            <SearchInput
+              variant="inDrawer"
+              onSubmit={handleSearch}
+              key="leftInput"
+            />
+          )],
+        }}
+      >
+        {queryRef && (
+          <React.Suspense
+            fallback={<Loader variant={LoaderVariant.inElement} />}
+          >
+            <AddDataComponentsLines
+              attackPattern={attackPattern}
+              queryRef={queryRef}
+            />
+          </React.Suspense>
+        )}
       </Drawer>
     </>
   );

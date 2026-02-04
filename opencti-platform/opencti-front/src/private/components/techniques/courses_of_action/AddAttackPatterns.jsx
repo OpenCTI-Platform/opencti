@@ -8,7 +8,6 @@ import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
 import AddAttackPatternsLines, { addAttackPatternsLinesQuery } from './AddAttackPatternsLines';
-import { Stack } from '@mui/material';
 
 class AddAttackPatterns extends Component {
   constructor(props) {
@@ -48,32 +47,35 @@ class AddAttackPatterns extends Component {
           open={this.state.open}
           onClose={this.handleClose.bind(this)}
           title={t('Add attack patterns')}
+          subHeader={{
+            left: [(
+              <SearchInput
+                variant="inDrawer"
+                onSubmit={this.handleSearch.bind(this)}
+                key="searchInput"
+              />
+            )],
+          }}
         >
-          <Stack gap={2}>
-            <SearchInput
-              variant="inDrawer"
-              onSubmit={this.handleSearch.bind(this)}
-            />
-            <QueryRenderer
-              query={addAttackPatternsLinesQuery}
-              variables={{
-                search: this.state.search,
-                count: 20,
-              }}
-              render={({ props }) => {
-                return (
-                  <AddAttackPatternsLines
-                    courseOfAction={courseOfAction}
-                    courseOfActionAttackPatterns={courseOfActionAttackPatterns}
-                    courseOfActionPaginationOptions={
-                      courseOfActionPaginationOptions
-                    }
-                    data={props}
-                  />
-                );
-              }}
-            />
-          </Stack>
+          <QueryRenderer
+            query={addAttackPatternsLinesQuery}
+            variables={{
+              search: this.state.search,
+              count: 20,
+            }}
+            render={({ props }) => {
+              return (
+                <AddAttackPatternsLines
+                  courseOfAction={courseOfAction}
+                  courseOfActionAttackPatterns={courseOfActionAttackPatterns}
+                  courseOfActionPaginationOptions={
+                    courseOfActionPaginationOptions
+                  }
+                  data={props}
+                />
+              );
+            }}
+          />
         </Drawer>
       </div>
     );

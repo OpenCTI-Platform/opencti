@@ -9,7 +9,6 @@ import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
 import AddCoursesOfActionLines, { addCoursesOfActionLinesQuery } from './AddCoursesOfActionLines';
 import CourseOfActionCreation from '../courses_of_action/CourseOfActionCreation';
-import { Stack } from '@mui/material';
 
 class AddCoursesOfAction extends Component {
   constructor(props) {
@@ -47,37 +46,41 @@ class AddCoursesOfAction extends Component {
           open={this.state.open}
           onClose={this.handleClose.bind(this)}
           title={t('Add courses of action')}
-        >
-          <Stack gap={2}>
-            <Stack direction="row" justifyContent="space-between">
-              <SearchInput
-                variant="inDrawer"
-                onSubmit={this.handleSearch.bind(this)}
-              />
+          subHeader={{
+            right: [(
               <CourseOfActionCreation
                 display={this.state.open}
                 contextual={true}
                 inputValue={this.state.search}
                 paginationOptions={paginationOptions}
+                key="rightButton"
               />
-            </Stack>
-            <QueryRenderer
-              query={addCoursesOfActionLinesQuery}
-              variables={{
-                search: this.state.search,
-                count: 20,
-              }}
-              render={({ props }) => {
-                return (
-                  <AddCoursesOfActionLines
-                    attackPattern={attackPattern}
-                    attackPatternCoursesOfAction={attackPatternCoursesOfAction}
-                    data={props}
-                  />
-                );
-              }}
-            />
-          </Stack>
+            )],
+            left: [(
+              <SearchInput
+                variant="inDrawer"
+                onSubmit={this.handleSearch.bind(this)}
+                key="leftInput"
+              />
+            )],
+          }}
+        >
+          <QueryRenderer
+            query={addCoursesOfActionLinesQuery}
+            variables={{
+              search: this.state.search,
+              count: 20,
+            }}
+            render={({ props }) => {
+              return (
+                <AddCoursesOfActionLines
+                  attackPattern={attackPattern}
+                  attackPatternCoursesOfAction={attackPatternCoursesOfAction}
+                  data={props}
+                />
+              );
+            }}
+          />
         </Drawer>
       </>
     );
