@@ -638,7 +638,6 @@ const StixDomainObjectHeader = (props) => {
                   >
                     <Tag
                       label={label}
-                      disableTooltip
                       onDelete={
                         enableReferences
                           ? () => handleOpenCommitDelete(label)
