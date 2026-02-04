@@ -644,6 +644,7 @@ const StixDomainObjectHeader = (props) => {
                           ? () => handleOpenCommitDelete(label)
                           : () => deleteAlias(label)
                       }
+                      maxWidth={150}
                     />
                   </Security>
                 )}
