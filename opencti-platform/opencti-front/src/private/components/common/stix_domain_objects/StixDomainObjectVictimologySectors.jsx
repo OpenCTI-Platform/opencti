@@ -31,6 +31,7 @@ import ItemMarkings from '../../../../components/ItemMarkings';
 import { export_max_size } from '../../../../utils/utils';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import withRouter from '../../../../utils/compat_router/withRouter';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 const styles = (theme) => ({
   container: {
@@ -464,17 +465,15 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                                 )
                               }
                               secondary={
-
-                                stixCoreRelationship.description
-                                && stixCoreRelationship.description.length > 0 ? (
+                                stixCoreRelationship.description && stixCoreRelationship.description.length > 0
+                                  ? (
                                       <MarkdownDisplay
                                         content={stixCoreRelationship.description}
                                         remarkGfmPlugin={true}
                                         commonmark={true}
                                       />
-                                    ) : (
-                                      t('No description of this targeting')
                                     )
+                                  : EMPTY_VALUE
                               }
                             />
                             <ItemMarkings
@@ -483,7 +482,6 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                               limit={1}
                             />
                             <ItemYears
-                              variant="inList"
                               years={stixCoreRelationship.years}
                             />
                           </ListItemButton>
@@ -617,11 +615,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                                                   <i>
                                                     {t('This relation is inferred')}
                                                   </i>
-                                                ) : (
-                                                  t(
-                                                    'No description of this targeting',
-                                                  )
-                                                )
+                                                ) : EMPTY_VALUE
                                           }
                                         />
                                         <ItemMarkings
@@ -630,7 +624,6 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                                           limit={1}
                                         />
                                         <ItemYears
-                                          variant="inList"
                                           years={stixCoreRelationship.years}
                                         />
                                       </ListItemButton>

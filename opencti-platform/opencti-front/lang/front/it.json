@@ -2676,8 +2676,6 @@
   "No default": "Nessun valore predefinito",
   "No default value set in Settings...": "Nessun valore predefinito impostato per questo attributo nelle impostazioni dell'entità. Puoi fornirne uno con l'input sopra. Questo valore verrà utilizzato se i dati sono mancanti nel file CSV.",
   "No description": "Nessuna descrizione",
-  "No description of this targeting": "Nessuna descrizione di questo targeting",
-  "No description of this usage": "Nessuna descrizione di questo utilizzo",
   "No detail available for this event": "Nessun dettaglio disponibile per questo evento",
   "No direct instance trigger": "Nessun trigger diretto dell'istanza",
   "No draft for the moment": "Nessuna bozza per il momento",

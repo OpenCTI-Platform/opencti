@@ -2676,8 +2676,6 @@
   "No default": "Keine Voreinstellung",
   "No default value set in Settings...": "In den Entitätseinstellungen ist kein Standardwert für dieses Attribut festgelegt. Sie können einen Wert mit der obigen Eingabe angeben. Dieser Wert wird verwendet, wenn die Daten in der CSV-Datei fehlen.",
   "No description": "Keine Beschreibung",
-  "No description of this targeting": "Keine Beschreibung dieses Ziels",
-  "No description of this usage": "Keine Beschreibung für diese Verwendung",
   "No detail available for this event": "Keine Details für dieses Ereignis verfügbar",
   "No direct instance trigger": "Kein direkter Instanz-Trigger",
   "No draft for the moment": "Vorläufig kein Entwurf",

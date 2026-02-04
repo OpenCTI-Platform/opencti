@@ -2676,8 +2676,6 @@
   "No default": "기본값 없음",
   "No default value set in Settings...": "엔터티 설정에서 이 속성에 대한 기본값이 설정되지 않았습니다. 위의 입력란에 하나를 제공할 수 있습니다. 이 값은 CSV 파일에 데이터가 없을 경우 사용됩니다.",
   "No description": "설명 없음",
-  "No description of this targeting": "이 표적에 대한 설명 없음",
-  "No description of this usage": "이 사용에 대한 설명 없음",
   "No detail available for this event": "이 이벤트에 대한 세부 정보가 없습니다",
   "No direct instance trigger": "직접 인스턴스 트리거 없음",
   "No draft for the moment": "현재 초안 없음",

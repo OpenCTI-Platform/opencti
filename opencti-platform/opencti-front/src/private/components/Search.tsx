@@ -212,9 +212,7 @@ const Search = () => {
       isSortable: true,
     },
     analyses: {
-      label: 'Analyses',
       percentWidth: 8,
-      isSortable: false,
     },
     objectMarking: {
       label: 'Marking',

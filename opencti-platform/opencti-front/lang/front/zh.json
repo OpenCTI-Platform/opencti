@@ -2676,8 +2676,6 @@
   "No default": "无默认值",
   "No default value set in Settings...": "实体设置中未为此属性设置默认值。您可以通过上面的输入提供一个。如果 CSV 文件中缺少数据，将使用此值。",
   "No description": "无说明",
-  "No description of this targeting": "没有关于此针对的描述",
-  "No description of this usage": "没有关于此用法的描述",
   "No detail available for this event": "此活动无详细信息",
   "No direct instance trigger": "",
   "No draft for the moment": "暂无草案",

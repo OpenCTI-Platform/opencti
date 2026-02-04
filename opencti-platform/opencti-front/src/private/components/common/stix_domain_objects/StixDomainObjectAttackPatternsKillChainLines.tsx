@@ -20,6 +20,7 @@ import { useInitCreateRelationshipContext } from '@components/common/stix_core_r
 import ItemMarkings from '../../../../components/ItemMarkings';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { useFormatter } from '../../../../components/i18n';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 interface StixDomainObjectAttackPatternsKillChainLinesProps {
   data: StixDomainObjectAttackPatternsKillChainContainer_data$data;
@@ -222,9 +223,7 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                                           remarkGfmPlugin={true}
                                           commonmark={true}
                                         />
-                                      ) : (
-                                        t_i18n('No description of this usage')
-                                      )
+                                      ) : EMPTY_VALUE
                                 }
                               />
                               <ItemMarkings
@@ -264,9 +263,8 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                                           <ListItemText
                                             primary={courseOfAction.name}
                                             secondary={
-                                              courseOfAction.description
-                                              && courseOfAction.description
-                                                .length > 0 ? (
+                                              courseOfAction.description && courseOfAction.description.length > 0
+                                                ? (
                                                     <MarkdownDisplay
                                                       content={
                                                         courseOfAction.description
@@ -275,11 +273,8 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                                                       commonmark={true}
                                                     >
                                                     </MarkdownDisplay>
-                                                  ) : (
-                                                    t_i18n(
-                                                      'No description of this course of action',
-                                                    )
                                                   )
+                                                : EMPTY_VALUE
                                             }
                                           />
                                         </ListItemButton>

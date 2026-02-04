@@ -2676,8 +2676,6 @@
   "No default": "No por defecto",
   "No default value set in Settings...": "No hay valor por defecto para este atributo en la configuración de la entidad. Puede proporcionar uno con la entrada de arriba. Este valor se utilizará si faltan datos en el archivo CSV.",
   "No description": "Sin descripción",
-  "No description of this targeting": "No hay descripción de este objetivo",
-  "No description of this usage": "No hay descripción de este uso",
   "No detail available for this event": "No hay detalles disponibles para este evento",
   "No direct instance trigger": "Sin desencadenador directo de instancias",
   "No draft for the moment": "No hay proyecto por el momento",

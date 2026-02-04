@@ -21,6 +21,8 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { stixDomainObjectThreatKnowledgeStixRelationshipsQuery } from './StixDomainObjectThreatKnowledgeQuery';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import { EMPTY_VALUE } from '../../../../utils/String';
+import { defaultRender } from '../../../../components/dataGrid/dataTableUtils';
 
 const styles = (theme) => ({
   itemIcon: {
@@ -185,45 +187,41 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                                 />
                               </ListItemIcon>
                               <ListItemText
+                                sx={{ marginRight: 8 }}
                                 primary={
-
-                                  !restricted ? (
-                                    entityToDisplay.entity_type
-                                    === 'Attack-Pattern' ? (
-                                          <span>
-                                            <strong>
-                                              {entityToDisplay.x_mitre_id}
-                                            </strong>{' '}
-                                            - {entityToDisplay.name}
-                                          </span>
-                                        ) : (
-                                          <span>{entityToDisplay.name}</span>
-                                        )
-                                  ) : (
-                                    t('Restricted')
-                                  )
+                                  !restricted
+                                    ? (entityToDisplay.entity_type === 'Attack-Pattern'
+                                        ? defaultRender(
+                                            <span>
+                                              <strong>
+                                                {entityToDisplay.x_mitre_id}
+                                              </strong>{'  '}
+                                              - {entityToDisplay.name}
+                                            </span>,
+                                          )
+                                        : defaultRender(entityToDisplay.name)
+                                      )
+                                    : t('Restricted')
                                 }
                                 secondary={
-                                  stixDomainObject.description
-                                  && stixDomainObject.description.length > 0 ? (
+                                  stixDomainObject.description && stixDomainObject.description.length > 0
+                                    ? (
                                         <MarkdownDisplay
                                           content={stixDomainObject.description}
                                           remarkGfmPlugin={true}
                                           commonmark={true}
                                         />
-                                      ) : (
-                                        t('No description of this usage')
                                       )
+                                    : EMPTY_VALUE
                                 }
                               />
                               <ItemMarkings
-                                variant="inList"
                                 markingDefinitions={stixDomainObject.objectMarking ?? []}
                                 limit={1}
                               />
                               <ItemYears
-                                variant="inList"
                                 years={stixDomainObject.years}
+                                style={{ marginLeft: 8 }}
                               />
                             </ListItemButton>
                           </ListItem>
