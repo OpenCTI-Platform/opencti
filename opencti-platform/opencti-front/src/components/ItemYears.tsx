@@ -13,7 +13,7 @@ const ItemYears = ({ years, style }: ItemYearsProps) => {
     fontSize: 12,
     lineHeight: '12px',
     height: 20,
-    marginRight: 15,
+    marginRight: 8,
     ...style,
   };
   return (
