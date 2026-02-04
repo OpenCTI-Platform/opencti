@@ -31,6 +31,7 @@ import pjson from '../../../../package.json';
 import { extractContentFrom } from '../../../utils/fileToContent';
 import { isCompatibleVersionWithMinimal } from '../../../utils/version';
 import { convertRepresentationsIds } from '../mapper-utils';
+import { pushAll } from '../../../utils/arrayUtil';
 
 const MINIMAL_COMPATIBLE_VERSION = '6.6.0';
 
@@ -230,7 +231,7 @@ export const csvMapperSchemaAttributes = async (context: AuthContext, user: Auth
       name: type,
       attributes: [],
     };
-    schemaAttribute.attributes.push(...Array.from(refs.values()).flatMap((ref) => {
+    pushAll(schemaAttribute.attributes, Array.from(refs.values()).flatMap((ref) => {
       if (INTERNAL_REFS.includes(ref.name)) return [];
       return [{
         name: ref.name,

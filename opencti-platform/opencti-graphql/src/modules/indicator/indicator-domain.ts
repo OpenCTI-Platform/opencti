@@ -58,6 +58,7 @@ import { stixHashesToInput } from '../../schema/fieldDataAdapter';
 import { REVOKED, VALID_FROM, VALID_UNTIL, X_DETECTION, X_SCORE } from '../../schema/identifier';
 import { checkDecayExclusionRules, getActiveDecayExclusionRules } from '../decayRule/exclusions/decayExclusionRule-domain';
 import { getEntitySettingFromCache } from '../../modules/entitySetting/entitySetting-utils';
+import { pushAll } from '../../utils/arrayUtil';
 
 export const NO_DECAY_DEFAULT_VALID_PERIOD: number = dayToMs(90);
 export const NO_DECAY_DEFAULT_REVOKED_SCORE: number = 0;
@@ -491,7 +492,7 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
       // First check if the same update by the same source exists
       if (!hasSameSourceAlreadyUpdateThisScore(user.id, newScore, indicatorBeforeUpdate.decay_history)) {
         const allChanges = restartDecayComputationOnEdit(newScore, indicatorBeforeUpdate, user.id);
-        finalInput.push(...allChanges);
+        pushAll(finalInput, allChanges);
         finalInput.push({ key: X_SCORE, value: [newScore] });
       }
     } else {
@@ -511,7 +512,7 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
         // Restart decay as if the score has been put to decay_base_score manually.
         const newScore = indicatorBeforeUpdate.decay_base_score;
         const allChanges = restartDecayComputationOnEdit(newScore, indicatorBeforeUpdate, user.id);
-        finalInput.push(...allChanges);
+        pushAll(finalInput, allChanges);
         finalInput.push({ key: X_SCORE, value: [newScore] });
       }
     }

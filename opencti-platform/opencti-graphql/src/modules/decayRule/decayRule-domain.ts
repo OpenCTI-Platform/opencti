@@ -23,6 +23,7 @@ import {
   ENTITY_IPV6_ADDR,
   ENTITY_URL,
 } from '../../schema/stixCyberObservable';
+import { unshiftAll } from '../../utils/arrayUtil';
 
 const DECAY_FACTOR: number = 3.0;
 
@@ -233,7 +234,7 @@ export const computeChartDecayAlgoSerie = (computeChartInput: ComputeDecayChartI
         }
         i += 1;
       }
-      decayData.unshift(...scoreInThePast);
+      unshiftAll(decayData, scoreInThePast);
     }
     return decayData;
   }

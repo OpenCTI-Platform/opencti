@@ -119,6 +119,7 @@ const RootDataComponent = () => {
                     )}
                     noAliases={true}
                     redirectToContent={true}
+                    enableEnrollPlaybook={true}
                   />
                   <Box
                     sx={{

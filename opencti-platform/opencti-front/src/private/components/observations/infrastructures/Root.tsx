@@ -132,6 +132,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
             )}
             enableQuickSubscription={true}
             redirectToContent={true}
+            enableEnrollPlaybook={true}
           />
           <Box
             sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 3 }}

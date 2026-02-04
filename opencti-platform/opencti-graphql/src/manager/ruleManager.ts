@@ -31,6 +31,8 @@ import { elList } from '../database/engine';
 import { isStixObject } from '../schema/stixCoreObject';
 import { buildCreateEvent, EVENT_CURRENT_VERSION, LIVE_STREAM_NAME, type StreamProcessor } from '../database/stream/stream-utils';
 
+import { pushAll } from '../utils/arrayUtil';
+
 const MIN_LIVE_STREAM_EVENT_VERSION = 4;
 
 // let activatedRules: Array<RuleRuntime> = [];
@@ -63,7 +65,7 @@ const ruleMergeHandler = async (event: MergeEvent): Promise<Array<BaseEvent>> =>
   // region 01 - Generate events for sources deletion
   // -- sources
   const sourceDeleteEvents = (eventContext.sources || []).map((s) => buildInternalEvent(EVENT_TYPE_DELETE, s));
-  events.push(...sourceDeleteEvents);
+  pushAll(events, sourceDeleteEvents);
   // endregion
   // region 03 - Generate event for merged entity
   const updateEvent = buildInternalEvent(EVENT_TYPE_UPDATE, data) as UpdateEvent;

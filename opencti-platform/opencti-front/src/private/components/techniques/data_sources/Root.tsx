@@ -112,6 +112,7 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
               </Security>
             )}
             redirectToContent={true}
+            enableEnrollPlaybook={true}
           />
           <Box
             sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 4 }}

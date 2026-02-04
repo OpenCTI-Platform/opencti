@@ -113,6 +113,7 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
             enableSuggestions={false}
             redirectToContent={true}
             disableAuthorizedMembers={true}
+            enableEnrollPlaybook={true}
           />
           <Box
             sx={{

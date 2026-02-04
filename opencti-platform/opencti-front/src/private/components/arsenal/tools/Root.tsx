@@ -161,6 +161,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
               enableEnricher={true}
               enableQuickSubscription={true}
               redirectToContent={true}
+              enableEnrollPlaybook={true}
             />
             <Box
               sx={{

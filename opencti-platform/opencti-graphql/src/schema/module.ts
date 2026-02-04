@@ -28,6 +28,7 @@ import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 import { registerEntityOverviewLayoutCustomization } from './overviewLayoutCustomization-register';
 import type { OverviewWidgetCustomization } from '../generated/graphql';
 import type { AuthContext, AuthUser } from '../types/user';
+import { pushAll } from '../utils/arrayUtil';
 
 export const modules = new Map();
 
@@ -128,9 +129,9 @@ export const registerDefinition = <T extends StoreEntity, Z extends StixObject>(
 
   // Register model attributes
   const attributes: AttributeDefinition[] = [standardId];
-  attributes.push(...definition.attributes.map((attr) => attr));
+  pushAll(attributes, definition.attributes.map((attr) => attr));
   if (definition.type.aliased) {
-    attributes.push(...[resolveAliasesField(definition.type.name), iAliasedIds]);
+    pushAll(attributes, [resolveAliasesField(definition.type.name), iAliasedIds]);
   }
   schemaAttributesDefinition.registerAttributes(definition.type.name, attributes);
 

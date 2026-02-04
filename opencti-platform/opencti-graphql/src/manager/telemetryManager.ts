@@ -26,6 +26,7 @@ import type { AuthUser } from '../types/user';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../modules/securityCoverage/securityCoverage-types';
 import { findRolesWithCapabilityInDraft } from '../domain/user';
+import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
 import { EnvStrategyType, isStrategyActivated } from '../modules/singleSignOn/providers-configuration';
 
 const TELEMETRY_MANAGER_KEY = conf.get('telemetry_manager:lock_key');
@@ -222,7 +223,7 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
 
     // region Settings information
     const settings = await getEntityFromCache<BasicStoreSettings>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_SETTINGS);
-    manager.setIsEEActivated(settings.valid_enterprise_edition === true ? 1 : 0);
+    manager.setIsEEActivated(isEnterpriseEditionFromSettings(settings) ? 1 : 0);
     // endregion
 
     // region Cluster information

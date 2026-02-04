@@ -10,7 +10,7 @@ on:
 
 jobs:
   opencti-frontend-test:
-    name: Frontend tests
+    name: Unit tests
     runs-on: ubuntu-latest
     steps:
     - name: OpenCTI checkout
@@ -59,7 +59,7 @@ jobs:
 
 
   opencti-frontend-e2e-test:
-    name: Frontend e2e tests
+    name: e2e tests
     runs-on: ubuntu-latest
     steps:
     - name: OpenCTI checkout
@@ -151,7 +151,7 @@ jobs:
     - name: Wait for OpenCTI e2e backend instances to start
       run: ./frontend-e2e-test/scripts/ci/wait-for-url-200.sh http://localhost:4500/health?health_access_key=cihealthkey 300 10
 
-    - name: Frontend e2e tests
+    - name: e2e tests
       run: |
         docker run --network runner-docker-network \
           --name frontend-e2e-tests \

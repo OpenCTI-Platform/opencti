@@ -105,8 +105,6 @@ const READ_QUERY = gql`
   }
 `;
 
-// TODO : find a way to mock EE
-
 describe('Report resolver standard behavior', () => {
   let reportInternalId;
   let datasetReportInternalId;

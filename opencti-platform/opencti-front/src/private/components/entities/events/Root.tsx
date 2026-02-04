@@ -157,6 +157,7 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
                 </Security>
               )}
               redirectToContent={true}
+              enableEnrollPlaybook={true}
             />
             <Box
               sx={{

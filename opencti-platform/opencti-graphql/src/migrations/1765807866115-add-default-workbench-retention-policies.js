@@ -35,9 +35,12 @@ export const up = async (next) => {
   };
   await elUpdateByQueryForMigration(fixMessage, READ_INDEX_INTERNAL_OBJECTS, updateQuery);
 
-  // Check if a retention rule for file scope already exists
-  const existingFileRules = await listRules(context, SYSTEM_USER, { filters: { mode: 'and', filters: [{ key: 'scope', values: ['file'] }], filterGroups: [] } });
-  if (existingFileRules.length === 0) {
+  // Get all existing retention rules (no filters to avoid potential issues)
+  const existingRules = await listRules(context, SYSTEM_USER, {});
+  const existingScopes = existingRules.map((rule) => rule.scope);
+
+  // Create file retention rule if none exists
+  if (!existingScopes.includes('file')) {
     await createRetentionRule(context, SYSTEM_USER, {
       name: 'Global files retention',
       max_retention: 30,
@@ -49,9 +52,8 @@ export const up = async (next) => {
     logApp.info(`${message} > File retention rule already exists, skipping`);
   }
 
-  // Check if a retention rule for workbench scope already exists
-  const existingWorkbenchRules = await listRules(context, SYSTEM_USER, { filters: { mode: 'and', filters: [{ key: 'scope', values: ['workbench'] }], filterGroups: [] } });
-  if (existingWorkbenchRules.length === 0) {
+  // Create workbench retention rule if none exists
+  if (!existingScopes.includes('workbench')) {
     await createRetentionRule(context, SYSTEM_USER, {
       name: 'All workbenches retention',
       max_retention: 30,

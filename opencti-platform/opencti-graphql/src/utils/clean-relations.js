@@ -5,6 +5,7 @@ import { ABSTRACT_BASIC_RELATIONSHIP } from '../schema/general';
 import { deleteElementById } from '../database/middleware';
 import { READ_DATA_INDICES, READ_RELATIONSHIPS_INDICES } from '../database/utils';
 import { SYSTEM_USER } from './access';
+import { pushAll } from './arrayUtil';
 
 const average = (arr) => arr.reduce((p, c) => p + c, 0) / arr.length;
 const computeMissingRelationsForType = async (context, relationType) => {
@@ -72,7 +73,7 @@ const computeMissingRelationsForType = async (context, relationType) => {
             s.connections.map((c) => c.internal_id),
           );
         });
-      relationsToTakeCare.push(...relationsToRemove);
+      pushAll(relationsToTakeCare, relationsToRemove);
       const timeForRun = new Date().getTime() - lastRun.getTime();
       timesSpent.push(timeForRun);
       timeSpent += timeForRun;
