@@ -17,7 +17,8 @@ COPY src /opt/opencti-worker
 WORKDIR /opt/opencti-worker
 
 RUN apk --no-cache add git libmagic \
-    && pip3 install --no-cache-dir --requirement requirements.txt
+    && pip3 install --no-cache-dir --requirement requirements.txt  \
+    && apk del git
 
 ENTRYPOINT ["python3"]
 CMD ["worker.py"]
