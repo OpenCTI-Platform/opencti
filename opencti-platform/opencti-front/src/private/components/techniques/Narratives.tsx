@@ -26,6 +26,7 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import type { Theme } from '../../../components/Theme';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { Stack } from '@mui/material';
 
 const LOCAL_STORAGE_KEY = 'narratives';
 
@@ -70,44 +71,32 @@ const Narratives: FunctionComponent = () => {
   const renderSubEntityLines = () => {
     return (
       <>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: theme.spacing(2),
-        }}
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+          sx={{ marginBottom: theme.spacing(2) }}
         >
           <SearchInput
             variant="small"
             onSubmit={helpers.handleSearch}
             keyword={searchTerm}
           />
-          <div style={{
-            marginTop: 0,
-            marginRight: 0,
-            display: 'flex',
-            alignItems: 'center',
-          }}
-          >
-            <ToggleButtonGroup
-              size="small"
-              color="secondary"
-              value={view || 'lines'}
-              exclusive={true}
-            >
-              <ViewSwitchingButtons
-                handleChangeView={helpers.handleChangeView}
-                disableCards={true}
-                currentView={view}
-                enableSubEntityLines={true}
-              />
-            </ToggleButtonGroup>
+
+          <Stack direction="row" gap={1}>
+            <ViewSwitchingButtons
+              handleChangeView={helpers.handleChangeView}
+              disableCards={true}
+              currentView={view}
+              enableSubEntityLines={true}
+            />
+
             <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
               <NarrativeCreation paginationOptions={queryPaginationOptions} />
             </Security>
-          </div>
-        </div>
-        <div className="clearfix" />
+          </Stack>
+        </Stack>
+
         {queryRef && (
           <React.Suspense
             fallback={(
