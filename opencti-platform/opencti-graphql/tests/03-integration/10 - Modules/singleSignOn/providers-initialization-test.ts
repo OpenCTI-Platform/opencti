@@ -371,7 +371,7 @@ describe('Providers initialization coverage', () => {
     });
   });
 
-  describe.skip('initializeAdminUser configurations verifications', () => {
+  describe('initializeAdminUser configurations verifications', () => {
     let adminToken: string;
     let adminEmail: string;
     let adminPassword: string;
@@ -472,6 +472,19 @@ describe('Providers initialization coverage', () => {
       await expect(async () => {
         await initializeAdminUser(testContext);
       }).rejects.toThrowError('Token must be a valid UUID');
+    });
+
+    it('should invalid token be refused', async () => {
+      // Reinstall initial configuration
+      vi.spyOn(providerConfig, 'getConfigurationAdminPassword').mockReturnValue(adminPassword);
+      vi.spyOn(providerConfig, 'getConfigurationAdminToken').mockReturnValue(adminToken);
+      vi.spyOn(providerConfig, 'getConfigurationAdminEmail').mockReturnValue(adminEmail);
+      vi.spyOn(providerConfig, 'isAdminExternallyManaged').mockReturnValue(adminExternallyManaged);
+      await initializeAdminUser(testContext);
+
+      const existingAdmin = await findById(testContext, SYSTEM_USER, OPENCTI_ADMIN_UUID) as AuthUser;
+      expect(existingAdmin.user_email).toBe(adminEmail);
+      expect(existingAdmin.api_token).toBe(adminToken);
     });
   });
 });
