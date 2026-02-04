@@ -4,7 +4,7 @@ import { initializeEnvAuthenticationProviders } from '../../../../src/modules/si
 import * as providerConfig from '../../../../src/modules/singleSignOn/providers-configuration';
 import * as providerInit from '../../../../src/modules/singleSignOn/providers-initialization';
 import { type ProviderConfiguration, PROVIDERS } from '../../../../src/modules/singleSignOn/providers-configuration';
-import { logApp } from '../../../../src/config/conf';
+import conf, { booleanConf, logApp } from '../../../../src/config/conf';
 import * as enterpriseEdition from '../../../../src/enterprise-edition/ee';
 import { clearProvider, clearSsoDatabase } from './singleSignOn-test-utils';
 import { initializeAuthenticationProviders } from '../../../../src/modules/singleSignOn/singleSignOn-init';
@@ -372,6 +372,32 @@ describe('Providers initialization coverage', () => {
   });
 
   describe('initializeAdminUser configurations verifications', () => {
+    let adminToken: string;
+    let adminEmail: string;
+    let adminPassword: string;
+    let adminExternallyManaged: boolean;
+
+    beforeAll(async () => {
+      // Copy existing configuration and reset it for tests purpose.
+      adminEmail = conf.get('app:admin:email');
+      adminPassword = conf.get('app:admin:password');
+      adminToken = conf.get('app:admin:token');
+      adminExternallyManaged = booleanConf('app:admin:externally_managed', false);
+    });
+
+    afterAll(async () => {
+      // Reinstall initial configuration
+      vi.spyOn(providerConfig, 'getConfigurationAdminPassword').mockReturnValue(adminPassword);
+      vi.spyOn(providerConfig, 'getConfigurationAdminToken').mockReturnValue(adminToken);
+      vi.spyOn(providerConfig, 'getConfigurationAdminEmail').mockReturnValue(adminEmail);
+      vi.spyOn(providerConfig, 'isAdminExternallyManaged').mockReturnValue(adminExternallyManaged);
+      await initializeAdminUser(testContext);
+
+      const existingAdmin = await findById(testContext, SYSTEM_USER, OPENCTI_ADMIN_UUID) as AuthUser;
+      expect(existingAdmin.user_email).toBe(adminEmail);
+      expect(existingAdmin.api_token).toBe(adminToken);
+    });
+
     it('should well configured admin be initialized', async () => {
       // GIVEN configuration
       const newToken = uuid();
