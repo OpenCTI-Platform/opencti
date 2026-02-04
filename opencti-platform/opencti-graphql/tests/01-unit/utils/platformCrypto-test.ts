@@ -25,6 +25,7 @@ describe('platformCrypto: key derivation', () => {
     const factory = createCryptoKeyFactory(testSeed);
     const keyPair = await factory.deriveEd25519KeyPair(['test', 'path'], 1);
     expect(keyPair).toHaveProperty('publicKeys');
+    expect(keyPair).toHaveProperty('jwks');
     expect(keyPair).toHaveProperty('sign');
     expect(keyPair).toHaveProperty('verify');
     expect(keyPair).toHaveProperty('signJwt');
@@ -64,7 +65,7 @@ describe('platformCrypto: key derivation', () => {
     const encrypted2 = await key2.encrypt(testData);
 
     // Different paths should produce different encrypted outputs
-    expect(encrypted1.equals(encrypted2)).toBe(false);
+    expect(encrypted1).not.toEqual(encrypted2);
 
     // Key1 cannot decrypt data encrypted with key2
     await expect(key1.decrypt(encrypted2)).rejects.toThrow();
@@ -80,7 +81,7 @@ describe('platformCrypto: key derivation', () => {
     const encryptedV2 = await keyV2.encrypt(testData);
 
     // Different versions should produce different encrypted outputs
-    expect(encryptedV1.equals(encryptedV2)).toBe(false);
+    expect(encryptedV1).not.toEqual(encryptedV2);
 
     // V1 key cannot decrypt data encrypted with V2 key
     await expect(keyV1.decrypt(encryptedV2)).rejects.toThrow(/Invalid kid for decryption/);
@@ -98,7 +99,7 @@ describe('platformCrypto: AES encryption and decryption', () => {
     const encrypted = await key.encrypt(plaintext);
     const decrypted = await key.decrypt(encrypted);
 
-    expect(decrypted.equals(plaintext)).toBe(true);
+    expect(decrypted).toEqual(plaintext);
   });
 
   it('should handle empty data', async () => {
@@ -109,7 +110,7 @@ describe('platformCrypto: AES encryption and decryption', () => {
     const encrypted = await key.encrypt(plaintext);
     const decrypted = await key.decrypt(encrypted);
 
-    expect(decrypted.equals(plaintext)).toBe(true);
+    expect(decrypted).toEqual(plaintext);
   });
 
   it('should handle large data', async () => {
@@ -120,7 +121,7 @@ describe('platformCrypto: AES encryption and decryption', () => {
     const encrypted = await key.encrypt(plaintext);
     const decrypted = await key.decrypt(encrypted);
 
-    expect(decrypted.equals(plaintext)).toBe(true);
+    expect(decrypted).toEqual(plaintext);
   });
 
   it('should handle binary data', async () => {
@@ -131,7 +132,7 @@ describe('platformCrypto: AES encryption and decryption', () => {
     const encrypted = await key.encrypt(plaintext);
     const decrypted = await key.decrypt(encrypted);
 
-    expect(decrypted.equals(plaintext)).toBe(true);
+    expect(decrypted).toEqual(plaintext);
   });
 
   it('should produce different ciphertext for same plaintext (due to random IV)', async () => {
@@ -143,13 +144,13 @@ describe('platformCrypto: AES encryption and decryption', () => {
     const encrypted2 = await key.encrypt(plaintext);
 
     // Same plaintext should produce different ciphertext (random IV)
-    expect(encrypted1.equals(encrypted2)).toBe(false);
+    expect(encrypted1).not.toEqual(encrypted2);
 
     // Both should decrypt to the same plaintext
     const decrypted1 = await key.decrypt(encrypted1);
     const decrypted2 = await key.decrypt(encrypted2);
-    expect(decrypted1.equals(plaintext)).toBe(true);
-    expect(decrypted2.equals(plaintext)).toBe(true);
+    expect(decrypted1).toEqual(plaintext);
+    expect(decrypted2).toEqual(plaintext);
   });
 
   it('should throw error for data too short', async () => {
@@ -199,28 +200,27 @@ describe('platformCrypto: AES encryption and decryption', () => {
 
   it('should support AAD (Additional Authenticated Data)', async () => {
     const factory = createCryptoKeyFactory(testSeed);
+    const key = await factory.deriveAesKey(['test', 'aad'], 1);
     const aad = Buffer.from('metadata');
-    const key = await factory.deriveAesKey(['test', 'aad'], 1, aad);
 
     const plaintext = Buffer.from('secret data');
-    const encrypted = await key.encrypt(plaintext);
-    const decrypted = await key.decrypt(encrypted);
+    const encrypted = await key.encrypt(plaintext, aad);
+    const decrypted = await key.decrypt(encrypted, aad);
 
-    expect(decrypted.equals(plaintext)).toBe(true);
+    expect(decrypted).toEqual(plaintext);
   });
 
   it('should fail decryption with wrong AAD', async () => {
     const factory = createCryptoKeyFactory(testSeed);
+    const key = await factory.deriveAesKey(['test', 'aad'], 1);
+
     const aad1 = Buffer.from('metadata1');
     const aad2 = Buffer.from('metadata2');
 
-    const keyWithAad1 = await factory.deriveAesKey(['test', 'aad1'], 1, aad1);
-    const keyWithAad2 = await factory.deriveAesKey(['test', 'aad1'], 1, aad2);
-
     const plaintext = Buffer.from('secret data');
-    const encrypted = await keyWithAad1.encrypt(plaintext);
+    const encrypted = await key.encrypt(plaintext, aad1);
 
-    await expect(keyWithAad2.decrypt(encrypted)).rejects.toThrow();
+    await expect(key.decrypt(encrypted, aad2)).rejects.toThrow();
   });
 });
 
@@ -282,7 +282,7 @@ describe('platformCrypto: Ed25519 signing and verification', () => {
     const signature2 = await keyPair.sign(data);
 
     // Ed25519 signatures are deterministic
-    expect(signature1.equals(signature2)).toBe(true);
+    expect(signature1).toEqual(signature2);
   });
 
   it('should throw error for signature too short', async () => {
@@ -326,8 +326,12 @@ describe('platformCrypto: Ed25519 signing and verification', () => {
     expect(keyPair.publicKeys).toBeDefined();
     expect(Object.keys(keyPair.publicKeys)).toHaveLength(1);
 
-    const kid = Object.keys(keyPair.publicKeys)[0];
+    expect(keyPair.jwks).toBeDefined();
+    expect(Object.keys(keyPair.jwks)).toHaveLength(1);
+
+    const kid = Object.keys(keyPair.jwks)[0];
     expect(kid).toMatch(/^[0-9a-f]{16}$/); // 8 bytes = 16 hex chars
+    expect(Object.keys(keyPair.jwks)[0]).toEqual(kid);
   });
 
   it('should produce different signatures for different key versions', async () => {
@@ -340,7 +344,7 @@ describe('platformCrypto: Ed25519 signing and verification', () => {
     const signatureV2 = await keyPairV2.sign(data);
 
     // Different versions should produce different signatures
-    expect(signatureV1.equals(signatureV2)).toBe(false);
+    expect(signatureV1).not.toEqual(signatureV2);
 
     // V1 key cannot verify signature from V2 key
     await expect(keyPairV1.verify(data, signatureV2)).rejects.toThrow(/Invalid kid for signature verification/);
@@ -512,7 +516,7 @@ describe('platformCrypto: edge cases and error handling', () => {
 
     const results = await Promise.all(operations);
     results.forEach((decrypted) => {
-      expect(decrypted.equals(plaintext)).toBe(true);
+      expect(decrypted).toEqual(plaintext);
     });
   });
 
@@ -524,7 +528,7 @@ describe('platformCrypto: edge cases and error handling', () => {
     const encrypted = await key.encrypt(specialChars);
     const decrypted = await key.decrypt(encrypted);
 
-    expect(decrypted.equals(specialChars)).toBe(true);
+    expect(decrypted).toEqual(specialChars);
   });
 
   it('should handle Unicode data', async () => {
@@ -535,7 +539,7 @@ describe('platformCrypto: edge cases and error handling', () => {
     const encrypted = await key.encrypt(unicode);
     const decrypted = await key.decrypt(encrypted);
 
-    expect(decrypted.equals(unicode)).toBe(true);
+    expect(decrypted).toEqual(unicode);
   });
 
   it('should create factory with exactly 32 bytes seed', () => {
@@ -556,7 +560,7 @@ describe('platformCrypto: edge cases and error handling', () => {
     const encrypted = await key.encrypt(plaintext);
     const decrypted = await key.decrypt(encrypted);
 
-    expect(decrypted.equals(plaintext)).toBe(true);
+    expect(decrypted).toEqual(plaintext);
   });
 
   it('should handle very long derivation paths', async () => {
@@ -568,7 +572,7 @@ describe('platformCrypto: edge cases and error handling', () => {
     const encrypted = await key.encrypt(plaintext);
     const decrypted = await key.decrypt(encrypted);
 
-    expect(decrypted.equals(plaintext)).toBe(true);
+    expect(decrypted).toEqual(plaintext);
   });
 
   it('should handle high version numbers', async () => {
@@ -579,6 +583,6 @@ describe('platformCrypto: edge cases and error handling', () => {
     const encrypted = await key.encrypt(plaintext);
     const decrypted = await key.decrypt(encrypted);
 
-    expect(decrypted.equals(plaintext)).toBe(true);
+    expect(decrypted).toEqual(plaintext);
   });
 });

@@ -58,7 +58,6 @@ export const createCryptoKeyFactory = (seed: Buffer) => {
   const deriveAesKey = async (
     derivationPath: string[],
     derivationPathVersion: number,
-    aad?: Buffer | undefined,
   ) => {
     const encodingVersion = 0x01;
     const ivLength = 12;
@@ -70,7 +69,7 @@ export const createCryptoKeyFactory = (seed: Buffer) => {
     const key = await deriveBytes([...derivationPath, algo, 'key'], derivationPathVersion, bits / 8);
     const kid = await deriveKid([...derivationPath, algo, 'kid'], derivationPathVersion);
 
-    const encrypt = async (data: Buffer) => {
+    const encrypt = async (data: Buffer, aad?: Buffer | undefined) => {
       const iv = crypto.randomBytes(ivLength); // recommended nonce size for GCM
       const cipher = crypto.createCipheriv(algo, key, iv, { authTagLength });
       if (aad !== undefined) {
@@ -87,7 +86,7 @@ export const createCryptoKeyFactory = (seed: Buffer) => {
       return Buffer.concat([Buffer.from([encodingVersion]), kid, iv, authTag, encryptedData]);
     };
 
-    const decrypt = async (data: Buffer) => {
+    const decrypt = async (data: Buffer, aad?: Buffer | undefined) => {
       const receivedLength = data.length;
       if (data.length < minLength) {
         throw new Error(`Unsupported encrypted data ${JSON.stringify({
@@ -208,6 +207,9 @@ export const createCryptoKeyFactory = (seed: Buffer) => {
     return {
       publicKeys: {
         [toHex(kid)]: publicKey,
+      },
+      jwks: {
+        [toHex(kid)]: jwk,
       },
       sign,
       verify,
