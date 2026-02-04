@@ -415,7 +415,7 @@ describe('platformCrypto: JWT signing and verification', () => {
     const token = await keyPair.signJwt(jwt);
 
     await expect(
-      keyPair.verifyJwt(token, { issuer: 'wrong-issuer' })
+      keyPair.verifyJwt(token, { issuer: 'wrong-issuer' }),
     ).rejects.toThrow();
   });
 
