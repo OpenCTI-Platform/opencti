@@ -5,10 +5,8 @@ import { useTheme } from '@mui/material/styles';
 import { SettingsSuggestOutlined } from '@mui/icons-material';
 import Chart from '@components/common/charts/Chart';
 import { ApexOptions } from 'apexcharts';
-import RulesHeaderGridCard from './RulesHeaderGridCard';
 import { RULES_LOCAL_STORAGE_KEY } from './rules-utils';
 import { RulesHeader_data$key } from './__generated__/RulesHeader_data.graphql';
-import ItemNumberDifference from '../../../../components/ItemNumberDifference';
 import { useFormatter } from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
@@ -19,6 +17,8 @@ import { areaChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
 import useAuth from '../../../../utils/hooks/useAuth';
 import Card from '../../../../components/common/card/Card';
+import CardNumber from '../../../../components/common/card/CardNumber';
+import CardStatistic from '../../../../components/common/card/CardStatistic';
 
 const fragmentData = graphql`
   fragment RulesHeader_data on Query 
@@ -77,7 +77,7 @@ interface RulesHeaderProps {
 const RulesHeader = ({ data }: RulesHeaderProps) => {
   const theme = useTheme<Theme>();
   const { platformModuleHelpers } = useAuth();
-  const { t_i18n, n, nsdt, md } = useFormatter();
+  const { t_i18n, nsdt, md } = useFormatter();
   const { viewStorage, helpers } = usePaginationLocalStorage(RULES_LOCAL_STORAGE_KEY, {});
 
   const {
@@ -125,59 +125,73 @@ const RulesHeader = ({ data }: RulesHeaderProps) => {
       <Grid container spacing={3}>
         <Grid size={{ xs: 6 }} container spacing={3}>
           <Grid size={{ xs: 6 }}>
-            <RulesHeaderGridCard
-              title={t_i18n('Total inferred entities')}
-              icon={<Database color="inherit" fontSize="large" />}
-            >
-              <div style={{ display: 'flex', alignItems: 'baseline' }}>
-                <span style={{ fontSize: 30 }}>{n(totalEntities)}</span>
-                <ItemNumberDifference
-                  difference={differenceEntities}
-                  description={t_i18n('24 hours')}
+            <CardNumber
+              value={totalEntities}
+              diffValue={differenceEntities}
+              diffLabel={t_i18n('24 hours')}
+              label={t_i18n('Total inferred entities')}
+              icon={(
+                <Database
+                  sx={{ opacity: 0.35 }}
+                  fontSize="large"
                 />
-              </div>
-            </RulesHeaderGridCard>
+              )}
+            />
           </Grid>
           <Grid size={{ xs: 6 }}>
-            <RulesHeaderGridCard
-              title={t_i18n('Total inferred relations')}
-              icon={<GraphOutline color="inherit" fontSize="large" />}
-            >
-              <div style={{ display: 'flex', alignItems: 'baseline' }}>
-                <span style={{ fontSize: 30 }}>{n(totalRelations)}</span>
-                <ItemNumberDifference
-                  difference={differenceRelations}
-                  description={t_i18n('24 hours')}
+            <CardNumber
+              value={totalRelations}
+              diffValue={differenceRelations}
+              diffLabel={t_i18n('24 hours')}
+              label={t_i18n('Total inferred relations')}
+              icon={(
+                <GraphOutline
+                  sx={{ opacity: 0.35 }}
+                  fontSize="large"
                 />
-              </div>
-            </RulesHeaderGridCard>
+              )}
+            />
           </Grid>
           <Grid size={{ xs: 6 }}>
-            <RulesHeaderGridCard
-              title={t_i18n('Rules engine status')}
-              icon={<AutoFix color="inherit" fontSize="large" />}
-            >
-              <ItemBoolean
-                status={isEngineEnabled}
-                label={isEngineEnabled ? t_i18n('Enabled') : t_i18n('Disabled')}
-              />
-            </RulesHeaderGridCard>
+            <CardStatistic
+              label={t_i18n('Rules engine status')}
+              icon={(
+                <AutoFix
+                  sx={{ opacity: 0.35 }}
+                  fontSize="large"
+                />
+              )}
+              value={(
+                <ItemBoolean
+                  status={isEngineEnabled}
+                  label={isEngineEnabled ? t_i18n('Enabled') : t_i18n('Disabled')}
+                />
+              )}
+            />
           </Grid>
           <Grid size={{ xs: 6 }}>
-            <RulesHeaderGridCard
-              title={t_i18n('Last event processed')}
-              icon={<SettingsSuggestOutlined color="inherit" fontSize="large" />}
-            >
-              <div>{nsdt(parse(lastEventTimestamp))}</div>
-            </RulesHeaderGridCard>
+            <CardStatistic
+              label={t_i18n('Last event processed')}
+              icon={(
+                <SettingsSuggestOutlined
+                  sx={{ opacity: 0.35 }}
+                  fontSize="large"
+                />
+              )}
+              value={(
+                <div style={{ fontSize: 18 }}>
+                  {nsdt(parse(lastEventTimestamp))}
+                </div>
+              )}
+            />
           </Grid>
         </Grid>
         <Grid size={{ xs: 6 }}>
-          <Card title={t_i18n('Inferred entities')}>
+          <Card padding="none" title={t_i18n('Inferred entities')}>
             <Chart
               type="area"
               width="100%"
-              height={240}
+              height={200}
               options={areaChartOptions(
                 theme,
                 true,

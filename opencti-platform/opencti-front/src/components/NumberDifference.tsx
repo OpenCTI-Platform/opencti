@@ -39,6 +39,7 @@ const NumberDifference = ({ value, description }: ItemNumberDifferenceProps) => 
       display: 'flex',
       alignItems: 'center',
       gap: theme.spacing(0.25),
+      whiteSpace: 'nowrap',
     }}
     >
       <Icon color="inherit" style={{ fontSize: 13 }} />

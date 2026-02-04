@@ -1,3 +1,4 @@
+import { ReactNode } from 'react';
 import { useTheme } from '@mui/styles';
 import { Theme } from '../../Theme';
 import Card from './Card';
@@ -5,14 +6,19 @@ import { Stack, Typography } from '@mui/material';
 
 interface CardStatisticProps {
   label: string;
-  value: string;
+  value: string | ReactNode;
+  icon?: ReactNode;
 }
 
-const CardStatistic = ({ label, value }: CardStatisticProps) => {
+const CardStatistic = ({
+  label,
+  value,
+  icon,
+}: CardStatisticProps) => {
   const theme = useTheme<Theme>();
 
   const valueStyle = {
-    fontSize: 40,
+    fontSize: 32,
     lineHeight: 1,
     fontWeight: 600,
   };
@@ -28,12 +34,19 @@ const CardStatistic = ({ label, value }: CardStatisticProps) => {
           {label}
         </Typography>
 
-        <div
-          data-testid={`card-stat-${label}`}
-          style={valueStyle}
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
         >
-          {value}
-        </div>
+          <div
+            data-testid={`card-stat-${label}`}
+            style={valueStyle}
+          >
+            {value}
+          </div>
+          {icon}
+        </Stack>
       </Stack>
     </Card>
   );

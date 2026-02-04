@@ -406,6 +406,15 @@ const DefaultDashboard = ({ timeField }) => {
               },
               date_attribute: timeField === 'functional' ? 'start_time' : 'created_at',
               sort_mode: 'desc',
+              columns: [
+                { attribute: 'name', label: 'Name' },
+                { attribute: 'created', label: 'Original creation date' },
+                { attribute: 'createdBy' },
+                { attribute: 'creators', label: 'Creators' },
+                { attribute: 'x_opencti_workflow_id' },
+                { attribute: 'objectLabel' },
+                { attribute: 'objectMarking' },
+              ],
             }]}
           />
         </Grid>
