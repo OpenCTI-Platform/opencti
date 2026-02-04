@@ -10,8 +10,6 @@ export const pushAll = <T>(target: T[], source: Iterable<T>): number => {
 export const unshiftAll = <T>(target: T[], source: T[]): number => {
   const m = source.length;
   if (m !== 0) {
-    const itemsToAdd = source === target ? source.slice() : source;
-
     const n = target.length;
     target.length = n + m;
 
@@ -22,7 +20,7 @@ export const unshiftAll = <T>(target: T[], source: T[]): number => {
 
     // Copy new items at the front
     for (let i = 0; i < m; i++) {
-      target[i] = itemsToAdd[i];
+      target[i] = source[i];
     }
   }
 
