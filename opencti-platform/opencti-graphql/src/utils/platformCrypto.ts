@@ -5,18 +5,15 @@ import * as ed25519 from '@noble/ed25519'; // required for ed25519 key derivatio
 import type { JWTVerifyOptions } from 'jose';
 import { importJWK, type JWK, jwtVerify, SignJWT } from 'jose';
 import { enrichWithRemoteCredentials } from '../config/credentials';
+import { confNameToEnvName } from '../config/conf';
 
 const hkdfAsync = promisify(crypto.hkdf);
-
-const masterSeedConfName = 'app:crypto:master_seed';
-const masterSeedEnvName = 'APP__CRYPTO__MASTER_SEED';
-const zeroBuffer = Buffer.alloc(0);
-
 const toHex = (buffer: Buffer) => buffer.toString('hex');
+const zeroBuffer = Buffer.alloc(0);
 
 export const createCryptoKeyFactory = (seed: Buffer) => {
   if (seed.length < 32) {
-    throw new Error(`${masterSeedConfName} must have at least 32 bytes ${JSON.stringify({ seedLength: seed.length })}`);
+    throw new Error(`Seed must have at least 32 bytes ${JSON.stringify({ seedLength: seed.length })}`);
   }
 
   const deriveBytes = async (
@@ -224,16 +221,24 @@ export const createCryptoKeyFactory = (seed: Buffer) => {
   };
 };
 
-const createPlatformCrypto = async () => {
-  const seedConfValue = nconf.get(masterSeedConfName);
-  delete process.env[masterSeedEnvName]; // remove from env after use
-  const { master_seed } = await enrichWithRemoteCredentials('crypto', { master_seed: seedConfValue });
+// best effort to handle safely the environment variable containing the master seed, remove it from env after reading so it cannot be leaked to spawned processes
+// buffer will be cleaned when read
+const masterSeedConfName = 'app:crypto:master_seed';
+const masterSeedEnvBuffer = Buffer.from(nconf.get(masterSeedConfName) ?? '', 'base64');
+delete process.env[confNameToEnvName(masterSeedConfName)];
 
-  if (!master_seed) {
-    throw new Error(`${masterSeedConfName} configuration is missing`);
+const createPlatformCrypto = async () => {
+  const { master_seed } = await enrichWithRemoteCredentials('crypto', {});
+  const seed = master_seed ? Buffer.from(master_seed, 'base64') : masterSeedEnvBuffer;
+
+  if (seed.length < 32) {
+    throw new Error(`${masterSeedConfName} configuration is missing or invalid, please provide at least 32 bytes of base64-encoded data by using 'openssl rand -base64 32' command ${JSON.stringify({ seedLength: seed.length })}`);
   }
 
-  return createCryptoKeyFactory(Buffer.from(master_seed, 'base64'));
+  const promise = createCryptoKeyFactory(Buffer.from(seed)); // send a private copy of the seed
+  seed.fill(0); // clean the local seed buffer
+  masterSeedEnvBuffer.fill(0); // always clean the buffer containing the master seed from env
+  return promise;
 };
 
 let platformCryptoPromise: Promise<ReturnType<typeof createCryptoKeyFactory>> | undefined = undefined;
