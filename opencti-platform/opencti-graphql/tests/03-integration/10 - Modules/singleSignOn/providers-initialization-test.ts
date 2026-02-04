@@ -220,7 +220,38 @@ describe('Providers initialization coverage', () => {
           `[ENV-PROVIDER][${useCase.strategyLogName}] DEPRECATED Strategy found in configuration providerRef:${useCase.identifier}, please consider using OpenID`,
         );
     });
-
+    const envProviders = {
+      oic: {
+        identifier: 'oic',
+        strategy: 'OpenIDConnectStrategy',
+        config: {
+          client_id: 'xxxxxxxxxxx',
+          client_secret: 'yyyyyyyyyyyyyy',
+          callback_url: 'https://opencti.mydomain.com/auth/oic/callback',
+          logout_remote: false,
+        },
+      },
+      saml: {
+        identifier: 'saml2',
+        strategy: 'SamlStrategy',
+        config: {
+          issuer: 'openctisaml',
+          label: 'SAML groups 1',
+          entry_point: 'https://myidp/realms/master/protocol/saml',
+          saml_callback_url: 'http://opencti.mydomain.com/auth/saml2/callback',
+          cert: 'xxxxxxxxxxxxxxxx',
+        },
+      },
+      ldap: {
+        identifier: 'ldap',
+        strategy: 'LdapStrategy',
+        config: {
+          url: 'ldap://myidp:389',
+          bind_dn: 'dc=mokapi,dc=io',
+          search_base: 'ou=people,dc=mokapi,dc=io',
+        },
+      },
+    };
     const convertedProviders = [
     /* TODO
     { identifier: 'local',
@@ -280,28 +311,30 @@ describe('Providers initialization coverage', () => {
         },
       },
     ];
-    it.each(convertedProviders)('should not init converted strategy from env', async (useCase) => {
-      vi.spyOn(providerConfig, 'getProvidersFromEnvironment').mockReturnValue(useCase.configuration);
+    it('should not init converted strategy from env', async () => {
+      vi.spyOn(providerConfig, 'getProvidersFromEnvironment').mockReturnValue(envProviders);
       vi.spyOn(providerConfig, 'isAuthenticationProviderMigrated').mockReturnValue(false);
       vi.spyOn(providerConfig, 'isAuthenticationForcedFromEnv').mockReturnValue(false);
       vi.spyOn(enterpriseEdition, 'isEnterpriseEdition').mockResolvedValue(true);
 
       const logAppInfoSpy = vi.spyOn(logApp, 'info');
       await initializeEnvAuthenticationProviders(testContext, ADMIN_USER);
+      for (let index = 0; index < convertedProviders.length; index += 1) {
+        const useCase = convertedProviders[index];
+        // Provider must not be registered
+        expect(PROVIDERS.some((strategyProv) => strategyProv.provider === useCase.identifier)).toBeFalsy();
 
-      // Provider must not be registered
-      expect(PROVIDERS.some((strategyProv) => strategyProv.provider === useCase.identifier)).toBeFalsy();
+        // And info should be in log that a provider is in env
+        expect(logAppInfoSpy, 'Provider should be see, but not added on env step.')
+          .toHaveBeenCalledWith(
+            `[ENV-PROVIDER][${useCase.strategyLogName}] ${useCase.strategyId} found in configuration providerRef:${useCase.identifier}`,
+          );
 
-      // And info should be in log that a provider is in env
-      expect(logAppInfoSpy, 'Provider should be see, but not added on env step.')
-        .toHaveBeenCalledWith(
-          `[ENV-PROVIDER][${useCase.strategyLogName}] ${useCase.strategyId} found in configuration providerRef:${useCase.identifier}`,
-        );
-
-      expect(logAppInfoSpy, 'Provider should be mark as should be converted')
-        .toHaveBeenCalledWith(
-          `[ENV-PROVIDER][${useCase.strategyLogName}] ${useCase.identifier} is about to be converted to database configuration.`,
-        );
+        expect(logAppInfoSpy, 'Provider should be mark as should be converted')
+          .toHaveBeenCalledWith(
+            `[ENV-PROVIDER][${useCase.strategyLogName}] ${useCase.identifier} is about to be converted to database configuration.`,
+          );
+      }
     });
 
     it('should disabled provider not be registered', async () => {

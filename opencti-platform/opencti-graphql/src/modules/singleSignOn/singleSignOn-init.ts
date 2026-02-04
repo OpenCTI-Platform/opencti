@@ -1,6 +1,6 @@
 import { EnvStrategyType, isAuthenticationForcedFromEnv, isStrategyActivated } from './providers-configuration';
 import { findAllSingleSignOn, logAuthInfo, logAuthWarn } from './singleSignOn-domain';
-import { registerLocalStrategy, registerStrategy } from './singleSignOn-providers';
+import { registerAdminLocalStrategy, registerLocalStrategy, registerStrategy } from './singleSignOn-providers';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import { initializeEnvAuthenticationProviders } from './providers-initialization';
@@ -29,7 +29,7 @@ export const initEnterpriseAuthenticationProviders = async (context: AuthContext
     // At the end if there is no local, need to add the internal local
     if (!isStrategyActivated(EnvStrategyType.STRATEGY_LOCAL)) {
       logAuthWarn('No local strategy configured, adding it', EnvStrategyType.STRATEGY_LOCAL);
-      await registerLocalStrategy();
+      await registerAdminLocalStrategy();
     }
   }
 };

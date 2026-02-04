@@ -1,5 +1,13 @@
 import type { AuthContext, AuthUser } from '../../types/user';
-import { type EditInput, type SingleSignMigrationInput, type SingleSignOnAddInput, type SingleSignOnSettings, StrategyType } from '../../generated/graphql';
+import {
+  type EditInput,
+  FilterMode,
+  FilterOperator,
+  type SingleSignMigrationInput,
+  type SingleSignOnAddInput,
+  type SingleSignOnSettings,
+  StrategyType,
+} from '../../generated/graphql';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntitySingleSignOn, ENTITY_TYPE_SINGLE_SIGN_ON } from './singleSignOn-types';
 import { now } from '../../utils/format';
@@ -69,6 +77,17 @@ export const findSingleSignOnPaginated = async (context: AuthContext, user: Auth
 export const internalAddSingleSignOn = async (context: AuthContext, user: AuthUser, input: SingleSignOnAddInput, skipRegister: boolean) => {
   const defaultOps = { created_at: now(), updated_at: now() };
   const singleSignOnInput = { ...input, ...defaultOps };
+  if (input.strategy === StrategyType.LocalStrategy) {
+    const filters = {
+      mode: FilterMode.And,
+      filters: [{ key: ['strategy'], values: [StrategyType.LocalStrategy], operator: FilterOperator.Eq }],
+      filterGroups: [],
+    };
+    const hasLocalStrategy = await findSingleSignOnPaginated(context, user, { filters });
+    if (hasLocalStrategy.edges.length > 0) {
+      throw FunctionalError('Local Strategy already exists in database');
+    }
+  }
   const created: BasicStoreEntitySingleSignOn = await createEntity(
     context,
     user,
@@ -134,6 +153,10 @@ export const deleteSingleSignOn = async (context: AuthContext, user: AuthUser, i
 
   if (!singleSignOn) {
     throw FunctionalError(`Single sign on ${id} cannot be found`);
+  }
+
+  if (singleSignOn.strategy === StrategyType.LocalStrategy) {
+    throw FunctionalError('Cannot delete Local Strategy');
   }
 
   if (singleSignOn.enabled && !isAuthenticationForcedFromEnv()) {
