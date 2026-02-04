@@ -271,7 +271,9 @@ import type {
   StoreCommon,
   StoreEntity,
   StoreFile,
+  StoreMarkingDefinition,
   StoreObject,
+  StoreProxyRelation,
   StoreRelation,
 } from '../types/store';
 import type { BasicStoreSettings } from '../types/settings';
@@ -499,9 +501,9 @@ export const loadElementsWithDependencies = async (
       pushAll(targetsToResolved, [relationElement.fromId, relationElement.toId]);
     }
     if (isNotEmptyField(e.x_opencti_files)) {
-      e.x_opencti_files.forEach((f) => {
+      e.x_opencti_files?.forEach((f) => {
         if (isNotEmptyField(f.file_markings)) {
-          pushAll(fileMarkings, f.file_markings);
+          pushAll(fileMarkings, f.file_markings as string[]);
         }
       });
     }
@@ -1078,7 +1080,7 @@ export const inputResolveRefs = async (
       instanceIds.forEach((instanceId) => {
         resolvedIds.add(instanceId);
         if (fetchingIdsMap.has(instanceId)) {
-          pushAll(matchingConfigs, fetchingIdsMap.get(instanceId));
+          pushAll(matchingConfigs, fetchingIdsMap.get(instanceId) as any[]);
         }
       });
       for (let configIndex = 0; configIndex < matchingConfigs.length; configIndex += 1) {
@@ -1204,7 +1206,7 @@ const createContainerSharingTask = (
 ) => {
   // If object_refs relations are newly created
   // One side is a container, the other side must inherit from the granted_refs
-  const targetGrantIds = [];
+  const targetGrantIds: (string | undefined)[] = [];
   let taskPromise = BluePromise.resolve();
   const elementGrants = (relations ?? []).filter((e) => e.entity_type === RELATION_GRANTED_TO).map((r) => r.to?.internal_id);
   // If container is granted, we need to grant every new children.
@@ -1496,7 +1498,7 @@ const mergeEntitiesRaw = async (
   context: AuthContext,
   user: AuthUser,
   targetEntity: BasicStoreEntity,
-  sourceEntities: BasicStoreCommon[],
+  sourceEntities: BasicStoreObject[],
   targetDependencies: MergeEntitiesDependency,
   sourcesDependencies: MergeEntitiesDependency,
   opts: { chosenFields?: Record<string, any> } = {},
@@ -1763,11 +1765,11 @@ const mergeEntitiesRaw = async (
       const sourceValues = fieldValues || [];
       // For aliased entities, get name of the source to add it as alias of the target
       if (targetFieldKey === ATTRIBUTE_ALIASES || targetFieldKey === ATTRIBUTE_ALIASES_OPENCTI) {
-        pushAll(sourceValues, sourceEntities.map((s) => s.name).filter((n) => isNotEmptyField(n)));
+        pushAll(sourceValues, (sourceEntities as BasicStoreEntity[]).map((s) => s.name).filter((n) => isNotEmptyField(n)));
       }
       // For x_opencti_additional_names exists, add the source name inside
       if (targetFieldKey === ATTRIBUTE_ADDITIONAL_NAMES) {
-        pushAll(sourceValues, sourceEntities.map((s) => s.name).filter((n) => isNotEmptyField(n)));
+        pushAll(sourceValues, (sourceEntities as BasicStoreEntity[]).map((s) => s.name).filter((n) => isNotEmptyField(n)));
       }
       // standard_id of merged entities must be kept in x_opencti_stix_ids
       if (targetFieldKey === IDS_STIX) {
@@ -2386,11 +2388,11 @@ export const generateUpdateMessage = async (
 
   // Extract file_markings from x_opencti_files updates to resolve marking names
   const fileObjects = getKeyValuesFromPatchElements(patchElements, files.name);
-  const fileMarkingIds = R.uniq(fileObjects.flatMap((f) => f?.file_markings ?? []));
-  let markings = [];
+  const fileMarkingIds: string[] = R.uniq(fileObjects.flatMap((f: any) => f?.file_markings ?? []));
+  let markings: StoreMarkingDefinition[] = [];
   if (fileMarkingIds.length > 0) {
-    const markingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
-    markings = fileMarkingIds.map((id) => markingsMap.get(id)).filter((m) => m);
+    const markingsMap = await getEntitiesMapFromCache<StoreMarkingDefinition>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+    markings = fileMarkingIds.map((id) => markingsMap.get(id)).filter((m) => m) as StoreMarkingDefinition[];
   }
 
   return generateUpdatePatchMessage(patchElements, entityType, { members, creators, markings });
@@ -3319,7 +3321,7 @@ export const getExistingRelations = async (
 ) => {
   const { from, to, relationship_type: relationshipType } = input;
   const { fromRule } = opts;
-  const existingRelationships = [];
+  const existingRelationships: StoreProxyRelation[] = [];
   if (fromRule) {
     // In case inferred rule, try to find the relation with basic filters
     // Only in inferred indices.
@@ -3739,7 +3741,7 @@ const internalCreateEntityRaw = async (
     // Generate the internal id if needed
     const standardId = resolvedInput.standard_id || generateStandardId(type, resolvedInput);
     // Check if the entity exists, must be done with SYSTEM USER to really find it.
-    const existingEntities = [];
+    const existingEntities: BasicStoreObject[] = [];
     const finderIds = [...participantIds, ...(context.previousStandard ? [context.previousStandard] : [])];
     const existingByIdsPromise = internalFindByIds(context, SYSTEM_USER, finderIds, { type }) as Promise<BasicStoreObject[]>;
     // Hash are per definition keys.
@@ -3890,7 +3892,13 @@ const internalCreateEntityRaw = async (
         const { filename } = await fileInput;
         const key = `${path}/${filename}`;
         const meta = isAutoExternal ? { external_reference_id: generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, { url: `/storage/get/${key}` }) } : {};
-        const { upload: uploadedFile } = await uploadToStorage(context, user, path, fileInput, { entity: dataEntity.element as BasicStoreBase, file_markings, meta, noTriggerImport });
+        const { upload: uploadedFile } = await uploadToStorage(
+          context,
+          user,
+          path,
+          fileInput,
+          { entity: dataEntity.element as BasicStoreBase, file_markings, meta, noTriggerImport },
+        );
         uploadedFiles.push(storeFileConverter(user, uploadedFile));
         // Add external references from files if necessary
         if (isAutoExternal) {
