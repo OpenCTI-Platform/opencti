@@ -139,7 +139,9 @@ const StixCoreObjectSecurityCoverage: FunctionComponent<StixCoreObjectSecurityCo
               size="small"
               disabled={!isGrantedToUpdate}
               onClick={handleOpen}
-              startIcon={<ShieldCheckOutline />}
+              // for some reason, fontSize props not works with ShieldCheckOutline,
+              // set width and height to match small icon size
+              startIcon={<ShieldCheckOutline sx={{ width: 20, height: 20 }} />}
             >
               {t_i18n('Add Security coverage')}
             </Button>
