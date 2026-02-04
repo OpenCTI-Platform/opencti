@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
-import { BiotechOutlined, ContentPasteSearchOutlined, Search, Star, StarOutlined, WavesOutlined } from '@mui/icons-material';
+import { BiotechOutlined, ContentPasteSearchOutlined, Search, StarOutlined, WavesOutlined } from '@mui/icons-material';
 import { LogoXtmOneIcon } from 'filigran-icon';
 import IconButton from '@mui/material/IconButton';
 import { Link, useLocation } from 'react-router-dom';
