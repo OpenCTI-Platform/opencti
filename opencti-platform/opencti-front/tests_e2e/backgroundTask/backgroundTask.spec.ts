@@ -20,7 +20,7 @@ import { runBackgroundTaskOnIncidentByFilter, runBackgroundTaskOnIncidentBySearc
  * @param page
  */
 
-const waitAndRefreshUntilFirstTaskInStatus = async (page: Page, tasksPage: DataProcessingTasksPage, status: string, expectVisible: boolean) => {
+export const waitAndRefreshUntilFirstTaskInStatus = async (page: Page, tasksPage: DataProcessingTasksPage, status: string, expectVisible: boolean) => {
   await tasksPage.goto();
   await expect(tasksPage.getPage()).toBeVisible();
 
