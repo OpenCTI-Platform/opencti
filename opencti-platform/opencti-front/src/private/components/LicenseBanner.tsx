@@ -70,12 +70,14 @@ const computeBannerInfo = (eeSettings: RootSettings$data['platform_enterprise_ed
     return {
       message: `The current ${eeSettings.license_type} license has expired, Enterprise Edition is disabled.`,
       bannerColor: 'red',
+      buttonStyle: getButtonStyle(0),
     };
   }
   if (eeSettings.license_extra_expiration) {
     return {
       message: `The current ${eeSettings.license_type} license has expired, Enterprise Edition will be disabled in ${eeSettings.license_extra_expiration_days} days.`,
       bannerColor: 'red',
+      buttonStyle: getButtonStyle(0),
     };
   }
   if (eeSettings.license_type === LICENSE_OPTION_TRIAL) {
