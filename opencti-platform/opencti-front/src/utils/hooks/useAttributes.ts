@@ -218,7 +218,19 @@ export const aliasedTypes = [
   'Vocabulary',
 ];
 
-export const typesWithNoAnalysesTab = ['Note', 'Opinion', 'Course-Of-Action', 'Data-Component', 'Data-Source'];
+export const typesWithNoAnalysesTab = [
+  'Report',
+  'Grouping',
+  'Malware-Analysis',
+  'Note',
+  'Opinion',
+  'Case-Incident',
+  'Case-Rfi',
+  'Case-Rft',
+  'Course-Of-Action',
+  'Data-Component',
+  'Data-Source',
+];
 
 const useAttributes = () => {
   const vocabularies = useVocabularyCategory();
