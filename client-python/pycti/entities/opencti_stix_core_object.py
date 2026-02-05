@@ -1896,9 +1896,9 @@ class StixCoreObject:
         """
         rule_id = kwargs.get("rule_id", None)
         element_id = kwargs.get("element_id", None)
-        execution_id = str(uuid.uuid4())
+        execution_id = kwargs.get("execution_id", None)
         rule_apply_complete = False
-        if element_id is not None and rule_id is not None:
+        if element_id is not None and rule_id is not None and execution_id is not None:
             while not rule_apply_complete:
                 self.opencti.app_logger.info(
                     "Apply rule async stix_core_object", {"id": element_id}
