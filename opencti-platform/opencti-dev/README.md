@@ -170,8 +170,8 @@ In SSO configuration for OpenID:
 In docker-compose file `opencti-mokapi`
 
 ```
-docker compose --profile mockapi up -d
-podman compose --profile mockapi up -d
+docker compose --profile mokapi up -d
+podman compose --profile mokapi up -d
 ```
 
 Users can be find in [mock-api/users.ldif](mock-api/users.ldif)
@@ -210,8 +210,8 @@ In SSO configuration:
 In docker-compose file `opencti-mokapi`
 
 ```
-docker compose --profile mockapi up -d
-podman compose --profile mockapi up -d
+docker compose --profile mokapi up -d
+podman compose --profile mokapi up -d
 ```
 
 `development.json` configuration, be carefully that **identifier** matches the one in database (here oiccyberark).

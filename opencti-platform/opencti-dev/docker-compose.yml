@@ -175,7 +175,7 @@ services:
 
   opencti-mokapi:
     image: mokapi/mokapi:latest
-    profiles: [ mockapi ]
+    profiles: [ mokapi ]
     container_name: opencti-dev-mokapi
     command: mokapi --providers.file.directory=/share
     volumes:
