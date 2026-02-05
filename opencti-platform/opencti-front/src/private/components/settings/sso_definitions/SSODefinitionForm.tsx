@@ -217,7 +217,6 @@ const SSODefinitionForm = ({
     groupSearchBase: '',
     groupSearchFilter: '',
     allow_self_signed: false,
-    // CERT
   };
 
   const getSourceAndTargetFromMapping = (groupMapping: string[]) => {
