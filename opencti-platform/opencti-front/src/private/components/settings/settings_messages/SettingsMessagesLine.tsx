@@ -26,11 +26,21 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   bodyItem: {
     fontSize: theme.typography.h3.fontSize,
-    float: 'left',
+    display: 'flex',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     paddingRight: theme.spacing(1),
+    alignItems: 'center',
+    minWidth: 0,
+    width: '100%',
+  },
+  bodyItemText: {
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    minWidth: 0,
+    flex: 1,
   },
   itemIconDisabled: {
     color: theme.palette.grey?.[700],
@@ -78,14 +88,16 @@ const SettingsMessagesLine = ({
       </ListItemIcon>
       <ListItemText
         primary={(
-          <div>
+          <div style={{ display: 'flex' }}>
             {Object.values(dataColumns ?? {}).map((value) => (
               <div
                 key={value.label}
                 className={classes.bodyItem}
                 style={{ width: value.width }}
               >
-                {value.render?.(message)}
+                <span className={classes.bodyItemText}>
+                  {value.render?.(message)}
+                </span>
               </div>
             ))}
           </div>
@@ -117,19 +129,21 @@ export const SettingsMessagesLineDummy = ({
     >
       <ListItemText
         primary={(
-          <div>
+          <div style={{ display: 'flex' }}>
             {Object.values(dataColumns).map((value) => (
               <div
                 key={value.label}
                 className={classes.bodyItem}
                 style={{ width: value.width }}
               >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height={20}
-                />
+                <span className={classes.bodyItemText}>
+                  <Skeleton
+                    animation="wave"
+                    variant="rectangular"
+                    width="90%"
+                    height={20}
+                  />
+                </span>
               </div>
             ))}
           </div>
