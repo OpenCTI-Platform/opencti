@@ -1,6 +1,6 @@
 import { Page } from '@playwright/test';
 
-const fakeDate = async (page: Page, dateString: string) => {
+export const fakeDate = async (page: Page, dateString: string) => {
   // Pick the new/fake "now" for you test pages.
   const fakeNow = new Date(dateString).valueOf();
 
@@ -47,9 +47,8 @@ export const awaitUntilCondition = async (
   let isConditionOk = await conditionPromise();
   let loopCurrent = 0;
   while (!isConditionOk === expectToBeTrue && loopCurrent < loopCount) {
-    // eslint-disable-next-line no-await-in-loop
     await sleep(sleepTimeBetweenLoop);
-    // eslint-disable-next-line no-await-in-loop
+
     isConditionOk = await conditionPromise();
     loopCurrent += 1;
   }
