@@ -96,11 +96,20 @@ const SSODefinitionEdition = ({
 
     if (configurationKeyList.includes(field)) {
       input.key = 'configuration';
-      input.value = (sso.configuration ?? []).map((e) => {
-        if (e.key !== field) return e;
-        const newValue = Array.isArray(value) ? JSON.stringify(value) : value;
-        return { key: e.key, value: newValue, type: e.type };
-      });
+      const configurations = [...(sso.configuration ?? [])];
+      const foundIndex = configurations.findIndex((item) => item.key === field);
+      const newEntry = {
+        key: field,
+        value: Array.isArray(value) ? JSON.stringify(value) : String(value),
+        type: Array.isArray(value) ? 'array' : typeof value,
+      };
+      if (foundIndex === -1) {
+        configurations.push(newEntry);
+      } else {
+        configurations[foundIndex] = newEntry;
+      }
+
+      input.value = [...configurations];
     }
 
     if (field === 'advancedConfigurations') {

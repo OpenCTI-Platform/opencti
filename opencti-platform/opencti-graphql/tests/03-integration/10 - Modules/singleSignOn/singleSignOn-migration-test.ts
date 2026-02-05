@@ -664,6 +664,46 @@ describe('Migration of SSO environment test coverage', () => {
         token_reference: 'access_token',
       });
     });
+
+    it('should OpenId with cyberark as credentials provider works', async () => {
+      const configuration = {
+        oic_cyberark: {
+          identifier: 'oic_cyberark',
+          strategy: 'OpenIDConnectStrategy',
+          credentials_provider: {
+            selector: 'cyberark',
+            cyberark: {
+              uri: 'http://localhost:8090/AIMWebService/api/Accounts',
+              field_targets: ['client_secret'],
+              app_id: 'cyberark',
+              safe: 'safe',
+              object: 'secret',
+            },
+            https_cert: {
+              reject_unauthorized: false,
+              ca: '/opt/local/opencti/myca.pem',
+              crt: '/opt/local/opencti/mycert.pem',
+              key: '/opt/local/opencti/mykey.pk',
+            },
+          },
+          config: {
+            label: 'My OpenId with CyberArk',
+            issuer: 'http://localhost:9999/realms/master',
+            client_id: 'openctioid',
+            redirect_uris: ['http://localhost:4000/auth/oic/callback'],
+          },
+        },
+      };
+
+      const result = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
+      const cyberArkConfig = result[0];
+
+      expect(cyberArkConfig.strategy).toBe('OpenIDConnectStrategy');
+      expect(cyberArkConfig.label).toBe('My OpenId with CyberArk');
+      expect(cyberArkConfig.enabled).toBeTruthy();
+
+      const credentialsProviderResult = cyberArkConfig;
+    });
   });
   describe('Dry run of LDAP migrations', () => {
     it('should LDAP minimal configuration works', async () => {

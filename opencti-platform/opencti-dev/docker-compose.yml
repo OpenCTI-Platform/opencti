@@ -173,11 +173,9 @@ services:
       ports:
         - "9999:8080"
 
-  # Mock LDAP provider - disabled by default
-  # docker compose --profile ldap up -d
   opencti-mokapi:
     image: mokapi/mokapi:latest
-    profiles: [ ldap ]
+    profiles: [ mockapi ]
     container_name: opencti-dev-mokapi
     command: mokapi --providers.file.directory=/share
     volumes:
