@@ -378,7 +378,6 @@ describe('Single sign on Domain coverage tests', () => {
         );
     });
   });
-
   describe('LDAP coverage tests', () => {
     afterAll(async () => {
       const allSso = await findAllSingleSignOn(testContext, ADMIN_USER);
@@ -416,6 +415,32 @@ describe('Single sign on Domain coverage tests', () => {
       // Here there is a pub/sub on redis, let's just call the same method as listener
       await onAuthenticationMessageAdd({ instance: ldapEntity });
       expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'ldapTest1')).toBeTruthy();
+    });
+  });
+  describe('CERT coverage tests', () => {
+    afterAll(async () => {
+      const allSso = await findAllSingleSignOn(testContext, ADMIN_USER);
+      for (let i = 0; i < allSso.length; i++) {
+        if (allSso[i].identifier?.startsWith('ldapTest')) {
+          await deleteSingleSignOn(testContext, ADMIN_USER, allSso[i].id);
+        }
+      }
+    });
+
+    it('should add new minimal Cert provider', async () => {
+      const input: SingleSignOnAddInput = {
+        strategy: StrategyType.ClientCertStrategy,
+        identifier: 'cert',
+        enabled: true,
+      };
+      const certEntity = await addSingleSignOn(testContext, ADMIN_USER, input);
+
+      expect(certEntity.identifier).toBe('cert');
+      expect(certEntity.enabled).toBe(true);
+
+      // Here there is a pub/sub on redis, let's just call the same method as listener
+      await onAuthenticationMessageAdd({ instance: certEntity });
+      expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'cert')).toBeTruthy();
     });
   });
 
