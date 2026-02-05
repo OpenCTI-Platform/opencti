@@ -429,6 +429,7 @@ describe('Single sign on Domain coverage tests', () => {
 
     it('should add new minimal Cert provider', async () => {
       const input: SingleSignOnAddInput = {
+        name: 'cert',
         strategy: StrategyType.ClientCertStrategy,
         identifier: 'cert',
         enabled: true,
