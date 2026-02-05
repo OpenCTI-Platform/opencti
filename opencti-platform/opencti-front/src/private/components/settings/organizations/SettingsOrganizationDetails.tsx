@@ -42,7 +42,7 @@ const SettingsOrganizationDetails: FunctionComponent<
             {t_i18n('Contact information')}
           </Label>
           <MarkdownDisplay
-            content={organization.contact_information ?? ''}
+            content={organization.contact_information}
             remarkGfmPlugin={true}
             commonmark={true}
           />

@@ -2676,8 +2676,6 @@
   "No default": "デフォルトなし",
   "No default value set in Settings...": "エンティティ設定でこの属性にデフォルト値が設定されていません。上記の入力で指定できます。CSVファイルにデータがない場合、この値が使用されます。",
   "No description": "説明なし",
-  "No description of this targeting": "この標的についての説明はありません",
-  "No description of this usage": "この使用方法についての説明はありません",
   "No detail available for this event": "このイベントの詳細は不明",
   "No direct instance trigger": "直接インスタンストリガーなし",
   "No draft for the moment": "今のところドラフトなし",

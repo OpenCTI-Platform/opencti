@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { Link } from 'react-router-dom';
+import { Box, ListItemButton } from '@mui/material';
 import withStyles from '@mui/styles/withStyles';
 import IconButton from '@common/button/IconButton';
 import List from '@mui/material/List';
@@ -11,7 +12,6 @@ import Collapse from '@mui/material/Collapse';
 import { Launch } from 'mdi-material-ui';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
 import { createRefetchContainer, graphql } from 'react-relay';
-import { ListItemButton } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
 import { yearFormat } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
@@ -21,6 +21,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { stixDomainObjectThreatKnowledgeStixRelationshipsQuery } from './StixDomainObjectThreatKnowledgeQuery';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import { defaultRender } from '../../../../components/dataGrid/dataTableUtils';
 
 const styles = (theme) => ({
   itemIcon: {
@@ -156,6 +157,31 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                         const entityToDisplay = (stixDomainObject.to?.id === stixDomainObjectId) ? stixDomainObject.from : stixDomainObject.to;
                         const restricted = entityToDisplay === null;
                         const link = `${entityLink}/relations/${stixDomainObject.id}`;
+                        const buildDomainObjectPrimaryText = () => {
+                          if (!restricted) {
+                            if (entityToDisplay.entity_type === 'Attack-Pattern') {
+                              if (entityToDisplay.x_mitre_id) {
+                                return defaultRender(
+                                  <span>
+                                    <strong>
+                                      {entityToDisplay.x_mitre_id}
+                                    </strong>{'  '}
+                                    - {entityToDisplay.name}
+                                  </span>,
+                                );
+                              }
+                              return defaultRender(
+                                <span>
+                                  {entityToDisplay.name}
+                                </span>,
+                              );
+                            }
+                            return defaultRender(entityToDisplay.name);
+                          }
+                          return t('Restricted');
+                        };
+                        const domainObjectPrimaryText = buildDomainObjectPrimaryText();
+
                         return (
                           <ListItem
                             key={stixDomainObject.id}
@@ -174,6 +200,11 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                               classes={{ root: classes.nested }}
                               component={Link}
                               to={link}
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 3,
+                              }}
                             >
                               <ListItemIcon className={classes.itemIcon}>
                                 <ItemIcon
@@ -185,44 +216,27 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                                 />
                               </ListItemIcon>
                               <ListItemText
-                                primary={
-
-                                  !restricted ? (
-                                    entityToDisplay.entity_type
-                                    === 'Attack-Pattern' ? (
-                                          <span>
-                                            <strong>
-                                              {entityToDisplay.x_mitre_id}
-                                            </strong>{' '}
-                                            - {entityToDisplay.name}
-                                          </span>
-                                        ) : (
-                                          <span>{entityToDisplay.name}</span>
-                                        )
-                                  ) : (
-                                    t('Restricted')
-                                  )
-                                }
-                                secondary={
-                                  stixDomainObject.description
-                                  && stixDomainObject.description.length > 0 ? (
-                                        <MarkdownDisplay
-                                          content={stixDomainObject.description}
-                                          remarkGfmPlugin={true}
-                                          commonmark={true}
-                                        />
-                                      ) : (
-                                        t('No description of this usage')
-                                      )
-                                }
+                                sx={{ marginRight: 8 }}
+                                primary={domainObjectPrimaryText}
+                                secondary={(
+                                  <MarkdownDisplay
+                                    content={stixDomainObject.description}
+                                    remarkGfmPlugin={true}
+                                    commonmark={true}
+                                  />
+                                )}
                               />
-                              <ItemMarkings
-                                variant="inList"
-                                markingDefinitions={stixDomainObject.objectMarking ?? []}
-                                limit={1}
-                              />
+                              <Box
+                                sx={{
+                                  width: 150,
+                                }}
+                              >
+                                <ItemMarkings
+                                  markingDefinitions={stixDomainObject.objectMarking ?? []}
+                                  limit={1}
+                                />
+                              </Box>
                               <ItemYears
-                                variant="inList"
                                 years={stixDomainObject.years}
                               />
                             </ListItemButton>

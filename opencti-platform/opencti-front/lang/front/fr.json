@@ -2676,8 +2676,6 @@
   "No default": "Pas de défaut",
   "No default value set in Settings...": "Aucune valeur par défaut n'a été définie pour cet attribut dans les paramètres de l'entité. Vous pouvez en fournir une en remplissant le champ ci-dessus. Cette valeur sera utilisée si les données sont manquantes dans le fichier CSV.",
   "No description": "Pas de description",
-  "No description of this targeting": "Aucune description de ce ciblage",
-  "No description of this usage": "Aucune description de cet usage",
   "No detail available for this event": "Aucun détail n'est disponible pour cet événement",
   "No direct instance trigger": "Aucun déclencheur d'instance direct",
   "No draft for the moment": "Pas de brouillon pour le moment",

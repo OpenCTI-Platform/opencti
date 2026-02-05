@@ -15,11 +15,13 @@ import { ListItemButton } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
 import { yearFormat } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
+import { isNotEmptyField } from '../../../../utils/utils';
 import StixCoreRelationshipPopover from '../stix_core_relationships/StixCoreRelationshipPopover';
 import ItemYears from '../../../../components/ItemYears';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import { EMPTY_VALUE } from '../../../../utils/String';
 
 const styles = (theme) => ({
   container: {
@@ -262,6 +264,22 @@ class StixDomainObjectVictimologyRegionsList extends Component {
       R.sortWith([R.ascend(R.prop('name'))]),
       R.filter(filterByKeyword),
     )(finalRegions);
+
+    const renderRelationshipDescription = (description, inferred) => {
+      if (isNotEmptyField(description)) {
+        return (
+          <MarkdownDisplay
+            content={description}
+            remarkGfmPlugin={true}
+            commonmark={true}
+          />
+        );
+      }
+      return inferred
+        ? (<i>{t('This relation is inferred')}</i>)
+        : EMPTY_VALUE;
+    };
+
     return (
       <List>
         {orderedFinalRegions.map((region) => {
@@ -350,27 +368,13 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                                 stixCoreRelationship.to.name
                               )
                             }
-                            secondary={
-
-                              stixCoreRelationship.description
-                              && stixCoreRelationship.description.length > 0 ? (
-                                    <MarkdownDisplay
-                                      content={stixCoreRelationship.description}
-                                      remarkGfmPlugin={true}
-                                      commonmark={true}
-                                    />
-                                  ) : (
-                                    t('No description of this targeting')
-                                  )
-                            }
+                            secondary={renderRelationshipDescription(stixCoreRelationship.description, stixCoreRelationship.inferred)}
                           />
                           <ItemMarkings
-                            variant="inList"
                             markingDefinitions={stixCoreRelationship.objectMarking ?? []}
                             limit={1}
                           />
                           <ItemYears
-                            variant="inList"
                             years={stixCoreRelationship.years}
                             country
                           />
@@ -434,9 +438,7 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                                   secondaryAction={stixCoreRelationship.is_inferred ? (
                                     <Tooltip
                                       title={
-                                        t(
-                                          'Inferred knowledge based on the rule ',
-                                        )
+                                        t('Inferred knowledge based on the rule ')
                                         + R.head(
                                           stixCoreRelationship.x_opencti_inferences,
                                         ).rule.name
@@ -470,44 +472,21 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                                       />
                                     </ListItemIcon>
                                     <ListItemText
-                                      primary={
-                                        stixCoreRelationship.to.id
-                                        === country.id ? (
-                                              <em>
-                                                {t(
-                                                  'Direct targeting of this country',
-                                                )}
-                                              </em>
-                                            ) : (
-                                              stixCoreRelationship.to.name
-                                            )
+                                      primary={stixCoreRelationship.to.id === country.id
+                                        ? (
+                                            <em>
+                                              {t('Direct targeting of this country')}
+                                            </em>
+                                          )
+                                        : stixCoreRelationship.to.name
                                       }
-                                      secondary={
-
-                                        stixCoreRelationship.description
-                                        && stixCoreRelationship.description.length
-                                        > 0 ? (
-                                              <MarkdownDisplay
-                                                content={
-                                                  stixCoreRelationship.description
-                                                }
-                                                remarkGfmPlugin={true}
-                                                commonmark={true}
-                                              />
-                                            ) : stixCoreRelationship.inferred ? (
-                                              <i>{t('This relation is inferred')}</i>
-                                            ) : (
-                                              t('No description of this targeting')
-                                            )
-                                      }
+                                      secondary={renderRelationshipDescription(stixCoreRelationship.description, stixCoreRelationship.inferred)}
                                     />
                                     <ItemMarkings
-                                      variant="inList"
                                       markingDefinitions={stixCoreRelationship.objectMarking ?? []}
                                       limit={1}
                                     />
                                     <ItemYears
-                                      variant="inList"
                                       years={stixCoreRelationship.years}
                                     />
                                   </ListItemButton>
@@ -533,12 +512,8 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                                           secondaryAction={stixCoreRelationship.is_inferred ? (
                                             <Tooltip
                                               title={
-                                                t(
-                                                  'Inferred knowledge based on the rule ',
-                                                )
-                                                + R.head(
-                                                  stixCoreRelationship.x_opencti_inferences,
-                                                ).rule.name
+                                                t('Inferred knowledge based on the rule ')
+                                                + R.head(stixCoreRelationship.x_opencti_inferences).rule.name
                                               }
                                             >
                                               <AutoFix
@@ -548,22 +523,14 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                                             </Tooltip>
                                           ) : (
                                             <StixCoreRelationshipPopover
-                                              stixCoreRelationshipId={
-                                                stixCoreRelationship.id
-                                              }
-                                              paginationOptions={
-                                                paginationOptions
-                                              }
-                                              onDelete={this.props.handleDelete.bind(
-                                                this,
-                                              )}
+                                              stixCoreRelationshipId={stixCoreRelationship.id}
+                                              paginationOptions={paginationOptions}
+                                              onDelete={this.props.handleDelete.bind(this)}
                                             />
                                           )}
                                         >
                                           <ListItemButton
-                                            classes={{
-                                              root: classes.subnested,
-                                            }}
+                                            classes={{ root: classes.subnested }}
                                             component={Link}
                                             to={link}
                                           >
@@ -571,57 +538,27 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                                               className={classes.itemIcon}
                                             >
                                               <ItemIcon
-                                                type={
-                                                  stixCoreRelationship.to
-                                                    .entity_type
-                                                }
+                                                type={stixCoreRelationship.to.entity_type}
                                               />
                                             </ListItemIcon>
                                             <ListItemText
-                                              primary={
-                                                stixCoreRelationship.to.id
-                                                === country.id ? (
-                                                      <em>
-                                                        {t(
-                                                          'Direct targeting of this country',
-                                                        )}
-                                                      </em>
-                                                    ) : (
-                                                      stixCoreRelationship.to.name
-                                                    )
+                                              primary={stixCoreRelationship.to.id === country.id
+                                                ? (
+                                                    <em>
+                                                      {t(
+                                                        'Direct targeting of this country',
+                                                      )}
+                                                    </em>
+                                                  )
+                                                : (stixCoreRelationship.to.name)
                                               }
-                                              secondary={
-
-                                                stixCoreRelationship.description
-                                                && stixCoreRelationship.description
-                                                  .length > 0 ? (
-                                                      <MarkdownDisplay
-                                                        content={
-                                                          stixCoreRelationship.description
-                                                        }
-                                                        remarkGfmPlugin={true}
-                                                        commonmark={true}
-                                                      />
-                                                    ) : stixCoreRelationship.inferred ? (
-                                                      <i>
-                                                        {t(
-                                                          'This relation is inferred',
-                                                        )}
-                                                      </i>
-                                                    ) : (
-                                                      t(
-                                                        'No description of this targeting',
-                                                      )
-                                                    )
-                                              }
+                                              secondary={renderRelationshipDescription(stixCoreRelationship.description, stixCoreRelationship.inferred)}
                                             />
                                             <ItemMarkings
-                                              variant="inList"
                                               markingDefinitions={stixCoreRelationship.objectMarking ?? []}
                                               limit={1}
                                             />
                                             <ItemYears
-                                              variant="inList"
                                               years={stixCoreRelationship.years}
                                             />
                                           </ListItemButton>

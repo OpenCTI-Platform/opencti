@@ -214,18 +214,13 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                                     - {attackPattern.name}
                                   </span>
                                 )}
-                                secondary={
-                                  attackPattern.description
-                                  && attackPattern.description.length > 0 ? (
-                                        <MarkdownDisplay
-                                          content={attackPattern.description}
-                                          remarkGfmPlugin={true}
-                                          commonmark={true}
-                                        />
-                                      ) : (
-                                        t_i18n('No description of this usage')
-                                      )
-                                }
+                                secondary={(
+                                  <MarkdownDisplay
+                                    content={attackPattern.description}
+                                    remarkGfmPlugin={true}
+                                    commonmark={true}
+                                  />
+                                )}
                               />
                               <ItemMarkings
                                 markingDefinitions={attackPattern.objectMarking ?? []}
@@ -263,24 +258,13 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                                           </ListItemIcon>
                                           <ListItemText
                                             primary={courseOfAction.name}
-                                            secondary={
-                                              courseOfAction.description
-                                              && courseOfAction.description
-                                                .length > 0 ? (
-                                                    <MarkdownDisplay
-                                                      content={
-                                                        courseOfAction.description
-                                                      }
-                                                      remarkGfmPlugin={true}
-                                                      commonmark={true}
-                                                    >
-                                                    </MarkdownDisplay>
-                                                  ) : (
-                                                    t_i18n(
-                                                      'No description of this course of action',
-                                                    )
-                                                  )
-                                            }
+                                            secondary={(
+                                              <MarkdownDisplay
+                                                content={courseOfAction.description}
+                                                remarkGfmPlugin={true}
+                                                commonmark={true}
+                                              />
+                                            )}
                                           />
                                         </ListItemButton>
                                       );

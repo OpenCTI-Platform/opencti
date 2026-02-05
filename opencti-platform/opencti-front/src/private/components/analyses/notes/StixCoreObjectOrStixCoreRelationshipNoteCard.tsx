@@ -132,7 +132,7 @@ const StixCoreObjectOrStixCoreRelationshipNoteCard: FunctionComponent<
             <Label>{t_i18n('Abstract')}</Label>
             <FieldOrEmpty source={note.attribute_abstract}>
               <MarkdownDisplay
-                content={note.attribute_abstract ?? null}
+                content={note.attribute_abstract}
                 remarkGfmPlugin
               />
             </FieldOrEmpty>
