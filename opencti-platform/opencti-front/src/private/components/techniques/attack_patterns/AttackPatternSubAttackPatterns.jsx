@@ -1,14 +1,12 @@
 import React from 'react';
 import * as R from 'ramda';
 import List from '@mui/material/List';
-import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { Link } from 'react-router-dom';
 import IconButton from '@common/button/IconButton';
-import { LockPattern } from 'mdi-material-ui';
-import { LinkOff } from '@mui/icons-material';
+import { Delete } from '@mui/icons-material';
 import { createFragmentContainer, graphql } from 'react-relay';
-import { ListItemButton } from '@mui/material';
+import { ListItemButton, Tooltip } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import AddSubAttackPattern from './AddSubAttackPattern';
@@ -76,23 +74,23 @@ const AttackPatternSubAttackPatternsComponent = ({ attackPattern }) => {
               divider={true}
               disablePadding={true}
               secondaryAction={(
-                <IconButton
-                  aria-label="Remove"
-                  onClick={() => removeSubAttackPattern(
-                    subAttackPattern,
-                  )}
-                >
-                  <LinkOff />
-                </IconButton>
+                <Tooltip title={t_i18n('Delete relationship')}>
+                  <IconButton
+                    aria-label="Remove"
+                    onClick={() => removeSubAttackPattern(
+                      subAttackPattern,
+                    )}
+                  >
+                    <Delete />
+                  </IconButton>
+                </Tooltip>
               )}
             >
               <ListItemButton
                 component={Link}
                 to={`/dashboard/techniques/attack_patterns/${subAttackPattern.id}`}
+                sx={{ paddingLeft: 0 }}
               >
-                <ListItemIcon>
-                  <LockPattern color="primary" />
-                </ListItemIcon>
                 <ListItemText
                   primary={`[${subAttackPattern.x_mitre_id}] ${subAttackPattern.name}`}
                 />

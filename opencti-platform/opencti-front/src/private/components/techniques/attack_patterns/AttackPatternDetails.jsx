@@ -3,10 +3,6 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import { PermIdentity } from '@mui/icons-material';
 import Grid from '@mui/material/Grid';
 import Card from '@common/card/Card';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
@@ -84,20 +80,7 @@ class AttackPatternDetailsComponent extends Component {
               >
                 {t('Required permissions')}
               </Label>
-              <List style={{ paddingTop: 0 }}>
-                <FieldOrEmpty source={attackPattern.x_mitre_permissions_required}>
-                  {attackPattern.x_mitre_permissions_required?.map(
-                    (permission) => (
-                      <ListItem key={permission} dense={true} divider={true}>
-                        <ListItemIcon>
-                          <PermIdentity />
-                        </ListItemIcon>
-                        <ListItemText primary={permission} />
-                      </ListItem>
-                    ),
-                  )}
-                </FieldOrEmpty>
-              </List>
+              <TextList list={attackPattern.x_mitre_permissions_required} />
               <AttackPatternCoursesOfAction attackPattern={attackPattern} />
               <AttackPatternDataComponents attackPattern={attackPattern} />
             </Grid>

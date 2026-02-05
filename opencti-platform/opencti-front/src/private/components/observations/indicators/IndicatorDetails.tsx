@@ -13,7 +13,6 @@ import DecayExclusionDialogContent from './DecayExclusionDialogContent';
 import ItemScore from '../../../../components/ItemScore';
 import IndicatorObservables from './IndicatorObservables';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
-import ExpandablePre from '../../../../components/ExpandablePre';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import StixCoreObjectKillChainPhasesView from '../../common/stix_core_objects/StixCoreObjectKillChainPhasesView';
 import { useFormatter } from '../../../../components/i18n';
@@ -48,7 +47,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
         <Label>
           {t_i18n('Indicator pattern')}
         </Label>
-        <ExpandablePre source={indicator.pattern ?? ''} limit={300} />
+        {indicator.pattern ?? ''}
         <Grid container={true} spacing={2} sx={{ mt: 0 }}>
           <Grid item xs={6}>
             <Label>

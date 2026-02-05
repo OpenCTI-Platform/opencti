@@ -13,7 +13,7 @@ import Label from '../../../../components/common/label/Label';
 // Do not use it for new code.
 const useStyles = makeStyles(() => ({
   killChainPhaseItem: {
-    paddingLeft: 10,
+    paddingLeft: 0,
     transition: 'background-color 0.1s ease',
     '&:hover': {
       background: 'rgba(0, 0, 0, 0.1)',
@@ -30,11 +30,13 @@ interface StixCoreObjectKillChainPhasesViewProps {
     x_opencti_order?: number | null;
   }>;
   firstLine?: boolean;
+  displayIcon?: boolean;
 }
 
 const StixCoreObjectKillChainPhasesView = ({
   killChainPhases,
   firstLine,
+  displayIcon = false,
 }: StixCoreObjectKillChainPhasesViewProps) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
@@ -54,9 +56,11 @@ const StixCoreObjectKillChainPhasesView = ({
                 divider={true}
                 classes={{ root: classes.killChainPhaseItem }}
               >
-                <ListItemIcon>
-                  <ItemIcon type={killChainPhase.entity_type} />
-                </ListItemIcon>
+                {displayIcon && (
+                  <ListItemIcon>
+                    <ItemIcon type={killChainPhase.entity_type} />
+                  </ListItemIcon>
+                )}
                 <ListItemText
                   primary={killChainPhase.phase_name}
                   secondary={<span style={{ color: theme.palette.text?.secondary }}>{killChainPhase.kill_chain_name}</span>}
