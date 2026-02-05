@@ -19,6 +19,7 @@ describe('Migration of SSO environment test coverage', () => {
       expect(result[0].enabled).toBeTruthy();
       expect(result.length).toBe(1);
     });
+
     it('should local disabled works', async () => {
       const configuration = {
         local: {
@@ -113,6 +114,18 @@ describe('Migration of SSO environment test coverage', () => {
             xmlSignatureTransforms: ['http://www.w3.org/2000/09/xmldsig#enveloped-signature', 'http://www.w3.org/2001/10/xml-exc-c14n#'],
             want_assertions_signed: true,
             organizations_default: ['OpenCTI'],
+            decryption_pvk: '-----BEGIN PRIVATE KEY-----\\nMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\n/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+A\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nGLQ9wsHH5tQkNr581fConN+uq1iWNxtEz8mOc+Xa2BSuAhl3nX++t5BWs7zeBQP9\\njjfMi8aOQuv7/7lgCAY9oX7OnjF0Zk42AW2oJMC/h/OUvU9wTsyN7lOsyvCLSHoQ\\n77lV3ZvL2Uj6mB+FsjcrT/mD3wKBgQDJiTUGC0LjAJXnw6ncnbm3uxXwENwV4Slp\\narnhMJo7pokw3tHUbbDmmKmMXxtpDsJkHioCLqcL72cuZWPqCCKC4HmH1s+hdUov\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nQQQQQQQQQQQQQQQQQQQQQQQQ\\n-----END PRIVATE KEY-----',
+            disable_requested_authn_context: true,
+            audience: 'MyAudience',
+            account_attribute: 'MyAccount',
+            pi: 3.14159,
+            auto_create_group: false,
+            firstname_attribute: 'theFirstname',
+            lastname_attribute: 'theLastName',
+            mail_attribute: 'TheMail',
+            private_key: 'MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM',
+            signature_algorithm: 'sha256',
+            want_authn_response_signed: false,
           },
         },
       };
@@ -134,6 +147,18 @@ describe('Migration of SSO environment test coverage', () => {
         { key: 'xmlSignatureTransforms', type: 'array', value: '["http://www.w3.org/2000/09/xmldsig#enveloped-signature","http://www.w3.org/2001/10/xml-exc-c14n#"]' },
         { key: 'wantAssertionsSigned', type: 'boolean', value: 'true' },
         { key: 'organizations_default', type: 'array', value: '["OpenCTI"]' },
+        { key: 'decryptionPvk', type: 'string', value: '-----BEGIN PRIVATE KEY-----\\nMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\n/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+A\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nGLQ9wsHH5tQkNr581fConN+uq1iWNxtEz8mOc+Xa2BSuAhl3nX++t5BWs7zeBQP9\\njjfMi8aOQuv7/7lgCAY9oX7OnjF0Zk42AW2oJMC/h/OUvU9wTsyN7lOsyvCLSHoQ\\n77lV3ZvL2Uj6mB+FsjcrT/mD3wKBgQDJiTUGC0LjAJXnw6ncnbm3uxXwENwV4Slp\\narnhMJo7pokw3tHUbbDmmKmMXxtpDsJkHioCLqcL72cuZWPqCCKC4HmH1s+hdUov\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nQQQQQQQQQQQQQQQQQQQQQQQQ\\n-----END PRIVATE KEY-----' },
+        { key: 'disableRequestedAuthnContext', type: 'boolean', value: 'true' },
+        { key: 'audience', type: 'string', value: 'MyAudience' },
+        { key: 'account_attribute', type: 'string', value: 'MyAccount' },
+        { key: 'pi', type: 'number', value: '3.14159' }, // couldn't find a saml float attribute but better to know if it works in theory
+        { key: 'auto_create_group', type: 'boolean', value: 'false' },
+        { key: 'firstname_attribute', type: 'string', value: 'theFirstname' },
+        { key: 'lastname_attribute', type: 'string', value: 'theLastName' },
+        { key: 'mail_attribute', type: 'string', value: 'TheMail' },
+        { key: 'privateKey', type: 'string', value: 'MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM' },
+        { key: 'signatureAlgorithm', type: 'string', value: 'sha256' },
+        { key: 'wantAuthnResponseSigned', type: 'boolean', value: 'false' },
       ]);
     });
 
@@ -205,6 +230,45 @@ describe('Migration of SSO environment test coverage', () => {
       expect(groupManagementEmptyConfiguration.groups_management).toStrictEqual({
         group_attributes: ['groups'],
         groups_mapping: [],
+      });
+    });
+
+    it('should SAML with organization mapping in configuration works', async () => {
+      const configuration = {
+        saml_org: {
+          identifier: 'saml_org',
+          strategy: 'SamlStrategy',
+          config: {
+            label: 'My test SAML with Orgs',
+            issuer: 'openctisaml_orgs',
+            entry_point: 'http://localhost:8888/realms/master/protocol/saml',
+            saml_callback_url: 'http://localhost:3000/auth/saml_org/callback',
+            cert: 'totallyFakeCertGroups',
+            organizations_management: {
+              organizations_path: ['theOrg'],
+              organizations_mapping: ['orgA:OCTIA', 'orgB:OCTIB'],
+            },
+          },
+        },
+      };
+
+      const result = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
+
+      const orgMappingSAMLConfiguration = result[0];
+      expect(orgMappingSAMLConfiguration.strategy).toBe('SamlStrategy');
+      expect(orgMappingSAMLConfiguration.name).toMatch(/My test SAML with Orgs-*/);
+      expect(orgMappingSAMLConfiguration.label).toBe('My test SAML with Orgs');
+      expect(orgMappingSAMLConfiguration.enabled).toBeTruthy();
+      expect(orgMappingSAMLConfiguration.configuration).toStrictEqual([
+        { key: 'issuer', type: 'string', value: 'openctisaml_orgs' },
+        { key: 'entryPoint', type: 'string', value: 'http://localhost:8888/realms/master/protocol/saml' },
+        { key: 'callbackUrl', type: 'string', value: 'http://localhost:3000/auth/saml_org/callback' },
+        { key: 'idpCert', type: 'string', value: 'totallyFakeCertGroups' },
+      ]);
+
+      expect(orgMappingSAMLConfiguration.organizations_management).toStrictEqual({
+        organizations_path: ['theOrg'],
+        organizations_mapping: ['orgA:OCTIA', 'orgB:OCTIB'],
       });
     });
 
@@ -380,6 +444,8 @@ describe('Migration of SSO environment test coverage', () => {
             redirect_uris: ['http://localhost:4000/auth/oic/callback'],
             label: 'My test oic with Types',
             entry_point: 'http://localhost:7777/realms/master/protocol/oic',
+            default_scopes: ['myopenid', 'myemail', 'myprofile'],
+            logout_remote: false,
           },
         },
       };
@@ -397,6 +463,8 @@ describe('Migration of SSO environment test coverage', () => {
         { key: 'client_secret', type: 'string', value: 'youShallNotPass' },
         { key: 'redirect_uris', type: 'array', value: '["http://localhost:4000/auth/oic/callback"]' },
         { key: 'entry_point', type: 'string', value: 'http://localhost:7777/realms/master/protocol/oic' },
+        { key: 'default_scopes', type: 'array', value: '["myopenid","myemail","myprofile"]' },
+        { key: 'logout_remote', type: 'boolean', value: 'false' },
       ]);
     });
 
@@ -446,6 +514,57 @@ describe('Migration of SSO environment test coverage', () => {
         read_userinfo: false,
         token_reference: 'token',
         groups_scope: 'groupsScope',
+      });
+    });
+
+    it('should OpenId with organization mapping in configuration works', async () => {
+      if (!MIGRATED_STRATEGY.some((strat) => strat === EnvStrategyType.STRATEGY_OPENID)) {
+        return;
+      }
+      const configuration = {
+        oic_orgs: {
+          identifier: 'oic_orgs',
+          strategy: 'OpenIDConnectStrategy',
+          config: {
+            issuer: 'http://localhost:9999/realms/master',
+            client_id: 'oic_orgs',
+            client_secret: 'youShallNotPass',
+            redirect_uris: ['http://localhost:4000/auth/oic_orgs/callback'],
+            logout_remote: true,
+            prevent_default_groups: false,
+            organizations_management: {
+              organizations_path: [
+                'orgs',
+              ],
+              organizations_mapping: [
+                '/Filigran org:Filigran',
+              ],
+              read_userinfo: false,
+              token_reference: 'access_token2',
+            },
+          },
+        },
+      };
+
+      const result = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
+      const orgsOpenIdConfiguration = result[0];
+      expect(orgsOpenIdConfiguration.strategy).toBe('OpenIDConnectStrategy');
+      expect(orgsOpenIdConfiguration.label).toBe('oic_orgs');
+      expect(orgsOpenIdConfiguration.enabled).toBeTruthy();
+      expect(orgsOpenIdConfiguration.configuration).toStrictEqual([
+        { key: 'issuer', type: 'string', value: 'http://localhost:9999/realms/master' },
+        { key: 'client_id', type: 'string', value: 'oic_orgs' },
+        { key: 'client_secret', type: 'string', value: 'youShallNotPass' },
+        { key: 'redirect_uris', type: 'array', value: '["http://localhost:4000/auth/oic_orgs/callback"]' },
+        { key: 'logout_remote', type: 'boolean', value: 'true' },
+        { key: 'prevent_default_groups', type: 'boolean', value: 'false' },
+      ]);
+
+      expect(orgsOpenIdConfiguration.organizations_management).toStrictEqual({
+        organizations_mapping: ['/Filigran org:Filigran'],
+        organizations_path: ['orgs'],
+        read_userinfo: false,
+        token_reference: 'access_token2',
       });
     });
 
