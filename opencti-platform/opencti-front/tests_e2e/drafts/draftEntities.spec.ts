@@ -1,7 +1,7 @@
 import DraftsPage from 'tests_e2e/model/drafts.pageModel';
 import { expect, test } from '../fixtures/baseFixtures';
 import DataProcessingTasksPage from '../model/DataProcessingTasks.pageModel';
-import { waitAndRefreshUntilFirstTaskInStatus } from '../backgroundTask/backgroundTask.spec';
+import { waitAndRefreshUntilFirstTaskInStatus } from '../backgroundTaskCheck-utils';
 
 test.describe('Drafts - Entities and background tasks', { tag: ['@ce'] }, () => {
   const draftName = `Draft E2E - ${Date.now()}`;
