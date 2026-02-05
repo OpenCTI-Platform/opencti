@@ -9,48 +9,10 @@ import Drawer from '../../common/drawer/Drawer';
 import IndicatorCreation from '../indicators/IndicatorCreation';
 import StixCyberObservableAddIndicatorsLines, { stixCyberObservableAddIndicatorsLinesQuery } from './StixCyberObservableAddIndicatorsLines';
 
-const styles = (theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
+const styles = () => ({
   createButton: {
     float: 'left',
     marginTop: -15,
-  },
-  title: {
-    float: 'left',
-  },
-  search: {
-    float: 'right',
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  container: {
-    padding: 0,
-  },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.grey[700],
-  },
-  avatar: {
-    width: 24,
-    height: 24,
   },
 });
 
@@ -84,12 +46,15 @@ class StixCyberObservableAddIndicators extends Component {
           open={open}
           onClose={handleClose.bind(this)}
           title={t('Add indicators')}
-          header={(
-            <SearchInput
-              variant="inDrawer"
-              onSubmit={this.handleSearch.bind(this)}
-            />
-          )}
+          subHeader={{
+            left: [(
+              <SearchInput
+                variant="inDrawer"
+                onSubmit={this.handleSearch.bind(this)}
+                key="searchInput"
+              />
+            )],
+          }}
         >
           <QueryRenderer
             query={stixCyberObservableAddIndicatorsLinesQuery}

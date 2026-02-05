@@ -1,4 +1,3 @@
-import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent, useState } from 'react';
 import IconButton from '@common/button/IconButton';
 import { Add } from '@mui/icons-material';
@@ -14,20 +13,10 @@ import {
 } from './__generated__/AddAttackPatternsLinesToDataComponentQuery.graphql';
 import AddAttackPatternsLines, { addAttackPatternsLinesQuery } from './AddAttackPatternsLines';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  search: {
-    marginLeft: 'auto',
-    marginRight: ' 20px',
-  },
-}));
-
 const AddAttackPatterns: FunctionComponent<{
   dataComponent: DataComponentAttackPatterns_dataComponent$data;
 }> = ({ dataComponent }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
 
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -61,14 +50,15 @@ const AddAttackPatterns: FunctionComponent<{
         open={open}
         onClose={handleClose}
         title={t_i18n('Add attack patterns')}
-        header={(
-          <div className={classes.search}>
+        subHeader={{
+          left: [(
             <SearchInput
               variant="inDrawer"
               onSubmit={handleSearch}
+              key="searchInput"
             />
-          </div>
-        )}
+          )],
+        }}
       >
         {queryRef && (
           <React.Suspense

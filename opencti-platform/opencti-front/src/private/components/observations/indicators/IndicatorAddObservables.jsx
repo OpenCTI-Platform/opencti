@@ -53,12 +53,15 @@ class IndicatorAddObservables extends Component {
           open={this.state.open}
           onClose={this.handleClose.bind(this)}
           title={t('Add observables')}
-          header={(
-            <SearchInput
-              variant="inDrawer"
-              onSubmit={this.handleSearch.bind(this)}
-            />
-          )}
+          subHeader={{
+            left: [(
+              <SearchInput
+                variant="inDrawer"
+                onSubmit={this.handleSearch.bind(this)}
+                key="searchInput"
+              />
+            )],
+          }}
         >
           <QueryRenderer
             query={indicatorAddObservablesLinesQuery}

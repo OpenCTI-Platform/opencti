@@ -46,20 +46,24 @@ class AddCoursesOfAction extends Component {
           open={this.state.open}
           onClose={this.handleClose.bind(this)}
           title={t('Add courses of action')}
-          header={(
-            <>
-              <SearchInput
-                variant="inDrawer"
-                onSubmit={this.handleSearch.bind(this)}
-              />
+          subHeader={{
+            right: [(
               <CourseOfActionCreation
                 display={this.state.open}
                 contextual={true}
                 inputValue={this.state.search}
                 paginationOptions={paginationOptions}
+                key="rightButton"
               />
-            </>
-          )}
+            )],
+            left: [(
+              <SearchInput
+                variant="inDrawer"
+                onSubmit={this.handleSearch.bind(this)}
+                key="leftInput"
+              />
+            )],
+          }}
         >
           <QueryRenderer
             query={addCoursesOfActionLinesQuery}

@@ -57,26 +57,21 @@ const AddThreatActorIndividualDemographicComponent: FunctionComponent<
         open={open}
         onClose={handleClose}
         title={title}
-        header={(
-          <div
-            style={{
-              marginLeft: 'auto',
-              marginRight: '20px',
-              display: 'flex',
-              flexWrap: 'wrap',
-              justifyContent: 'flex-end',
-              alignItems: 'flex-end',
-            }}
-          >
+        subHeader={{
+          right: [(
+            <CountryCreation
+              paginationOptions={paginationOptions}
+              key="rightButton"
+            />
+          )],
+          left: [(
             <SearchInput
               variant="inDrawer"
               onSubmit={onSearch}
+              key="leftInput"
             />
-            <CountryCreation
-              paginationOptions={paginationOptions}
-            />
-          </div>
-        )}
+          )],
+        }}
       >
         <AddThreatActorIndividualDemographicLines
           threatActorIndividual={threatActorIndividual}

@@ -67,14 +67,15 @@ class AddNotes extends Component {
           open={this.state.open}
           onClose={this.handleClose.bind(this)}
           title={t('Add notes')}
-          header={(
-            <div className={classes.search}>
+          subHeader={{
+            left: [(
               <SearchInput
                 variant="inDrawer"
                 onSubmit={this.handleSearch.bind(this)}
+                key="leftInput"
               />
-            </div>
-          )}
+            )],
+          }}
         >
           <QueryRenderer
             query={addNotesLinesQuery}

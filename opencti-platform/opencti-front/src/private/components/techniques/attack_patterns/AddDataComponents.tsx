@@ -44,20 +44,24 @@ const AddDataComponents: FunctionComponent<{
         open={open}
         onClose={handleClose}
         title={t_i18n('Add data components')}
-        header={(
-          <>
-            <SearchInput
-              variant="inDrawer"
-              onSubmit={handleSearch}
-            />
+        subHeader={{
+          right: [(
             <DataComponentCreation
               contextual={true}
               display={open}
               inputValue={search}
               paginationOptions={paginationOptions}
+              key="rightButton"
             />
-          </>
-        )}
+          )],
+          left: [(
+            <SearchInput
+              variant="inDrawer"
+              onSubmit={handleSearch}
+              key="leftInput"
+            />
+          )],
+        }}
       >
         {queryRef && (
           <React.Suspense

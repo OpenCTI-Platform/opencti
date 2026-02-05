@@ -9,7 +9,6 @@ import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
 import AddSubNarrativesLines, { addSubNarrativesLinesQuery } from './AddSubNarrativesLines';
 import NarrativeCreation from './NarrativeCreation';
-import { Stack } from '@mui/material';
 
 class AddSubNarrative extends Component {
   constructor(props) {
@@ -47,40 +46,41 @@ class AddSubNarrative extends Component {
           open={this.state.open}
           onClose={this.handleClose.bind(this)}
           title={t('Add subnarratives')}
-        >
-          <Stack gap={2}>
-            <Stack
-              direction="row"
-              justifyContent="space-between"
-            >
-              <SearchInput
-                variant="inDrawer"
-                onSubmit={this.handleSearch.bind(this)}
-              />
+          subHeader={{
+            right: [(
               <NarrativeCreation
                 display={this.state.open}
                 contextual={true}
                 inputValue={this.state.search}
                 paginationOptions={paginationOptions}
+                key="rightButton"
               />
-            </Stack>
-            <QueryRenderer
-              query={addSubNarrativesLinesQuery}
-              variables={{
-                search: this.state.search,
-                count: 20,
-              }}
-              render={({ props }) => {
-                return (
-                  <AddSubNarrativesLines
-                    narrative={narrative}
-                    narrativeSubNarratives={narrativeSubNarratives}
-                    data={props}
-                  />
-                );
-              }}
-            />
-          </Stack>
+            )],
+            left: [(
+              <SearchInput
+                variant="inDrawer"
+                onSubmit={this.handleSearch.bind(this)}
+                key="leftInput"
+              />
+            )],
+          }}
+        >
+          <QueryRenderer
+            query={addSubNarrativesLinesQuery}
+            variables={{
+              search: this.state.search,
+              count: 20,
+            }}
+            render={({ props }) => {
+              return (
+                <AddSubNarrativesLines
+                  narrative={narrative}
+                  narrativeSubNarratives={narrativeSubNarratives}
+                  data={props}
+                />
+              );
+            }}
+          />
         </Drawer>
       </div>
     );

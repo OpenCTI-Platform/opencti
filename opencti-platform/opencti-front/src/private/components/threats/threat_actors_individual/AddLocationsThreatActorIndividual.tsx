@@ -16,7 +16,6 @@ import LocationCreation from '../../common/location/LocationCreation';
 import { insertNode } from '../../../../utils/store';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import { Stack } from '@mui/material';
 
 interface AddLocationsThreatActorIndividualComponentProps {
   threatActorIndividual: ThreatActorIndividualLocations_locations$data;
@@ -63,32 +62,36 @@ const AddLocationsThreatActorIndividualComponent: FunctionComponent<AddLocations
         open={open}
         onClose={handleClose}
         title={t_i18n('Add locations')}
+        subHeader={{
+          right: [(
+            <LocationCreation
+              display={open}
+              contextual={true}
+              inputValue={paginationOptions.search ?? ''}
+              updater={updater}
+              key="rightButton"
+            />
+          )],
+          left: [(
+            <SearchInput
+              variant="inDrawer"
+              onSubmit={onSearch}
+              key="leftInput"
+            />
+          )],
+        }}
       >
         {queryRef && (
           <React.Suspense
             fallback={<Loader variant={LoaderVariant.inElement} />}
           >
-            <Stack gap={2}>
-              <Stack gap={1} direction="row" justifyContent="space-between">
-                <SearchInput
-                  variant="inDrawer"
-                  onSubmit={onSearch}
-                />
-                <LocationCreation
-                  display={open}
-                  contextual={true}
-                  inputValue={paginationOptions.search ?? ''}
-                  updater={updater}
-                />
-              </Stack>
-              <AddLocationsThreatActorIndividualLines
-                threatActorIndividual={threatActorIndividual}
-                threatActorIndividualLocations={
-                  threatActorIndividualLocations
-                }
-                data={data}
-              />
-            </Stack>
+            <AddLocationsThreatActorIndividualLines
+              threatActorIndividual={threatActorIndividual}
+              threatActorIndividualLocations={
+                threatActorIndividualLocations
+              }
+              data={data}
+            />
           </React.Suspense>
         )}
       </Drawer>

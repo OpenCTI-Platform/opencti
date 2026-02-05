@@ -11,7 +11,6 @@ import { QueryRenderer } from '../../../../relay/environment';
 import LocationCreation from '../../common/location/LocationCreation';
 import AddLocationsThreatActorGroupLines, { addLocationsThreatActorGroupLinesQuery } from './AddLocationsThreatActorGroupLines';
 import { insertNode } from '../../../../utils/store';
-import { Stack } from '@mui/material';
 
 const styles = () => ({
   search: {
@@ -62,38 +61,42 @@ class AddLocationsThreatActorGroup extends Component {
           open={this.state.open}
           onClose={this.handleClose.bind(this)}
           title={t('Add locations')}
-        >
-          <Stack gap={2}>
-            <Stack gap={1} direction="row" justifyContent="space-between">
-              <SearchInput
-                variant="inDrawer"
-                onSubmit={this.handleSearch.bind(this)}
-              />
+          subHeader={{
+            right: [(
               <LocationCreation
                 display={this.state.open}
                 contextual={true}
                 inputValue={this.state.search}
                 paginationOptions={paginationOptions}
                 updater={updater}
+                key="rightButton"
               />
-            </Stack>
-            <QueryRenderer
-              query={addLocationsThreatActorGroupLinesQuery}
-              variables={{
-                search: this.state.search,
-                count: 100,
-              }}
-              render={({ props }) => {
-                return (
-                  <AddLocationsThreatActorGroupLines
-                    threatActorGroup={threatActorGroup}
-                    threatActorGroupLocations={threatActorGroupLocations}
-                    data={props}
-                  />
-                );
-              }}
-            />
-          </Stack>
+            )],
+            left: [(
+              <SearchInput
+                variant="inDrawer"
+                onSubmit={this.handleSearch.bind(this)}
+                key="leftInput"
+              />
+            )],
+          }}
+        >
+          <QueryRenderer
+            query={addLocationsThreatActorGroupLinesQuery}
+            variables={{
+              search: this.state.search,
+              count: 100,
+            }}
+            render={({ props }) => {
+              return (
+                <AddLocationsThreatActorGroupLines
+                  threatActorGroup={threatActorGroup}
+                  threatActorGroupLocations={threatActorGroupLocations}
+                  data={props}
+                />
+              );
+            }}
+          />
         </Drawer>
 
       </>

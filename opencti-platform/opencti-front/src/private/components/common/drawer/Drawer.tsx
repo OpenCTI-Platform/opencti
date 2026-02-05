@@ -10,7 +10,7 @@ import { SubscriptionAvatars } from '../../../../components/Subscription';
 import type { Theme } from '../../../../components/Theme';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { GenericContext } from '../model/GenericContextModel';
-import { SxProps } from '@mui/material';
+import { SxProps, Stack } from '@mui/material';
 
 export enum DrawerVariant {
   create = 'create',
@@ -68,6 +68,10 @@ interface DrawerProps {
   variant?: DrawerVariant;
   context?: readonly (GenericContext | null)[] | null;
   header?: React.ReactElement;
+  subHeader?: {
+    right?: React.ReactElement[];
+    left?: React.ReactElement[];
+  };
   controlledDial?: DrawerControlledDialType;
   containerStyle?: CSSProperties;
   disabled?: boolean;
@@ -93,6 +97,7 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
   variant,
   context,
   header,
+  subHeader,
   controlledDial,
   containerStyle,
   disabled = false,
@@ -131,6 +136,40 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
       });
     }
   }
+
+  const renderSubHeader = () => {
+    if (!subHeader) return null;
+
+    if (subHeader.left && subHeader.right) {
+      return (
+        <Stack direction="row" justifyContent="space-between">
+          <Stack direction="row" gap={1}>
+            {subHeader.left}
+          </Stack>
+          <Stack direction="row" gap={1}>
+            {subHeader.right}
+          </Stack>
+        </Stack>
+      );
+    }
+
+    if (subHeader.left && !subHeader.right) {
+      return (
+        <Stack direction="row" gap={1}>
+          {subHeader.left}
+        </Stack>
+      );
+    }
+
+    if (!subHeader.left && subHeader.right) {
+      return (
+        <Stack direction="row" gap={1} justifyContent="flex-end">
+          {subHeader.right}
+        </Stack>
+      );
+    }
+  };
+
   return (
     <>
       {controlledDial ? controlledDial({ onOpen: () => setOpen(true), onClose: handleClose }) : undefined }
@@ -203,7 +242,10 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
             backgroundColor: theme.palette.background.drawer,
           }}
         >
-          {component}
+          <Stack gap={2}>
+            {renderSubHeader()}
+            {component}
+          </Stack>
         </div>
       </DrawerMUI>
     </>

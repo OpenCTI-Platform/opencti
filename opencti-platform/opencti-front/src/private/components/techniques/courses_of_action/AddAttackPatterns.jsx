@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
 import IconButton from '@common/button/IconButton';
 import { Add } from '@mui/icons-material';
 import Drawer from '../../common/drawer/Drawer';
@@ -9,13 +8,6 @@ import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
 import AddAttackPatternsLines, { addAttackPatternsLinesQuery } from './AddAttackPatternsLines';
-
-const styles = () => ({
-  search: {
-    marginLeft: 'auto',
-    marginRight: ' 20px',
-  },
-});
 
 class AddAttackPatterns extends Component {
   constructor(props) {
@@ -38,7 +30,6 @@ class AddAttackPatterns extends Component {
   render() {
     const {
       t,
-      classes,
       courseOfAction,
       courseOfActionAttackPatterns,
       courseOfActionPaginationOptions,
@@ -56,14 +47,15 @@ class AddAttackPatterns extends Component {
           open={this.state.open}
           onClose={this.handleClose.bind(this)}
           title={t('Add attack patterns')}
-          header={(
-            <div className={classes.search}>
+          subHeader={{
+            left: [(
               <SearchInput
                 variant="inDrawer"
                 onSubmit={this.handleSearch.bind(this)}
+                key="searchInput"
               />
-            </div>
-          )}
+            )],
+          }}
         >
           <QueryRenderer
             query={addAttackPatternsLinesQuery}
@@ -98,4 +90,4 @@ AddAttackPatterns.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(AddAttackPatterns);
+export default compose(inject18n)(AddAttackPatterns);
