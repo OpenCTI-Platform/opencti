@@ -47,13 +47,13 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
         <Label>
           {t_i18n('Indicator pattern')}
         </Label>
-        {indicator.pattern ?? ''}
+        <span>{indicator.pattern ?? ''}</span>
         <Grid container={true} spacing={2} sx={{ mt: 0 }}>
           <Grid item xs={6}>
             <Label>
               {t_i18n('Valid from')}
             </Label>
-            {fldt(indicator.valid_from)}
+            <span>{fldt(indicator.valid_from)}</span>
             <Label
               sx={{ mt: 2 }}
               action={indicator.decay_applied_rule && (
@@ -121,7 +121,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
             <Label>
               {t_i18n('Valid until')}
             </Label>
-            {fldt(indicator.valid_until)}
+            <span>{fldt(indicator.valid_until)}</span>
             <Label
               sx={{ marginTop: 2 }}
             >

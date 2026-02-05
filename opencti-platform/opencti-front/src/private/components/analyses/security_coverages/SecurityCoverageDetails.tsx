@@ -21,8 +21,8 @@ import SecurityCoverageSecurityPlatforms from './SecurityCoverageSecurityPlatfor
 import SecurityCoverageVulnerabilities from './SecurityCoverageVulnerabilities';
 import { isNotEmptyField } from '../../../../utils/utils';
 import { fileUri } from '../../../../relay/environment';
-import obasDark from '../../../../static/images/xtm/obas_dark.png';
-import obasLight from '../../../../static/images/xtm/obas_light.png';
+import oaevDark from '../../../../static/images/xtm/oaev_dark.png';
+import oaevLight from '../../../../static/images/xtm/oaev_light.png';
 import ExternalLinkPopover from '../../../../components/ExternalLinkPopover';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
@@ -93,8 +93,8 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
                   startIcon={(
                     <img
                       style={{ width: 20 }}
-                      src={fileUri(theme.palette.mode === 'dark' ? obasDark : obasLight)}
-                      alt="OBAS"
+                      src={fileUri(theme.palette.mode === 'dark' ? oaevDark : oaevLight)}
+                      alt="OAEV"
                     />
                   )}
                   variant="secondary"
