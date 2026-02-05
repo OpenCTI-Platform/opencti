@@ -166,7 +166,7 @@
     "globals": "17.2.0",
     "http-proxy-middleware": "3.0.5",
     "i18n-auto-translation": "2.2.3",
-    "jsdom": "27.4.0",
+    "jsdom": "28.0.0",
     "license-checker-rseidelsohn": "4.4.2",
     "monocart-reporter": "2.9.23",
     "relay-compiler": "20.1.1",
