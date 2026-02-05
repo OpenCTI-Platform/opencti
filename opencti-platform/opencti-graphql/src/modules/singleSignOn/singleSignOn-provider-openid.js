@@ -61,6 +61,7 @@ export const registerOpenIdStrategy = async (ssoEntity) => {
   const providerRef = ssoEntity.identifier || 'oic';
   const ssoConfig = convertKeyValueToJsConfiguration(ssoEntity);
   const providerName = ssoEntity?.label || providerRef;
+  const ssoConfigEnriched = await enrichWithRemoteCredentials(`providers:${providerRef}`, ssoConfig);
 
   logApp.debug(`OpenIDConnectStrategy enriched providerRef:${providerRef}`, EnvStrategyType.STRATEGY_OPENID, ssoConfigEnriched);
 
