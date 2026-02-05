@@ -18,7 +18,6 @@ import { useFormatter } from '../../../../components/i18n';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import type { Theme } from '../../../../components/Theme';
 import ItemIcon from '../../../../components/ItemIcon';
-import { EMPTY_VALUE } from '../../../../utils/String';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.

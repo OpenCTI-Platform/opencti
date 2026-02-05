@@ -15,6 +15,7 @@ import { ListItemButton } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
 import { yearFormat } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
+import { isNotEmptyField } from '../../../../utils/utils';
 import StixCoreRelationshipPopover from '../stix_core_relationships/StixCoreRelationshipPopover';
 import ItemYears from '../../../../components/ItemYears';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -268,7 +269,7 @@ class StixDomainObjectVictimologyRegionsList extends Component {
       if (isNotEmptyField(description)) {
         return (
           <MarkdownDisplay
-            content={stixCoreRelationship.description}
+            content={description}
             remarkGfmPlugin={true}
             commonmark={true}
           />

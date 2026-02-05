@@ -28,7 +28,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
 import StixCoreRelationshipsExports from '../stix_core_relationships/StixCoreRelationshipsExports';
 import ItemMarkings from '../../../../components/ItemMarkings';
-import { export_max_size } from '../../../../utils/utils';
+import { export_max_size, isNotEmptyField } from '../../../../utils/utils';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import withRouter from '../../../../utils/compat_router/withRouter';
 import { EMPTY_VALUE } from '../../../../utils/String';
@@ -305,7 +305,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
       if (isNotEmptyField(description)) {
         return (
           <MarkdownDisplay
-            content={stixCoreRelationship.description}
+            content={description}
             remarkGfmPlugin={true}
             commonmark={true}
           />
