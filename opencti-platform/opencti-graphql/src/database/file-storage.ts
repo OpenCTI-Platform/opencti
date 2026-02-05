@@ -571,7 +571,7 @@ export const upload = async (
   const markings = await getEntitiesMapFromCache<BasicStoreObject>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   const normalized_file_markings = file_markings?.map((m) => {
     const marking = markings.get(m);
-    return marking ? markings.get(m)?.internal_id : m;
+    return marking ? marking.internal_id : m;
   }) ?? [];
   const filtered_markings = normalized_file_markings.filter((id) => id) as string[];
   // Verify markings
