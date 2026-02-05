@@ -165,7 +165,7 @@ const SSODefinitionForm = ({
 
   const initialValues: SSODefinitionFormValues = {
     name: '',
-    identifier: '',
+    identifier: selectedCert ? 'cert' : '',
     label: '',
     enabled: true,
     // SAML - OPENID - LDAP
@@ -365,17 +365,19 @@ const SSODefinitionForm = ({
                 required
                 style={{ marginTop: 20 }}
               />
-              <div style={{ marginTop: 20 }}>
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="identifier"
-                  onSubmit={updateField}
-                  label={t_i18n('Authentication Name')}
-                  fullWidth
-                  required
-                />
-              </div>
+              {!selectedCert && (
+                <div style={{ marginTop: 20 }}>
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="identifier"
+                    onSubmit={updateField}
+                    label={t_i18n('Authentication Name')}
+                    fullWidth
+                    required
+                  />
+                </div>
+              )}
               <Field
                 component={SwitchField}
                 variant="standard"
@@ -385,7 +387,7 @@ const SSODefinitionForm = ({
                 label={t_i18n(`Enable ${selectedStrategy} authentication`)}
                 containerstyle={{ marginLeft: 2, marginTop: 20 }}
               />
-              {selectedStrategy !== 'LocalAuth' && (
+              {selectedStrategy !== 'LocalAuth' && !selectedCert && (
                 <Field
                   component={TextField}
                   variant="standard"

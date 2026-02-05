@@ -156,7 +156,7 @@ const SSODefinitions = () => {
       percentWidth: 25,
       render: (node: { label?: string; identifier: string }) => (
         <ItemBoolean
-          neutralLabel={node?.label ?? node.identifier}
+          neutralLabel={node?.label || node.identifier}
           status={null}
         />
       ) },
