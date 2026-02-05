@@ -1,5 +1,5 @@
 import { StrategyType } from '../../generated/graphql';
-import conf, { logApp } from '../../config/conf';
+import { logApp } from '../../config/conf';
 import LocalStrategy from 'passport-local';
 import { login } from '../../domain/user';
 import { addUserLoginCount } from '../../manager/telemetryManager';
@@ -7,6 +7,7 @@ import { logAuthError, logAuthInfo } from './singleSignOn-domain';
 import {
   AuthType,
   EnvStrategyType,
+  getConfigurationAdminEmail,
   INTERNAL_SECURITY_PROVIDER,
   isAuthenticationActivatedByIdentifier,
   LOCAL_STRATEGY_IDENTIFIER,
@@ -55,8 +56,7 @@ export const registerAdminLocalStrategy = async () => {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore as per document new LocalStrategy is the right way, not sure what to do.
   const adminLocalStrategy = new LocalStrategy({}, (username: string, password: string, done: any) => {
-    const adminEmail = conf.get('app:admin:email');
-    if (username !== adminEmail) {
+    if (username !== getConfigurationAdminEmail()) {
       return done(AuthenticationFailure());
     }
     return login(username, password)

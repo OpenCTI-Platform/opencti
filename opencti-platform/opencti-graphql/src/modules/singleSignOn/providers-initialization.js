@@ -8,6 +8,10 @@ import {
   isAuthenticationForcedFromEnv,
   genConfigMapper,
   providerLoginHandler,
+  isAdminExternallyManaged,
+  getConfigurationAdminEmail,
+  getConfigurationAdminPassword,
+  getConfigurationAdminToken,
 } from './providers-configuration';
 import { getAllIdentifiers, logAuthInfo, runSingleSignOnRunMigration } from './singleSignOn-domain';
 import * as R from 'ramda';
@@ -22,7 +26,7 @@ import { Strategy as SamlStrategy } from '@node-saml/passport-saml';
 import { custom as OpenIDCustom, Issuer as OpenIDIssuer, Strategy as OpenIDStrategy } from 'openid-client';
 import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
 import validator from 'validator';
-import conf, { getPlatformHttpProxyAgent, logApp } from '../../config/conf';
+import { getPlatformHttpProxyAgent, logApp } from '../../config/conf';
 import { AuthenticationFailure, ConfigurationError } from '../../config/errors';
 import { AuthType, INTERNAL_SECURITY_PROVIDER, PROVIDERS } from './providers-configuration';
 import { DEFAULT_INVALID_CONF_VALUE, SYSTEM_USER } from '../../utils/access';
@@ -66,17 +70,16 @@ export const registerAuthenticationProvider = (providerRef, strategy, configurat
 
 // Admin user initialization
 export const initializeAdminUser = async (context) => {
-  const isExternallyManaged = conf.get('app:admin:externally_managed') === true;
-  if (isExternallyManaged) {
+  if (isAdminExternallyManaged()) {
     logApp.info('[INIT] admin user initialization disabled by configuration');
     const existingAdmin = await findById(context, SYSTEM_USER, OPENCTI_ADMIN_UUID);
     if (existingAdmin) {
       await userDelete(context, SYSTEM_USER, OPENCTI_ADMIN_UUID);
     }
   } else {
-    const adminEmail = conf.get('app:admin:email');
-    const adminPassword = conf.get('app:admin:password');
-    const adminToken = conf.get('app:admin:token');
+    const adminEmail = getConfigurationAdminEmail();
+    const adminPassword = getConfigurationAdminPassword();
+    const adminToken = getConfigurationAdminToken();
     if (isEmptyField(adminEmail) || isEmptyField(adminPassword) || isEmptyField(adminToken)
       || adminPassword === DEFAULT_INVALID_CONF_VALUE || adminToken === DEFAULT_INVALID_CONF_VALUE
     ) {
@@ -682,8 +685,7 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
     if (!hasLocal && isForcedEnv) {
       logApp.info('[ENV-PROVIDER][FALLBACK] No local strategy, adding the fallback one');
       const adminLocalStrategy = new LocalStrategy({}, (username, password, done) => {
-        const adminEmail = conf.get('app:admin:email');
-        if (username !== adminEmail) {
+        if (username !== getConfigurationAdminEmail()) {
           return done(AuthenticationFailure());
         }
         return login(username, password)

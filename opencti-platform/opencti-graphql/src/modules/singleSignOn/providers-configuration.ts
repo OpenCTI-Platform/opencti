@@ -96,3 +96,24 @@ export const isAuthenticationActivatedByIdentifier = (identifier: string) => PRO
 export const isAuthenticationProviderMigrated = (migratedIdentifiers: string[], authIdentifier: string) => {
   return migratedIdentifiers.some((strategyIdentifier) => strategyIdentifier === authIdentifier);
 };
+
+// Region Admin user initialization
+const CONFIGURATION_ADMIN_EMAIL = conf.get('app:admin:email');
+export const getConfigurationAdminEmail = () => {
+  return CONFIGURATION_ADMIN_EMAIL;
+};
+
+const CONFIGURATION_ADMIN_PASSWORD = conf.get('app:admin:password');
+export const getConfigurationAdminPassword = () => {
+  return CONFIGURATION_ADMIN_PASSWORD;
+};
+
+const CONFIGURATION_ADMIN_TOKEN = conf.get('app:admin:token');
+export const getConfigurationAdminToken = () => {
+  return CONFIGURATION_ADMIN_TOKEN;
+};
+
+const CONFIGURATION_ADMIN_EXT = booleanConf('app:admin:externally_managed', false);
+export const isAdminExternallyManaged = () => {
+  return CONFIGURATION_ADMIN_EXT;
+};

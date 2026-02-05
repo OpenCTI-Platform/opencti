@@ -4,13 +4,19 @@ import { initializeEnvAuthenticationProviders } from '../../../../src/modules/si
 import * as providerConfig from '../../../../src/modules/singleSignOn/providers-configuration';
 import * as providerInit from '../../../../src/modules/singleSignOn/providers-initialization';
 import { type ProviderConfiguration, PROVIDERS } from '../../../../src/modules/singleSignOn/providers-configuration';
-import { logApp } from '../../../../src/config/conf';
+import conf, { booleanConf, logApp } from '../../../../src/config/conf';
 import * as enterpriseEdition from '../../../../src/enterprise-edition/ee';
 import { clearProvider, clearSsoDatabase } from './singleSignOn-test-utils';
 import { initializeAuthenticationProviders } from '../../../../src/modules/singleSignOn/singleSignOn-init';
 import { waitInSec } from '../../../../src/database/utils';
 import { fullEntitiesList } from '../../../../src/database/middleware-loader';
 import { ENTITY_TYPE_SINGLE_SIGN_ON } from '../../../../src/modules/singleSignOn/singleSignOn-types';
+import { findById as findUserById } from '../../../../src/domain/user';
+import { v4 as uuid } from 'uuid';
+import { initializeAdminUser } from '../../../../src/modules/singleSignOn/providers-initialization';
+import type { AuthUser } from '../../../../src/types/user';
+import { OPENCTI_ADMIN_UUID } from '../../../../src/schema/general';
+import { SYSTEM_USER } from '../../../../src/utils/access';
 
 describe('Providers initialization coverage', () => {
   const PROVIDERS_SAVE: ProviderConfiguration[] = [];
@@ -362,6 +368,114 @@ describe('Providers initialization coverage', () => {
       expect(logAppInfoSpy, 'No logs').not.toHaveBeenCalledWith(
         '[ENV-PROVIDER][LDAP] LdapStrategy is about to be converted to database configuration.',
       );
+    });
+  });
+
+  describe('initializeAdminUser configurations verifications', () => {
+    let adminToken: string;
+    let adminEmail: string;
+    let adminPassword: string;
+    let adminExternallyManaged: boolean;
+
+    beforeAll(async () => {
+      // Copy existing configuration and reset it for tests purpose.
+      adminEmail = conf.get('app:admin:email');
+      adminPassword = conf.get('app:admin:password');
+      adminToken = conf.get('app:admin:token');
+      adminExternallyManaged = booleanConf('app:admin:externally_managed', false);
+    });
+
+    afterAll(async () => {
+      // Copy existing configuration and reset it for tests purpose.
+      // Reinstall initial configuration
+      vi.spyOn(providerConfig, 'getConfigurationAdminPassword').mockReturnValue(adminPassword);
+      vi.spyOn(providerConfig, 'getConfigurationAdminToken').mockReturnValue(adminToken);
+      vi.spyOn(providerConfig, 'getConfigurationAdminEmail').mockReturnValue(adminEmail);
+      vi.spyOn(providerConfig, 'isAdminExternallyManaged').mockReturnValue(adminExternallyManaged);
+      await initializeAdminUser(testContext);
+
+      const existingAdmin = await findUserById(testContext, SYSTEM_USER, OPENCTI_ADMIN_UUID) as AuthUser;
+      expect(existingAdmin.user_email).toBe(adminEmail);
+      expect(existingAdmin.api_token).toBe(adminToken);
+    });
+
+    it('should well configured admin be initialized', async () => {
+      // GIVEN configuration
+      const newToken = uuid();
+      vi.spyOn(providerConfig, 'getConfigurationAdminPassword').mockReturnValue('IDiscoveredUniverseMatter');
+      vi.spyOn(providerConfig, 'getConfigurationAdminToken').mockReturnValue(newToken);
+      vi.spyOn(providerConfig, 'getConfigurationAdminEmail').mockReturnValue('cecilia.payne@filigran.io');
+      vi.spyOn(providerConfig, 'isAdminExternallyManaged').mockReturnValue(false);
+
+      await initializeAdminUser(testContext);
+
+      const existingAdmin = await findUserById(testContext, SYSTEM_USER, OPENCTI_ADMIN_UUID) as AuthUser;
+      expect(existingAdmin.user_email).toBe('cecilia.payne@filigran.io');
+      expect(existingAdmin.api_token).toBe(newToken);
+    });
+
+    it('should password env with digit only works', async () => {
+      // GIVEN configuration
+      const newToken = uuid();
+      vi.spyOn(providerConfig, 'getConfigurationAdminPassword').mockReturnValue(1111);
+      vi.spyOn(providerConfig, 'getConfigurationAdminToken').mockReturnValue(newToken);
+      vi.spyOn(providerConfig, 'getConfigurationAdminEmail').mockReturnValue('cecilia.payne@filigran.io');
+      vi.spyOn(providerConfig, 'isAdminExternallyManaged').mockReturnValue(false);
+
+      await initializeAdminUser(testContext);
+      // expect no exception, exception are failing tests so nothing to check more.
+    });
+
+    // There is a "too many concurrent call on the same entities" edition issues on this one (externally managed = true means delete admin user)
+    it.skip('should externally managed admin prevent admin creation', async () => {
+      // GIVEN configuration
+      vi.spyOn(providerConfig, 'getConfigurationAdminPassword').mockReturnValue('FirstBlackFemaleEngineerAtNasa');
+      vi.spyOn(providerConfig, 'getConfigurationAdminToken').mockReturnValue(adminToken);
+      vi.spyOn(providerConfig, 'getConfigurationAdminEmail').mockReturnValue('mary.jackson@filigran.io');
+      vi.spyOn(providerConfig, 'isAdminExternallyManaged').mockReturnValue(true);
+
+      await initializeAdminUser(testContext);
+
+      await waitInSec(1); // tests are too fast, delete user and create the same again need some pause
+
+      const existingAdmin = await findUserById(testContext, SYSTEM_USER, OPENCTI_ADMIN_UUID) as AuthUser;
+      expect(existingAdmin).toBeUndefined();
+    });
+
+    it('should default password be refused', async () => {
+      // GIVEN configuration
+      vi.spyOn(providerConfig, 'getConfigurationAdminPassword').mockReturnValue('ChangeMe');
+      vi.spyOn(providerConfig, 'getConfigurationAdminToken').mockReturnValue(adminToken);
+      vi.spyOn(providerConfig, 'getConfigurationAdminEmail').mockReturnValue('mary.jackson@filigran.io');
+      vi.spyOn(providerConfig, 'isAdminExternallyManaged').mockReturnValue(false);
+
+      await expect(async () => {
+        await initializeAdminUser(testContext);
+      }).rejects.toThrowError('You need to configure the environment vars');
+    });
+
+    it('should invalid email be refused', async () => {
+      // GIVEN configuration
+      vi.spyOn(providerConfig, 'getConfigurationAdminPassword').mockReturnValue('changeMe');
+      vi.spyOn(providerConfig, 'getConfigurationAdminToken').mockReturnValue(adminToken);
+      vi.spyOn(providerConfig, 'getConfigurationAdminEmail').mockReturnValue('mary.jacksonATfiligran.io');
+      vi.spyOn(providerConfig, 'isAdminExternallyManaged').mockReturnValue(false);
+
+      await expect(async () => {
+        await initializeAdminUser(testContext);
+      }).rejects.toThrowError('Email must be a valid email address');
+    });
+
+    it('should invalid token be refused', async () => {
+      // GIVEN configuration
+      vi.spyOn(providerConfig, 'getConfigurationAdminPassword').mockReturnValue('FirstBlackFemaleEngineerAtNasa');
+      vi.spyOn(providerConfig, 'getConfigurationAdminToken').mockReturnValue('1234-1324-13424');
+      vi.spyOn(providerConfig, 'getConfigurationAdminEmail').mockReturnValue('mary.jackson@filigran.io');
+      vi.spyOn(providerConfig, 'isAdminExternallyManaged').mockReturnValue(false);
+
+      await expect(async () => {
+        await initializeAdminUser(testContext);
+      }).rejects.toThrowError('Token must be a valid UUID');
     });
   });
 });
