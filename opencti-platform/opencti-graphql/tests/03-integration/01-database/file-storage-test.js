@@ -8,6 +8,8 @@ import { elLoadById } from '../../../src/database/engine';
 import { allFilesForPaths, paginatedForPathWithEnrichment } from '../../../src/modules/internal/document/document-domain';
 import { utcDate } from '../../../src/utils/format';
 import { MARKING_TLP_AMBER_STRICT } from '../../../src/schema/identifier';
+import { storeLoadById } from '../../../src/database/middleware-loader';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
 
 const exportFileName = '(ExportFileStix)_Malware-Paradise Ransomware_all.json';
 const exportFileId = (malware) => `export/Malware/${malware.id}/${exportFileName.toLowerCase()}`;
@@ -33,7 +35,8 @@ describe('File storage file listing', () => {
     expect(file.name).toEqual(exportFileName);
     expect(file.size).toEqual(FILE_SIZE);
     expect(file.metaData).not.toBeNull();
-    expect(file.metaData.file_markings[0]).toEqual(MARKING_TLP_AMBER_STRICT);
+    const tlpAmberMarking = await storeLoadById(testContext, ADMIN_USER, MARKING_TLP_AMBER_STRICT, ENTITY_TYPE_MARKING_DEFINITION);
+    expect(file.metaData.file_markings[0]).toEqual(tlpAmberMarking.internal_id);
     expect(file.metaData.encoding).toEqual('7bit');
     expect(file.metaData.filename).toEqual(exportFileName.replace(/\s/g, '%20'));
     expect(file.metaData.mimetype).toEqual('application/json');
