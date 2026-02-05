@@ -1,15 +1,12 @@
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
-import Dialog from '@mui/material/Dialog';
-import React, { UIEvent } from 'react';
+import Dialog from '@common/dialog/Dialog';
 import { playbookMutationFieldPatch } from '@components/data/playbooks/PlaybookEditionForm';
-import Transition from '../../../../components/Transition';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContentText from '@mui/material/DialogContentText';
+import { UIEvent } from 'react';
 import { useFormatter } from '../../../../components/i18n';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import stopEvent from '../../../../utils/domEvent';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 interface PlaybookPopoverToggleDialogProps {
   playbookRunning: boolean;
@@ -43,23 +40,16 @@ const PlaybookPopoverToggleDialog = ({
 
   return (
     <Dialog
-      slotProps={{ paper: { elevation: 1 } }}
       open={showDialog}
-      keepMounted={true}
-      slots={{ transition: Transition }}
       onClose={close}
+      title={t_i18n('Are you sure?')}
     >
-      <DialogTitle>
-        {t_i18n('Are you sure?')}
-      </DialogTitle>
-      <DialogContent>
-        <DialogContentText>
-          {!playbookRunning
-            ? t_i18n('Do you want to start this playbook?')
-            : t_i18n('Do you want to stop this playbook?')
-          }
-        </DialogContentText>
-      </DialogContent>
+      <DialogContentText>
+        {!playbookRunning
+          ? t_i18n('Do you want to start this playbook?')
+          : t_i18n('Do you want to stop this playbook?')
+        }
+      </DialogContentText>
       <DialogActions>
         <Button variant="secondary" onClick={close} disabled={commiting}>
           {t_i18n('Cancel')}

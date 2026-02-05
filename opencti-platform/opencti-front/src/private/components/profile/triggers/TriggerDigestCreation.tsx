@@ -1,8 +1,6 @@
 import Button from '@common/button/Button';
-import Dialog from '@mui/material/Dialog';
+import Dialog from '@common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
 import MenuItem from '@mui/material/MenuItem';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig, FormikHelpers } from 'formik/dist/types';
@@ -276,7 +274,7 @@ const TriggerDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
       disableRestoreFocus={true}
       open={open ?? false}
       onClose={handleClose}
-      slotProps={{ paper: { elevation: 1 } }}
+      title={t_i18n('Create a regular digest')}
     >
       <Formik
         initialValues={digestInitialValues}
@@ -285,22 +283,24 @@ const TriggerDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
         onReset={onReset}
       >
         {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
-          <div>
-            <DialogTitle>{t_i18n('Create a regular digest')}</DialogTitle>
-            <DialogContent>{digestFields(setFieldValue, values)}</DialogContent>
-            <DialogActions sx={{ display: 'flex' }}>
-              <Button onClick={handleReset} disabled={isSubmitting}>
+          <>
+            {digestFields(setFieldValue, values)}
+            <DialogActions>
+              <Button
+                variant="secondary"
+                onClick={handleReset}
+                disabled={isSubmitting}
+              >
                 {t_i18n('Cancel')}
               </Button>
               <Button
-                color="secondary"
                 onClick={submitForm}
                 disabled={isSubmitting}
               >
                 {t_i18n('Create')}
               </Button>
             </DialogActions>
-          </div>
+          </>
         )}
       </Formik>
     </Dialog>

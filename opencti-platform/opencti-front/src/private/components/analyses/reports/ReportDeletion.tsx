@@ -1,15 +1,14 @@
-import React, { FunctionComponent, useState } from 'react';
+import Button from '@common/button/Button';
+import Dialog from '@common/dialog/Dialog';
+import { Alert, AlertTitle, Checkbox, DialogActions, FormControlLabel, FormGroup, Typography } from '@mui/material';
+import { useTheme } from '@mui/styles';
+import { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
-import { Alert, AlertTitle, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, FormControlLabel, FormGroup } from '@mui/material';
-import Button from '@common/button/Button';
-import { useTheme } from '@mui/styles';
-import DialogTitle from '@mui/material/DialogTitle';
 import { useFormatter } from '../../../../components/i18n';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import Transition from '../../../../components/Transition';
-import { QueryRenderer } from '../../../../relay/environment';
 import type { Theme } from '../../../../components/Theme';
+import { QueryRenderer } from '../../../../relay/environment';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { ReportDeletionQuery$data } from './__generated__/ReportDeletionQuery.graphql';
 
 const reportDeletionQuery = graphql`
@@ -76,56 +75,48 @@ const ReportDeletion: FunctionComponent<ReportDeletionProps> = ({
   return (
     <Dialog
       open={isOpen}
-      slots={{ transition: Transition }}
-      slotProps={{ paper: { elevation: 1 } }}
       onClose={handleCloseDelete}
+      title={t_i18n('Are you sure?')}
     >
-      <DialogTitle>
-        {t_i18n('Are you sure?')}
-      </DialogTitle>
-      <DialogContent>
-        <DialogContentText>
-          {t_i18n('Do you want to delete this report?')}
-        </DialogContentText>
-        <QueryRenderer
-          query={reportDeletionQuery}
-          variables={{ id: reportId }}
-          render={(result: { props: ReportDeletionQuery$data }) => {
-            const numberOfDeletions = result.props?.report?.deleteWithElementsCount ?? 0;
-            if (numberOfDeletions === 0) return <div />;
-            return (
-              <Alert
-                severity="warning"
-                variant="outlined"
-                style={{ marginTop: 20 }}
-              >
-                <AlertTitle>{t_i18n('Cascade delete')}</AlertTitle>
-                {t_i18n('In this report, ')}&nbsp;
-                <strong style={{ color: theme.palette.error.main }}>
-                  {numberOfDeletions}
-                </strong>
+      <Typography>{t_i18n('Do you want to delete this report?')}</Typography>
+      <QueryRenderer
+        query={reportDeletionQuery}
+        variables={{ id: reportId }}
+        render={(result: { props: ReportDeletionQuery$data }) => {
+          const numberOfDeletions = result.props?.report?.deleteWithElementsCount ?? 0;
+          if (numberOfDeletions === 0) return <div />;
+          return (
+            <Alert
+              severity="warning"
+              variant="outlined"
+              style={{ marginTop: 20 }}
+            >
+              <AlertTitle>{t_i18n('Cascade delete')}</AlertTitle>
+              {t_i18n('In this report, ')}&nbsp;
+              <strong style={{ color: theme.palette.error.main }}>
+                {numberOfDeletions}
+              </strong>
                   &nbsp;
-                {t_i18n(
-                  'element(s) are not linked to any other reports and will be orphan after the deletion.',
-                )}
-                <FormGroup>
-                  <FormControlLabel
-                    control={(
-                      <Checkbox
-                        disableRipple={true}
-                        checked={purgeElements}
-                        onChange={() => setPurgeElements(!purgeElements)}
-                      />
-                    )}
-                    label={t_i18n('Also delete these elements')}
-                  />
-                </FormGroup>
-              </Alert>
-            );
-          }}
-        >
-        </QueryRenderer>
-      </DialogContent>
+              {t_i18n(
+                'element(s) are not linked to any other reports and will be orphan after the deletion.',
+              )}
+              <FormGroup>
+                <FormControlLabel
+                  control={(
+                    <Checkbox
+                      disableRipple={true}
+                      checked={purgeElements}
+                      onChange={() => setPurgeElements(!purgeElements)}
+                    />
+                  )}
+                  label={t_i18n('Also delete these elements')}
+                />
+              </FormGroup>
+            </Alert>
+          );
+        }}
+      >
+      </QueryRenderer>
       <DialogActions>
         <Button variant="secondary" onClick={handleCloseDelete} disabled={deleting}>
           {t_i18n('Cancel')}

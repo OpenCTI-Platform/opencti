@@ -1,13 +1,11 @@
-import React, { FunctionComponent, ReactNode, useMemo } from 'react';
-import Dialog from '@mui/material/Dialog';
 import Button from '@common/button/Button';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
+import IconButton from '@common/button/IconButton';
+import Dialog from '@common/dialog/Dialog';
+import { CsvMapperRepresentationAttributeFormData } from '@components/data/csvMapper/representations/attributes/Attribute';
+import { Badge } from '@mui/material';
 import DialogActions from '@mui/material/DialogActions';
 import { CogOutline } from 'mdi-material-ui';
-import IconButton from '@common/button/IconButton';
-import { Badge } from '@mui/material';
-import { CsvMapperRepresentationAttributeFormData } from '@components/data/csvMapper/representations/attributes/Attribute';
+import React, { FunctionComponent, ReactNode, useMemo } from 'react';
 import { useFormatter } from '../../../../../../components/i18n';
 
 interface CsvMapperRepresentationDialogOptionProps {
@@ -47,18 +45,13 @@ const CsvMapperRepresentationDialogOption: FunctionComponent<CsvMapperRepresenta
         onClose={handleClose}
         aria-labelledby="csv-mapper-dialog-title"
         aria-describedby="Configure optional settings to the field"
-        slotProps={{
-          paper: {
-            elevation: 1,
-          },
-        }}
+        title={(
+          <span id="csv-mapper-dialog-title">
+            {t_i18n('Attribute mapping configuration')}
+          </span>
+        )}
       >
-        <DialogTitle id="csv-mapper-dialog-title">
-          {t_i18n('Attribute mapping configuration')}
-        </DialogTitle>
-        <DialogContent>
-          {children}
-        </DialogContent>
+        {children}
         <DialogActions>
           <Button onClick={handleClose} autoFocus>
             {t_i18n('Close')}

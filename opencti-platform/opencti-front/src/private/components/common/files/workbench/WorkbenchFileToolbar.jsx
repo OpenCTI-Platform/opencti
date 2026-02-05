@@ -1,26 +1,24 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import * as R from 'ramda';
-import withTheme from '@mui/styles/withTheme';
-import withStyles from '@mui/styles/withStyles';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import { CenterFocusStrongOutlined, ClearOutlined, DeleteOutlined } from '@mui/icons-material';
-import Drawer from '@mui/material/Drawer';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
-import Dialog from '@mui/material/Dialog';
+import Dialog from '@common/dialog/Dialog';
+import { CenterFocusStrongOutlined, ClearOutlined, DeleteOutlined } from '@mui/icons-material';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContentText from '@mui/material/DialogContentText';
+import Drawer from '@mui/material/Drawer';
 import Slide from '@mui/material/Slide';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
+import withStyles from '@mui/styles/withStyles';
+import withTheme from '@mui/styles/withTheme';
 import { Form, Formik } from 'formik';
-import DialogTitle from '@mui/material/DialogTitle';
+import * as PropTypes from 'prop-types';
+import * as R from 'ramda';
+import React, { Component } from 'react';
 import inject18n from '../../../../../components/i18n';
-import ObjectMarkingField from '../../form/ObjectMarkingField';
+import { MESSAGING$ } from '../../../../../relay/environment';
 import { UserContext } from '../../../../../utils/hooks/useAuth';
 import withHooksSettingsMessagesBannerHeight from '../../../settings/settings_messages/withHooksSettingsMessagesBannerHeight';
-import { MESSAGING$ } from '../../../../../relay/environment';
+import ObjectMarkingField from '../../form/ObjectMarkingField';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -219,60 +217,49 @@ class WorkbenchFileToolbar extends Component {
             </Toolbar>
             <Dialog
               open={displayApplyMarking}
-              slotProps={{ paper: { elevation: 1 } }}
-              keepMounted={true}
-              slots={{ transition: Transition }}
               onClose={this.handleCloseApplyMarking.bind(this)}
-              maxWidth="xs"
-              fullWidth={true}
+              title={t('Apply marking definitions')}
+              size="small"
             >
-              <DialogTitle>{t('Apply marking definitions')}</DialogTitle>
-              <DialogContent>
-                <Formik
-                  initialValues={initialValues}
-                  onSubmit={this.onSubmitApplyMarking.bind(this)}
-                  onReset={this.onResetApplyMarking.bind(this)}
-                >
-                  {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
-                    <Form>
-                      <ObjectMarkingField name="objectMarking" setFieldValue={setFieldValue} />
-                      <div className={classes.buttons}>
-                        <Button
-                          onClick={handleReset}
-                          disabled={isSubmitting}
-                          classes={{ root: classes.button }}
-                        >
-                          {t('Cancel')}
-                        </Button>
-                        <Button
-                          color="secondary"
-                          onClick={submitForm}
-                          disabled={isSubmitting}
-                          classes={{ root: classes.button }}
-                        >
-                          {t('Update')}
-                        </Button>
-                      </div>
-                    </Form>
-                  )}
-                </Formik>
-              </DialogContent>
+              <Formik
+                initialValues={initialValues}
+                onSubmit={this.onSubmitApplyMarking.bind(this)}
+                onReset={this.onResetApplyMarking.bind(this)}
+              >
+                {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
+                  <Form>
+                    <ObjectMarkingField name="objectMarking" setFieldValue={setFieldValue} />
+                    <div className={classes.buttons}>
+                      <Button
+                        onClick={handleReset}
+                        disabled={isSubmitting}
+                        classes={{ root: classes.button }}
+                      >
+                        {t('Cancel')}
+                      </Button>
+                      <Button
+                        color="secondary"
+                        onClick={submitForm}
+                        disabled={isSubmitting}
+                        classes={{ root: classes.button }}
+                      >
+                        {t('Update')}
+                      </Button>
+                    </div>
+                  </Form>
+                )}
+              </Formik>
             </Dialog>
             <Dialog
               open={displayDelete}
-              slotProps={{ paper: { elevation: 1 } }}
-              keepMounted={true}
-              slots={{ transition: Transition }}
               onClose={this.handleCloseDelete.bind(this)}
+              title={t('Are you sure?')}
+              size="small"
             >
-              <DialogTitle>
-                {t('Are you sure?')}
-              </DialogTitle>
-              <DialogContent>
-                <DialogContentText>
-                  {t('Do you want to remove these objects?')}
-                </DialogContentText>
-              </DialogContent>
+              <DialogContentText>
+                {t('Do you want to remove these objects?')}
+              </DialogContentText>
+
               <DialogActions>
                 <Button onClick={this.handleCloseDelete.bind(this)}>
                   {t('Cancel')}

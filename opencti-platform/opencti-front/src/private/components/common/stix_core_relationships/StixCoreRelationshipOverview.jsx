@@ -1,12 +1,10 @@
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
+import Dialog from '@common/dialog/Dialog';
 import { ArrowRightAlt, EditOutlined, ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import { Tooltip, Typography } from '@mui/material';
-import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
 import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
 import withStyles from '@mui/styles/withStyles';
@@ -27,7 +25,6 @@ import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemStatus from '../../../../components/ItemStatus';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
-import Transition from '../../../../components/Transition';
 import { commitMutation } from '../../../../relay/environment';
 import { itemColor } from '../../../../utils/Colors';
 import withRouter from '../../../../utils/compat_router/withRouter';
@@ -564,19 +561,13 @@ class StixCoreRelationshipContainer extends Component {
         </div>
         <Dialog
           open={this.state.displayDelete}
-          slotProps={{ paper: { elevation: 1 } }}
-          keepMounted={true}
-          slots={{ transition: Transition }}
           onClose={this.handleCloseDelete.bind(this)}
+          title={t('Are you sure?')}
+          size="small"
         >
-          <DialogTitle>
-            {t('Are you sure?')}
-          </DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              {t('Do you want to delete this relationship?')}
-            </DialogContentText>
-          </DialogContent>
+          <DialogContentText>
+            {t('Do you want to delete this relationship?')}
+          </DialogContentText>
           <DialogActions>
             <Button
               onClick={this.handleCloseDelete.bind(this)}

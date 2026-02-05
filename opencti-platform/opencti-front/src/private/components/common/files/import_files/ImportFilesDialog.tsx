@@ -1,43 +1,46 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { Box, Dialog, DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material';
-import { FormikConfig, FormikErrors, useFormik } from 'formik';
-import { AssociatedEntityOption } from '@components/common/form/AssociatedEntityField';
-import ImportFilesUploader from '@components/common/files/import_files/ImportFilesUploader';
-import ImportFilesOptions from '@components/common/files/import_files/ImportFilesOptions';
-import { graphql, UseMutationConfig, usePreloadedQuery } from 'react-relay';
-import { Link } from 'react-router-dom';
-import ImportFilesStepper from '@components/common/files/import_files/ImportFilesStepper';
-import ImportFilesUploadProgress from '@components/common/files/import_files/ImportFilesUploadProgress';
-import ImportFilesToggleMode from '@components/common/files/import_files/ImportFilesToggleMode';
+import { ImportFilesProvider, importFilesQuery, InitialValues, useImportFilesContext } from '@components/common/files/import_files/ImportFilesContext';
 import ImportFilesFormSelector from '@components/common/files/import_files/ImportFilesFormSelector';
 import ImportFilesFormView from '@components/common/files/import_files/ImportFilesFormView';
-import { draftCreationMutation } from '@components/drafts/DraftCreation';
-import { DraftCreationMutation, DraftCreationMutation$data } from '@components/drafts/__generated__/DraftCreationMutation.graphql';
-import { ImportFilesProvider, importFilesQuery, InitialValues, useImportFilesContext } from '@components/common/files/import_files/ImportFilesContext';
+import ImportFilesOptions from '@components/common/files/import_files/ImportFilesOptions';
+import ImportFilesStepper from '@components/common/files/import_files/ImportFilesStepper';
+import ImportFilesToggleMode from '@components/common/files/import_files/ImportFilesToggleMode';
+import ImportFilesUploadProgress from '@components/common/files/import_files/ImportFilesUploadProgress';
+import ImportFilesUploader from '@components/common/files/import_files/ImportFilesUploader';
 import { ImportFilesContextQuery } from '@components/common/files/import_files/__generated__/ImportFilesContextQuery.graphql';
-import {
-  ImportFilesDialogGlobalMutation,
-  ImportFilesDialogGlobalMutation$variables,
-} from '@components/common/files/import_files/__generated__/ImportFilesDialogGlobalMutation.graphql';
 import {
   ImportFilesDialogEntityMutation,
   ImportFilesDialogEntityMutation$variables,
 } from '@components/common/files/import_files/__generated__/ImportFilesDialogEntityMutation.graphql';
-import { Close } from '@mui/icons-material';
+import {
+  ImportFilesDialogGlobalMutation,
+  ImportFilesDialogGlobalMutation$variables,
+} from '@components/common/files/import_files/__generated__/ImportFilesDialogGlobalMutation.graphql';
+import { AssociatedEntityOption } from '@components/common/form/AssociatedEntityField';
 import { AuthorizedMembersFieldValue } from '@components/common/form/AuthorizedMembersField';
+import { draftCreationMutation } from '@components/drafts/DraftCreation';
+import { DraftCreationMutation, DraftCreationMutation$data } from '@components/drafts/__generated__/DraftCreationMutation.graphql';
+import { Box, DialogActions } from '@mui/material';
+import { useTheme } from '@mui/styles';
+import { FormikConfig, FormikErrors, useFormik } from 'formik';
+import { useCallback, useMemo, useState } from 'react';
+import { graphql, UseMutationConfig, usePreloadedQuery } from 'react-relay';
+import { Link } from 'react-router-dom';
+import { Theme } from '../../../../../components/Theme';
+import { THEME_DARK_DIALOG_BACKGROUND } from '../../../../../components/ThemeDark';
+import { THEME_LIGHT_DIALOG_BACKGROUND } from '../../../../../components/ThemeLight';
+import Button from '../../../../../components/common/button/Button';
+import Dialog from '../../../../../components/common/dialog/Dialog';
 import { useFormatter } from '../../../../../components/i18n';
-import Transition from '../../../../../components/Transition';
 import { handleErrorInForm, MESSAGING$ } from '../../../../../relay/environment';
-import useApiMutation from '../../../../../utils/hooks/useApiMutation';
-import useBulkCommit from '../../../../../utils/hooks/useBulkCommit';
-import { resolveLink } from '../../../../../utils/Entity';
-import useDraftContext from '../../../../../utils/hooks/useDraftContext';
 import { RelayError } from '../../../../../relay/relayTypes';
-import { KNOWLEDGE_KNASKIMPORT } from '../../../../../utils/hooks/useGranted';
+import { resolveLink } from '../../../../../utils/Entity';
 import Security from '../../../../../utils/Security';
 import { FieldOption } from '../../../../../utils/field';
-import IconButton from '../../../../../components/common/button/IconButton';
-import Button from '../../../../../components/common/button/Button';
+import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import useBulkCommit from '../../../../../utils/hooks/useBulkCommit';
+import useDraftContext from '../../../../../utils/hooks/useDraftContext';
+import { KNOWLEDGE_KNASKIMPORT } from '../../../../../utils/hooks/useGranted';
+import { hasCustomColor } from '../../../../../utils/theme';
 import useSwitchDraft from '../../../drafts/useSwitchDraft';
 
 export const CSV_MAPPER_NAME = '[FILE] CSV Mapper import';
@@ -118,6 +121,8 @@ export type OptionsFormValues = {
 
 const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
   const { t_i18n } = useFormatter();
+
+  const theme = useTheme<Theme>();
 
   const draftContext = useDraftContext();
   const {
@@ -466,76 +471,83 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
     t_i18n,
   ]);
 
+  const getStepperBackgroundColor = () => {
+    if (hasCustomColor(theme, 'theme_paper')) {
+      return theme.palette.background.paper;
+    }
+
+    return theme.palette.mode === 'dark'
+      ? THEME_DARK_DIALOG_BACKGROUND
+      : THEME_LIGHT_DIALOG_BACKGROUND;
+  };
+
+  const stepperBackgroundColor = getStepperBackgroundColor();
+
   return (
     <Dialog
       open={open}
-      slots={{ transition: Transition }}
-      fullWidth
-      maxWidth={false}
-      onClose={handleClose}
-      slotProps={{
-        paper: {
-          elevation: 1,
-          style: {
-            height: '100vh',
-          },
-        },
-      }}
+      size="large"
+      title={t_i18n('Import data')}
     >
-      <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2 }}>
-        <Typography variant="h5">{t_i18n('Import data')}</Typography>
-        <IconButton
-          aria-label="Close"
-          onClick={handleClose}
-          size="default"
-        >
-          <Close fontSize="small" color="primary" />
-        </IconButton>
-      </DialogTitle>
-      <DialogContent sx={{ paddingInline: 20, marginBlock: 10 }}>
-        {!uploadStatus ? (
-          <>
+      {!uploadStatus ? (
+        <>
+          <Box
+            sx={{
+              position: 'sticky',
+              top: 0,
+              backgroundColor: stepperBackgroundColor,
+              zIndex: 1,
+              pt: 1,
+              pb: 3,
+            }}
+          >
             <ImportFilesStepper />
-            {/* Remove stepper height (25px) */}
-            <Box sx={{ paddingBlock: 5, height: 'calc(100% - 25px)' }}>
-              {activeStep === 0 && (<ImportFilesToggleMode />)}
-              {activeStep === 1 && (
+          </Box>
+
+          <Box sx={{ py: 1 }}>
+            {
+              activeStep === 0 && (
+                <ImportFilesToggleMode />
+              )
+            }
+
+            {
+              activeStep === 1 && (
                 importMode === 'form'
                   ? <ImportFilesFormSelector />
-                  : (
-                      <ImportFilesUploader
-                        connectorsForImport={connectorsForImport}
-                      />
-                    )
-              )}
-              {activeStep === 2 && (
+                  : <ImportFilesUploader connectorsForImport={connectorsForImport} />
+              )
+            }
+
+            {
+              activeStep === 2 && (
                 importMode === 'form'
                   ? <ImportFilesFormView onSuccess={handleClose} />
                   : <ImportFilesOptions optionsFormikContext={optionsContext} draftContext={draftContext} />
-              )}
-            </Box>
-          </>
-        ) : (
-          <ImportFilesUploadProgress
-            currentCount={bulkCurrentCount}
-            totalCount={bulkCount}
-            uploadedFiles={uploadedFiles}
-            BulkResult={BulkResult}
-          />
-        )}
-      </DialogContent>
-      <DialogActions sx={{ p: 2 }}>
-        {/* Close dialog */}
-        {(!uploadStatus || uploadStatus === 'success') && (
-          <Button
-            onClick={() => handleClose()}
-            variant="secondary"
-          >
-            {uploadStatus === 'success' ? t_i18n('Close') : t_i18n('Cancel')}
-          </Button>
-        )}
-        {renderActions}
-      </DialogActions>
+              )
+            }
+          </Box>
+
+          <DialogActions>
+            {(!uploadStatus || uploadStatus === 'success') && (
+              <Button
+                onClick={() => handleClose()}
+                variant="secondary"
+              >
+                {uploadStatus === 'success' ? t_i18n('Close') : t_i18n('Cancel')}
+              </Button>
+            )}
+            {renderActions}
+          </DialogActions>
+        </>
+      ) : (
+        <ImportFilesUploadProgress
+          currentCount={bulkCurrentCount}
+          totalCount={bulkCount}
+          uploadedFiles={uploadedFiles}
+          BulkResult={BulkResult}
+        />
+      )}
     </Dialog>
   );
 };
@@ -544,6 +556,7 @@ const ImportFilesDialog = ({ open, entityId, handleClose, initialFreeTextContent
   const initialValue: InitialValues = initialFreeTextContent
     ? { entityId, activeStep: 1, importMode: 'manual', initialFreeTextContent }
     : { entityId };
+
   return (
     <ImportFilesProvider initialValue={initialValue}>
       <ImportFiles open={open} handleClose={handleClose}></ImportFiles>

@@ -1,11 +1,11 @@
-import React, { FunctionComponent, useState } from 'react';
+import Button from '@common/button/Button';
+import Dialog from '@common/dialog/Dialog';
+import { DialogActions, DialogContentText } from '@mui/material';
+import { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
-import { Dialog, DialogActions, DialogContent, DialogContentText } from '@mui/material';
-import Button from '@common/button/Button';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import Transition from '../../../../components/Transition';
 
 const groupDeletionMutation = graphql`
   mutation GroupDeletionDialogContainerDeletionMutation($id: ID!) {
@@ -53,16 +53,12 @@ const GroupDeletionDialog: FunctionComponent<GroupDeletionDialogProps> = ({
   return (
     <Dialog
       open={isOpen}
-      PaperProps={{ elevation: 1 }}
-      keepMounted={true}
-      TransitionComponent={Transition}
       onClose={handleClose}
+      title={t_i18n('Are you sure?')}
     >
-      <DialogContent>
-        <DialogContentText>
-          {t_i18n('Do you want to delete this group?')}
-        </DialogContentText>
-      </DialogContent>
+      <DialogContentText>
+        {t_i18n('Do you want to delete this group?')}
+      </DialogContentText>
       <DialogActions>
         <Button variant="secondary" onClick={handleClose} disabled={deleting}>
           {t_i18n('Cancel')}

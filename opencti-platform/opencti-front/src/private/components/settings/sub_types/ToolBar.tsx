@@ -1,29 +1,27 @@
-import makeStyles from '@mui/styles/makeStyles';
-import Drawer from '@mui/material/Drawer';
-import IconButton from '@common/button/IconButton';
-import { ClearOutlined, FileOpenOutlined, LocalOfferOutlined, VisibilityOffOutlined } from '@mui/icons-material';
-import Typography from '@mui/material/Typography';
-import React, { FunctionComponent, useEffect, useState } from 'react';
-import Toolbar from '@mui/material/Toolbar';
-import Tooltip from '@mui/material/Tooltip';
-import Alert from '@mui/material/Alert';
 import Button from '@common/button/Button';
-import Switch from '@mui/material/Switch';
-import * as R from 'ramda';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
+import IconButton from '@common/button/IconButton';
+import Dialog from '@common/dialog/Dialog';
+import { ClearOutlined, FileOpenOutlined, LocalOfferOutlined, VisibilityOffOutlined } from '@mui/icons-material';
+import Alert from '@mui/material/Alert';
 import DialogActions from '@mui/material/DialogActions';
+import Drawer from '@mui/material/Drawer';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
+import Switch from '@mui/material/Switch';
+import Toolbar from '@mui/material/Toolbar';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
+import makeStyles from '@mui/styles/makeStyles';
+import * as R from 'ramda';
+import { FunctionComponent, useEffect, useState } from 'react';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
-import { entitySettingPatch } from './entity_setting/EntitySettingSettings';
-import useEntitySettings from '../../../../utils/hooks/useEntitySettings';
-import type { EntitySetting } from '../../../../utils/hooks/useEntitySettings';
 import { MESSAGING$ } from '../../../../relay/environment';
-import useAuth from '../../../../utils/hooks/useAuth';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useAuth from '../../../../utils/hooks/useAuth';
+import type { EntitySetting } from '../../../../utils/hooks/useEntitySettings';
+import useEntitySettings from '../../../../utils/hooks/useEntitySettings';
+import { entitySettingPatch } from './entity_setting/EntitySettingSettings';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -250,38 +248,34 @@ const ToolBar: FunctionComponent<{
       </Toolbar>
       <Dialog
         open={display}
-        slotProps={{ paper: { elevation: 1 } }}
-        keepMounted={true}
         onClose={handleClose}
+        title={title}
       >
-        <DialogTitle>{title}</DialogTitle>
-        <DialogContent>
-          <Alert severity="info" style={{ marginBottom: 20 }}>
-            {description}
-            {notAvailableSetting.length > 0 && (
-              <div style={{ marginTop: 10 }}>
-                <strong>
-                  {t_i18n(
-                    'Be careful, this setting is not available for the following selected entity types: ',
-                  )}
-                  <span>
-                    {notAvailableSetting
-                      .map((node) => t_i18n(`entity_${node.target_type}`))
-                      .join(', ')}
-                  </span>
-                </strong>
-              </div>
-            )}
-          </Alert>
-          <FormGroup>
-            <FormControlLabel
-              control={
-                <Switch checked={value} onChange={() => setValue(!value)} />
-              }
-              label={t_i18n('Enable this feature')}
-            />
-          </FormGroup>
-        </DialogContent>
+        <Alert severity="info" style={{ marginBottom: 20 }}>
+          {description}
+          {notAvailableSetting.length > 0 && (
+            <div style={{ marginTop: 10 }}>
+              <strong>
+                {t_i18n(
+                  'Be careful, this setting is not available for the following selected entity types: ',
+                )}
+                <span>
+                  {notAvailableSetting
+                    .map((node) => t_i18n(`entity_${node.target_type}`))
+                    .join(', ')}
+                </span>
+              </strong>
+            </div>
+          )}
+        </Alert>
+        <FormGroup>
+          <FormControlLabel
+            control={
+              <Switch checked={value} onChange={() => setValue(!value)} />
+            }
+            label={t_i18n('Enable this feature')}
+          />
+        </FormGroup>
         <DialogActions>
           <Button variant="secondary" onClick={handleClose}>{t_i18n('Cancel')}</Button>
           <Button onClick={handleAction}>

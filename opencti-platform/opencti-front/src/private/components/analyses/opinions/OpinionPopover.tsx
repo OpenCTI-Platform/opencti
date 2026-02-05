@@ -1,27 +1,24 @@
-import React, { FunctionComponent, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
+import Dialog from '@common/dialog/Dialog';
+import { OpinionEditionContainerQuery$data } from '@components/analyses/opinions/__generated__/OpinionEditionContainerQuery.graphql';
+import MoreVert from '@mui/icons-material/MoreVert';
+import DialogActions from '@mui/material/DialogActions';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Button from '@common/button/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import MoreVert from '@mui/icons-material/MoreVert';
-import { graphql } from 'react-relay';
-import ToggleButton from '@mui/material/ToggleButton';
-import IconButton from '@common/button/IconButton';
-import { Formik } from 'formik';
 import { PopoverProps } from '@mui/material/Popover';
-import { OpinionEditionContainerQuery$data } from '@components/analyses/opinions/__generated__/OpinionEditionContainerQuery.graphql';
+import ToggleButton from '@mui/material/ToggleButton';
+import { Formik } from 'formik';
+import React, { FunctionComponent, useState } from 'react';
+import { graphql } from 'react-relay';
+import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
-import { opinionEditionQuery } from './OpinionEdition';
 import { CollaborativeSecurity } from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
-import OpinionEditionContainer from './OpinionEditionContainer';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import Transition from '../../../../components/Transition';
+import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import { opinionEditionQuery } from './OpinionEdition';
+import OpinionEditionContainer from './OpinionEditionContainer';
 
 const OpinionPopoverDeletionMutation = graphql`
   mutation OpinionPopoverDeletionMutation($id: ID!) {
@@ -129,15 +126,10 @@ const OpinionPopover: FunctionComponent<OpinionPopoverProps> = ({ opinion, varia
         {({ submitForm, handleReset }) => (
           <Dialog
             open={displayDelete}
-            slotProps={{ paper: { elevation: 1 } }}
-            slots={{ transition: Transition }}
             onClose={handleCloseDelete}
+            size="small"
+            title={t_i18n('Do you want to delete this opinion?')}
           >
-            <DialogContent>
-              <DialogContentText>
-                {t_i18n('Do you want to delete this opinion?')}
-              </DialogContentText>
-            </DialogContent>
             <DialogActions>
               <Button variant="secondary" onClick={handleReset} disabled={deleting}>
                 {t_i18n('Cancel')}

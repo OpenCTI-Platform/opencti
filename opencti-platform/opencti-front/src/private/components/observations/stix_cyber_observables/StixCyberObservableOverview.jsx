@@ -1,36 +1,34 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import * as R from 'ramda';
-import { compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
-import Grid from '@mui/material/Grid';
-import { InformationOutline } from 'mdi-material-ui';
-import Tooltip from '@mui/material/Tooltip';
 import Button from '@common/button/Button';
-import { DialogTitle } from '@mui/material';
-import DialogContent from '@mui/material/DialogContent';
+import IconButton from '@common/button/IconButton';
+import Card from '@common/card/Card';
+import Dialog from '@common/dialog/Dialog';
+import { BrushOutlined, Delete } from '@mui/icons-material';
+import DialogActions from '@mui/material/DialogActions';
+import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import IconButton from '@common/button/IconButton';
-import { BrushOutlined, Delete } from '@mui/icons-material';
-import DialogActions from '@mui/material/DialogActions';
-import Dialog from '@mui/material/Dialog';
-import { graphql } from 'react-relay';
 import Slide from '@mui/material/Slide';
-import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
-import ItemScore from '../../../../components/ItemScore';
-import StixCoreObjectLabelsView from '../../common/stix_core_objects/StixCoreObjectLabelsView';
-import ItemCreators from '../../../../components/ItemCreators';
+import Tooltip from '@mui/material/Tooltip';
+import withStyles from '@mui/styles/withStyles';
+import { InformationOutline } from 'mdi-material-ui';
+import * as PropTypes from 'prop-types';
+import * as R from 'ramda';
+import { compose } from 'ramda';
+import React, { Component } from 'react';
+import { graphql } from 'react-relay';
 import ItemAuthor from '../../../../components/ItemAuthor';
-import inject18n from '../../../../components/i18n';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import ItemCopy from '../../../../components/ItemCopy';
+import ItemCreators from '../../../../components/ItemCreators';
 import ItemMarkings from '../../../../components/ItemMarkings';
-import Card from '@common/card/Card';
+import ItemScore from '../../../../components/ItemScore';
 import Label from '../../../../components/common/label/Label';
 import Tag from '../../../../components/common/tag/Tag';
+import inject18n from '../../../../components/i18n';
+import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import StixCoreObjectLabelsView from '../../common/stix_core_objects/StixCoreObjectLabelsView';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -216,37 +214,32 @@ class StixCyberObservableOverview extends Component {
           </Grid>
         </Card>
         <Dialog
-          slotProps={{ paper: { elevation: 1 } }}
           open={this.state.openStixIds}
-          slots={{ transition: Transition }}
           onClose={this.handleToggleOpenStixIds.bind(this)}
-          fullWidth={true}
+          title={t('Other STIX IDs')}
         >
-          <DialogTitle>{t('Other STIX IDs')}</DialogTitle>
-          <DialogContent dividers={true}>
-            <List>
-              {stixIds.map(
-                (stixId) => stixId.length > 0 && (
-                  <ListItem
-                    key={stixId}
-                    disableGutters={true}
-                    dense={true}
-                    secondaryAction={(
-                      <IconButton
-                        edge="end"
-                        aria-label="delete"
-                        onClick={this.deleteStixId.bind(this, stixId)}
-                      >
-                        <Delete />
-                      </IconButton>
-                    )}
-                  >
-                    <ListItemText primary={stixId} />
-                  </ListItem>
-                ),
-              )}
-            </List>
-          </DialogContent>
+          <List>
+            {stixIds.map(
+              (stixId) => stixId.length > 0 && (
+                <ListItem
+                  key={stixId}
+                  disableGutters={true}
+                  dense={true}
+                  secondaryAction={(
+                    <IconButton
+                      edge="end"
+                      aria-label="delete"
+                      onClick={this.deleteStixId.bind(this, stixId)}
+                    >
+                      <Delete />
+                    </IconButton>
+                  )}
+                >
+                  <ListItemText primary={stixId} />
+                </ListItem>
+              ),
+            )}
+          </List>
           <DialogActions>
             <Button
               onClick={this.handleToggleOpenStixIds.bind(this)}

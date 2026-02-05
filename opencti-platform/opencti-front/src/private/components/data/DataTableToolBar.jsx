@@ -1,5 +1,6 @@
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
+import Dialog from '@common/dialog/Dialog';
 import {
   AddOutlined,
   AutoFixHighOutlined,
@@ -20,16 +21,13 @@ import {
   TransformOutlined,
   UnpublishedOutlined,
 } from '@mui/icons-material';
-import { FormControlLabel, Switch } from '@mui/material';
+import { DialogContentText, FormControlLabel, Switch } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import Autocomplete from '@mui/material/Autocomplete';
 import Avatar from '@mui/material/Avatar';
 import Checkbox from '@mui/material/Checkbox';
 import Chip from '@mui/material/Chip';
-import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
 import FormControl from '@mui/material/FormControl';
 import Grid from '@mui/material/Grid';
 import InputLabel from '@mui/material/InputLabel';
@@ -1524,7 +1522,7 @@ class DataTableToolBar extends Component {
             <IconButton
               onClick={() => this.setState({ containerCreation: true })}
               edge="end"
-              style={{ position: 'absolute', top: 22, right: 48 }}
+              style={{ position: 'absolute', top: 80, right: 50 }}
             >
               <AddOutlined />
             </IconButton>
@@ -2605,157 +2603,143 @@ class DataTableToolBar extends Component {
                 )}
               </Toolbar>
               <Dialog
-                slotProps={{ paper: { elevation: 1 } }}
                 open={this.state.displayTask}
                 keepMounted={true}
                 slots={{ transition: Transition }}
                 onClose={this.handleCloseTask.bind(this)}
-                fullWidth={true}
                 maxWidth="md"
                 data-testid="background-task-popup"
+                title={t('Launch a background task')}
+
               >
-                <DialogTitle>
-                  <div style={{ float: 'left' }}>
-                    {t('Launch a background task')}
-                  </div>
-                  <div style={{ float: 'right' }}>
-                    <span
-                      style={{
-                        padding: '2px 5px 2px 5px',
-                      }}
-                    >
-                      {n(numberOfSelectedElements)}
-                    </span>{' '}
-                    {t('selected element(s)')}
-                  </div>
-                </DialogTitle>
-                <DialogContent>
-                  {numberOfSelectedElements > 1000 && (
-                    <Alert severity="warning">
-                      {t(
-                        'You\'re targeting more than 1000 entities with this background task, be sure of what you\'re doing!',
-                      )}
-                    </Alert>
-                  )}
-                  <TableContainer>
-                    <Table>
-                      <TableHead>
-                        <TableRow>
-                          <TableCell>#</TableCell>
-                          <TableCell>{t('Step')}</TableCell>
-                          <TableCell>{t('Field')}</TableCell>
-                          <TableCell>{t('Values')}</TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        <TableRow>
-                          <TableCell>
-                            {' '}
-                            <span
-                              style={{
-                                padding: '2px 5px 2px 5px',
-                                marginRight: 5,
-                                color:
+                <DialogContentText>
+                  {`${n(numberOfSelectedElements)} ${t('selected element(s)')}`}
+                </DialogContentText>
+                {numberOfSelectedElements > 1000 && (
+                  <Alert severity="warning">
+                    {t(
+                      'You\'re targeting more than 1000 entities with this background task, be sure of what you\'re doing!',
+                    )}
+                  </Alert>
+                )}
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>#</TableCell>
+                        <TableCell>{t('Step')}</TableCell>
+                        <TableCell>{t('Field')}</TableCell>
+                        <TableCell>{t('Values')}</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell>
+                          {' '}
+                          <span
+                            style={{
+                              padding: '2px 5px 2px 5px',
+                              marginRight: 5,
+                              color:
                                   theme.palette.mode === 'dark'
                                     ? '#000000'
                                     : '#ffffff',
-                                backgroundColor: theme.palette.primary.main,
-                              }}
-                            >
-                              1
-                            </span>
-                          </TableCell>
-                          <TableCell>
-                            <Chip style={{ borderRadius: 4 }} label="SCOPE" />
-                          </TableCell>
-                          <TableCell>{t('N/A')}</TableCell>
-                          <TableCell>
-                            {selectAll ? (
-                              <div className={classes.filters}>
-                                {search && search.length > 0 && (
-                                  <span>
+                              backgroundColor: theme.palette.primary.main,
+                            }}
+                          >
+                            1
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <Chip style={{ borderRadius: 4 }} label="SCOPE" />
+                        </TableCell>
+                        <TableCell>{t('N/A')}</TableCell>
+                        <TableCell>
+                          {selectAll ? (
+                            <div className={classes.filters}>
+                              {search && search.length > 0 && (
+                                <span>
+                                  <Chip
+                                    classes={{ root: classes.filter }}
+                                    label={(
+                                      <div>
+                                        <strong>{t('Search')}</strong>: {search}
+                                      </div>
+                                    )}
+                                  />
+                                  {filters.filters.length > 0 && (
                                     <Chip
-                                      classes={{ root: classes.filter }}
-                                      label={(
-                                        <div>
-                                          <strong>{t('Search')}</strong>: {search}
-                                        </div>
-                                      )}
+                                      classes={{ root: classes.operator }}
+                                      label={t('AND')}
                                     />
-                                    {filters.filters.length > 0 && (
-                                      <Chip
-                                        classes={{ root: classes.operator }}
-                                        label={t('AND')}
-                                      />
-                                    )}
-                                  </span>
-                                )}
-                                <TasksFilterValueContainer filters={filters} entityTypes={entityTypes} />
-                              </div>
-                            ) : (
-                              <span>
-                                {mergingElement
-                                  ? truncate(
-                                      R.join(', ', [
-                                        getMainRepresentative(mergingElement),
-                                      ]),
-                                      80,
-                                    )
-                                  : truncate(
-                                      selectedElementsList.map((o) => getMainRepresentative(o)).join(', '),
-                                      80,
-                                    )}
-                              </span>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                        {R.map((o) => {
-                          const number = actions.indexOf(o);
-                          return (
-                            <TableRow key={o.type}>
-                              <TableCell>
-                                {' '}
-                                <span
-                                  style={{
-                                    padding: '2px 5px 2px 5px',
-                                    marginRight: 5,
-                                    color:
+                                  )}
+                                </span>
+                              )}
+                              <TasksFilterValueContainer filters={filters} entityTypes={entityTypes} />
+                            </div>
+                          ) : (
+                            <span>
+                              {mergingElement
+                                ? truncate(
+                                    R.join(', ', [
+                                      getMainRepresentative(mergingElement),
+                                    ]),
+                                    80,
+                                  )
+                                : truncate(
+                                    selectedElementsList.map((o) => getMainRepresentative(o)).join(', '),
+                                    80,
+                                  )}
+                            </span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                      {R.map((o) => {
+                        const number = actions.indexOf(o);
+                        return (
+                          <TableRow key={o.type}>
+                            <TableCell>
+                              {' '}
+                              <span
+                                style={{
+                                  padding: '2px 5px 2px 5px',
+                                  marginRight: 5,
+                                  color:
                                       theme.palette.mode === 'dark'
                                         ? '#000000'
                                         : '#ffffff',
-                                    backgroundColor: theme.palette.primary.main,
-                                  }}
-                                >
-                                  {number + 2}
-                                </span>
-                              </TableCell>
-                              <TableCell>
-                                <Chip label={o.type} />
-                              </TableCell>
-                              <TableCell>
-                                {R.pathOr(t('N/A'), ['context', 'field'], o)}
-                              </TableCell>
-                              <TableCell>
-                                {truncate(
-                                  R.join(
-                                    ', ',
-                                    R.map(
-                                      (p) => (typeof p === 'string'
-                                        ? p
-                                        : getMainRepresentative(p)),
-                                      R.pathOr([], ['context', 'values'], o),
-                                    ),
+                                  backgroundColor: theme.palette.primary.main,
+                                }}
+                              >
+                                {number + 2}
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              <Chip label={o.type} />
+                            </TableCell>
+                            <TableCell>
+                              {R.pathOr(t('N/A'), ['context', 'field'], o)}
+                            </TableCell>
+                            <TableCell>
+                              {truncate(
+                                R.join(
+                                  ', ',
+                                  R.map(
+                                    (p) => (typeof p === 'string'
+                                      ? p
+                                      : getMainRepresentative(p)),
+                                    R.pathOr([], ['context', 'values'], o),
                                   ),
-                                  80,
-                                )}
-                              </TableCell>
-                            </TableRow>
-                          );
-                        }, actions)}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-                </DialogContent>
+                                ),
+                                80,
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      }, actions)}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
                 <DialogActions>
                   <Button
                     variant="secondary"
@@ -3089,98 +3073,97 @@ class DataTableToolBar extends Component {
                 slots={{ transition: Transition }}
                 open={this.state.displayAddInContainer}
                 onClose={() => this.setState({ displayAddInContainer: false })}
+                title={t('Add in container')}
               >
-                <DialogTitle>{t('Add in container')}</DialogTitle>
-                <DialogContent>
-                  <StixDomainObjectCreation
-                    inputValue={actionsInputs[0]?.inputValue || ''}
-                    open={this.state.containerCreation}
-                    display={true}
-                    speeddial={true}
-                    stixDomainObjectTypes={['Container']}
-                    handleClose={() => this.setState({ containerCreation: false })
-                    }
-                    creationCallback={(data) => {
-                      const element = {
-                        label: data.name,
-                        value: data.id,
-                        type: data.entity_type,
-                      };
-                      this.setState(({ containers }) => ({
-                        containers: [...(containers ?? []), element],
-                      }));
-                      this.handleChangeActionInputValues(0, null, [
-                        ...(actionsInputs[0]?.values ?? []),
-                        element,
-                      ]);
-                    }}
-                  />
-                  <Autocomplete
-                    size="small"
-                    fullWidth={true}
-                    selectOnFocus={true}
-                    autoHighlight={true}
-                    getOptionLabel={(option) => (option.label ? option.label : '')}
-                    value={actionsInputs[0]?.values || []}
-                    multiple={true}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        variant="standard"
-                        label={t('Values')}
-                        fullWidth={true}
-                        onFocus={this.searchContainers.bind(this, 0)}
-                        style={{ marginTop: 3 }}
-                      />
-                    )}
-                    noOptionsText={t('No available options')}
-                    options={this.state.containers}
-                    onInputChange={this.searchContainers.bind(this, 0)}
-                    inputValue={actionsInputs[0]?.inputValue || ''}
-                    onChange={this.handleChangeActionInputValues.bind(this, 0)}
-                    renderOption={(props, option) => (
-                      <li {...props}>
-                        <div className={classes.icon}>
-                          <ItemIcon type={option.type} />
-                        </div>
-                        <div className={classes.text}>{option.label}</div>
-                      </li>
-                    )}
-                    disableClearable
-                  />
-                  <FormControlLabel
-                    style={{ marginTop: 20 }}
-                    control={(
-                      <Checkbox
-                        checked={
-                          actionsInputs[0]?.options?.includeNeighbours || false
-                        }
-                        onChange={this.handleChangeActionInputOptions.bind(
-                          this,
-                          0,
-                          'includeNeighbours',
-                        )}
-                      />
-                    )}
-                    label={t('Also include first neighbours')}
-                  />
-                  <IconButton
-                    onClick={() => this.setState({ containerCreation: true })}
-                    edge="end"
-                    style={{ position: 'absolute', top: 68, right: 48 }}
-                  >
-                    <AddOutlined />
-                  </IconButton>
-                </DialogContent>
+                <StixDomainObjectCreation
+                  inputValue={actionsInputs[0]?.inputValue || ''}
+                  open={this.state.containerCreation}
+                  display={true}
+                  speeddial={true}
+                  stixDomainObjectTypes={['Container']}
+                  handleClose={() => this.setState({ containerCreation: false })
+                  }
+                  creationCallback={(data) => {
+                    const element = {
+                      label: data.name,
+                      value: data.id,
+                      type: data.entity_type,
+                    };
+                    this.setState(({ containers }) => ({
+                      containers: [...(containers ?? []), element],
+                    }));
+                    this.handleChangeActionInputValues(0, null, [
+                      ...(actionsInputs[0]?.values ?? []),
+                      element,
+                    ]);
+                  }}
+                />
+                <Autocomplete
+                  size="small"
+                  fullWidth={true}
+                  selectOnFocus={true}
+                  autoHighlight={true}
+                  getOptionLabel={(option) => (option.label ? option.label : '')}
+                  value={actionsInputs[0]?.values || []}
+                  multiple={true}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      variant="standard"
+                      label={t('Values')}
+                      fullWidth={true}
+                      onFocus={this.searchContainers.bind(this, 0)}
+                      style={{ marginTop: 3 }}
+                    />
+                  )}
+                  noOptionsText={t('No available options')}
+                  options={this.state.containers}
+                  onInputChange={this.searchContainers.bind(this, 0)}
+                  inputValue={actionsInputs[0]?.inputValue || ''}
+                  onChange={this.handleChangeActionInputValues.bind(this, 0)}
+                  renderOption={(props, option) => (
+                    <li {...props}>
+                      <div className={classes.icon}>
+                        <ItemIcon type={option.type} />
+                      </div>
+                      <div className={classes.text}>{option.label}</div>
+                    </li>
+                  )}
+                  disableClearable
+                />
+                <FormControlLabel
+                  style={{ marginTop: 20 }}
+                  control={(
+                    <Checkbox
+                      checked={
+                        actionsInputs[0]?.options?.includeNeighbours || false
+                      }
+                      onChange={this.handleChangeActionInputOptions.bind(
+                        this,
+                        0,
+                        'includeNeighbours',
+                      )}
+                    />
+                  )}
+                  label={t('Also include first neighbours')}
+                />
+                <IconButton
+                  onClick={() => this.setState({ containerCreation: true })}
+                  edge="end"
+                  style={{ position: 'absolute', top: 68, right: 48 }}
+                >
+                  <AddOutlined />
+                </IconButton>
+
                 <DialogActions>
                   <Button
+                    varient="secondary"
                     onClick={() => this.setState({ displayAddInContainer: false })
                     }
                   >
                     {t('Cancel')}
                   </Button>
                   <Button
-                    color="secondary"
                     onClick={() => {
                       this.setState(
                         {
@@ -3209,75 +3192,75 @@ class DataTableToolBar extends Component {
                 slots={{ transition: Transition }}
                 open={this.state.displayShare}
                 onClose={() => this.setState({ displayShare: false })}
+                title={t('Share with organizations')}
               >
-                <DialogTitle>{t('Share with organizations')}</DialogTitle>
-                <DialogContent>
-                  <StixDomainObjectCreation
-                    inputValue={this.state.organizationInput}
-                    open={this.state.organizationCreation}
-                    display={true}
-                    speeddial={true}
-                    stixDomainObjectTypes={['Organization']}
-                    handleClose={() => this.setState({ organizationCreation: false })}
-                    creationCallback={(data) => {
-                      const element = {
-                        label: data.name,
-                        value: data.id,
-                        type: data.entity_type,
-                      };
-                      this.setState(({ organizations }) => ({
-                        organizations: [...(organizations ?? []), element],
-                      }));
-                      this.setState({ shareOrganizations: [...this.state.shareOrganizations, element] });
-                    }}
-                  />
-                  <Autocomplete
-                    size="small"
-                    fullWidth={true}
-                    selectOnFocus={true}
-                    autoHighlight={true}
-                    getOptionLabel={(option) => (option.label ? option.label : '')}
-                    value={this.state.shareOrganizations}
-                    multiple={true}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        variant="standard"
-                        label={t('Values')}
-                        fullWidth={true}
-                        onFocus={this.searchOrganizations.bind(this)}
-                        style={{ marginTop: 3 }}
-                      />
-                    )}
-                    noOptionsText={t('No available options')}
-                    options={this.state.organizations}
-                    onInputChange={this.searchOrganizations.bind(this)}
-                    inputValue={this.state.organizationInput}
-                    onChange={(_, value) => this.setState({ shareOrganizations: value })}
-                    renderOption={(props, option) => (
-                      <li {...props}>
-                        <div className={classes.icon}>
-                          <ItemIcon type={option.type} />
-                        </div>
-                        <div className={classes.text}>{option.label}</div>
-                      </li>
-                    )}
-                    disableClearable
-                  />
-                  <IconButton
-                    onClick={() => this.setState({ organizationCreation: true })}
-                    edge="end"
-                    style={{ position: 'absolute', top: 68, right: 48 }}
-                  >
-                    <AddOutlined />
-                  </IconButton>
-                </DialogContent>
+                <StixDomainObjectCreation
+                  inputValue={this.state.organizationInput}
+                  open={this.state.organizationCreation}
+                  display={true}
+                  speeddial={true}
+                  stixDomainObjectTypes={['Organization']}
+                  handleClose={() => this.setState({ organizationCreation: false })}
+                  creationCallback={(data) => {
+                    const element = {
+                      label: data.name,
+                      value: data.id,
+                      type: data.entity_type,
+                    };
+                    this.setState(({ organizations }) => ({
+                      organizations: [...(organizations ?? []), element],
+                    }));
+                    this.setState({ shareOrganizations: [...this.state.shareOrganizations, element] });
+                  }}
+                />
+                <Autocomplete
+                  size="small"
+                  fullWidth={true}
+                  selectOnFocus={true}
+                  autoHighlight={true}
+                  getOptionLabel={(option) => (option.label ? option.label : '')}
+                  value={this.state.shareOrganizations}
+                  multiple={true}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      variant="standard"
+                      label={t('Values')}
+                      fullWidth={true}
+                      onFocus={this.searchOrganizations.bind(this)}
+                      style={{ marginTop: 3 }}
+                    />
+                  )}
+                  noOptionsText={t('No available options')}
+                  options={this.state.organizations}
+                  onInputChange={this.searchOrganizations.bind(this)}
+                  inputValue={this.state.organizationInput}
+                  onChange={(_, value) => this.setState({ shareOrganizations: value })}
+                  renderOption={(props, option) => (
+                    <li {...props}>
+                      <div className={classes.icon}>
+                        <ItemIcon type={option.type} />
+                      </div>
+                      <div className={classes.text}>{option.label}</div>
+                    </li>
+                  )}
+                  disableClearable
+                />
+                <IconButton
+                  onClick={() => this.setState({ organizationCreation: true })}
+                  edge="end"
+                  style={{ position: 'absolute', top: 80, right: 50 }}
+                >
+                  <AddOutlined />
+                </IconButton>
                 <DialogActions>
-                  <Button onClick={this.handleCloseShare.bind(this)}>
+                  <Button
+                    variant="secondary"
+                    onClick={this.handleCloseShare.bind(this)}
+                  >
                     {t('Cancel')}
                   </Button>
                   <Button
-                    color="secondary"
                     onClick={() => {
                       const shareActions = [
                         { type: 'SHARE_MULTIPLE', context: { values: this.state.shareOrganizations } },
@@ -3301,45 +3284,46 @@ class DataTableToolBar extends Component {
                 slots={{ transition: Transition }}
                 open={this.state.displayUnshare}
                 onClose={() => this.setState({ displayUnshare: false })}
+                title={t('Unshare with organizations')}
               >
-                <DialogTitle>{t('Unshare with organizations')}</DialogTitle>
-                <DialogContent>
-                  <Autocomplete
-                    size="small"
-                    fullWidth={true}
-                    selectOnFocus={true}
-                    autoHighlight={true}
-                    getOptionLabel={(option) => (option.label ? option.label : '')}
-                    value={this.state.shareOrganizations}
-                    multiple={true}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        variant="standard"
-                        label={t('Values')}
-                        fullWidth={true}
-                        onFocus={this.searchOrganizations.bind(this)}
-                        style={{ marginTop: 3 }}
-                      />
-                    )}
-                    noOptionsText={t('No available options')}
-                    options={this.state.organizations}
-                    onInputChange={this.searchOrganizations.bind(this)}
-                    inputValue={this.state.organizationInput}
-                    onChange={(_, value) => this.setState({ shareOrganizations: value })}
-                    renderOption={(props, option) => (
-                      <li {...props}>
-                        <div className={classes.icon}>
-                          <ItemIcon type={option.type} />
-                        </div>
-                        <div className={classes.text}>{option.label}</div>
-                      </li>
-                    )}
-                    disableClearable
-                  />
-                </DialogContent>
+                <Autocomplete
+                  size="small"
+                  fullWidth={true}
+                  selectOnFocus={true}
+                  autoHighlight={true}
+                  getOptionLabel={(option) => (option.label ? option.label : '')}
+                  value={this.state.shareOrganizations}
+                  multiple={true}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      variant="standard"
+                      label={t('Values')}
+                      fullWidth={true}
+                      onFocus={this.searchOrganizations.bind(this)}
+                      style={{ marginTop: 3 }}
+                    />
+                  )}
+                  noOptionsText={t('No available options')}
+                  options={this.state.organizations}
+                  onInputChange={this.searchOrganizations.bind(this)}
+                  inputValue={this.state.organizationInput}
+                  onChange={(_, value) => this.setState({ shareOrganizations: value })}
+                  renderOption={(props, option) => (
+                    <li {...props}>
+                      <div className={classes.icon}>
+                        <ItemIcon type={option.type} />
+                      </div>
+                      <div className={classes.text}>{option.label}</div>
+                    </li>
+                  )}
+                  disableClearable
+                />
                 <DialogActions>
-                  <Button onClick={this.handleCloseUnshare.bind(this)}>
+                  <Button
+                    variant="secondary"
+                    onClick={this.handleCloseUnshare.bind(this)}
+                  >
                     {t('Cancel')}
                   </Button>
                   <Button

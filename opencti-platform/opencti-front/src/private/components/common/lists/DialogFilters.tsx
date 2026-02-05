@@ -1,14 +1,12 @@
-import React, { FunctionComponent, ReactElement } from 'react';
-import Tooltip from '@mui/material/Tooltip';
+import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import { BiotechOutlined } from '@mui/icons-material';
 import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@common/button/Button';
-import { useFormatter } from '../../../../components/i18n';
+import Tooltip from '@mui/material/Tooltip';
+import React, { FunctionComponent, ReactElement } from 'react';
 import FilterIconButton from '../../../../components/FilterIconButton';
+import { useFormatter } from '../../../../components/i18n';
 import { Filter, FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { FilterSearchContext } from '../../../../utils/filters/filtersUtils';
 
@@ -55,25 +53,20 @@ const DialogFilters: FunctionComponent<DialogFiltersProps> = ({
         </IconButton>
       </Tooltip>
       <Dialog
-        slotProps={{ paper: { elevation: 1 } }}
         open={open}
         onClose={handleCloseFilters}
-        fullWidth={true}
-        maxWidth="md"
+        title={t_i18n('Advanced search')}
       >
-        <DialogTitle>{t_i18n('Advanced search')}</DialogTitle>
-        <DialogContent style={{ paddingTop: 10, paddingBottom: 10 }}>
-          <FilterIconButton
-            filters={filters}
-            handleRemoveFilter={defaultHandleRemoveFilter}
-            handleSwitchGlobalMode={handleSwitchGlobalMode}
-            handleSwitchLocalMode={handleSwitchLocalMode}
-            searchContext={searchContext}
-            availableEntityTypes={availableEntityTypes}
-            availableRelationshipTypes={availableRelationshipTypes}
-          />
-          {filterElement}
-        </DialogContent>
+        <FilterIconButton
+          filters={filters}
+          handleRemoveFilter={defaultHandleRemoveFilter}
+          handleSwitchGlobalMode={handleSwitchGlobalMode}
+          handleSwitchLocalMode={handleSwitchLocalMode}
+          searchContext={searchContext}
+          availableEntityTypes={availableEntityTypes}
+          availableRelationshipTypes={availableRelationshipTypes}
+        />
+        {filterElement}
         <DialogActions>
           <Button variant="secondary" onClick={handleCloseFilters}>{t_i18n('Cancel')}</Button>
           <Button onClick={handleSearch}>

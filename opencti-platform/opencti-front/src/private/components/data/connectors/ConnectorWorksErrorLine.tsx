@@ -1,20 +1,17 @@
-import TableRow from '@mui/material/TableRow';
-import TableCell from '@mui/material/TableCell';
 import Button from '@common/button/Button';
-import React, { FunctionComponent, useState } from 'react';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
-import Dialog from '@mui/material/Dialog';
 import IconButton from '@common/button/IconButton';
-import { InfoOutlined } from '@mui/icons-material';
-import Tooltip from '@mui/material/Tooltip';
+import Dialog from '@common/dialog/Dialog';
 import { ParsedWorkMessage, ResolvedEntity } from '@components/data/connectors/parseWorkErrors';
-import Typography from '@mui/material/Typography';
+import { InfoOutlined } from '@mui/icons-material';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContentText from '@mui/material/DialogContentText';
 import Paper from '@mui/material/Paper';
+import TableCell from '@mui/material/TableCell';
+import TableRow from '@mui/material/TableRow';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
+import { FunctionComponent, useState } from 'react';
 import ItemCopy from '../../../../components/ItemCopy';
-import Transition from '../../../../components/Transition';
 import { useFormatter } from '../../../../components/i18n';
 import { EMPTY_VALUE, truncate } from '../../../../utils/String';
 
@@ -88,64 +85,60 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
       </TableRow>
 
       <Dialog
-        slotProps={{ paper: { elevation: 1 } }}
         open={openModalErrorDetails}
-        slots={{ transition: Transition }}
         onClose={handleToggleModalError}
+        title={t_i18n('Details')}
       >
-        <DialogTitle>{t_i18n('Details')}</DialogTitle>
-        <DialogContent sx={{ minWidth: '500px' }}>
-          <DialogContentText>
-            {error.isParsed && (
-              <>
-                <Typography variant="h4" gutterBottom={true}>{t_i18n('Source')}</Typography>
-                <Paper
-                  style={{ padding: '15px', borderRadius: 4, marginBottom: '15px' }}
-                  variant="outlined"
-                >
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 15 }}>
-                    <div>
-                      <Typography variant="h3" gutterBottom={true}>{t_i18n('Entity')}</Typography>
-                      {displayEntityOrId(error.parsedError.entity, true)}
-                    </div>
-                    {error.parsedError.entity.from && (
-                      <div>
-                        <Typography variant="h3" gutterBottom={true}>{t_i18n('From')}</Typography>
-                        {displayEntityOrId(error.parsedError.entity.from, true)}
-                      </div>
-                    )}
-                    {error.parsedError.entity.to && (
-                      <div>
-                        <Typography variant="h3" gutterBottom={true}>{t_i18n('To')}</Typography>
-                        {displayEntityOrId(error.parsedError.entity.to, true)}
-                      </div>
-                    )}
+        <DialogContentText>
+          {error.isParsed && (
+            <>
+              <Typography variant="h4" gutterBottom={true}>{t_i18n('Source')}</Typography>
+              <Paper
+                style={{ padding: '15px', borderRadius: 4, marginBottom: '15px' }}
+                variant="outlined"
+              >
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 15 }}>
+                  <div>
+                    <Typography variant="h3" gutterBottom={true}>{t_i18n('Entity')}</Typography>
+                    {displayEntityOrId(error.parsedError.entity, true)}
                   </div>
-                </Paper>
-              </>
-            )}
-            <Typography variant="h4" gutterBottom={true}>{t_i18n('Error')}</Typography>
-            <Paper
-              style={{ padding: '15px', borderRadius: 4 }}
-              variant="outlined"
-            >
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 15 }}>
-                <div>
-                  <Typography variant="h3" gutterBottom={true}>{t_i18n('Timestamp')}</Typography>
-                  <pre><ItemCopy content={error.rawError.timestamp ?? EMPTY_VALUE} /></pre>
+                  {error.parsedError.entity.from && (
+                    <div>
+                      <Typography variant="h3" gutterBottom={true}>{t_i18n('From')}</Typography>
+                      {displayEntityOrId(error.parsedError.entity.from, true)}
+                    </div>
+                  )}
+                  {error.parsedError.entity.to && (
+                    <div>
+                      <Typography variant="h3" gutterBottom={true}>{t_i18n('To')}</Typography>
+                      {displayEntityOrId(error.parsedError.entity.to, true)}
+                    </div>
+                  )}
                 </div>
-                <div>
-                  <Typography variant="h3" gutterBottom={true}>{t_i18n('Message')}</Typography>
-                  <pre><ItemCopy content={error.rawError.message ?? EMPTY_VALUE} variant="wrap" /></pre>
-                </div>
-                <div>
-                  <Typography variant="h3" gutterBottom={true}>{t_i18n('Source')}</Typography>
-                  <pre><ItemCopy content={error.rawError.source ?? EMPTY_VALUE} variant="wrap" /></pre>
-                </div>
+              </Paper>
+            </>
+          )}
+          <Typography variant="h4" gutterBottom={true}>{t_i18n('Error')}</Typography>
+          <Paper
+            style={{ padding: '15px', borderRadius: 4 }}
+            variant="outlined"
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 15 }}>
+              <div>
+                <Typography variant="h3" gutterBottom={true}>{t_i18n('Timestamp')}</Typography>
+                <pre><ItemCopy content={error.rawError.timestamp ?? EMPTY_VALUE} /></pre>
               </div>
-            </Paper>
-          </DialogContentText>
-        </DialogContent>
+              <div>
+                <Typography variant="h3" gutterBottom={true}>{t_i18n('Message')}</Typography>
+                <pre><ItemCopy content={error.rawError.message ?? EMPTY_VALUE} variant="wrap" /></pre>
+              </div>
+              <div>
+                <Typography variant="h3" gutterBottom={true}>{t_i18n('Source')}</Typography>
+                <pre><ItemCopy content={error.rawError.source ?? EMPTY_VALUE} variant="wrap" /></pre>
+              </div>
+            </div>
+          </Paper>
+        </DialogContentText>
         <DialogActions>
           <Button onClick={handleToggleModalError}>
             {t_i18n('Close')}

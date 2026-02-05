@@ -1,41 +1,26 @@
-import React, { FunctionComponent, useState } from 'react';
-import { Field, Form, Formik } from 'formik';
-import * as Yup from 'yup';
-import { graphql } from 'react-relay';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@common/button/Button';
-import MenuItem from '@mui/material/MenuItem';
+import Dialog from '@common/dialog/Dialog';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
-import makeStyles from '@mui/styles/makeStyles';
-import { RecordSourceSelectorProxy } from 'relay-runtime';
 import {
   LocationCreationMutation,
   LocationCreationMutation$data,
   LocationCreationMutation$variables,
 } from '@components/common/location/__generated__/LocationCreationMutation.graphql';
+import MenuItem from '@mui/material/MenuItem';
+import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
+import { FunctionComponent, useState } from 'react';
+import { graphql } from 'react-relay';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
+import * as Yup from 'yup';
+import TextField from '../../../../components/TextField';
+import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
+import MarkdownField from '../../../../components/fields/MarkdownField';
+import SelectField from '../../../../components/fields/SelectField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
-import TextField from '../../../../components/TextField';
-import SelectField from '../../../../components/fields/SelectField';
-import MarkdownField from '../../../../components/fields/MarkdownField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import type { Theme } from '../../../../components/Theme';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-}));
 
 const locationMutation = graphql`
   mutation LocationCreationMutation($input: LocationAddInput!) {
@@ -89,7 +74,6 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
   creationCallback,
   updater,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   const [commit] = useApiMutation<LocationCreationMutation>(locationMutation);
@@ -176,23 +160,21 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
               <MenuItem key={idx} value={location}>{t_i18n(location)}</MenuItem>
             ))}
           </Field>
-          <div className={classes.buttons}>
+          <FormButtonContainer>
             <Button
               variant="secondary"
               onClick={handleReset}
               disabled={isSubmitting}
-              classes={{ root: classes.button }}
             >
               {t_i18n('Cancel')}
             </Button>
             <Button
               onClick={submitForm}
               disabled={isSubmitting}
-              classes={{ root: classes.button }}
             >
               {t_i18n('Create')}
             </Button>
-          </div>
+          </FormButtonContainer>
         </Form>
       )}
     </Formik>
@@ -239,16 +221,17 @@ const LocationCreation: FunctionComponent<LocationCreationFormProps> = ({
         >
           {t_i18n('Create Location')}
         </Button>
-        <Dialog open={open} onClose={handleClose} slotProps={{ paper: { elevation: 1 } }}>
-          <DialogTitle>{t_i18n('Add a location')}</DialogTitle>
-          <DialogContent>
-            <LocationCreationForm
-              inputValue={inputValue}
-              updater={updater}
-              onCompleted={handleClose}
-              onReset={handleClose}
-            />
-          </DialogContent>
+        <Dialog
+          open={open}
+          onClose={handleClose}
+          title={t_i18n('Add a location')}
+        >
+          <LocationCreationForm
+            inputValue={inputValue}
+            updater={updater}
+            onCompleted={handleClose}
+            onReset={handleClose}
+          />
         </Dialog>
       </div>
     );

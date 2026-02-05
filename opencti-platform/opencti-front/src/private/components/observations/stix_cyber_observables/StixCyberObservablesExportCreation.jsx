@@ -1,29 +1,28 @@
-import React, { Component } from 'react';
+import Button from '@common/button/Button';
+import Dialog from '@common/dialog/Dialog';
+import { Add, InfoOutlined } from '@mui/icons-material';
+import { Stack } from '@mui/material';
+import DialogActions from '@mui/material/DialogActions';
+import Fab from '@mui/material/Fab';
+import MenuItem from '@mui/material/MenuItem';
+import Slide from '@mui/material/Slide';
+import Tooltip from '@mui/material/Tooltip';
+import withStyles from '@mui/styles/withStyles';
+import { Field, Form, Formik } from 'formik';
 import * as PropTypes from 'prop-types';
 import { compose, filter, flatten, fromPairs, includes, map, propOr, uniq, zip } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@common/button/Button';
-import Slide from '@mui/material/Slide';
-import { Add, InfoOutlined } from '@mui/icons-material';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { Form, Formik, Field } from 'formik';
-import MenuItem from '@mui/material/MenuItem';
+import React, { Component } from 'react';
+import { createFragmentContainer, graphql } from 'react-relay';
 import * as Yup from 'yup';
-import Tooltip from '@mui/material/Tooltip';
-import Fab from '@mui/material/Fab';
-import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE } from '../../common/files/FileManager';
-import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import inject18n from '../../../../components/i18n';
-import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
-import { markingDefinitionsLinesSearchQuery } from '../../settings/MarkingDefinitionsQuery';
 import SelectField from '../../../../components/fields/SelectField';
+import inject18n from '../../../../components/i18n';
 import Loader from '../../../../components/Loader';
+import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import { ExportContext } from '../../../../utils/ExportContextProvider';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE } from '../../common/files/FileManager';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
+import { markingDefinitionsLinesSearchQuery } from '../../settings/MarkingDefinitionsQuery';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -176,27 +175,27 @@ class StixCyberObservablesExportCreationComponent extends Component {
                   <Form>
                     <Dialog
                       open={this.state.open}
-                      slotProps={{ paper: { elevation: 1 } }}
                       onClose={() => {
                         resetForm();
                         this.handleClose();
                       }}
-                      fullWidth={true}
                       data-testid="StixCyberObservablesExportCreationDialog"
+                      title={(
+                        <Stack direction="row" alignContent="center" gap={1}>
+                          {t('Generate an export')}
+                          <Tooltip title={t('Your max shareable markings will be applied to the content max markings')}>
+                            <InfoOutlined color="primary" />
+                          </Tooltip>
+                        </Stack>
+                      )}
                     >
-                      <DialogTitle>
-                        {t('Generate an export')}
-                        <Tooltip title={t('Your max shareable markings will be applied to the content max markings')}>
-                          <InfoOutlined sx={{ paddingLeft: 1 }} fontSize="small" />
-                        </Tooltip>
-                      </DialogTitle>
                       <QueryRenderer
                         query={markingDefinitionsLinesSearchQuery}
                         variables={{ first: 200 }}
                         render={({ props }) => {
                           if (props && props.markingDefinitions) {
                             return (
-                              <DialogContent>
+                              <>
                                 <Field
                                   component={SelectField}
                                   variant="standard"
@@ -246,7 +245,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
                                   filterTargetIds={this.state.selectedContentMaxMarkingsIds}
                                   style={fieldSpacingContainerStyle}
                                 />
-                              </DialogContent>
+                              </>
                             );
                           }
                           return <Loader variant="inElement" />;

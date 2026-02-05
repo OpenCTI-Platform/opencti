@@ -9,7 +9,7 @@ export default class CommitMessagePage {
   }
 
   getAddNewReferenceButton() {
-    return this.page.locator('.MuiDialogContent-root > div > .MuiButtonBase-root');
+    return this.page.getByRole('button', { name: 'Add', exact: true });
   }
 
   getNewReferenceSourceNameInput() {

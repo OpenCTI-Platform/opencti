@@ -1,24 +1,21 @@
-import React, { FunctionComponent, useState } from 'react';
-import CreatorField from '@components/common/form/CreatorField';
 import Button from '@common/button/Button';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import Dialog from '@mui/material/Dialog';
+import Dialog from '@common/dialog/Dialog';
 import ConfidenceField from '@components/common/form/ConfidenceField';
-import { Box } from '@mui/material';
-import { graphql } from 'react-relay';
-import { FormikConfig } from 'formik/dist/types';
-import { Formik } from 'formik';
-import * as Yup from 'yup';
-import Alert from '@mui/material/Alert';
-import { fetchQuery } from '../../../relay/environment';
-import { useFormatter } from '../../../components/i18n';
-import { fieldSpacingContainerStyle } from '../../../utils/field';
-import Transition from '../../../components/Transition';
-import useApiMutation from '../../../utils/hooks/useApiMutation';
+import CreatorField from '@components/common/form/CreatorField';
 import { IngestionEditionUserHandlingQuery$data } from '@components/data/__generated__/IngestionEditionUserHandlingQuery.graphql';
+import { Box } from '@mui/material';
+import Alert from '@mui/material/Alert';
+import DialogActions from '@mui/material/DialogActions';
+import { Formik } from 'formik';
+import { FormikConfig } from 'formik/dist/types';
+import { FunctionComponent, useState } from 'react';
+import { graphql } from 'react-relay';
 import { GraphQLTaggedNode } from 'relay-runtime/lib/query/RelayModernGraphQLTag';
+import * as Yup from 'yup';
+import { useFormatter } from '../../../components/i18n';
+import { fetchQuery } from '../../../relay/environment';
+import { fieldSpacingContainerStyle } from '../../../utils/field';
+import useApiMutation from '../../../utils/hooks/useApiMutation';
 
 export const ingestionEditionUserHandlingQuery = graphql`
   query IngestionEditionUserHandlingQuery(
@@ -109,58 +106,47 @@ const IngestionEditionUserHandling: FunctionComponent<IngestionEditionUserHandli
       >
         {({ submitForm, resetForm }) => (
 
-          <Box sx={{ paddingRight: '50px' }}>
-            <Dialog
-              sx={{ paddingRight: '150px' }}
-              open={openDialog}
-              fullWidth={true}
-              keepMounted={true}
-              slots={{ transition: Transition }}
-              onClose={() => {
-                setOpenDialog(false);
-              }}
-            >
-              <DialogTitle>
-                {t_i18n('Create an automatic user')}
-              </DialogTitle>
-              <DialogContent>
-                <Box sx={{ margin: '0 70px 0' }}>
-                  <CreatorField
-                    name="user_name"
-                    label={t_i18n('Service account responsible for data creation')}
-                    containerStyle={fieldSpacingContainerStyle}
-                    showConfidence
-                    disabled={true}
-                  />
-                </Box>
-                <Box sx={{ margin: '20px 70px 0' }}>
-                  <ConfidenceField
-                    name="confidence_level"
-                    entityType="User"
-                    containerStyle={fieldSpacingContainerStyle}
-                    showAlert={false}
-                  />
-                </Box>
-              </DialogContent>
-              <DialogActions>
-                <Button
-                  variant="secondary"
-                  onClick={() => {
-                    setOpenDialog(false);
-                    resetForm();
-                  }}
-                >
-                  {t_i18n('Cancel')}
-                </Button>
-                <Button onClick={() => {
-                  submitForm();
+          <Dialog
+            open={openDialog}
+            fullWidth={true}
+            onClose={() => {
+              setOpenDialog(false);
+            }}
+            title={t_i18n('Create an automatic user')}
+          >
+            <CreatorField
+              name="user_name"
+              label={t_i18n('Service account responsible for data creation')}
+              containerStyle={fieldSpacingContainerStyle}
+              showConfidence
+              disabled={true}
+            />
+            <Box sx={{ marginTop: 2 }}>
+              <ConfidenceField
+                name="confidence_level"
+                entityType="User"
+                containerStyle={fieldSpacingContainerStyle}
+                showAlert={false}
+              />
+            </Box>
+            <DialogActions>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setOpenDialog(false);
+                  resetForm();
                 }}
-                >
-                  {t_i18n('Confirm')}
-                </Button>
-              </DialogActions>
-            </Dialog>
-          </Box>
+              >
+                {t_i18n('Cancel')}
+              </Button>
+              <Button onClick={() => {
+                submitForm();
+              }}
+              >
+                {t_i18n('Confirm')}
+              </Button>
+            </DialogActions>
+          </Dialog>
 
         )}
       </Formik>

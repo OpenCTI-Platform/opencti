@@ -164,7 +164,7 @@ const AutocompleteField = <
           onClick={() => openCreate()}
           sx={{
             position: 'absolute',
-            bottom: 4,
+            bottom: showError ? 25 : 4,
             right: 25,
           }}
           title={t_i18n('Add')}

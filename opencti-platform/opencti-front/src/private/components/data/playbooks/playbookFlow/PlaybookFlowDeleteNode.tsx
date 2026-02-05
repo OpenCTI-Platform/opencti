@@ -13,14 +13,10 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
-import Dialog from '@mui/material/Dialog';
-import React from 'react';
-import Transition from '../../../../../components/Transition';
+import Dialog from '@common/dialog/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContentText from '@mui/material/DialogContentText';
 import { useFormatter } from '../../../../../components/i18n';
 
 interface PlaybookFlowDeleteNodeProps {
@@ -42,23 +38,16 @@ const PlaybookFlowDeleteNode = ({
 
   return (
     <Dialog
-      slotProps={{ paper: { elevation: 1 } }}
       open={selectedNode !== null && action === 'delete'}
-      keepMounted={true}
-      slots={{ transition: Transition }}
       onClose={() => {
         setSelectedNode(null);
         setAction(null);
       }}
+      title={t_i18n('Are you sure?')}
     >
-      <DialogTitle>
-        {t_i18n('Are you sure?')}
-      </DialogTitle>
-      <DialogContent>
-        <DialogContentText>
-          {t_i18n('Do you want to delete this node?')}
-        </DialogContentText>
-      </DialogContent>
+      <DialogContentText>
+        {t_i18n('Do you want to delete this node?')}
+      </DialogContentText>
       <DialogActions>
         <Button
           variant="secondary"

@@ -1,23 +1,21 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
-import { graphql } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import Slide from '@mui/material/Slide';
+import Dialog from '@common/dialog/Dialog';
 import MoreVert from '@mui/icons-material/MoreVert';
-import DialogTitle from '@mui/material/DialogTitle';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContentText from '@mui/material/DialogContentText';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import Slide from '@mui/material/Slide';
+import withStyles from '@mui/styles/withStyles';
+import * as PropTypes from 'prop-types';
+import { compose } from 'ramda';
+import React, { Component } from 'react';
+import { graphql } from 'react-relay';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
-import RetentionEdition from './RetentionEdition';
 import { deleteNode } from '../../../../utils/store';
+import RetentionEdition from './RetentionEdition';
 
 const styles = () => ({
   container: {
@@ -151,19 +149,12 @@ class RetentionPopover extends Component {
         />
         <Dialog
           open={this.state.displayDelete}
-          slotProps={{ paper: { elevation: 1 } }}
-          keepMounted={true}
-          slots={{ transition: Transition }}
           onClose={this.handleCloseDelete.bind(this)}
+          title={t('Are you sure?')}
         >
-          <DialogTitle>
-            {t('Are you sure?')}
-          </DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              {t('Do you want to delete this retention policy?')}
-            </DialogContentText>
-          </DialogContent>
+          <DialogContentText>
+            {t('Do you want to delete this retention policy?')}
+          </DialogContentText>
           <DialogActions>
             <Button
               variant="secondary"

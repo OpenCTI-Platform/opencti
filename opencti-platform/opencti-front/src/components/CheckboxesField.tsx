@@ -43,17 +43,17 @@ const CheckboxesField = ({
     <FormControl component="fieldset" name={name}>
       <FormLabel component="legend">{label}</FormLabel>
 
-      <ButtonGroup size="small" sx={{ marginTop: '4px' }}>
+      <ButtonGroup size="small" sx={{ marginY: 1 }}>
         <Button
           disabled={items.length === 0}
-          variant={(items.length > 0 && value.length === items.length) ? 'primary' : 'tertiary'}
+          variant={(items.length > 0 && value.length === items.length) ? 'primary' : 'secondary'}
           onClick={checkAll}
         >
           {t_i18n('All')}
         </Button>
         <Button
           disabled={items.length === 0}
-          variant={(items.length > 0 && value.length === 0) ? 'primary' : 'tertiary'}
+          variant={(items.length > 0 && value.length === 0) ? 'primary' : 'secondary'}
           onClick={checkNone}
         >
           {t_i18n('None')}

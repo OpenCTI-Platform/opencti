@@ -1,5 +1,6 @@
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
+import Dialog from '@common/dialog/Dialog';
 import { getConnectorMetadata, IngestionConnectorType } from '@components/data/IngestionCatalog/utils/ingestionConnectorTypeMetadata';
 import ConnectorStatusChip from '@components/data/connectors/ConnectorStatusChip';
 import ConnectorsList, { connectorsListQuery } from '@components/data/connectors/ConnectorsList';
@@ -11,11 +12,8 @@ import { ConnectorsStateQuery } from '@components/data/connectors/__generated__/
 import useConnectorsStatusFilters from '@components/data/connectors/hooks/useConnectorsStatusFilters';
 import { DeleteOutlined, DeveloperBoardOutlined, ExtensionOutlined, HubOutlined, PlaylistRemoveOutlined } from '@mui/icons-material';
 import { ListItemButton } from '@mui/material';
-import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -29,20 +27,19 @@ import { interval } from 'rxjs';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import type { Theme } from '../../../../components/Theme';
-import Transition from '../../../../components/Transition';
 import Card from '../../../../components/common/card/Card';
 import BooleanStatusIcon from '../../../../components/common/icons/BooleanStatusIcon';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import { type Connector, getConnectorTriggerStatus } from '../../../../utils/Connector';
 import Security from '../../../../utils/Security';
+import { EMPTY_VALUE } from '../../../../utils/String';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { MODULES_MODMANAGE } from '../../../../utils/hooks/useGranted';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
 import { connectorDeletionMutation, connectorResetStateMutation } from './Connector';
 import SortConnectorsHeader from './SortConnectorsHeader';
 import canDeleteConnector from './utils/canDeleteConnector';
-import { EMPTY_VALUE } from '../../../../utils/String';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -247,23 +244,16 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
   return (
     <>
       <Dialog
-        slotProps={{ paper: { elevation: 1 } }}
         open={!!connectorIdToReset}
-        keepMounted={true}
-        slots={{ transition: Transition }}
         onClose={() => setConnectorIdToReset(undefined)}
+        title={t_i18n('Are you sure?')}
       >
-        <DialogTitle>
-          {t_i18n('Are you sure?')}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to reset the state and purge messages queue of this connector?')}
-          </DialogContentText>
-          <DialogContentText>
-            {t_i18n('Number of messages: ') + connectorMessages}
-          </DialogContentText>
-        </DialogContent>
+        <DialogContentText>
+          {t_i18n('Do you want to reset the state and purge messages queue of this connector?')}
+        </DialogContentText>
+        <DialogContentText>
+          {t_i18n('Number of messages: ') + connectorMessages}
+        </DialogContentText>
         <DialogActions>
           <Button
             variant="secondary"

@@ -1,27 +1,24 @@
-import React, { Dispatch, FunctionComponent, SyntheticEvent, useState } from 'react';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import StixDomainObjectCreation from '@components/common/stix_domain_objects/StixDomainObjectCreation';
-import Autocomplete from '@mui/material/Autocomplete';
-import TextField from '@mui/material/TextField';
-import IconButton from '@common/button/IconButton';
-import { AddOutlined } from '@mui/icons-material';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
-import Dialog from '@mui/material/Dialog';
+import IconButton from '@common/button/IconButton';
+import Dialog from '@common/dialog/Dialog';
+import type { FilterOption } from '@components/common/lists/FilterAutocomplete';
+import StixDomainObjectCreation from '@components/common/stix_domain_objects/StixDomainObjectCreation';
+import { WorkspaceTurnToContainerDialogMutation } from '@components/workspaces/__generated__/WorkspaceTurnToContainerDialogMutation.graphql';
+import { AddOutlined } from '@mui/icons-material';
+import Autocomplete from '@mui/material/Autocomplete';
+import DialogActions from '@mui/material/DialogActions';
+import TextField from '@mui/material/TextField';
+import { useTheme } from '@mui/styles';
+import React, { Dispatch, FunctionComponent, SyntheticEvent, useState } from 'react';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
-import { WorkspaceTurnToContainerDialogMutation } from '@components/workspaces/__generated__/WorkspaceTurnToContainerDialogMutation.graphql';
-import type { FilterOption } from '@components/common/lists/FilterAutocomplete';
-import { useTheme } from '@mui/styles';
-import Transition from '../../../components/Transition';
 import { useFormatter } from '../../../components/i18n';
 import ItemIcon from '../../../components/ItemIcon';
-import { resolveLink } from '../../../utils/Entity';
+import type { Theme } from '../../../components/Theme';
 import { handleError } from '../../../relay/environment';
+import { resolveLink } from '../../../utils/Entity';
 import useSearchEntities, { EntityValue } from '../../../utils/filters/useSearchEntities';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
-import type { Theme } from '../../../components/Theme';
 
 interface WorkspaceTurnToContainerDialogProps {
   workspace: { id: string | null };
@@ -144,100 +141,93 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
 
   return (
     <Dialog
-      slotProps={{ paper: { elevation: 1 } }}
-      fullWidth={true}
-      maxWidth="sm"
-      slots={{ transition: Transition }}
       open={open}
       onClose={() => handleClose()}
+      title={t_i18n('Add to container')}
     >
-      <DialogTitle>{t_i18n('Add to container')}</DialogTitle>
-      <DialogContent>
-        <StixDomainObjectCreation
-          isFromBulkRelation={undefined}
-          inputValue={actionsInputs?.inputValue || ''}
-          open={containerCreation}
-          display={true}
-          speeddial={true}
-          stixDomainObjectTypes={[
-            'Report',
-            'Grouping',
-            'Case-Incident',
-            'Case-Rfi',
-            'Case-Rft',
-          ]}
-          handleClose={() => setContainerCreation(false)}
-          creationCallback={({ name, id, entity_type }: StixContainer) => {
-            if (name && id && entity_type) {
-              const element = {
-                label: name,
-                value: id,
-                type: entity_type,
-              };
-              containersFromElements.push(element);
-              handleChangeActionInputValues(null, [element]);
-            }
-          }}
-          confidence={undefined}
-          defaultCreatedBy={undefined}
-          defaultMarkingDefinitions={undefined}
-          onCompleted={undefined}
-          paginationKey={undefined}
-          paginationOptions={undefined}
-          // controlledDial={undefined}
-        />
-        <Autocomplete
-          size="small"
-          fullWidth={true}
-          selectOnFocus={true}
-          autoHighlight={true}
-          getOptionLabel={(option) => option?.label ?? ''}
-          value={actionsInputs?.value ? [actionsInputs.value] : []}
-          multiple={true}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              variant="standard"
-              label={t_i18n('Container')}
-              fullWidth={true}
-              onFocus={(event: React.SyntheticEvent<Element, Event>) => searchContainers(event)}
-              style={{ marginTop: 3 }}
-            />
-          )}
-          noOptionsText={t_i18n('No available options')}
-          options={containersFromElements}
-          onInputChange={(event, userInput) => searchContainers(event, userInput)}
-          inputValue={actionsInputs?.inputValue || ''}
-          onChange={(event, value) => handleChangeActionInputValues(event, value as EntityValue[])}
-          renderOption={(props, option) => (
-            <li {...props}>
-              <div style={{
-                display: 'inline-block',
-                paddingTop: 4,
-                marginRight: theme.spacing(1),
-              }}
-              >
-                <ItemIcon type={option.type} />
-              </div>
-              <div style={{
-                display: 'inline-block',
-                flexGrow: 1,
-              }}
-              >
-                {option.label}
-              </div>
-            </li>
-          )}
-          disableClearable
-        />
-        <IconButton
-          onClick={() => setContainerCreation(true)}
-          // edge="end"
-          style={{ position: 'absolute', top: 68, right: 48 }}
-        >
-          <AddOutlined />
-        </IconButton>
-      </DialogContent>
+      <StixDomainObjectCreation
+        isFromBulkRelation={undefined}
+        inputValue={actionsInputs?.inputValue || ''}
+        open={containerCreation}
+        display={true}
+        speeddial={true}
+        stixDomainObjectTypes={[
+          'Report',
+          'Grouping',
+          'Case-Incident',
+          'Case-Rfi',
+          'Case-Rft',
+        ]}
+        handleClose={() => setContainerCreation(false)}
+        creationCallback={({ name, id, entity_type }: StixContainer) => {
+          if (name && id && entity_type) {
+            const element = {
+              label: name,
+              value: id,
+              type: entity_type,
+            };
+            containersFromElements.push(element);
+            handleChangeActionInputValues(null, [element]);
+          }
+        }}
+        confidence={undefined}
+        defaultCreatedBy={undefined}
+        defaultMarkingDefinitions={undefined}
+        onCompleted={undefined}
+        paginationKey={undefined}
+        paginationOptions={undefined}
+        // controlledDial={undefined}
+      />
+      <Autocomplete
+        size="small"
+        fullWidth={true}
+        selectOnFocus={true}
+        autoHighlight={true}
+        getOptionLabel={(option) => option?.label ?? ''}
+        value={actionsInputs?.value ? [actionsInputs.value] : []}
+        multiple={true}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            variant="standard"
+            label={t_i18n('Container')}
+            fullWidth={true}
+            onFocus={(event: React.SyntheticEvent<Element, Event>) => searchContainers(event)}
+            style={{ marginTop: 3 }}
+          />
+        )}
+        noOptionsText={t_i18n('No available options')}
+        options={containersFromElements}
+        onInputChange={(event, userInput) => searchContainers(event, userInput)}
+        inputValue={actionsInputs?.inputValue || ''}
+        onChange={(event, value) => handleChangeActionInputValues(event, value as EntityValue[])}
+        renderOption={(props, option) => (
+          <li {...props}>
+            <div style={{
+              display: 'inline-block',
+              paddingTop: 4,
+              marginRight: theme.spacing(1),
+            }}
+            >
+              <ItemIcon type={option.type} />
+            </div>
+            <div style={{
+              display: 'inline-block',
+              flexGrow: 1,
+            }}
+            >
+              {option.label}
+            </div>
+          </li>
+        )}
+        disableClearable
+      />
+      <IconButton
+        onClick={() => setContainerCreation(true)}
+        style={{ position: 'absolute', top: 68, right: 48 }}
+      >
+        <AddOutlined />
+      </IconButton>
       <DialogActions>
         <Button variant="secondary" onClick={() => handleClose()}>
           {t_i18n('Cancel')}

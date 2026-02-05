@@ -1,8 +1,7 @@
 import Button from '@common/button/Button';
+import Dialog from '@common/dialog/Dialog';
+import { DialogActions } from '@mui/material';
 import Chip from '@mui/material/Chip';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import Typography from '@mui/material/Typography';
@@ -82,45 +81,47 @@ const NotifierTestDialog: FunctionComponent<NotifierTestDialogProps> = ({
 
   const [target, setTarget] = useState('default_notification');
   return (
-    <Dialog open={open} onClose={onClose} slotProps={{ paper: { elevation: 1 } }}>
-      <DialogTitle>{t_i18n('Testing notifier')}</DialogTitle>
-      <DialogContent>
-        <div className={classes.container}>
-          <Typography>Choose target</Typography>
-          <Select
-            value={target}
-            onChange={(e) => setTarget(e.target.value)}
-            fullWidth={true}
-          >
-            <MenuItem value="default_notification">
-              {t_i18n('Sample Notification')}
-            </MenuItem>
-            <MenuItem value="default_digest">{t_i18n('Sample Digest')}</MenuItem>
-            <MenuItem value="default_activity">
-              {t_i18n('Sample Activity Alert')}
-            </MenuItem>
-          </Select>
-        </div>
-        <div className={classes.container}>
-          {!queryRef && <Typography>Result</Typography>}
-          <React.Suspense
-            fallback={(
-              <>
-                <Typography>Result</Typography>
-                <Loader variant={LoaderVariant.inElement} />
-              </>
-            )}
-          >
-            {queryRef && <NotifierTestResult queryRef={queryRef} />}
-          </React.Suspense>
-        </div>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      title={t_i18n('Testing notifier')}
+    >
+      <div className={classes.container}>
+        <Typography>Choose target</Typography>
+        <Select
+          value={target}
+          onChange={(e) => setTarget(e.target.value)}
+          fullWidth={true}
+        >
+          <MenuItem value="default_notification">
+            {t_i18n('Sample Notification')}
+          </MenuItem>
+          <MenuItem value="default_digest">{t_i18n('Sample Digest')}</MenuItem>
+          <MenuItem value="default_activity">
+            {t_i18n('Sample Activity Alert')}
+          </MenuItem>
+        </Select>
+      </div>
+      <div className={classes.container}>
+        {!queryRef && <Typography>Result</Typography>}
+        <React.Suspense
+          fallback={(
+            <>
+              <Typography>Result</Typography>
+              <Loader variant={LoaderVariant.inElement} />
+            </>
+          )}
+        >
+          {queryRef && <NotifierTestResult queryRef={queryRef} />}
+        </React.Suspense>
+      </div>
+      <DialogActions>
         <Button
-          color="secondary"
           onClick={() => onTest(target)}
         >
           {t_i18n('Test')}
         </Button>
-      </DialogContent>
+      </DialogActions>
     </Dialog>
   );
 };

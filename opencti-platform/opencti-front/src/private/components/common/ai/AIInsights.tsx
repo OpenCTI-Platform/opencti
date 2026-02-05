@@ -1,5 +1,6 @@
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
+import Dialog from '@common/dialog/Dialog';
 import FeedbackCreation from '@components/cases/feedbacks/FeedbackCreation';
 import AISummaryActivity from '@components/common/ai/AISummaryActivity';
 import AISummaryContainers from '@components/common/ai/AISummaryContainers';
@@ -8,10 +9,7 @@ import AISummaryHistory from '@components/common/ai/AISummaryHistory';
 import EnterpriseEditionAgreement from '@components/common/entreprise_edition/EnterpriseEditionAgreement';
 import FiligranIcon from '@components/common/FiligranIcon';
 import Box from '@mui/material/Box';
-import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Tooltip from '@mui/material/Tooltip';
@@ -236,6 +234,7 @@ const AIInsights = ({
       </>
     );
   }
+
   if (isEnterpriseEdition && !fullyActive) {
     return (
       <>
@@ -244,18 +243,13 @@ const AIInsights = ({
           onClick={() => setDisplayAIDialog(true)}
         />
         <Dialog
-          slotProps={{ paper: { elevation: 1 } }}
           open={displayAIDialog}
           onClose={() => setDisplayAIDialog(false)}
-          fullWidth={true}
-          maxWidth="sm"
+          title={t_i18n('Enable AI powered platform')}
         >
-          <DialogTitle>
-            {t_i18n('Enable AI powered platform')}
-          </DialogTitle>
-          <DialogContent>
+          <span>
             {t_i18n('To use this AI feature in the enterprise edition, please add a token.')}
-          </DialogContent>
+          </span>
           <DialogActions>
             <Button onClick={() => setDisplayAIDialog(false)}>{t_i18n('Close')}</Button>
           </DialogActions>

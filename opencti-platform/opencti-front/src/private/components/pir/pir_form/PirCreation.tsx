@@ -13,19 +13,18 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React, { useState } from 'react';
-import { Dialog } from '@mui/material';
+import Dialog from '@common/dialog/Dialog';
+import { useState } from 'react';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import { PirsListQuery$variables } from '../__generated__/PirsListQuery.graphql';
-import { PirCreationFormData, pirFormDataToMutationInput } from './pir-form-utils';
-import { PirCreationMutation } from './__generated__/PirCreationMutation.graphql';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import Transition from '../../../../components/Transition';
-import PirCreationForm from './PirCreationForm';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { useFormatter } from '../../../../components/i18n';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { insertNode } from '../../../../utils/store';
+import { PirsListQuery$variables } from '../__generated__/PirsListQuery.graphql';
+import { PirCreationMutation } from './__generated__/PirCreationMutation.graphql';
+import { PirCreationFormData, pirFormDataToMutationInput } from './pir-form-utils';
+import PirCreationForm from './PirCreationForm';
 
 const pirCreateMutation = graphql`
   mutation PirCreationMutation($input: PirAddInput!) {
@@ -78,16 +77,10 @@ const PirCreation = ({ paginationOptions }: PirCreationProps) => {
       />
 
       <Dialog
-        fullWidth
         open={dialogOpen}
-        slots={{ transition: Transition }}
-        slotProps={{
-          paper: {
-            elevation: 1,
-            style: { minWidth: '950px' },
-          },
-        }}
         onClose={handleCloseDialog}
+        size="large"
+        title={t_i18n('Create priority intelligence requirement')}
       >
         <PirCreationForm
           onCancel={handleCloseDialog}

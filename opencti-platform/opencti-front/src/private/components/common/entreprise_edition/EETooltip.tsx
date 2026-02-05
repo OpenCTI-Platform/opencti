@@ -1,17 +1,16 @@
-import { Tooltip, TooltipProps } from '@mui/material';
-import React, { ReactElement, useState } from 'react';
-import DialogTitle from '@mui/material/DialogTitle';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
 import Button from '@common/button/Button';
+import Dialog from '@common/dialog/Dialog';
+import { Tooltip, TooltipProps } from '@mui/material';
 import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import { ReactElement, useState } from 'react';
 import { useFormatter } from '../../../../components/i18n';
+import useAI from '../../../../utils/hooks/useAI';
+import useAuth from '../../../../utils/hooks/useAuth';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useGranted';
 import FeedbackCreation from '../../cases/feedbacks/FeedbackCreation';
 import EnterpriseEditionAgreement from './EnterpriseEditionAgreement';
-import useAI from '../../../../utils/hooks/useAI';
-import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useGranted';
-import useAuth from '../../../../utils/hooks/useAuth';
 
 const EETooltipComponent = ({ children, ...tooltipProps }: TooltipProps) => {
   return (
@@ -73,17 +72,13 @@ const EETooltip = ({
           </span>
         </EETooltipComponent>
         <Dialog
-          slotProps={{ paper: { elevation: 1 } }}
           open={openConfigAI}
           onClose={() => setOpenConfigAI(false)}
-          fullWidth={true}
-          maxWidth="sm"
+          size="small"
+          title={t_i18n('Enable AI powered platform')}
         >
-          <DialogTitle>
-            {t_i18n('Enable AI powered platform')}
-          </DialogTitle>
           <DialogContent>
-            {t_i18n('The token is missing in your platform configuration, please ask your Filigran representative to provide you with it or with on-premise deployment instructions. Your can open a support ticket to do so.')}
+            {t_i18n('The token is missing in your platform configuration, please ask your Filigran representative to provide you with it or with on-premise deployment instructions. You can open a support ticket to do so.')}
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setOpenConfigAI(false)}>{t_i18n('Close')}</Button>

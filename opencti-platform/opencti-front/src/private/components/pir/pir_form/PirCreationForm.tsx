@@ -13,19 +13,19 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import { DialogActions, DialogContent, DialogTitle } from '@mui/material';
-import React, { useState } from 'react';
-import { Form, Formik } from 'formik';
-import * as Yup from 'yup';
 import Button from '@common/button/Button';
-import { PirCreationFormData } from './pir-form-utils';
-import PirCreationFormGeneralSettings, { redisStreamQuery } from './PirCreationFormGeneralSettings';
-import PirCreationFormStepper from './PirCreationFormStepper';
+import { DialogActions, Stack } from '@mui/material';
+import { Form, Formik } from 'formik';
+import React, { useState } from 'react';
+import * as Yup from 'yup';
 import { useFormatter } from '../../../../components/i18n';
-import PirCreationFormCriteria from './PirCreationFormCriteria';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { PirCreationFormGeneralSettingsRedisStreamQuery } from './__generated__/PirCreationFormGeneralSettingsRedisStreamQuery.graphql';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
+import { PirCreationFormData } from './pir-form-utils';
+import PirCreationFormCriteria from './PirCreationFormCriteria';
+import PirCreationFormGeneralSettings, { redisStreamQuery } from './PirCreationFormGeneralSettings';
+import PirCreationFormStepper from './PirCreationFormStepper';
 
 interface PirCreationFormProps {
   onCancel: () => void;
@@ -84,11 +84,7 @@ const PirCreationForm = ({ onCancel, onSubmit }: PirCreationFormProps) => {
 
         return (
           <>
-            <DialogTitle>
-              {t_i18n('Create priority intelligence requirement')}
-            </DialogTitle>
-
-            <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Stack gap={2}>
               <PirCreationFormStepper
                 step={step}
                 accessibleSteps={accessibleSteps}
@@ -107,7 +103,7 @@ const PirCreationForm = ({ onCancel, onSubmit }: PirCreationFormProps) => {
                 )}
                 {step === 1 && <PirCreationFormCriteria />}
               </Form>
-            </DialogContent>
+            </Stack>
 
             <DialogActions>
               <Button variant="secondary" onClick={onCancel}>

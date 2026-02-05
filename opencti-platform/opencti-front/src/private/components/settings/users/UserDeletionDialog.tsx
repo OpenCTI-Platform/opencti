@@ -1,11 +1,11 @@
-import React, { FunctionComponent, useState } from 'react';
+import Button from '@common/button/Button';
+import Dialog from '@common/dialog/Dialog';
+import { DialogActions } from '@mui/material';
+import { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
-import { Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
-import Button from '@common/button/Button';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import Transition from '../../../../components/Transition';
 
 const userDeletionMutation = graphql`
   mutation UserDeletionDialogDeletionMutation($id: ID!) {
@@ -53,19 +53,14 @@ const UserDeletionDialog: FunctionComponent<UserDeletionDialogProps> = ({
   return (
     <Dialog
       open={isOpen}
-      PaperProps={{ elevation: 1 }}
-      keepMounted={true}
-      TransitionComponent={Transition}
       onClose={handleClose}
+      title={t_i18n('Do you want to delete this user?')}
     >
-      <DialogTitle>{t_i18n('Do you want to delete this user?')}</DialogTitle>
-      <DialogContent dividers>
-        <ul>
-          <li>{t_i18n('All notifications, triggers and digests associated with the user will be deleted.')}</li>
-          <li>{t_i18n('All investigations and dashboard where the user is the only admin, will be deleted.')}</li>
-        </ul>
-        {t_i18n('If you want to keep the associated information, we recommend deactivating the user instead.')}
-      </DialogContent>
+      <ul>
+        <li>{t_i18n('All notifications, triggers and digests associated with the user will be deleted.')}</li>
+        <li>{t_i18n('All investigations and dashboard where the user is the only admin, will be deleted.')}</li>
+      </ul>
+      {t_i18n('If you want to keep the associated information, we recommend deactivating the user instead.')}
       <DialogActions>
         <Button
           variant="secondary"

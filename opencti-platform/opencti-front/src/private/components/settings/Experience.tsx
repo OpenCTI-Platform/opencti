@@ -1,45 +1,42 @@
-import React, { ChangeEvent, FunctionComponent, useState } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
-import Grid from '@mui/material/Grid';
-import XtmHubSettings from '@components/settings/xtm-hub/XtmHubSettings';
-import SupportPackages from '@components/settings/support/SupportPackages';
-import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
+import Button from '@common/button/Button';
+import Dialog from '@common/dialog/Dialog';
+import Tag from '@common/tag/Tag';
+import EnterpriseEditionButton from '@components/common/entreprise_edition/EnterpriseEditionButton';
 import { Experience$key } from '@components/settings/__generated__/Experience.graphql';
-import Typography from '@mui/material/Typography';
+import { ExperienceFieldPatchMutation$data } from '@components/settings/__generated__/ExperienceFieldPatchMutation.graphql';
+import getEEWarningMessage from '@components/settings/EEActivation';
+import SupportPackages from '@components/settings/support/SupportPackages';
+import XtmHubSettings from '@components/settings/xtm-hub/XtmHubSettings';
+import { Stack, Switch } from '@mui/material';
+import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
+import DialogActions from '@mui/material/DialogActions';
+import Grid from '@mui/material/Grid';
+import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Paper from '@mui/material/Paper';
-import Alert from '@mui/material/Alert';
-import EnterpriseEditionButton from '@components/common/entreprise_edition/EnterpriseEditionButton';
-import List from '@mui/material/List';
+import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/styles';
-import Button from '@common/button/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
+import makeStyles from '@mui/styles/makeStyles';
+import React, { ChangeEvent, FunctionComponent, useState } from 'react';
+import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import * as Yup from 'yup';
-import Box from '@mui/material/Box';
-import { Stack, Switch } from '@mui/material';
-import { ExperienceFieldPatchMutation$data } from '@components/settings/__generated__/ExperienceFieldPatchMutation.graphql';
-import getEEWarningMessage from '@components/settings/EEActivation';
-import { ExperienceQuery } from './__generated__/ExperienceQuery.graphql';
-import Transition from '../../../components/Transition';
-import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
-import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import Loader, { LoaderVariant } from '../../../components/Loader';
+import Card from '../../../components/common/card/Card';
+import { useFormatter } from '../../../components/i18n';
 import ItemBoolean from '../../../components/ItemBoolean';
+import Loader, { LoaderVariant } from '../../../components/Loader';
 import type { Theme } from '../../../components/Theme';
 import { FieldOption } from '../../../utils/field';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
-import useGranted, { SETTINGS_SETPARAMETERS, SETTINGS_SUPPORT } from '../../../utils/hooks/useGranted';
-import ValidateTermsOfUseDialog from './ValidateTermsOfUseDialog';
 import useAuth from '../../../utils/hooks/useAuth';
-import Card from '../../../components/common/card/Card';
-import Tag from '@common/tag/Tag';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import useGranted, { SETTINGS_SETPARAMETERS, SETTINGS_SUPPORT } from '../../../utils/hooks/useGranted';
+import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import DangerZoneButton from '../common/danger_zone/DangerZoneButton';
+import { ExperienceQuery } from './__generated__/ExperienceQuery.graphql';
+import ValidateTermsOfUseDialog from './ValidateTermsOfUseDialog';
 
 export enum CGUStatus {
   pending = 'pending',
@@ -292,27 +289,23 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
               </List>
             </Card>
             <Dialog
-              slotProps={{ paper: { elevation: 1 } }}
               open={openEEChanges}
-              keepMounted
-              slots={{ transition: Transition }}
               onClose={() => setOpenEEChanges(false)}
+              title={t_i18n('Disable Enterprise Edition')}
             >
-              <DialogTitle>{t_i18n('Disable Enterprise Edition')}</DialogTitle>
-              <DialogContent>
-                <Alert
-                  severity="warning"
-                  variant="outlined"
-                  color="dangerZone"
-                  style={{ borderColor: theme.palette.dangerZone.main }}
-                >
-                  {t_i18n(getEEWarningMessage(isLtsPlatform))}
-                  <br /><br />
-                  <strong>{t_i18n('However, your existing data will remain intact and will not be lost.')}</strong>
-                </Alert>
-              </DialogContent>
+              <Alert
+                severity="warning"
+                variant="outlined"
+                color="dangerZone"
+                style={{ borderColor: theme.palette.dangerZone.main }}
+              >
+                {t_i18n(getEEWarningMessage(isLtsPlatform))}
+                <br /><br />
+                <strong>{t_i18n('However, your existing data will remain intact and will not be lost.')}</strong>
+              </Alert>
               <DialogActions>
                 <Button
+                  variant="secondary"
                   onClick={() => {
                     setOpenEEChanges(false);
                   }}
@@ -320,7 +313,6 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                   {t_i18n('Cancel')}
                 </Button>
                 <Button
-                  color="secondary"
                   onClick={() => {
                     setOpenEEChanges(false);
                     handleSubmitField('enterprise_license', '');

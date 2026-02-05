@@ -1,22 +1,21 @@
-import { Field, Form, Formik } from 'formik';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
-import React, { Suspense, useEffect, useState } from 'react';
-import { FormikHelpers } from 'formik/dist/types';
-import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
+import DialogActions from '@mui/material/DialogActions';
 import makeStyles from '@mui/styles/makeStyles';
+import { Field, Form, Formik } from 'formik';
+import { FormikHelpers } from 'formik/dist/types';
+import { Suspense, useEffect, useState } from 'react';
+import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
+import CheckboxesField from '../../../../components/CheckboxesField';
 import SwitchField from '../../../../components/fields/SwitchField';
+import { GraphLink, GraphNode } from '../../../../components/graph/graph.types';
 import { useFormatter } from '../../../../components/i18n';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
+import { FieldOption } from '../../../../utils/field';
+import useAuth from '../../../../utils/hooks/useAuth';
+import { InvestigationExpandFormRelDistributionQuery } from './__generated__/InvestigationExpandFormRelDistributionQuery.graphql';
 import { InvestigationExpandFormTargetsDistributionFromQuery } from './__generated__/InvestigationExpandFormTargetsDistributionFromQuery.graphql';
 import { InvestigationExpandFormTargetsDistributionToQuery } from './__generated__/InvestigationExpandFormTargetsDistributionToQuery.graphql';
-import { InvestigationExpandFormRelDistributionQuery } from './__generated__/InvestigationExpandFormRelDistributionQuery.graphql';
-import CheckboxesField from '../../../../components/CheckboxesField';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
-import useAuth from '../../../../utils/hooks/useAuth';
-import { GraphLink, GraphNode } from '../../../../components/graph/graph.types';
-import { FieldOption } from '../../../../utils/field';
+import { Stack } from '@mui/material';
 
 // The number of elements targeted by the given
 // entities ids, sorted by type of entity.
@@ -73,10 +72,6 @@ const investigationExpandFormRelDistributionQuery = graphql`
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles(() => ({
-  checkboxesContainer: {
-    display: 'flex',
-    justifyContent: 'space-between',
-  },
   fallback: {
     minHeight: 200,
     minWidth: 200,
@@ -114,7 +109,6 @@ const InvestigationExpandFormContent = ({
   distributionFromQueryRef,
   distributionToQueryRef,
 }: InvestigationExpandFormContentProps) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { schema } = useAuth();
 
@@ -377,30 +371,28 @@ const InvestigationExpandFormContent = ({
     >
       {({ submitForm, handleReset, isSubmitting }) => (
         <Form>
-          <DialogTitle>{t_i18n('Expand elements')}</DialogTitle>
-          <DialogContent>
-            <div className={classes.checkboxesContainer}>
-              <Field
-                name="entity_types"
-                component={CheckboxesField}
-                label={t_i18n('All types of target')}
-                items={targets}
-              />
-              <Field
-                name="relationship_types"
-                component={CheckboxesField}
-                label={t_i18n('All types of relationship')}
-                items={relationships}
-              />
-            </div>
+          <Stack direction="row" justifyContent="space-between">
             <Field
-              component={SwitchField}
-              type="checkbox"
-              name="reset_filters"
-              label={t_i18n('Reset filters')}
-              containerstyle={{ marginTop: 20 }}
+              name="entity_types"
+              component={CheckboxesField}
+              label={t_i18n('All types of target')}
+              items={targets}
             />
-          </DialogContent>
+            <Field
+              name="relationship_types"
+              component={CheckboxesField}
+              label={t_i18n('All types of relationship')}
+              items={relationships}
+            />
+          </Stack>
+
+          <Field
+            component={SwitchField}
+            type="checkbox"
+            name="reset_filters"
+            label={t_i18n('Reset filters')}
+            containerstyle={{ marginTop: 20 }}
+          />
 
           <DialogActions>
             <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>

@@ -1,13 +1,11 @@
-import React, { useState } from 'react';
-import Dialog from '@mui/material/Dialog';
+import Dialog from '@common/dialog/Dialog';
 import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
+import React, { useState } from 'react';
 
 import GroupWithNullConfidenceLevelAlertContent from '@components/settings/platform_alerts/GroupWithNullConfidenceLevelAlertContent';
 import { useFormatter } from '../../../../components/i18n';
-import { RootSettings$data } from '../../../__generated__/RootSettings.graphql';
-import Transition from '../../../../components/Transition';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import { RootSettings$data } from '../../../__generated__/RootSettings.graphql';
 
 type PlatformCriticalAlertDialogProps = {
   alerts: RootSettings$data['platform_critical_alerts'];
@@ -43,11 +41,9 @@ const PlatformCriticalAlertDialog: React.FC<PlatformCriticalAlertDialogProps> = 
   return (
     <Dialog
       open={open}
-      slotProps={{ paper: { elevation: 1 } }}
-      slots={{ transition: Transition }}
       onClose={closeHandler}
+      title={t_i18n('Important notice: your action is required!')}
     >
-      <DialogTitle>{t_i18n('Important notice: your action is required!')}</DialogTitle>
       {getDialogContentFromAlertType()}
     </Dialog>
   );

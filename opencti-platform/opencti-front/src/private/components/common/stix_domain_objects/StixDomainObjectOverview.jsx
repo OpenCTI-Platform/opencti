@@ -1,45 +1,42 @@
-import React, { useState } from 'react';
-import * as PropTypes from 'prop-types';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
+import Card from '@common/card/Card';
+import Dialog from '@common/dialog/Dialog';
+import { Add, BrushOutlined, Delete } from '@mui/icons-material';
+import DialogActions from '@mui/material/DialogActions';
 import Grid from '@mui/material/Grid';
-import { InformationOutline } from 'mdi-material-ui';
-import Tooltip from '@mui/material/Tooltip';
-import Dialog from '@mui/material/Dialog';
-import { DialogTitle } from '@mui/material';
-import DialogContent from '@mui/material/DialogContent';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import { Add, BrushOutlined, Delete } from '@mui/icons-material';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@common/button/Button';
-import IconButton from '@common/button/IconButton';
-import { Formik } from 'formik';
+import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/material/styles';
-import Card from '@common/card/Card';
+import { Formik } from 'formik';
+import { InformationOutline } from 'mdi-material-ui';
+import * as PropTypes from 'prop-types';
+import { useState } from 'react';
+import ItemAssignees from '../../../../components/ItemAssignees';
+import ItemAuthor from '../../../../components/ItemAuthor';
+import ItemBoolean from '../../../../components/ItemBoolean';
+import ItemConfidence from '../../../../components/ItemConfidence';
+import ItemCopy from '../../../../components/ItemCopy';
+import ItemCreators from '../../../../components/ItemCreators';
+import ItemMarkings from '../../../../components/ItemMarkings';
+import ItemOpenVocab from '../../../../components/ItemOpenVocab';
+import ItemParticipants from '../../../../components/ItemParticipants';
+import ItemPatternType from '../../../../components/ItemPatternType';
+import ItemStatus from '../../../../components/ItemStatus';
+import Label from '../../../../components/common/label/Label';
+import { useFormatter } from '../../../../components/i18n';
+import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
+import Security from '../../../../utils/Security';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import StixCoreObjectOpinions from '../../analyses/opinions/StixCoreObjectOpinions';
 import ProcessingStatusOverview from '../../cases/case_rfis/ProcessingStatusOverview';
 import ObjectAssigneeField from '../form/ObjectAssigneeField';
 import ObjectParticipantField from '../form/ObjectParticipantField';
-import StixCoreObjectOpinions from '../../analyses/opinions/StixCoreObjectOpinions';
-import ItemMarkings from '../../../../components/ItemMarkings';
-import ItemPatternType from '../../../../components/ItemPatternType';
 import StixCoreObjectLabelsView from '../stix_core_objects/StixCoreObjectLabelsView';
-import ItemBoolean from '../../../../components/ItemBoolean';
-import ItemCreators from '../../../../components/ItemCreators';
-import ItemConfidence from '../../../../components/ItemConfidence';
-import ItemAuthor from '../../../../components/ItemAuthor';
-import { useFormatter } from '../../../../components/i18n';
-import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import { stixDomainObjectMutation } from './StixDomainObjectHeader';
-import ItemStatus from '../../../../components/ItemStatus';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import ItemCopy from '../../../../components/ItemCopy';
-import ItemAssignees from '../../../../components/ItemAssignees';
-import ItemOpenVocab from '../../../../components/ItemOpenVocab';
-import ItemParticipants from '../../../../components/ItemParticipants';
-import Transition from '../../../../components/Transition';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import Label from '../../../../components/common/label/Label';
 
 const StixDomainObjectOverview = ({
   stixDomainObject,
@@ -356,37 +353,32 @@ const StixDomainObjectOverview = ({
         </Grid>
       </Card>
       <Dialog
-        slotProps={{ paper: { elevation: 1 } }}
         open={openStixIds}
-        slots={{ transition: Transition }}
         onClose={handleToggleOpenStixIds}
-        fullWidth={true}
+        title={t_i18n('Other STIX IDs')}
       >
-        <DialogTitle>{t_i18n('Other STIX IDs')}</DialogTitle>
-        <DialogContent dividers={true}>
-          <List>
-            {stixIds.map(
-              (stixId) => stixId.length > 0 && (
-                <ListItem
-                  key={stixId}
-                  disableGutters={true}
-                  dense={true}
-                  secondaryAction={(
-                    <IconButton
-                      edge="end"
-                      aria-label="delete"
-                      onClick={() => deleteStixId(stixId)}
-                    >
-                      <Delete />
-                    </IconButton>
-                  )}
-                >
-                  <ListItemText primary={stixId} />
-                </ListItem>
-              ),
-            )}
-          </List>
-        </DialogContent>
+        <List>
+          {stixIds.map(
+            (stixId) => stixId.length > 0 && (
+              <ListItem
+                key={stixId}
+                disableGutters={true}
+                dense={true}
+                secondaryAction={(
+                  <IconButton
+                    edge="end"
+                    aria-label="delete"
+                    onClick={() => deleteStixId(stixId)}
+                  >
+                    <Delete />
+                  </IconButton>
+                )}
+              >
+                <ListItemText primary={stixId} />
+              </ListItem>
+            ),
+          )}
+        </List>
         <DialogActions>
           <Button
             onClick={handleToggleOpenStixIds}
@@ -402,19 +394,14 @@ const StixDomainObjectOverview = ({
       >
         {({ submitForm, handleReset }) => (
           <Dialog
-            slotProps={{ paper: { elevation: 1 } }}
             open={openAddAssignee}
-            slots={{ transition: Transition }}
             onClose={handleToggleAddAssignee}
-            fullWidth={true}
+            title={t_i18n('Add new assignees')}
           >
-            <DialogTitle>{t_i18n('Add new assignees')}</DialogTitle>
-            <DialogContent>
-              <ObjectAssigneeField
-                name="objectAssignee"
-                style={fieldSpacingContainerStyle}
-              />
-            </DialogContent>
+            <ObjectAssigneeField
+              name="objectAssignee"
+              style={fieldSpacingContainerStyle}
+            />
             <DialogActions>
               <Button
                 variant="secondary"
@@ -438,19 +425,14 @@ const StixDomainObjectOverview = ({
       >
         {({ submitForm }) => (
           <Dialog
-            slotProps={{ paper: { elevation: 1 } }}
             open={openAddParticipant}
-            slots={{ transition: Transition }}
             onClose={handleToggleAddParticipant}
-            fullWidth={true}
+            title={t_i18n('Add new participants')}
           >
-            <DialogTitle>{t_i18n('Add new participants')}</DialogTitle>
-            <DialogContent>
-              <ObjectParticipantField
-                name="objectParticipant"
-                style={fieldSpacingContainerStyle}
-              />
-            </DialogContent>
+            <ObjectParticipantField
+              name="objectParticipant"
+              style={fieldSpacingContainerStyle}
+            />
             <DialogActions>
               <Button
                 variant="secondary"

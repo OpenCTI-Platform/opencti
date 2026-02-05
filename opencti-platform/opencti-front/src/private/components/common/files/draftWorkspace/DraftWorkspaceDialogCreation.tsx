@@ -1,24 +1,22 @@
-import React, { FunctionComponent } from 'react';
-import { Field, Form, Formik } from 'formik';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
-import { graphql } from 'react-relay';
-import * as Yup from 'yup';
-import { FormikConfig } from 'formik/dist/types';
-import { RecordSourceSelectorProxy } from 'relay-runtime';
-import { DraftsLinesPaginationQuery$variables } from '@components/drafts/__generated__/DraftsLinesPaginationQuery.graphql';
+import Dialog from '@common/dialog/Dialog';
 import AuthorizedMembersField, { AuthorizedMembersFieldValue } from '@components/common/form/AuthorizedMembersField';
+import { DraftsLinesPaginationQuery$variables } from '@components/drafts/__generated__/DraftsLinesPaginationQuery.graphql';
+import DialogActions from '@mui/material/DialogActions';
+import { Field, Form, Formik } from 'formik';
+import { FormikConfig } from 'formik/dist/types';
+import { FunctionComponent } from 'react';
+import { graphql } from 'react-relay';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
+import * as Yup from 'yup';
 import { useFormatter } from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
-import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../../../../relay/environment';
+import { fieldSpacingContainerStyle } from '../../../../../utils/field';
+import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import useAuth from '../../../../../utils/hooks/useAuth';
 import { insertNode } from '../../../../../utils/store';
 import { DraftWorkspaceDialogCreationMutation, DraftWorkspaceDialogCreationMutation$variables } from './__generated__/DraftWorkspaceDialogCreationMutation.graphql';
-import useAuth from '../../../../../utils/hooks/useAuth';
-import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 
 const draftWorkspaceDialogCreationMutation = graphql`
   mutation DraftWorkspaceDialogCreationMutation($input: DraftWorkspaceAddInput!) {
@@ -112,32 +110,29 @@ const DraftWorkspaceDialogCreation: FunctionComponent<DraftWorkspaceCreationProp
       {({ submitForm, handleReset, isSubmitting }) => (
         <Form>
           <Dialog
-            slotProps={{ paper: { elevation: 1 } }}
             open={!!openCreate}
             onClose={handleCloseCreate}
-            fullWidth
+            title={t_i18n('Create a Draft')}
           >
-            <DialogTitle>{t_i18n('Create a Draft')}</DialogTitle>
-            <DialogContent>
-              <Field
-                component={TextField}
-                variant="standard"
-                name="name"
-                label={t_i18n('Name')}
-                fullWidth
-              />
-              <Field
-                name="authorizedMembers"
-                component={AuthorizedMembersField}
-                owner={owner}
-                showAllMembersLine={showAllMembersLine}
-                canDeactivate
-                addMeUserWithAdminRights
-                enableAccesses
-                applyAccesses
-                style={fieldSpacingContainerStyle}
-              />
-            </DialogContent>
+            <Field
+              component={TextField}
+              variant="standard"
+              name="name"
+              label={t_i18n('Name')}
+              fullWidth
+            />
+            <Field
+              name="authorizedMembers"
+              component={AuthorizedMembersField}
+              owner={owner}
+              showAllMembersLine={showAllMembersLine}
+              canDeactivate
+              addMeUserWithAdminRights
+              enableAccesses
+              applyAccesses
+              style={fieldSpacingContainerStyle}
+            />
+
             <DialogActions>
               <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Cancel')}

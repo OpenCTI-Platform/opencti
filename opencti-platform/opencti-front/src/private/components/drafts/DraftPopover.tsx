@@ -1,31 +1,28 @@
-import React, { UIEvent, useState } from 'react';
-import MoreVert from '@mui/icons-material/MoreVert';
-import IconButton from '@common/button/IconButton';
-import MenuItem from '@mui/material/MenuItem';
-import Menu from '@mui/material/Menu';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
-import Dialog from '@mui/material/Dialog';
-import { graphql } from 'react-relay';
-import { PopoverProps } from '@mui/material/Popover';
-import { DraftsLinesPaginationQuery$variables } from '@components/drafts/__generated__/DraftsLinesPaginationQuery.graphql';
+import IconButton from '@common/button/IconButton';
+import Dialog from '@common/dialog/Dialog';
 import { DraftPopoverDeleteMutation } from '@components/drafts/__generated__/DraftPopoverDeleteMutation.graphql';
-import DialogTitle from '@mui/material/DialogTitle';
+import { DraftsLinesPaginationQuery$variables } from '@components/drafts/__generated__/DraftsLinesPaginationQuery.graphql';
+import MoreVert from '@mui/icons-material/MoreVert';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContentText from '@mui/material/DialogContentText';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import { PopoverProps } from '@mui/material/Popover';
+import React, { UIEvent, useState } from 'react';
+import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import useApiMutation from '../../../utils/hooks/useApiMutation';
-import Transition from '../../../components/Transition';
-import { KNOWLEDGE } from '../../../utils/hooks/useGranted';
-import Security from '../../../utils/Security';
+import DeleteDialog from '../../../components/DeleteDialog';
 import { useFormatter } from '../../../components/i18n';
 import { MESSAGING$ } from '../../../relay/environment';
-import { deleteNode } from '../../../utils/store';
 import { RelayError } from '../../../relay/relayTypes';
-import stopEvent from '../../../utils/domEvent';
-import DeleteDialog from '../../../components/DeleteDialog';
-import useDeletion from '../../../utils/hooks/useDeletion';
 import { useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
+import stopEvent from '../../../utils/domEvent';
+import useApiMutation from '../../../utils/hooks/useApiMutation';
+import useDeletion from '../../../utils/hooks/useDeletion';
+import { KNOWLEDGE } from '../../../utils/hooks/useGranted';
+import Security from '../../../utils/Security';
+import { deleteNode } from '../../../utils/store';
 import useSwitchDraft from './useSwitchDraft';
 
 const draftPopoverDeleteMutation = graphql`
@@ -158,16 +155,11 @@ const DraftPopover: React.FC<DraftPopoverProps> = ({
         />
         <Dialog
           open={openSwitch}
-          slotProps={{ paper: { elevation: 1 } }}
-          slots={{ transition: Transition }}
           onClose={handleCloseSwitch}
-          fullWidth={true}
-          maxWidth="xs"
+          title={t_i18n('Switch to Draft Mode')}
+          size="small"
         >
-          <DialogTitle>{t_i18n('Switch to Draft Mode')}</DialogTitle>
-          <DialogContent>
-            <DialogContentText>{t_i18n('You are about to switch to Draft mode. All your OpenCTI platform will be in draft. The selected Draft will be the draft by default.')}</DialogContentText>
-          </DialogContent>
+          <DialogContentText>{t_i18n('You are about to switch to Draft mode. All your OpenCTI platform will be in draft. The selected Draft will be the draft by default.')}</DialogContentText>
           <DialogActions>
             <Button variant="secondary" onClick={handleCloseSwitch}>{t_i18n('Cancel')}</Button>
             <Button

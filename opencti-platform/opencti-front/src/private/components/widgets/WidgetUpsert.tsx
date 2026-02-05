@@ -1,17 +1,14 @@
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
-import Dialog from '@mui/material/Dialog';
-import React, { FunctionComponent } from 'react';
-import WidgetConfigStepper from './WidgetConfigStepper';
-import { useWidgetConfigContext, WidgetConfigType } from './WidgetConfigContext';
-import Transition from '../../../components/Transition';
+import Dialog from '@common/dialog/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import { FunctionComponent } from 'react';
 import { useFormatter } from '../../../components/i18n';
-import WidgetCreationTypes from './WidgetCreationTypes';
-import WidgetCreationPerspective from './WidgetCreationPerspective';
+import { useWidgetConfigContext, WidgetConfigType } from './WidgetConfigContext';
+import WidgetConfigStepper from './WidgetConfigStepper';
 import WidgetCreationDataSelection from './WidgetCreationDataSelection';
 import WidgetCreationParameters from './WidgetCreationParameters';
+import WidgetCreationPerspective from './WidgetCreationPerspective';
+import WidgetCreationTypes from './WidgetCreationTypes';
 import useWidgetConfigValidateForm from './useWidgetConfigValidateForm';
 
 interface WidgetUpsertProps {
@@ -34,24 +31,18 @@ const WidgetUpsert: FunctionComponent<WidgetUpsertProps> = ({
   return (
     <Dialog
       open={open}
-      slotProps={{ paper: { elevation: 1 } }}
-      slots={{ transition: Transition }}
       onClose={onCancel}
-      fullWidth={true}
-      maxWidth="md"
       className="noDrag"
     >
-      <DialogTitle>
-        <WidgetConfigStepper />
-      </DialogTitle>
+      <WidgetConfigStepper />
 
       {open && (
-        <DialogContent>
+        <>
           {step === 0 && <WidgetCreationTypes />}
           {step === 1 && <WidgetCreationPerspective />}
           {step === 2 && <WidgetCreationDataSelection />}
           {step === 3 && <WidgetCreationParameters />}
-        </DialogContent>
+        </>
       )}
 
       <DialogActions>

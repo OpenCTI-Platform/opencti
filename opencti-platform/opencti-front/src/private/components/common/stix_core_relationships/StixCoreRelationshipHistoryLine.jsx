@@ -1,30 +1,29 @@
-import React, { useState } from 'react';
-import { graphql, useFragment } from 'react-relay';
-import { deepOrange, deepPurple, green, indigo, pink, red, teal, yellow } from '@mui/material/colors';
-import Paper from '@mui/material/Paper';
-import Avatar from '@mui/material/Avatar';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
+import Dialog from '@common/dialog/Dialog';
 import { AddOutlined, DeleteOutlined, EditOutlined, HelpOutlined, LinkOffOutlined, LinkOutlined, OpenInBrowserOutlined } from '@mui/icons-material';
-import { LinkVariantPlus, LinkVariantRemove, Merge } from 'mdi-material-ui';
-import Tooltip from '@mui/material/Tooltip';
+import { ListItemButton } from '@mui/material';
+import Avatar from '@mui/material/Avatar';
+import Badge from '@mui/material/Badge';
+import { deepOrange, deepPurple, green, indigo, pink, red, teal, yellow } from '@mui/material/colors';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
 import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Badge from '@mui/material/Badge';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@common/button/Button';
-import DialogContentText from '@mui/material/DialogContentText';
-import IconButton from '@common/button/IconButton';
-import ListItem from '@mui/material/ListItem';
-import { ListItemButton } from '@mui/material';
-import { Link } from 'react-router-dom';
+import Paper from '@mui/material/Paper';
+import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/styles';
-import { truncate } from 'src/utils/String';
+import { LinkVariantPlus, LinkVariantRemove, Merge } from 'mdi-material-ui';
+import { useState } from 'react';
+import { graphql, useFragment } from 'react-relay';
+import { Link } from 'react-router-dom';
 import { useFormatter } from 'src/components/i18n';
-import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import { truncate } from 'src/utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
+import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import Transition from '../../../../components/Transition';
 
 export const StixCoreRelationshipHistoryFragment = graphql`
@@ -307,19 +306,15 @@ const StixCoreRelationshipHistoryLine = ({ nodeRef, isRelation }) => {
       }}
       />
       <Dialog
-        slotProps={{ paper: { elevation: 1 } }}
         open={open}
         onClose={handleClose}
-        fullWidth
+        title={t_i18n('Commit message')}
       >
-        <DialogTitle>{t_i18n('Commit message')}</DialogTitle>
-        <DialogContent>
-          <MarkdownDisplay
-            content={node.context_data.commit}
-            remarkGfmPlugin={true}
-            commonmark={true}
-          />
-        </DialogContent>
+        <MarkdownDisplay
+          content={node.context_data.commit}
+          remarkGfmPlugin={true}
+          commonmark={true}
+        />
         <DialogActions>
           <Button onClick={handleClose}>
             {t_i18n('Close')}

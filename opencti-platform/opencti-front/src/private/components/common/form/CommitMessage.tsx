@@ -1,18 +1,16 @@
-import React, { FunctionComponent, useState } from 'react';
-import { Field } from 'formik';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
+import Dialog from '@common/dialog/Dialog';
+import DialogActions from '@mui/material/DialogActions';
 import makeStyles from '@mui/styles/makeStyles';
-import { useFormatter } from '../../../../components/i18n';
+import { Field } from 'formik';
+import { FunctionComponent, useState } from 'react';
 import MarkdownField from '../../../../components/fields/MarkdownField';
-import type { ExternalReferencesValues } from './ExternalReferencesField';
-import { ExternalReferencesField } from './ExternalReferencesField';
+import { useFormatter } from '../../../../components/i18n';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import type { ExternalReferencesValues } from './ExternalReferencesField';
+import { ExternalReferencesField } from './ExternalReferencesField';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -75,8 +73,6 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
         <div className={classes.buttons}>
           <Security needs={[KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]}>
             <Button
-              // variant="contained"
-              // color="warning"
               onClick={submitForm} // directly submit
               disabled={disabled}
               classes={{ root: classes.button }}
@@ -95,38 +91,34 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
       )}
       <Dialog
         data-testid="commit-message-page"
-        slotProps={{ paper: { elevation: 1 } }}
         open={handleClose ? open : controlOpen}
         onClose={handleClose ?? handleCloseControl}
-        fullWidth
+        title={t_i18n('Reference modification')}
       >
-        <DialogTitle>{t_i18n('Reference modification')}</DialogTitle>
-        <DialogContent>
-          <ExternalReferencesField
-            name="references"
-            style={fieldSpacingContainerStyle}
-            setFieldValue={setFieldValue}
-            values={values}
-            id={id}
-            noStoreUpdate={noStoreUpdate}
-            required={false}
-          />
-          <Field
-            component={MarkdownField}
-            name="message"
-            label={t_i18n('Message')}
-            fullWidth
-            multiline
-            rows="2"
-            style={{ marginTop: 20 }}
-          />
-        </DialogContent>
+        <ExternalReferencesField
+          name="references"
+          style={fieldSpacingContainerStyle}
+          setFieldValue={setFieldValue}
+          values={values}
+          id={id}
+          noStoreUpdate={noStoreUpdate}
+          required={false}
+        />
+        <Field
+          component={MarkdownField}
+          name="message"
+          label={t_i18n('Message')}
+          fullWidth
+          multiline
+          rows="2"
+          style={{ marginTop: 20 }}
+        />
         <DialogActions>
           <Security needs={[KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]}>
             <Button
+              variant="secondary"
               onClick={submitForm} // directly submit
               disabled={disabled || validateReferences(values)}
-              classes={{ root: classes.button }}
             >
               {t_i18n('Update without references')}
             </Button>

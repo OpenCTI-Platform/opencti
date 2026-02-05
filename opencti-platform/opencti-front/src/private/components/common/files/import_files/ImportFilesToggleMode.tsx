@@ -1,15 +1,12 @@
-import React from 'react';
 import { ImportMode, useImportFilesContext } from '@components/common/files/import_files/ImportFilesContext';
+import { DescriptionOutlined, RouteOutlined, UploadFileOutlined } from '@mui/icons-material';
 import { Box, CardContent } from '@mui/material';
 import Typography from '@mui/material/Typography';
-import { RouteOutlined, UploadFileOutlined, DescriptionOutlined } from '@mui/icons-material';
-import { useFormatter } from '../../../../../components/i18n';
-import Card from '../../../../../components/common/card/Card';
 import { useTheme } from '@mui/styles';
+import React from 'react';
+import Card from '../../../../../components/common/card/Card';
+import { useFormatter } from '../../../../../components/i18n';
 import { Theme } from '../../../../../components/Theme';
-
-const CARD_WIDTH = 450;
-const CARD_HEIGHT = 300;
 
 const ImportFilesToggleMode = () => {
   const theme = useTheme<Theme>();
@@ -52,12 +49,9 @@ const ImportFilesToggleMode = () => {
   return (
     <Box
       sx={{
-        display: 'flex',
-        gap: 4,
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '60vh',
-        flexWrap: 'wrap',
+        display: 'grid',
+        gridTemplateColumns: `repeat(${modes.length}, 1fr)`,
+        gap: 1,
       }}
     >
       {modes.map(({ mode, title, description, icon }) => (
@@ -67,24 +61,26 @@ const ImportFilesToggleMode = () => {
           onClick={() => onSelectMode(mode)}
           key={mode}
           sx={{
-            width: CARD_WIDTH,
-            height: CARD_HEIGHT,
+            minWidth: 0,
             textAlign: 'center',
             ...(importMode === mode
               ? { borderColor: theme.palette.primary.main }
               : {}),
           }}
         >
-          <CardContent>
-            {icon}
+          <CardContent
+            sx={{
+              height: '100%',
+            }}
+          >
+            <Box>{icon}</Box>
             <Typography
               gutterBottom
               variant="h2"
-              style={{ marginTop: 20 }}
+              sx={{ marginBlock: 2 }}
             >
               {title}
             </Typography>
-            <br />
             <Typography variant="body1">
               {description}
             </Typography>

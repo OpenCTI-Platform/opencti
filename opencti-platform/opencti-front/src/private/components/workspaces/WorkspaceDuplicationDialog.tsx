@@ -1,24 +1,21 @@
-import React, { FunctionComponent, UIEvent, useMemo, useState } from 'react';
 import Button from '@common/button/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
+import Dialog from '@common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';
-import DialogTitle from '@mui/material/DialogTitle';
 import TextField from '@mui/material/TextField';
+import { FunctionComponent, UIEvent, useMemo, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router-dom';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { useFormatter } from '../../../components/i18n';
+import { handleError, MESSAGING$ } from '../../../relay/environment';
+import stopEvent from '../../../utils/domEvent';
+import useApiMutation from '../../../utils/hooks/useApiMutation';
 import {
   WorkspaceDuplicationDialogDuplicatedWorkspaceCreationMutation,
   WorkspaceDuplicationDialogDuplicatedWorkspaceCreationMutation$data,
 } from './__generated__/WorkspaceDuplicationDialogDuplicatedWorkspaceCreationMutation.graphql';
 import { WorkspaceDuplicationDialogFragment$data, WorkspaceDuplicationDialogFragment$key } from './__generated__/WorkspaceDuplicationDialogFragment.graphql';
 import { WorkspacesLinesPaginationQuery$variables } from './__generated__/WorkspacesLinesPaginationQuery.graphql';
-import { useFormatter } from '../../../components/i18n';
-import Transition from '../../../components/Transition';
-import { handleError, MESSAGING$ } from '../../../relay/environment';
-import useApiMutation from '../../../utils/hooks/useApiMutation';
-import stopEvent from '../../../utils/domEvent';
 
 const workspaceDuplicationFragment = graphql`
   fragment WorkspaceDuplicationDialogFragment on Workspace {
@@ -119,36 +116,26 @@ const WorkspaceDuplicationDialog: FunctionComponent<
   return (
     <Dialog
       open={displayDuplicate}
-      slotProps={{
-        paper: {
-          elevation: 1,
-          onClick: (e: React.MouseEvent) => stopEvent(e),
-        },
-      }}
-      slots={{ transition: Transition }}
       onClose={handleCloseDuplicate}
       fullWidth={true}
-      maxWidth="xs"
+      title={t_i18n('Duplicate the dashboard')}
     >
-      <DialogTitle>{t_i18n('Duplicate the dashboard')}</DialogTitle>
-      <DialogContent>
-        <TextField
-          error={!newName}
-          autoFocus
-          margin="dense"
-          id="duplicated_dashboard_name"
-          label={t_i18n('New name')}
-          type="text"
-          fullWidth
-          variant="standard"
-          helperText={!newName ? `${t_i18n('This field is required')}` : ''}
-          defaultValue={newName}
-          onChange={(event) => {
-            event.preventDefault();
-            setNewName(event.target.value);
-          }}
-        />
-      </DialogContent>
+      <TextField
+        error={!newName}
+        autoFocus
+        margin="dense"
+        id="duplicated_dashboard_name"
+        label={t_i18n('New name')}
+        type="text"
+        fullWidth
+        variant="standard"
+        helperText={!newName ? `${t_i18n('This field is required')}` : ''}
+        defaultValue={newName}
+        onChange={(event) => {
+          event.preventDefault();
+          setNewName(event.target.value);
+        }}
+      />
       <DialogActions>
         <Button variant="secondary" onClick={() => handleCloseDuplicate()}>{t_i18n('Cancel')}</Button>
         <Button

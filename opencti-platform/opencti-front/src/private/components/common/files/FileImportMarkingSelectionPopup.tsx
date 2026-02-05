@@ -1,14 +1,11 @@
-import { Formik } from 'formik';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import React from 'react';
-import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import Button from '@common/button/Button';
+import Dialog from '@common/dialog/Dialog';
 import AssociatedEntityField, { AssociatedEntityOption } from '@components/common/form/AssociatedEntityField';
-import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
+import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
+import DialogActions from '@mui/material/DialogActions';
+import { Formik } from 'formik';
 import { useFormatter } from '../../../../components/i18n';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 
 type FileImportMarkingSelectionPopupProps = {
   closePopup: () => void;
@@ -44,33 +41,29 @@ const FileImportMarkingSelectionPopup = ({ closePopup, handleUpload, isOpen, ent
         {({ resetForm, submitForm, setFieldValue }) => (
           <Dialog
             open={isOpen}
-            fullWidth={true}
-            slotProps={{ paper: { elevation: 1 } }}
             onClose={() => {
               resetForm();
               closePopup();
             }}
+            title={t_i18n('Select file marking definitions')}
           >
-            <DialogTitle>{t_i18n('Select file marking definitions')}</DialogTitle>
-            <DialogContent>
-              <ObjectMarkingField
-                name="fileMarkings"
-                label={t_i18n('File marking definition levels')}
-                style={fieldSpacingContainerStyle}
-                setFieldValue={setFieldValue}
-                required={false}
-              />
-              {!entityId
-                && (
-                  <div style={{ paddingTop: '10px' }}>
-                    <AssociatedEntityField
-                      label={t_i18n('Associated entity')}
-                      name="associatedEntity"
-                      onChange={setFieldValue}
-                    />
-                  </div>
-                )}
-            </DialogContent>
+            <ObjectMarkingField
+              name="fileMarkings"
+              label={t_i18n('File marking definition levels')}
+              style={fieldSpacingContainerStyle}
+              setFieldValue={setFieldValue}
+              required={false}
+            />
+            {!entityId
+              && (
+                <div style={{ paddingTop: '10px' }}>
+                  <AssociatedEntityField
+                    label={t_i18n('Associated entity')}
+                    name="associatedEntity"
+                    onChange={setFieldValue}
+                  />
+                </div>
+              )}
             <DialogActions>
               <Button
                 variant="secondary"

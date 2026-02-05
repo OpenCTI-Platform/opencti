@@ -1,35 +1,33 @@
-import React, { FunctionComponent, useState } from 'react';
-import { LogoXtmOneIcon } from 'filigran-icon';
-import InputAdornment from '@mui/material/InputAdornment';
-import MenuItem from '@mui/material/MenuItem';
-import Menu from '@mui/material/Menu';
-import { v4 as uuid } from 'uuid';
-import { graphql } from 'react-relay';
-import Dialog from '@mui/material/Dialog';
-import { DialogTitle } from '@mui/material';
-import DialogContent from '@mui/material/DialogContent';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Select from '@mui/material/Select';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
-import { TextFieldAskAIFixSpellingMutation, TextFieldAskAIFixSpellingMutation$data } from '@components/common/form/__generated__/TextFieldAskAIFixSpellingMutation.graphql';
-import { TextFieldAskAIMakeShorterMutation, TextFieldAskAIMakeShorterMutation$data } from '@components/common/form/__generated__/TextFieldAskAIMakeShorterMutation.graphql';
-import { TextFieldAskAIMakeLongerMutation, TextFieldAskAIMakeLongerMutation$data } from '@components/common/form/__generated__/TextFieldAskAIMakeLongerMutation.graphql';
-import { TextFieldAskAIChangeToneMutation, TextFieldAskAIChangeToneMutation$data } from '@components/common/form/__generated__/TextFieldAskAIChangeToneMutation.graphql';
-import { TextFieldAskAISummarizeMutation, TextFieldAskAISummarizeMutation$data } from '@components/common/form/__generated__/TextFieldAskAISummarizeMutation.graphql';
-import { TextFieldAskAIExplainMutation, TextFieldAskAIExplainMutation$data } from '@components/common/form/__generated__/TextFieldAskAIExplainMutation.graphql';
-import { useTheme } from '@mui/styles';
+import Dialog from '@common/dialog/Dialog';
 import FiligranIcon from '@components/common/FiligranIcon';
-import EETooltip from '../entreprise_edition/EETooltip';
+import { TextFieldAskAIChangeToneMutation, TextFieldAskAIChangeToneMutation$data } from '@components/common/form/__generated__/TextFieldAskAIChangeToneMutation.graphql';
+import { TextFieldAskAIExplainMutation, TextFieldAskAIExplainMutation$data } from '@components/common/form/__generated__/TextFieldAskAIExplainMutation.graphql';
+import { TextFieldAskAIFixSpellingMutation, TextFieldAskAIFixSpellingMutation$data } from '@components/common/form/__generated__/TextFieldAskAIFixSpellingMutation.graphql';
+import { TextFieldAskAIMakeLongerMutation, TextFieldAskAIMakeLongerMutation$data } from '@components/common/form/__generated__/TextFieldAskAIMakeLongerMutation.graphql';
+import { TextFieldAskAIMakeShorterMutation, TextFieldAskAIMakeShorterMutation$data } from '@components/common/form/__generated__/TextFieldAskAIMakeShorterMutation.graphql';
+import { TextFieldAskAISummarizeMutation, TextFieldAskAISummarizeMutation$data } from '@components/common/form/__generated__/TextFieldAskAISummarizeMutation.graphql';
+import DialogActions from '@mui/material/DialogActions';
+import FormControl from '@mui/material/FormControl';
+import InputAdornment from '@mui/material/InputAdornment';
+import InputLabel from '@mui/material/InputLabel';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import { useTheme } from '@mui/styles';
+import { LogoXtmOneIcon } from 'filigran-icon';
+import React, { FunctionComponent, useState } from 'react';
+import { graphql } from 'react-relay';
+import { v4 as uuid } from 'uuid';
 import { useFormatter } from '../../../../components/i18n';
+import EETooltip from '../entreprise_edition/EETooltip';
 
-import ResponseDialog from '../../../../utils/ai/ResponseDialog';
-import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
+import ResponseDialog from '../../../../utils/ai/ResponseDialog';
 import useAI from '../../../../utils/hooks/useAI';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 // region types
 interface TextFieldAskAiProps {
@@ -296,28 +294,23 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
           />
         )}
         <Dialog
-          slotProps={{ paper: { elevation: 1 } }}
           open={openToneOptions}
           onClose={handleCloseToneOptions}
-          fullWidth={true}
-          maxWidth="xs"
+          title={t_i18n('Select options')}
         >
-          <DialogTitle>{t_i18n('Select options')}</DialogTitle>
-          <DialogContent>
-            <FormControl style={{ width: '100%' }}>
-              <InputLabel id="tone">{t_i18n('Tone')}</InputLabel>
-              <Select
-                labelId="tone"
-                value={tone}
-                onChange={(event) => setTone(event.target.value as unknown as 'tactical' | 'operational' | 'strategic')}
-                fullWidth={true}
-              >
-                <MenuItem value="tactical">{t_i18n('Tactical')}</MenuItem>
-                <MenuItem value="operational">{t_i18n('Operational')}</MenuItem>
-                <MenuItem value="strategic">{t_i18n('Strategic')}</MenuItem>
-              </Select>
-            </FormControl>
-          </DialogContent>
+          <FormControl style={{ width: '100%' }}>
+            <InputLabel id="tone">{t_i18n('Tone')}</InputLabel>
+            <Select
+              labelId="tone"
+              value={tone}
+              onChange={(event) => setTone(event.target.value as unknown as 'tactical' | 'operational' | 'strategic')}
+              fullWidth={true}
+            >
+              <MenuItem value="tactical">{t_i18n('Tactical')}</MenuItem>
+              <MenuItem value="operational">{t_i18n('Operational')}</MenuItem>
+              <MenuItem value="strategic">{t_i18n('Strategic')}</MenuItem>
+            </Select>
+          </FormControl>
           <DialogActions>
             <Button variant="secondary" onClick={handleCloseToneOptions}>
               {t_i18n('Cancel')}

@@ -1,9 +1,7 @@
 import Button from '@common/button/Button';
-import Dialog from '@mui/material/Dialog';
+import Dialog from '@common/dialog/Dialog';
+import FormButtonContainer from '@common/form/FormButtonContainer';
 import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik, FormikConfig } from 'formik';
 import { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
@@ -11,21 +9,13 @@ import { RecordSourceSelectorProxy } from 'relay-runtime';
 import * as Yup from 'yup';
 import ColorPickerField from '../../../../components/ColorPickerField';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import SimpleTextField from '../../../../components/SimpleTextField';
-import type { Theme } from '../../../../components/Theme';
-import FormButtonContainer from '@common/form/FormButtonContainer';
 import { useFormatter } from '../../../../components/i18n';
 import { PaginationOptions } from '../../../../components/list_lines';
+import SimpleTextField from '../../../../components/SimpleTextField';
 import { commitMutation, defaultCommitMutation, handleErrorInForm } from '../../../../relay/environment';
 import { insertNode } from '../../../../utils/store';
 import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 import { LabelAddInput, LabelCreationContextualMutation$data } from './__generated__/LabelCreationContextualMutation.graphql';
-
-const useStyles = makeStyles<Theme>(() => ({
-  dialog: {
-    overflow: 'hidden',
-  },
-}));
 
 const labelMutation = graphql`
   mutation LabelCreationMutation($input: LabelAddInput!) {
@@ -76,7 +66,6 @@ const LabelCreation: FunctionComponent<LabelCreationProps> = ({
   paginationOptions,
   dryrun,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const labelValidation = Yup.object().shape({
     value: Yup.string().required(t_i18n('This field is required')),
@@ -217,27 +206,23 @@ const LabelCreation: FunctionComponent<LabelCreationProps> = ({
             <Form>
               <Dialog
                 open={open}
-                PaperProps={{ elevation: 1 }}
                 onClose={handleClose}
-                fullWidth={true}
+                title={t_i18n('Create a label')}
               >
-                <DialogTitle>{t_i18n('Create a label')}</DialogTitle>
-                <DialogContent classes={{ root: classes.dialog }}>
-                  <Field
-                    component={SimpleTextField}
-                    variant="standard"
-                    name="value"
-                    label={t_i18n('Value')}
-                    fullWidth={true}
-                  />
-                  <Field
-                    component={ColorPickerField}
-                    name="color"
-                    label={t_i18n('Color')}
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
-                  />
-                </DialogContent>
+                <Field
+                  component={SimpleTextField}
+                  variant="standard"
+                  name="value"
+                  label={t_i18n('Value')}
+                  fullWidth={true}
+                />
+                <Field
+                  component={ColorPickerField}
+                  name="color"
+                  label={t_i18n('Color')}
+                  fullWidth={true}
+                  style={{ marginTop: 20 }}
+                />
                 <DialogActions>
                   <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                     {t_i18n('Cancel')}

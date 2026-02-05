@@ -1,28 +1,25 @@
-import React, { FunctionComponent, useEffect, useState } from 'react';
-import { Field } from 'formik';
-import { graphql } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
 import Button from '@common/button/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
+import Dialog from '@common/dialog/Dialog';
 import { ObjectMarkingFieldAllowedMarkingQuery$data } from '@components/common/form/__generated__/ObjectMarkingFieldAllowedMarkingQuery.graphql';
 import { ObjectMarkingFieldOtherUserAllowedMarkingsQuery$data } from '@components/common/form/__generated__/ObjectMarkingFieldOtherUserAllowedMarkingsQuery.graphql';
-import DialogTitle from '@mui/material/DialogTitle';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContentText from '@mui/material/DialogContentText';
 import { useTheme } from '@mui/material/styles';
-import useAuth from '../../../../utils/hooks/useAuth';
-import Transition from '../../../../components/Transition';
+import makeStyles from '@mui/styles/makeStyles';
+import { Field } from 'formik';
+import React, { FunctionComponent, useEffect, useState } from 'react';
+import { graphql } from 'react-relay';
 import AutocompleteField from '../../../../components/AutocompleteField';
-import { RenderOption } from '../../../../components/list_lines';
 import { useFormatter } from '../../../../components/i18n';
+import { RenderOption } from '../../../../components/list_lines';
+import type { Theme } from '../../../../components/Theme';
+import { fetchQuery } from '../../../../relay/environment';
 import { convertMarking } from '../../../../utils/edition';
+import { FieldOption } from '../../../../utils/field';
+import useAuth from '../../../../utils/hooks/useAuth';
+import MarkingIcon from '../../../../utils/MarkingIcon';
 import { filterMarkingsOutFor } from '../../../../utils/markings/markingsFiltering';
 import { isEmptyField } from '../../../../utils/utils';
-import { fetchQuery } from '../../../../relay/environment';
-import { FieldOption } from '../../../../utils/field';
-import type { Theme } from '../../../../components/Theme';
-import MarkingIcon from '../../../../utils/MarkingIcon';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -277,20 +274,14 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
         renderOption={renderOption}
       />
       <Dialog
-        slotProps={{ paper: { elevation: 1 } }}
         open={!!newMarking}
-        keepMounted={true}
-        slots={{ transition: Transition }}
         onClose={handleCancellation}
+        title={t_i18n('Are you sure?')}
+        size="small"
       >
-        <DialogTitle>
-          {t_i18n('Are you sure?')}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('You are about to change the marking with another rank.')}
-          </DialogContentText>
-        </DialogContent>
+        <DialogContentText>
+          {t_i18n('You are about to change the marking with another rank.')}
+        </DialogContentText>
         <DialogActions>
           <Button variant="secondary" onClick={handleCancellation}>{t_i18n('Cancel')}</Button>
           <Button onClick={submitUpdate}>

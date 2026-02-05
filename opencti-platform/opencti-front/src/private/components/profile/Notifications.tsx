@@ -1,40 +1,38 @@
-import React, { FunctionComponent, useState } from 'react';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
+import Dialog from '@common/dialog/Dialog';
+import { NotificationsLine_node$data } from '@components/profile/__generated__/NotificationsLine_node.graphql';
+import { NotificationsLines_data$data } from '@components/profile/__generated__/NotificationsLines_data.graphql';
+import { NotificationsLinesPaginationQuery, NotificationsLinesPaginationQuery$variables } from '@components/profile/__generated__/NotificationsLinesPaginationQuery.graphql';
+import DigestNotificationDrawer from '@components/profile/notifications/DigestNotificationDrawer';
+import { CheckCircleOutlined, DeleteOutlined, UnpublishedOutlined } from '@mui/icons-material';
 import { Badge, Tooltip } from '@mui/material';
 import Chip from '@mui/material/Chip';
 import { indigo } from '@mui/material/colors';
-import IconButton from '@common/button/IconButton';
-import { CheckCircleOutlined, DeleteOutlined, UnpublishedOutlined } from '@mui/icons-material';
-import { graphql } from 'react-relay';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import Button from '@common/button/Button';
 import DialogActions from '@mui/material/DialogActions';
-import { NotificationsLine_node$data } from '@components/profile/__generated__/NotificationsLine_node.graphql';
-import { NotificationsLinesPaginationQuery, NotificationsLinesPaginationQuery$variables } from '@components/profile/__generated__/NotificationsLinesPaginationQuery.graphql';
-import { NotificationsLines_data$data } from '@components/profile/__generated__/NotificationsLines_data.graphql';
-import DigestNotificationDrawer from '@components/profile/notifications/DigestNotificationDrawer';
+import DialogContentText from '@mui/material/DialogContentText';
+import { FunctionComponent, useState } from 'react';
+import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
-import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import useAuth from '../../../utils/hooks/useAuth';
-import { emptyFilterGroup, isFilterGroupNotEmpty, useGetDefaultFilterObject, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../utils/filters/filtersUtils';
 import Breadcrumbs from '../../../components/Breadcrumbs';
-import { useFormatter } from '../../../components/i18n';
-import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
-import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
-import MarkdownDisplay from '../../../components/MarkdownDisplay';
-import { hexToRGB } from '../../../utils/Colors';
-import useApiMutation from '../../../utils/hooks/useApiMutation';
-import Transition from '../../../components/Transition';
-import { deleteNode } from '../../../utils/store';
-import { isNotEmptyField } from '../../../utils/utils';
+import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
-import { colors, getFirstOperation, iconSelector } from './notifications/notificationUtils';
+import { useFormatter } from '../../../components/i18n';
+import MarkdownDisplay from '../../../components/MarkdownDisplay';
 import { chipInListBasicStyle } from '../../../utils/chipStyle';
+import { hexToRGB } from '../../../utils/Colors';
+import { emptyFilterGroup, isFilterGroupNotEmpty, useGetDefaultFilterObject, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../utils/filters/filtersUtils';
+import useApiMutation from '../../../utils/hooks/useApiMutation';
+import useAuth from '../../../utils/hooks/useAuth';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
+import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
+import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import { deleteNode } from '../../../utils/store';
 import { EMPTY_VALUE } from '../../../utils/String';
+import { isNotEmptyField } from '../../../utils/utils';
+import { colors, getFirstOperation, iconSelector } from './notifications/notificationUtils';
 
 export const LOCAL_STORAGE_KEY = 'notifiers';
 
@@ -442,16 +440,13 @@ const Notifications: FunctionComponent = () => {
       )}
       {notificationToDelete && (
         <Dialog
-          slotProps={{ paper: { elevation: 1 } }}
           open={!!notificationToDelete}
-          slots={{ transition: Transition }}
           onClose={handleCloseDelete}
+          title={t_i18n('Are you sure?')}
         >
-          <DialogContent>
-            <DialogContentText>
-              {t_i18n('Do you want to delete this notification?')}
-            </DialogContentText>
-          </DialogContent>
+          <DialogContentText>
+            {t_i18n('Do you want to delete this notification?')}
+          </DialogContentText>
           <DialogActions>
             <Button variant="secondary" onClick={handleCloseDelete}>
               {t_i18n('Cancel')}

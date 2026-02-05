@@ -1,45 +1,42 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { compose, toPairs, uniq } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
+import Button from '@common/button/Button';
+import { ArrowDropDown, ArrowDropUp, FileDownloadOutlined, LibraryBooksOutlined, SettingsOutlined, ViewModuleOutlined } from '@mui/icons-material';
+import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
+import Checkbox from '@mui/material/Checkbox';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
 import List from '@mui/material/List';
-import Tooltip from '@mui/material/Tooltip';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { ArrowDropDown, ArrowDropUp, FileDownloadOutlined, LibraryBooksOutlined, SettingsOutlined, ViewModuleOutlined } from '@mui/icons-material';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import Checkbox from '@mui/material/Checkbox';
-import Alert from '@mui/material/Alert';
-import { FileDelimitedOutline, FormatListGroup, Group, RelationManyToMany, VectorPolygon } from 'mdi-material-ui';
-import DialogTitle from '@mui/material/DialogTitle';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@common/button/Button';
-import Box from '@mui/material/Box';
+import Tooltip from '@mui/material/Tooltip';
+import withStyles from '@mui/styles/withStyles';
 import { ListViewIcon, SublistViewIcon } from 'filigran-icon';
-import FiligranIcon from '../../private/components/common/FiligranIcon';
+import { FileDelimitedOutline, FormatListGroup, Group, RelationManyToMany, VectorPolygon } from 'mdi-material-ui';
+import * as PropTypes from 'prop-types';
+import { compose, toPairs, uniq } from 'ramda';
+import { Component } from 'react';
 import { ErrorBoundary } from '../../private/components/Error';
-import { UserContext } from '../../utils/hooks/useAuth';
+import FiligranIcon from '../../private/components/common/FiligranIcon';
 import Filters from '../../private/components/common/lists/Filters';
+import StixCoreObjectsExports from '../../private/components/common/stix_core_objects/StixCoreObjectsExports';
+import StixCoreRelationshipsExports from '../../private/components/common/stix_core_relationships/StixCoreRelationshipsExports';
+import StixDomainObjectsExports from '../../private/components/common/stix_domain_objects/StixDomainObjectsExports';
+import StixCyberObservablesExports from '../../private/components/observations/stix_cyber_observables/StixCyberObservablesExports';
+import { ExportContext } from '../../utils/ExportContextProvider';
+import Security from '../../utils/Security';
+import { UserContext } from '../../utils/hooks/useAuth';
+import { KNOWLEDGE_KNGETEXPORT } from '../../utils/hooks/useGranted';
+import { export_max_size } from '../../utils/utils';
+import FilterIconButton from '../FilterIconButton';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
-import StixDomainObjectsExports from '../../private/components/common/stix_domain_objects/StixDomainObjectsExports';
-import Security from '../../utils/Security';
-import { KNOWLEDGE_KNGETEXPORT } from '../../utils/hooks/useGranted';
-import StixCyberObservablesExports from '../../private/components/observations/stix_cyber_observables/StixCyberObservablesExports';
-import StixCoreRelationshipsExports from '../../private/components/common/stix_core_relationships/StixCoreRelationshipsExports';
-import StixCoreObjectsExports from '../../private/components/common/stix_core_objects/StixCoreObjectsExports';
-import FilterIconButton from '../FilterIconButton';
-import { ExportContext } from '../../utils/ExportContextProvider';
-import { export_max_size } from '../../utils/utils';
-import Transition from '../Transition';
 
 const styles = (theme) => ({
   container: {
@@ -555,36 +552,32 @@ class ListLines extends Component {
           {handleSwitchRedirectionMode && (
             <Dialog
               open={this.state.openSettings}
-              slotProps={{ paper: { elevation: 1 } }}
-              slots={{ transition: Transition }}
               onClose={this.handleCloseSettings.bind(this)}
-              maxWidth="xs"
-              fullWidth={true}
+              size="small"
+              title={t('List settings')}
             >
-              <DialogTitle>{t('List settings')}</DialogTitle>
-              <DialogContent>
-                <FormControl style={{ width: '100%' }}>
-                  <InputLabel id="redirectionMode">
-                    {t('Redirection mode')}
-                  </InputLabel>
-                  <Select
-                    value={redirectionMode}
-                    onChange={(event) => handleSwitchRedirectionMode(event.target.value)
-                    }
-                    fullWidth={true}
-                  >
-                    <MenuItem value="overview">
-                      {t('Redirecting to the Overview section')}
-                    </MenuItem>
-                    <MenuItem value="knowledge">
-                      {t('Redirecting to the Knowledge section')}
-                    </MenuItem>
-                    <MenuItem value="content">
-                      {t('Redirecting to the Content section')}
-                    </MenuItem>
-                  </Select>
-                </FormControl>
-              </DialogContent>
+              <FormControl style={{ width: '100%' }}>
+                <InputLabel id="redirectionMode">
+                  {t('Redirection mode')}
+                </InputLabel>
+                <Select
+                  value={redirectionMode}
+                  onChange={(event) => handleSwitchRedirectionMode(event.target.value)
+                  }
+                  fullWidth={true}
+                >
+                  <MenuItem value="overview">
+                    {t('Redirecting to the Overview section')}
+                  </MenuItem>
+                  <MenuItem value="knowledge">
+                    {t('Redirecting to the Knowledge section')}
+                  </MenuItem>
+                  <MenuItem value="content">
+                    {t('Redirecting to the Content section')}
+                  </MenuItem>
+                </Select>
+              </FormControl>
+
               <DialogActions>
                 <Button onClick={this.handleCloseSettings.bind(this)}>
                   {t('Close')}

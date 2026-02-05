@@ -1,20 +1,17 @@
-import React, { Component } from 'react';
+import List from '@mui/material/List';
+import Slide from '@mui/material/Slide';
+import withStyles from '@mui/styles/withStyles';
 import * as PropTypes from 'prop-types';
 import { compose, pathOr } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
-import Slide from '@mui/material/Slide';
-import { graphql, createRefetchContainer } from 'react-relay';
-import List from '@mui/material/List';
+import React, { Component } from 'react';
+import { createRefetchContainer, graphql } from 'react-relay';
 import { interval } from 'rxjs';
-import IconButton from '@common/button/IconButton';
-import { Close } from '@mui/icons-material';
-import Typography from '@mui/material/Typography';
-import StixCyberObservablesExportCreation from './StixCyberObservablesExportCreation';
-import { FIVE_SECONDS } from '../../../../utils/Time';
-import FileLine from '../../common/files/FileLine';
 import inject18n from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
+import { FIVE_SECONDS } from '../../../../utils/Time';
 import { KNOWLEDGE_KNGETEXPORT_KNASKEXPORT } from '../../../../utils/hooks/useGranted';
+import FileLine from '../../common/files/FileLine';
+import StixCyberObservablesExportCreation from './StixCyberObservablesExportCreation';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -60,7 +57,7 @@ class StixCyberObservablesExportsContentComponent extends Component {
   }
 
   render() {
-    const { classes, t, data, paginationOptions, handleToggle, exportContext } = this.props;
+    const { t, data, paginationOptions, exportContext } = this.props;
     const stixCyberObservablesExportFiles = pathOr(
       [],
       ['stixCyberObservablesExportFiles', 'edges'],
@@ -68,17 +65,6 @@ class StixCyberObservablesExportsContentComponent extends Component {
     );
     return (
       <div>
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleToggle.bind(this)}
-            color="primary"
-          >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6">{t('Exports list')}</Typography>
-        </div>
         <List>
           {stixCyberObservablesExportFiles.length > 0 ? (
             stixCyberObservablesExportFiles.map((file) => file?.node && (
@@ -149,9 +135,7 @@ const StixCyberObservablesExportsContent = createRefetchContainer(
 );
 
 StixCyberObservablesExportsContent.propTypes = {
-  classes: PropTypes.object.isRequired,
   t: PropTypes.func,
-  handleToggle: PropTypes.func,
   data: PropTypes.object,
   paginationOptions: PropTypes.object,
   handleApplyListArgs: PropTypes.func,

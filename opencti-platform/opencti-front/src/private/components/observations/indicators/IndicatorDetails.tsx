@@ -1,28 +1,25 @@
-import React, { FunctionComponent, useState } from 'react';
-import { createFragmentContainer, graphql } from 'react-relay';
-import Grid from '@mui/material/Grid';
-import { TroubleshootOutlined } from '@mui/icons-material';
-import { IndicatorDetails_indicator$data } from '@components/observations/indicators/__generated__/IndicatorDetails_indicator.graphql';
-import { InformationOutline } from 'mdi-material-ui';
-import Tooltip from '@mui/material/Tooltip';
 import Button from '@common/button/Button';
-import Dialog from '@mui/material/Dialog';
-import Box from '@mui/material/Box';
-import DecayDialogContent from './DecayDialogContent';
-import DecayExclusionDialogContent from './DecayExclusionDialogContent';
-import ItemScore from '../../../../components/ItemScore';
-import IndicatorObservables from './IndicatorObservables';
-import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
-import ItemBoolean from '../../../../components/ItemBoolean';
-import StixCoreObjectKillChainPhasesView from '../../common/stix_core_objects/StixCoreObjectKillChainPhasesView';
-import { useFormatter } from '../../../../components/i18n';
-import Transition from '../../../../components/Transition';
-import FieldOrEmpty from '../../../../components/FieldOrEmpty';
-import Card from '../../../../components/common/card/Card';
-import Label from '../../../../components/common/label/Label';
-import { Stack } from '@mui/material';
 import Tag from '@common/tag/Tag';
 import TextList from '@common/text/TextList';
+import { IndicatorDetails_indicator$data } from '@components/observations/indicators/__generated__/IndicatorDetails_indicator.graphql';
+import { TroubleshootOutlined } from '@mui/icons-material';
+import { Stack, Tooltip } from '@mui/material';
+import Box from '@mui/material/Box';
+import Grid from '@mui/material/Grid';
+import { InformationOutline } from 'mdi-material-ui';
+import { FunctionComponent, useState } from 'react';
+import { createFragmentContainer, graphql } from 'react-relay';
+import Card from '../../../../components/common/card/Card';
+import Label from '../../../../components/common/label/Label';
+import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import { useFormatter } from '../../../../components/i18n';
+import ItemBoolean from '../../../../components/ItemBoolean';
+import ItemScore from '../../../../components/ItemScore';
+import StixCoreObjectKillChainPhasesView from '../../common/stix_core_objects/StixCoreObjectKillChainPhasesView';
+import DecayDialogContent from './DecayDialogContent';
+import DecayExclusionDialogContent from './DecayExclusionDialogContent';
+import IndicatorObservables from './IndicatorObservables';
 
 interface IndicatorDetailsComponentProps {
   indicator: IndicatorDetails_indicator$data;
@@ -82,27 +79,19 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
                   >
                     {t_i18n('Lifecycle')}
                   </Button>
-                  <Dialog
-                    slotProps={{ paper: { elevation: 1 } }}
-                    open={isLifecycleOpen}
-                    keepMounted={true}
-                    slots={{ transition: Transition }}
-                    onClose={onDecayLifecycleClose}
-                    fullWidth
-                    maxWidth="lg"
-                  >
-                    {indicator.decay_exclusion_applied_rule ? (
-                      <DecayExclusionDialogContent
-                        indicator={indicator}
-                        onClose={onDecayLifecycleClose}
-                      />
-                    ) : (
-                      <DecayDialogContent
-                        indicator={indicator}
-                        onClose={onDecayLifecycleClose}
-                      />
-                    )}
-                  </Dialog>
+                  {indicator.decay_exclusion_applied_rule ? (
+                    <DecayExclusionDialogContent
+                      open={isLifecycleOpen}
+                      indicator={indicator}
+                      onClose={onDecayLifecycleClose}
+                    />
+                  ) : (
+                    <DecayDialogContent
+                      open={isLifecycleOpen}
+                      indicator={indicator}
+                      onClose={onDecayLifecycleClose}
+                    />
+                  )}
                 </>
               )}
             </Stack>

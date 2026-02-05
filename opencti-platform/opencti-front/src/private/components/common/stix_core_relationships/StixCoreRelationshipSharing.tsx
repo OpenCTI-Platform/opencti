@@ -1,28 +1,26 @@
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
+import Dialog from '@common/dialog/Dialog';
+import EEChip from '@components/common/entreprise_edition/EEChip';
+import EETooltip from '@components/common/entreprise_edition/EETooltip';
+import { AccountBalanceOutlined } from '@mui/icons-material';
+import DialogActions from '@mui/material/DialogActions';
+import Tooltip from '@mui/material/Tooltip';
+import { Form, Formik } from 'formik';
+import type { FormikHelpers } from 'formik/dist/types';
+import { BankPlus } from 'mdi-material-ui';
 import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@common/button/Button';
-import { AccountBalanceOutlined } from '@mui/icons-material';
-import { BankPlus } from 'mdi-material-ui';
-import Tooltip from '@mui/material/Tooltip';
-import type { FormikHelpers } from 'formik/dist/types';
-import { Form, Formik } from 'formik';
-import Dialog from '@mui/material/Dialog';
-import { DialogTitle } from '@mui/material';
-import DialogContent from '@mui/material/DialogContent';
-import IconButton from '@common/button/IconButton';
-import EETooltip from '@components/common/entreprise_edition/EETooltip';
-import EEChip from '@components/common/entreprise_edition/EEChip';
-import ObjectOrganizationField from '../form/ObjectOrganizationField';
-import { StixCoreRelationshipSharingQuery$data } from './__generated__/StixCoreRelationshipSharingQuery.graphql';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
-import { useFormatter } from '../../../../components/i18n';
-import { truncate } from '../../../../utils/String';
-import useGranted, { KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/hooks/useGranted';
-import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import Label from '../../../../components/common/label/Label';
 import Tag from '../../../../components/common/tag/Tag';
+import { useFormatter } from '../../../../components/i18n';
+import { commitMutation, QueryRenderer } from '../../../../relay/environment';
+import { truncate } from '../../../../utils/String';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import useGranted, { KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/hooks/useGranted';
+import ObjectOrganizationField from '../form/ObjectOrganizationField';
+import { StixCoreRelationshipSharingQuery$data } from './__generated__/StixCoreRelationshipSharingQuery.graphql';
 
 // region types
 interface ContainerHeaderSharedProps {
@@ -170,22 +168,18 @@ const StixCoreRelationshipSharing: FunctionComponent<
         >
           {({ submitForm, handleReset, isSubmitting }) => (
             <Dialog
-              slotProps={{ paper: { elevation: 1 } }}
               open={displaySharing}
               onClose={() => handleReset()}
-              fullWidth={true}
+              title={t_i18n('Share with an organization')}
             >
-              <DialogTitle>{t_i18n('Share with an organization')}</DialogTitle>
-              <DialogContent style={{ overflowY: 'hidden' }}>
-                <Form>
-                  <ObjectOrganizationField
-                    name="objectOrganization"
-                    style={{ width: '100%' }}
-                    label={t_i18n('Organization')}
-                    multiple={false}
-                  />
-                </Form>
-              </DialogContent>
+              <Form>
+                <ObjectOrganizationField
+                  name="objectOrganization"
+                  style={{ width: '100%' }}
+                  label={t_i18n('Organization')}
+                  multiple={false}
+                />
+              </Form>
               <DialogActions>
                 <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                   {t_i18n('Close')}

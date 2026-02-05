@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import Button from '@common/button/Button';
 import Checkbox from '@mui/material/Checkbox';
-import Dialog from '@mui/material/Dialog';
+import Dialog from '@common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -344,7 +344,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
       disableRestoreFocus={true}
       open={open ?? false}
       onClose={onReset}
-      slotProps={{ paper: { elevation: 1 } }}
+      title={t_i18n('Create a live trigger')}
     >
       <Formik
         initialValues={liveInitialValues}
@@ -354,14 +354,12 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
       >
         {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
           <>
-            <DialogTitle>{t_i18n('Create a live trigger')}</DialogTitle>
-            <DialogContent>{liveFields(setFieldValue, values)}</DialogContent>
+            {liveFields(setFieldValue, values)}
             <DialogActions>
-              <Button onClick={handleReset} disabled={isSubmitting}>
+              <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
               </Button>
               <Button
-                color="secondary"
                 onClick={submitForm}
                 disabled={isSubmitting}
               >

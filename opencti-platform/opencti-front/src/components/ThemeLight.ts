@@ -16,6 +16,7 @@ const THEME_LIGHT_DEFAULT_ACCENT = '#dfdfdf';
 const THEME_LIGHT_DEFAULT_TEXT = '#18191B';
 export const THEME_LIGHT_DEFAULT_PAPER = '#ffffff';
 const THEME_LIGHT_DEFAULT_NAV = '#ffffff';
+export const THEME_LIGHT_DIALOG_BACKGROUND = '#FFFFFF';
 
 const getAppBodyGradientEndColor = (background: string | null): string => {
   if (background && background !== THEME_LIGHT_DEFAULT_BACKGROUND) {
@@ -377,6 +378,38 @@ const ThemeLight = (
         },
       },
     },
+    MuiDialog: {
+      styleOverrides: {
+        paper: {
+          backgroundImage: 'none',
+          backgroundColor: paper === THEME_LIGHT_DEFAULT_PAPER
+            ? '#FFFFFF'
+            : (paper ?? '#FFFFFF'),
+          borderRadius: 4,
+        },
+      },
+    },
+    MuiDialogTitle: {
+      defaultProps: {
+        variant: 'h5',
+      },
+    },
+    MuiDialogActions: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          gap: theme.spacing(1),
+          padding: 0,
+          marginTop: theme.spacing(4),
+          marginLeft: 0,
+          '& .MuiButton-root': {
+            textTransform: 'none',
+          },
+          '& > :not(style) ~ :not(style)': {
+            marginLeft: 0,
+          },
+        }),
+      },
+    },
     MuiToggleButtonGroup: {
       defaultProps: {
         size: 'small',
@@ -652,15 +685,6 @@ const ThemeLight = (
           display: 'inline-block',
           '&::first-letter': {
             textTransform: 'uppercase',
-          },
-        },
-      },
-    },
-    MuiDialogActions: {
-      styleOverrides: {
-        root: {
-          '& .MuiButton-root': {
-            textTransform: 'none',
           },
         },
       },

@@ -1,30 +1,27 @@
+import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
-import { DotsHorizontalCircleOutline } from 'mdi-material-ui';
-import Tooltip from '@mui/material/Tooltip';
-import { CloseOutlined, Delete, AddOutlined } from '@mui/icons-material';
-import React, { useState } from 'react';
-import { useFormatter } from 'src/components/i18n';
-import { FormikConfig } from 'formik/dist/types';
-import { MESSAGING$ } from 'src/relay/environment';
-import { graphql } from 'react-relay';
-import { SelectChangeEvent } from '@mui/material/Select';
-import Slide from '@mui/material/Slide';
-import { Field, Form, Formik } from 'formik';
-import TextField from '@mui/material/TextField';
-import Dialog from '@mui/material/Dialog';
-import Transition from 'src/components/Transition';
-import { DialogTitle } from '@mui/material';
-import DialogContent from '@mui/material/DialogContent';
+import Dialog from '@common/dialog/Dialog';
+import Tag from '@common/tag/Tag';
+import { AddOutlined, CloseOutlined, Delete } from '@mui/icons-material';
+import DialogActions from '@mui/material/DialogActions';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@common/button/Button';
+import ListItemText from '@mui/material/ListItemText';
+import { SelectChangeEvent } from '@mui/material/Select';
+import Slide from '@mui/material/Slide';
+import TextField from '@mui/material/TextField';
+import Tooltip from '@mui/material/Tooltip';
+import { Field, Form, Formik } from 'formik';
+import { FormikConfig } from 'formik/dist/types';
+import { DotsHorizontalCircleOutline } from 'mdi-material-ui';
+import { useState } from 'react';
+import { graphql } from 'react-relay';
+import { useFormatter } from 'src/components/i18n';
+import { MESSAGING$ } from 'src/relay/environment';
+import useApiMutation from 'src/utils/hooks/useApiMutation';
 import { EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from 'src/utils/hooks/useGranted';
 import Security from 'src/utils/Security';
-import useApiMutation from 'src/utils/hooks/useApiMutation';
-import Tag from '@common/tag/Tag';
 
 const workspaceMutation = graphql`
   mutation WorkspaceHeaderTagManagerFieldMutation($id: ID!, $input: [EditInput!]!) {
@@ -139,57 +136,51 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
           </Slide>
 
           <Dialog
-            slotProps={{ paper: { elevation: 1 } }}
             open={isTagDialogOpen}
-            slots={{ transition: Transition }}
             onClose={toggleTagDialog}
-            fullWidth
+            title={t_i18n('Entity tags')}
           >
-            <DialogTitle>
-              {t_i18n('Entity tags')}
-              <Formik
-                initialValues={{ newTag: '' }}
-                onSubmit={onSubmitCreateTag}
-              >
-                <Form style={{ float: 'right' }}>
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="newTag"
-                    autoFocus
-                    placeholder={t_i18n('New tag')}
-                    onChange={handleChangeNewTag}
-                    value={newTag}
-                  />
-                </Form>
-              </Formik>
-            </DialogTitle>
-            <DialogContent dividers>
-              <List>
-                {tags.map(
-                  (label) => label.length > 0 && (
-                    <ListItem
-                      key={label}
-                      disableGutters
-                      dense
-                    >
-                      <ListItemText primary={label} />
-                      <ListItemSecondaryAction>
-                        <IconButton
-                        // edge="end"
-                          aria-label="delete"
-                          onClick={deleteTag(label)}
-                        >
-                          <Delete />
-                        </IconButton>
-                      </ListItemSecondaryAction>
-                    </ListItem>
-                  ),
-                )}
-              </List>
-            </DialogContent>
+            <Formik
+              initialValues={{ newTag: '' }}
+              onSubmit={onSubmitCreateTag}
+            >
+              <Form style={{ float: 'right' }}>
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="newTag"
+                  autoFocus
+                  placeholder={t_i18n('New tag')}
+                  onChange={handleChangeNewTag}
+                  value={newTag}
+                />
+              </Form>
+            </Formik>
+
+            <List>
+              {tags.map(
+                (label) => label.length > 0 && (
+                  <ListItem
+                    key={label}
+                    disableGutters
+                    dense
+                  >
+                    <ListItemText primary={label} />
+                    <ListItemSecondaryAction>
+                      <IconButton
+                        aria-label="delete"
+                        onClick={deleteTag(label)}
+                      >
+                        <Delete />
+                      </IconButton>
+                    </ListItemSecondaryAction>
+                  </ListItem>
+                ),
+              )}
+            </List>
+
             <DialogActions>
-              <Button onClick={toggleTagDialog} color="primary">
+              <Button onClick={toggleTagDialog}>
                 {t_i18n('Close')}
               </Button>
             </DialogActions>

@@ -1,56 +1,54 @@
-import React, { FunctionComponent, useState } from 'react';
-import { includes } from 'ramda';
-import { createPaginationContainer, graphql, RelayPaginationProp } from 'react-relay';
-import { RecordSourceSelectorProxy } from 'relay-runtime';
-import List from '@mui/material/List';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
-import { ExpandLessOutlined, ExpandMoreOutlined, OpenInBrowserOutlined } from '@mui/icons-material';
-import Slide, { SlideProps } from '@mui/material/Slide';
-import { Field, Form, Formik } from 'formik';
-import DialogTitle from '@mui/material/DialogTitle';
-import MenuItem from '@mui/material/MenuItem';
-import * as Yup from 'yup';
-import makeStyles from '@mui/styles/makeStyles';
-import { FormikConfig } from 'formik/dist/types';
-import { Link } from 'react-router-dom';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
-import Tooltip from '@mui/material/Tooltip';
+import Dialog from '@common/dialog/Dialog';
 import { FileLine_file$data } from '@components/common/files/__generated__/FileLine_file.graphql';
-import ManageImportConnectorMessage from '@components/data/import/ManageImportConnectorMessage';
-import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import { CsvMapperFieldOption } from '@components/common/form/CsvMapperField';
+import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
+import ManageImportConnectorMessage from '@components/data/import/ManageImportConnectorMessage';
+import { ExpandLessOutlined, ExpandMoreOutlined, OpenInBrowserOutlined } from '@mui/icons-material';
 import { ListItemButton, Stack } from '@mui/material';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContentText from '@mui/material/DialogContentText';
+import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import { truncate } from '../../../../utils/String';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import MenuItem from '@mui/material/MenuItem';
+import Slide, { SlideProps } from '@mui/material/Slide';
+import Tooltip from '@mui/material/Tooltip';
+import makeStyles from '@mui/styles/makeStyles';
+import { Field, Form, Formik } from 'formik';
+import { FormikConfig } from 'formik/dist/types';
+import { includes } from 'ramda';
+import React, { FunctionComponent, useState } from 'react';
+import { createPaginationContainer, graphql, RelayPaginationProp } from 'react-relay';
+import { Link } from 'react-router-dom';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
+import * as Yup from 'yup';
+import DeleteDialog from '../../../../components/DeleteDialog';
+import ItemIcon from '../../../../components/ItemIcon';
+import type { Theme } from '../../../../components/Theme';
+import Card from '../../../../components/common/card/Card';
+import { NO_DATA_WIDGET_MESSAGE } from '../../../../components/dashboard/WidgetNoData';
+import SelectField from '../../../../components/fields/SelectField';
+import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
-import AddExternalReferences from './AddExternalReferences';
-import { externalReferenceMutationRelationDelete } from './AddExternalReferencesLines';
 import Security from '../../../../utils/Security';
+import { truncate } from '../../../../utils/String';
+import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import useDeletion from '../../../../utils/hooks/useDeletion';
 import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
-import ExternalReferenceEnrichment from './ExternalReferenceEnrichment';
+import { deleteNodeFromId } from '../../../../utils/store';
+import { isNotEmptyField } from '../../../../utils/utils';
 import FileLine from '../../common/files/FileLine';
 import FileUploader from '../../common/files/FileUploader';
-import ExternalReferencePopover from './ExternalReferencePopover';
-import SelectField from '../../../../components/fields/SelectField';
 import { scopesConn, stixCoreObjectFilesAndHistoryAskJobImportMutation } from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
-import type { Theme } from '../../../../components/Theme';
-import { useFormatter } from '../../../../components/i18n';
-import { deleteNodeFromId } from '../../../../utils/store';
+import AddExternalReferences from './AddExternalReferences';
+import { externalReferenceMutationRelationDelete } from './AddExternalReferencesLines';
+import ExternalReferenceEnrichment from './ExternalReferenceEnrichment';
+import ExternalReferencePopover from './ExternalReferencePopover';
 import { StixCoreObjectExternalReferencesLines_data$data } from './__generated__/StixCoreObjectExternalReferencesLines_data.graphql';
-import { isNotEmptyField } from '../../../../utils/utils';
-import ItemIcon from '../../../../components/ItemIcon';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
-import { NO_DATA_WIDGET_MESSAGE } from '../../../../components/dashboard/WidgetNoData';
-import DeleteDialog from '../../../../components/DeleteDialog';
-import useDeletion from '../../../../utils/hooks/useDeletion';
-import Card from '../../../../components/common/card/Card';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -494,20 +492,13 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
       />
 
       <Dialog
-        slotProps={{ paper: { elevation: 1 } }}
         open={displayExternalLink}
-        keepMounted={true}
-        slots={{ transition: Transition }}
         onClose={handleCloseExternalLink}
+        title={t_i18n('Are you sure?')}
       >
-        <DialogTitle>
-          {t_i18n('Are you sure?')}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to browse this external link?')}
-          </DialogContentText>
-        </DialogContent>
+        <DialogContentText>
+          {t_i18n('Do you want to browse this external link?')}
+        </DialogContentText>
         <DialogActions>
           <Button variant="secondary" onClick={handleCloseExternalLink}>{t_i18n('Cancel')}</Button>
           <Button onClick={handleBrowseExternalLink}>
@@ -525,77 +516,72 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
         {({ submitForm, handleReset, setFieldValue, isSubmitting, isValid }) => (
           <Form style={{ margin: '0 0 20px 0' }}>
             <Dialog
-              slotProps={{ paper: { elevation: 1 } }}
               open={!!fileToImport}
-              keepMounted={true}
               onClose={() => handleReset()}
-              fullWidth={true}
+              title={t_i18n('Launch an import')}
             >
-              <DialogTitle>{t_i18n('Launch an import')}</DialogTitle>
-              <DialogContent>
-                <Field
-                  component={SelectField}
-                  name="connector_id"
-                  label={t_i18n('Connector')}
-                  fullWidth={true}
-                  containerstyle={{ width: '100%' }}
-                  onChange={handleSelectConnector}
-                >
-                  {data.connectorsForImport?.map((connector, i) => {
-                    const disabled = !fileToImport
-                      || (connector
-                        && connector.connector_scope
-                        && connector.connector_scope.length > 0
-                        && !includes(
-                          fileToImport.metaData?.mimetype,
-                          connector.connector_scope,
-                        ));
-                    return (
-                      <MenuItem
-                        key={i}
-                        value={connector?.id}
-                        disabled={disabled || !connector?.active}
-                      >
-                        {connector?.name}
-                      </MenuItem>
-                    );
-                  })}
-                </Field>
-                {(selectedConnector?.configurations?.length ?? 0) > 0
-                  ? (
-                      <Field
-                        component={SelectField}
-                        variant="standard"
-                        name="configuration"
-                        label={t_i18n('Configuration')}
-                        fullWidth={true}
-                        containerstyle={{ marginTop: 20, width: '100%' }}
-                        onChange={(_: string, option: CsvMapperFieldOption) => onCsvMapperSelection(option)}
-                      >
-                        {(selectedConnector?.configurations ?? []).map((config) => {
-                          return (
-                            <MenuItem
-                              key={config.id}
-                              value={config.configuration}
-                            >
-                              {config.name}
-                            </MenuItem>
-                          );
-                        })}
-                      </Field>
-                    ) : <ManageImportConnectorMessage name={selectedConnector?.name} />
-                }
-                {selectedConnector?.name === 'ImportCsv'
-                  && hasUserChoiceCsvMapper
-                  && (
-                    <ObjectMarkingField
-                      name="objectMarking"
-                      style={fieldSpacingContainerStyle}
-                      setFieldValue={setFieldValue}
-                    />
-                  )
-                }
-              </DialogContent>
+              <Field
+                component={SelectField}
+                name="connector_id"
+                label={t_i18n('Connector')}
+                fullWidth={true}
+                containerstyle={{ width: '100%' }}
+                onChange={handleSelectConnector}
+              >
+                {data.connectorsForImport?.map((connector, i) => {
+                  const disabled = !fileToImport
+                    || (connector
+                      && connector.connector_scope
+                      && connector.connector_scope.length > 0
+                      && !includes(
+                        fileToImport.metaData?.mimetype,
+                        connector.connector_scope,
+                      ));
+                  return (
+                    <MenuItem
+                      key={i}
+                      value={connector?.id}
+                      disabled={disabled || !connector?.active}
+                    >
+                      {connector?.name}
+                    </MenuItem>
+                  );
+                })}
+              </Field>
+              {(selectedConnector?.configurations?.length ?? 0) > 0
+                ? (
+                    <Field
+                      component={SelectField}
+                      variant="standard"
+                      name="configuration"
+                      label={t_i18n('Configuration')}
+                      fullWidth={true}
+                      containerstyle={{ marginTop: 20, width: '100%' }}
+                      onChange={(_: string, option: CsvMapperFieldOption) => onCsvMapperSelection(option)}
+                    >
+                      {(selectedConnector?.configurations ?? []).map((config) => {
+                        return (
+                          <MenuItem
+                            key={config.id}
+                            value={config.configuration}
+                          >
+                            {config.name}
+                          </MenuItem>
+                        );
+                      })}
+                    </Field>
+                  ) : <ManageImportConnectorMessage name={selectedConnector?.name} />
+              }
+              {selectedConnector?.name === 'ImportCsv'
+                && hasUserChoiceCsvMapper
+                && (
+                  <ObjectMarkingField
+                    name="objectMarking"
+                    style={fieldSpacingContainerStyle}
+                    setFieldValue={setFieldValue}
+                  />
+                )
+              }
               <DialogActions>
                 <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                   {t_i18n('Cancel')}

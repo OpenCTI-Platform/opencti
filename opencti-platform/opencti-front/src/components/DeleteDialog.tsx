@@ -1,15 +1,10 @@
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
-import Dialog from '@mui/material/Dialog';
-import React, { UIEvent } from 'react';
-import DialogTitle from '@mui/material/DialogTitle';
+import Dialog from '@common/dialog/Dialog';
+import { AlertTitle, DialogActions, Typography } from '@mui/material';
 import Alert from '@mui/material/Alert';
-import { AlertTitle } from '@mui/material';
-import Transition from './Transition';
-import { useFormatter } from './i18n';
+import React, { UIEvent } from 'react';
 import { Deletion } from '../utils/hooks/useDeletion';
+import { useFormatter } from './i18n';
 
 type DeleteDialogProps = {
   deletion: Deletion;
@@ -35,23 +30,17 @@ const DeleteDialog: React.FC<DeleteDialogProps> = ({
   return (
     <Dialog
       open={isOpen ?? deletion.displayDelete}
-      slotProps={{ paper: { elevation: 1 } }}
-      keepMounted={true}
-      slots={{ transition: Transition }}
       onClose={onClose ?? ((e) => deletion.handleCloseDelete(e as UIEvent))}
+      title={t_i18n('Are you sure?')}
+      size="small"
     >
-      <DialogTitle>
-        {t_i18n('Are you sure?')}
-      </DialogTitle>
-      <DialogContent>
-        <DialogContentText>{message}</DialogContentText>
-        {warning && (
-          <Alert severity="warning" variant="outlined" style={{ marginTop: 20 }}>
-            <AlertTitle>{warning.title}</AlertTitle>
-            {warning.message}
-          </Alert>
-        )}
-      </DialogContent>
+      <Typography>{message}</Typography>
+      {warning && (
+        <Alert severity="warning" variant="outlined" style={{ marginTop: 20 }}>
+          <AlertTitle>{warning.title}</AlertTitle>
+          {warning.message}
+        </Alert>
+      )}
       <DialogActions>
         <Button variant="secondary" onClick={onClose ?? deletion.handleCloseDelete} disabled={deletion.deleting}>
           {t_i18n('Cancel')}

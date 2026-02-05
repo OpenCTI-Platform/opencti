@@ -1,4 +1,3 @@
-import DialogContent from '@mui/material/DialogContent';
 import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
@@ -7,7 +6,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
-import Dialog from '@mui/material/Dialog';
+import Dialog from '@common/dialog/Dialog';
 import React, { useState } from 'react';
 import { Form, Formik } from 'formik';
 import CommitMessage from '@components/common/form/CommitMessage';
@@ -16,7 +15,6 @@ import { knowledgeGraphQueryCheckObjectQuery } from '@components/common/containe
 import { KnowledgeGraphQueryCheckObjectQuery$data } from '@components/common/containers/__generated__/KnowledgeGraphQueryCheckObjectQuery.graphql';
 import { LinearProgress } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import Transition from '../../Transition';
 import { useFormatter } from '../../i18n';
 import { containerTypes } from '../../../utils/hooks/useAttributes';
 import { useGraphContext } from '../GraphContext';
@@ -228,57 +226,51 @@ const GraphToolbarRemoveConfirm = ({
     <>
       <Dialog
         open={open}
-        keepMounted
-        slotProps={{ paper: { elevation: 1 } }}
-        slots={{ transition: Transition }}
+        size="small"
         onClose={close}
+        title={t_i18n('Do you want to remove these elements?')}
       >
-        <DialogContent>
-          <Typography variant="body1">
-            {t_i18n('Do you want to remove these elements?')}
-          </Typography>
-          {context !== 'investigation' && (
-            <Alert
-              severity="warning"
-              variant="outlined"
-              style={{ marginTop: 20 }}
-            >
-              <AlertTitle>{t_i18n('Cascade delete')}</AlertTitle>
-              <FormGroup>
-                <FormControlLabel
-                  label={t_i18n('Delete the element if no other containers contain it')}
-                  control={(
-                    <Checkbox
-                      checked={andDelete}
-                      onChange={() => setAndDelete((d) => !d)}
-                    />
-                  )}
-                />
-              </FormGroup>
-            </Alert>
-          )
-          }
-
-          {totalToDelete > 0 && (
-            <div
-              style={{
-                marginTop: theme.spacing(1),
-                display: 'flex',
-                gap: theme.spacing(1),
-                alignItems: 'center',
-              }}
-            >
-              <LinearProgress
-                style={{ flex: 1 }}
-                variant="determinate"
-                value={(currentDeleted / totalToDelete) * 100}
+        {context !== 'investigation' && (
+          <Alert
+            severity="warning"
+            variant="outlined"
+            style={{ marginTop: 20 }}
+          >
+            <AlertTitle>{t_i18n('Cascade delete')}</AlertTitle>
+            <FormGroup>
+              <FormControlLabel
+                label={t_i18n('Delete the element if no other containers contain it')}
+                control={(
+                  <Checkbox
+                    checked={andDelete}
+                    onChange={() => setAndDelete((d) => !d)}
+                  />
+                )}
               />
-              <Typography style={{ flexShrink: 0 }}>
-                {currentDeleted} / {totalToDelete}
-              </Typography>
-            </div>
-          )}
-        </DialogContent>
+            </FormGroup>
+          </Alert>
+        )
+        }
+
+        {totalToDelete > 0 && (
+          <div
+            style={{
+              marginTop: theme.spacing(1),
+              display: 'flex',
+              gap: theme.spacing(1),
+              alignItems: 'center',
+            }}
+          >
+            <LinearProgress
+              style={{ flex: 1 }}
+              variant="determinate"
+              value={(currentDeleted / totalToDelete) * 100}
+            />
+            <Typography style={{ flexShrink: 0 }}>
+              {currentDeleted} / {totalToDelete}
+            </Typography>
+          </div>
+        )}
         <DialogActions>
           <Button variant="secondary" onClick={close} disabled={totalToDelete > 0}>
             {t_i18n('Cancel')}

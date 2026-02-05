@@ -1,25 +1,23 @@
-import React, { useState } from 'react';
-import * as R from 'ramda';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
+import Dialog from '@common/dialog/Dialog';
 import { InfoOutlined } from '@mui/icons-material';
-import { graphql } from 'react-relay';
-import { Field, Form, Formik } from 'formik';
+import DialogActions from '@mui/material/DialogActions';
 import MenuItem from '@mui/material/MenuItem';
-import * as Yup from 'yup';
 import Tooltip from '@mui/material/Tooltip';
-import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE } from '../files/FileManager';
-import ObjectMarkingField from '../form/ObjectMarkingField';
-import { useFormatter } from '../../../../components/i18n';
-import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
-import { markingDefinitionsLinesSearchQuery } from '../../settings/MarkingDefinitionsQuery';
+import { Field, Form, Formik } from 'formik';
+import * as R from 'ramda';
+import { useState } from 'react';
+import { graphql } from 'react-relay';
+import * as Yup from 'yup';
 import SelectField from '../../../../components/fields/SelectField';
+import { useFormatter } from '../../../../components/i18n';
 import Loader from '../../../../components/Loader';
+import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import { ExportContext } from '../../../../utils/ExportContextProvider';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { markingDefinitionsLinesSearchQuery } from '../../settings/MarkingDefinitionsQuery';
+import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE } from '../files/FileManager';
+import ObjectMarkingField from '../form/ObjectMarkingField';
 
 export const StixCoreObjectsExportCreationMutation = graphql`
   mutation StixCoreObjectsExportCreationMutation(
@@ -116,28 +114,28 @@ const StixCoreObjectsExportCreation = ({
             {({ submitForm, handleReset, isSubmitting, resetForm, setFieldValue }) => (
               <Form>
                 <Dialog
-                  slotProps={{ paper: { elevation: 1 } }}
                   open={open}
                   onClose={() => {
                     resetForm();
                     setOpen(false);
                   }}
-                  fullWidth={true}
                   data-testid="StixCoreObjectsExportCreationDialog"
+                  title={(
+                    <>
+                      {t_i18n('Generate an export')}
+                      <Tooltip title={t_i18n('Your max shareable markings will be applied to the content max markings')}>
+                        <InfoOutlined sx={{ paddingLeft: 1 }} fontSize="small" />
+                      </Tooltip>
+                    </>
+                  )}
                 >
-                  <DialogTitle>
-                    {t_i18n('Generate an export')}
-                    <Tooltip title={t_i18n('Your max shareable markings will be applied to the content max markings')}>
-                      <InfoOutlined sx={{ paddingLeft: 1 }} fontSize="small" />
-                    </Tooltip>
-                  </DialogTitle>
                   <QueryRenderer
                     query={markingDefinitionsLinesSearchQuery}
                     variables={{ first: 200 }}
                     render={({ props }) => {
                       if (props && props.markingDefinitions) {
                         return (
-                          <DialogContent>
+                          <>
                             <Field
                               component={SelectField}
                               variant="standard"
@@ -172,7 +170,7 @@ const StixCoreObjectsExportCreation = ({
                               style={fieldSpacingContainerStyle}
                               setFieldValue={setFieldValue}
                             />
-                          </DialogContent>
+                          </>
                         );
                       }
                       return <Loader variant="inElement" />;
@@ -183,7 +181,6 @@ const StixCoreObjectsExportCreation = ({
                       {t_i18n('Cancel')}
                     </Button>
                     <Button
-                      // color="secondary"
                       onClick={submitForm}
                       disabled={isSubmitting}
                     >

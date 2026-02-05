@@ -1,26 +1,24 @@
-import React from 'react';
-import { Field, Form, Formik } from 'formik';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import MenuItem from '@mui/material/MenuItem';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
-import * as Yup from 'yup';
-import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
-import ManageImportConnectorMessage from '@components/data/import/ManageImportConnectorMessage';
-import { fileManagerAskJobImportMutation, fileManagerCreateDraftAskJobImportMutation } from '@components/common/files/FileManager';
-import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import Dialog from '@common/dialog/Dialog';
 import { ImportWorksDrawerQuery, ImportWorksDrawerQuery$data } from '@components/common/files/__generated__/ImportWorksDrawerQuery.graphql';
+import { fileManagerAskJobImportMutation, fileManagerCreateDraftAskJobImportMutation } from '@components/common/files/FileManager';
 import { fileWorksQuery } from '@components/common/files/ImportWorksDrawer';
-import { ImportWorkbenchesContentFileLine_file$data } from '@components/data/import/__generated__/ImportWorkbenchesContentFileLine_file.graphql';
-import { ImportFilesContentFileLine_file$data } from '@components/data/import/__generated__/ImportFilesContentFileLine_file.graphql';
 import AuthorizedMembersField, { AuthorizedMembersFieldValue } from '@components/common/form/AuthorizedMembersField';
-import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
-import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
-import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
+import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
+import { ImportFilesContentFileLine_file$data } from '@components/data/import/__generated__/ImportFilesContentFileLine_file.graphql';
+import { ImportWorkbenchesContentFileLine_file$data } from '@components/data/import/__generated__/ImportWorkbenchesContentFileLine_file.graphql';
+import ManageImportConnectorMessage from '@components/data/import/ManageImportConnectorMessage';
+import DialogActions from '@mui/material/DialogActions';
+import MenuItem from '@mui/material/MenuItem';
+import { Field, Form, Formik } from 'formik';
+import React from 'react';
+import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import * as Yup from 'yup';
 import SelectField from '../../../../components/fields/SelectField';
 import { useFormatter } from '../../../../components/i18n';
+import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
+import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useAuth from '../../../../utils/hooks/useAuth';
 
 interface LaunchImportDialogProps {
@@ -155,92 +153,88 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
         <Form>
           <Dialog
             open={open}
-            slotProps={{ paper: { elevation: 1 } }}
-            keepMounted={true}
             onClose={() => handleReset()}
-            fullWidth={true}
             onClick={(event) => event.stopPropagation()}
+            title={t_i18n('Launch an import')}
           >
-            <DialogTitle>{t_i18n('Launch an import')}</DialogTitle>
-            <DialogContent>
+            <Field
+              component={SelectField}
+              variant="standard"
+              name="connector_id"
+              label={t_i18n('Connector')}
+              fullWidth={true}
+              containerstyle={{ width: '100%' }}
+              onChange={handleSelectConnector}
+            >
+              {connectors?.map((connector) => {
+                const disabled = !file
+                  || (connector?.connector_scope && connector?.connector_scope?.length > 0
+                    && file?.metaData?.mimetype && !connector?.connector_scope?.includes(file?.metaData?.mimetype));
+                return (
+                  <MenuItem
+                    key={connector?.id}
+                    value={connector?.id}
+                    disabled={disabled || !connector?.active}
+                  >
+                    {connector?.name}
+                  </MenuItem>
+                );
+              })}
+            </Field>
+            {!isDraftContext && (
               <Field
                 component={SelectField}
                 variant="standard"
-                name="connector_id"
-                label={t_i18n('Connector')}
+                name="validation_mode"
+                label={t_i18n('Validation mode')}
                 fullWidth={true}
-                containerstyle={{ width: '100%' }}
-                onChange={handleSelectConnector}
+                containerstyle={{ marginTop: 20, width: '100%' }}
+                setFieldValue={setFieldValue}
               >
-                {connectors?.map((connector) => {
-                  const disabled = !file
-                    || (connector?.connector_scope && connector?.connector_scope?.length > 0
-                      && file?.metaData?.mimetype && !connector?.connector_scope?.includes(file?.metaData?.mimetype));
-                  return (
-                    <MenuItem
-                      key={connector?.id}
-                      value={connector?.id}
-                      disabled={disabled || !connector?.active}
-                    >
-                      {connector?.name}
-                    </MenuItem>
-                  );
-                })}
+                <MenuItem value="workbench">Workbench</MenuItem>
+                <MenuItem value="draft">Draft</MenuItem>
               </Field>
-              {!isDraftContext && (
-                <Field
-                  component={SelectField}
-                  variant="standard"
-                  name="validation_mode"
-                  label={t_i18n('Validation mode')}
-                  fullWidth={true}
-                  containerstyle={{ marginTop: 20, width: '100%' }}
-                  setFieldValue={setFieldValue}
-                >
-                  <MenuItem value="workbench">Workbench</MenuItem>
-                  <MenuItem value="draft">Draft</MenuItem>
-                </Field>
-              )}
-              {values.validation_mode === 'draft' && (
-                <Field
-                  name="authorizedMembers"
-                  component={AuthorizedMembersField}
-                  owner={owner}
-                  showAllMembersLine={showAllMembersLine}
-                  canDeactivate
-                  addMeUserWithAdminRights
-                  enableAccesses
-                  applyAccesses
-                  style={fieldSpacingContainerStyle}
-                />
-              )}
-              {selectedConnector?.configurations && selectedConnector?.configurations?.length > 0 ? (
-                <Field
-                  component={SelectField}
-                  variant="standard"
-                  name="configuration"
-                  label={t_i18n('Configuration')}
-                  fullWidth={true}
-                  containerstyle={{ marginTop: 20, width: '100%' }}
-                  onChange={handleSetCsvMapper}
-                >
-                  {selectedConnector?.configurations?.map((config) => (
-                    <MenuItem key={config.id} value={config.configuration}>
-                      {config.name}
-                    </MenuItem>
-                  ))}
-                </Field>
-              ) : (
-                <ManageImportConnectorMessage name={selectedConnector?.name} />
-              )}
-              {selectedConnector?.name === 'ImportCsv' && hasUserChoiceCsvMapper && (
-                <ObjectMarkingField
-                  name="objectMarking"
-                  style={fieldSpacingContainerStyle}
-                  setFieldValue={setFieldValue}
-                />
-              )}
-            </DialogContent>
+            )}
+            {values.validation_mode === 'draft' && (
+              <Field
+                name="authorizedMembers"
+                component={AuthorizedMembersField}
+                owner={owner}
+                showAllMembersLine={showAllMembersLine}
+                canDeactivate
+                addMeUserWithAdminRights
+                enableAccesses
+                applyAccesses
+                style={fieldSpacingContainerStyle}
+              />
+            )}
+            {selectedConnector?.configurations && selectedConnector?.configurations?.length > 0 ? (
+              <Field
+                component={SelectField}
+                variant="standard"
+                name="configuration"
+                label={t_i18n('Configuration')}
+                fullWidth={true}
+                containerstyle={{ marginTop: 20, width: '100%' }}
+                onChange={handleSetCsvMapper}
+              >
+                {selectedConnector?.configurations?.map((config) => (
+                  <MenuItem key={config.id} value={config.configuration}>
+                    {config.name}
+                  </MenuItem>
+                ))}
+              </Field>
+            ) : (
+              <ManageImportConnectorMessage name={selectedConnector?.name} />
+            )}
+            {selectedConnector?.name === 'ImportCsv' && hasUserChoiceCsvMapper && (
+              <ObjectMarkingField
+                name="objectMarking"
+                style={fieldSpacingContainerStyle}
+                setFieldValue={setFieldValue}
+              />
+            )}
+
             <DialogActions>
               <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Cancel')}

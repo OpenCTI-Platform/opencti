@@ -1,12 +1,9 @@
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
-import Dialog from '@mui/material/Dialog';
-import React, { FunctionComponent } from 'react';
+import Dialog from '@common/dialog/Dialog';
 import { OpenInNewOutlined } from '@mui/icons-material';
+import { DialogActions, Typography } from '@mui/material';
+import { FunctionComponent } from 'react';
 import { useFormatter } from './i18n';
-import Transition from './Transition';
 
 interface ExternalLinkPopoverProps {
   displayExternalLink: boolean;
@@ -37,28 +34,24 @@ const ExternalLinkPopover: FunctionComponent<ExternalLinkPopoverProps> = ({
 
   return (
     <Dialog
-      slotProps={{ paper: { elevation: 1 } }}
       open={displayExternalLink}
-      keepMounted={true}
-      slots={{ transition: Transition }}
       onClose={handleCloseExternalLink}
+      title={t_i18n('Do you want to browse this external link?')}
     >
-      <DialogContent>
-        <DialogContentText>
-          {t_i18n('Do you want to browse this external link?')}
-        </DialogContentText>
-        <DialogContentText
-          title={displayLinkStr} // complete URL in tooltip on hover
-          sx={{ wordWrap: 'break-word', marginTop: 1 }}
-        >
-          {displayLinkCrop}
-        </DialogContentText>
-      </DialogContent>
+      <Typography
+        title={displayLinkStr} // complete URL in tooltip on hover
+        sx={{ wordWrap: 'break-word', marginTop: 1 }}
+      >
+        {displayLinkCrop}
+      </Typography>
+
       <DialogActions>
         <Button variant="secondary" onClick={handleCloseExternalLink}>{t_i18n('Cancel')}</Button>
-        <Button onClick={handleBrowseExternalLink}>
+        <Button
+          startIcon={<OpenInNewOutlined fontSize="small" />}
+          onClick={handleBrowseExternalLink}
+        >
           {t_i18n('Browse the link')}
-          <OpenInNewOutlined fontSize="small" sx={{ marginLeft: '2px' }} />
         </Button>
       </DialogActions>
     </Dialog>

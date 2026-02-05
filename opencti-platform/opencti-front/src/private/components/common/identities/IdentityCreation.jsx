@@ -1,27 +1,25 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import Button from '@common/button/Button';
+import Dialog from '@common/dialog/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import MenuItem from '@mui/material/MenuItem';
+import withStyles from '@mui/styles/withStyles';
 import { Field, Form, Formik } from 'formik';
+import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { compose } from 'ramda';
-import * as Yup from 'yup';
-import { v4 as uuid } from 'uuid';
+import { Component } from 'react';
 import { graphql } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@common/button/Button';
-import MenuItem from '@mui/material/MenuItem';
+import { v4 as uuid } from 'uuid';
+import * as Yup from 'yup';
+import TextField from '../../../../components/TextField';
+import MarkdownField from '../../../../components/fields/MarkdownField';
+import SelectField from '../../../../components/fields/SelectField';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
-import TextField from '../../../../components/TextField';
-import SelectField from '../../../../components/fields/SelectField';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { ExternalReferencesField } from '../form/ExternalReferencesField';
 import ObjectLabelField from '../form/ObjectLabelField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
-import { ExternalReferencesField } from '../form/ExternalReferencesField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -161,67 +159,63 @@ class IdentityCreation extends Component {
           }) => (
             <Form>
               <Dialog
-                slotProps={{ paper: { elevation: 1 } }}
                 open={open}
                 onClose={handleClose.bind(this)}
-                fullWidth={true}
+                title={t('Create an entity')}
               >
-                <DialogTitle>{t('Create an entity')}</DialogTitle>
-                <DialogContent>
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="name"
-                    label={t('Name')}
-                    fullWidth={true}
-                    detectDuplicate={['Organization', 'Individual']}
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="name"
+                  label={t('Name')}
+                  fullWidth={true}
+                  detectDuplicate={['Organization', 'Individual']}
+                />
+                <Field
+                  component={MarkdownField}
+                  name="description"
+                  label={t('Description')}
+                  fullWidth={true}
+                  multiline={true}
+                  rows="4"
+                  style={{ marginTop: 20 }}
+                />
+                <Field
+                  component={SelectField}
+                  variant="standard"
+                  name="type"
+                  label={t('Entity type')}
+                  fullWidth={true}
+                  containerstyle={fieldSpacingContainerStyle}
+                >
+                  {!onlyAuthors && (<MenuItem value="Sector">{t('Sector')}</MenuItem>)}
+                  <MenuItem value="Organization">{t('Organization')}</MenuItem>
+                  <MenuItem value="System">{t('System')}</MenuItem>
+                  <MenuItem value="Individual">{t('Individual')}</MenuItem>
+                </Field>
+                {!dryrun && (
+                  <ObjectLabelField
+                    name="objectLabel"
+                    style={fieldSpacingContainerStyle}
+                    setFieldValue={setFieldValue}
+                    values={values.objectLabel}
                   />
-                  <Field
-                    component={MarkdownField}
-                    name="description"
-                    label={t('Description')}
-                    fullWidth={true}
-                    multiline={true}
-                    rows="4"
-                    style={{ marginTop: 20 }}
+                )}
+                {!dryrun && (
+                  <ObjectMarkingField
+                    name="objectMarking"
+                    style={fieldSpacingContainerStyle}
+                    setFieldValue={setFieldValue}
                   />
-                  <Field
-                    component={SelectField}
-                    variant="standard"
-                    name="type"
-                    label={t('Entity type')}
-                    fullWidth={true}
-                    containerstyle={fieldSpacingContainerStyle}
-                  >
-                    {!onlyAuthors && (<MenuItem value="Sector">{t('Sector')}</MenuItem>)}
-                    <MenuItem value="Organization">{t('Organization')}</MenuItem>
-                    <MenuItem value="System">{t('System')}</MenuItem>
-                    <MenuItem value="Individual">{t('Individual')}</MenuItem>
-                  </Field>
-                  {!dryrun && (
-                    <ObjectLabelField
-                      name="objectLabel"
-                      style={fieldSpacingContainerStyle}
-                      setFieldValue={setFieldValue}
-                      values={values.objectLabel}
-                    />
-                  )}
-                  {!dryrun && (
-                    <ObjectMarkingField
-                      name="objectMarking"
-                      style={fieldSpacingContainerStyle}
-                      setFieldValue={setFieldValue}
-                    />
-                  )}
-                  {!dryrun && (
-                    <ExternalReferencesField
-                      name="externalReferences"
-                      style={fieldSpacingContainerStyle}
-                      setFieldValue={setFieldValue}
-                      values={values.externalReferences}
-                    />
-                  )}
-                </DialogContent>
+                )}
+                {!dryrun && (
+                  <ExternalReferencesField
+                    name="externalReferences"
+                    style={fieldSpacingContainerStyle}
+                    setFieldValue={setFieldValue}
+                    values={values.externalReferences}
+                  />
+                )}
                 <DialogActions>
                   <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                     {t('Cancel')}

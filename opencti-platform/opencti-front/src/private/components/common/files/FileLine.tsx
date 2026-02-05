@@ -1,45 +1,43 @@
-import React, { FunctionComponent, useState } from 'react';
-import { isEmpty } from 'ramda';
-import moment from 'moment';
-import Alert from '@mui/material/Alert';
-import { createFragmentContainer, graphql, GraphQLTaggedNode } from 'react-relay';
-import { FileOutline, ProgressUpload } from 'mdi-material-ui';
-import { DeleteOutlined, DocumentScannerOutlined, GetAppOutlined, WarningOutlined } from '@mui/icons-material';
-import Tooltip from '@mui/material/Tooltip';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import CircularProgress from '@mui/material/CircularProgress';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
-import Slide, { SlideProps } from '@mui/material/Slide';
-import makeStyles from '@mui/styles/makeStyles';
-import { RecordSourceSelectorProxy } from 'relay-runtime';
-import { PopoverProps } from '@mui/material/Popover';
-import MenuItem from '@mui/material/MenuItem';
-import Menu from '@mui/material/Menu';
-import { ListItem, ListItemButton, Stack } from '@mui/material';
+import Dialog from '@common/dialog/Dialog';
 import { getDraftModeColor } from '@components/common/draft/DraftChip';
+import { DeleteOutlined, DocumentScannerOutlined, GetAppOutlined, WarningOutlined } from '@mui/icons-material';
+import { ListItem, ListItemButton, Stack } from '@mui/material';
+import Alert from '@mui/material/Alert';
+import CircularProgress from '@mui/material/CircularProgress';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContentText from '@mui/material/DialogContentText';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import { PopoverProps } from '@mui/material/Popover';
+import Slide, { SlideProps } from '@mui/material/Slide';
+import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles';
 import type { OverridableStringUnion } from '@mui/types';
-import DialogTitle from '@mui/material/DialogTitle';
-import useAuth from '../../../../utils/hooks/useAuth';
-import FileWork from './FileWork';
+import { FileOutline, ProgressUpload } from 'mdi-material-ui';
+import moment from 'moment';
+import { isEmpty } from 'ramda';
+import React, { FunctionComponent, useState } from 'react';
+import { createFragmentContainer, graphql, GraphQLTaggedNode } from 'react-relay';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
+import DeleteDialog from '../../../../components/DeleteDialog';
+import ItemMarkings from '../../../../components/ItemMarkings';
+import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { APP_BASE_PATH, commitMutation, MESSAGING$ } from '../../../../relay/environment';
-import type { Theme } from '../../../../components/Theme';
-import { FileLine_file$data } from './__generated__/FileLine_file.graphql';
-import { isNotEmptyField } from '../../../../utils/utils';
-import { truncate } from '../../../../utils/String';
-import ItemMarkings from '../../../../components/ItemMarkings';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNASKIMPORT } from '../../../../utils/hooks/useGranted';
-import DeleteDialog from '../../../../components/DeleteDialog';
+import { truncate } from '../../../../utils/String';
+import useAuth from '../../../../utils/hooks/useAuth';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
+import { KNOWLEDGE_KNASKIMPORT } from '../../../../utils/hooks/useGranted';
+import { isNotEmptyField } from '../../../../utils/utils';
+import FileWork from './FileWork';
+import { FileLine_file$data } from './__generated__/FileLine_file.graphql';
 
 const Transition = React.forwardRef(({ children, ...otherProps }: SlideProps, ref) => (
   <Slide direction="up" ref={ref} {...otherProps}>{children}</Slide>
@@ -452,19 +450,12 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
       />
       <Dialog
         open={displayRemove}
-        slotProps={{ paper: { elevation: 1 } }}
-        keepMounted={true}
-        slots={{ transition: Transition }}
         onClose={handleCloseRemove}
+        title={t_i18n('Are you sure?')}
       >
-        <DialogTitle>
-          {t_i18n('Are you sure?')}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to remove this job?')}
-          </DialogContentText>
-        </DialogContent>
+        <DialogContentText>
+          {t_i18n('Do you want to remove this job?')}
+        </DialogContentText>
         <DialogActions>
           <Button variant="secondary" onClick={handleCloseRemove} disabled={deleting}>
             {t_i18n('Cancel')}
@@ -479,38 +470,31 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
       </Dialog>
       <Dialog
         open={displayDownload}
-        slotProps={{ paper: { elevation: 1 } }}
-        keepMounted={true}
-        slots={{ transition: Transition }}
         onClose={handleCloseDownload}
       >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('How do you want to download this file?')}
-          </DialogContentText>
-          <Alert
-            severity="warning"
-            variant="outlined"
-            style={{ position: 'relative', marginTop: 20 }}
-          >
-            {t_i18n(
-              'You are about to download a file related to an Artifact (or a binary). It might be malicious. You can download it as an encrypted archive (password: "infected") in order to protect your workstation and share it safely.',
-            )}
-          </Alert>
-        </DialogContent>
+        <DialogContentText>
+          {t_i18n('How do you want to download this file?')}
+        </DialogContentText>
+        <Alert
+          severity="warning"
+          variant="outlined"
+          style={{ position: 'relative', marginTop: 20 }}
+        >
+          {t_i18n(
+            'You are about to download a file related to an Artifact (or a binary). It might be malicious. You can download it as an encrypted archive (password: "infected") in order to protect your workstation and share it safely.',
+          )}
+        </Alert>
         <DialogActions>
           <Button onClick={handleCloseDownload} disabled={deleting}>
             {t_i18n('Cancel')}
           </Button>
           <Button
-            // color="warning"
             onClick={() => handleLink(`${APP_BASE_PATH}/storage/get/${encodedFilePath}`)
             }
           >
             {t_i18n('Raw file')}
           </Button>
           <Button
-            // color="success"
             onClick={() => handleLink(
               `${APP_BASE_PATH}/storage/encrypted/${encodedFilePath}`,
             )

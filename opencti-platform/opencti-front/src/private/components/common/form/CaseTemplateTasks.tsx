@@ -1,24 +1,22 @@
-import { DialogContent } from '@mui/material';
 import Button from '@common/button/Button';
-import Dialog from '@mui/material/Dialog';
+import Dialog from '@common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';
-import DialogTitle from '@mui/material/DialogTitle';
 import makeStyles from '@mui/styles/makeStyles';
 import { Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import * as R from 'ramda';
-import React, { FunctionComponent, SyntheticEvent, useState } from 'react';
+import { FunctionComponent, SyntheticEvent, useState } from 'react';
 import { graphql } from 'react-relay';
 import AutocompleteField, { AutocompleteFieldProps } from '../../../../components/AutocompleteField';
-import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
+import { useFormatter } from '../../../../components/i18n';
+import ItemIcon from '../../../../components/ItemIcon';
 import TextField from '../../../../components/TextField';
 import { fetchQuery, handleErrorInForm } from '../../../../relay/environment';
 import Field, { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { CaseTemplateTasksCreationMutation, TaskTemplateAddInput } from './__generated__/CaseTemplateTasksCreationMutation.graphql';
 import { CaseTemplateTasksSearchQuery$data } from './__generated__/CaseTemplateTasksSearchQuery.graphql';
-import ItemIcon from '../../../../components/ItemIcon';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -155,32 +153,32 @@ const CaseTemplateTasks: FunctionComponent<TaskTemplateFieldProps> = ({
           </li>
         )}
       />
-      <Dialog slotProps={{ paper: { elevation: 1 } }} open={openCreation}>
+      <Dialog
+        open={openCreation}
+        title={t_i18n('Create a task template')}
+      >
         <Formik<TaskTemplateAddInput>
           initialValues={{ name: '', description: '' }}
           onSubmit={submitTaskCreation}
         >
           {({ submitForm, handleReset, isSubmitting }) => (
             <Form>
-              <DialogTitle>{t_i18n('Create a task template')}</DialogTitle>
-              <DialogContent>
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="name"
-                  label={t_i18n('Name')}
-                  fullWidth={true}
-                />
-                <Field
-                  component={MarkdownField}
-                  name="description"
-                  label={t_i18n('Description')}
-                  fullWidth={true}
-                  multiline={true}
-                  rows="4"
-                  style={{ marginTop: 20, marginBottom: 20 }}
-                />
-              </DialogContent>
+              <Field
+                component={TextField}
+                variant="standard"
+                name="name"
+                label={t_i18n('Name')}
+                fullWidth={true}
+              />
+              <Field
+                component={MarkdownField}
+                name="description"
+                label={t_i18n('Description')}
+                fullWidth={true}
+                multiline={true}
+                rows="4"
+                style={{ marginTop: 20, marginBottom: 20 }}
+              />
               <DialogActions>
                 <Button
                   variant="secondary"

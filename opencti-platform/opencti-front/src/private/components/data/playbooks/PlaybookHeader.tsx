@@ -13,15 +13,13 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
+import Dialog from '@common/dialog/Dialog';
 import Tag from '@common/tag/Tag';
 import PlaybookEdition from '@components/data/playbooks/PlaybookEdition';
 import { CheckCircleOutlined, ErrorOutlined, ExpandLessOutlined, ExpandMoreOutlined, ManageHistoryOutlined } from '@mui/icons-material';
 import { Stack } from '@mui/material';
 import Badge from '@mui/material/Badge';
 import Collapse from '@mui/material/Collapse';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -35,7 +33,6 @@ import { createRefetchContainer, graphql, RelayRefetchProp } from 'react-relay';
 import { interval } from 'rxjs';
 import ItemIcon from '../../../../components/ItemIcon';
 import { Theme } from '../../../../components/Theme';
-import Transition from '../../../../components/Transition';
 import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
 import { useFormatter } from '../../../../components/i18n';
 import { FIVE_SECONDS } from '../../../../utils/Time';
@@ -207,17 +204,11 @@ const PlaybookHeaderComponent = ({
         </List>
       </Drawer>
       <Dialog
-        slotProps={{ paper: { elevation: 1 } }}
-        slots={{ transition: Transition }}
         open={rawData !== null}
         onClose={() => setRawData(null)}
-        fullWidth={true}
-        maxWidth="md"
+        title={t_i18n('Raw data')}
       >
-        <DialogTitle>{t_i18n('Raw data')}</DialogTitle>
-        <DialogContent>
-          <pre>{rawData}</pre>
-        </DialogContent>
+        <pre>{rawData}</pre>
       </Dialog>
     </>
   );

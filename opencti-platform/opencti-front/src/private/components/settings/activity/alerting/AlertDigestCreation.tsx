@@ -1,10 +1,7 @@
 import Button from '@common/button/Button';
-import Dialog from '@mui/material/Dialog';
+import Dialog from '@common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
 import MenuItem from '@mui/material/MenuItem';
-import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import React, { FunctionComponent } from 'react';
@@ -15,26 +12,17 @@ import MarkdownField from '../../../../../components/fields/MarkdownField';
 import SelectField from '../../../../../components/fields/SelectField';
 import { useFormatter } from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
-import type { Theme } from '../../../../../components/Theme';
 import TimePickerField from '../../../../../components/TimePickerField';
 import { handleErrorInForm } from '../../../../../relay/environment';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { insertNode } from '../../../../../utils/store';
 import { dayStartDate, parse } from '../../../../../utils/Time';
+import Drawer from '../../../common/drawer/Drawer';
 import NotifierField from '../../../common/form/NotifierField';
 import ObjectMembersField from '../../../common/form/ObjectMembersField';
 import { AlertingPaginationQuery$variables } from './__generated__/AlertingPaginationQuery.graphql';
 import AlertsField from './AlertsField';
-import Drawer from '../../../common/drawer/Drawer';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>(() => ({
-  dialogActions: {
-    padding: '0 17px 20px 0',
-  },
-}));
 
 const triggerDigestCreationMutation = graphql`
   mutation AlertDigestCreationAddMutation($input: TriggerActivityDigestAddInput!) {
@@ -83,7 +71,6 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
   handleClose,
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const onReset = () => handleClose && handleClose();
   const [commitDigest] = useApiMutation(triggerDigestCreationMutation);
   const digestInitialValues: TriggerDigestActivityAddInput = {
@@ -283,12 +270,11 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
     </Drawer>
   );
   const renderContextual = () => (
-
     <Dialog
       disableRestoreFocus={true}
       open={open ?? false}
       onClose={handleClose}
-      slotProps={{ paper: { elevation: 1 } }}
+      title={t_i18n('Create a regular activity digest')}
     >
       <Formik
         initialValues={digestInitialValues}
@@ -297,22 +283,24 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
         onReset={onReset}
       >
         {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
-          <div>
-            <DialogTitle>{t_i18n('Create a regular activity digest')}</DialogTitle>
-            <DialogContent>{digestFields(setFieldValue, values)}</DialogContent>
-            <DialogActions classes={{ root: classes.dialogActions }}>
-              <Button onClick={handleReset} disabled={isSubmitting}>
+          <>
+            {digestFields(setFieldValue, values)}
+            <DialogActions>
+              <Button
+                variant="secondary"
+                onClick={handleReset}
+                disabled={isSubmitting}
+              >
                 {t_i18n('Cancel')}
               </Button>
               <Button
-                color="secondary"
                 onClick={submitForm}
                 disabled={isSubmitting}
               >
                 {t_i18n('Create')}
               </Button>
             </DialogActions>
-          </div>
+          </>
         )}
       </Formik>
     </Dialog>

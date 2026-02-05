@@ -1,18 +1,19 @@
-import React, { FunctionComponent, useState } from 'react';
-import { Dialog, DialogContent, DialogTitle, IconButton, List, ListItem, ListItemIcon, ListItemText, Skeleton } from '@mui/material';
 import Button from '@common/button/Button';
-import { Add } from '@mui/icons-material';
+import Dialog from '@common/dialog/Dialog';
+import { NotesLinesPaginationQuery$variables } from '@components/analyses/__generated__/NotesLinesPaginationQuery.graphql';
 import Drawer from '@components/common/drawer/Drawer';
+import { Add } from '@mui/icons-material';
+import { IconButton, List, ListItem, ListItemIcon, ListItemText, Skeleton } from '@mui/material';
+import { FunctionComponent, useState } from 'react';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { useFormatter } from 'src/components/i18n';
 import SearchInput from 'src/components/SearchInput';
-import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { QueryRenderer } from 'src/relay/environment';
 import { insertNode } from 'src/utils/store';
-import { NotesLinesPaginationQuery$variables } from '@components/analyses/__generated__/NotesLinesPaginationQuery.graphql';
-import AddNotesLines, { addNotesLinesQuery } from './AddNotesLines';
 import { AddNotesLinesQuery$data } from './__generated__/AddNotesLinesQuery.graphql';
-import { NoteCreationForm } from './NoteCreation';
 import { StixCoreObjectOrStixCoreRelationshipNotesCards_data$data } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCards_data.graphql';
+import AddNotesLines, { addNotesLinesQuery } from './AddNotesLines';
+import { NoteCreationForm } from './NoteCreation';
 
 interface AddNotesFunctionalComponentProps {
   stixCoreObjectOrStixCoreRelationshipId: string;
@@ -152,21 +153,13 @@ const AddNotesFunctionalComponent: FunctionComponent<AddNotesFunctionalComponent
       <Dialog
         open={dialogOpen}
         onClose={handleDialogClose}
-        slotProps={{
-          paper: {
-            elevation: 1,
-            style: { width: 800 },
-          },
-        }}
+        title={t_i18n('Create a note')}
       >
-        <DialogTitle>{t_i18n('Create a note')}</DialogTitle>
-        <DialogContent>
-          <NoteCreationForm
-            inputValue={search}
-            updater={updater}
-            onClose={handleDialogClose}
-          />
-        </DialogContent>
+        <NoteCreationForm
+          inputValue={search}
+          updater={updater}
+          onClose={handleDialogClose}
+        />
       </Dialog>
     </>
   );

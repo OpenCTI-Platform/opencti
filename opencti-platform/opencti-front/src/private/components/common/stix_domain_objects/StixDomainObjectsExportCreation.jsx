@@ -1,26 +1,25 @@
-import React, { Component } from 'react';
+import Button from '@common/button/Button';
+import { InfoOutlined } from '@mui/icons-material';
+import Dialog from '@common/dialog/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import MenuItem from '@mui/material/MenuItem';
+import Slide from '@mui/material/Slide';
+import Tooltip from '@mui/material/Tooltip';
+import withStyles from '@mui/styles/withStyles';
+import { Field, Form, Formik } from 'formik';
 import * as PropTypes from 'prop-types';
 import { compose, filter, flatten, fromPairs, includes, map, uniq, zip } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@common/button/Button';
-import Slide from '@mui/material/Slide';
-import { InfoOutlined } from '@mui/icons-material';
-import { Field, Form, Formik } from 'formik';
-import MenuItem from '@mui/material/MenuItem';
+import React, { Component } from 'react';
+import { graphql } from 'react-relay';
 import * as Yup from 'yup';
-import Tooltip from '@mui/material/Tooltip';
-import ObjectMarkingField from '../form/ObjectMarkingField';
+import SelectField from '../../../../components/fields/SelectField';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
-import SelectField from '../../../../components/fields/SelectField';
 import { ExportContext } from '../../../../utils/ExportContextProvider';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE } from '../files/FileManager';
-import { graphql } from 'react-relay';
+import ObjectMarkingField from '../form/ObjectMarkingField';
+import { Stack } from '@mui/material';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -158,71 +157,69 @@ class StixDomainObjectsExportCreation extends Component {
               {({ submitForm, resetForm, isSubmitting, setFieldValue }) => (
                 <Form>
                   <Dialog
-                    slotProps={{ paper: { elevation: 1 } }}
                     open={this.props.open}
                     onClose={this.props.onClose}
-                    fullWidth={true}
                     data-testid="StixDomainObjectsExportCreationDialog"
+                    title={(
+                      <Stack direction="row" gap={1} alignContent="center">
+                        {t('Generate an export')}
+                        <Tooltip title={t('Your max shareable markings will be applied to the content max markings')}>
+                          <InfoOutlined color="primary" />
+                        </Tooltip>
+                      </Stack>
+                    )}
                   >
-                    <DialogTitle>
-                      {t('Generate an export')}
-                      <Tooltip title={t('Your max shareable markings will be applied to the content max markings')}>
-                        <InfoOutlined sx={{ paddingLeft: 1 }} fontSize="small" />
-                      </Tooltip>
-                    </DialogTitle>
-                    <DialogContent>
-                      <Field
-                        component={SelectField}
-                        variant="standard"
-                        name="format"
-                        label={t('Export format')}
-                        fullWidth={true}
-                        containerstyle={{ width: '100%' }}
-                      >
-                        {availableFormat.map((value, i) => (
-                          <MenuItem
-                            key={i}
-                            value={value}
-                            disabled={!isExportActive(value)}
-                          >
-                            {value}
-                          </MenuItem>
-                        ))}
-                      </Field>
-                      <Field
-                        component={SelectField}
-                        variant="standard"
-                        name="type"
-                        label={t('Export type')}
-                        fullWidth={true}
-                        containerstyle={fieldSpacingContainerStyle}
-                      >
-                        <MenuItem value="simple">
-                          {t('Simple export (just the entity)')}
+                    <Field
+                      component={SelectField}
+                      variant="standard"
+                      name="format"
+                      label={t('Export format')}
+                      fullWidth={true}
+                      containerstyle={{ width: '100%' }}
+                    >
+                      {availableFormat.map((value, i) => (
+                        <MenuItem
+                          key={i}
+                          value={value}
+                          disabled={!isExportActive(value)}
+                        >
+                          {value}
                         </MenuItem>
-                        <MenuItem value="full">
-                          {t(
-                            'Full export (entity and first neighbours)',
-                          )}
-                        </MenuItem>
-                      </Field>
-                      <ObjectMarkingField
-                        name="contentMaxMarkings"
-                        label={t(CONTENT_MAX_MARKINGS_TITLE)}
-                        onChange={(_, values) => this.handleSelectedContentMaxMarkingsChange(values)}
-                        style={fieldSpacingContainerStyle}
-                        setFieldValue={setFieldValue}
-                        limitToMaxSharing
-                        helpertext={t(CONTENT_MAX_MARKINGS_HELPERTEXT)}
-                      />
-                      <ObjectMarkingField
-                        name="fileMarkings"
-                        label={t('File marking definition levels')}
-                        filterTargetIds={this.state.selectedContentMaxMarkingsIds}
-                        style={fieldSpacingContainerStyle}
-                        setFieldValue={setFieldValue}
-                      />
-                    </DialogContent>
+                      ))}
+                    </Field>
+                    <Field
+                      component={SelectField}
+                      variant="standard"
+                      name="type"
+                      label={t('Export type')}
+                      fullWidth={true}
+                      containerstyle={fieldSpacingContainerStyle}
+                    >
+                      <MenuItem value="simple">
+                        {t('Simple export (just the entity)')}
+                      </MenuItem>
+                      <MenuItem value="full">
+                        {t(
+                          'Full export (entity and first neighbours)',
+                        )}
+                      </MenuItem>
+                    </Field>
+                    <ObjectMarkingField
+                      name="contentMaxMarkings"
+                      label={t(CONTENT_MAX_MARKINGS_TITLE)}
+                      onChange={(_, values) => this.handleSelectedContentMaxMarkingsChange(values)}
+                      style={fieldSpacingContainerStyle}
+                      setFieldValue={setFieldValue}
+                      limitToMaxSharing
+                      helpertext={t(CONTENT_MAX_MARKINGS_HELPERTEXT)}
+                    />
+                    <ObjectMarkingField
+                      name="fileMarkings"
+                      label={t('File marking definition levels')}
+                      filterTargetIds={this.state.selectedContentMaxMarkingsIds}
+                      style={fieldSpacingContainerStyle}
+                      setFieldValue={setFieldValue}
+                    />
                     <DialogActions>
                       <Button
                         variant="secondary"

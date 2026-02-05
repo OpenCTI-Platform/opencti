@@ -2,11 +2,11 @@ import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import Tag from '@common/tag/Tag';
 import { Add } from '@mui/icons-material';
-import Dialog from '@mui/material/Dialog';
+import Dialog from '@common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import { Box } from '@mui/material';
+import { Box, Stack } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { Label as MdiLabel } from 'mdi-material-ui';
@@ -194,15 +194,11 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
           )}
           {labels && labels.length > 12 && (
             <Dialog
-              slotProps={{ paper: { elevation: 1 } }}
               open={openLabels}
-              slots={{ transition: Transition }}
               onClose={handleCloseLabels}
-              fullWidth={true}
-              maxWidth="md"
+              title={t_i18n('All labels')}
             >
-              <DialogTitle>{t_i18n('All labels')}</DialogTitle>
-              <DialogContent sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 1 }}>
                 {map(
                   (label) => (
                     <Tag
@@ -219,7 +215,7 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
                   ),
                   labels,
                 )}
-              </DialogContent>
+              </Stack>
               <DialogActions>
                 <Button onClick={handleCloseLabels}>
                   {t_i18n('Close')}

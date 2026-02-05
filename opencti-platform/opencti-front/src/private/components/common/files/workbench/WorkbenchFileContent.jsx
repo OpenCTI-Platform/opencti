@@ -1,14 +1,15 @@
-import { Add, ArrowDropDown, ArrowDropUp, DeleteOutlined, DoubleArrow } from '@mui/icons-material';
-import Box from '@mui/material/Box';
 import Button from '@common/button/Button';
-import Checkbox from '@mui/material/Checkbox';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import Fab from '@mui/material/Fab';
 import IconButton from '@common/button/IconButton';
+import Dialog from '@common/dialog/Dialog';
+import { Add, ArrowDropDown, ArrowDropUp, DeleteOutlined, DoubleArrow } from '@mui/icons-material';
+import { ListItemButton, Stack } from '@mui/material';
+import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
+import Checkbox from '@mui/material/Checkbox';
+import DialogActions from '@mui/material/DialogActions';
+import Fab from '@mui/material/Fab';
 import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import MenuItem from '@mui/material/MenuItem';
@@ -20,54 +21,51 @@ import makeStyles from '@mui/styles/makeStyles';
 import Axios from 'axios';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { v4 as uuid } from 'uuid';
 import * as Yup from 'yup';
-import Alert from '@mui/material/Alert';
-import { ListItemButton, Stack } from '@mui/material';
-import ListItem from '@mui/material/ListItem';
+import Breadcrumbs from '../../../../../components/Breadcrumbs';
+import TitleMainEntity from '../../../../../components/common/typography/TitleMainEntity';
 import DateTimePickerField from '../../../../../components/DateTimePickerField';
-import { useFormatter } from '../../../../../components/i18n';
-import ItemBoolean from '../../../../../components/ItemBoolean';
-import ItemIcon from '../../../../../components/ItemIcon';
+import DeleteDialog from '../../../../../components/DeleteDialog';
 import MarkdownField from '../../../../../components/fields/MarkdownField';
+import RichTextField from '../../../../../components/fields/RichTextField';
 import SelectField from '../../../../../components/fields/SelectField';
 import SwitchField from '../../../../../components/fields/SwitchField';
+import { useFormatter } from '../../../../../components/i18n';
+import ItemBoolean from '../../../../../components/ItemBoolean';
+import ItemEntityType from '../../../../../components/ItemEntityType';
+import ItemIcon from '../../../../../components/ItemIcon';
+import ItemMarkings from '../../../../../components/ItemMarkings';
 import TextField from '../../../../../components/TextField';
 import { APP_BASE_PATH, commitMutation, handleError, MESSAGING$, QueryRenderer } from '../../../../../relay/environment';
-import { observableValue, resolveIdentityClass, resolveIdentityType, resolveLink, resolveLocationType, resolveThreatActorType } from '../../../../../utils/Entity';
 import { defaultKey, getMainRepresentative } from '../../../../../utils/defaultRepresentatives';
+import { observableValue, resolveIdentityClass, resolveIdentityType, resolveLink, resolveLocationType, resolveThreatActorType } from '../../../../../utils/Entity';
+import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import useAttributes from '../../../../../utils/hooks/useAttributes';
+import useDeletion from '../../../../../utils/hooks/useDeletion';
+import { KNOWLEDGE_KNUPDATE } from '../../../../../utils/hooks/useGranted';
 import useVocabularyCategory from '../../../../../utils/hooks/useVocabularyCategory';
+import Security from '../../../../../utils/Security';
 import { computeDuplicates, convertFromStixType, convertToStixType, truncate, uniqWithByFields } from '../../../../../utils/String';
 import { buildDate, now } from '../../../../../utils/Time';
 import { isEmptyField, isNotEmptyField } from '../../../../../utils/utils';
 import { stixCyberObservablesLinesSearchQuery } from '../../../observations/stix_cyber_observables/StixCyberObservablesLines';
+import { markingDefinitionsLinesSearchQuery } from '../../../settings/MarkingDefinitionsQuery';
+import Drawer from '../../drawer/Drawer';
 import CreatedByField from '../../form/CreatedByField';
 import DynamicResolutionField from '../../form/DynamicResolutionField';
 import { ExternalReferencesField } from '../../form/ExternalReferencesField';
 import ObjectLabelField from '../../form/ObjectLabelField';
 import ObjectMarkingField from '../../form/ObjectMarkingField';
 import OpenVocabField from '../../form/OpenVocabField';
+import StixCoreObjectLabels from '../../stix_core_objects/StixCoreObjectLabels';
 import { stixDomainObjectsLinesSearchQuery } from '../../stix_domain_objects/StixDomainObjectsLines';
 import { fileManagerAskJobImportMutation } from '../FileManager';
 import WorkbenchFilePopover from './WorkbenchFilePopover';
 import WorkbenchFileToolbar from './WorkbenchFileToolbar';
-import { fieldSpacingContainerStyle } from '../../../../../utils/field';
-import RichTextField from '../../../../../components/fields/RichTextField';
-import Drawer from '../../drawer/Drawer';
-import { markingDefinitionsLinesSearchQuery } from '../../../settings/MarkingDefinitionsQuery';
-import { KNOWLEDGE_KNUPDATE } from '../../../../../utils/hooks/useGranted';
-import Security from '../../../../../utils/Security';
-import DeleteDialog from '../../../../../components/DeleteDialog';
-import useDeletion from '../../../../../utils/hooks/useDeletion';
-import Breadcrumbs from '../../../../../components/Breadcrumbs';
-import TitleMainEntity from '../../../../../components/common/typography/TitleMainEntity';
-import StixCoreObjectLabels from '../../stix_core_objects/StixCoreObjectLabels';
-import ItemMarkings from '../../../../../components/ItemMarkings';
-import ItemEntityType from '../../../../../components/ItemEntityType';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -4193,51 +4191,46 @@ const WorkbenchFileContentComponent = ({
           <Form style={{ margin: '0 0 20px 0' }}>
             <Dialog
               open={displayValidate}
-              slotProps={{ paper: { elevation: 1 } }}
-              keepMounted
               onClose={handleCloseValidate}
-              fullWidth
+              title={t_i18n('Validate and send for import')}
             >
-              <DialogTitle>{t_i18n('Validate and send for import')}</DialogTitle>
-              <DialogContent>
-                {!!file.metaData.entity_id && !!file.metaData.entity && (
-                  <>
-                    <Alert severity="info" variant="outlined">
-                      <Typography>
-                        {t_i18n('Having this checked means the last version of the entity linked to the workbench will be fetched from database before executing the workbench.')}
-                      </Typography>
-                      <Typography>
-                        {t_i18n('Because by default the workbench won\'t include the updates made on the entity after the creation of the workbench.')}
-                      </Typography>
-                    </Alert>
-                    <Field
-                      component={SwitchField}
-                      type="checkbox"
-                      name="refreshEntity"
-                      label={t_i18n('Refresh entity')}
-                    />
-                  </>
-                )}
-                <Field
-                  component={SelectField}
-                  variant="standard"
-                  name="connector_id"
-                  label={t_i18n('Connector')}
-                  fullWidth
-                  containerstyle={{ width: '100%' }}
-                  disabled={connectors.filter((n) => n.active).length === 0}
-                >
-                  {connectors.map((connector) => (
-                    <MenuItem
-                      key={connector.id}
-                      value={connector.id}
-                      disabled={!connector.active}
-                    >
-                      {connector.name}
-                    </MenuItem>
-                  ))}
-                </Field>
-              </DialogContent>
+              {!!file.metaData.entity_id && !!file.metaData.entity && (
+                <>
+                  <Alert severity="info" variant="outlined">
+                    <Typography>
+                      {t_i18n('Having this checked means the last version of the entity linked to the workbench will be fetched from database before executing the workbench.')}
+                    </Typography>
+                    <Typography>
+                      {t_i18n('Because by default the workbench won\'t include the updates made on the entity after the creation of the workbench.')}
+                    </Typography>
+                  </Alert>
+                  <Field
+                    component={SwitchField}
+                    type="checkbox"
+                    name="refreshEntity"
+                    label={t_i18n('Refresh entity')}
+                  />
+                </>
+              )}
+              <Field
+                component={SelectField}
+                variant="standard"
+                name="connector_id"
+                label={t_i18n('Connector')}
+                fullWidth
+                containerstyle={{ width: '100%' }}
+                disabled={connectors.filter((n) => n.active).length === 0}
+              >
+                {connectors.map((connector) => (
+                  <MenuItem
+                    key={connector.id}
+                    value={connector.id}
+                    disabled={!connector.active}
+                  >
+                    {connector.name}
+                  </MenuItem>
+                ))}
+              </Field>
               <DialogActions>
                 <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                   {t_i18n('Cancel')}
@@ -4267,51 +4260,46 @@ const WorkbenchFileContentComponent = ({
           <Form style={{ margin: '0 0 20px 0' }}>
             <Dialog
               open={displayConvertToDraft}
-              slotProps={{ paper: { elevation: 1 } }}
-              keepMounted
               onClose={handleCloseConvertToDraft}
-              fullWidth
+              title={t_i18n('Convert this workbench to a draft')}
             >
-              <DialogTitle>{t_i18n('Convert this workbench to a draft')}</DialogTitle>
-              <DialogContent>
-                {!!file.metaData.entity_id && !!file.metaData.entity && (
-                  <>
-                    <Alert severity="info" variant="outlined">
-                      <Typography>
-                        {t_i18n('Having this checked means the last version of the entity linked to the workbench will be fetched from database before executing the convertion.')}
-                      </Typography>
-                      <Typography>
-                        {t_i18n('Because by default the draft won\'t include the updates made on the entity after the creation of the workbench.')}
-                      </Typography>
-                    </Alert>
-                    <Field
-                      component={SwitchField}
-                      type="checkbox"
-                      name="refreshEntity"
-                      label={t_i18n('Refresh entity')}
-                    />
-                  </>
-                )}
-                <Field
-                  component={SelectField}
-                  variant="standard"
-                  name="connector_id"
-                  label={t_i18n('Connector')}
-                  fullWidth
-                  containerstyle={{ width: '100%' }}
-                  disabled={connectors.filter((n) => n.active).length === 0}
-                >
-                  {connectors.map((connector) => (
-                    <MenuItem
-                      key={connector.id}
-                      value={connector.id}
-                      disabled={!connector.active}
-                    >
-                      {connector.name}
-                    </MenuItem>
-                  ))}
-                </Field>
-              </DialogContent>
+              {!!file.metaData.entity_id && !!file.metaData.entity && (
+                <>
+                  <Alert severity="info" variant="outlined">
+                    <Typography>
+                      {t_i18n('Having this checked means the last version of the entity linked to the workbench will be fetched from database before executing the convertion.')}
+                    </Typography>
+                    <Typography>
+                      {t_i18n('Because by default the draft won\'t include the updates made on the entity after the creation of the workbench.')}
+                    </Typography>
+                  </Alert>
+                  <Field
+                    component={SwitchField}
+                    type="checkbox"
+                    name="refreshEntity"
+                    label={t_i18n('Refresh entity')}
+                  />
+                </>
+              )}
+              <Field
+                component={SelectField}
+                variant="standard"
+                name="connector_id"
+                label={t_i18n('Connector')}
+                fullWidth
+                containerstyle={{ width: '100%' }}
+                disabled={connectors.filter((n) => n.active).length === 0}
+              >
+                {connectors.map((connector) => (
+                  <MenuItem
+                    key={connector.id}
+                    value={connector.id}
+                    disabled={!connector.active}
+                  >
+                    {connector.name}
+                  </MenuItem>
+                ))}
+              </Field>
               <DialogActions>
                 <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                   {t_i18n('Cancel')}

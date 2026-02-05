@@ -1,47 +1,43 @@
-import React, { FunctionComponent, useState } from 'react';
-import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
-import { Field, Form, Formik } from 'formik';
-import * as Yup from 'yup';
-import Grid from '@mui/material/Grid';
-import { useTheme } from '@mui/styles';
+import Button from '@common/button/Button';
+import Dialog from '@common/dialog/Dialog';
+import EEChip from '@components/common/entreprise_edition/EEChip';
+import EETooltip from '@components/common/entreprise_edition/EETooltip';
+import GroupSetDefaultGroupForIngestionUsers from '@components/settings/groups/GroupSetDefaultGroupForIngestionUsers';
+import { VpnKeyOutlined } from '@mui/icons-material';
 import Alert from '@mui/material/Alert';
-import MenuItem from '@mui/material/MenuItem';
+import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import { VpnKeyOutlined } from '@mui/icons-material';
 import ListItemText from '@mui/material/ListItemText';
-import GroupSetDefaultGroupForIngestionUsers from '@components/settings/groups/GroupSetDefaultGroupForIngestionUsers';
-import EEChip from '@components/common/entreprise_edition/EEChip';
-import EETooltip from '@components/common/entreprise_edition/EETooltip';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
-import DialogTitle from '@mui/material/DialogTitle';
-import DangerZoneBlock from '../common/danger_zone/DangerZoneBlock';
-import AccessesMenu from './AccessesMenu';
-import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
-import { useFormatter } from '../../../components/i18n';
-import SwitchField from '../../../components/fields/SwitchField';
-import TextField from '../../../components/TextField';
-import { Policies$key } from './__generated__/Policies.graphql';
-import MarkdownField from '../../../components/fields/MarkdownField';
-import { PoliciesQuery } from './__generated__/PoliciesQuery.graphql';
-import SelectField from '../../../components/fields/SelectField';
-import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import Loader, { LoaderVariant } from '../../../components/Loader';
-import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
-import ItemBoolean from '../../../components/ItemBoolean';
+import MenuItem from '@mui/material/MenuItem';
+import { useTheme } from '@mui/styles';
+import { Field, Form, Formik } from 'formik';
+import React, { FunctionComponent, useState } from 'react';
+import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
+import * as Yup from 'yup';
 import Breadcrumbs from '../../../components/Breadcrumbs';
-import useApiMutation from '../../../utils/hooks/useApiMutation';
-import Transition from '../../../components/Transition';
-import type { Theme } from '../../../components/Theme';
-import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import { FieldOption } from '../../../utils/field';
 import Card from '../../../components/common/card/Card';
+import MarkdownField from '../../../components/fields/MarkdownField';
+import SelectField from '../../../components/fields/SelectField';
+import SwitchField from '../../../components/fields/SwitchField';
+import { useFormatter } from '../../../components/i18n';
+import ItemBoolean from '../../../components/ItemBoolean';
+import Loader, { LoaderVariant } from '../../../components/Loader';
+import TextField from '../../../components/TextField';
+import type { Theme } from '../../../components/Theme';
+import { FieldOption } from '../../../utils/field';
+import useApiMutation from '../../../utils/hooks/useApiMutation';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import useHelper from '../../../utils/hooks/useHelper';
+import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import DangerZoneBlock from '../common/danger_zone/DangerZoneBlock';
+import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
+import { Policies$key } from './__generated__/Policies.graphql';
+import { PoliciesQuery } from './__generated__/PoliciesQuery.graphql';
+import AccessesMenu from './AccessesMenu';
+import { DialogActions } from '@mui/material';
 
 const PoliciesFragment = graphql`
   fragment Policies on Settings {
@@ -228,32 +224,27 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                             />
                           </EETooltip>
                           <Dialog
-                            slotProps={{ paper: { elevation: 1 } }}
                             open={openPlatformOrganizationChanges}
                             keepMounted
-                            slots={{ transition: Transition }}
                             onClose={() => setOpenPlatformOrganizationChanges(false)}
+                            title={t_i18n('Numerous repercussions linked to the activation of this feature')}
                           >
-                            <DialogTitle>{t_i18n('Numerous repercussions linked to the activation of this feature')}</DialogTitle>
-                            <DialogContent>
-                              <DialogContentText>
-                                <Alert
-                                  severity="warning"
-                                  variant="outlined"
-                                  color="dangerZone"
-                                  style={{
-                                    borderColor: theme.palette.dangerZone.main,
-                                  }}
-                                >
-                                  {t_i18n(
-                                    'This feature has implications for the entire platform and must be fully understood before being used. For example, it\'s mandatory to have organizations set up for each user, otherwise they won\'t be able to log in. It is also mandatory to include connector\'s users in the platform main organization to avoid import problems.',
-                                  )}
-                                </Alert>
-                              </DialogContentText>
-                            </DialogContent>
+                            <Alert
+                              severity="warning"
+                              variant="outlined"
+                              color="dangerZone"
+                              style={{
+                                borderColor: theme.palette.dangerZone.main,
+                              }}
+                            >
+                              {t_i18n(
+                                'This feature has implications for the entire platform and must be fully understood before being used. For example, it\'s mandatory to have organizations set up for each user, otherwise they won\'t be able to log in. It is also mandatory to include connector\'s users in the platform main organization to avoid import problems.',
+                              )}
+                            </Alert>
+
                             <DialogActions>
                               <Button
-                                variant="outlined"
+                                variant="secondary"
                                 onClick={() => {
                                   setFieldValue('platform_organization', platformOrganization);
                                   setOpenPlatformOrganizationChanges(false);

@@ -1,42 +1,40 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import * as R from 'ramda';
-import { createPaginationContainer, graphql } from 'react-relay';
-import { ConnectionHandler } from 'relay-runtime';
-import withStyles from '@mui/styles/withStyles';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
+import Card from '@common/card/Card';
+import { ExpandLessOutlined, ExpandMoreOutlined, OpenInBrowserOutlined } from '@mui/icons-material';
+import { ListItemButton } from '@mui/material';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContentText from '@mui/material/DialogContentText';
 import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Button from '@common/button/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
-import { ExpandLessOutlined, ExpandMoreOutlined, OpenInBrowserOutlined } from '@mui/icons-material';
 import Slide from '@mui/material/Slide';
-import { interval } from 'rxjs';
-import ListItem from '@mui/material/ListItem';
 import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@common/button/IconButton';
+import withStyles from '@mui/styles/withStyles';
+import * as PropTypes from 'prop-types';
+import * as R from 'ramda';
+import React, { Component } from 'react';
+import { createPaginationContainer, graphql } from 'react-relay';
 import { Link } from 'react-router-dom';
-import DialogTitle from '@mui/material/DialogTitle';
-import { ListItemButton } from '@mui/material';
-import inject18n from '../../../../components/i18n';
-import { truncate } from '../../../../utils/String';
-import { commitMutation } from '../../../../relay/environment';
-import AddExternalReferences from './AddExternalReferences';
-import { externalReferenceMutationRelationDelete } from './AddExternalReferencesLines';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
-import FileLine from '../../common/files/FileLine';
-import { FIVE_SECONDS } from '../../../../utils/Time';
-import FileUploader from '../../common/files/FileUploader';
-import ExternalReferencePopover from './ExternalReferencePopover';
-import ExternalReferenceEnrichment from './ExternalReferenceEnrichment';
-import { isNotEmptyField } from '../../../../utils/utils';
+import { ConnectionHandler } from 'relay-runtime';
+import { interval } from 'rxjs';
 import ItemIcon from '../../../../components/ItemIcon';
 import { NO_DATA_WIDGET_MESSAGE } from '../../../../components/dashboard/WidgetNoData';
-import Card from '@common/card/Card';
+import inject18n from '../../../../components/i18n';
+import { commitMutation } from '../../../../relay/environment';
+import Security from '../../../../utils/Security';
+import { truncate } from '../../../../utils/String';
+import { FIVE_SECONDS } from '../../../../utils/Time';
+import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
+import { isNotEmptyField } from '../../../../utils/utils';
+import FileLine from '../../common/files/FileLine';
+import FileUploader from '../../common/files/FileUploader';
+import AddExternalReferences from './AddExternalReferences';
+import { externalReferenceMutationRelationDelete } from './AddExternalReferencesLines';
+import ExternalReferenceEnrichment from './ExternalReferenceEnrichment';
+import ExternalReferencePopover from './ExternalReferencePopover';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -379,20 +377,13 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
           )}
         </Card>
         <Dialog
-          slotProps={{ paper: { elevation: 1 } }}
           open={this.state.displayDialog}
-          keepMounted={true}
-          slots={{ transition: Transition }}
           onClose={this.handleCloseDialog.bind(this)}
+          title={t('Are you sure?')}
         >
-          <DialogTitle>
-            {t('Are you sure?')}
-          </DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              {t('Do you want to remove this external reference?')}
-            </DialogContentText>
-          </DialogContent>
+          <DialogContentText>
+            {t('Do you want to remove this external reference?')}
+          </DialogContentText>
           <DialogActions>
             <Button
               variant="secondary"
@@ -410,17 +401,13 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
           </DialogActions>
         </Dialog>
         <Dialog
-          slotProps={{ paper: { elevation: 1 } }}
           open={this.state.displayExternalLink}
-          keepMounted={true}
-          slots={{ transition: Transition }}
           onClose={this.handleCloseExternalLink.bind(this)}
+          title={t('Do you want to browse this external link?')}
         >
-          <DialogContent>
-            <DialogContentText>
-              {t('Do you want to browse this external link?')}
-            </DialogContentText>
-          </DialogContent>
+          <DialogContentText>
+            {t('Do you want to browse this external link?')}
+          </DialogContentText>
           <DialogActions>
             <Button variant="secondary" onClick={this.handleCloseExternalLink.bind(this)}>
               {t('Cancel')}

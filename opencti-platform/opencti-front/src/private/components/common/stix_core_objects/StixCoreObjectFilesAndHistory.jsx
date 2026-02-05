@@ -8,7 +8,7 @@ import { ConnectionHandler } from 'relay-runtime';
 import MenuItem from '@mui/material/MenuItem';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
-import Dialog from '@mui/material/Dialog';
+import Dialog from '@common/dialog/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
@@ -311,117 +311,112 @@ const StixCoreObjectFilesAndHistory = ({
         onReset={handleCloseImport}
       >
         {({ submitForm, handleReset, isSubmitting, setFieldValue, isValid, values }) => (
-          <Form style={{ margin: '0 0 20px 0' }}>
+          <Form>
             <Dialog
-              slotProps={{ paper: { elevation: 1 } }}
               open={fileToImport}
-              keepMounted={true}
               onClose={() => handleReset()}
-              fullWidth={true}
+              title={t_i18n('Launch an import')}
             >
-              <DialogTitle>{t_i18n('Launch an import')}</DialogTitle>
-              <DialogContent>
+              <Field
+                component={SelectField}
+                variant="standard"
+                name="connector_id"
+                label={t_i18n('Connector')}
+                fullWidth={true}
+                containerstyle={{ width: '100%' }}
+                onChange={handleSelectConnector}
+              >
+                {connectorsImport.map((connector, i) => {
+                  const disabled = !fileToImport
+                    || (connector.connector_scope.length > 0
+                      && !includes(
+                        fileToImport.metaData.mimetype,
+                        connector.connector_scope,
+                      ));
+                  return (
+                    <MenuItem
+                      key={i}
+                      value={connector.id}
+                      disabled={disabled || !connector.active}
+                    >
+                      {connector.name}
+                    </MenuItem>
+                  );
+                })}
+              </Field>
+              {!draftContext && (
                 <Field
                   component={SelectField}
                   variant="standard"
-                  name="connector_id"
-                  label={t_i18n('Connector')}
+                  name="validation_mode"
+                  label={t_i18n('Validation mode')}
                   fullWidth={true}
-                  containerstyle={{ width: '100%' }}
-                  onChange={handleSelectConnector}
+                  containerstyle={{ marginTop: 20, width: '100%' }}
+                  setFieldValue={setFieldValue}
                 >
-                  {connectorsImport.map((connector, i) => {
-                    const disabled = !fileToImport
-                      || (connector.connector_scope.length > 0
-                        && !includes(
-                          fileToImport.metaData.mimetype,
-                          connector.connector_scope,
-                        ));
-                    return (
-                      <MenuItem
-                        key={i}
-                        value={connector.id}
-                        disabled={disabled || !connector.active}
-                      >
-                        {connector.name}
-                      </MenuItem>
-                    );
-                  })}
-                </Field>
-                {!draftContext && (
-                  <Field
-                    component={SelectField}
-                    variant="standard"
-                    name="validation_mode"
-                    label={t_i18n('Validation mode')}
-                    fullWidth={true}
-                    containerstyle={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
+                  <MenuItem
+                    key="workbench"
+                    value="workbench"
                   >
-                    <MenuItem
-                      key="workbench"
-                      value="workbench"
+                    Workbench
+                  </MenuItem>
+                  <MenuItem
+                    key="draft"
+                    value="draft"
+                  >
+                    Draft
+                  </MenuItem>
+                </Field>
+              )}
+              {values.validation_mode === 'draft' && (
+                <Field
+                  name="authorizedMembers"
+                  component={AuthorizedMembersField}
+                  owner={owner}
+                  showAllMembersLine={showAllMembersLine}
+                  canDeactivate
+                  addMeUserWithAdminRights
+                  enableAccesses
+                  applyAccesses
+                  style={fieldSpacingContainerStyle}
+                />
+              )}
+              {selectedConnector?.configurations?.length > 0
+                ? (
+                    <Field
+                      component={SelectField}
+                      variant="standard"
+                      name="configuration"
+                      label={t_i18n('Configuration')}
+                      fullWidth={true}
+                      containerstyle={{ marginTop: 20, width: '100%' }}
+                      onChange={(_, value) => onCsvMapperSelection(value)}
                     >
-                      Workbench
-                    </MenuItem>
-                    <MenuItem
-                      key="draft"
-                      value="draft"
-                    >
-                      Draft
-                    </MenuItem>
-                  </Field>
-                )}
-                {values.validation_mode === 'draft' && (
-                  <Field
-                    name="authorizedMembers"
-                    component={AuthorizedMembersField}
-                    owner={owner}
-                    showAllMembersLine={showAllMembersLine}
-                    canDeactivate
-                    addMeUserWithAdminRights
-                    enableAccesses
-                    applyAccesses
-                    style={fieldSpacingContainerStyle}
-                  />
-                )}
-                {selectedConnector?.configurations?.length > 0
-                  ? (
-                      <Field
-                        component={SelectField}
-                        variant="standard"
-                        name="configuration"
-                        label={t_i18n('Configuration')}
-                        fullWidth={true}
-                        containerstyle={{ marginTop: 20, width: '100%' }}
-                        onChange={(_, value) => onCsvMapperSelection(value)}
-                      >
-                        {selectedConnector.configurations.map((config) => {
-                          return (
-                            <MenuItem
-                              key={config.id}
-                              value={config.configuration}
-                            >
-                              {config.name}
-                            </MenuItem>
-                          );
-                        })}
-                      </Field>
-                    ) : <ManageImportConnectorMessage name={selectedConnector?.name} />
-                }
-                {selectedConnector?.name === 'ImportCsv'
-                  && hasUserChoiceCsvMapper
-                  && (
-                    <>
-                      <ObjectMarkingField
-                        name="objectMarking"
-                        style={fieldSpacingContainerStyle}
-                        setFieldValue={setFieldValue}
-                      />
-                    </>
-                  )
-                }
-              </DialogContent>
+                      {selectedConnector.configurations.map((config) => {
+                        return (
+                          <MenuItem
+                            key={config.id}
+                            value={config.configuration}
+                          >
+                            {config.name}
+                          </MenuItem>
+                        );
+                      })}
+                    </Field>
+                  ) : <ManageImportConnectorMessage name={selectedConnector?.name} />
+              }
+              {selectedConnector?.name === 'ImportCsv'
+                && hasUserChoiceCsvMapper
+                && (
+                  <>
+                    <ObjectMarkingField
+                      name="objectMarking"
+                      style={fieldSpacingContainerStyle}
+                      setFieldValue={setFieldValue}
+                    />
+                  </>
+                )
+              }
               <DialogActions>
                 <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                   {t_i18n('Cancel')}

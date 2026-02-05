@@ -1,11 +1,9 @@
 import Button from '@common/button/Button';
+import Dialog from '@common/dialog/Dialog';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import CustomFileUploader from '@components/common/files/CustomFileUploader';
 import ConfidenceField from '@components/common/form/ConfidenceField';
 import { CoursesOfActionLinesPaginationQuery$variables } from '@components/techniques/__generated__/CoursesOfActionLinesPaginationQuery.graphql';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import { FunctionComponent, useState } from 'react';
@@ -292,16 +290,17 @@ const CourseOfActionCreation: FunctionComponent<CourseOfActionFormProps> = ({
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
         {CreateCourseOfActionControlledDialContextual}
-        <Dialog open={open} onClose={handleClose} slotProps={{ paper: { elevation: 1 } }}>
-          <DialogTitle>{t_i18n('Create a course of action')}</DialogTitle>
-          <DialogContent>
-            <CourseOfActionCreationForm
-              inputValue={inputValue}
-              updater={updater}
-              onCompleted={handleClose}
-              onReset={handleClose}
-            />
-          </DialogContent>
+        <Dialog
+          open={open}
+          onClose={handleClose}
+          title={t_i18n('Create a course of action')}
+        >
+          <CourseOfActionCreationForm
+            inputValue={inputValue}
+            updater={updater}
+            onCompleted={handleClose}
+            onReset={handleClose}
+          />
         </Dialog>
       </div>
     );
