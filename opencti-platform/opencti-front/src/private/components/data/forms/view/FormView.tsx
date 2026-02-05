@@ -29,7 +29,6 @@ import { environment } from '../../../../../relay/environment';
 import StixCoreObjectsField from '../../../common/form/StixCoreObjectsField';
 import useGranted, { INGESTION, MODULES } from '../../../../../utils/hooks/useGranted';
 import Card from '../../../../../components/common/card/Card';
-import { useImportFilesContext } from '@components/common/files/import_files/ImportFilesContext';
 
 // Styles
 const useStyles = makeStyles<Theme>(() => ({
@@ -142,7 +141,10 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
   const [pollingTimeout, setPollingTimeout] = useState(false);
   const isConnectorReader = useGranted([MODULES]);
   const isGrantedIngestion = useGranted([INGESTION]);
-  const { isForcedImportToDraft } = useImportFilesContext();
+
+  const isUserHasImport = useGranted(['KNOWLEDGE_KNASKIMPORT']);
+  const isUserHasImportInDraftOverride = isUserHasImport ? false : useGranted([], false, { capabilitiesInDraft: ['KNOWLEDGE_KNASKIMPORT'] });
+  const isForcedImportToDraft = isUserHasImport ? false : isUserHasImportInDraftOverride;
 
   const data = usePreloadedQuery(formViewQuery, queryRef);
   const { form } = data;

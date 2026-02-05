@@ -142,6 +142,7 @@ const Root = () => {
           element={(
             <Security
               needs={[KNOWLEDGE_KNUPDATE]}
+              capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}
               placeholder={<Navigate to="/dashboard" />}
             >
               <FormView />
