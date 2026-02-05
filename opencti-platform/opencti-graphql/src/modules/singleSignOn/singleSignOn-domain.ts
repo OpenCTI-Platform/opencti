@@ -33,7 +33,7 @@ export const isConfigurationAdminUser = (user: AuthUser): boolean => {
 // Warn: if you change this list, you will need to write a migration on existing SSO entities
 export const AUTH_SECRET_LIST = [
   'client_secret', // OpenID
-  'bind_credentials', // LDAP
+  'bindCredentials', // LDAP
   'privateKey', // SAML
   'decryptionPvk', // SAML
 ];
@@ -70,23 +70,6 @@ const encryptConfigurationSecrets = async (configurationWithClear: Configuration
 
 // End Encryption region
 
-const toEnv = (newStrategyType: StrategyType) => {
-  switch (newStrategyType) {
-    case StrategyType.LocalStrategy:
-      return EnvStrategyType.STRATEGY_LOCAL;
-    case StrategyType.SamlStrategy:
-      return EnvStrategyType.STRATEGY_SAML;
-    case StrategyType.LdapStrategy:
-      return EnvStrategyType.STRATEGY_LDAP;
-    case StrategyType.OpenIdConnectStrategy:
-      return EnvStrategyType.STRATEGY_OPENID;
-    case StrategyType.ClientCertStrategy:
-      return EnvStrategyType.STRATEGY_CERT;
-    case StrategyType.HeaderStrategy:
-      return EnvStrategyType.STRATEGY_HEADER;
-  }
-};
-
 export const checkAuthenticationEditionLocked = (user: AuthUser) => {
   if (isAuthenticationEditionLocked() && !isConfigurationAdminUser(user)) {
     throw UnsupportedError('Authentication edition is locked by environment variable');
@@ -98,16 +81,16 @@ export const checkSSOAllowed = async (context: AuthContext) => {
 };
 
 // For now it's only a logApp, but will be also send to UI via Redis.
-export const logAuthInfo = (message: string, strategyType: EnvStrategyType, meta?: any) => {
-  logApp.info(`[Auth][${strategyType}]${message}`, { meta });
+export const logAuthInfo = (message: string, strategyType: EnvStrategyType | StrategyType, meta?: any) => {
+  logApp.info(`[Auth][${strategyType.toUpperCase()}]${message}`, { meta });
 };
 
-export const logAuthWarn = (message: string, strategyType: EnvStrategyType, meta?: any) => {
-  logApp.warn(`[Auth][${strategyType}]${message}`, { meta });
+export const logAuthWarn = (message: string, strategyType: EnvStrategyType | StrategyType, meta?: any) => {
+  logApp.warn(`[Auth][${strategyType.toUpperCase()}]${message}`, { meta });
 };
 
-export const logAuthError = (message: string, strategyType: EnvStrategyType | undefined, meta?: any) => {
-  logApp.error(`[Auth][${strategyType ?? 'Not provided'}]${message}`, { meta });
+export const logAuthError = (message: string, strategyType: EnvStrategyType | StrategyType | undefined, meta?: any) => {
+  logApp.error(`[Auth][${strategyType ? strategyType.toUpperCase() : 'Not provided'}]${message}`, { meta });
 };
 
 export const findSingleSignOnById = async (context: AuthContext, user: AuthUser, id: string) => {
@@ -161,7 +144,7 @@ export const internalAddSingleSignOn = async (context: AuthContext, user: AuthUs
   });
 
   if (created.enabled && !skipRegister) {
-    logAuthInfo('Activating new strategy', toEnv(input.strategy), { identifier: input.identifier });
+    logAuthInfo('Activating new strategy', input.strategy, { identifier: input.identifier });
     await notify(BUS_TOPICS[ENTITY_TYPE_SINGLE_SIGN_ON].EDIT_TOPIC, created, user);
   }
   return created;
@@ -183,12 +166,14 @@ export const fieldPatchSingleSignOn = async (context: AuthContext, user: AuthUse
     throw FunctionalError(`Single sign on ${id} cannot be found`);
   }
 
+  logApp.info('INPUT', { input: JSON.stringify(input) });
+
   const finalInput: EditInput[] = [];
   for (let i = 0; i < input.length; i++) {
     // What about object_path ???
     const currentInput = input[i];
     if (currentInput.key === 'configuration') {
-      const configurationEncrypted = await encryptConfigurationSecrets(currentInput.value[0]);
+      const configurationEncrypted = await encryptConfigurationSecrets(currentInput.value);
       const overrideEditInput: EditInput = {
         key: 'configuration', value: [configurationEncrypted],
       };
@@ -230,7 +215,7 @@ export const deleteSingleSignOn = async (context: AuthContext, user: AuthUser, i
   }
 
   if (singleSignOn.enabled && !isAuthenticationForcedFromEnv()) {
-    logAuthInfo('Disabling strategy', toEnv(singleSignOn.strategy), { identifier: singleSignOn.identifier });
+    logAuthInfo('Disabling strategy', singleSignOn.strategy, { identifier: singleSignOn.identifier });
     await unregisterStrategy(singleSignOn);
   }
 

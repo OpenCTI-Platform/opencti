@@ -35,10 +35,10 @@ export const parseValueAsType = async (config: ConfigurationType) => {
     } else if (config.type.toLowerCase() === 'secret') {
       return await decryptAuthValue(config.value);
     } else {
-      logApp.error('Authentication configuration cannot be parsed, unknown type. Ignored', { key: config.key, type: config.type });
+      throw ConfigurationError('Authentication configuration cannot be parsed, unknown type.', { key: config.key, type: config.type });
     }
   } else {
-    logApp.error('Authentication configuration cannot be parsed, key, type or value is empty. Ignored', { key: config.key, type: config.type });
+    throw ConfigurationError('Authentication configuration cannot be parsed, key, type or value is empty.', { key: config.key, type: config.type });
   }
 };
 
@@ -48,7 +48,11 @@ export const convertKeyValueToJsConfiguration = async (ssoEntity: BasicStoreEnti
     for (let i = 0; i < ssoEntity.configuration.length; i++) {
       const currentConfig = ssoEntity.configuration[i];
       if (isNotEmptyField(currentConfig.value)) {
-        ssoConfiguration[currentConfig.key] = await parseValueAsType(currentConfig);
+        try {
+          ssoConfiguration[currentConfig.key] = await parseValueAsType(currentConfig);
+        } catch (e) {
+          logAuthError(`Configuration ${currentConfig.key} cannot be read, is ignored. Please verify your configuration.`, ssoEntity.strategy, { currentConfig, cause: e });
+        }
       }
     }
     return ssoConfiguration;

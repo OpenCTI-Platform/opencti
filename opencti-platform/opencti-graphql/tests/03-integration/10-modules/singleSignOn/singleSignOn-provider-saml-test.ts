@@ -3,10 +3,13 @@ import { convertKeyValueToJsConfiguration } from '../../../../src/modules/single
 import type { BasicStoreEntitySingleSignOn } from '../../../../src/modules/singleSignOn/singleSignOn-types';
 import { type GroupsManagement, type OrganizationsManagement, StrategyType } from '../../../../src/generated/graphql';
 import { buildSAMLOptions, computeSamlGroupAndOrg, computeSamlUserInfo } from '../../../../src/modules/singleSignOn/singleSignOn-provider-saml';
+import { encryptAuthValue } from '../../../../src/modules/singleSignOn/singleSignOn-domain';
 
 describe('SAML Single sign on Provider coverage tests', () => {
   describe('SAML configuration coverage', () => {
     it('should build correct options for SAML', async () => {
+      const encryptedKey = await encryptAuthValue('kkkkkkkkkkkkk');
+
       const samlEntity: Partial<BasicStoreEntitySingleSignOn> = {
         strategy: StrategyType.SamlStrategy,
         configuration: [
@@ -42,7 +45,7 @@ describe('SAML Single sign on Provider coverage tests', () => {
           },
           {
             key: 'privateKey',
-            value: '***kkkkkkkkkkkkk',
+            value: `${encryptedKey}`,
             type: 'secret',
           },
         ],

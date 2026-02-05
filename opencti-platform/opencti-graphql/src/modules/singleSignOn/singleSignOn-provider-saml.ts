@@ -1,5 +1,5 @@
 import type { BasicStoreEntitySingleSignOn } from './singleSignOn-types';
-import { logAuthInfo } from './singleSignOn-domain';
+import { logAuthError, logAuthInfo } from './singleSignOn-domain';
 import { AuthType, EnvStrategyType, genConfigMapper, type ProviderConfiguration, providerLoginHandler, type ProviderUserInfo } from './providers-configuration';
 import { addUserLoginCount } from '../../manager/telemetryManager';
 import { registerAuthenticationProvider } from './providers-initialization';
@@ -38,7 +38,11 @@ export const buildSAMLOptions = async (ssoEntity: BasicStoreEntitySingleSignOn) 
     const ssoOtherOptions: any = {};
     for (let i = 0; i < ssoEntity.configuration.length; i++) {
       const currentConfig = ssoEntity.configuration[i];
-      ssoOtherOptions[currentConfig.key] = await parseValueAsType(currentConfig);
+      try {
+        ssoOtherOptions[currentConfig.key] = await parseValueAsType(currentConfig);
+      } catch (e) {
+        logAuthError(`Configuration ${currentConfig.key} cannot be read, is ignored. Please verify your configuration.`, EnvStrategyType.STRATEGY_SAML, { currentConfig, cause: e });
+      }
     }
     return { ...ssoOptions, ...ssoOtherOptions } as PassportSamlConfig;
   } else {

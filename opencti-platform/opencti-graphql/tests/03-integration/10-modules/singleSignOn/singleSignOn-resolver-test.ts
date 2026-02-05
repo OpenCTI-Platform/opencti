@@ -110,14 +110,14 @@ describe('Single Sign On', () => {
       createdSingleSighOns.push(createdSingleSignOn1Id);
 
       const configurationData: ConfigurationTypeInput[] = singleSignOn?.data?.singleSignOnAdd?.configuration as ConfigurationTypeInput[];
-      const certData = configurationData.find((config) => config.key === 'cert');
-      expect(certData).toBe('21341234');
-      const callbackUrlData = configurationData.find((config) => config.key === 'callbackUrl');
-      expect(callbackUrlData).toBe('http://myopencti/auth/samlTestDomain/callback');
-      const issuerData = configurationData.find((config) => config.key === 'issuer');
-      expect(issuerData).toBe('issuer');
-      const privateKeyData = configurationData.find((config) => config.key === 'privateKey');
-      expect(privateKeyData).not.toBe('myPK'); // should be encrypted
+      const certData = configurationData.find((config) => config.key === 'cert') as ConfigurationTypeInput;
+      expect(certData.value).toBe('21341234');
+      const callbackUrlData = configurationData.find((config) => config.key === 'callbackUrl') as ConfigurationTypeInput;
+      expect(callbackUrlData.value).toBe('http://myopencti/auth/samlTestDomain/callback');
+      const issuerData = configurationData.find((config) => config.key === 'issuer') as ConfigurationTypeInput;
+      expect(issuerData.value).toBe('issuer');
+      const privateKeyData = configurationData.find((config) => config.key === 'privateKey') as ConfigurationTypeInput;
+      expect(privateKeyData.value).not.toBe('myPK'); // should be encrypted
     });
 
     it('should create another single sign on entity', async () => {
