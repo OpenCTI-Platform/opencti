@@ -61,6 +61,8 @@ const NOT_CLEANABLE_FILTER_KEYS = [
   'entity_id',
   'ids',
   'bulkSearchKeywords',
+  'draft_ids',
+  'draft_change',
   PIR_SCORE_FILTER,
   LAST_PIR_SCORE_DATE_FILTER,
 ];
@@ -857,8 +859,6 @@ export const removeIdFromFilterGroupObject = (filters?: FilterGroup | null): Fil
   };
 };
 
-const notCleanableFilterKeys = ['ids', 'entity_type', 'authorized_members.id', 'user_id', 'internal_id', 'entity_id'];
-
 // TODO use useRemoveIdAndIncorrectKeysFromFilterGroupObject instead when all the calling files are in pure function
 export const removeIdAndIncorrectKeysFromFilterGroupObject = (filters: FilterGroup | null | undefined, availableFilterKeys: string[]): FilterGroup | undefined => {
   if (!filters) {
@@ -888,7 +888,7 @@ export const removeIdAndIncorrectKeysFromFilterGroupObject = (filters: FilterGro
 };
 
 export const useRemoveIdAndIncorrectKeysFromFilterGroupObject = (filters?: FilterGroup | null, entityTypes = ['Stix-Core-Object']): FilterGroup | undefined => {
-  const availableFilterKeys = useAvailableFilterKeysForEntityTypes(entityTypes).concat(notCleanableFilterKeys);
+  const availableFilterKeys = useAvailableFilterKeysForEntityTypes(entityTypes).concat(NOT_CLEANABLE_FILTER_KEYS);
   return removeIdAndIncorrectKeysFromFilterGroupObject(filters, availableFilterKeys);
 };
 
@@ -901,7 +901,7 @@ interface BuildEntityTypeBasedFilterContextArgs {
 export const useBuildEntityTypeBasedFilterContext = (
   entityTypeParam: string | string[],
   filters: FilterGroup | undefined,
-  args?: BuildEntityTypeBasedFilterContextArgs = {},
+  args: BuildEntityTypeBasedFilterContextArgs = {},
 ): FilterGroup => {
   const { excludedEntityTypesParam = null, entityTypesContext = null, draftId = null } = args;
   const entityTypes = Array.isArray(entityTypeParam) ? entityTypeParam : [entityTypeParam];
