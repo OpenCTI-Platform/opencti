@@ -2887,7 +2887,7 @@ class OpenCTIStix2:
         if rule_id is None:
             rule_id = item["opencti_rule"]
         self.opencti.stix_core_object.rule_apply_async(
-            element_id=item["id"], rule_id=rule_id
+            element_id=item["id"], rule_id=rule_id, execution_id=bundle_id
         )
 
     def rule_clear(self, item):
