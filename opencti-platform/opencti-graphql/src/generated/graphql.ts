@@ -7295,15 +7295,19 @@ export type DraftVersion = {
 export type DraftWorkspace = BasicObject & InternalObject & {
   __typename?: 'DraftWorkspace';
   authorizedMembers: Array<MemberAccess>;
+  createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
   draft_status: DraftStatus;
   entity_id?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
+  objectAssignee?: Maybe<Array<Assignee>>;
+  objectParticipant?: Maybe<Array<Participant>>;
   objectsCount: DraftObjectsCount;
   parent_types: Array<Scalars['String']['output']>;
   processingCount: Scalars['Int']['output'];
@@ -41294,15 +41298,19 @@ export type DraftVersionResolvers<ContextType = any, ParentType extends Resolver
 
 export type DraftWorkspaceResolvers<ContextType = any, ParentType extends ResolversParentTypes['DraftWorkspace'] = ResolversParentTypes['DraftWorkspace']> = ResolversObject<{
   authorizedMembers?: Resolver<Array<ResolversTypes['MemberAccess']>, ParentType, ContextType>;
+  createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draft_status?: Resolver<ResolversTypes['DraftStatus'], ParentType, ContextType>;
   entity_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  objectAssignee?: Resolver<Maybe<Array<ResolversTypes['Assignee']>>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<Array<ResolversTypes['Participant']>>, ParentType, ContextType>;
   objectsCount?: Resolver<ResolversTypes['DraftObjectsCount'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   processingCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
