@@ -4,9 +4,9 @@ import List from '@mui/material/List';
 import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { ListItemButton } from '@mui/material';
+import { ListItemButton, Tooltip } from '@mui/material';
 import IconButton from '@common/button/IconButton';
-import { LinkOff, SourceOutlined } from '@mui/icons-material';
+import { Delete, SourceOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import ListItem from '@mui/material/ListItem';
 import { useFormatter } from '../../../../components/i18n';
@@ -65,12 +65,14 @@ const DataSourceDataComponentsComponent: FunctionComponent<{
                   divider={true}
                   disablePadding={true}
                   secondaryAction={(
-                    <IconButton
-                      aria-label="Remove"
-                      onClick={() => removeDataComponent(dataComponent.id)}
-                    >
-                      <LinkOff />
-                    </IconButton>
+                    <Tooltip title={t_i18n('Delete relationship')}>
+                      <IconButton
+                        aria-label="Remove"
+                        onClick={() => removeDataComponent(dataComponent.id)}
+                      >
+                        <Delete />
+                      </IconButton>
+                    </Tooltip>
                   )}
                 >
                   <ListItemButton

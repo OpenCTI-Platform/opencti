@@ -1,12 +1,12 @@
 import React from 'react';
 import { filter } from 'ramda';
 import IconButton from '@common/button/IconButton';
-import { Domain, LinkOff } from '@mui/icons-material';
+import { Domain, Delete } from '@mui/icons-material';
 import { graphql, createFragmentContainer } from 'react-relay';
 import { AutoFix } from 'mdi-material-ui';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import { ListItemButton } from '@mui/material';
+import { ListItemButton, Tooltip } from '@mui/material';
 import ListItemText from '@mui/material/ListItemText';
 import { Link } from 'react-router-dom';
 import AddSubSector from './AddSubSector';
@@ -65,12 +65,14 @@ const SectorSubSectorsComponent = ({ sector }) => {
             disablePadding
             secondaryAction={types.includes('manual') ? (
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <IconButton
-                  aria-label="Remove"
-                  onClick={() => removeSubSector(subSectorEdge)}
-                >
-                  <LinkOff />
-                </IconButton>
+                <Tooltip title={t_i18n('Delete relationship')}>
+                  <IconButton
+                    aria-label="Remove"
+                    onClick={() => removeSubSector(subSectorEdge)}
+                  >
+                    <Delete />
+                  </IconButton>
+                </Tooltip>
               </Security>
             ) : <AutoFix fontSize="small" style={{ marginRight: 13 }} />}
           >
