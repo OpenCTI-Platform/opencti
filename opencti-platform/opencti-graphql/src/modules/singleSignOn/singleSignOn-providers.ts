@@ -125,11 +125,7 @@ const registerCertStrategy = async (ssoEntity: BasicStoreEntitySingleSignOn) => 
   const providerRef = 'cert';
 
   logAuthInfo('Configuring Cert', EnvStrategyType.STRATEGY_CERT, { id: ssoEntity.id, identifier: ssoEntity.identifier, providerRef });
-
-  const ssoConfiguration: any = convertKeyValueToJsConfiguration(ssoEntity);
-  const providerName = ssoConfiguration?.label || providerRef;
-
-  PROVIDERS.push({ name: providerName, type: AuthType.AUTH_SSO, strategy: EnvStrategyType.STRATEGY_CERT, provider: providerRef });
+  PROVIDERS.push({ name: providerRef, type: AuthType.AUTH_SSO, strategy: EnvStrategyType.STRATEGY_CERT, provider: providerRef });
   logAuthInfo('Cert configured', EnvStrategyType.STRATEGY_CERT, { id: ssoEntity.id, identifier: ssoEntity.identifier, providerRef });
 };
 

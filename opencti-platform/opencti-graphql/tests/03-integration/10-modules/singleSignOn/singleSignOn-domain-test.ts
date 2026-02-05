@@ -418,13 +418,9 @@ describe('Single sign on Domain coverage tests', () => {
     });
   });
   describe('CERT coverage tests', () => {
+    let certEntityId: string;
     afterAll(async () => {
-      const allSso = await findAllSingleSignOn(testContext, ADMIN_USER);
-      for (let i = 0; i < allSso.length; i++) {
-        if (allSso[i].identifier?.startsWith('ldapTest')) {
-          await deleteSingleSignOn(testContext, ADMIN_USER, allSso[i].id);
-        }
-      }
+      await deleteSingleSignOn(testContext, ADMIN_USER, certEntityId);
     });
 
     it('should add new minimal Cert provider', async () => {
@@ -438,10 +434,15 @@ describe('Single sign on Domain coverage tests', () => {
 
       expect(certEntity.identifier).toBe('cert');
       expect(certEntity.enabled).toBe(true);
+      certEntityId = certEntity.id;
 
       // Here there is a pub/sub on redis, let's just call the same method as listener
       await onAuthenticationMessageAdd({ instance: certEntity });
       expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'cert')).toBeTruthy();
+    });
+    it('should fieldPatch CERT SSO', async () => {
+      const patched = await fieldPatchSingleSignOn(testContext, ADMIN_USER, certEntityId, [{ key: 'enabled', value: [false] }]);
+      expect(patched.enabled).toBeFalsy();
     });
   });
 
