@@ -29,6 +29,8 @@ const caseRfiFragment = graphql`
     standard_id
     description
     created
+    modified
+    created_at
     information_types
     priority
     severity
