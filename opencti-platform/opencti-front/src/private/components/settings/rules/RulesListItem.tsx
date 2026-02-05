@@ -1,5 +1,5 @@
 import React, { CSSProperties } from 'react';
-import { Grid2 as Grid } from '@mui/material';
+import { Grid2 as Grid, Stack } from '@mui/material';
 import DangerZoneBlock from '@components/common/danger_zone/DangerZoneBlock';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -67,14 +67,15 @@ const RulesListItem = ({ rule, task, toggle }: RulesListItemProps) => {
               title={title}
               sx={style}
             >
-              <Grid container spacing={3}>
-                <Grid size={{ xs: 6 }}>
+              <Stack gap={2}>
+                <div>
                   <Label>
                     {t_i18n('Description')}
                   </Label>
-                  {t_i18n(rule.description)}
-                </Grid>
-                <Grid size={{ xs: 6 }}>
+                  <span>{t_i18n(rule.description)}</span>
+                </div>
+
+                <div>
                   <Label>
                     {t_i18n('Status')}
                   </Label>
@@ -91,13 +92,12 @@ const RulesListItem = ({ rule, task, toggle }: RulesListItemProps) => {
                       )}
                     />
                   </FormGroup>
-                </Grid>
+                </div>
+
                 {isEngineEnabled && taskWork && (
-                  <Grid size={{ xs: 12 }}>
-                    <RuleListItemProgressBar taskEnable={task.enable ?? false} work={taskWork} />
-                  </Grid>
+                  <RuleListItemProgressBar taskEnable={task.enable ?? false} work={taskWork} />
                 )}
-              </Grid>
+              </Stack>
             </Card>
           )}
         />

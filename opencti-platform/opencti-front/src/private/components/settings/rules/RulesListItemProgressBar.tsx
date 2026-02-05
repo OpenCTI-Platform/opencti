@@ -2,6 +2,8 @@ import React from 'react';
 import LinearProgress from '@mui/material/LinearProgress';
 import { Work } from './RulesList';
 import { useFormatter } from '../../../../components/i18n';
+import Label from '../../../../components/common/label/Label';
+import { Stack } from '@mui/material';
 
 interface RuleListItemProgressBarProps {
   taskEnable: boolean;
@@ -27,25 +29,25 @@ const RuleListItemProgressBar = ({ taskEnable, work }: RuleListItemProgressBarPr
     else progressValue = percentProcessed;
   }
 
-  return (
-    <div
-      style={{
-        width: '100%',
-        textAlign: 'center',
-        fontSize: 9,
-        fontFamily: 'Consolas, monaco, monospace',
-      }}
-    >
-      {taskEnable && workCompleted && labelEnableComplete}
-      {taskEnable && !workCompleted && labelEnableOngoing}
-      {!taskEnable && workCompleted && labelDisableComplete}
-      {!taskEnable && !workCompleted && labelDisableOngoing}
+  const getLabel = () => {
+    if (taskEnable && workCompleted) return labelEnableComplete;
+    if (taskEnable) return labelEnableOngoing;
+    if (workCompleted) return labelDisableComplete;
+    return labelDisableOngoing;
+  };
 
-      <LinearProgress
-        style={{ borderRadius: 4, height: 10 }}
-        variant="determinate"
-        value={progressValue}
-      />
+  return (
+    <div>
+      <Stack gap={1}>
+        <Label>
+          {getLabel()}
+        </Label>
+        <LinearProgress
+          style={{ borderRadius: 4, height: 10 }}
+          variant="determinate"
+          value={progressValue}
+        />
+      </Stack>
     </div>
   );
 };
