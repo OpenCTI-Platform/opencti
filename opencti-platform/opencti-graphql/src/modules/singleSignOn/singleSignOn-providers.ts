@@ -143,19 +143,19 @@ export const registerStrategy = async (authenticationStrategy: BasicStoreEntityS
         if (authenticationStrategy.enabled) {
           switch (authenticationStrategy.strategy) {
             case StrategyType.SamlStrategy:
-              logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}}`, EnvStrategyType.STRATEGY_SAML);
+              logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_SAML);
               if (authenticationStrategy.enabled) {
                 await registerSAMLStrategy(authenticationStrategy);
               }
               break;
             case StrategyType.OpenIdConnectStrategy:
-              logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}}`, EnvStrategyType.STRATEGY_OPENID);
+              logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_OPENID);
               if (authenticationStrategy.enabled) {
                 await registerOpenIdStrategy(authenticationStrategy);
               }
               break;
             case StrategyType.LdapStrategy:
-              logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}}`, EnvStrategyType.STRATEGY_LDAP);
+              logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_LDAP);
               if (authenticationStrategy.enabled) {
                 await registerLDAPStrategy(authenticationStrategy);
               }
@@ -180,7 +180,7 @@ export const registerStrategy = async (authenticationStrategy: BasicStoreEntityS
   } catch (e) {
     if (e instanceof GraphQLError) {
       logAuthError(
-        `Error when initializing an authentication provider (id: ${authenticationStrategy?.id ?? 'no id'}, identifier: ${authenticationStrategy?.identifier ?? 'no identifier'}), cause: ${e.message}`,
+        `Error when initializing an authentication provider (id: ${authenticationStrategy?.id ?? 'no id'}, identifier: ${authenticationStrategy?.identifier ?? 'no identifier'}, cause: ${e.message})`,
         undefined,
         { message: e.message, data: e.extensions.data },
       );
