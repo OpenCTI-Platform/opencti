@@ -1825,7 +1825,7 @@ const internalAuthenticateUser = async (context, req, user) => {
   let authenticatedUser = user;
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const synchronizedUpsert = req.headers['synchronized-upsert'] === 'true' && isBypassUser(authenticatedUser);
-    const applicantId = req.headers['opencti-applicant-id'];
+  const applicantId = req.headers['opencti-applicant-id'];
   if (applicantId && isBypassUser(authenticatedUser)) {
     const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
     authenticatedUser = platformUsers.get(applicantId) || INTERNAL_USERS[applicantId];
