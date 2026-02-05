@@ -1,22 +1,22 @@
-import React, { useMemo } from 'react';
-import { graphql, useSubscription } from 'react-relay';
-import Grid from '@mui/material/Grid';
-import EntitySettingCustomOverview from '@components/settings/sub_types/entity_setting/EntitySettingCustomOverview';
 import { SubTypeQuery, SubTypeQuery$variables } from '@components/settings/sub_types/__generated__/SubTypeQuery.graphql';
-import { useOutletContext } from 'react-router-dom';
+import EntitySettingCustomOverview from '@components/settings/sub_types/entity_setting/EntitySettingCustomOverview';
 import GlobalWorkflowSettings from '@components/settings/sub_types/workflow/GlobalWorkflowSettings';
 import RequestAccessSettings from '@components/settings/sub_types/workflow/RequestAccessSettings';
 import Divider from '@mui/material/Divider';
-import { useFormatter } from '../../../../components/i18n';
-import EntitySettingSettings from './entity_setting/EntitySettingSettings';
-import EntitySettingAttributes from './entity_setting/EntitySettingAttributes';
-import SearchInput from '../../../../components/SearchInput';
-import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import FintelTemplatesGrid from './fintel_templates/FintelTemplatesGrid';
-import ErrorNotFound from '../../../../components/ErrorNotFound';
-import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import Grid from '@mui/material/Grid';
+import { useMemo } from 'react';
+import { graphql, useSubscription } from 'react-relay';
+import { useOutletContext } from 'react-router-dom';
 import Card from '../../../../components/common/card/Card';
+import ErrorNotFound from '../../../../components/ErrorNotFound';
+import { useFormatter } from '../../../../components/i18n';
+import SearchInput from '../../../../components/SearchInput';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useHelper from '../../../../utils/hooks/useHelper';
+import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import EntitySettingAttributes from './entity_setting/EntitySettingAttributes';
+import EntitySettingSettings from './entity_setting/EntitySettingSettings';
+import FintelTemplatesGrid from './fintel_templates/FintelTemplatesGrid';
 
 const entitySettingSubscription = graphql`
   subscription SubTypeOverviewEntitySettingSubscription($id: ID!) {
@@ -78,7 +78,9 @@ const SubTypeOverview = () => {
             <div style={{ display: 'flex' }}>
               <Grid item xs={hasRequestAccessConfig ? 6 : 12}>
                 {subType.settings?.availableSettings.includes('workflow_configuration')
-                  && <GlobalWorkflowSettings data={subType} subTypeId={subType.id} workflowEnabled={subType.workflowEnabled ?? false} />
+                  && (
+                    <GlobalWorkflowSettings data={subType} subTypeId={subType.id} workflowEnabled={subType.workflowEnabled ?? false} />
+                  )
                 }
               </Grid>
               {hasRequestAccessConfig && (

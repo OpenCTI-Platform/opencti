@@ -1,20 +1,19 @@
-import React from 'react';
-import { graphql, useFragment } from 'react-relay';
-import Switch from '@mui/material/Switch';
-import Grid from '@mui/material/Grid';
 import { Box, Tooltip } from '@mui/material';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
+import Grid from '@mui/material/Grid';
+import Switch from '@mui/material/Switch';
 import { InformationOutline } from 'mdi-material-ui';
-import { useFormatter } from '../../../../../components/i18n';
-import ErrorNotFound from '../../../../../components/ErrorNotFound';
-import { SETTINGS_SETACCESSES } from '../../../../../utils/hooks/useGranted';
-import GroupEntitySettingHiddenTypesList from '../../groups/GroupEntitySettingHiddenTypesList';
-import Security from '../../../../../utils/Security';
-import { EntitySettingSettings_entitySetting$key } from './__generated__/EntitySettingSettings_entitySetting.graphql';
-import SettingsOrganizationEntitySettingHiddenTypesList from '../../organizations/SettingsOrganizationEntitySettingHiddenTypesList';
-import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import { graphql, useFragment } from 'react-relay';
 import Label from '../../../../../components/common/label/Label';
+import ErrorNotFound from '../../../../../components/ErrorNotFound';
+import { useFormatter } from '../../../../../components/i18n';
+import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import { SETTINGS_SETACCESSES } from '../../../../../utils/hooks/useGranted';
+import Security from '../../../../../utils/Security';
+import GroupEntitySettingHiddenTypesList from '../../groups/GroupEntitySettingHiddenTypesList';
+import SettingsOrganizationEntitySettingHiddenTypesList from '../../organizations/SettingsOrganizationEntitySettingHiddenTypesList';
+import { EntitySettingSettings_entitySetting$key } from './__generated__/EntitySettingSettings_entitySetting.graphql';
 
 export const entitySettingFragment = graphql`
   fragment EntitySettingSettings_entitySetting on EntitySetting {

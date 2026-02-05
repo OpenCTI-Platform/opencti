@@ -85,10 +85,10 @@ const StixCoreObjectSharingList = ({ data, disabled, inContainer, children }: St
       renderTag={(organization) => (
         <Tag
           label={organization.name}
-          disableTooltip
           onDelete={() => removeOrganization(organization.id)}
           disabled={fullyDisabled || disabledOrgs.includes(organization.id)}
           icon={<AccountBalanceOutlined fontSize="small" />}
+          maxWidth={150}
         />
       )}
       direction="rtl"

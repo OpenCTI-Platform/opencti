@@ -638,12 +638,12 @@ const StixDomainObjectHeader = (props) => {
                   >
                     <Tag
                       label={label}
-                      disableTooltip
                       onDelete={
                         enableReferences
                           ? () => handleOpenCommitDelete(label)
                           : () => deleteAlias(label)
                       }
+                      maxWidth={150}
                     />
                   </Security>
                 )}
