@@ -19,6 +19,8 @@ import type { Theme } from '../components/Theme';
 import { RootSettings$data } from './__generated__/RootSettings.graphql';
 import Loader from '../components/Loader';
 import useDraftContext from '../utils/hooks/useDraftContext';
+import { Stack, SxProps } from '@mui/material';
+import DraftToolbar from './components/drafts/DraftToolbar';
 
 const Dashboard = lazy(() => import('./components/Dashboard'));
 const StixObjectOrStixRelationship = lazy(() => import('./components/StixObjectOrStixRelationship'));
@@ -55,19 +57,7 @@ const Index = ({ settings }: IndexProps) => {
   } = useAuth();
   const draftContext = useDraftContext();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
-  const boxSx = {
-    flexGrow: 1,
-    paddingLeft: 3,
-    paddingRight: 3,
-    paddingBottom: 1,
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.easeInOut,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    overflowY: 'hidden',
-    minHeight: '100vh',
-    paddingTop: `calc( 16px + 64px + ${settingsMessagesBannerHeight ?? 0}px)`, // 24 for margin, 48 for top bar
-  };
+
   // Change the theme body attribute when the mode changes in
   // the palette because some components like CKEditor uses this
   // body attribute to display correct styles.
@@ -81,6 +71,23 @@ const Index = ({ settings }: IndexProps) => {
       }
     }
   }, [theme]);
+
+  const mainSx: SxProps = {
+    transition: theme.transitions.create('width', {
+      easing: theme.transitions.easing.easeInOut,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    flexGrow: 1,
+    height: '100vh',
+    paddingTop: `calc(16px + 64px + ${settingsMessagesBannerHeight ?? 0}px)`,
+  };
+
+  const boxSx: SxProps = {
+    px: 3,
+    flex: 1,
+    overflowY: 'hidden',
+    minHeight: 0,
+  };
 
   return (
     <>
@@ -102,44 +109,47 @@ const Index = ({ settings }: IndexProps) => {
         <TopBar />
         <LeftBar />
         <Message />
-        <Box component="main" sx={boxSx}>
-          <Suspense fallback={<Loader />}>
-            <Routes>
-              <Route
-                path="/"
-                element={draftContext?.id
-                  ? (
-                      <Navigate to={`/dashboard/data/import/draft/${draftContext.id}/`} replace={true} />
-                    )
-                  : boundaryWrapper(Dashboard)}
-              />
-              {/* Search need to be rework */}
-              <Route path="/search/*" element={boundaryWrapper(RootSearch)} />
-              <Route path="/id/:id" element={boundaryWrapper(StixObjectOrStixRelationship)} />
-              <Route path="/search_bulk" element={boundaryWrapper(RootSearchBulk)} />
-              <Route path="/analyses/*" element={boundaryWrapper(RootAnalyses)} />
-              <Route path="/cases/*" element={boundaryWrapper(RootCases)} />
-              <Route path="/events/*" element={boundaryWrapper(RootEvents)} />
-              <Route path="/threats/*" element={boundaryWrapper(RootThreats)} />
-              <Route path="/arsenal/*" element={boundaryWrapper(RootArsenal)} />
-              <Route path="/techniques/*" element={boundaryWrapper(RootTechnique)} />
-              {/* Need to refactor below */}
-              <Route path="/entities/*" element={boundaryWrapper(RootEntities)} />
-              <Route path="/locations/*" element={boundaryWrapper(RootLocation)} />
-              <Route path="/data/import/draft/*" element={boundaryWrapper(RootDrafts)} />
-              <Route path="/data/*" element={boundaryWrapper(RootData)} />
-              {isTrashEnable() && (<Route path="/trash/*" element={boundaryWrapper(RootTrash)} />)}
-              <Route path="/pirs/*" element={boundaryWrapper(RootPir)} />
-              <Route path="/workspaces/*" element={boundaryWrapper(RootWorkspaces)} />
-              <Route path="/settings/*" element={boundaryWrapper(RootSettings)} />
-              <Route path="/audits/*" element={boundaryWrapper(RootAudit)} />
-              <Route path="/profile/*" element={boundaryWrapper(RootProfile)} />
-              <Route path="/observations/*" element={boundaryWrapper(RootObservations)} />
-              <Route path="/xtm-hub/*" element={boundaryWrapper(RootXTMHub)} />
-              <Route path="/*" element={<NoMatch />} />
-            </Routes>
-          </Suspense>
-        </Box>
+        <Stack component="main" sx={mainSx}>
+          <Box sx={boxSx}>
+            <Suspense fallback={<Loader />}>
+              <Routes>
+                <Route
+                  path="/"
+                  element={draftContext?.id
+                    ? (
+                        <Navigate to={`/dashboard/data/import/draft/${draftContext.id}/`} replace={true} />
+                      )
+                    : boundaryWrapper(Dashboard)}
+                />
+                {/* Search need to be rework */}
+                <Route path="/search/*" element={boundaryWrapper(RootSearch)} />
+                <Route path="/id/:id" element={boundaryWrapper(StixObjectOrStixRelationship)} />
+                <Route path="/search_bulk" element={boundaryWrapper(RootSearchBulk)} />
+                <Route path="/analyses/*" element={boundaryWrapper(RootAnalyses)} />
+                <Route path="/cases/*" element={boundaryWrapper(RootCases)} />
+                <Route path="/events/*" element={boundaryWrapper(RootEvents)} />
+                <Route path="/threats/*" element={boundaryWrapper(RootThreats)} />
+                <Route path="/arsenal/*" element={boundaryWrapper(RootArsenal)} />
+                <Route path="/techniques/*" element={boundaryWrapper(RootTechnique)} />
+                {/* Need to refactor below */}
+                <Route path="/entities/*" element={boundaryWrapper(RootEntities)} />
+                <Route path="/locations/*" element={boundaryWrapper(RootLocation)} />
+                <Route path="/data/import/draft/*" element={boundaryWrapper(RootDrafts)} />
+                <Route path="/data/*" element={boundaryWrapper(RootData)} />
+                {isTrashEnable() && (<Route path="/trash/*" element={boundaryWrapper(RootTrash)} />)}
+                <Route path="/pirs/*" element={boundaryWrapper(RootPir)} />
+                <Route path="/workspaces/*" element={boundaryWrapper(RootWorkspaces)} />
+                <Route path="/settings/*" element={boundaryWrapper(RootSettings)} />
+                <Route path="/audits/*" element={boundaryWrapper(RootAudit)} />
+                <Route path="/profile/*" element={boundaryWrapper(RootProfile)} />
+                <Route path="/observations/*" element={boundaryWrapper(RootObservations)} />
+                <Route path="/xtm-hub/*" element={boundaryWrapper(RootXTMHub)} />
+                <Route path="/*" element={<NoMatch />} />
+              </Routes>
+            </Suspense>
+          </Box>
+          <DraftToolbar />
+        </Stack>
       </Box>
     </>
   );

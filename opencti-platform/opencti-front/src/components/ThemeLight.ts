@@ -306,8 +306,8 @@ const ThemeLight = (
       },
     },
     h6: {
-      fontWeight: 400,
-      fontSize: 18,
+      fontWeight: 600,
+      fontSize: 14,
       color: text_color,
       fontFamily: '"Geologica", sans-serif',
       textTransform: 'lowercase',

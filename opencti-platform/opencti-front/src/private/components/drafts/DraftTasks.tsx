@@ -11,84 +11,84 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 
 export const draftTaskLineFragment = graphql`
-    fragment DraftTasksLine_task on BackgroundTask {
-        id
-        initiator {
-          id
-          name
-          representative {
-            main
-          }
-        }
-        type
-        actions {
-            type
-            context {
-                field
-                type
-                values
-            }
-        }
-        created_at
-        last_execution_date
-        completed
-        task_expected_number
-        task_processed_number
+  fragment DraftTasksLine_task on BackgroundTask {
+    id
+    initiator {
+      id
+      name
+      representative {
+        main
+      }
     }
+    type
+    actions {
+      type
+      context {
+        field
+        type
+        values
+      }
+    }
+    created_at
+    last_execution_date
+    completed
+    task_expected_number
+    task_processed_number
+  }
 `;
 
 const draftTasksLinesFragment = graphql`
-    fragment DraftTasksLines_data on Query
-    @argumentDefinitions(
-        count: { type: "Int", defaultValue: 500 }
-        cursor: { type: "ID" }
-        orderBy: { type: "BackgroundTasksOrdering" }
-        orderMode: { type: "OrderingMode" }
-        search: { type: "String" }
-        filters: { type: "FilterGroup" }
+  fragment DraftTasksLines_data on Query
+  @argumentDefinitions(
+    count: { type: "Int", defaultValue: 500 }
+    cursor: { type: "ID" }
+    orderBy: { type: "BackgroundTasksOrdering" }
+    orderMode: { type: "OrderingMode" }
+    search: { type: "String" }
+    filters: { type: "FilterGroup" }
+  )
+  @refetchable(queryName: "DraftTasksRefetchQuery") {
+    backgroundTasks(
+      first: $count,
+      after: $cursor,
+      orderBy: $orderBy,
+      orderMode: $orderMode,
+      search: $search,
+      filters: $filters,
     )
-    @refetchable(queryName: "DraftTasksRefetchQuery") {
-        backgroundTasks(
-            first: $count,
-            after: $cursor,
-            orderBy: $orderBy,
-            orderMode: $orderMode,
-            search: $search,
-            filters: $filters,
-        )
-        @connection(key: "Pagination_global_backgroundTasks") {
-            edges {
-                node {
-                    id
-                    ...DraftTasksLine_task
-                }
-            }
-            pageInfo {
-                globalCount
-            }
+    @connection(key: "Pagination_global_backgroundTasks") {
+      edges {
+        node {
+          id
+          ...DraftTasksLine_task
         }
+      }
+      pageInfo {
+        globalCount
+      }
     }
+  }
 `;
 
 export const draftTasksQuery = graphql`
-    query DraftTasksQuery(
-        $count: Int,
-        $cursor: ID,
-        $orderBy: BackgroundTasksOrdering,
-        $orderMode: OrderingMode,
-        $search: String,
-        $filters: FilterGroup,
-    ) {
-        ...DraftTasksLines_data
-        @arguments(
-            count: $count
-            cursor: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            search: $search
-            filters: $filters
-        )
-    }
+  query DraftTasksQuery(
+    $count: Int,
+    $cursor: ID,
+    $orderBy: BackgroundTasksOrdering,
+    $orderMode: OrderingMode,
+    $search: String,
+    $filters: FilterGroup,
+  ) {
+    ...DraftTasksLines_data
+    @arguments(
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      search: $search
+      filters: $filters
+    )
+  }
 `;
 
 const LOCAL_STORAGE_KEY = 'draft_tasks';
