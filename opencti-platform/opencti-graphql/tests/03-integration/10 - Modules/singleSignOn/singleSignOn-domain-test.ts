@@ -122,7 +122,7 @@ describe('Single sign on Domain coverage tests', () => {
       expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'samlTestNotOk')).toBeFalsy();
       expect(logAppErrorSpy, 'No exception should be throw, but an error message should be present')
         .toHaveBeenCalledWith(
-          `[Auth][Not provided]Error when initializing an authentication provider (id: ${samlEntity.id}, identifier: samlTestNotOk), cause: SSO configuration is empty`,
+          `[Auth][Not provided]Error when initializing an authentication provider (id: ${samlEntity.id}, identifier: samlTestNotOk), cause: SSO configuration is empty.`,
           expect.anything(),
         );
     });
@@ -146,7 +146,7 @@ describe('Single sign on Domain coverage tests', () => {
       expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'samlTestNotOk2')).toBeFalsy();
       expect(logAppErrorSpy, 'No exception should be throw, but an error message should be present')
         .toHaveBeenCalledWith(
-          `[Auth][Not provided]Error when initializing an authentication provider (id: ${samlEntity.id}, identifier: samlTestNotOk2), cause: callbackUrl is mandatory for SAML`,
+          `[Auth][Not provided]Error when initializing an authentication provider (id: ${samlEntity.id}, identifier: samlTestNotOk2), cause: callbackUrl is mandatory for SAML.`,
           expect.anything(),
         );
     });
@@ -169,7 +169,7 @@ describe('Single sign on Domain coverage tests', () => {
       expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'samlTestNotOk4')).toBeFalsy();
       expect(logAppErrorSpy, 'No exception should be throw, but an error message should be present')
         .toHaveBeenCalledWith(
-          `[Auth][Not provided]Error when initializing an authentication provider (id: ${samlEntity.id}, identifier: samlTestNotOk4), cause: idpCert is mandatory for SAML`,
+          `[Auth][Not provided]Error when initializing an authentication provider (id: ${samlEntity.id}, identifier: samlTestNotOk4), cause: idpCert is mandatory for SAML.`,
           expect.anything(),
         );
     });
@@ -194,7 +194,7 @@ describe('Single sign on Domain coverage tests', () => {
       expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'samlTestNotOk5')).toBeFalsy();
       expect(logAppErrorSpy, 'No exception should be throw, but an error message should be present')
         .toHaveBeenCalledWith(
-          `[Auth][Not provided]Error when initializing an authentication provider (id: ${samlEntity.id}, identifier: samlTestNotOk5), cause: issuer is mandatory for SAML`,
+          `[Auth][Not provided]Error when initializing an authentication provider (id: ${samlEntity.id}, identifier: samlTestNotOk5), cause: issuer is mandatory for SAML.`,
           expect.anything(),
         );
     });
@@ -255,7 +255,7 @@ describe('Single sign on Domain coverage tests', () => {
 
       expect(logAppErrorSpy, 'No exception should be throw, but an error message should be present')
         .toHaveBeenCalledWith(
-          `[Auth][Not provided]Error when initializing an authentication provider (id: ${oicEntity.id}, identifier: openidTestKo1), cause: redirect_uris is mandatory for OpenID`,
+          `[Auth][Not provided]Error when initializing an authentication provider (id: ${oicEntity.id}, identifier: openidTestKo1), cause: redirect_uris is mandatory for OpenID.`,
           expect.anything(),
         );
     });
@@ -285,7 +285,7 @@ describe('Single sign on Domain coverage tests', () => {
 
       expect(logAppErrorSpy, 'No exception should be throw, but an error message should be present')
         .toHaveBeenCalledWith(
-          `[Auth][Not provided]Error when initializing an authentication provider (id: ${oicEntity.id}, identifier: openidTestKo2), cause: client_id is mandatory for OpenID`,
+          `[Auth][Not provided]Error when initializing an authentication provider (id: ${oicEntity.id}, identifier: openidTestKo2), cause: client_id is mandatory for OpenID.`,
           expect.anything(),
         );
     });
@@ -315,7 +315,7 @@ describe('Single sign on Domain coverage tests', () => {
 
       expect(logAppErrorSpy, 'No exception should be throw, but an error message should be present')
         .toHaveBeenCalledWith(
-          `[Auth][Not provided]Error when initializing an authentication provider (id: ${oicEntity.id}, identifier: openidTestKo3), cause: issuer is mandatory for OpenID`,
+          `[Auth][Not provided]Error when initializing an authentication provider (id: ${oicEntity.id}, identifier: openidTestKo3), cause: issuer is mandatory for OpenID.`,
           expect.anything(),
         );
     });
@@ -345,7 +345,7 @@ describe('Single sign on Domain coverage tests', () => {
 
       expect(logAppErrorSpy, 'No exception should be throw, but an error message should be present')
         .toHaveBeenCalledWith(
-          `[Auth][Not provided]Error when initializing an authentication provider (id: ${oicEntity.id}, identifier: openidTestKo4), cause: client_secret is mandatory for OpenID`,
+          `[Auth][Not provided]Error when initializing an authentication provider (id: ${oicEntity.id}, identifier: openidTestKo4), cause: client_secret is mandatory for OpenID.`,
           expect.anything(),
         );
     });

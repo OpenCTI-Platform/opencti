@@ -180,7 +180,7 @@ export const registerStrategy = async (authenticationStrategy: BasicStoreEntityS
   } catch (e) {
     if (e instanceof GraphQLError) {
       logAuthError(
-        `Error when initializing an authentication provider (id: ${authenticationStrategy?.id ?? 'no id'}, identifier: ${authenticationStrategy?.identifier ?? 'no identifier'}, cause: ${e.message})`,
+        `Error when initializing an authentication provider (id: ${authenticationStrategy?.id ?? 'no id'}, identifier: ${authenticationStrategy?.identifier ?? 'no identifier'}), cause: ${e.message}.`,
         undefined,
         { message: e.message, data: e.extensions.data },
       );

@@ -60,9 +60,7 @@ export const computeOpenIdGroupsMapping = (groupManagement, decodedUser, userinf
 export const registerOpenIdStrategy = async (ssoEntity) => {
   const providerRef = ssoEntity.identifier || 'oic';
   const ssoConfig = convertKeyValueToJsConfiguration(ssoEntity);
-  logAuthInfo(`OpenIDConnectStrategy found in database providerRef:${providerRef}`, EnvStrategyType.STRATEGY_OPENID, { name: ssoEntity.name, identifier: ssoEntity.identifier });
-  const ssoConfigEnriched = await enrichWithRemoteCredentials(`providers:${providerRef}`, ssoConfig);
-  const providerName = ssoConfigEnriched?.label || providerRef;
+  const providerName = ssoEntity?.label || providerRef;
 
   logApp.debug(`OpenIDConnectStrategy enriched providerRef:${providerRef}`, EnvStrategyType.STRATEGY_OPENID, ssoConfigEnriched);
 
