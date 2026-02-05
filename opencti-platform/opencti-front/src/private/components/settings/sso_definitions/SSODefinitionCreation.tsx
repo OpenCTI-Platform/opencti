@@ -153,8 +153,8 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
     <Drawer
       title={
         selectedStrategy
-          ? t_i18n(`Create ${selectedStrategy} SSO`)
-          : t_i18n('Create SSO')
+          ? t_i18n(`Create ${selectedStrategy} Authentication`)
+          : t_i18n('Create Authentication')
       }
       controlledDial={CreateSSODefinitionControlledDial}
     >

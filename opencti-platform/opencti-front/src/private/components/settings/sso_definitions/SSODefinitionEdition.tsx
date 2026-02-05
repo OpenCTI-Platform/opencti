@@ -149,7 +149,7 @@ const SSODefinitionEdition = ({
 
   return (
     <Drawer
-      title={t_i18n(`Update a ${strategyConfigSelected} SSO`)}
+      title={t_i18n(`Update a ${strategyConfigSelected} Authentication`)}
       open={isOpen}
       onClose={onClose}
     >

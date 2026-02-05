@@ -50,7 +50,7 @@ export const SSODefinitionPopover = ({ data }: SsoDefinitionPopoverProps) => {
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={onCloseMenu}>
         <SSODefinitionDeletion
           ssoId={id}
-          onDeleteComplete={() => navigate('/dashboard/settings/accesses/single_sign_ons')}
+          onDeleteComplete={() => navigate('/dashboard/settings/accesses/authentications')}
         >
           {({ handleOpenDelete, deleting }) => (
             <MenuItem onClick={handleOpenDelete} disabled={deleting}>

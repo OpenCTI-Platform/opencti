@@ -346,7 +346,7 @@ const SSODefinitionForm = ({
               value={currentTab}
               onChange={(event, value) => handleChangeTab(value)}
             >
-              <Tab label={t_i18n('SSO Configuration')} />
+              <Tab label={t_i18n('Authentication Configuration')} />
               {selectedStrategy !== 'LocalAuth' && <Tab label={t_i18n('Groups configuration')} />}
               {selectedStrategy !== 'LocalAuth' && <Tab label={t_i18n('Organizations configuration')} />}
             </Tabs>
