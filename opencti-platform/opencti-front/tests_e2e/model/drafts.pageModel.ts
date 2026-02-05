@@ -41,7 +41,7 @@ export default class DraftsPage {
     return this.page.getByTestId('draft-creation-form');
   }
 
-  async createDraft({ name = 'E2E Test Draft', authorizedMembers = [] }: { name?: string; authorizedMembers: Array<{ name: string; permission: AccessLevelLocator }> }) {
+  async createDraft({ name = 'E2E Test Draft', authorizedMembers = [] }: { name?: string; authorizedMembers?: Array<{ name: string; permission: AccessLevelLocator }> }) {
     await this.navigate();
     await this.getCreateDraftButton().click();
     const createDraftDrawer = this.getCreateDraftDrawer();
@@ -53,5 +53,31 @@ export default class DraftsPage {
       await this.accessRestriction.addAccess(member.name, member.permission);
     }
     await this.page.getByRole('button', { name: 'Create' }).click();
+  }
+
+  async addEntityToDraft({ type, name }: { type: string; name: string }) {
+    await this.page.getByRole('button', { name: /Add entity/i }).click();
+    await this.page.getByLabel(/Entity type/i).selectOption(type);
+    await this.page.getByLabel(/Name/i).fill(name);
+    await this.page.getByRole('button', { name: /Create/i }).click();
+  }
+
+  getEntityInList(entityName: string) {
+    return this.page.getByText(entityName, { exact: true });
+  }
+
+  // Select the top checkbox to select all entities in the list
+  async selectAllEntities() {
+    await this.page.getByRole('checkbox', { name: /Select all/i }).check();
+  }
+
+  // Click the "remove from draft" icon in the dataTable toolbar
+  async clickRemoveFromDraftToolbar() {
+    await this.page.getByRole('button', { name: /Remove from draft/i }).click();
+  }
+
+  // Confirm removal in the popup by clicking "launch"
+  async confirmRemoveEntities() {
+    await this.page.getByRole('button', { name: /Launch/i }).click();
   }
 }
