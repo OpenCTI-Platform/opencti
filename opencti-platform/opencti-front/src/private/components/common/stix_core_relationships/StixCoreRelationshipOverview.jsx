@@ -409,20 +409,15 @@ class StixCoreRelationshipContainer extends Component {
                       {t('Description')}
                     </Label>
                     <MarkdownDisplay
-                      content={
-                        stixCoreRelationship.x_opencti_inferences !== null ? (
-                          t('Inferred knowledge')
-                        ) : (
-                          stixCoreRelationship.description
-                        )
+                      content={stixCoreRelationship.x_opencti_inferences !== null
+                        ? t('Inferred knowledge')
+                        : stixCoreRelationship.description
                       }
                       remarkGfmPlugin={true}
                       commonmark={true}
                     />
                     <StixCoreObjectKillChainPhasesView
-                      killChainPhases={
-                        stixCoreRelationship.killChainPhases
-                      }
+                      killChainPhases={stixCoreRelationship.killChainPhases}
                     />
                   </Grid>
                 </Grid>

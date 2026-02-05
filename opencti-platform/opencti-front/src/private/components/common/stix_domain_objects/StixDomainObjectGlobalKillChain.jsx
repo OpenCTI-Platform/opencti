@@ -21,7 +21,6 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { stixDomainObjectThreatKnowledgeStixRelationshipsQuery } from './StixDomainObjectThreatKnowledgeQuery';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
-import { EMPTY_VALUE } from '../../../../utils/String';
 import { defaultRender } from '../../../../components/dataGrid/dataTableUtils';
 
 const styles = (theme) => ({
@@ -219,17 +218,13 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                               <ListItemText
                                 sx={{ marginRight: 8 }}
                                 primary={domainObjectPrimaryText}
-                                secondary={
-                                  stixDomainObject.description && stixDomainObject.description.length > 0
-                                    ? (
-                                        <MarkdownDisplay
-                                          content={stixDomainObject.description}
-                                          remarkGfmPlugin={true}
-                                          commonmark={true}
-                                        />
-                                      )
-                                    : EMPTY_VALUE
-                                }
+                                secondary={(
+                                  <MarkdownDisplay
+                                    content={stixDomainObject.description}
+                                    remarkGfmPlugin={true}
+                                    commonmark={true}
+                                  />
+                                )}
                               />
                               <Box
                                 sx={{

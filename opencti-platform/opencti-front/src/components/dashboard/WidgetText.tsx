@@ -25,7 +25,7 @@ const WidgetText = ({
     return (
       <div style={{ marginTop: theme.spacing(-1) }}>
         <MarkdownDisplay
-          content={parameters?.content ?? ''}
+          content={parameters?.content}
           remarkGfmPlugin={true}
           commonmark={true}
         />

@@ -371,7 +371,7 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
         <DialogTitle>{t_i18n('Commit message')}</DialogTitle>
         <DialogContent>
           <MarkdownDisplay
-            content={log.context_data?.message ?? EMPTY_VALUE}
+            content={log.context_data?.message}
             remarkGfmPlugin={true}
             commonmark={true}
           />

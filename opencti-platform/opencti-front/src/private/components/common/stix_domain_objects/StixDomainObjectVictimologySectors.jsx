@@ -300,6 +300,22 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
       R.filter(filterByKeyword),
     )(finalSectors);
     const exportDisabled = orderedFinalSectors.length > export_max_size;
+
+    const renderRelationshipDescription = (description, inferred) => {
+      if (isNotEmptyField(description)) {
+        return (
+          <MarkdownDisplay
+            content={stixCoreRelationship.description}
+            remarkGfmPlugin={true}
+            commonmark={true}
+          />
+        );
+      }
+      return inferred
+        ? (<i>{t('This relation is inferred')}</i>)
+        : EMPTY_VALUE;
+    };
+
     return (
       <div>
         <div className={classes.parameters}>
@@ -464,17 +480,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                                   stixCoreRelationship.to.name
                                 )
                               }
-                              secondary={
-                                stixCoreRelationship.description && stixCoreRelationship.description.length > 0
-                                  ? (
-                                      <MarkdownDisplay
-                                        content={stixCoreRelationship.description}
-                                        remarkGfmPlugin={true}
-                                        commonmark={true}
-                                      />
-                                    )
-                                  : EMPTY_VALUE
-                              }
+                              secondary={renderRelationshipDescription(stixCoreRelationship.description, stixCoreRelationship.inferred)}
                             />
                             <ItemMarkings
                               variant="inList"
@@ -598,25 +604,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                                                   stixCoreRelationship.to.name
                                                 )
                                           }
-                                          secondary={
-
-                                            stixCoreRelationship.description
-                                            && stixCoreRelationship.description
-                                              .length > 0 ? (
-                                                  <MarkdownDisplay
-                                                    content={
-                                                      stixCoreRelationship.description
-                                                    }
-                                                    remarkGfmPlugin={true}
-                                                    commonmark={true}
-                                                  >
-                                                  </MarkdownDisplay>
-                                                ) : stixCoreRelationship.inferred ? (
-                                                  <i>
-                                                    {t('This relation is inferred')}
-                                                  </i>
-                                                ) : EMPTY_VALUE
-                                          }
+                                          secondary={renderRelationshipDescription(stixCoreRelationship.description, stixCoreRelationship.inferred)}
                                         />
                                         <ItemMarkings
                                           variant="inList"

@@ -44,7 +44,7 @@ const HistoryDrawer: FunctionComponent<HistoryDrawerProps> = ({ open, onClose, t
             {t_i18n('Message')}
           </Label>
           <MarkdownDisplay
-            content={data?.context_data?.message ?? ''}
+            content={data?.context_data?.message}
             remarkGfmPlugin={true}
             commonmark={true}
           />

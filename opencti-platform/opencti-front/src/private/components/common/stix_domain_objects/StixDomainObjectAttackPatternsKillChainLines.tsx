@@ -20,7 +20,6 @@ import { useInitCreateRelationshipContext } from '@components/common/stix_core_r
 import ItemMarkings from '../../../../components/ItemMarkings';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { useFormatter } from '../../../../components/i18n';
-import { EMPTY_VALUE } from '../../../../utils/String';
 
 interface StixDomainObjectAttackPatternsKillChainLinesProps {
   data: StixDomainObjectAttackPatternsKillChainContainer_data$data;
@@ -215,16 +214,13 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                                     - {attackPattern.name}
                                   </span>
                                 )}
-                                secondary={
-                                  attackPattern.description
-                                  && attackPattern.description.length > 0 ? (
-                                        <MarkdownDisplay
-                                          content={attackPattern.description}
-                                          remarkGfmPlugin={true}
-                                          commonmark={true}
-                                        />
-                                      ) : EMPTY_VALUE
-                                }
+                                secondary={(
+                                  <MarkdownDisplay
+                                    content={attackPattern.description}
+                                    remarkGfmPlugin={true}
+                                    commonmark={true}
+                                  />
+                                )}
                               />
                               <ItemMarkings
                                 markingDefinitions={attackPattern.objectMarking ?? []}
@@ -262,20 +258,13 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                                           </ListItemIcon>
                                           <ListItemText
                                             primary={courseOfAction.name}
-                                            secondary={
-                                              courseOfAction.description && courseOfAction.description.length > 0
-                                                ? (
-                                                    <MarkdownDisplay
-                                                      content={
-                                                        courseOfAction.description
-                                                      }
-                                                      remarkGfmPlugin={true}
-                                                      commonmark={true}
-                                                    >
-                                                    </MarkdownDisplay>
-                                                  )
-                                                : EMPTY_VALUE
-                                            }
+                                            secondary={(
+                                              <MarkdownDisplay
+                                                content={courseOfAction.description}
+                                                remarkGfmPlugin={true}
+                                                commonmark={true}
+                                              />
+                                            )}
                                           />
                                         </ListItemButton>
                                       );
