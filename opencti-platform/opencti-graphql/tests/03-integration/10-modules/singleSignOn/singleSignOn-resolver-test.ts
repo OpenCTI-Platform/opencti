@@ -17,8 +17,8 @@ import { deleteElementById } from '../../../../src/database/middleware';
 import { ENTITY_TYPE_SINGLE_SIGN_ON } from '../../../../src/modules/singleSignOn/singleSignOn-types';
 
 export const SINGLE_SIGN_ON_LIST_QUERY = gql`
-    query singleSignOns($first: Int) {
-        singleSignOns(first: $first) {
+    query singleSignOns($first: Int $filters: FilterGroup) {
+        singleSignOns(first: $first, filters: $filters) {
             edges {
                 node {
                     id
@@ -26,6 +26,18 @@ export const SINGLE_SIGN_ON_LIST_QUERY = gql`
                     strategy
                     enabled
                     identifier
+                    configuration {
+                        key
+                        value
+                        type
+                    }
+                    groups_management {
+                        groups_path
+                        groups_mapping
+                    }
+                    organizations_management {
+                        organizations_mapping
+                    }
                 }
             }
         }
@@ -62,9 +74,9 @@ export const SINGLE_SIGN_ON_UPDATE = gql`
             groups_path
             groups_mapping
           }
-            organizations_management {
-                organizations_mapping
-            }
+          organizations_management {
+              organizations_mapping
+          }
         }
     }
 `;
@@ -260,31 +272,6 @@ describe('Single Sign On', () => {
       expect(result?.data?.singleSignOnFieldPatch?.groups_management.groups_mapping).toStrictEqual(['/Connector:Connectors']);
     });
   });
-  describe('Delete', () => {
-    it('should not delete single sign on without SETAUTH capa', async () => {
-      await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
-        query: SINGLE_SIGN_ON_DELETE,
-        variables: { id: createdSingleSignOn1Id },
-      });
-    });
-    it('should delete all single sign on entities', async () => {
-      for (let i = 0; i < createdSingleSighOns.length; i += 1) {
-        await queryAsAdminWithSuccess({
-          query: SINGLE_SIGN_ON_DELETE,
-          variables: { id: createdSingleSighOns[i] },
-        });
-      }
-      const singleSignOnList = await queryAsAdminWithSuccess({
-        query: SINGLE_SIGN_ON_LIST_QUERY,
-        variables: { first: 10 },
-      });
-
-      expect(singleSignOnList).toBeDefined();
-      const ssoList = singleSignOnList?.data?.singleSignOns.edges;
-      expect(ssoList.find((item: any) => item?.node?.id === createdSingleSignOn1Id)).toBeUndefined();
-      expect(ssoList.find((item: any) => item?.node?.id === createdSingleSignOn2Id)).toBeUndefined();
-    });
-  });
 
   describe('configuration migration coverage', async () => {
     it('should migration dry run not raise errors', async () => {
@@ -314,13 +301,16 @@ describe('SSO: Local strategy dedicated behaviour', () => {
   it('should get Local Strategy', async () => {
     const localStrategy = await queryAsAdminWithSuccess({
       query: SINGLE_SIGN_ON_LIST_QUERY,
-      variables: { filters: {
-        mode: FilterMode.And,
-        filters: [{ key: ['strategy'], values: [StrategyType.LocalStrategy], operator: FilterOperator.Eq }],
-        filterGroups: [],
-      } },
+      variables: {
+        filters: {
+          mode: FilterMode.And,
+          filters: [{ key: ['strategy'], values: [StrategyType.LocalStrategy], operator: FilterOperator.Eq }],
+          filterGroups: [],
+        },
+      },
     });
     expect(localStrategy).toBeDefined();
+    console.log('YOP:', { data: JSON.stringify(localStrategy?.data) });
     expect(localStrategy?.data?.singleSignOns.edges[0].node.identifier).toBe('local');
     localStrategyId = localStrategy?.data?.singleSignOns.edges[0].node.id;
   });
@@ -356,5 +346,31 @@ describe('SSO: Local strategy dedicated behaviour', () => {
     const ssoList = singleSignOnList?.data?.singleSignOns.edges;
     expect(ssoList.find((item: any) => item?.node?.id === localStrategyId)).toBeUndefined();
     expect(ssoList.find((item: any) => item?.node?.id === localStrategyId)).toBeUndefined();
+  });
+
+  describe('Delete', () => {
+    it('should not delete single sign on without SETAUTH capa', async () => {
+      await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
+        query: SINGLE_SIGN_ON_DELETE,
+        variables: { id: createdSingleSignOn1Id },
+      });
+    });
+    it('should delete all single sign on entities', async () => {
+      for (let i = 0; i < createdSingleSighOns.length; i += 1) {
+        await queryAsAdminWithSuccess({
+          query: SINGLE_SIGN_ON_DELETE,
+          variables: { id: createdSingleSighOns[i] },
+        });
+      }
+      const singleSignOnList = await queryAsAdminWithSuccess({
+        query: SINGLE_SIGN_ON_LIST_QUERY,
+        variables: { first: 10 },
+      });
+
+      expect(singleSignOnList).toBeDefined();
+      const ssoList = singleSignOnList?.data?.singleSignOns.edges;
+      expect(ssoList.find((item: any) => item?.node?.id === createdSingleSignOn1Id)).toBeUndefined();
+      expect(ssoList.find((item: any) => item?.node?.id === createdSingleSignOn2Id)).toBeUndefined();
+    });
   });
 });

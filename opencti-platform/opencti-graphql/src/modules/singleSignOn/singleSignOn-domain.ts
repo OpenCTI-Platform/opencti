@@ -56,7 +56,7 @@ const encryptConfigurationSecrets = async (configurationWithClear: Configuration
   const configurationWithSecrets: ConfigurationTypeInput[] = [];
   if (configurationWithClear) {
     for (let i = 0; i < configurationWithClear?.length; i++) {
-      const currentConfig = configurationWithClear[i];
+      const currentConfig = configurationWithClear[i] as ConfigurationTypeInput;
       if (AUTH_SECRET_LIST.some((key) => key === currentConfig.key)) {
         const encryptedValue = await encryptAuthValue(currentConfig.value);
         configurationWithSecrets.push({ key: currentConfig.key, value: encryptedValue, type: 'secret' });
@@ -100,6 +100,7 @@ export const findSingleSignOnById = async (context: AuthContext, user: AuthUser,
 
 export const findSingleSignOnPaginated = async (context: AuthContext, user: AuthUser, args: any) => {
   await checkSSOAllowed(context);
+  console.log('FIND call', { args });
   return pageEntitiesConnection<BasicStoreEntitySingleSignOn>(context, user, [ENTITY_TYPE_SINGLE_SIGN_ON], args);
 };
 
@@ -173,9 +174,10 @@ export const fieldPatchSingleSignOn = async (context: AuthContext, user: AuthUse
     // What about object_path ???
     const currentInput = input[i];
     if (currentInput.key === 'configuration') {
-      const configurationEncrypted = await encryptConfigurationSecrets(currentInput.value);
+      const configurationEncrypted: ConfigurationTypeInput[] = await encryptConfigurationSecrets(currentInput.value);
       const overrideEditInput: EditInput = {
-        key: 'configuration', value: [configurationEncrypted],
+        ...currentInput,
+        value: configurationEncrypted,
       };
       finalInput.push(overrideEditInput);
     } else {
