@@ -143,7 +143,8 @@ const SSODefinitions = () => {
       label: t_i18n('Enabled'),
       percentWidth: 25,
       render: (node: { enabled: boolean }) => (
-        node.enabled ? <ItemBoolean label={t_i18n('True')} status={true} />
+        node.enabled
+          ? <ItemBoolean label={t_i18n('True')} status={true} />
           : <ItemBoolean label={t_i18n('False')} status={false} />
       ) },
     label: {
@@ -178,9 +179,7 @@ const SSODefinitions = () => {
         { label: t_i18n('Authentication definitions'), current: true }]}
       />
       <AccessesMenu />
-      {!isEnterpriseEdition ? (
-        <EnterpriseEdition feature="Authentication definitions" />
-      ) : (
+      {isEnterpriseEdition ? (
         <>
           {queryRef && (
             <DataTable
@@ -200,6 +199,8 @@ const SSODefinitions = () => {
             />
           )}
         </>
+      ) : (
+        <EnterpriseEdition feature="Authentication definitions" />
       )}
     </div>
   );
