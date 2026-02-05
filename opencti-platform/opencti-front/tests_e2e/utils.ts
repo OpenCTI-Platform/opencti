@@ -1,6 +1,6 @@
 import { Page } from '@playwright/test';
 
-const fakeDate = async (page: Page, dateString: string) => {
+export const fakeDate = async (page: Page, dateString: string) => {
   // Pick the new/fake "now" for you test pages.
   const fakeNow = new Date(dateString).valueOf();
 
