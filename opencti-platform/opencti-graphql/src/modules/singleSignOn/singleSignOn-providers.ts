@@ -33,7 +33,8 @@ export const parseValueAsType = async (config: ConfigurationType) => {
     } else if (config.type.toLowerCase() === 'string') {
       return config.value;
     } else if (config.type.toLowerCase() === 'secret') {
-      return await decryptAuthValue(config.value);
+      const decryptedBuffer = await decryptAuthValue(config.value);
+      return decryptedBuffer.toString();
     } else {
       throw ConfigurationError('Authentication configuration cannot be parsed, unknown type.', { key: config.key, type: config.type });
     }

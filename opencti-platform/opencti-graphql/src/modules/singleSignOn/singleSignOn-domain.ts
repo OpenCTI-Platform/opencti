@@ -23,6 +23,7 @@ import { parseSingleSignOnRunConfiguration } from './singleSignOn-migration';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import { unregisterStrategy } from './singleSignOn-providers';
 import { EnvStrategyType, getConfigurationAdminEmail, isAuthenticationEditionLocked, isAuthenticationForcedFromEnv } from './providers-configuration';
+import { getPlatformCrypto } from '../../utils/platformCrypto';
 
 export const isConfigurationAdminUser = (user: AuthUser): boolean => {
   return user.user_email === getConfigurationAdminEmail();
@@ -38,18 +39,27 @@ export const AUTH_SECRET_LIST = [
   'decryptionPvk', // SAML
 ];
 
+const AUTH_DERIVATION_PATH = ['authentication', 'elastic'];
+let authenticationKeyPairPromise: any;
 export const encryptAuthValue = async (value: string) => {
-  // TODO
-  // const authenticationAesKey = await factory.deriveAesKey(['elastic', 'authentication'], 1); => need to be done only once maybe ?
-  // const encrypted = await authenticationAesKey.encrypt(value);
-  return '***' + value;
+  const factory = await getPlatformCrypto();
+  if (!authenticationKeyPairPromise) {
+    authenticationKeyPairPromise = factory.deriveAesKey(AUTH_DERIVATION_PATH, 1);
+  }
+  const keyPair = await authenticationKeyPairPromise;
+  const clearDataBuffer = Buffer.from(value);
+  const encryptedBuffer = await keyPair.encrypt(clearDataBuffer);
+  return encryptedBuffer.toString('base64');
 };
 
 export const decryptAuthValue = async (value: string) => {
-  // TODO
-  // const authenticationAesKey = await factory.deriveAesKey(['elastic', 'authentication'], 1); => need to be done only once maybe ?
-  // const clear = await authenticationAesKey.decrypt(value);
-  return value.substring(3);
+  const factory = await getPlatformCrypto();
+  if (!authenticationKeyPairPromise) {
+    authenticationKeyPairPromise = factory.deriveAesKey(AUTH_DERIVATION_PATH, 1);
+  }
+  const keyPair = await authenticationKeyPairPromise;
+  const decodedBuffer = Buffer.from(value, 'base64');
+  return await keyPair.decrypt(decodedBuffer);
 };
 
 const encryptConfigurationSecrets = async (configurationWithClear: ConfigurationTypeInput[]) => {
