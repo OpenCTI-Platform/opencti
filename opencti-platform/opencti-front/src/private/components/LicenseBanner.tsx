@@ -17,6 +17,8 @@ import * as Yup from 'yup';
 import { Field, Form, Formik } from 'formik';
 import TextField from '../../components/TextField';
 import { FormikConfig } from 'formik/dist/types';
+import { Theme } from '@mui/material/styles/createTheme';
+import { SxProps } from '@mui/material';
 
 export const LICENSE_OPTION_TRIAL = 'trial';
 
@@ -36,6 +38,7 @@ interface BannerInfo {
   message: React.ReactNode;
   bannerColor: TopBannerColor;
   buttonText?: string;
+  buttonStyle?: SxProps<Theme>;
   onButtonClick?: () => void;
 }
 
@@ -43,6 +46,22 @@ const getBannerColor = (remainingDays: number) => {
   if (remainingDays <= 8) return 'gradient_yellow';
   if (remainingDays <= 22) return 'gradient_green';
   return 'gradient_blue';
+};
+
+const getButtonColor = (remainingDays: number): string => {
+  if (remainingDays <= 8) return '#884106';
+  if (remainingDays <= 22) return '#005744';
+  return '#1e3a8a';
+};
+
+const getButtonStyle = (remainingDays: number): SxProps<Theme> => {
+  const buttonColor = getButtonColor(remainingDays);
+
+  return {
+    color: 'white',
+    fontWeight: 'bold',
+    backgroundColor: buttonColor,
+  };
 };
 
 const computeBannerInfo = (eeSettings: RootSettings$data['platform_enterprise_edition'], onButtonClick?: () => void): BannerInfo | undefined => {
@@ -61,9 +80,11 @@ const computeBannerInfo = (eeSettings: RootSettings$data['platform_enterprise_ed
   }
   if (eeSettings.license_type === LICENSE_OPTION_TRIAL) {
     const remainingDays = daysBetweenDates(now(), moment(eeSettings.license_expiration_date));
+    const buttonStyle = getButtonStyle(remainingDays);
     const bannerColor = getBannerColor(remainingDays);
     return {
       buttonText: t_i18n('Contact us'),
+      buttonStyle,
       bannerColor,
       message: (
         <>
@@ -115,8 +136,9 @@ const LicenseBanner = () => {
   return (
     <>
       <TopBanner
-        bannerColor={bannerInfo.bannerColor}
         bannerText={bannerInfo.message}
+        bannerColor={bannerInfo.bannerColor}
+        buttonStyle={bannerInfo.buttonStyle}
         buttonText={bannerInfo.buttonText}
         onButtonClick={bannerInfo.onButtonClick}
       />
@@ -131,7 +153,7 @@ const LicenseBanner = () => {
           validationSchema={contactUsValidation}
           onSubmit={onSubmit}
         >
-          {({ submitForm, isSubmitting }) => (
+          {({ submitForm, isSubmitting, resetForm }) => (
             <Form>
               <DialogContent>
                 <Field
@@ -145,7 +167,13 @@ const LicenseBanner = () => {
                 />
               </DialogContent>
               <DialogActions>
-                <Button disabled={isSubmitting} onClick={() => setShowFormDialog(false)}>
+                <Button
+                  disabled={isSubmitting}
+                  onClick={() => {
+                    resetForm();
+                    setShowFormDialog(false);
+                  }}
+                >
                   {t_i18n('Cancel')}
                 </Button>
                 <Button onClick={submitForm} disabled={isSubmitting} color="secondary">
