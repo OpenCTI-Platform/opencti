@@ -21,6 +21,7 @@ import { initLockFork } from '../../src/lock/master-lock';
 import { ADMIN_USER, createTestUsers, isPlatformAlive, testContext } from '../utils/testQuery';
 import { initializeStreamStack } from '../../src/database/stream/stream-handler';
 import { initializeAdminUser } from '../../src/modules/singleSignOn/providers-initialization';
+import { initializeAuthenticationProviders } from '../../src/modules/singleSignOn/singleSignOn-init';
 
 /**
  * This is run once before all tests (for setup) and after all (for teardown).
@@ -47,6 +48,7 @@ const initializePlatform = async () => {
   await initializeData(context, true);
   await initializeAdminUser(context);
   await initDefaultNotifiers(context);
+  await initializeAuthenticationProviders(context);
   logApp.info(`[vitest-global-setup] Platform initialized in ${new Date().getTime() - stopTime} ms`);
 };
 
