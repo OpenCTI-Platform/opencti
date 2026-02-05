@@ -13,7 +13,8 @@ import { SSODefinitionsLines_data$data } from './__generated__/SSODefinitionsLin
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import SSODefinitionCreation from '@components/settings/sso_definitions/SSODefinitionCreation';
 import ItemBoolean from '../../../../components/ItemBoolean';
-import { CheckCircleOutlined, CloseOutlined } from '@mui/icons-material';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
 
 const LOCAL_STORAGE_KEY = 'SSODefinitions';
 
@@ -106,8 +107,9 @@ const ssoDefinitionsLinesFragment = graphql`
 `;
 const SSODefinitions = () => {
   const { t_i18n } = useFormatter();
+  const isEnterpriseEdition = useEnterpriseEdition();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('SSO Definitions | Security | Settings'));
+  setTitle(t_i18n('Authentication Definitions | Security | Settings'));
   const initialValues = {
     searchTerm: '',
     sortBy: 'name',
@@ -127,7 +129,7 @@ const SSODefinitions = () => {
       percentWidth: 25,
       render: (node: { strategy: string }) => (
         <ItemBoolean
-          neutralLabel={node.strategy}
+          neutralLabel={t_i18n(node.strategy)}
           status={null}
         />
       ),
@@ -141,8 +143,9 @@ const SSODefinitions = () => {
       label: t_i18n('Enabled'),
       percentWidth: 25,
       render: (node: { enabled: boolean }) => (
-        node.enabled ? <CheckCircleOutlined fontSize="small" color="success" />
-          : <CloseOutlined fontSize="small" color="error" />
+        node.enabled
+          ? <ItemBoolean label={t_i18n('True')} status={true} />
+          : <ItemBoolean label={t_i18n('False')} status={false} />
       ) },
     label: {
       label: t_i18n('Login Button Name'),
@@ -173,31 +176,31 @@ const SSODefinitions = () => {
       <Breadcrumbs elements={[
         { label: t_i18n('Settings') },
         { label: t_i18n('Security') },
-        { label: t_i18n('SSO definitions'), current: true }]}
+        { label: t_i18n('Authentication definitions'), current: true }]}
       />
       <AccessesMenu />
-      {queryRef && (
-        <DataTable
-          dataColumns={dataColumns}
-          resolvePath={(data: SSODefinitionsLines_data$data) => data.singleSignOns?.edges?.map((e) => e?.node)}
-          storageKey={LOCAL_STORAGE_KEY}
-          initialValues={initialValues}
-          contextFilters={contextFilters}
-          lineFragment={ssoDefinitionsLineFragment}
-          preloadedPaginationProps={preloadedPaginationProps}
-          // actions={(ssoDefinition) => (
-          //   <SSODefinitionPopover
-          //     ssoDefinition={ssoDefinition}
-          //     paginationOptions={queryPaginationOptions}
-          //   />
-          // )}
-          entityTypes={['SingleSignOn']}
-          searchContextFinal={{ entityTypes: ['SingleSignOn'] }}
-          disableToolBar
-          removeSelectAll
-          disableLineSelection
-          createButton={<SSODefinitionCreation paginationOptions={queryPaginationOptions} />}
-        />
+      {isEnterpriseEdition ? (
+        <>
+          {queryRef && (
+            <DataTable
+              dataColumns={dataColumns}
+              resolvePath={(data: SSODefinitionsLines_data$data) => data.singleSignOns?.edges?.map((e) => e?.node)}
+              storageKey={LOCAL_STORAGE_KEY}
+              initialValues={initialValues}
+              contextFilters={contextFilters}
+              lineFragment={ssoDefinitionsLineFragment}
+              preloadedPaginationProps={preloadedPaginationProps}
+              entityTypes={['SingleSignOn']}
+              searchContextFinal={{ entityTypes: ['SingleSignOn'] }}
+              disableToolBar
+              removeSelectAll
+              disableLineSelection
+              createButton={<SSODefinitionCreation paginationOptions={queryPaginationOptions} />}
+            />
+          )}
+        </>
+      ) : (
+        <EnterpriseEdition feature="Authentication definitions" />
       )}
     </div>
   );

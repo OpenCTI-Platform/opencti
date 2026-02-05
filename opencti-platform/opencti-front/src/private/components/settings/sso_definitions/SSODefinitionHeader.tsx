@@ -34,7 +34,7 @@ const SSODefinitionHeader = (
   const [isEditionOpen, setIsEditionOpen] = useState(false);
 
   const breadcrumb = [
-    { label: t_i18n('SSO Definitions'), link: '/dashboard/settings/accesses/single_sign_ons' },
+    { label: t_i18n('Authentication Definitions'), link: '/dashboard/settings/accesses/single_sign_ons' },
     { label: strategy, current: true },
   ];
 

@@ -1,6 +1,5 @@
 import { Grid2 as Grid } from '@mui/material';
 import React, { useState } from 'react';
-import Card from '@common/card/Card';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -14,7 +13,6 @@ import { SSODefinitionOverviewMappingFragment$key } from '@components/settings/s
 import ItemBoolean from '../../../../components/ItemBoolean';
 import Tooltip from '@mui/material/Tooltip';
 import AccessesMenu from '@components/settings/AccessesMenu';
-import { CheckCircleOutlined, CloseOutlined } from '@mui/icons-material';
 import { EMPTY_VALUE } from '../../../../utils/String';
 
 export const ssoDefinitionOverviewMappingFragment = graphql`
@@ -238,9 +236,9 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
 
             <Grid size={{ xs: 12, md: 6 }} sx={{ display: 'flex', alignItems: 'center' }}>
               {valueIsTrue
-                ? <CheckCircleOutlined fontSize="small" color="success" />
+                ? <ItemBoolean label={t_i18n('True')} status={true} />
                 : valueIsFalse
-                  ? <CloseOutlined fontSize="small" color="error" />
+                  ? <ItemBoolean label={t_i18n('False')} status={false} />
                   : row.value ? renderValue(row.value) : EMPTY_VALUE}
             </Grid>
 
@@ -263,20 +261,17 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
     <div style={{ paddingRight: '200px' }}>
       <AccessesMenu />
       <Grid size={{ xs: 12 }}>
-        <Card title="SSO Mapping">
-          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <Tabs
-              value={currentTab}
-              onChange={(event, value) => setCurrentTab(value)}
-            >
-              <Tab label={t_i18n('SSO Configuration')} />
-              <Tab label={t_i18n('Groups configuration')} />
-              <Tab label={t_i18n('Organizations configuration')} />
-            </Tabs>
-          </Box>
-
-          {renderRows(rowsByTab[currentTab])}
-        </Card>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <Tabs
+            value={currentTab}
+            onChange={(event, value) => setCurrentTab(value)}
+          >
+            <Tab label={t_i18n('SSO configuration')} sx={{ textTransform: 'none' }} />
+            <Tab label={t_i18n('Groups configuration')} />
+            <Tab label={t_i18n('Organizations configuration')} />
+          </Tabs>
+        </Box>
+        {renderRows(rowsByTab[currentTab])}
       </Grid>
     </div>
   );
