@@ -892,24 +892,42 @@ export const useRemoveIdAndIncorrectKeysFromFilterGroupObject = (filters?: Filte
   return removeIdAndIncorrectKeysFromFilterGroupObject(filters, availableFilterKeys);
 };
 
+interface BuildEntityTypeBasedFilterContextArgs {
+  excludedEntityTypesParam?: string | string[] | undefined;
+  entityTypesContext?: string[];
+  draftId?: string;
+}
+
 export const useBuildEntityTypeBasedFilterContext = (
   entityTypeParam: string | string[],
   filters: FilterGroup | undefined,
-  excludedEntityTypeParam?: string | string[] | undefined,
-  entityTypesContext?: string[],
+  args?: BuildEntityTypeBasedFilterContextArgs = {},
 ): FilterGroup => {
+  const { excludedEntityTypesParam = null, entityTypesContext = null, draftId = null } = args;
   const entityTypes = Array.isArray(entityTypeParam) ? entityTypeParam : [entityTypeParam];
   const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, entityTypesContext ?? entityTypes);
   const entityTypeFilter = { key: 'entity_type', values: entityTypes, operator: 'eq', mode: 'or' };
-  const entityTypeFilters = [entityTypeFilter];
-  if (excludedEntityTypeParam && excludedEntityTypeParam.length > 0) {
-    const excludedEntityTypes = Array.isArray(excludedEntityTypeParam) ? excludedEntityTypeParam : [excludedEntityTypeParam];
+  const entityTypeContextFilters: Filter[] = [entityTypeFilter];
+  if (excludedEntityTypesParam && excludedEntityTypesParam.length > 0) {
+    const excludedEntityTypes = Array.isArray(excludedEntityTypesParam) ? excludedEntityTypesParam : [excludedEntityTypesParam];
     const excludedEntityTypeFilter = { key: 'entity_type', values: excludedEntityTypes, operator: 'not_eq', mode: 'or' };
-    entityTypeFilters.push(excludedEntityTypeFilter);
+    entityTypeContextFilters.push(excludedEntityTypeFilter);
   }
+  if (draftId) {
+    entityTypeContextFilters.push({
+      key: 'draft_ids',
+      values: [draftId],
+    });
+    entityTypeContextFilters.push({
+      key: 'draft_change',
+      operator: 'not_nil',
+      values: [],
+    });
+  }
+
   return {
     mode: 'and',
-    filters: entityTypeFilters,
+    filters: entityTypeContextFilters,
     filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
   };
 };

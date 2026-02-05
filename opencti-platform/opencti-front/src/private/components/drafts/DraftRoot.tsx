@@ -235,7 +235,7 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
         />
         <Route
           path="/entities"
-          element={<DraftEntities entitiesType="Stix-Domain-Object" excludedEntitiesType="Container" isReadOnly={isDraftReadOnly} />}
+          element={<DraftEntities entitiesType="Stix-Domain-Object" excludedEntityTypes="Container" isReadOnly={isDraftReadOnly} />}
         />
         <Route
           path="/observables"
