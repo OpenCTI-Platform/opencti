@@ -40,6 +40,7 @@ import { RELATION_USES } from '../../../src/schema/stixCoreRelationship';
 import { buildAggregationRelationFilter } from '../../../src/database/middleware-loader';
 import { mapCountPerEntityType, mapEdgesCountPerEntityType } from '../../utils/domainQueryHelper';
 import { entitiesCounter, entitiesCounterTotal, relationsCounter } from './entityCountHelper';
+import { ENTITY_TYPE_SINGLE_SIGN_ON } from '../../../src/modules/singleSignOn/singleSignOn-types';
 
 const elWhiteUser = async () => {
   const opts = { types: ['Marking-Definition'], connectionFormat: false };
@@ -51,7 +52,7 @@ const elWhiteUser = async () => {
 
 describe('Elasticsearch configuration test', () => {
   it('should configuration correct', async () => {
-    expect(searchEngineInit()).resolves.toBeTruthy();
+    await expect(searchEngineInit()).resolves.toBeTruthy();
     // check all WRITE_PLATFORM_INDICES creation
     for (let i = 0; i < WRITE_PLATFORM_INDICES.length; i += 1) {
       const indexName = WRITE_PLATFORM_INDICES[i];
@@ -219,9 +220,8 @@ describe('Elasticsearch computation', () => {
     expect(aggregationMap.get('Malware')).toEqual(1); // Because of date filtering
   });
   it('should invalid time histogram fail', async () => {
-    const histogramCount = elHistogramCount(testContext, ADMIN_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, { types: ['Stix-Domain-Object'], field: 'created_at', interval: 'minute' });
-    // noinspection ES6MissingAwait.toEqual(36);
-    expect(histogramCount).rejects.toThrow();
+    const histogramCount = async () => elHistogramCount(testContext, ADMIN_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, { types: ['Stix-Domain-Object'], field: 'created_at', interval: 'minute' });
+    await expect(histogramCount).rejects.toThrow();
   });
   it('should day histogram accurate', async () => {
     const data = await elHistogramCount(
@@ -451,6 +451,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('User')).toBe(entitiesCounter.User);
     expect(entityTypeMap.get('Vocabulary')).toBe(entitiesCounter.Vocabulary);
     expect(entityTypeMap.get('RetentionRule')).toBe(entitiesCounter.RetentionRule);
+    expect(entityTypeMap.get(ENTITY_TYPE_SINGLE_SIGN_ON)).toBe(entitiesCounter.SingleSignOn);
     expect(data.edges.length).toEqual(entitiesCounterTotal);
     const filterBaseTypes = R.uniq(R.map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
@@ -602,7 +603,8 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Vocabulary')).toBe(entitiesCounter.Vocabulary);
     expect(entityTypeMap.get('EmailTemplate')).toBe(entitiesCounter.EmailTemplate);
     expect(entityTypeMap.get('RetentionRule')).toBe(entitiesCounter.RetentionRule);
-    expect(data.edges.length).toEqual(214 + entitiesCounter.Vocabulary);
+    expect(entityTypeMap.get(ENTITY_TYPE_SINGLE_SIGN_ON)).toBe(entitiesCounter.SingleSignOn);
+    expect(data.edges.length).toEqual(215 + entitiesCounter.Vocabulary);
   });
   it('should entity paginate with field exist filter', async () => {
     const filters = {
@@ -742,7 +744,8 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('External-Reference')).toBe(entitiesCounter.ExternalReference);
     expect(entityTypeMap.get('EmailTemplate')).toBe(entitiesCounter.EmailTemplate);
     expect(entityTypeMap.get('RetentionRule')).toBe(entitiesCounter.RetentionRule);
-    expect(data.edges.length).toEqual(225 + entitiesCounter.Vocabulary);
+    expect(entityTypeMap.get(ENTITY_TYPE_SINGLE_SIGN_ON)).toBe(entitiesCounter.SingleSignOn);
+    expect(data.edges.length).toEqual(entitiesCounterTotal);
     const createdDates = R.map((e) => e.node.created, data.edges);
     let previousCreatedDate = null;
     for (let index = 0; index < createdDates.length; index += 1) {
@@ -992,9 +995,8 @@ describe('Elasticsearch reindex', () => {
     expect(data.toId === attackPatternId).toBeTruthy(); // attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17
   });
   it('should relation reindex check consistency', async () => {
-    const indexPromise = elIndexElements(testContext, ADMIN_USER, 'uses', [{ relationship_type: 'uses' }]);
-    // noinspection ES6MissingAwait
-    expect(indexPromise).rejects.toThrow();
+    const indexPromise = async () => elIndexElements(testContext, ADMIN_USER, 'uses', [{ relationship_type: 'uses' }]);
+    await expect(indexPromise).rejects.toThrow();
   });
   it('should reindex sighting with unmapped fields', async () => {
     // dummy object with old fields that are not part of the strict mapping
