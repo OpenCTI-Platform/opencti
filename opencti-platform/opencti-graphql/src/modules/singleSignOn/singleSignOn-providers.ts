@@ -22,6 +22,7 @@ import { registerSAMLStrategy } from './singleSignOn-provider-saml';
 import { registerLDAPStrategy } from './singleSignOn-provider-ldap';
 import { GraphQLError } from 'graphql/index';
 import { registerOpenIdStrategy } from './singleSignOn-provider-openid';
+import { registerHeadertrategy } from './singleSignOn-provider-header';
 
 export const parseValueAsType = async (config: ConfigurationType) => {
   if (isNotEmptyField(config.value) && isNotEmptyField(config.key) && isNotEmptyField(config.type)) {
@@ -183,7 +184,8 @@ export const registerStrategy = async (authenticationStrategy: BasicStoreEntityS
               }
               break;
             case StrategyType.HeaderStrategy:
-              logApp.warn(`[SSO] ${authenticationStrategy.strategy} not implemented in UI yet`);
+              logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_HEADER);
+              await registerHeadertrategy(authenticationStrategy);
               break;
             case StrategyType.ClientCertStrategy:
               logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_CERT);

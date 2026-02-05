@@ -15,6 +15,8 @@ interface OrganizationsManagement {
   organizations_mapping: string[];
   token_reference?: string;
   read_userinfo?: boolean;
+  organizations_splitter?: string;
+  organizations_header?: string;
 }
 
 interface GroupsManagement {
@@ -24,6 +26,8 @@ interface GroupsManagement {
   groups_mapping: string[];
   read_userinfo?: boolean;
   token_reference?: string;
+  groups_splitter?: string;
+  groups_header?: string;
 }
 
 export interface BasicStoreEntitySingleSignOn extends BasicStoreEntity {

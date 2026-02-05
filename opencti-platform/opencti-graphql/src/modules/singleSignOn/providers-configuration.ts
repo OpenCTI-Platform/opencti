@@ -44,7 +44,7 @@ export const MIGRATED_STRATEGY = [
   EnvStrategyType.STRATEGY_OPENID,
   EnvStrategyType.STRATEGY_LDAP,
   EnvStrategyType.STRATEGY_CERT,
-  // EnvStrategyType.STRATEGY_HEADER,
+  EnvStrategyType.STRATEGY_HEADER,
 ];
 
 export interface ProviderConfiguration {
@@ -53,7 +53,7 @@ export interface ProviderConfiguration {
   strategy: EnvStrategyType;
   // provider is also named 'identifier' or 'providerRef' in code.
   provider: string;
-  reqLoginHandler?: () => void;
+  reqLoginHandler?: (req: any) => Promise<unknown>;
   logout_uri?: string;
   logout_remote?: boolean;
 }
