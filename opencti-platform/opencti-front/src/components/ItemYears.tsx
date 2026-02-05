@@ -5,16 +5,14 @@ import Tag from '@common/tag/Tag';
 
 interface ItemYearsProps {
   years: string;
-  style?: CSSProperties;
 }
 
-const ItemYears = ({ years, style }: ItemYearsProps) => {
+const ItemYears = ({ years }: ItemYearsProps) => {
   const chipStyle: CSSProperties = {
     fontSize: 12,
     lineHeight: '12px',
     height: 20,
     marginRight: 8,
-    ...style,
   };
   return (
     <Tag

@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { Link } from 'react-router-dom';
+import { Box, ListItemButton } from '@mui/material';
 import withStyles from '@mui/styles/withStyles';
 import IconButton from '@common/button/IconButton';
 import List from '@mui/material/List';
@@ -11,7 +12,6 @@ import Collapse from '@mui/material/Collapse';
 import { Launch } from 'mdi-material-ui';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
 import { createRefetchContainer, graphql } from 'react-relay';
-import { ListItemButton } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
 import { yearFormat } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
@@ -158,6 +158,31 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                         const entityToDisplay = (stixDomainObject.to?.id === stixDomainObjectId) ? stixDomainObject.from : stixDomainObject.to;
                         const restricted = entityToDisplay === null;
                         const link = `${entityLink}/relations/${stixDomainObject.id}`;
+                        const buildDomainObjectPrimaryText = () => {
+                          if (!restricted) {
+                            if (entityToDisplay.entity_type === 'Attack-Pattern') {
+                              if (entityToDisplay.x_mitre_id) {
+                                return defaultRender(
+                                  <span>
+                                    <strong>
+                                      {entityToDisplay.x_mitre_id}
+                                    </strong>{'  '}
+                                    - {entityToDisplay.name}
+                                  </span>,
+                                );
+                              }
+                              return defaultRender(
+                                <span>
+                                  {entityToDisplay.name}
+                                </span>,
+                              );
+                            }
+                            return defaultRender(entityToDisplay.name);
+                          }
+                          return t('Restricted');
+                        };
+                        const domainObjectPrimaryText = buildDomainObjectPrimaryText();
+
                         return (
                           <ListItem
                             key={stixDomainObject.id}
@@ -176,6 +201,11 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                               classes={{ root: classes.nested }}
                               component={Link}
                               to={link}
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 3,
+                              }}
                             >
                               <ListItemIcon className={classes.itemIcon}>
                                 <ItemIcon
@@ -188,21 +218,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                               </ListItemIcon>
                               <ListItemText
                                 sx={{ marginRight: 8 }}
-                                primary={
-                                  !restricted
-                                    ? (entityToDisplay.entity_type === 'Attack-Pattern'
-                                        ? defaultRender(
-                                            <span>
-                                              <strong>
-                                                {entityToDisplay.x_mitre_id}
-                                              </strong>{'  '}
-                                              - {entityToDisplay.name}
-                                            </span>,
-                                          )
-                                        : defaultRender(entityToDisplay.name)
-                                      )
-                                    : t('Restricted')
-                                }
+                                primary={domainObjectPrimaryText}
                                 secondary={
                                   stixDomainObject.description && stixDomainObject.description.length > 0
                                     ? (
@@ -215,13 +231,18 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                                     : EMPTY_VALUE
                                 }
                               />
-                              <ItemMarkings
-                                markingDefinitions={stixDomainObject.objectMarking ?? []}
-                                limit={1}
-                              />
+                              <Box
+                                sx={{
+                                  width: 150,
+                                }}
+                              >
+                                <ItemMarkings
+                                  markingDefinitions={stixDomainObject.objectMarking ?? []}
+                                  limit={1}
+                                />
+                              </Box>
                               <ItemYears
                                 years={stixDomainObject.years}
-                                style={{ marginLeft: 8 }}
                               />
                             </ListItemButton>
                           </ListItem>
