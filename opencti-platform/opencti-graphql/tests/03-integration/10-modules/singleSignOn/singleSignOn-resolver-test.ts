@@ -101,7 +101,6 @@ describe('SSO: Local strategy dedicated behaviour', () => {
       },
     });
     expect(localStrategy).toBeDefined();
-    console.log('YOP:', { data: JSON.stringify(localStrategy?.data) });
     expect(localStrategy?.data?.singleSignOns.edges[0].node.identifier).toBe('local');
     localStrategyId = localStrategy?.data?.singleSignOns.edges[0].node.id;
   });

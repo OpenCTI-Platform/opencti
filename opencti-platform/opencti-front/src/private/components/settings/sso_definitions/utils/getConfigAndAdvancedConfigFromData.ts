@@ -35,13 +35,13 @@ const ldapConfigKeys = [
   'allow_self_signed',
 ];
 
-type Config = {
+export type Config = {
   key: string;
   value: string;
   type: string;
 };
 
-type ConfigTypeArray = ReadonlyArray<Config>;
+export type ConfigTypeArray = ReadonlyArray<Config>;
 
 export const getSSOConfigList = (strategy: string) => {
   switch (strategy) {

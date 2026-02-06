@@ -69,14 +69,11 @@ const encryptConfigurationSecrets = async (configurationWithClear: Configuration
   if (configurationWithClear) {
     for (let i = 0; i < configurationWithClear?.length; i++) {
       const currentConfig = configurationWithClear[i] as ConfigurationTypeInput;
-      logApp.info(`CONFIG ENCRYPT check ${currentConfig.key}`);
       if (AUTH_SECRET_LIST.some((key) => key === currentConfig.key) || currentConfig.type === 'secret') {
         const encryptedValue = await encryptAuthValue(currentConfig.value);
         configurationWithSecrets.push({ key: currentConfig.key, value: encryptedValue, type: ENCRYPTED_TYPE });
-        logApp.info(`CONFIG ENCRYPT ${currentConfig.key} encrypted`);
       } else {
         configurationWithSecrets.push(currentConfig);
-        logApp.info(`CONFIG ENCRYPT ${currentConfig.key} not encrypted`);
       }
     }
   }
@@ -181,15 +178,11 @@ export const fieldPatchSingleSignOn = async (context: AuthContext, user: AuthUse
     throw FunctionalError(`Single sign on ${id} cannot be found`);
   }
 
-  logApp.info('FIELD PATCH ', { input: JSON.stringify(input) });
-
   const finalInput: EditInput[] = [];
   for (let i = 0; i < input.length; i++) {
     const currentInput = input[i];
     if (currentInput.key === 'configuration') {
-      logApp.info('FIELD PATCH has config');
       if (!currentInput.operation || currentInput.operation === EditOperation.Add || currentInput.operation === EditOperation.Replace) {
-        logApp.info(`FIELD PATCH need encryption on ${currentInput.key}`);
         const configurationEncrypted: ConfigurationTypeInput[] = await encryptConfigurationSecrets(currentInput.value);
         const overrideEditInput: EditInput = {
           ...currentInput,
@@ -202,7 +195,6 @@ export const fieldPatchSingleSignOn = async (context: AuthContext, user: AuthUse
       finalInput.push(currentInput);
     }
   }
-  logApp.info('FIELD PATCH final config', { final: JSON.stringify(finalInput) });
   const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_SINGLE_SIGN_ON, finalInput);
   const singleSignOnEntityAfterUpdate: BasicStoreEntitySingleSignOn = element;
   await publishUserAction({
