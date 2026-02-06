@@ -89,12 +89,12 @@ const Incidents: FunctionComponent = () => {
           exportContext={{ entity_type: 'Incident' }}
           availableEntityTypes={['Incident']}
           additionalHeaderButtons={[
-            <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE]}>
+            <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}>
               <StixCoreObjectForms entityType="Incident" />
             </Security>,
           ]}
           createButton={(
-            <Security needs={[KNOWLEDGE_KNUPDATE]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}>
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <IncidentCreation paginationOptions={queryPaginationOptions} />
             </Security>
           )}

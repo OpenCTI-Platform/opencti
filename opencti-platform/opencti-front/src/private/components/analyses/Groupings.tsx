@@ -214,12 +214,12 @@ const Groupings: FunctionComponent<GroupingsProps> = () => {
           lineFragment={groupingLineFragment}
           exportContext={{ entity_type: 'Grouping' }}
           additionalHeaderButtons={[
-            <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE]}>
+            <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}>
               <StixCoreObjectForms entityType="Grouping" />
             </Security>,
           ]}
           createButton={(
-            <Security needs={[KNOWLEDGE_KNUPDATE]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}>
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <GroupingCreation paginationOptions={queryPaginationOptions} />
             </Security>
           )}

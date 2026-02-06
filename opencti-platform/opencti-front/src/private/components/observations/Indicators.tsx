@@ -208,12 +208,12 @@ const Indicators = () => {
           preloadedPaginationProps={preloadedPaginationOptions}
           exportContext={{ entity_type: 'Indicator' }}
           additionalHeaderButtons={[
-            <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE]}>
+            <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}>
               <StixCoreObjectForms entityType="Threat-Actor-Group" />
             </Security>,
           ]}
           createButton={(
-            <Security needs={[KNOWLEDGE_KNUPDATE]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}>
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <IndicatorCreation paginationOptions={queryPaginationOptions} />
             </Security>
           )}

@@ -201,12 +201,12 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
           lineFragment={caseFragment}
           exportContext={{ entity_type: 'Case-Rfi' }}
           additionalHeaderButtons={[
-            <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE]}>
+            <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}>
               <StixCoreObjectForms entityType="Case-Rfi" />
             </Security>,
           ]}
           createButton={(
-            <Security needs={[KNOWLEDGE_KNUPDATE]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}>
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <CaseRfiCreation paginationOptions={queryPaginationOptions} />
             </Security>
           )}
