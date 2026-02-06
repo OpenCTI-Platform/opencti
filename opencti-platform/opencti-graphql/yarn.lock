@@ -9451,6 +9451,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"jose@npm:^4.15.9":
+  version: 4.15.9
+  resolution: "jose@npm:4.15.9"
+  checksum: 10c0/4ed4ddf4a029db04bd167f2215f65d7245e4dc5f36d7ac3c0126aab38d66309a9e692f52df88975d99429e357e5fd8bab340ff20baab544d17684dd1d940a0f4
+  languageName: node
+  linkType: hard
+
+"jose@npm:^6.1.0":
+  version: 6.1.3
+  resolution: "jose@npm:6.1.3"
+  checksum: 10c0/b9577b4a7a5e84131011c23823db9f5951eae3ba796771a6a2401ae5dd50daf71104febc8ded9c38146aa5ebe94a92ac09c725e699e613ef26949b9f5a8bc30f
+  languageName: node
+  linkType: hard
+
 "js-base64@npm:^2.1.9":
   version: 2.6.4
   resolution: "js-base64@npm:2.6.4"
@@ -10602,6 +10616,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"oauth4webapi@npm:^3.8.2":
+  version: 3.8.3
+  resolution: "oauth4webapi@npm:3.8.3"
+  checksum: 10c0/9730a3231304c419ca26b3bce238d437e763a87645a9761b4a1a044eccc120660ea6b4fbba4a86f6411eaaabc8a59777f60f2afff888d7a3b784c5ce5dddfa09
+  languageName: node
+  linkType: hard
+
 "oauth@npm:0.10.x":
   version: 0.10.2
   resolution: "oauth@npm:0.10.2"
@@ -10915,7 +10936,8 @@ __metadata:
     node-forge: "npm:1.3.3"
     nodemailer: "npm:7.0.13"
     openai: "npm:4.104.0"
-    openid-client: "npm:5.7.1"
+    openid-client: "npm:6.8.1"
+    openid-clientv5: "npm:openid-client@5.7.1"
     opentelemetry-node-metrics: "npm:3.0.0"
     otplib: "npm:13.2.1"
     passport: "npm:0.7.0"
@@ -10968,15 +10990,25 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openid-client@patch:openid-client@5.7.1#./patch/openid-client.patch::locator=opencti-graphql%40workspace%3A.":
+"openid-client@npm:6.8.1":
+  version: 6.8.1
+  resolution: "openid-client@npm:6.8.1"
+  dependencies:
+    jose: "npm:^6.1.0"
+    oauth4webapi: "npm:^3.8.2"
+  checksum: 10c0/57a3925478dce27bb81264a3ec93f383893b839fc3c737bfd857edfd653e74caf4f4cbff635ed836e26b06143e24595cf9cf5f0761f95eace4a1b25c1f24eff3
+  languageName: node
+  linkType: hard
+
+"openid-clientv5@patch:openid-client@5.7.1#./patch/openid-client.patch::locator=opencti-graphql%40workspace%3A.":
   version: 5.7.1
-  resolution: "openid-client@patch:openid-client@npm%3A5.7.1#./patch/openid-client.patch::version=5.7.1&hash=dbea69&locator=opencti-graphql%40workspace%3A."
+  resolution: "openid-clientv5@patch:openid-client@npm%3A5.7.1#./patch/openid-client.patch::version=5.7.1&hash=dbea69&locator=opencti-graphql%40workspace%3A."
   dependencies:
     jose: "npm:^4.15.9"
     lru-cache: "npm:^6.0.0"
     object-hash: "npm:^2.2.0"
     oidc-token-hash: "npm:^5.0.3"
-  checksum: 10c0/0510bd9870d6a7c37c5bfc377425c69cf7a7e1ae57bd71acac4336124c322426dce322dd6378303d5265767a5a6734bb39f214443a2497463c850cacad73dd0c
+  checksum: 10c0/91af252243023ebdf60bd033b3ccc809d794efac3d1e943fd2b14b7444effd3bff4dfbaa22a7adde8683854dc248d72af275c034f4ebfbfa1f3d2166e9d17ec4
   languageName: node
   linkType: hard
 

@@ -15,7 +15,7 @@ import {
 } from './providers-configuration';
 import { getAllIdentifiers, logAuthInfo, runSingleSignOnRunMigration } from './singleSignOn-domain';
 import * as R from 'ramda';
-import passport from 'passport/lib';
+import passport from 'passport';
 import GitHub from 'github-api';
 import { jwtDecode } from 'jwt-decode';
 import FacebookStrategy from 'passport-facebook';
@@ -23,7 +23,7 @@ import GithubStrategy from 'passport-github';
 import LocalStrategy from 'passport-local';
 import LdapStrategy from 'passport-ldapauth';
 import { Strategy as SamlStrategy } from '@node-saml/passport-saml';
-import { custom as OpenIDCustom, Issuer as OpenIDIssuer, Strategy as OpenIDStrategy } from 'openid-client';
+import { custom as OpenIDCustom, Issuer as OpenIDIssuer, Strategy as OpenIDStrategy } from 'openid-clientv5';
 import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
 import validator from 'validator';
 import { getPlatformHttpProxyAgent, logApp } from '../../config/conf';

@@ -120,7 +120,7 @@ In SSO configuration for SAML:
 ```
 In SSO configuration for OpenID:
 
-```
+```json
 {
 "oick": {
       "identifier": "oick",
@@ -161,7 +161,7 @@ In SSO configuration for OpenID:
           "token_reference": "access_token"
         }
       }
-    },
+    }
 }
 ```
 

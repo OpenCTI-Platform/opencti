@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import moment, { type DurationInputArg2 } from 'moment/moment';
-import type { SortResults } from '@elastic/elasticsearch/lib/api/types';
+import type { estypes } from '@elastic/elasticsearch';
 import { DatabaseError, UnsupportedError } from '../config/errors';
 import { isHistoryObject, isInternalObject } from '../schema/internalObject';
 import { isStixMetaObject } from '../schema/stixMetaObject';
@@ -220,12 +220,12 @@ export const fillTimeSeries = (startDate: Date, endDate: Date, interval: string,
   return newData;
 };
 
-export const offsetToCursor = (sort: SortResults): string => {
+export const offsetToCursor = (sort: estypes.SortResults): string => {
   const objJsonStr = JSON.stringify(sort);
   return Buffer.from(objJsonStr, 'utf-8').toString('base64');
 };
 
-export const cursorToOffset = (cursor: string): SortResults => {
+export const cursorToOffset = (cursor: string): estypes.SortResults => {
   const buff = Buffer.from(cursor, 'base64');
   const str = buff.toString('utf-8');
   return JSON.parse(str);
@@ -284,7 +284,7 @@ export const buildPaginationFromEdges = <T>(
 export const buildPagination = <T> (
   limit: number,
   searchAfter: string | undefined | null,
-  instances: { node: T; sort?: SortResults; types?: string[] }[],
+  instances: { node: T; sort?: estypes.SortResults; types?: string[] }[],
   globalCount: number,
   filteredCount = 0,
 ): BasicConnection<T> => {
