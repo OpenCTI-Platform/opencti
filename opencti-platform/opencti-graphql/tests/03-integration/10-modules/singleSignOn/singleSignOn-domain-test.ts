@@ -8,6 +8,7 @@ import {
   fieldPatchSingleSignOn,
   findAllSingleSignOn,
   findSingleSignOnById,
+  TO_ENCRYPT_TYPE,
 } from '../../../../src/modules/singleSignOn/singleSignOn-domain';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { StrategyType, type SingleSignOnAddInput, type EditInput } from '../../../../src/generated/graphql';
@@ -42,7 +43,7 @@ describe('Single sign on Domain coverage tests', () => {
           { key: 'idpCert', value: '21341234', type: 'string' },
           { key: 'issuer', value: 'issuer', type: 'string' },
           { key: 'privateKey', value: 'myPrivateKey', type: 'string' },
-          { key: 'custom_value_that_is_secret', value: 'theCustomValue', type: 'secret' },
+          { key: 'custom_value_that_is_secret', value: 'theCustomValue', type: TO_ENCRYPT_TYPE },
         ],
       };
       const samlEntity = await addSingleSignOn(testContext, ADMIN_USER, input);

@@ -15,7 +15,7 @@ import { queryAsAdminWithSuccess, queryAsUserIsExpectedError, queryAsUserIsExpec
 import { ADMIN_USER, testContext, USER_PARTICIPATE, USER_SECURITY } from '../../../utils/testQuery';
 import { deleteElementById } from '../../../../src/database/middleware';
 import { ENTITY_TYPE_SINGLE_SIGN_ON } from '../../../../src/modules/singleSignOn/singleSignOn-types';
-import { ENCRYPTED_TYPE } from '../../../../src/modules/singleSignOn/singleSignOn-domain';
+import { ENCRYPTED_TYPE, TO_ENCRYPT_TYPE } from '../../../../src/modules/singleSignOn/singleSignOn-domain';
 
 export const SINGLE_SIGN_ON_LIST_QUERY = gql`
     query singleSignOns($first: Int $filters: FilterGroup) {
@@ -155,7 +155,7 @@ describe('Single Sign On CRUD coverage', () => {
         { key: 'cert', value: '21341234', type: 'string' },
         { key: 'issuer', value: 'issuer', type: 'string' },
         { key: 'privateKey', value: 'myPK', type: 'string' },
-        { key: 'mySecret', value: 'Ilove;Mint', type: 'secret' },
+        { key: 'mySecret', value: 'Ilove;Mint', type: TO_ENCRYPT_TYPE },
       ],
     };
     it('should not create single sign on entity without SETAUTH capa', async () => {

@@ -39,7 +39,13 @@ export const AUTH_SECRET_LIST = [
   'privateKey', // SAML
   'decryptionPvk', // SAML
 ];
+
+// Type for data that are encrypted
 export const ENCRYPTED_TYPE = 'encrypted';
+
+// Type for data that are in clear from creation and need to be encrypted
+export const TO_ENCRYPT_TYPE = 'secret';
+
 const AUTH_DERIVATION_PATH = ['authentication', 'elastic'];
 let authenticationKeyPairPromise: any;
 
@@ -69,7 +75,8 @@ const encryptConfigurationSecrets = async (configurationWithClear: Configuration
   if (configurationWithClear) {
     for (let i = 0; i < configurationWithClear?.length; i++) {
       const currentConfig = configurationWithClear[i] as ConfigurationTypeInput;
-      if (AUTH_SECRET_LIST.some((key) => key === currentConfig.key) || currentConfig.type === 'secret') {
+
+      if ((AUTH_SECRET_LIST.some((key) => key === currentConfig.key) && currentConfig.type !== ENCRYPTED_TYPE) || currentConfig.type === TO_ENCRYPT_TYPE) {
         const encryptedValue = await encryptAuthValue(currentConfig.value);
         configurationWithSecrets.push({ key: currentConfig.key, value: encryptedValue, type: ENCRYPTED_TYPE });
       } else {
@@ -181,21 +188,27 @@ export const fieldPatchSingleSignOn = async (context: AuthContext, user: AuthUse
   const finalInput: EditInput[] = [];
   for (let i = 0; i < input.length; i++) {
     const currentInput = input[i];
+
     if (currentInput.key === 'configuration') {
       if (!currentInput.operation || currentInput.operation === EditOperation.Add || currentInput.operation === EditOperation.Replace) {
         const configurationEncrypted: ConfigurationTypeInput[] = await encryptConfigurationSecrets(currentInput.value);
         const overrideEditInput: EditInput = {
-          ...currentInput,
+          key: currentInput.key,
+          operation: currentInput.operation,
+          object_path: currentInput.object_path,
           value: configurationEncrypted,
         };
         finalInput.push(overrideEditInput);
+      } else {
+        finalInput.push(currentInput);
       }
-      finalInput.push(currentInput);
     } else {
       finalInput.push(currentInput);
     }
   }
+
   const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_SINGLE_SIGN_ON, finalInput);
+
   const singleSignOnEntityAfterUpdate: BasicStoreEntitySingleSignOn = element;
   await publishUserAction({
     user,
