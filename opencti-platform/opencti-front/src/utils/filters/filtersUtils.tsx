@@ -910,7 +910,7 @@ export const useBuildEntityTypeBasedFilterContext = (
   const entityTypeContextFilters: Filter[] = [entityTypeFilter];
   if (excludedEntityTypesParam && excludedEntityTypesParam.length > 0) {
     const excludedEntityTypes = Array.isArray(excludedEntityTypesParam) ? excludedEntityTypesParam : [excludedEntityTypesParam];
-    const excludedEntityTypeFilter = { key: 'entity_type', values: excludedEntityTypes, operator: 'not_eq', mode: 'or' };
+    const excludedEntityTypeFilter = { key: 'entity_type', values: excludedEntityTypes, operator: 'not_eq', mode: 'and' };
     entityTypeContextFilters.push(excludedEntityTypeFilter);
   }
   if (draftId) {

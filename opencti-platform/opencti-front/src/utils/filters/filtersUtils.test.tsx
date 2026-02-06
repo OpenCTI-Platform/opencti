@@ -516,7 +516,7 @@ describe('Filters utils', () => {
         mode: 'and',
         filters: [
           { key: 'entity_type', values: ['Stix-Core-Object'], operator: 'eq', mode: 'or' },
-          { key: 'entity_type', values: ['Report'], operator: 'not_eq', mode: 'or' },
+          { key: 'entity_type', values: ['Report'], operator: 'not_eq', mode: 'and' },
           { key: 'draft_ids', values: [draftId] },
           { key: 'draft_change', operator: 'not_nil', values: [] },
         ],
