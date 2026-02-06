@@ -9,6 +9,7 @@ import {
   removeIdAndIncorrectKeysFromFilterGroupObject,
   removeIdFromFilterGroupObject,
   serializeFilterGroupForBackend,
+  useBuildEntityTypeBasedFilterContext,
   useBuildFilterKeysMapFromEntityType,
 } from './filtersUtils';
 import { createMockUserContext, testRenderHook } from '../tests/test-render';
@@ -459,6 +460,52 @@ describe('Filters utils', () => {
       };
       const result3 = getEntityTypeTwoFirstLevelsFilterValues(filters3, ['File', 'Domain-Name'], []);
       expect(result3).toEqual(['Stix-Cyber-Observable', 'File']);
+    });
+  });
+
+  describe('useBuildEntityTypeBasedFilterContext', () => {
+    it('should return filters with added entity type and draft context', () => {
+      const draftId = 'draft1-id';
+      const filters: FilterGroup = {
+        mode: 'and',
+        filters: [{ key: 'objectLabel', operator: 'not_eq', values: ['label1'] }],
+        filterGroups: [
+          {
+            mode: 'and',
+            filters: [
+              { key: 'objectMarking', values: ['marking1', 'marking2'] },
+              { key: 'created_at', values: ['now-1d'], operator: 'gt' },
+              { key: 'fake_filter_key', values: ['test'] }, // to be removed in the result
+            ],
+            filterGroups: [],
+          },
+        ],
+      };
+      const contextFilters = {
+        mode: 'and',
+        filters: [
+          { key: 'entity_type', values: ['Stix-Core-Object'], operator: 'eq', mode: 'or' },
+          { key: 'entity_type', values: ['Report'], operator: 'not_eq', mode: 'or' },
+          { key: 'draft_ids', values: [draftId] },
+          { key: 'draft_change', operator: 'not_nil', values: [] },
+        ],
+        filterGroups: [{
+          mode: 'and',
+          filters: [{ key: 'objectLabel', operator: 'not_eq', values: ['label1'] }],
+          filterGroups: [
+            {
+              mode: 'and',
+              filters: [
+                { key: 'objectMarking', values: ['marking1', 'marking2'] },
+                { key: 'created_at', values: ['now-1d'], operator: 'gt' },
+              ],
+              filterGroups: [],
+            },
+          ],
+        }],
+      };
+      const result = useBuildEntityTypeBasedFilterContext('Stix-Core-Object', filters, { excludedEntityTypesParam: ['Report'], draftId });
+      expect(result).toEqual(contextFilters);
     });
   });
 });
