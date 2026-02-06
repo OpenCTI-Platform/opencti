@@ -84,7 +84,7 @@ import { getEntitiesMapFromCache } from '../database/cache';
 import { AccessOperation, BYPASS, isBypassUser, isUserCanAccessStoreElement, isUserHasCapabilities, SYSTEM_USER, validateUserAccessOperation } from '../utils/access';
 import { connectorsForAnalysis } from '../database/repository';
 import { getDraftContext } from '../utils/draftContext';
-import { FilterOperator } from '../generated/graphql';
+import { FilterOperator, ValidationMode } from '../generated/graphql';
 import {
   getContainersStats,
   getHistory,
@@ -814,7 +814,10 @@ export const stixCoreObjectImportFile = async (context, user, id, file, args = {
     noTriggerImport,
   });
 
-  if (connectors && isUserHasCapabilities(user, ['KNOWLEDGE_KNASKIMPORT'], { forceCapabilityInDraft: true })) {
+  const canAskImport = isUserHasCapabilities(user, ['KNOWLEDGE_KNASKIMPORT']);
+  const canAskImportInDraft = isUserHasCapabilities(user, ['KNOWLEDGE_KNASKIMPORT'], { forceCapabilityInDraft: true });
+
+  if (connectors && (canAskImport || (canAskImportInDraft && validationMode === ValidationMode.Draft))) {
     await Promise.all(connectors.map(async ({ connectorId, configuration }) => (
       askJobImport(contextInDraft, user, {
         fileName: uploadedFile.id,
