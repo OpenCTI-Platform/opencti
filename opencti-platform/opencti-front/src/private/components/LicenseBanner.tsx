@@ -17,7 +17,6 @@ import * as Yup from 'yup';
 import { Field, Form, Formik } from 'formik';
 import TextField from '../../components/TextField';
 import { FormikConfig } from 'formik/dist/types';
-import { Theme } from '@mui/material/styles/createTheme';
 import { SxProps } from '@mui/material';
 
 export const LICENSE_OPTION_TRIAL = 'trial';
@@ -38,7 +37,7 @@ interface BannerInfo {
   message: React.ReactNode;
   bannerColor: TopBannerColor;
   buttonText?: string;
-  buttonStyle?: SxProps<Theme>;
+  buttonSx?: SxProps;
   onButtonClick?: () => void;
 }
 
@@ -51,10 +50,10 @@ const getBannerColor = (remainingDays: number) => {
 const getButtonColor = (remainingDays: number): string => {
   if (remainingDays <= 8) return '#884106';
   if (remainingDays <= 22) return '#005744';
-  return '#1e3a8a';
+  return '#007399';
 };
 
-const getButtonStyle = (remainingDays: number): SxProps<Theme> => {
+const getButtonSx = (remainingDays: number): SxProps => {
   const buttonColor = getButtonColor(remainingDays);
 
   return {
@@ -70,23 +69,23 @@ const computeBannerInfo = (eeSettings: RootSettings$data['platform_enterprise_ed
     return {
       message: `The current ${eeSettings.license_type} license has expired, Enterprise Edition is disabled.`,
       bannerColor: 'red',
-      buttonStyle: getButtonStyle(0),
+      buttonSx: getButtonSx(0),
     };
   }
   if (eeSettings.license_extra_expiration) {
     return {
       message: `The current ${eeSettings.license_type} license has expired, Enterprise Edition will be disabled in ${eeSettings.license_extra_expiration_days} days.`,
       bannerColor: 'red',
-      buttonStyle: getButtonStyle(0),
+      buttonSx: getButtonSx(0),
     };
   }
   if (eeSettings.license_type === LICENSE_OPTION_TRIAL) {
     const remainingDays = daysBetweenDates(now(), moment(eeSettings.license_expiration_date));
-    const buttonStyle = getButtonStyle(remainingDays);
+    const buttonSx = getButtonSx(remainingDays);
     const bannerColor = getBannerColor(remainingDays);
     return {
       buttonText: t_i18n('Contact us'),
-      buttonStyle,
+      buttonSx,
       bannerColor,
       message: (
         <>
@@ -140,7 +139,7 @@ const LicenseBanner = () => {
       <TopBanner
         bannerText={bannerInfo.message}
         bannerColor={bannerInfo.bannerColor}
-        buttonStyle={bannerInfo.buttonStyle}
+        buttonSx={bannerInfo.buttonSx}
         buttonText={bannerInfo.buttonText}
         onButtonClick={bannerInfo.onButtonClick}
       />

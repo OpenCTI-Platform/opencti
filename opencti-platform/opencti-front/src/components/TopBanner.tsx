@@ -4,7 +4,6 @@ import { isNotEmptyField } from '../utils/utils';
 import { SYSTEM_BANNER_HEIGHT } from '../public/components/SystemBanners';
 import { UserContext } from '../utils/hooks/useAuth';
 import { SxProps } from '@mui/material';
-import { Theme } from '@mui/material/styles/createTheme';
 import { ChevronRight } from '@mui/icons-material';
 
 export const TOP_BANNER_HEIGHT = 30;
@@ -23,11 +22,11 @@ interface TopBannerProps {
   bannerText: React.ReactNode;
   bannerColor?: TopBannerColor;
   buttonText: React.ReactNode;
-  buttonStyle?: SxProps<Theme>;
+  buttonSx?: SxProps;
   onButtonClick?: () => void;
 }
 
-const TopBanner = ({ bannerText, bannerColor = 'gradient_blue', buttonText, onButtonClick, buttonStyle }: TopBannerProps) => {
+const TopBanner = ({ bannerText, bannerColor = 'gradient_blue', buttonText, onButtonClick, buttonSx }: TopBannerProps) => {
   const { settings } = useContext(UserContext);
   const colors = TOPBANNER_COLORS[bannerColor];
 
@@ -68,7 +67,7 @@ const TopBanner = ({ bannerText, bannerColor = 'gradient_blue', buttonText, onBu
             '& .MuiButton-endIcon': {
               marginLeft: '2px',
             },
-            ...buttonStyle,
+            ...buttonSx,
           }}
           endIcon={<ChevronRight />}
         >
