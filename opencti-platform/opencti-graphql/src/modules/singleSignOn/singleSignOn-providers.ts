@@ -184,11 +184,11 @@ export const registerStrategy = async (authenticationStrategy: BasicStoreEntityS
               break;
             case StrategyType.HeaderStrategy:
               logApp.warn(`[SSO] ${authenticationStrategy.strategy} not implemented in UI yet`);
-          break;
-        case StrategyType.ClientCertStrategy:
-          logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_CERT);
-          await registerCertStrategy(authenticationStrategy);
-          break;
+              break;
+            case StrategyType.ClientCertStrategy:
+              logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_CERT);
+              await registerCertStrategy(authenticationStrategy);
+              break;
 
             default:
               logAuthError('Unknown strategy should not be possible, skipping', undefined, {
