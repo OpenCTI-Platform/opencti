@@ -78,6 +78,7 @@ const Index = ({ settings }: IndexProps) => {
       duration: theme.transitions.duration.enteringScreen,
     }),
     flexGrow: 1,
+    overflowY: 'hidden',
     height: '100vh',
     paddingTop: `calc(16px + 64px + ${settingsMessagesBannerHeight ?? 0}px)`,
   };
