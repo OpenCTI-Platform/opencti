@@ -464,6 +464,23 @@ describe('Filters utils', () => {
   });
 
   describe('useBuildEntityTypeBasedFilterContext', () => {
+    it('should return filters with added entity type context', () => {
+      const filters: FilterGroup = {
+        mode: 'and',
+        filters: [{ key: 'objectLabel', operator: 'not_eq', values: ['label1'] }],
+        filterGroups: [],
+      };
+      const contextFilters = {
+        mode: 'and',
+        filters: [
+          { key: 'entity_type', values: ['Malware'], operator: 'eq', mode: 'or' },
+        ],
+        filterGroups: [filters],
+      };
+      const result = useBuildEntityTypeBasedFilterContext('Stix-Core-Object', filters);
+      expect(result).toEqual(contextFilters);
+    });
+
     it('should return filters with added entity type and draft context', () => {
       const draftId = 'draft1-id';
       const filters: FilterGroup = {
