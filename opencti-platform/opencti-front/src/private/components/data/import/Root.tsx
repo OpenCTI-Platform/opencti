@@ -5,11 +5,11 @@ import WorkbenchFile from '../../common/files/workbench/WorkbenchFile';
 import ImportFilesContent from './ImportFilesContent';
 import ImportWorkbenchesContent from './ImportWorkbenchesContent';
 import useGranted, { KNOWLEDGE_KNASKIMPORT } from '../../../../utils/hooks/useGranted';
-import useHasOnlyAccessToImportDraftTab from '../../../../utils/hooks/useHasOnlyAccessToImportDraftTab';
+import useImportAccess from '../../../../utils/hooks/useImportAccess';
 
 const Root = () => {
   const canAskImportKnowledge = useGranted([KNOWLEDGE_KNASKIMPORT]);
-  const hasOnlyAccessToImportDraftTab = useHasOnlyAccessToImportDraftTab();
+  const { hasOnlyAccessToImportDraftTab } = useImportAccess();
 
   const restrictAccessToDraftOnly = canAskImportKnowledge || !hasOnlyAccessToImportDraftTab;
   return (

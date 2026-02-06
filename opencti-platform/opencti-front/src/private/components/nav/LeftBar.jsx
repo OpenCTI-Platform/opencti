@@ -105,7 +105,7 @@ import useGranted, {
   TAXIIAPI,
   VIRTUAL_ORGANIZATION_ADMIN,
 } from '../../../utils/hooks/useGranted';
-import useHasOnlyAccessToImportDraftTab from '../../../utils/hooks/useHasOnlyAccessToImportDraftTab';
+import useImportAccess from '../../../utils/hooks/useImportAccess';
 import useHelper from '../../../utils/hooks/useHelper';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
@@ -227,7 +227,7 @@ const LeftBarComponent = ({ queryRef }) => {
     me: { submenu_auto_collapse, submenu_show_icons, draftContext },
   } = useAuth();
   const navigate = useNavigate();
-  const hasOnlyAccessToImportDraftTab = useHasOnlyAccessToImportDraftTab();
+  const { hasOnlyAccessToImportDraftTab } = useImportAccess();
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
   const isGrantedToImport = useGranted([KNOWLEDGE_KNASKIMPORT]) || hasOnlyAccessToImportDraftTab;
   const isGrantedToProcessing = useGranted([KNOWLEDGE_KNUPDATE, AUTOMATION_AUTMANAGE, CSVMAPPERS]);

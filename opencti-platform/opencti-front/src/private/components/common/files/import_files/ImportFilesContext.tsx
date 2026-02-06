@@ -6,6 +6,7 @@ import { ImportFilesContextGuessMimeTypeQuery$data } from '@components/common/fi
 import useGranted from '../../../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import useDraftContext from '../../../../../utils/hooks/useDraftContext';
+import useImportAccess from '../../../../../utils/hooks/useImportAccess';
 import { fetchQuery } from '../../../../../relay/environment';
 
 export const importFilesQuery = graphql`
@@ -190,6 +191,7 @@ export const ImportFilesProvider = ({ children, initialValue }: {
 }) => {
   const canSelectImportMode = useGranted(['KNOWLEDGE_KNASKIMPORT'], false, { capabilitiesInDraft: ['KNOWLEDGE_KNASKIMPORT'] });
   const draftContext = useDraftContext();
+  const { isForcedImportToDraft } = useImportAccess();
 
   const initalActiveStep = initialValue.activeStep ?? (canSelectImportMode ? 0 : 1);
   const initialImportMode = canSelectImportMode ? initialValue.importMode : 'auto';
@@ -216,10 +218,6 @@ export const ImportFilesProvider = ({ children, initialValue }: {
     setActiveStep(initalActiveStep);
     setImportMode(initialImportMode);
   }, [initialValue.activeStep, initialValue.importMode]);
-
-  const isUserHasImport = useGranted(['KNOWLEDGE_KNASKIMPORT']);
-  const isUserHasImportInDraftOverride = isUserHasImport ? false : useGranted([], false, { capabilitiesInDraft: ['KNOWLEDGE_KNASKIMPORT'] });
-  const isForcedImportToDraft = isUserHasImport ? false : isUserHasImportInDraftOverride;
 
   return queryRef && (
     <React.Suspense>

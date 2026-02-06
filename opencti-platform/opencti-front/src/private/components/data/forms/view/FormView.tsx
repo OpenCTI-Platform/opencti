@@ -28,6 +28,7 @@ import { convertFormSchemaToYupSchema, formatFormDataForSubmission } from './For
 import { environment } from '../../../../../relay/environment';
 import StixCoreObjectsField from '../../../common/form/StixCoreObjectsField';
 import useGranted, { INGESTION, MODULES } from '../../../../../utils/hooks/useGranted';
+import useImportAccess from '../../../../../utils/hooks/useImportAccess';
 import Card from '../../../../../components/common/card/Card';
 
 // Styles
@@ -141,10 +142,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
   const [pollingTimeout, setPollingTimeout] = useState(false);
   const isConnectorReader = useGranted([MODULES]);
   const isGrantedIngestion = useGranted([INGESTION]);
-
-  const isUserHasImport = useGranted(['KNOWLEDGE_KNASKIMPORT']);
-  const isUserHasImportInDraftOverride = isUserHasImport ? false : useGranted([], false, { capabilitiesInDraft: ['KNOWLEDGE_KNASKIMPORT'] });
-  const isForcedImportToDraft = isUserHasImport ? false : isUserHasImportInDraftOverride;
+  const { isForcedImportToDraft } = useImportAccess();
 
   const data = usePreloadedQuery(formViewQuery, queryRef);
   const { form } = data;
