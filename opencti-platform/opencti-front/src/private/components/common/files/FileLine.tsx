@@ -40,6 +40,7 @@ import { KNOWLEDGE_KNASKIMPORT } from '../../../../utils/hooks/useGranted';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
+import Box from '@mui/material/Box';
 
 const Transition = React.forwardRef(({ children, ...otherProps }: SlideProps, ref) => (
   <Slide direction="up" ref={ref} {...otherProps}>{children}</Slide>
@@ -275,10 +276,12 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
             gap={1}
           >
             {!isProgress && !isFail && !isOutdated && (
-              <ItemMarkings
-                markingDefinitions={fileMarkings}
-                limit={1}
-              />
+              <Box sx={{ maxWidth: 150 }}>
+                <ItemMarkings
+                  markingDefinitions={fileMarkings}
+                  limit={1}
+                />
+              </Box>
             )}
             {!disableImport && (
               <Tooltip title={t_i18n('Launch an import of this file')}>
