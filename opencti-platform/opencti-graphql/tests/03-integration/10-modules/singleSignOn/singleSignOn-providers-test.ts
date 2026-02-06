@@ -1,12 +1,12 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
-import { registerLocalStrategy } from '../../../../src/modules/singleSignOn/singleSignOn-providers';
+import { parseValueAsType, registerLocalStrategy } from '../../../../src/modules/singleSignOn/singleSignOn-providers';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import * as providerConfig from '../../../../src/modules/singleSignOn/providers-configuration';
 import { isAuthenticationActivatedByIdentifier, type ProviderConfiguration, PROVIDERS } from '../../../../src/modules/singleSignOn/providers-configuration';
 import { clearProvider } from './singleSignOn-test-utils';
 import { initEnterpriseAuthenticationProviders } from '../../../../src/modules/singleSignOn/singleSignOn-init';
 import { waitInSec } from '../../../../src/database/utils';
-import { deleteSingleSignOn, internalAddSingleSignOn } from '../../../../src/modules/singleSignOn/singleSignOn-domain';
+import { deleteSingleSignOn, encryptAuthValue, ENCRYPTED_TYPE, internalAddSingleSignOn } from '../../../../src/modules/singleSignOn/singleSignOn-domain';
 import { type SingleSignOnAddInput, StrategyType } from '../../../../src/generated/graphql';
 
 describe('Single sign on Provider coverage tests', () => {
@@ -115,6 +115,57 @@ describe('Single sign on Provider coverage tests', () => {
           provider: 'local',
         },
       ]);
+    });
+  });
+
+  describe('Convert database configuration to object coverage', () => {
+    it('should boolean be correctly parsed', async () => {
+      let result = await parseValueAsType({ key: 'theKey', value: 'true', type: 'boolean' });
+      expect(result).toBe(true);
+
+      result = await parseValueAsType({ key: 'theKey', value: 'true', type: 'BOOLEAN' });
+      expect(result).toBe(true);
+
+      result = await parseValueAsType({ key: 'theKey', value: 'wrong', type: 'Boolean' });
+      expect(result).toBe(false);
+    });
+
+    it('should number be correctly parsed', async () => {
+      let result = await parseValueAsType({ key: 'theKey', value: 'true', type: 'boolean' });
+      expect(result).toBe(true);
+
+      result = await parseValueAsType({ key: 'theKey', value: 'true', type: 'BOOLEAN' });
+      expect(result).toBe(true);
+
+      result = await parseValueAsType({ key: 'theKey', value: 'wrong', type: 'Boolean' });
+      expect(result).toBe(false);
+    });
+
+    it('should partial configuration throw error', async () => {
+      await expect((async () => {
+        await parseValueAsType({ key: '', value: 'true', type: 'boolean' });
+      })()).rejects.toThrowError('Authentication configuration cannot be parsed, key, type or value is empty.');
+
+      await expect((async () => {
+        await parseValueAsType({ key: 'myKey', value: '', type: 'string' });
+      })()).rejects.toThrowError('Authentication configuration cannot be parsed, key, type or value is empty.');
+
+      await expect((async () => {
+        await parseValueAsType({ key: 'myKey', value: 'true', type: '' });
+      })()).rejects.toThrowError('Authentication configuration cannot be parsed, key, type or value is empty.');
+    });
+
+    it('should invalid configuration throw error', async () => {
+      await expect((async () => {
+        await parseValueAsType({ key: 'myKey', value: '{un: "deux"}', type: 'object' });
+      })()).rejects.toThrowError('Authentication configuration cannot be parsed, unknown type.');
+    });
+
+    it('should decrypt secret types', async () => {
+      const encryptedValue = await encryptAuthValue('MyValueIsFine');
+      expect(encryptedValue).not.toBe('MyValueIsFine');
+      const result = await parseValueAsType({ key: 'myKey', value: `${encryptedValue}`, type: ENCRYPTED_TYPE });
+      expect(result).toBe('MyValueIsFine');
     });
   });
 });

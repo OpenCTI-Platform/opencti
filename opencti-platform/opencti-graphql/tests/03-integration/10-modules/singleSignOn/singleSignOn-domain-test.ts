@@ -17,7 +17,6 @@ import convertSingleSignOnToStix from '../../../../src/modules/singleSignOn/sing
 import { onAuthenticationMessageAdd, onAuthenticationMessageDelete, onAuthenticationMessageEdit } from '../../../../src/modules/singleSignOn/singleSignOn-listener';
 import * as providerConfig from '../../../../src/modules/singleSignOn/providers-configuration';
 import { getFakeAuthUser } from '../../../utils/domainQueryHelper';
-import { initializeAdminUser } from '../../../../src/modules/singleSignOn/providers-initialization';
 
 describe('Single sign on Domain coverage tests', () => {
   describe('SAML coverage tests', () => {
@@ -144,7 +143,7 @@ describe('Single sign on Domain coverage tests', () => {
       expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'samlTestNotOk')).toBeFalsy();
       expect(logAppErrorSpy, 'No exception should be throw, but an error message should be present')
         .toHaveBeenCalledWith(
-          `[Auth][Not provided]Error when initializing an authentication provider (id: ${samlEntity.id}, identifier: samlTestNotOk), cause: SSO configuration is empty.`,
+          `[Auth][Not provided]Error when initializing an authentication provider (id: ${samlEntity.id}, identifier: samlTestNotOk), cause: idpCert is mandatory for SAML.`,
           expect.anything(),
         );
     });
@@ -253,8 +252,9 @@ describe('Single sign on Domain coverage tests', () => {
 
       const client_id: ConfigurationType = oicEntity.configuration?.find((config) => config.key === 'client_id') as ConfigurationType;
       expect(client_id.value).toBe('myoicclient');
-      const bindCredentials = oicEntity.configuration?.find((config) => config.key === 'client_secret') as ConfigurationType; ;
-      expect(bindCredentials.value).not.toBe('graceHopper');
+      const client_secret = oicEntity.configuration?.find((config) => config.key === 'client_secret') as ConfigurationType;
+      expect(client_secret.value).not.toBe('graceHopper');
+      expect(client_secret.type).toBe(ENCRYPTED_TYPE);
     });
 
     it('should missing redirect_uris throw error', async () => {
@@ -410,6 +410,7 @@ describe('Single sign on Domain coverage tests', () => {
       expect(configUrl.value).toBe('ldap://localhost:389');
       const bindCredentials = ldapEntity.configuration?.find((config) => config.key === 'bindCredentials') as ConfigurationType;
       expect(bindCredentials.value).not.toBe('youShallNotPass');
+      expect(bindCredentials.type).toBe(ENCRYPTED_TYPE);
 
       // Here there is a pub/sub on redis, let's just call the same method as listener
       await onAuthenticationMessageAdd({ instance: ldapEntity });
