@@ -1,8 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import Chip from '@mui/material/Chip';
 import Grid from '@mui/material/Grid';
-import makeStyles from '@mui/styles/makeStyles';
 import Divider from '@mui/material/Divider';
 import Card from '@common/card/Card';
 import RelatedContainers from '../../common/containers/related_containers/RelatedContainers';
@@ -12,18 +10,8 @@ import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import Label from '../../../../components/common/label/Label';
-
-const useStyles = makeStyles((theme) => ({
-  chip: {
-    fontSize: 12,
-    lineHeight: '12px',
-    backgroundColor: theme.palette.background.accent,
-    color: theme.palette.text.primary,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-    margin: '0 5px 5px 0',
-  },
-}));
+import Tag from '@common/tag/Tag';
+import { Stack } from '@mui/material';
 
 const ReportDetailsFragment = graphql`
   fragment ReportDetails_report on Report {
@@ -45,7 +33,6 @@ const ReportDetailsFragment = graphql`
 `;
 
 const ReportDetails = ({ report }) => {
-  const classes = useStyles();
   const { t_i18n, fldt } = useFormatter();
   const [height, setHeight] = useState(0);
   const ref = useRef(null);
@@ -89,13 +76,14 @@ const ReportDetails = ({ report }) => {
             <ExpandableMarkdown source={reportData.description} limit={400} />
             <Label sx={{ mt: 2 }}>{t_i18n('Report types')}</Label>
             <FieldOrEmpty source={reportData.report_types}>
-              {reportData.report_types?.map((reportType) => (
-                <Chip
-                  key={reportType}
-                  classes={{ root: classes.chip }}
-                  label={reportType}
-                />
-              ))}
+              <Stack direction="row" flexWrap="wrap" gap={1}>
+                {reportData.report_types?.map((reportType) => (
+                  <Tag
+                    key={reportType}
+                    label={reportType}
+                  />
+                ))}
+              </Stack>
             </FieldOrEmpty>
             <Label sx={{ mt: 2 }}>{t_i18n('Publication date')}</Label>
             {fldt(reportData.published)}

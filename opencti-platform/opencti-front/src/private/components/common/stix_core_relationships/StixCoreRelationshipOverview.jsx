@@ -418,6 +418,7 @@ class StixCoreRelationshipContainer extends Component {
                     />
                     <StixCoreObjectKillChainPhasesView
                       killChainPhases={stixCoreRelationship.killChainPhases}
+                      displayIcon
                     />
                   </Grid>
                 </Grid>

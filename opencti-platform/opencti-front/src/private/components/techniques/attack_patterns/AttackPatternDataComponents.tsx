@@ -2,12 +2,11 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import React, { FunctionComponent } from 'react';
 import List from '@mui/material/List';
 import { Link } from 'react-router-dom';
-import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import IconButton from '@common/button/IconButton';
-import { LinkOff, SourceOutlined } from '@mui/icons-material';
+import { Delete } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
-import { ListItemButton } from '@mui/material';
+import { ListItemButton, Tooltip } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
 import { useFormatter } from '../../../../components/i18n';
 import { AttackPatternDataComponents_attackPattern$data } from './__generated__/AttackPatternDataComponents_attackPattern.graphql';
@@ -82,23 +81,21 @@ const AttackPatternDataComponentsComponent: FunctionComponent<{
                   divider={true}
                   disablePadding={true}
                   secondaryAction={(
-                    <IconButton
-                      aria-label="Remove"
-                      onClick={() => removeDataComponent(dataComponent.id)}
-                    >
-                      <LinkOff />
-                    </IconButton>
+                    <Tooltip title={t_i18n('Delete relationship')}>
+                      <IconButton
+                        aria-label="Remove"
+                        onClick={() => removeDataComponent(dataComponent.id)}
+                      >
+                        <Delete />
+                      </IconButton>
+                    </Tooltip>
                   )}
                 >
                   <ListItemButton
                     component={Link}
                     to={`/dashboard/techniques/data_components/${dataComponent.id}`}
+                    sx={{ paddingLeft: 0 }}
                   >
-                    <ListItemIcon>
-                      <ListItemIcon>
-                        <SourceOutlined color="primary" />
-                      </ListItemIcon>
-                    </ListItemIcon>
                     <ListItemText primary={dataComponent.name} />
                   </ListItemButton>
                 </ListItem>

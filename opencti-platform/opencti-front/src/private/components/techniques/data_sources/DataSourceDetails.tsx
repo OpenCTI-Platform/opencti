@@ -8,7 +8,7 @@ import DataSourceDataComponents from './DataSourceDataComponents';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
-import { capitalizeFirstLetter } from 'src/utils/String';
+import TextList from '@common/text/TextList';
 
 const DataSourceDetailsFragment = graphql`
   fragment DataSourceDetails_dataSource on DataSource {
@@ -56,21 +56,13 @@ const DataSourceDetailsComponent: FunctionComponent<DataSourceDetailsProps> = ({
             <Label>
               {t_i18n('Platforms')}
             </Label>
-            <FieldOrEmpty source={data.x_mitre_platforms}>
-              <span>
-                {data.x_mitre_platforms?.map((platform) => capitalizeFirstLetter(platform)).join(', ')}
-              </span>
-            </FieldOrEmpty>
+            <TextList list={data.x_mitre_platforms} />
             <Label
               sx={{ marginTop: 2 }}
             >
               {t_i18n('Layers')}
             </Label>
-            <FieldOrEmpty source={data.collection_layers}>
-              <span>
-                {data.collection_layers?.map((platform) => capitalizeFirstLetter(platform)).join(', ')}
-              </span>
-            </FieldOrEmpty>
+            <TextList list={data.collection_layers} />
           </Grid>
           <Grid item xs={12}>
             <DataSourceDataComponents dataSource={data} />

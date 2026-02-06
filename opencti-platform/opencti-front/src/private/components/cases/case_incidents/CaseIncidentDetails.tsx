@@ -11,6 +11,7 @@ import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import Tag from '../../../../components/common/tag/Tag';
+import { Stack } from '@mui/material';
 
 const CaseIncidentDetailsFragment = graphql`
   fragment CaseIncidentDetails_case on CaseIncident {
@@ -96,12 +97,14 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
               {t_i18n('Incident response type')}
             </Label>
             <FieldOrEmpty source={responseTypes}>
-              {responseTypes.map((responseType) => (
-                <Tag
-                  key={responseType}
-                  label={responseType}
-                />
-              ))}
+              <Stack direction="row" flexWrap="wrap" gap={1}>
+                {responseTypes.map((responseType) => (
+                  <Tag
+                    key={responseType}
+                    label={responseType}
+                  />
+                ))}
+              </Stack>
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={12}>

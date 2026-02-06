@@ -8,10 +8,10 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { Link } from 'react-router-dom';
 import IconButton from '@common/button/IconButton';
-import { LinkOff } from '@mui/icons-material';
+import { Delete } from '@mui/icons-material';
 import { graphql, createFragmentContainer } from 'react-relay';
 import * as R from 'ramda';
-import { ListItemButton } from '@mui/material';
+import { ListItemButton, Tooltip } from '@mui/material';
 import AddLocations from './AddLocations';
 import { addLocationsMutationRelationDelete } from './AddLocationsLines';
 import { APP_BASE_PATH, commitMutation } from '../../../../relay/environment';
@@ -95,12 +95,14 @@ class IntrusionSetLocationsComponent extends Component {
                   disablePadding
                   secondaryAction={(
                     <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                      <IconButton
-                        aria-label="Remove"
-                        onClick={this.removeLocation.bind(this, locationEdge)}
-                      >
-                        <LinkOff />
-                      </IconButton>
+                      <Tooltip title={t('Delete relationship')}>
+                        <IconButton
+                          aria-label="Remove"
+                          onClick={this.removeLocation.bind(this, locationEdge)}
+                        >
+                          <Delete />
+                        </IconButton>
+                      </Tooltip>
                     </Security>
                   )}
                 >

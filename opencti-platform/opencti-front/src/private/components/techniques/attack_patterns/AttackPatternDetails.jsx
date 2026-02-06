@@ -2,13 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
-import Chip from '@mui/material/Chip';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import { PermIdentity, SettingsApplications } from '@mui/icons-material';
 import Grid from '@mui/material/Grid';
 import Card from '@common/card/Card';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
@@ -20,26 +14,12 @@ import AttackPatternCoursesOfAction from './AttackPatternCoursesOfAction';
 import AttackPatternDataComponents from './AttackPatternDataComponents';
 import StixCoreObjectKillChainPhasesView from '../../common/stix_core_objects/StixCoreObjectKillChainPhasesView';
 import Label from '../../../../components/common/label/Label';
-
-const styles = (theme) => ({
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: '15px',
-    borderRadius: 4,
-  },
-  chip: {
-    fontSize: 12,
-    lineHeight: '12px',
-    backgroundColor: theme.palette.background.accent,
-    borderRadius: 4,
-    color: theme.palette.text.primary,
-    margin: '0 5px 5px 0',
-  },
-});
+import Tag from '@common/tag/Tag';
+import TextList from '@common/text/TextList';
 
 class AttackPatternDetailsComponent extends Component {
   render() {
-    const { t, classes, attackPattern } = this.props;
+    const { t, attackPattern } = this.props;
     return (
       <div style={{ height: '100%' }}>
         <Card title={t('Details')}>
@@ -56,9 +36,8 @@ class AttackPatternDetailsComponent extends Component {
                 {t('External ID')}
               </Label>
               <FieldOrEmpty source={attackPattern.x_mitre_id}>
-                <Chip
+                <Tag
                   label={attackPattern.x_mitre_id}
-                  classes={{ root: classes.chip }}
                 />
               </FieldOrEmpty>
               <Label
@@ -77,18 +56,7 @@ class AttackPatternDetailsComponent extends Component {
                   {t('Platforms')}
                 </Label>
                 <List style={{ paddingTop: 0 }}>
-                  <FieldOrEmpty source={attackPattern.x_mitre_platforms}>
-                    {attackPattern.x_mitre_platforms?.map(
-                      (platform) => (
-                        <ListItem key={platform} dense={true} divider={true}>
-                          <ListItemIcon>
-                            <SettingsApplications />
-                          </ListItemIcon>
-                          <ListItemText primary={platform} />
-                        </ListItem>
-                      ),
-                    )}
-                  </FieldOrEmpty>
+                  <TextList list={attackPattern.x_mitre_platforms} />
                 </List>
               </div>
               <AttackPatternSubAttackPatterns attackPattern={attackPattern} />
@@ -112,20 +80,7 @@ class AttackPatternDetailsComponent extends Component {
               >
                 {t('Required permissions')}
               </Label>
-              <List style={{ paddingTop: 0 }}>
-                <FieldOrEmpty source={attackPattern.x_mitre_permissions_required}>
-                  {attackPattern.x_mitre_permissions_required?.map(
-                    (permission) => (
-                      <ListItem key={permission} dense={true} divider={true}>
-                        <ListItemIcon>
-                          <PermIdentity />
-                        </ListItemIcon>
-                        <ListItemText primary={permission} />
-                      </ListItem>
-                    ),
-                  )}
-                </FieldOrEmpty>
-              </List>
+              <TextList list={attackPattern.x_mitre_permissions_required} />
               <AttackPatternCoursesOfAction attackPattern={attackPattern} />
               <AttackPatternDataComponents attackPattern={attackPattern} />
             </Grid>
@@ -176,4 +131,4 @@ const AttackPatternDetails = createFragmentContainer(
   },
 );
 
-export default compose(inject18n, withStyles(styles))(AttackPatternDetails);
+export default compose(inject18n)(AttackPatternDetails);
