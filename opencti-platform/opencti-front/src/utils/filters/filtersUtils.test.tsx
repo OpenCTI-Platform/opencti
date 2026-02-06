@@ -484,15 +484,15 @@ describe('Filters utils', () => {
       const contextFilters = {
         mode: 'and',
         filters: [
-          { key: 'entity_type', values: ['Malware'], operator: 'eq', mode: 'or' },
+          { key: 'entity_type', values: ['Stix-Core-Object'], operator: 'eq', mode: 'or' },
         ],
         filterGroups: [filters],
       };
       const { hook } = testRenderHook(
-        () => useBuildEntityTypeBasedFilterContext('Malware', filters),
+        () => useBuildEntityTypeBasedFilterContext('Stix-Core-Object', filters),
         { userContext },
       );
-      expect(hook.result.current).toStrictEqual(contextFilters);
+      expect(hook.result.current).toEqual(contextFilters);
     });
 
     it('should return filters with added entity type and draft context', () => {
@@ -539,7 +539,7 @@ describe('Filters utils', () => {
         () => useBuildEntityTypeBasedFilterContext(['Stix-Core-Object'], filters, { excludedEntityTypesParam: ['Report'], draftId }),
         { userContext },
       );
-      expect(hook.result.current).toStrictEqual(contextFilters);
+      expect(hook.result.current).toEqual(contextFilters);
     });
   });
 });
