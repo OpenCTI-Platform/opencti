@@ -56,7 +56,7 @@ export default class DraftsPage {
   }
 
   async addEntityToDraft({ type, name }: { type: string; name: string }) {
-    await this.page.getByRole('button', { name: /Add entity/i }).click();
+    await this.page.getByRole('button', { name: /Create entity/i }).click();
     await this.page.getByLabel(/Entity type/i).selectOption(type);
     await this.page.getByLabel(/Name/i).fill(name);
     await this.page.getByRole('button', { name: /Create/i }).click();
