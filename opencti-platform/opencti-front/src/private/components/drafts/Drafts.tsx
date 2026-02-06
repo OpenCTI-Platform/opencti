@@ -296,7 +296,7 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
   };
 
   return (
-    <span data-testid="draft-page">
+    <div data-testid="draft-page">
       {!entityId && (
         <>
           <Breadcrumbs
@@ -340,7 +340,7 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
           )}
         </>
       )}
-    </span>
+    </div>
   );
 };
 
