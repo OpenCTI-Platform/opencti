@@ -36,7 +36,6 @@ By default, an authentication created will be enabled, meaning that it will be v
 ## Specifities per Configuration
 
 ### OpenID
-This strategy allows to use the [OpenID Connect Protocol](https://openid.net/connect) to handle the authentication and is based on [Node OpenID Client](https://github.com/panva/node-openid-client) which is more powerful than the passport one.
 
 When selecting OpenID a form will open:
 
@@ -45,8 +44,8 @@ For OpenID, the following fields are mandatory:
 
 - a configuration name, allowing you to differentiate between two configurations of the same type
 - an authentication name, allowing to customize the name of the button present on the login screen.
-- ClientID: The ID of your IDP client entity that created & signed the SAML
-- Client Secret: The secret of your IDP client
+- ClientID: The ID of your Identity Provider client entity that created & signed the SAML
+- Client Secret: The secret of your Identity Provider client
 - OpenID issuer: the root URI of your platform
 
 Once succesfully created, you will land on the overview screen of your Authentication.
@@ -61,7 +60,7 @@ For SAML, the following fields are mandatory:
 - SAML Entity ID/Issuer: the equivalent of the `base_url` attribute, your actual OpenCTI URL.
 - SAML SSO URL: The Identity Provider’s login endpoint where users are sent to authenticate.
 - Identidy provider encryption certificate: parameter mandatory (PEM format) because it is used to validate the SAML response. Depending on certificate format it may include the header, footer and newline (\n) characters.
-- Entry point: **what is it? ⇒ it’s the IDP url, duplicates with**  SAML SSO URL ??
+- Entry point: **what is it? ⇒ it’s the Identity Provider url, duplicates with**  SAML SSO URL ??
 
 The private_key (PEM format) is optional and is only required if you want to sign the SAML client request. Will be encrypted in database for security reason.
 
@@ -117,77 +116,106 @@ In this regards, there is the possiblity to add more custom values, that will be
 
 You need to specify a type, add the corresponding value that you want to send to passport & they key it will match in passport that you can send the correct value with the right field.
 
-### SAML passport fields
+### All passport fields
 This Github page represent the list of fields that are supported by our passport library. It's fairly technical information, but will give you the full picture of all custom fields you can add in your authentication, on the top of the already provided fields. 
 
 ### Passeport List of non-supported fields 
 
-| category | field name | field type | commment |
-|----------|------------|------------|----------|
-|          | idpCert    | string     | one string only supported|
-|          | IdpCertCallback | string |one string only supported|
-|          |decryptionPvk?| Buffer   | only string is supported |
-|          |additionalParams| Record<string, string>    | |
-|          |additionalAuthorizeParams| Record<string, string>    | |
-|          |additionalLogoutParams | Record<string, string>    |  |
-|          |racComparison| RacComparison    |  |
-|          |scoping?| SamlScopingConfig    |  |
-|          |cacheProvider| CacheProvider    |  |
-|          |validateInResponseTo| ValidateInResponseTo    |  |
-|          |samlAuthnRequestExtensions?| Record<string, unknown>    |  |
-|          |samlLogoutRequestExtensions?|Record<string, unknown>   |  |
-| metadataContactPerson? | "@contactType": "technical", "support", "administrative","billing", "other"; Extensions?| string    | |
-| metadataContactPerson? |Company? | string    | |
-| metadataContactPerson? |GivenName? | string    | |
-|  metadataContactPerson? |SurName? | string    | |
-| metadataContactPerson? |EmailAddress? | string    | |
-| metadataContactPerson? |TelephoneNumber? | string    | |
-|metadataOrganization?: {OrganizationName: |@xml:lang| string    | |
-|metadataOrganization?: {OrganizationName: |#text| string    | |
-|metadataOrganization?: {OrganizationDisplayName: |@xml:lang| string    | |
-|metadataOrganization?: {OrganizationDisplayName: |#text| string    | |
-|metadataOrganization?: {OrganizationURL: |@xml:lang| string    | |
-|metadataOrganization?: {OrganizationURL: |#text| string    | |
-| metadataContactPerson? |EmailAddress? | string    | |
-| metadataContactPerson? |EmailAddress? | string    | |
-| metadataContactPerson? |EmailAddress? | string    | |
+| category                                        | field name                                                                              | field type                | commment                 |
+|-------------------------------------------------|-----------------------------------------------------------------------------------------|---------------------------|--------------------------|
+|                                                 | Identity ProviderCert                                                                   | string                    | one string only supported|
+|                                                 | Identity ProviderCertCallback                                                           | string                    | one string only supported|
+|                                                 | decryptionPvk?                                                                          | Buffer                    | only string is supported |
+|                                                 | additionalParams                                                                        | Record<string, string>    |                          |
+|                                                 | additionalAuthorizeParams                                                               | Record<string, string>    |                          |
+|                                                 | additionalLogoutParams                                                                  | Record<string, string>    |                          |
+|                                                 | racComparison                                                                           | RacComparison             |                          |
+|                                                 | scoping?| SamlScopingConfig                                                             |                           |                          |
+|                                                 | cacheProvider                                                                           | CacheProvider             |                          |
+|                                                 | validateInResponseTo                                                                    | ValidateInResponseTo      |                          |
+|                                                 | samlAuthnRequestExtensions?                                                             | Record<string, unknown>   |                          |
+|                                                 | samlLogoutRequestExtensions?                                                            | Record<string, unknown>   |                          |
+| metadataContactPerson?                          | "@contactType": "technical", "support", "administrative","billing", "other"; Extensions?| string                    |                          |
+| metadataContactPerson?                          | Company?                                                                                | string                    |                          |
+| metadataContactPerson?                          | GivenName?                                                                              | string                    |                          |
+|  metadataContactPerson?                         | SurName?                                                                                | string                    |                          |
+| metadataContactPerson?                          | EmailAddress?                                                                           | string                    |                          |
+| metadataContactPerson?                          | TelephoneNumber?                                                                        | string                    |                          |
+| metadataOrganization?: {OrganizationName:       | @xml:lang                                                                               | string                    |                          |
+| metadataOrganization?: {OrganizationName:       | #text                                                                                   | string                    |                          |
+| metadataOrganization?: {OrganizationDisplayName:| @xml:lang                                                                               | string                    |                          |
+| metadataOrganization?: {OrganizationDisplayName:| #text                                                                                   | string                    |                          |
+| metadataOrganization?: {OrganizationURL:        | @xml:lang                                                                               | string                    |                          |
+| metadataOrganization?: {OrganizationURL:        | #text                                                                                   | string                    |                          |
+
 
 ### Passeport List supported fields
 
-| category | field name | field type | commment |
-|----------|------------|------------|----------|
-| Mandatory         | idpCert    | string     ||
-| Mandatory         | issuer    | string     ||
-| Mandatory         | callbackUrl    | string     ||
-| Core         | entryPoint?    | string     ||
-| Core         | decryptionPvk?    | string     ||
-| Additional SAML behaviors         | identifierFormat    | string, null     ||
-| Additional SAML behaviors         | allowCreate    | bolean    ||
-| Additional SAML behaviors         | spNameQualifier?    | string, null     ||
-| Additional SAML behaviors         | acceptedClockSkewMs    | number    ||
-| Additional SAML behaviors         | attributeConsumingServiceIndex?:    | string    ||
-| Additional SAML behaviors         | disableRequestedAuthnContext    | boolean     ||
-| Additional SAML behaviors         | authnContext    | string     ||
-| Additional SAML behaviors         | forceAuthn    | boolean    ||
-| Additional SAML behaviors         | skipRequestCompression    | boolean     ||
-| Additional SAML behaviors         | authnRequestBinding?    | string     ||
-| Additional SAML behaviors         | providerName?    | string     ||
-| Additional SAML behaviors         | passive    | boolean     ||
-| Additional SAML behaviors         | idpIssuer?    | string     ||
-| Additional SAML behaviors         | audience    | string, false     ||
-| Additional SAML behaviors         | wantAssertionsSigned    | boolean     ||
-| Additional SAML behaviors         | wantAuthnResponseSigned    | boolean     ||
-| Additional SAML behaviors         | maxAssertionAgeMs    | boolean     ||
-| Additional SAML behaviors         | generateUniqueId    | string     ||
-| Additional SAML behaviors         | signMetadata    | boolean     ||
-| InResponseTo Validation        | requestIdExpirationPeriodMs    | number     ||
-| Logout      | logoutUrl    | string     ||
-| Logout      | logoutCallbackUrl?    | string     ||
-| extras      | disableRequestAcsUrl   | boolean     ||
+| category                          | field name                      | field type    | commment |
+|-----------------------------------|---------------------------------|---------------|----------|
+| Mandatory                         | Identity ProviderCert           | string        |          |
+| Mandatory                         | issuer                          | string        |          |
+| Mandatory                         | callbackUrl                     | string        |          |
+| Core                              | entryPoint?                     | string        |          |
+| Core                              | decryptionPvk?                  | string        |          |
+| Additional SAML behaviors         | identifierFormat                | string, null  |          |
+| Additional SAML behaviors         | allowCreate                     | bolean        |          |
+| Additional SAML behaviors         | spNameQualifier?                | string, null  |          |
+| Additional SAML behaviors         | acceptedClockSkewMs             | number        |          |
+| Additional SAML behaviors         | attributeConsumingServiceIndex?:| string        |          |
+| Additional SAML behaviors         | disableRequestedAuthnContext    | boolean       |          |
+| Additional SAML behaviors         | authnContext                    | string        |          |
+| Additional SAML behaviors         | forceAuthn                      | boolean       |          |
+| Additional SAML behaviors         | skipRequestCompression          | boolean       |          |
+| Additional SAML behaviors         | authnRequestBinding?            | string        |          |
+| Additional SAML behaviors         | providerName?                   | string        |          |
+| Additional SAML behaviors         | passive                         | boolean       |          |
+| Additional SAML behaviors         | Identity ProviderIssuer?        | string        |          |
+| Additional SAML behaviors         | audience                        | string, false |          |
+| Additional SAML behaviors         | wantAssertionsSigned            | boolean       |          |
+| Additional SAML behaviors         | wantAuthnResponseSigned         | boolean       |          |
+| Additional SAML behaviors         | maxAssertionAgeMs               | boolean       |          |
+| Additional SAML behaviors         | generateUniqueId                | string        |          |
+| Additional SAML behaviors         | signMetadata                    | boolean       |          |
+| InResponseTo Validation           | requestIdExpirationPeriodMs     | number        |          |
+| Logout                            | logoutUrl                       | string        |          |
+| Logout                            | logoutCallbackUrl?              | string        |          |
+| extras                            | disableRequestAcsUrl            | boolean       |          |
 
 ### Deprecated for all strategies
-The following field is deprecated for all strategies: roles_management.
+The following field is deprecated for all strategies: `roles_management`.
+`credentials_provider` from CyberArk is not migrated either. 
 
+## Using Cyberark along with OpenID
+To use Cybrark with OpenID, you can follow these steps: 
+
+- Create OpenID configuration in UI, note the identifier (eg: "oic") it will need to match environment varaible name
+- For the field that will be overrided by cyberark configuration, you can put any string it will be ignored (to pass the mandatory field checks)
+- You will need to keep the cyberark configuration in environment variable such as:
+
+```json
+{
+ "providers": {
+   "oic": {
+     "credentials_provider": {
+       "selector": "cyberark",
+       "cyberark": {
+         "uri": "https://<cyberark-url>",
+         "field_targets": [
+           "client_secret"
+         ],
+         "app_id": "cyberark",
+         "safe": "safe",
+         "object": "secret"
+       },
+       "https_cert": {
+         "reject_unauthorized": false
+       }
+     }
+   }
+ }
+}
+```
 
 # Group mapping
 
@@ -225,6 +253,8 @@ If the authentication is disabled, it means that the form to enter username & pa
 Please be careful before disabling it: 
 
 - you should ensure that you have at least another authentication working (meaning that not only you get successfully authenticated, but that both your group mapping & organization mapping are correct) before disabling it.
+
+
 
 
 
