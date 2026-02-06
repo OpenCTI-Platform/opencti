@@ -1,10 +1,12 @@
+# Define an authntication strategy via the graphical interface
+
 !!! tip "Enterprise edition"
 
-     SSO configuration is under the [OpenCTI Enterprise Edition](https://docs.opencti.io/latest/administration/enterprise/?h=ente) license. Please read the information below to have all the information.
+     SSO configuration & usage is under the [OpenCTI Enterprise Edition](https://docs.opencti.io/latest/administration/enterprise/?h=ente) license. Please read the information below to have all the information.
  
-All the configuration listed below require an Entreprise Edition to work, except the Local strategy. 
+All the configurations listed below require an Entreprise Edition to work, except the Local strategy. 
 
-# Supported Strategies
+## Supported Strategies
 
 Under the hood, we technically use the strategies provided by [PassportJS](http://www.passportjs.org/). We integrate a subset of the strategies available with passport. If you need more, we can integrate other strategies.
 
@@ -17,7 +19,7 @@ Via UI, you can configure the following stategies
 - Certificate (not avaiable yet)
 - Headers.
 
-# Create a new configuration
+## Create a new configuration
 
 To create a new configuration, you need to have the [right capability](https://docs.opencti.io/latest/administration/users/). 
 Assuming you have it, wen navigating to Parameters/authentications, you will land on a screen to manage your authentication strategies.
@@ -33,9 +35,9 @@ Click on the button to create a new strategy. Only the following stategies will 
 Each of the configurations have some mandatory fields. Once these are provided, you will be able to create your configuration. Providing a group mapping or an org mapping **is not mandatory to create your authentication.**
 By default, an authentication created will be enabled, meaning that it will be visible on your login screen: you can update this beahvior by toggling off the field in the creation form.
 
-## Specifities per Configuration
+### Specifities per Configuration
 
-### OpenID
+#### OpenID
 
 When selecting OpenID a form will open:
 
@@ -50,7 +52,7 @@ For OpenID, the following fields are mandatory:
 
 Once succesfully created, you will land on the overview screen of your Authentication.
 
-### SAML
+#### SAML
 When selecting SAML a form will open:
 
 For SAML, the following fields are mandatory: 
@@ -73,7 +75,7 @@ The private_key (PEM format) is optional and is only required if you want to s
     ```
 
 
-### LDAP
+#### LDAP
 When selecting LDAP a form will open:
 
 
@@ -90,7 +92,7 @@ For LDAP, the following fields are mandatory:
 
 Once succesfully created, you will land on the overview screen of your Authentication.
 
-### Certificate
+#### Certificate
 
 When using an OpenID Connect provider secured with a certificate issued by a **custom Certificate Authority (CA)** or a **self-signed certificate**, OpenCTI (running on Node.js) might not inherently trust this certificate. This can lead to connection errors like `unable to get local issuer certificate`.
 
@@ -105,10 +107,10 @@ After these steps, OpenCTI should successfully establish a secure connection wit
 
 Always prefer trusting the CA certificate as described above.
 
-### Headers
+#### Headers
 This strategy can authenticate the users directly from trusted headers.
 
-## Add a custom field not present in SAML, LDAP, OpenID forms
+### Add a custom field not present in SAML, LDAP, OpenID forms
 
 The list of fields present in the graphical interface are the main fields that we have seen being used. However it is important to be able to support additionnal fields that are needed for various authentications.
 In this regards, there is the possiblity to add more custom values, that will be used by our Passport/Node OpenID library. 
@@ -116,7 +118,7 @@ In this regards, there is the possiblity to add more custom values, that will be
 
 You need to specify a type, add the corresponding value that you want to send to passport & they key it will match in passport that you can send the correct value with the right field.
 
-### All passport fields
+#### All passport fields
 This Github page represent the list of fields that are supported by our passport library. It's fairly technical information, but will give you the full picture of all custom fields you can add in your authentication, on the top of the already provided fields. 
 
 ### Passeport List of non-supported fields 
@@ -149,7 +151,7 @@ This Github page represent the list of fields that are supported by our passport
 | metadataOrganization?: {OrganizationURL:        | #text                                                                                   | string                    |                          |
 
 
-### Passeport List supported fields
+#### Passeport List supported fields
 
 | category                          | field name                      | field type    | commment |
 |-----------------------------------|---------------------------------|---------------|----------|
@@ -182,11 +184,11 @@ This Github page represent the list of fields that are supported by our passport
 | Logout                            | logoutCallbackUrl?              | string        |          |
 | extras                            | disableRequestAcsUrl            | boolean       |          |
 
-### Deprecated for all strategies
+#### Deprecated for all strategies
 The following field is deprecated for all strategies: `roles_management`.
 `credentials_provider` from CyberArk is not migrated either. 
 
-## Using Cyberark along with OpenID
+### Using Cyberark along with OpenID
 To use Cybrark with OpenID, you can follow these steps: 
 
 - Create OpenID configuration in UI, note the identifier (eg: "oic") it will need to match environment varaible name
@@ -217,7 +219,7 @@ To use Cybrark with OpenID, you can follow these steps:
 }
 ```
 
-# Group mapping
+## Group mapping
 
 Now that a configuration is defined, you can define the group mapping (if applicable) for the authentication supporting this functionalities.
 
@@ -236,14 +238,19 @@ More precisely, if the user that tries to authenticate has groups that don’t e
 - else: an error is raised.
 
 
-## OpenID group mapping 
-## SAML group mapping
-## LDAP group mapping 
-## Headers group mapping
-## Certificate group mapping
+### OpenID group mapping 
+### SAML group mapping
+### LDAP group mapping 
+### Headers group mapping
+### Certificate group mapping
+
+## Troubleshooting 
+Setting up a configuration correctly is always a struggle. To understand what is happening you need to have a look at your logs, available ???
 
 
-# Specific behavior of Local Auth 
+
+
+## Specific behavior of Local Auth 
 Local Auth is the authentication with Username & password. 
 
 This Authentication is unique, meaning that you cannot create a new one. The authentication can be however disabled. 
@@ -253,6 +260,8 @@ If the authentication is disabled, it means that the form to enter username & pa
 Please be careful before disabling it: 
 
 - you should ensure that you have at least another authentication working (meaning that not only you get successfully authenticated, but that both your group mapping & organization mapping are correct) before disabling it.
+
+
 
 
 
