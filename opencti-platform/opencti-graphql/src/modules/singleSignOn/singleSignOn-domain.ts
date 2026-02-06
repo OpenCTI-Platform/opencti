@@ -2,6 +2,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import {
   type ConfigurationTypeInput,
   type EditInput,
+  EditOperation,
   FilterMode,
   FilterOperator,
   type SingleSignMigrationInput,
@@ -68,11 +69,14 @@ const encryptConfigurationSecrets = async (configurationWithClear: Configuration
   if (configurationWithClear) {
     for (let i = 0; i < configurationWithClear?.length; i++) {
       const currentConfig = configurationWithClear[i] as ConfigurationTypeInput;
+      logApp.info(`CONFIG ENCRYPT check ${currentConfig.key}`);
       if (AUTH_SECRET_LIST.some((key) => key === currentConfig.key) || currentConfig.type === 'secret') {
         const encryptedValue = await encryptAuthValue(currentConfig.value);
         configurationWithSecrets.push({ key: currentConfig.key, value: encryptedValue, type: ENCRYPTED_TYPE });
+        logApp.info(`CONFIG ENCRYPT ${currentConfig.key} encrypted`);
       } else {
         configurationWithSecrets.push(currentConfig);
+        logApp.info(`CONFIG ENCRYPT ${currentConfig.key} not encrypted`);
       }
     }
   }
@@ -111,7 +115,6 @@ export const findSingleSignOnById = async (context: AuthContext, user: AuthUser,
 
 export const findSingleSignOnPaginated = async (context: AuthContext, user: AuthUser, args: any) => {
   await checkSSOAllowed(context);
-  console.log('FIND call', { args });
   return pageEntitiesConnection<BasicStoreEntitySingleSignOn>(context, user, [ENTITY_TYPE_SINGLE_SIGN_ON], args);
 };
 
@@ -178,24 +181,28 @@ export const fieldPatchSingleSignOn = async (context: AuthContext, user: AuthUse
     throw FunctionalError(`Single sign on ${id} cannot be found`);
   }
 
-  logApp.info('INPUT', { input: JSON.stringify(input) });
+  logApp.info('FIELD PATCH ', { input: JSON.stringify(input) });
 
   const finalInput: EditInput[] = [];
   for (let i = 0; i < input.length; i++) {
-    // What about object_path ???
     const currentInput = input[i];
     if (currentInput.key === 'configuration') {
-      const configurationEncrypted: ConfigurationTypeInput[] = await encryptConfigurationSecrets(currentInput.value);
-      const overrideEditInput: EditInput = {
-        ...currentInput,
-        value: configurationEncrypted,
-      };
-      finalInput.push(overrideEditInput);
+      logApp.info('FIELD PATCH has config');
+      if (!currentInput.operation || currentInput.operation === EditOperation.Add || currentInput.operation === EditOperation.Replace) {
+        logApp.info(`FIELD PATCH need encryption on ${currentInput.key}`);
+        const configurationEncrypted: ConfigurationTypeInput[] = await encryptConfigurationSecrets(currentInput.value);
+        const overrideEditInput: EditInput = {
+          ...currentInput,
+          value: configurationEncrypted,
+        };
+        finalInput.push(overrideEditInput);
+      }
+      finalInput.push(currentInput);
     } else {
       finalInput.push(currentInput);
     }
   }
-
+  logApp.info('FIELD PATCH final config', { final: JSON.stringify(finalInput) });
   const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_SINGLE_SIGN_ON, finalInput);
   const singleSignOnEntityAfterUpdate: BasicStoreEntitySingleSignOn = element;
   await publishUserAction({

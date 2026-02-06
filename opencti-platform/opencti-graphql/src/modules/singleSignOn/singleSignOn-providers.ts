@@ -52,7 +52,7 @@ export const convertKeyValueToJsConfiguration = async (ssoEntity: BasicStoreEnti
         try {
           ssoConfiguration[currentConfig.key] = await parseValueAsType(currentConfig);
         } catch (e) {
-          logAuthError(`Configuration ${currentConfig.key} cannot be read, is ignored. Please verify your configuration.`, ssoEntity.strategy, { currentConfig, cause: e });
+          logAuthError(`Configuration ${currentConfig?.key} cannot be read, is ignored. Please verify your configuration.`, ssoEntity.strategy, { cause: e });
         }
       }
     }

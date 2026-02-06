@@ -68,16 +68,16 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
     organizations_management,
   } = ssoOverview;
 
-  type Row = { key: string; value: unknown; mandatory: boolean };
+  type Row = { key: string; value: unknown; type: string; mandatory: boolean };
 
   const getSsoConfigRows = (): Row[] => {
     const rows: Row[] = [
-      { key: 'name', value: name, mandatory: true },
-      { key: 'identifier', value: identifier, mandatory: true },
-      { key: 'label', value: label, mandatory: false },
-      { key: 'description', value: description, mandatory: false },
-      { key: 'enabled', value: enabled, mandatory: true },
-      { key: 'strategy', value: strategy, mandatory: true },
+      { key: 'name', value: name, type: 'string', mandatory: true },
+      { key: 'identifier', type: 'string', value: identifier, mandatory: true },
+      { key: 'label', type: 'string', value: label, mandatory: false },
+      { key: 'description', type: 'string', value: description, mandatory: false },
+      { key: 'enabled', type: 'boolean', value: enabled, mandatory: true },
+      { key: 'strategy', type: 'string', value: strategy, mandatory: true },
     ];
     const mandatoryField = [
       'entryPoint',
@@ -90,6 +90,7 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
       rows.push({
         key: c.key,
         value: c.value,
+        type: c.type,
         mandatory: isMandatory,
       });
     });
@@ -103,26 +104,31 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
       {
         key: 'group_attributes',
         value: groups_management.group_attributes,
+        type: 'array',
         mandatory: false,
       },
       {
         key: 'groups_path',
         value: groups_management.groups_path,
+        type: 'array',
         mandatory: false,
       },
       {
         key: 'groups_mapping',
         value: groups_management.groups_mapping,
+        type: 'array',
         mandatory: false,
       },
       {
         key: 'read_userinfo',
         value: groups_management.read_userinfo,
+        type: 'boolean',
         mandatory: false,
       },
       {
         key: 'token_reference',
         value: groups_management.token_reference,
+        type: 'string',
         mandatory: false,
       },
     ];
@@ -134,16 +140,19 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
       {
         key: 'organizations_path',
         value: organizations_management.organizations_path,
+        type: 'array',
         mandatory: false,
       },
       {
         key: 'organizations_mapping',
         value: organizations_management.organizations_mapping,
+        type: 'array',
         mandatory: false,
       },
       {
         key: 'organizations_scope',
         value: organizations_management.organizations_scope,
+        type: 'array',
         mandatory: false,
       },
     ];
@@ -156,11 +165,11 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
       />
     );
   };
-  const renderValue = (value: unknown) => {
-    if (Array.isArray(value)) {
+  const renderValue = (row: Row) => {
+    if (row.type === 'array' && Array.isArray(row.value)) {
       return (
         <List dense disablePadding>
-          {value.map((item, idx) => (
+          {row.value.map((item, idx) => (
             <ListItem key={idx} disableGutters>
               <ListItemText
                 primary={item}
@@ -171,29 +180,41 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
       );
     }
 
-    if (typeof value === 'object' && value !== null) {
+    if (typeof row.value === 'object' && row.value !== null) {
       return (
         <List dense disablePadding>
           <ListItem disableGutters>
             <ListItemText
-              primary={JSON.stringify(value, null, 2)}
+              primary={JSON.stringify(row.value, null, 2)}
             />
           </ListItem>
         </List>
       );
     }
-    const MAX_LEN = 70;
 
+    if (row.type === 'encrypted' && row.value !== null) {
+      return (
+        <List dense disablePadding>
+          <ListItem disableGutters>
+            <ListItemText
+              primary="******"
+            />
+          </ListItem>
+        </List>
+      );
+    }
+
+    const MAX_LEN = 70;
     const truncate = (value: string) =>
       value && value.length > MAX_LEN ? `${value.slice(0, MAX_LEN)}…` : value;
     return (
       <List dense disablePadding>
         <ListItem disableGutters>
-          <Tooltip title={value != null && String(value).length > MAX_LEN ? String(value) : ''}>
+          <Tooltip title={(row.value != null && String(row.value).length > MAX_LEN) ? String(row.value) : ''}>
             <ListItemText
               primary={
-                value != null
-                  ? truncate(String(value))
+                row.value != null
+                  ? truncate(String(row.value))
                   : ''
               }
             />
@@ -239,7 +260,7 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
                 ? <ItemBoolean label={t_i18n('True')} status={true} />
                 : valueIsFalse
                   ? <ItemBoolean label={t_i18n('False')} status={false} />
-                  : row.value ? renderValue(row.value) : EMPTY_VALUE}
+                  : row.value ? renderValue(row) : EMPTY_VALUE}
             </Grid>
 
             <Grid size={{ xs: 12, md: 3 }} sx={{ display: 'flex', alignItems: 'center' }}>

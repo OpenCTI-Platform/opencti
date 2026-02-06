@@ -35,11 +35,13 @@ const ldapConfigKeys = [
   'allow_self_signed',
 ];
 
-type configType = ReadonlyArray<{
+type Config = {
   key: string;
   value: string;
   type: string;
-}>;
+};
+
+type ConfigTypeArray = ReadonlyArray<Config>;
 
 export const getSSOConfigList = (strategy: string) => {
   switch (strategy) {
@@ -53,12 +55,25 @@ export const getSSOConfigList = (strategy: string) => {
   }
 };
 
-export const getAdvancedConfigFromData = (config: configType, strategy: string): ConfigurationTypeInput[] => {
+export const getAdvancedConfigFromData = (config: ConfigTypeArray, strategy: string): ConfigurationTypeInput[] => {
   const configKeys = getSSOConfigList(strategy);
-  return config.filter((item) => !configKeys.includes(item.key));
+
+  const finalConfig: Config[] = [];
+  for (let i = 0; i < config.length; i++) {
+    const item = config[i];
+    if (!configKeys.includes(item.key)) {
+      if (item.type === 'encrypted') {
+        finalConfig.push({ key: item.key, value: '******', type: 'secret' });
+      } else {
+        finalConfig.push(item);
+      }
+    }
+  }
+
+  return finalConfig;
 };
 
-export const getConfigFromData = (config: configType, strategy: string): ConfigurationTypeInput[] => {
+export const getConfigFromData = (config: ConfigTypeArray, strategy: string): ConfigurationTypeInput[] => {
   const configKeys = getSSOConfigList(strategy);
   return config.filter((item) => configKeys.includes(item.key));
 };
