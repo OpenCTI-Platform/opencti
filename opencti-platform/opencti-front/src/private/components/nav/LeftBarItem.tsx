@@ -128,6 +128,7 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
               mr: 1,
               opacity: iconOpacity,
               color: iconColor,
+              ...(isSubItem && { alignSelf: 'flex-start', pt: 0.35 }),
               '& svg': {
                 fontSize: '16px!important',
               },
@@ -142,11 +143,17 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
             primary={itemLabel}
             sx={{
               pt: 0.1,
+              ...(isSubItem && { flex: 1, minWidth: 0 }),
             }}
             slotProps={{
               primary: {
                 fontSize: fontSize === 'default' ? '14px' : '12px',
                 color: getTextColor(),
+                ...(isSubItem && {
+                  whiteSpace: 'normal',
+                  lineHeight: 1.35,
+                  wordBreak: 'break-word',
+                }),
               },
             }}
           />
@@ -166,8 +173,10 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
         dense
         onClick={inCollapse ? undefined : onMenuClose}
         sx={{
+          alignItems: 'flex-start',
           px: 2.5,
           py: 1,
+          minHeight: 'unset',
           '&:hover': {
             backgroundColor: theme.palette.leftBar.hover,
           },
@@ -282,7 +291,8 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
             onMouseLeave: onMenuClose,
             sx: {
               pointerEvents: 'auto',
-              width: 180,
+              minWidth: 200,
+              maxWidth: 300,
               backgroundColor: theme.palette.leftBar.popoverItem,
             },
           },

@@ -7,6 +7,9 @@ import { EXPLORE, INVESTIGATION } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
 import PublicDashboard from './dashboards/public_dashboards/PublicDashboards';
 import RessaDWM from './dashboards/ressa_dwm/RessaDWM';
+import OrganizationManagerDashboard from './dashboards/organization_manager_dashboard/OrganizationManagerDashboard';
+import MiddleManagersDashboard from './dashboards/middle_managers_dashboard/MiddleManagersDashboard';
+import OperationalManagersDashboard from './dashboards/operational_managers_dashboard/OperationalManagersDashboard';
 
 const DashboardRoute = () => (
   <Security needs={[EXPLORE]} placeholder={<Navigate to="/dashboard" />}>
@@ -29,6 +32,24 @@ const PublicDashboardRoute = () => (
 const RessaDWMRoute = () => (
   <Security needs={[EXPLORE]} placeholder={<Navigate to="/dashboard" />}>
     <RessaDWM />
+  </Security>
+);
+
+const OrganizationManagerDashboardRoute = () => (
+  <Security needs={[EXPLORE]} placeholder={<Navigate to="/dashboard" />}>
+    <OrganizationManagerDashboard />
+  </Security>
+);
+
+const MiddleManagersDashboardRoute = () => (
+  <Security needs={[EXPLORE]} placeholder={<Navigate to="/dashboard" />}>
+    <MiddleManagersDashboard />
+  </Security>
+);
+
+const OperationalManagersDashboardRoute = () => (
+  <Security needs={[EXPLORE]} placeholder={<Navigate to="/dashboard" />}>
+    <OperationalManagersDashboard />
   </Security>
 );
 
@@ -61,6 +82,18 @@ const Root = () => (
     <Route
       path="/dashboards_ressa_dwm/*"
       element={<RessaDWMRoute />}
+    />
+    <Route
+      path="/dashboards_organization_manager/*"
+      element={<OrganizationManagerDashboardRoute />}
+    />
+    <Route
+      path="/dashboards_middle_managers/*"
+      element={<MiddleManagersDashboardRoute />}
+    />
+    <Route
+      path="/dashboards_operational_managers/*"
+      element={<OperationalManagersDashboardRoute />}
     />
     <Route
       path="/investigations/*"

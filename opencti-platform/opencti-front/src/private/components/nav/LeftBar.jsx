@@ -503,6 +503,27 @@ const LeftBarComponent = ({ queryRef }) => {
                     label: 'Ressa DWM',
                     exact: true,
                   },
+                  {
+                    granted: isGrantedToExplore,
+                    type: 'Dashboard',
+                    link: '/dashboard/workspaces/dashboards_organization_manager',
+                    label: 'Organization Manager Dashboard',
+                    exact: true,
+                  },
+                  {
+                    granted: isGrantedToExplore,
+                    type: 'Dashboard',
+                    link: '/dashboard/workspaces/dashboards_middle_managers',
+                    label: 'Middle Managers Dashboard',
+                    exact: true,
+                  },
+                  {
+                    granted: isGrantedToExplore,
+                    type: 'Dashboard',
+                    link: '/dashboard/workspaces/dashboards_operational_managers',
+                    label: 'Operational Managers Dashboard',
+                    exact: true,
+                  },
                 ]}
               />
             )}
