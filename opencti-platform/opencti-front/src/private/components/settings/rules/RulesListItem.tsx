@@ -11,7 +11,7 @@ import { Rule, Task } from './RulesList';
 import useAuth from '../../../../utils/hooks/useAuth';
 import RuleListItemProgressBar from './RulesListItemProgressBar';
 import type { Theme } from '../../../../components/Theme';
-import Tag from './RulesListItemTag';
+import { RuleTag } from './RulesListItemTag';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
 
@@ -108,26 +108,26 @@ const RulesListItem = ({ rule, task, toggle }: RulesListItemProps) => {
             <div style={{ flex: '1' }}>
               {(rule.display?.if ?? []).map((step, index) => (
                 <div key={index} style={styleStep}>
-                  <Tag variant="if">{t_i18n('IF')}</Tag>
-                  <Tag color={step?.source_color}>{step?.source}</Tag>
-                  <Tag color={step?.identifier_color}>{t_i18n(step?.relation)}</Tag>
-                  <Tag color={step?.target_color}>{step?.target}</Tag>
+                  <span>{t_i18n('IF')}</span>
+                  <RuleTag color={step?.source_color} label={step?.source} />
+                  <span>{t_i18n(step?.relation)}</span>
+                  <RuleTag color={step?.target_color} label={step?.target} />
                 </div>
               ))}
             </div>
             <div style={{ textAlign: 'center' }}>
               <ArrowRightAlt fontSize="large" />
               <br />
-              <Tag variant="then">{t_i18n('THEN')}</Tag>
+              <span>{t_i18n('THEN')}</span>
             </div>
             <div style={{ flex: '1' }}>
               {(rule.display?.then ?? []).map((step, index) => {
                 return (
                   <div key={index} style={styleStep}>
-                    <Tag variant="action">{step?.action}</Tag>
-                    <Tag color={step?.source_color}>{step?.source}</Tag>
-                    {step?.relation && <Tag color={step?.identifier_color}>{t_i18n(step?.relation)}</Tag>}
-                    {step?.target && <Tag color={step?.target_color}>{step?.target}</Tag>}
+                    <RuleTag action label={step?.action} />
+                    <RuleTag color={step?.source_color} label={step?.source} />
+                    {step?.relation && <span>{t_i18n(step?.relation)}</span>}
+                    {step?.target && <RuleTag color={step?.target_color} label={step?.target} />}
                   </div>
                 );
               })}
