@@ -19,6 +19,7 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
     x_opencti_inferences: [Inference]
     # StixCoreObject
     createdBy: Identity
+    currentUserAccessRight: String
     numberOfConnectedElement: Int!
     objectMarking: [MarkingDefinition!]
     objectOrganization: [Organization!]

@@ -14,14 +14,9 @@ const CARD_HEIGHT = 300;
 const ImportFilesToggleMode = () => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const { setActiveStep, importMode, setImportMode, entityId } = useImportFilesContext();
+  const { setActiveStep, importMode, setImportMode, entityId, isForcedImportToDraft } = useImportFilesContext();
+
   const modes: { mode: ImportMode; title: string; description: string; icon: React.ReactElement }[] = [
-    {
-      mode: 'auto',
-      title: t_i18n('Direct/Automatic Import'),
-      description: t_i18n('Quick import with no configuration needed. Just upload your files and the platform takes care of the rest. Perfect if your file follows a standard format (STIX2.1, MISP).'),
-      icon: <UploadFileOutlined sx={{ fontSize: 40 }} color="primary" />,
-    },
     {
       mode: 'manual',
       title: t_i18n('Step-by-Step Import'),
@@ -29,6 +24,15 @@ const ImportFilesToggleMode = () => {
       icon: <RouteOutlined sx={{ fontSize: 40, transform: 'rotate(90deg)' }} color="primary" />,
     },
   ];
+
+  if (!isForcedImportToDraft) {
+    modes.unshift({
+      mode: 'auto',
+      title: t_i18n('Direct/Automatic Import'),
+      description: t_i18n('Quick import with no configuration needed. Just upload your files and the platform takes care of the rest. Perfect if your file follows a standard format (STIX2.1, MISP).'),
+      icon: <UploadFileOutlined sx={{ fontSize: 40 }} color="primary" />,
+    });
+  }
 
   // Add form mode only when entityId is not defined (global usage)
   if (!entityId) {

@@ -15,7 +15,7 @@ import { extractContentFrom } from '../utils/fileToContent';
 import { stixLoadById } from '../database/middleware';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { FilterMode, OrderingMode } from '../generated/graphql';
+import { FilterMode, OrderingMode, ValidationMode } from '../generated/graphql';
 import { telemetry } from '../config/tracing';
 import { ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { getDraftContext } from '../utils/draftContext';
@@ -151,8 +151,10 @@ export const uploadAndAskJobImport = async (context, user, args = {}) => {
   } = args;
   const contextInDraft = { ...context, draft_context: draftId };
   const uploadedFile = await uploadImport(contextInDraft, user, { file, fileMarkings, noTriggerImport });
+  const canAskImport = isUserHasCapabilities(user, ['KNOWLEDGE_KNASKIMPORT']);
+  const canAskImportInDraft = isUserHasCapabilities(user, ['KNOWLEDGE_KNASKIMPORT'], { forceCapabilityInDraft: true });
 
-  if (connectors && isUserHasCapabilities(user, ['KNOWLEDGE_KNASKIMPORT'])) {
+  if (connectors && (canAskImport || (canAskImportInDraft && validationMode === ValidationMode.Draft))) {
     await Promise.all(connectors.map(async ({ connectorId, configuration }) => (
       askJobImport(contextInDraft, user, {
         fileName: uploadedFile.id,

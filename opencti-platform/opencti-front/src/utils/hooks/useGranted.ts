@@ -77,38 +77,53 @@ export const isBypassUser = (me: { id: string; capabilities: readonly { name: st
   return userCapabilities.includes(BYPASS);
 };
 
-const useGranted = (capabilities: string[], matchAll = false): boolean => {
+const checkCapabilities = (capabilities: string[], userCapabilities: string[], matchAll: boolean): boolean => {
+  if (capabilities.length === 0) return false;
+  const capabilityMatches = (requestedCapability: string) =>
+    userCapabilities.some((u) => requestedCapability !== BYPASS && u.includes(requestedCapability));
+
+  return matchAll ? capabilities.every(capabilityMatches) : capabilities.some(capabilityMatches);
+};
+
+const useGranted = (
+  capabilities: string[],
+  matchAll = false,
+  options: {
+    capabilitiesInDraft?: string[];
+  } = {},
+): boolean => {
   const { me } = useAuth();
   const { isFeatureEnable } = useHelper();
   const isCapabilitiesInDraftEnabled = isFeatureEnable('CAPABILITIES_IN_DRAFT');
+  const { capabilitiesInDraft } = options;
 
   // Prevent use of the old SETTINGS capability for future uses
   if (capabilities.includes(SETTINGS)) {
     throw new Error('The SETTINGS capability should not be used');
   }
 
-  let userCapabilities: string[] = [];
   const userBaseCapabilities = getCapabilitiesName(me.capabilities);
+  const userCapabilitiesInDraft = getCapabilitiesName(me.capabilitiesInDraft);
 
   if (isBypassUser(me)) {
     return true;
   }
 
-  // If the user is in draft mode, add capabilities in draft to the base capabilities
-  if (isCapabilitiesInDraftEnabled && me.draftContext) {
-    const userCapabilitiesInDraft = getCapabilitiesName(me.capabilitiesInDraft);
-    userCapabilities = Array.from(new Set([...userBaseCapabilities, ...userCapabilitiesInDraft]));
-  } else {
-    userCapabilities = userBaseCapabilities;
-  }
+  // Check base capabilities
+  const baseGranted = checkCapabilities(capabilities, userBaseCapabilities, matchAll);
 
-  // Check if any of the user capabilities includes the requested capability as a substring
-  const capabilityMatches = (requestedCapability: string) =>
-    userCapabilities.some((u) => requestedCapability !== BYPASS && u.includes(requestedCapability));
+  // Check capabilities in Draft if provided
+  const draftGranted = isCapabilitiesInDraftEnabled && capabilitiesInDraft?.length
+    ? checkCapabilities(capabilitiesInDraft, userCapabilitiesInDraft, matchAll)
+    : false;
 
-  return matchAll
-    ? capabilities.every(capabilityMatches)
-    : capabilities.some(capabilityMatches);
+  // Check base and draft capabilities in draft context
+  const draftGrantedInDraftContext = isCapabilitiesInDraftEnabled && me.draftContext
+    ? checkCapabilities(capabilities, [...userBaseCapabilities, ...userCapabilitiesInDraft], matchAll)
+    : false;
+
+  // Access is granted if EITHER check passes
+  return baseGranted || draftGranted || draftGrantedInDraftContext;
 };
 
 export default useGranted;

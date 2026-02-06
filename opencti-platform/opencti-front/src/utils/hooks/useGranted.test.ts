@@ -1,20 +1,18 @@
 import { DraftContext } from './useDraftContext';
 import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
-import useGranted, { SETTINGS, BYPASS } from './useGranted';
-
-vi.mock('./useAuth', () => ({ default: vi.fn() }));
-
 import useAuth from './useAuth';
-// TODO remove when FF is deleted (CAPABILITIES_IN_DRAFT)
-vi.mock('./useHelper', () => ({ default: vi.fn() }));
 import useHelper from './useHelper';
-
+import useGranted, { SETTINGS, BYPASS, KNOWLEDGE, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNASKIMPORT } from './useGranted';
 import { RootMe_data$data } from '../../private/__generated__/RootMe_data.graphql';
 
+vi.mock('./useAuth', () => ({ default: vi.fn() }));
+vi.mock('./useHelper', () => ({ default: vi.fn() }));
+
 type MeUser = {
+  id?: string;
   capabilities: RootMe_data$data['capabilities'];
   capabilitiesInDraft?: RootMe_data$data['capabilitiesInDraft'];
-  draftContext?: Partial<DraftContext>;
+  draftContext?: Partial<DraftContext> | null;
 };
 
 describe('useGranted', () => {
@@ -28,26 +26,27 @@ describe('useGranted', () => {
     vi.resetAllMocks();
   });
 
-  const mockAuthMe = (me: MeUser) => {
-    (useAuth as Mock).mockReturnValue({ me });
+  const mockAuthMe = (me: MeUser, isDraftFeatureEnabled = true) => {
+    (useAuth as Mock).mockReturnValue({ me: { id: 'user-id', ...me } });
     // TODO remove when FF is deleted (CAPABILITIES_IN_DRAFT)
-    (useHelper as Mock).mockReturnValue({ isFeatureEnable: (feature: string) => feature === 'CAPABILITIES_IN_DRAFT' });
+    (useHelper as Mock).mockReturnValue({
+      isFeatureEnable: (feature: string) => feature === 'CAPABILITIES_IN_DRAFT' && isDraftFeatureEnabled,
+    });
   };
 
-  it('should throws if SETTINGS capability is used', () => {
+  // --- Core Security & Bypass ---
+
+  it('should throw if SETTINGS capability is used', () => {
     mockAuthMe({ capabilities: [] });
     expect(() => useGranted([SETTINGS])).toThrow();
   });
 
-  it('should returns true if user has BYPASS', () => {
-    mockAuthMe({
-      capabilities: [{ name: BYPASS }],
-    });
-
+  it('should return true if user has BYPASS', () => {
+    mockAuthMe({ capabilities: [{ name: BYPASS }] });
     expect(useGranted(['ANYTHING'])).toBe(true);
   });
 
-  it('should returns false if user has capa with BYPASS in substring', () => {
+  it('should return false if user has a capability that only contains BYPASS as a substring', () => {
     mockAuthMe({
       capabilities: [
         { name: 'KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE' },
@@ -58,56 +57,96 @@ describe('useGranted', () => {
     expect(useGranted([BYPASS])).toBe(false);
   });
 
-  it('should returns true if any capability matches parent capability (OR mode)', () => {
-    mockAuthMe({
-      capabilities: [{ name: 'KNOWLEDGE_KNUPDATE' }],
-    });
+  // --- Base Capability Logic (OR / AND) ---
 
-    expect(useGranted(['KNOWLEDGE'])).toBe(true);
+  it('should return true if any capability matches (OR mode / default)', () => {
+    mockAuthMe({ capabilities: [{ name: KNOWLEDGE_KNUPDATE }] });
+    expect(useGranted([KNOWLEDGE])).toBe(true); // Parent matches because child includes parent string
   });
 
-  it('returns false if no capability matches (OR mode)', () => {
-    mockAuthMe({
-      capabilities: [{ name: 'KNOWLEDGE' }],
-    });
-
-    expect(useGranted(['KNOWLEDGE_KNUPDATE'])).toBe(false);
+  it('should return false if no capability matches', () => {
+    mockAuthMe({ capabilities: [{ name: KNOWLEDGE }] });
+    expect(useGranted([KNOWLEDGE_KNUPDATE])).toBe(false); // Child req doesn't match parent user
   });
 
-  it('returns true only if all capabilities match when matchAll = true', () => {
+  it('should handle matchAll (AND mode) correctly', () => {
     mockAuthMe({
-      capabilities: [{ name: 'KNOWLEDGE' }, { name: 'KNOWLEDGE_KNUPDATE' }],
+      capabilities: [{ name: KNOWLEDGE }, { name: KNOWLEDGE_KNASKIMPORT }],
     });
 
-    expect(useGranted(['KNOWLEDGE', 'KNOWLEDGE_KNUPDATE'], true)).toBe(true);
-    expect(useGranted(['KNOWLEDGE', 'KNOWLEDGE_KNUPDATE_KNDELETE'], true)).toBe(false);
+    expect(useGranted([KNOWLEDGE, KNOWLEDGE_KNASKIMPORT], true)).toBe(true);
+    expect(useGranted([KNOWLEDGE, 'UNKNOWN'], true)).toBe(false);
   });
 
-  it('uses draft capabilities when user is in draft mode', () => {
+  // --- Draft Context Logic ---
+
+  it('should use draft capabilities when user is in draft context', () => {
     mockAuthMe({
-      draftContext: draftContext,
-      capabilities: [{ name: 'KNOWLEDGE' }],
-      capabilitiesInDraft: [{ name: 'KNOWLEDGE_KNUPDATE' }],
+      draftContext,
+      capabilities: [{ name: KNOWLEDGE }],
+      capabilitiesInDraft: [{ name: KNOWLEDGE_KNASKIMPORT }],
     });
 
-    expect(useGranted(['KNOWLEDGE_KNUPDATE'])).toBe(true);
+    // Should be true because KNOWLEDGE_KNASKIMPORT is in the draft pool and context is active
+    expect(useGranted([KNOWLEDGE_KNASKIMPORT])).toBe(true);
   });
 
-  it('merges capabilities uniquely without duplicates', () => {
+  it('should satisfy matchAll by merging base and draft pools in draft context', () => {
     mockAuthMe({
-      draftContext: draftContext,
-      capabilities: [{ name: 'KNOWLEDGE' }],
-      capabilitiesInDraft: [{ name: 'KNOWLEDGE' }, { name: 'KNOWLEDGE_KNUPDATE' }],
+      draftContext,
+      capabilities: [{ name: KNOWLEDGE }],
+      capabilitiesInDraft: [{ name: KNOWLEDGE_KNASKIMPORT }],
     });
 
-    expect(useGranted(['KNOWLEDGE_KNUPDATE'])).toBe(true);
+    // User has KNOWLEDGE (base) AND KNOWLEDGE_KNASKIMPORT (draft)
+    expect(useGranted([KNOWLEDGE, KNOWLEDGE_KNASKIMPORT], true)).toBe(true);
   });
 
-  it('returns false if capability list is empty', () => {
+  it('should not use draft capabilities if user is NOT in draft context', () => {
     mockAuthMe({
-      capabilities: [{ name: 'KNOWLEDGE' }],
+      draftContext: null,
+      capabilities: [{ name: KNOWLEDGE }],
+      capabilitiesInDraft: [{ name: KNOWLEDGE_KNASKIMPORT }],
     });
 
+    expect(useGranted([KNOWLEDGE_KNASKIMPORT])).toBe(false);
+  });
+
+  // --- Explicit Options Logic ---
+
+  it('should check options.capabilitiesInDraft against userCapabilitiesInDraft regardless of context', () => {
+    mockAuthMe({
+      draftContext: null, // No context
+      capabilities: [{ name: KNOWLEDGE }],
+      capabilitiesInDraft: [{ name: KNOWLEDGE_KNASKIMPORT }],
+    });
+
+    // Explicitly asking to check the draft pool for KNOWLEDGE_KNASKIMPORT
+    expect(useGranted([], false, { capabilitiesInDraft: [KNOWLEDGE_KNASKIMPORT] })).toBe(true);
+  });
+
+  // --- Feature Flag (FF) Protection ---
+
+  it('should ignore all draft logic if CAPABILITIES_IN_DRAFT feature flag is disabled', () => {
+    mockAuthMe({
+      draftContext,
+      capabilities: [{ name: KNOWLEDGE }],
+      capabilitiesInDraft: [{ name: KNOWLEDGE_KNASKIMPORT }],
+    }, false); // FF is OFF
+    expect(useGranted([KNOWLEDGE_KNASKIMPORT])).toBe(false);
+    expect(useGranted([], false, { capabilitiesInDraft: [KNOWLEDGE_KNASKIMPORT] })).toBe(false);
+  });
+
+  // --- Edge Cases ---
+
+  it('should return false if the requested capability list is empty', () => {
+    mockAuthMe({ capabilities: [{ name: KNOWLEDGE }] });
     expect(useGranted([])).toBe(false);
+  });
+
+  it('should handle undefined or null capabilities gracefully', () => {
+    // @ts-expect-error Testing invalid input
+    mockAuthMe({ capabilities: null, capabilitiesInDraft: undefined });
+    expect(useGranted([KNOWLEDGE])).toBe(false);
   });
 });

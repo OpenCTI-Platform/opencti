@@ -6,6 +6,7 @@ import { ImportFilesContextGuessMimeTypeQuery$data } from '@components/common/fi
 import useGranted from '../../../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import useDraftContext from '../../../../../utils/hooks/useDraftContext';
+import useImportAccess from '../../../../../utils/hooks/useImportAccess';
 import { fetchQuery } from '../../../../../relay/environment';
 
 export const importFilesQuery = graphql`
@@ -179,6 +180,7 @@ type ImportFilesContextProps = InitialValues & {
   inDraftContext: boolean;
   guessMimeType: (fileId: string) => Promise<string | null>;
   queryRef: PreloadedQuery<ImportFilesContextQuery>;
+  isForcedImportToDraft: boolean;
 };
 
 const ImportFilesContext = createContext<ImportFilesContextProps | undefined>(undefined);
@@ -187,8 +189,9 @@ export const ImportFilesProvider = ({ children, initialValue }: {
   children: ReactNode;
   initialValue: InitialValues;
 }) => {
-  const canSelectImportMode = useGranted(['KNOWLEDGE_KNASKIMPORT']); // Check capability to set connectors and validation mode
+  const canSelectImportMode = useGranted(['KNOWLEDGE_KNASKIMPORT'], false, { capabilitiesInDraft: ['KNOWLEDGE_KNASKIMPORT'] });
   const draftContext = useDraftContext();
+  const { isForcedImportToDraft } = useImportAccess();
 
   const initalActiveStep = initialValue.activeStep ?? (canSelectImportMode ? 0 : 1);
   const initialImportMode = canSelectImportMode ? initialValue.importMode : 'auto';
@@ -235,6 +238,7 @@ export const ImportFilesProvider = ({ children, initialValue }: {
           selectedFormId,
           setSelectedFormId,
           inDraftContext: !!draftContext?.id,
+          isForcedImportToDraft,
           guessMimeType,
           queryRef,
         }}

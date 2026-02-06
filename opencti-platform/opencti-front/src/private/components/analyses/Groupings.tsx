@@ -14,7 +14,7 @@ import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocum
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
-import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
 
 const LOCAL_STORAGE_KEY = 'groupings';
@@ -214,7 +214,7 @@ const Groupings: FunctionComponent<GroupingsProps> = () => {
           lineFragment={groupingLineFragment}
           exportContext={{ entity_type: 'Grouping' }}
           additionalHeaderButtons={[
-            <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE]}>
+            <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}>
               <StixCoreObjectForms entityType="Grouping" />
             </Security>,
           ]}
