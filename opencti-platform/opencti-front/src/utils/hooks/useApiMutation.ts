@@ -4,17 +4,19 @@ import { ReactNode, useCallback } from 'react';
 import { MESSAGING$, relayErrorHandling } from '../../relay/environment';
 import { RelayError } from '../../relay/relayTypes';
 
+export interface UsiApiMutationOptions {
+  errorMessage?: string | ReactNode;
+  errorMessageMap?: Record<string, string | ReactNode>;
+  successMessage?: string | ReactNode;
+}
+
 /**
  * Hook wrapping Relay useMutation to automatically display an error popup with a message if the mutation fails
  */
 const useApiMutation = <T extends MutationParameters>(
   query: GraphQLTaggedNode,
   fn?: (environment: IEnvironment, config: MutationConfig<T>) => Disposable,
-  options?: {
-    errorMessage?: string | ReactNode;
-    errorMessageMap?: Record<string, string | ReactNode>;
-    successMessage?: string | ReactNode;
-  },
+  options?: UsiApiMutationOptions,
 ): [(args: UseMutationConfig<T>) => void, boolean] => {
   const [commit, inFlight] = useMutation(query, fn);
   const commitWithError = useCallback((args: UseMutationConfig<T>) => {

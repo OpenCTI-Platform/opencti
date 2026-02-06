@@ -12,8 +12,6 @@ import { graphql } from 'react-relay';
 import { PopoverProps } from '@mui/material/Popover';
 import { DraftsLinesPaginationQuery$variables } from '@components/drafts/__generated__/DraftsLinesPaginationQuery.graphql';
 import { DraftPopoverDeleteMutation } from '@components/drafts/__generated__/DraftPopoverDeleteMutation.graphql';
-import { draftContextBannerMutation } from '@components/drafts/DraftContextBanner';
-import { DraftContextBannerMutation, DraftContextBannerMutation$data } from '@components/drafts/__generated__/DraftContextBannerMutation.graphql';
 import DialogTitle from '@mui/material/DialogTitle';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
@@ -28,6 +26,7 @@ import stopEvent from '../../../utils/domEvent';
 import DeleteDialog from '../../../components/DeleteDialog';
 import useDeletion from '../../../utils/hooks/useDeletion';
 import { useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
+import useSwitchDraft from './useSwitchDraft';
 
 const draftPopoverDeleteMutation = graphql`
     mutation DraftPopoverDeleteMutation($id: ID!) {
@@ -40,7 +39,7 @@ interface DraftPopoverProps {
   draftLocked: boolean;
   paginationOptions: DraftsLinesPaginationQuery$variables;
   updater?: (
-    store: RecordSourceSelectorProxy<DraftContextBannerMutation$data>,
+    store: RecordSourceSelectorProxy,
   ) => void;
   currentUserAccessRight?: string;
 }
@@ -56,7 +55,7 @@ const DraftPopover: React.FC<DraftPopoverProps> = ({
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
   const [openSwitch, setOpenSwitch] = useState(false);
   const [switchToDraft, setSwitchToDraft] = useState(false);
-  const [commitSwitchToDraft] = useApiMutation<DraftContextBannerMutation>(draftContextBannerMutation);
+  const { enterDraft } = useSwitchDraft();
   const currentAccessRight = useGetCurrentUserAccessRight(currentUserAccessRight);
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
@@ -116,10 +115,7 @@ const DraftPopover: React.FC<DraftPopoverProps> = ({
   const submitToDraft = (event: UIEvent) => {
     stopEvent(event);
     setSwitchToDraft(true);
-    commitSwitchToDraft({
-      variables: {
-        input: [{ key: 'draft_context', value: [draftId] }],
-      },
+    enterDraft(draftId, {
       onCompleted: () => {
         MESSAGING$.notifySuccess(<span>{t_i18n('You are now in Draft Mode')}</span>);
         setSwitchToDraft(false);

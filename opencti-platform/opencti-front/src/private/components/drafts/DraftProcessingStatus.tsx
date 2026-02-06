@@ -1,22 +1,23 @@
-import React, { FunctionComponent, useState } from 'react';
+import { FunctionComponent, useState } from 'react';
 import Drawer from '@components/common/drawer/Drawer';
 import Alert from '@mui/material/Alert';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import Tooltip from '@mui/material/Tooltip';
-import CircularProgress from '@mui/material/CircularProgress';
 import { Badge } from '@mui/material';
-import { CheckCircleOutlined } from '@mui/icons-material';
-import IconButton from '@common/button/IconButton';
 import { useFormatter } from '../../../components/i18n';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import DraftWorks from './DraftWorks';
 import DraftTasks from './DraftTasks';
+import Tag from '../../../components/common/tag/Tag';
+import { useTheme } from '@mui/styles';
+import { Theme } from '../../../components/Theme';
 
 interface DraftProcessingStatusProps {
   forceRefetch: () => void;
 }
+
 const DraftProcessingStatus: FunctionComponent<DraftProcessingStatusProps> = ({ forceRefetch }) => {
+  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [displayProcesses, setDisplayProcesses] = useState(false);
   const [tabValue, setTabValue] = useState<string>('Works');
@@ -28,34 +29,26 @@ const DraftProcessingStatus: FunctionComponent<DraftProcessingStatusProps> = ({ 
   return (
     <div style={{ display: 'flex', alignItems: 'center' }}>
       {!isCurrentDraftProcessing && (
-        <IconButton
-          color="success"
-          size="default"
+        <Tag
+          color={theme.palette.designSystem.alert.success.primary}
+          label={t_i18n('No processes running')}
           onClick={() => {
             forceRefetch();
             setDisplayProcesses(true);
           }}
-        >
-          <CheckCircleOutlined />
-        </IconButton>
+        />
       )}
       {isCurrentDraftProcessing && (
-        <Tooltip title={t_i18n('Processes currently running')}>
-          <Badge
-            badgeContent={currentDraftProcessingCount}
-            color="warning"
-          >
-            <CircularProgress
-              onClick={() => {
-                forceRefetch();
-                setDisplayProcesses(true);
-              }}
-              variant="indeterminate"
-              size={25}
-              style={{ cursor: 'pointer' }}
-            />
-          </Badge>
-        </Tooltip>
+        <Badge badgeContent={currentDraftProcessingCount}>
+          <Tag
+            color={theme.palette.designSystem.alert.warning.primary}
+            label={t_i18n('Processes currently running')}
+            onClick={() => {
+              forceRefetch();
+              setDisplayProcesses(true);
+            }}
+          />
+        </Badge>
       )}
       <Drawer
         title={t_i18n('Draft processes')}

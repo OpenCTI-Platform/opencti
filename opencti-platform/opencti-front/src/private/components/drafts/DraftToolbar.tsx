@@ -83,7 +83,12 @@ const DraftToolbarWrapper = ({ draftId }: DraftToolbarWrapperProps) => {
   );
 
   useInterval(
-    () => loadQuery({ id: draftId }),
+    () => {
+      loadQuery(
+        { id: draftId },
+        { fetchPolicy: 'store-and-network' },
+      );
+    },
     THIRTY_SECONDS,
   );
 

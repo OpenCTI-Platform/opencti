@@ -13,8 +13,6 @@ import ImportFilesFormSelector from '@components/common/files/import_files/Impor
 import ImportFilesFormView from '@components/common/files/import_files/ImportFilesFormView';
 import { draftCreationMutation } from '@components/drafts/DraftCreation';
 import { DraftCreationMutation, DraftCreationMutation$data } from '@components/drafts/__generated__/DraftCreationMutation.graphql';
-import { draftContextBannerMutation } from '@components/drafts/DraftContextBanner';
-import { DraftContextBannerMutation } from '@components/drafts/__generated__/DraftContextBannerMutation.graphql';
 import { ImportFilesProvider, importFilesQuery, InitialValues, useImportFilesContext } from '@components/common/files/import_files/ImportFilesContext';
 import { ImportFilesContextQuery } from '@components/common/files/import_files/__generated__/ImportFilesContextQuery.graphql';
 import {
@@ -40,6 +38,7 @@ import Security from '../../../../../utils/Security';
 import { FieldOption } from '../../../../../utils/field';
 import IconButton from '../../../../../components/common/button/IconButton';
 import Button from '../../../../../components/common/button/Button';
+import useSwitchDraft from '../../../drafts/useSwitchDraft';
 
 export const CSV_MAPPER_NAME = '[FILE] CSV Mapper import';
 
@@ -160,10 +159,11 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
     successMessage: t_i18n('Draft workspace created successfully.'),
   });
 
-  const [commitContextMutation] = useApiMutation<DraftContextBannerMutation>(draftContextBannerMutation, undefined, {
+  const { enterDraft } = useSwitchDraft({
     errorMessage: t_i18n('Failed to set draft context.'),
     successMessage: t_i18n('Draft context set successfully.'),
   });
+
   const {
     bulkCommit,
     bulkCount,
@@ -219,26 +219,20 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
       MESSAGING$.notifyError(errors.at(0)?.message);
       return undefined;
     }
-  }, [commitCreationMutation, commitContextMutation]);
+  }, [commitCreationMutation, enterDraft]);
 
   const setDraftContext = () => {
-    commitContextMutation({
-      variables: {
-        input: [
-          {
-            key: 'draft_context',
-            value: [draftId],
-          },
-        ],
-      },
-      onCompleted: () => {
-        handleClose();
-      },
-      onError: (error) => {
-        const { errors } = (error as unknown as RelayError).res;
-        MESSAGING$.notifyError(errors.at(0)?.message);
-      },
-    });
+    if (draftId) {
+      enterDraft(draftId, {
+        onCompleted: () => {
+          handleClose();
+        },
+        onError: (error) => {
+          const { errors } = (error as unknown as RelayError).res;
+          MESSAGING$.notifyError(errors.at(0)?.message);
+        },
+      });
+    }
   };
 
   const importFiles = (

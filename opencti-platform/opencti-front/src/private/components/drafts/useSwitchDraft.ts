@@ -1,6 +1,6 @@
 import { UseMutationConfig } from 'react-relay';
 import { graphql, MutationParameters } from 'relay-runtime';
-import useApiMutation from '../../../utils/hooks/useApiMutation';
+import useApiMutation, { UsiApiMutationOptions } from '../../../utils/hooks/useApiMutation';
 
 const mutation = graphql`
   mutation useSwitchDraftMutation($input: [EditInput]!) {
@@ -14,8 +14,8 @@ const mutation = graphql`
 
 type ArgsType = Omit<UseMutationConfig<MutationParameters>, 'variables'>;
 
-const useSwitchDraft = () => {
-  const [commit] = useApiMutation(mutation);
+const useSwitchDraft = (options?: UsiApiMutationOptions) => {
+  const [commit] = useApiMutation(mutation, undefined, options);
 
   const exitDraft = (args: ArgsType = {}) => {
     commit({

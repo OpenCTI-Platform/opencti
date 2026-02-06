@@ -1,6 +1,4 @@
 import IconButton from '@common/button/IconButton';
-import { getDraftModeColor } from '@components/common/draft/DraftChip';
-import DraftContextBanner from '@components/drafts/DraftContextBanner';
 import { TopBarAskAINLQMutation, TopBarAskAINLQMutation$data } from '@components/nav/__generated__/TopBarAskAINLQMutation.graphql';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
 import { AccountCircleOutlined, AlarmOnOutlined, NotificationsOutlined } from '@mui/icons-material';
@@ -196,8 +194,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
 
   // global search keyword
   const keyword = decodeSearchKeyword(location.pathname.match(/(?:\/dashboard\/search\/(?:knowledge|files)\/(.*))/)?.[1] ?? '');
-  // draft
-  const draftModeColor = getDraftModeColor(theme);
 
   const getAppTopBarGradient = (): string => {
     const defaultGradientDark = `${alpha(THEME_DARK_DEFAULT_BACKGROUND, 0.9)} 0%, ${alpha(THEME_DARK_DEFAULT_BODY_END_GRADIENT, 0.9)}`;
@@ -232,7 +228,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
           display: 'flex',
           justifyContent: 'space-between',
           background: `linear-gradient(90deg, ${appBarGradient} 100%)`,
-          borderBottom: draftContext ? `1px solid ${draftModeColor}` : `1px solid ${theme.palette.background.secondary}`,
         }}
       >
         {hasKnowledgeAccess && (
@@ -246,10 +241,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
         )}
         <div>
           <Stack direction="row" gap={1} alignItems="center">
-            {draftContext && (
-              <DraftContextBanner />
-            )}
-
             {!draftContext && (
               <Security needs={[KNOWLEDGE]}>
                 <>
