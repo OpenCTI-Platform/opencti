@@ -118,13 +118,15 @@ describe('oganization-sharing-test', () => {
       expect(organizationSharingQueryResult?.data?.stixCoreObjectEdit.restrictionOrganizationAdd).not.toBeNull();
     });
     it('should Editor user access all objects', async () => {
-      await awaitUntilCondition(async () => {
+      const condition = async () => {
         const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
           query: REPORT_STIX_DOMAIN_ENTITIES,
           variables: { id: reportInternalId },
         });
         return queryResult.data.report !== null && queryResult.data.report.objects.edges.length === 8;
-      }); // wait for task manager & worker to handle organization sharing
+      };
+      // wait for task manager & worker to handle organization sharing
+      await awaitUntilCondition(condition, 1000, 10, true, 'Please check that you have a test worker running');
       const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
         query: REPORT_STIX_DOMAIN_ENTITIES,
         variables: { id: reportInternalId },

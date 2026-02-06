@@ -199,8 +199,14 @@ jobs:
           -e PYTHONUNBUFFERED=1  \
           filigran/platform:${{ github.sha }} \
           sh -c 'set -eux
-            NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-rules-and-others --coverage
-        '
+              APP__ENTERPRISE_EDITION_LICENSE="$(wget -qO- https://filigran.jfrog.io/artifactory/ci-utils/opencti-license/opencti_ee_ci_licence.crt)"
+              export APP__ENTERPRISE_EDITION_LICENSE
+              mkdir -p ../../opencti-connectors/stream/backup-files/src
+              wget -O ../../opencti-connectors/stream/backup-files/src/backup-files.py https://raw.githubusercontent.com/OpenCTI-Platform/connectors/master/stream/backup-files/src/backup-files.py
+              mkdir -p ../../opencti-connectors/external-import/restore-files/src
+              wget -O ../../opencti-connectors/external-import/restore-files/src/restore-files.py https://raw.githubusercontent.com/OpenCTI-Platform/connectors/master/external-import/restore-files/src/restore-files.py
+              NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-rules-and-others --coverage
+          '
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v5

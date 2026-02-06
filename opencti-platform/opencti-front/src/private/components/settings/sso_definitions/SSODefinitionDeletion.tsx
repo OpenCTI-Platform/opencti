@@ -56,7 +56,7 @@ const SSODefinitionDeletion = ({ ssoId, onDeleteComplete, children }: SSODefinit
       <DeleteDialog
         deletion={deletion}
         submitDelete={onDelete}
-        message={t_i18n('Do you want to delete this SSO?')}
+        message={t_i18n('Do you want to delete this Authentication?')}
       />
     </>
   );

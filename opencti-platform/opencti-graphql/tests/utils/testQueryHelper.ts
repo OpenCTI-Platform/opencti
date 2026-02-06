@@ -222,12 +222,14 @@ export const unSetOrganization = async () => {
  * @param sleepTimeBetweenLoop Time to wait between each loop in ms.
  * @param loopCount Max loop to do.
  * @param expectToBeTrue The expecting result of the condition.
+ * @param message Message to display when condition is not met
  */
 export const awaitUntilCondition = async (
   conditionPromise: () => Promise<boolean>,
   sleepTimeBetweenLoop = 1000,
   loopCount = 10,
   expectToBeTrue = true,
+  message: string = '',
 ) => {
   let isConditionOk = await conditionPromise();
   let loopCurrent = 0;
@@ -239,6 +241,6 @@ export const awaitUntilCondition = async (
   }
 
   if (!isConditionOk === expectToBeTrue) {
-    throw new Error(`Condition not met after ${loopCount} attempts`);
+    throw new Error(`Condition not met after ${loopCount} attempts - ${message}`);
   }
 };

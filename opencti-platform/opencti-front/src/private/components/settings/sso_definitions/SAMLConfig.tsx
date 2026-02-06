@@ -30,7 +30,7 @@ const SAMLConfig = ({ updateField }: Props) => {
         component={TextField}
         variant="standard"
         name="callbackUrl"
-        label={t_i18n('SAML SSO URL')}
+        label={t_i18n('SAML Callback URL')}
         onSubmit={updateField}
         fullWidth
         required

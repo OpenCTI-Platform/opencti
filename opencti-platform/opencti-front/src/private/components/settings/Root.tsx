@@ -90,7 +90,7 @@ const Root = () => {
     if (isGrantedToSecurityAccess) return '/dashboard/settings/accesses';
     if (isGrantedToMarkingOnly) return '/dashboard/settings/accesses/marking';
     if (isGrantedToDisseminationListOnly) return '/dashboard/settings/accesses/dissemination_list';
-    if (isGrantedToSsoOnly) return '/dashboard/settings/accesses/single_sign_ons';
+    if (isGrantedToSsoOnly) return '/dashboard/settings/accesses/authentications';
     if (isGrantedToCustomization) return '/dashboard/settings/customization';
     if (isGrantedToTaxonomies) return '/dashboard/settings/vocabularies';
     if (isGrantedToActivity) return '/dashboard/settings/activity';
@@ -288,7 +288,7 @@ const Root = () => {
             )}
           />
           <Route
-            path="/accesses/single_sign_ons"
+            path="/accesses/authentications"
             element={(
               <Security
                 needs={[SETTINGS_SETAUTH]}
@@ -303,7 +303,7 @@ const Root = () => {
             )}
           />
           <Route
-            path="/accesses/single_sign_ons/:singleSignOnId/*"
+            path="/accesses/authentication/:singleSignOnId/*"
             element={(
               <Security
                 needs={[SETTINGS_SETAUTH]}

@@ -150,7 +150,7 @@ export const resolveLink = (type = 'unknown'): string | null => {
     case 'SSH-Key':
       return '/dashboard/observations/observables';
     case 'SingleSignOn':
-      return '/dashboard/settings/accesses/single_sign_ons';
+      return '/dashboard/settings/accesses/authentication';
     default:
       return null;
   }

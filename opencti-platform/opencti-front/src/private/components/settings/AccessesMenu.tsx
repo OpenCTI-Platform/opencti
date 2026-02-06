@@ -77,7 +77,7 @@ const AccessesMenu: FunctionComponent = () => {
   ];
   const singleSignOnEntries: MenuEntry[] = [
     {
-      path: '/dashboard/settings/accesses/single_sign_ons',
+      path: '/dashboard/settings/accesses/authentications',
       label: 'Authentication definitions',
       icon: <KeyOutlined fontSize="medium" />,
       isEE: true,

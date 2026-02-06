@@ -132,38 +132,47 @@ export const unregisterStrategy = async (authenticationStrategy: BasicStoreEntit
 export const registerStrategy = async (authenticationStrategy: BasicStoreEntitySingleSignOn) => {
   try {
     if (authenticationStrategy.strategy && authenticationStrategy.identifier) {
-      switch (authenticationStrategy.strategy) {
-        case StrategyType.LocalStrategy:
-          logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_LOCAL);
-          if (authenticationStrategy.enabled) {
-            await registerLocalStrategy();
-          } else {
-            await registerAdminLocalStrategy();
-          }
-          break;
-        case StrategyType.SamlStrategy:
-          logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_SAML);
-          await registerSAMLStrategy(authenticationStrategy);
-          break;
-        case StrategyType.OpenIdConnectStrategy:
-          logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_OPENID);
-          await registerOpenIdStrategy(authenticationStrategy);
-          break;
-        case StrategyType.LdapStrategy:
-          logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_LDAP);
-          await registerLDAPStrategy(authenticationStrategy);
-          break;
-        case StrategyType.HeaderStrategy:
-        case StrategyType.ClientCertStrategy:
-          logApp.warn(`[SSO] ${authenticationStrategy.strategy} not implemented in UI yet`);
-          break;
+      if (authenticationStrategy.strategy === StrategyType.LocalStrategy) {
+        logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_LOCAL);
+        if (authenticationStrategy.enabled) {
+          await registerLocalStrategy();
+        } else {
+          await registerAdminLocalStrategy();
+        }
+      } else {
+        if (authenticationStrategy.enabled) {
+          switch (authenticationStrategy.strategy) {
+            case StrategyType.SamlStrategy:
+              logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_SAML);
+              if (authenticationStrategy.enabled) {
+                await registerSAMLStrategy(authenticationStrategy);
+              }
+              break;
+            case StrategyType.OpenIdConnectStrategy:
+              logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_OPENID);
+              if (authenticationStrategy.enabled) {
+                await registerOpenIdStrategy(authenticationStrategy);
+              }
+              break;
+            case StrategyType.LdapStrategy:
+              logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_LDAP);
+              if (authenticationStrategy.enabled) {
+                await registerLDAPStrategy(authenticationStrategy);
+              }
+              break;
+            case StrategyType.HeaderStrategy:
+            case StrategyType.ClientCertStrategy:
+              logApp.warn(`[SSO] ${authenticationStrategy.strategy} not implemented in UI yet`);
+              break;
 
-        default:
-          logAuthError('Unknown strategy should not be possible, skipping', undefined, {
-            name: authenticationStrategy?.name,
-            strategy: authenticationStrategy.strategy,
-          });
-          break;
+            default:
+              logAuthError('Unknown strategy should not be possible, skipping', undefined, {
+                name: authenticationStrategy?.name,
+                strategy: authenticationStrategy.strategy,
+              });
+              break;
+          }
+        }
       }
     } else {
       logAuthError('[SSO INIT] configuration without strategy or identifier should not be possible, skipping', undefined, { id: authenticationStrategy?.id, strategy: authenticationStrategy.strategy, identifier: authenticationStrategy.identifier });
@@ -171,7 +180,7 @@ export const registerStrategy = async (authenticationStrategy: BasicStoreEntityS
   } catch (e) {
     if (e instanceof GraphQLError) {
       logAuthError(
-        `Error when initializing an authentication provider (id: ${authenticationStrategy?.id ?? 'no id'}, identifier: ${authenticationStrategy?.identifier ?? 'no identifier'}), cause: ${e.message}`,
+        `Error when initializing an authentication provider (id: ${authenticationStrategy?.id ?? 'no id'}, identifier: ${authenticationStrategy?.identifier ?? 'no identifier'}), cause: ${e.message}.`,
         undefined,
         { message: e.message, data: e.extensions.data },
       );

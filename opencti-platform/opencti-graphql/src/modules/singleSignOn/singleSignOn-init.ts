@@ -1,10 +1,11 @@
 import { EnvStrategyType, isAuthenticationForcedFromEnv, isStrategyActivated } from './providers-configuration';
-import { findAllSingleSignOn, logAuthInfo, logAuthWarn } from './singleSignOn-domain';
+import { findAllSingleSignOn, internalAddSingleSignOn, logAuthInfo, logAuthWarn } from './singleSignOn-domain';
 import { registerAdminLocalStrategy, registerLocalStrategy, registerStrategy } from './singleSignOn-providers';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import { initializeEnvAuthenticationProviders } from './providers-initialization';
 import { SYSTEM_USER } from '../../utils/access';
+import { type SingleSignOnAddInput, StrategyType } from '../../generated/graphql';
 
 /**
  * Called during platform initialization.
@@ -18,8 +19,14 @@ export const initEnterpriseAuthenticationProviders = async (context: AuthContext
 
     if (providersFromDatabase.length === 0) {
       // No configuration in database, fallback to default local strategy
-      logAuthInfo('configuring default local strategy', EnvStrategyType.STRATEGY_LOCAL);
-      await registerLocalStrategy();
+      logAuthInfo('Configuring new local strategy', EnvStrategyType.STRATEGY_LOCAL);
+      const defaultLocal: SingleSignOnAddInput = {
+        strategy: StrategyType.LocalStrategy,
+        name: 'Local',
+        identifier: 'local',
+        enabled: true,
+      };
+      await internalAddSingleSignOn(context, user, defaultLocal, false);
     } else {
       for (let i = 0; i < providersFromDatabase.length; i++) {
         await registerStrategy(providersFromDatabase[i]);
