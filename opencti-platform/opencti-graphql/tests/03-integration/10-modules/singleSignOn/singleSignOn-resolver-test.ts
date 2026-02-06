@@ -15,6 +15,7 @@ import { queryAsAdminWithSuccess, queryAsUserIsExpectedError, queryAsUserIsExpec
 import { ADMIN_USER, testContext, USER_PARTICIPATE, USER_SECURITY } from '../../../utils/testQuery';
 import { deleteElementById } from '../../../../src/database/middleware';
 import { ENTITY_TYPE_SINGLE_SIGN_ON } from '../../../../src/modules/singleSignOn/singleSignOn-types';
+import { ENCRYPTED_TYPE } from '../../../../src/modules/singleSignOn/singleSignOn-domain';
 
 export const SINGLE_SIGN_ON_LIST_QUERY = gql`
     query singleSignOns($first: Int $filters: FilterGroup) {
@@ -155,6 +156,7 @@ describe('Single Sign On CRUD coverage', () => {
         { key: 'cert', value: '21341234', type: 'string' },
         { key: 'issuer', value: 'issuer', type: 'string' },
         { key: 'privateKey', value: 'myPK', type: 'string' },
+        { key: 'mySecret', value: 'Ilove;Mint', type: 'secret' },
       ],
     };
     it('should not create single sign on entity without SETAUTH capa', async () => {
@@ -181,8 +183,16 @@ describe('Single Sign On CRUD coverage', () => {
       expect(callbackUrlData.value).toBe('http://myopencti/auth/samlTestDomain/callback');
       const issuerData = configurationData.find((config) => config.key === 'issuer') as ConfigurationTypeInput;
       expect(issuerData.value).toBe('issuer');
+
+      // should be encrypted because in AUTH_SECRET_LIST list
       const privateKeyData = configurationData.find((config) => config.key === 'privateKey') as ConfigurationTypeInput;
-      expect(privateKeyData.value).not.toBe('myPK'); // should be encrypted
+      expect(privateKeyData.value).not.toBe('myPK');
+      expect(privateKeyData.type).toBe(ENCRYPTED_TYPE);
+
+      // this one is encrypted because enter as 'secret' by user
+      const customSecretData = configurationData.find((config) => config.key === 'mySecret') as ConfigurationTypeInput;
+      expect(customSecretData.value).not.toBe('Ilove;Mint');
+      expect(customSecretData.type).toBe(ENCRYPTED_TYPE);
     });
 
     it('should create another single sign on entity', async () => {

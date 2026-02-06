@@ -1,7 +1,14 @@
 import { afterAll, describe, expect, it, vi } from 'vitest';
 
 import { logApp } from '../../../../src/config/conf';
-import { addSingleSignOn, deleteSingleSignOn, fieldPatchSingleSignOn, findAllSingleSignOn, findSingleSignOnById } from '../../../../src/modules/singleSignOn/singleSignOn-domain';
+import {
+  addSingleSignOn,
+  deleteSingleSignOn,
+  ENCRYPTED_TYPE,
+  fieldPatchSingleSignOn,
+  findAllSingleSignOn,
+  findSingleSignOnById,
+} from '../../../../src/modules/singleSignOn/singleSignOn-domain';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { StrategyType, type SingleSignOnAddInput, type EditInput } from '../../../../src/generated/graphql';
 import { PROVIDERS } from '../../../../src/modules/singleSignOn/providers-configuration';
@@ -36,6 +43,7 @@ describe('Single sign on Domain coverage tests', () => {
           { key: 'idpCert', value: '21341234', type: 'string' },
           { key: 'issuer', value: 'issuer', type: 'string' },
           { key: 'privateKey', value: 'myPrivateKey', type: 'string' },
+          { key: 'custom_value_that_is_secret', value: 'theCustomValue', type: 'secret' },
         ],
       };
       const samlEntity = await addSingleSignOn(testContext, ADMIN_USER, input);
@@ -46,8 +54,16 @@ describe('Single sign on Domain coverage tests', () => {
 
       const callbackUrl = samlEntity.configuration?.find((config) => config.key === 'callbackUrl') as ConfigurationType;
       expect(callbackUrl.value).toBe('http://myopencti/auth/samlTestDomain/callback');
-      const bindCredentials = samlEntity.configuration?.find((config) => config.key === 'privateKey') as ConfigurationType;
-      expect(bindCredentials.value).not.toBe('myPrivateKey');
+
+      // this one is encrypted because on the list of sensistive, see AUTH_SECRET_LIST
+      const privateKey = samlEntity.configuration?.find((config) => config.key === 'privateKey') as ConfigurationType;
+      expect(privateKey.value).not.toBe('myPrivateKey');
+      expect(privateKey.type).toBe(ENCRYPTED_TYPE);
+
+      // this one is encrypted because enter as 'secret' by user
+      const customSecret = samlEntity.configuration?.find((config) => config.key === 'custom_value_that_is_secret') as ConfigurationType;
+      expect(customSecret.value).not.toBe('custom_value_that_is_secret');
+      expect(customSecret.type).toBe(ENCRYPTED_TYPE);
 
       // Here there is a pub/sub on redis, let's just call the same method than listener
       await onAuthenticationMessageAdd({ instance: samlEntity });

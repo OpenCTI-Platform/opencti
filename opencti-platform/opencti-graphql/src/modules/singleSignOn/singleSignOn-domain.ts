@@ -38,26 +38,27 @@ export const AUTH_SECRET_LIST = [
   'privateKey', // SAML
   'decryptionPvk', // SAML
 ];
-
+export const ENCRYPTED_TYPE = 'encrypted';
 const AUTH_DERIVATION_PATH = ['authentication', 'elastic'];
 let authenticationKeyPairPromise: any;
-export const encryptAuthValue = async (value: string) => {
+
+const getKeyPair = async () => {
   const factory = await getPlatformCrypto();
   if (!authenticationKeyPairPromise) {
     authenticationKeyPairPromise = factory.deriveAesKey(AUTH_DERIVATION_PATH, 1);
   }
-  const keyPair = await authenticationKeyPairPromise;
+  return await authenticationKeyPairPromise;
+};
+
+export const encryptAuthValue = async (value: string) => {
+  const keyPair = await getKeyPair();
   const clearDataBuffer = Buffer.from(value);
   const encryptedBuffer = await keyPair.encrypt(clearDataBuffer);
   return encryptedBuffer.toString('base64');
 };
 
 export const decryptAuthValue = async (value: string) => {
-  const factory = await getPlatformCrypto();
-  if (!authenticationKeyPairPromise) {
-    authenticationKeyPairPromise = factory.deriveAesKey(AUTH_DERIVATION_PATH, 1);
-  }
-  const keyPair = await authenticationKeyPairPromise;
+  const keyPair = await getKeyPair();
   const decodedBuffer = Buffer.from(value, 'base64');
   return await keyPair.decrypt(decodedBuffer);
 };
@@ -67,9 +68,9 @@ const encryptConfigurationSecrets = async (configurationWithClear: Configuration
   if (configurationWithClear) {
     for (let i = 0; i < configurationWithClear?.length; i++) {
       const currentConfig = configurationWithClear[i] as ConfigurationTypeInput;
-      if (AUTH_SECRET_LIST.some((key) => key === currentConfig.key)) {
+      if (AUTH_SECRET_LIST.some((key) => key === currentConfig.key) || currentConfig.type === 'secret') {
         const encryptedValue = await encryptAuthValue(currentConfig.value);
-        configurationWithSecrets.push({ key: currentConfig.key, value: encryptedValue, type: 'secret' });
+        configurationWithSecrets.push({ key: currentConfig.key, value: encryptedValue, type: ENCRYPTED_TYPE });
       } else {
         configurationWithSecrets.push(currentConfig);
       }

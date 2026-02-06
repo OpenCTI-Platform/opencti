@@ -3,7 +3,7 @@ import { logApp } from '../../config/conf';
 import LocalStrategy from 'passport-local';
 import { login } from '../../domain/user';
 import { addUserLoginCount } from '../../manager/telemetryManager';
-import { decryptAuthValue, logAuthError, logAuthInfo } from './singleSignOn-domain';
+import { decryptAuthValue, ENCRYPTED_TYPE, logAuthError, logAuthInfo } from './singleSignOn-domain';
 import {
   AuthType,
   EnvStrategyType,
@@ -32,7 +32,7 @@ export const parseValueAsType = async (config: ConfigurationType) => {
       return JSON.parse(config.value);
     } else if (config.type.toLowerCase() === 'string') {
       return config.value;
-    } else if (config.type.toLowerCase() === 'secret') {
+    } else if (config.type.toLowerCase() === ENCRYPTED_TYPE) {
       const decryptedBuffer = await decryptAuthValue(config.value);
       return decryptedBuffer.toString();
     } else {

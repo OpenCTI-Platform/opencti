@@ -41,7 +41,7 @@ export const buildSAMLOptions = async (ssoEntity: BasicStoreEntitySingleSignOn) 
       try {
         ssoOtherOptions[currentConfig.key] = await parseValueAsType(currentConfig);
       } catch (e) {
-        logAuthError(`Configuration ${currentConfig.key} cannot be read, is ignored. Please verify your configuration.`, EnvStrategyType.STRATEGY_SAML, { currentConfig, cause: e });
+        logAuthError(`Configuration ${currentConfig?.key} cannot be read, is ignored. Please verify your configuration.`, EnvStrategyType.STRATEGY_SAML, { cause: e });
       }
     }
     return { ...ssoOptions, ...ssoOtherOptions } as PassportSamlConfig;
