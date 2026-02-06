@@ -273,7 +273,6 @@ const SSODefinitionForm = ({
   const groupSearchBase = data?.configuration?.find((e) => e.key === 'groupSearchBase');
   const groupSearchFilter = data?.configuration?.find((e) => e.key === 'groupSearchFilter');
   const allow_self_signed = data?.configuration?.find((e) => e.key === 'allow_self_signed');
-  const description = data?.description;
 
   if (data) {
     initialValues.name = data.name;
