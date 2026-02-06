@@ -12,6 +12,8 @@ import { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hoo
 import Security from '../../../../utils/Security';
 import UploadImport from '../../../../components/UploadImport';
 import Card from '../../../../components/common/card/Card';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
+import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -37,6 +39,7 @@ const FileImportViewerComponent: FunctionComponent<
   directDownload,
 }) => {
   const { t_i18n } = useFormatter();
+  const draftContext = useDraftContext();
 
   const { id, importFiles } = entity;
   useEffect(() => {
@@ -48,12 +51,16 @@ const FileImportViewerComponent: FunctionComponent<
       subscription.unsubscribe();
     };
   }, []);
+
+  const currentAccessRight = useGetCurrentUserAccessRight(entity.currentUserAccessRight);
+  const canDisplayUploadFileButton = !draftContext || currentAccessRight.canEdit;
+
   return (
     <Grid item xs={6}>
       <Card
         padding="horizontal"
         title={t_i18n('Uploaded files')}
-        action={(
+        action={canDisplayUploadFileButton && (
           <Security needs={[KNOWLEDGE_KNUPLOAD]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}>
             <UploadImport
               entityId={id}
@@ -119,6 +126,7 @@ const FileImportViewer = createRefetchContainer(
       fragment FileImportViewer_entity on StixCoreObject {
         id
         entity_type
+        currentUserAccessRight
         importFiles(first: 500) @connection(key: "Pagination_importFiles") {
           edges {
             node {

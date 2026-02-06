@@ -18,6 +18,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
     x_opencti_inferences: [Inference]
     # StixCoreObject
     createdBy: Identity
+    currentUserAccessRight: String
     numberOfConnectedElement: Int!
     objectMarking: [MarkingDefinition!]
     objectOrganization: [Organization!]

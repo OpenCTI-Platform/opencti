@@ -60,6 +60,7 @@ import { numberOfContainersForObject } from '../domain/container';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { getSpecVersionOrDefault } from '../domain/stixRelationship';
 import { loadThroughDenormalized } from './stix';
+import { getUserAccessRight } from '../utils/access';
 
 const stixCoreObjectResolvers = {
   Query: {
@@ -110,6 +111,7 @@ const stixCoreObjectResolvers = {
     editContext: (stixCoreObject) => fetchEditContext(stixCoreObject.id),
     // region batch loaded through rel de-normalization. Cant be ordered of filtered
     createdBy: (stixCoreObject, _, context) => loadThroughDenormalized(context, context.user, stixCoreObject, INPUT_CREATED_BY),
+    currentUserAccessRight: (stixCoreObject, _, context) => getUserAccessRight(context.user, stixCoreObject),
     objectOrganization: (stixCoreObject, _, context) => loadThroughDenormalized(context, context.user, stixCoreObject, INPUT_GRANTED_REFS, { sortBy: 'name' }),
     objectLabel: (stixCoreObject, _, context) => loadThroughDenormalized(context, context.user, stixCoreObject, INPUT_LABELS, { sortBy: 'value' }),
     objectMarking: (stixCoreObject, _, context) => context.batch.markingsBatchLoader.load(stixCoreObject),
