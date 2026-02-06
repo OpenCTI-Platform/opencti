@@ -173,15 +173,27 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
 
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
-      percentWidth: 50,
+      percentWidth: 28,
       isSortable: true,
     },
     creator: {
-      percentWidth: 15,
+      percentWidth: 10,
       isSortable: true,
     },
     created_at: {
-      percentWidth: 15,
+      percentWidth: 12,
+      isSortable: true,
+    },
+    createdBy: {
+      percentWidth: 10,
+      isSortable: true,
+    },
+    objectParticipant: {
+      percentWidth: 10,
+      isSortable: true,
+    },
+    objectAssignee: {
+      percentWidth: 10,
       isSortable: true,
     },
     draft_status: {
