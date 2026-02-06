@@ -814,7 +814,7 @@ export const stixCoreObjectImportFile = async (context, user, id, file, args = {
     noTriggerImport,
   });
 
-  if (connectors && isUserHasCapabilities(user, ['KNOWLEDGE_KNASKIMPORT'])) {
+  if (connectors && isUserHasCapabilities(user, ['KNOWLEDGE_KNASKIMPORT'], { forceCapabilityInDraft: true })) {
     await Promise.all(connectors.map(async ({ connectorId, configuration }) => (
       askJobImport(contextInDraft, user, {
         fileName: uploadedFile.id,
