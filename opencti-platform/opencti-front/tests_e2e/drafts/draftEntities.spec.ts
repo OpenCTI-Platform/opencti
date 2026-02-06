@@ -1,14 +1,17 @@
 import DraftsPage from 'tests_e2e/model/drafts.pageModel';
 import { expect, test } from '../fixtures/baseFixtures';
 import DataProcessingTasksPage from '../model/DataProcessingTasks.pageModel';
-import { waitAndRefreshUntilFirstTaskInStatus } from '../backgroundTaskCheck-utils';
+import DataTablePage from '../model/DataTable.pageModel';
+import TaskPopup from '../model/taskPopup.pageModel';
 
 test.describe('Drafts - Entities and background tasks', { tag: ['@ce'] }, () => {
   const draftName = `Draft E2E - ${Date.now()}`;
   const malwareName = 'malware in draft';
   test('should create a draft, add a malware entity, and verify its presence', async ({ page }) => {
     const Drafts = new DraftsPage(page);
-    const Tasks = new DataProcessingTasksPage(page);
+    const taskPopup = new TaskPopup(page);
+    const dataTable = new DataTablePage(page);
+    const tasksPage = new DataProcessingTasksPage(page);
 
     // navigate in the drafts list
     await Drafts.navigate();
@@ -33,18 +36,18 @@ test.describe('Drafts - Entities and background tasks', { tag: ['@ce'] }, () => 
     await expect(Drafts.getEntityInList(malwareName)).toBeVisible();
 
     // Select all entities in the list
-    await Drafts.selectAllEntities();
-
+    await dataTable.getCheckAll().click();
     // Click the "remove from draft" icon in the toolbar
-    await Drafts.clickRemoveFromDraftToolbar();
+    await taskPopup.launchRemoveFromDraft();
+    // Need to wait after click on "Launch" that the popup goes away.
+    await expect(taskPopup.getPage().getByText('Launch a background task')).not.toBeVisible({ timeout: 3000 });
 
-    // Confirm removal in the popup
-    await Drafts.confirmRemoveEntities();
-
-    // Wait for the background task to complete (status "Complete")
-    await waitAndRefreshUntilFirstTaskInStatus(page, Tasks, 'Complete', true);
+    // Wait for the background task to complete
+    await tasksPage.waitForTaskCompletion(page);
 
     // Check that the malware is no longer in the list
     await expect(Drafts.getEntityInList(malwareName)).not.toBeVisible();
+
+    // TODO check other malwares have not been deleted
   });
 });
