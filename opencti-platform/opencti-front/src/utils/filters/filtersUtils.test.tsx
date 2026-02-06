@@ -489,7 +489,7 @@ describe('Filters utils', () => {
         filterGroups: [filters],
       };
       const { hook } = testRenderHook(
-        () => useBuildEntityTypeBasedFilterContext('Stix-Core-Object', filters),
+        () => useBuildEntityTypeBasedFilterContext('Malware', filters),
         { userContext },
       );
       expect(hook.result.current).toStrictEqual(contextFilters);
