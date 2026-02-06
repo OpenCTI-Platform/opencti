@@ -464,6 +464,17 @@ describe('Filters utils', () => {
   });
 
   describe('useBuildEntityTypeBasedFilterContext', () => {
+    const userContext = createMockUserContext({
+      schema: {
+        scos: [{ id: '', label: '' }],
+        sdos: [{ id: '', label: '' }],
+        smos: [{ id: '', label: '' }],
+        scrs: [{ id: '', label: '' }],
+        schemaRelationsTypesMapping: new Map<string, readonly string[]>(),
+        schemaRelationsRefTypesMapping: new Map<string, readonly { name: string; toTypes: string[] }[]>(),
+        filterKeysSchema,
+      },
+    });
     it('should return filters with added entity type context', () => {
       const filters: FilterGroup = {
         mode: 'and',
@@ -477,8 +488,11 @@ describe('Filters utils', () => {
         ],
         filterGroups: [filters],
       };
-      const result = useBuildEntityTypeBasedFilterContext('Stix-Core-Object', filters);
-      expect(result).toEqual(contextFilters);
+      const { hook } = testRenderHook(
+        () => useBuildEntityTypeBasedFilterContext('Stix-Core-Object', filters),
+        { userContext },
+      );
+      expect(hook.result.current).toStrictEqual(contextFilters);
     });
 
     it('should return filters with added entity type and draft context', () => {
@@ -521,8 +535,11 @@ describe('Filters utils', () => {
           ],
         }],
       };
-      const result = useBuildEntityTypeBasedFilterContext('Stix-Core-Object', filters, { excludedEntityTypesParam: ['Report'], draftId });
-      expect(result).toEqual(contextFilters);
+      const { hook } = testRenderHook(
+        () => useBuildEntityTypeBasedFilterContext(['Stix-Core-Object'], filters, { excludedEntityTypesParam: ['Report'], draftId }),
+        { userContext },
+      );
+      expect(hook.result.current).toStrictEqual(contextFilters);
     });
   });
 });
