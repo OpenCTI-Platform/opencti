@@ -48,6 +48,7 @@ import { SYSTEM_USER } from '../utils/access';
 import { safeRender } from '../utils/safeEjs';
 import { computeDefaultValue, formatValue, handleDefaultMarkings, handleRefEntities, type InputType } from './csv-mapper';
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
+import { pushAll } from '../utils/arrayUtil';
 
 const format = (value: string | string[], def: AttributeDefinition, attribute: SimpleAttributePath | ComplexAttributePath | undefined) => {
   if (Array.isArray(value)) {
@@ -265,7 +266,7 @@ const handleBasedOnAttribute = async (
   // endregion
   // region bind the value and override default if needed
   if (attribute.based_on && attribute.based_on.representations) {
-    const entities = [];
+    const entities: Record<string, InputType>[] = [];
     const ident = attribute.based_on.identifier;
     const isRetroCompatibilityIdentifier = typeof ident === 'string' && isNotEmptyField(ident);
     for (let index = 0; index < attribute.based_on.representations.length; index += 1) {
@@ -283,12 +284,13 @@ const handleBasedOnAttribute = async (
           mappedIdentifiers = extractTargetIdentifierFromJson(base, record, targetIdentifier.identifier, definition);
         }
       }
+      const byRepresentation = otherEntities.get(representation);
+      const elementsByRepresentation = Array.from(byRepresentation?.values() ?? []);
       if (!emptyMatching) {
-        entities.push(...(otherEntities.get(representation) ?? []).flat()
-          .filter((e) => e !== undefined
-            && mappedIdentifiers.includes(e.__identifier as string)) as Record<string, InputType>[]);
+        pushAll(entities, elementsByRepresentation.filter((e) => e !== undefined
+          && mappedIdentifiers.includes(e.__identifier as string)) as Record<string, InputType>[]);
       } else {
-        entities.push(...(otherEntities.get(representation) ?? []).flat()
+        pushAll(entities, elementsByRepresentation
           .filter((e) => e !== undefined) as Record<string, InputType>[]);
       }
     }
