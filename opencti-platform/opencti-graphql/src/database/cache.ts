@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import type { BasicStoreCommon, BasicStoreIdentifier } from '../types/store';
 import { logApp } from '../config/conf';
-import { UnsupportedError } from '../config/errors';
+import { DatabaseError, UnsupportedError } from '../config/errors';
 import { telemetry } from '../config/tracing';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { StixId, StixObject } from '../types/stix-2-1-common';
@@ -125,23 +125,35 @@ const getEntitiesFromCache = async <T extends BasicStoreIdentifier | StixObject>
     if (!fromCache) {
       throw UnsupportedError('Cache configuration type not supported', { type });
     }
-    if (!fromCache.values) {
-      // If cache already in progress build, just wait for completion
+    const MAX_CACHE_RETRIES = 10;
+    let retries = 0;
+    // Loop until values are available.
+    // If a concurrent fetch fails, waiters retry instead of returning empty data.
+    while (!fromCache.values) {
       if (fromCache.inProgress) {
-        while (fromCache.inProgress) {
-          await wait(100);
-        }
-        return fromCache.values ?? (type === ENTITY_TYPE_RESOLVED_FILTERS ? new Map() : []);
+        await wait(100);
+        continue;
       }
-      // If not in progress, re fetch the data
       fromCache.inProgress = true;
       try {
-        fromCache.values = await fromCache.fn();
+        let cacheData = await fromCache.fn();
+        if (!cacheData) {
+          // This situation must be adapted with code evolution
+          logApp.warn('[CACHE] Cache function refresh return undefined values', { type });
+          cacheData = type === ENTITY_TYPE_RESOLVED_FILTERS ? new Map() : [];
+        }
+        fromCache.values = cacheData;
+      } catch (err: any) {
+        retries += 1;
+        logApp.error('[CACHE] Error loading cache', { type, attempt: retries, maxRetries: MAX_CACHE_RETRIES, cause: err });
+        if (retries >= MAX_CACHE_RETRIES) {
+          throw DatabaseError(err.message);
+        }
       } finally {
         fromCache.inProgress = false;
       }
     }
-    return fromCache.values ?? (type === ENTITY_TYPE_RESOLVED_FILTERS ? new Map() : []);
+    return fromCache.values;
   };
   return telemetry(context, user, `CACHE ${type}`, {
     [SEMATTRS_DB_NAME]: 'cache_engine',
