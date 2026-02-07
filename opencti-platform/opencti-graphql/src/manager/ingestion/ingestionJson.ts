@@ -6,6 +6,7 @@ import { now } from '../../utils/format';
 import { SYSTEM_USER } from '../../utils/access';
 import { pushBundleToConnectorQueue } from './ingestionUtils';
 import { ingestionQueueExecution } from './ingestionExecutor';
+import { buildStixBundle } from '../../database/stix-2-1-converter';
 
 // region Types
 type JsonConnectorState = { ingestion_json_state?: object };
@@ -30,15 +31,15 @@ const mergeQueryState = (queryParamsAttributes: Array<DataParam> | undefined, pr
 };
 
 const jsonDataHandler: JsonHandlerFn = async (context: AuthContext, ingestion: BasicStoreEntityIngestionJson) => {
-  const { bundle, variables, nextExecutionState } = await executeJsonQuery(context, ingestion);
+  const { objects, variables, nextExecutionState } = await executeJsonQuery(context, ingestion);
   // Push the bundle to absorption queue if required
-  if (bundle.objects.length > 0) {
-    await pushBundleToConnectorQueue(context, ingestion, bundle);
+  if (objects.length > 0) {
+    await pushBundleToConnectorQueue(context, ingestion, buildStixBundle(objects));
   }
   // Save new state for next execution
   const ingestionState = mergeQueryState(ingestion.query_attributes, variables, nextExecutionState);
   const state: JsonConnectorState = { ingestion_json_state: ingestionState };
-  return { size: bundle.objects.length, ingestionPatch: { ...state, last_execution_date: now() }, connectorInfo: { state: ingestionState } };
+  return { size: objects.length, ingestionPatch: { ...state, last_execution_date: now() }, connectorInfo: { state: ingestionState } };
 };
 
 export const jsonExecutor = async (context: AuthContext) => {
