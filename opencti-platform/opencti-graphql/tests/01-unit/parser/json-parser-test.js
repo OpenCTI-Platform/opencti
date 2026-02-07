@@ -116,9 +116,9 @@ describe('JSON mapper testing', () => {
     expect(report.object_refs.length).toBe(121);
   });
   it('should ecrime correctly parsed', async () => {
-    const stixBundle = await jsonMappingExecution(testContext, ADMIN_USER, ecrime_data, ecrime_mapper);
-    const { mapByType, mapByFromAndTo } = buildMaps(stixBundle);
-    expect(stixBundle.objects.length).toBe(26);
+    const objects = await jsonMappingExecution(testContext, ADMIN_USER, ecrime_data, ecrime_mapper);
+    const { mapByType, mapByFromAndTo } = buildMaps(objects);
+    expect(objects.length).toBe(26);
     expect(mapByType.get('identity').length).toBe(9);
     expect(mapByType.get('location').length).toBe(2);
     expect(mapByType.get('intrusion-set').length).toBe(1);
@@ -159,9 +159,9 @@ describe('JSON mapper testing', () => {
     expect(report.object_refs).toContain(sector.id);
   });
   it('should domains correctly parsed', async () => {
-    const stixBundle = await jsonMappingExecution(testContext, ADMIN_USER, domains_data, domains_mapper);
-    const { mapByType } = buildMaps(stixBundle);
-    expect(stixBundle.objects.length).toBe(1);
+    const objects = await jsonMappingExecution(testContext, ADMIN_USER, domains_data, domains_mapper);
+    const { mapByType } = buildMaps(objects);
+    expect(objects.length).toBe(1);
     expect(mapByType.get('domain-name').length).toBe(1);
 
     // Test domain binding
@@ -169,9 +169,9 @@ describe('JSON mapper testing', () => {
     expect(domain.value).toBe('evil.com');
   });
   it('should indicators correctly parsed', async () => {
-    const stixBundle = await jsonMappingExecution(testContext, ADMIN_USER, indicators_data, indicators_mapper);
-    const { mapByType } = buildMaps(stixBundle);
-    expect(stixBundle.objects.length).toBe(4);
+    const objects = await jsonMappingExecution(testContext, ADMIN_USER, indicators_data, indicators_mapper);
+    const { mapByType } = buildMaps(objects);
+    expect(objects.length).toBe(4);
     expect(mapByType.get('indicator').length).toBe(2);
     expect(mapByType.get('external-reference').length).toBe(2);
 
@@ -185,9 +185,9 @@ describe('JSON mapper testing', () => {
     expect(indicator2.external_references[0].url).toBe('https://abuse.ch/domain/malicious2.com');
   });
   it('should groupings correctly parsed', async () => {
-    const stixBundle = await jsonMappingExecution(testContext, ADMIN_USER, groupings_data, groupings_mapper);
-    const { mapByType } = buildMaps(stixBundle);
-    expect(stixBundle.objects.length).toBe(10);
+    const objects = await jsonMappingExecution(testContext, ADMIN_USER, groupings_data, groupings_mapper);
+    const { mapByType } = buildMaps(objects);
+    expect(objects.length).toBe(10);
     expect(mapByType.get('indicator').length).toBe(3);
     expect(mapByType.get('grouping').length).toBe(2);
     expect(mapByType.get('location').length).toBe(5); // 5 countries
@@ -204,9 +204,9 @@ describe('JSON mapper testing', () => {
     expect(florida.object_refs.filter((r) => r.startsWith('indicator--')).length).toBe(2);
   });
   it('should complex identifiers correctly parsed', async () => {
-    const stixBundle = await jsonMappingExecution(testContext, ADMIN_USER, complex_data, complex_identifier_mapper);
-    const { mapByType } = buildMaps(stixBundle);
-    expect(stixBundle.objects.length).toBe(3);
+    const objects = await jsonMappingExecution(testContext, ADMIN_USER, complex_data, complex_identifier_mapper);
+    const { mapByType } = buildMaps(objects);
+    expect(objects.length).toBe(3);
 
     // Check domains exist
     const domains = mapByType.get('domain-name');
