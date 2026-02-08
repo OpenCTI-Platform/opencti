@@ -28,6 +28,12 @@ class MeterManager {
 
   private sideBulkGauge: Gauge | null = null;
 
+  private streamPush: Counter | null = null;
+
+  private sseEvents: Counter | null = null;
+
+  private syncQueuePush: Counter | null = null;
+
   constructor(meterProvider: MeterProvider) {
     this.meterProvider = meterProvider;
   }
@@ -54,6 +60,18 @@ class MeterManager {
 
   sideBulk(val: number, attributes: any) {
     this.sideBulkGauge?.record(val, attributes);
+  }
+
+  streamPushEvent(attributes: any) {
+    this.streamPush?.add(1, attributes);
+  }
+
+  sseEvent(attributes: any) {
+    this.sseEvents?.add(1, attributes);
+  }
+
+  syncQueueEvent(attributes: any) {
+    this.syncQueuePush?.add(1, attributes);
   }
 
   registerMetrics() {
@@ -85,6 +103,18 @@ class MeterManager {
     this.sideBulkGauge = meter.createGauge('opencti_api_side_bulk', {
       valueType: ValueType.INT,
       description: 'Size of bulk for absorption impacts',
+    });
+    this.streamPush = meter.createCounter('opencti_stix_stream_push_total', {
+      valueType: ValueType.INT,
+      description: 'Total number of events pushed to the data stream',
+    });
+    this.sseEvents = meter.createCounter('opencti_sse_events_total', {
+      valueType: ValueType.INT,
+      description: 'Total number of events sent via SSE to stream clients',
+    });
+    this.syncQueuePush = meter.createCounter('opencti_sync_queue_push_total', {
+      valueType: ValueType.INT,
+      description: 'Total number of events pushed to RabbitMQ per sync',
     });
     // - Library metrics
     nodeMetrics(this.meterProvider, { prefix: '' });
@@ -129,7 +159,8 @@ export const telemetry = async (context: AuthContext, user: AuthUser, spanName: 
       [SEMATTRS_ENDUSER_ID]: user.id,
       ...attrs,
     },
-    kind: 2 }, ctx);
+    kind: 2,
+  }, ctx);
 
   try {
     const data = await fn();

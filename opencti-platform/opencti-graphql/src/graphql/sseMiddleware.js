@@ -47,6 +47,7 @@ import { createAuthenticatedContext } from '../http/httpAuthenticatedContext';
 import { EVENT_CURRENT_VERSION } from '../database/stream/stream-utils';
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
 import { doYield } from '../utils/eventloop-utils';
+import { meterManager } from '../config/tracing';
 
 const broadcastClients = {};
 const queryIndices = [...READ_STIX_INDICES, READ_INDEX_STIX_META_OBJECTS];
@@ -295,6 +296,9 @@ const createSseMiddleware = () => {
         }
         lastEventId = eventId || lastEventId;
         const message = buildMessage(eventId, topic, event);
+        if (eventId && topic !== 'heartbeat') {
+          meterManager.sseEvent({ stream_id: req.params?.id || 'raw' });
+        }
         if (!res.write(message)) {
           logApp.debug('[STREAM] Buffer draining', { buffer: res.writableLength, limit: res.writableHighWaterMark });
           await once(res, 'drain');

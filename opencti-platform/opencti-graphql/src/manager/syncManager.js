@@ -16,6 +16,7 @@ import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { getHttpClient } from '../utils/http-client';
 import { createSyncHttpUri, httpBase } from '../domain/connector-utils';
 import { EVENT_CURRENT_VERSION } from '../database/stream/stream-utils';
+import { meterManager } from '../config/tracing';
 
 const SYNC_MANAGER_KEY = conf.get('sync_manager:lock_key') || 'sync_manager_lock';
 const SCHEDULE_TIME = conf.get('sync_manager:interval') || 10000;
@@ -157,6 +158,7 @@ const syncManagerInstance = (syncId) => {
                 applicant_id: sync.user_id ?? OPENCTI_SYSTEM_UUID,
                 content,
               });
+              meterManager.syncQueueEvent({ sync_id: syncId });
               await saveCurrentState(context, 'event', sync, eventId);
             }
             // Clear the current event to dequeue the next one

@@ -19,7 +19,8 @@ import {
 import { DatabaseError } from '../../config/errors';
 import { getDraftContext } from '../../utils/draftContext';
 import { rawRedisStreamClient } from '../redis-stream';
-import { telemetry } from '../../config/tracing';
+import { meterManager, telemetry } from '../../config/tracing';
+import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 
 const streamClient: RawStreamClient = rawRedisStreamClient;
 export const initializeStreamStack = async () => {
@@ -28,12 +29,14 @@ export const initializeStreamStack = async () => {
   }
 };
 
-const pushToStream = async <T extends BaseEvent> (context: AuthContext, user: AuthUser, event: T, opts: EventOpts = {}) => {
+const pushToStream = async <T extends StreamDataEvent>(context: AuthContext, user: AuthUser, event: T, opts: EventOpts = {}) => {
   const draftContext = getDraftContext(context, user);
   const eventToPush = { ...event, event_id: context.eventId };
   if (!draftContext && isStreamPublishable(opts)) {
     const pushToStreamFn = async () => {
       await streamClient.rawPushToStream(eventToPush);
+      const isInferred = event.data.extensions[STIX_EXT_OCTI].is_inferred;
+      meterManager.streamPushEvent({ source: isInferred ? 'inferred' : 'explicit' });
     };
     await telemetry(context, user, 'INSERT STREAM', {
       [SEMATTRS_DB_NAME]: 'stream_engine',
@@ -126,7 +129,7 @@ export const storeDeleteEvent = async (context: AuthContext, user: AuthUser, ins
   }
 };
 
-export const createStreamProcessor = <T extends BaseEvent> (
+export const createStreamProcessor = <T extends BaseEvent>(
   provider: string,
   callback: (events: Array<SseEvent<T>>, lastEventId: string) => Promise<void>,
   opts: StreamProcessorOption = {},
@@ -138,7 +141,7 @@ export const fetchStreamInfo = async (streamName = LIVE_STREAM_NAME) => {
   return streamClient.rawFetchStreamInfo(streamName);
 };
 
-export const fetchStreamEventsRangeFromEventId = async <T extends BaseEvent> (
+export const fetchStreamEventsRangeFromEventId = async <T extends BaseEvent>(
   startEventId: string,
   callback: (events: Array<SseEvent<T>>, lastEventId: string) => void,
   opts: FetchEventRangeOption = {},

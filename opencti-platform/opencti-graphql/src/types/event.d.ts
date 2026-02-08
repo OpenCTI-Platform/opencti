@@ -42,7 +42,7 @@ interface StreamNotifEvent extends BaseEvent {
   type: 'live' | 'digest' | 'action';
 }
 
-export type StreamDataEventType = 'update' | 'create' | 'delete';
+export type StreamDataEventType = 'update' | 'create' | 'delete' | 'merge';
 
 interface StreamDataEvent extends BaseEvent {
   scope: 'internal' | 'external';
