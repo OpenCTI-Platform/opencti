@@ -1082,7 +1082,6 @@ describe('meUser specific resolvers', async () => {
         lastname
         language
         theme
-        theme
         otp_activated
         otp_qr
         description

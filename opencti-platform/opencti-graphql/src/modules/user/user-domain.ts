@@ -1,11 +1,12 @@
 import { v4 as uuid } from 'uuid';
 import { DateTime } from 'luxon';
+import * as crypto from 'crypto';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { addUser, findUserPaginated } from '../../domain/user';
-import { SYSTEM_USER, isUserHasCapability } from '../../utils/access';
+import { SYSTEM_USER } from '../../utils/access';
 import type { BasicGroupEntity } from '../../types/store';
 import { findDefaultIngestionGroups } from '../../domain/group';
-import { FunctionalError, ValidationError, ForbiddenAccess } from '../../config/errors';
+import { FunctionalError, ValidationError } from '../../config/errors';
 import { TokenDuration, type UserAddInput, type UserTokenAddInput } from '../../generated/graphql';
 import { getEntityFromCache } from '../../database/cache';
 import type { BasicStoreSettings } from '../../types/settings';
@@ -16,9 +17,9 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { internalLoadById } from '../../database/middleware-loader';
-import { generateSecureToken } from '../../utils/security';
 import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../../database/utils';
 import { apiTokens } from '../attributes/internalObject-registrationAttributes';
+import { getPlatformCrypto } from '../../utils/platformCrypto';
 
 // -- Existing Logic --
 export const userAlreadyExists = async (context: AuthContext, name: string) => {
@@ -75,10 +76,14 @@ export const createOnTheFlyUser = async (context: AuthContext, user: AuthUser, i
 };
 
 // -- API Token Logic --
-export const addUserToken = async (context: AuthContext, user: AuthUser, input: UserTokenAddInput) => {
-  if (!isUserHasCapability(user, 'APIACCESS_USETOKEN')) {
-    throw ForbiddenAccess('You are not allowed use API tokens');
-  }
+export interface GeneratedToken {
+  token: string;
+  hash: string;
+  masked_token: string;
+}
+
+// Add token
+const addToken = async (context: AuthContext, user: AuthUser, userId: string, input: UserTokenAddInput) => {
   const { duration, name } = input;
   let expires_at = null;
   if (duration && duration !== TokenDuration.Unlimited) {
@@ -93,11 +98,10 @@ export const addUserToken = async (context: AuthContext, user: AuthUser, input: 
       expires_at = DateTime.now().plus({ days }).toUTC().toString();
     }
   }
-
-  const { token, hash, masked_token } = await generateSecureToken();
+  const generatedToken = await generateSecureToken();
+  const { token, hash, masked_token } = generatedToken;
   const tokenId = uuid();
   const now = DateTime.now().toUTC().toString();
-
   const newToken = {
     id: tokenId,
     name,
@@ -106,59 +110,94 @@ export const addUserToken = async (context: AuthContext, user: AuthUser, input: 
     expires_at,
     masked_token,
   };
-
   const updates = [{ key: apiTokens.name, value: [newToken], operation: UPDATE_OPERATION_ADD }];
-  const { element } = await updateAttribute(context, user, user.id, ENTITY_TYPE_USER, updates);
-
+  const { element } = await updateAttribute(context, user, userId, ENTITY_TYPE_USER, updates);
+  return { token: newToken, token_value: token, element };
+};
+export const addUserToken = async (context: AuthContext, user: AuthUser, userId: string, input: UserTokenAddInput) => {
+  const { token, token_value, element } = await addToken(context, user, userId, input);
   await publishUserAction({
     user,
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `generated a new API token '${newToken.name}'`,
+    message: `generated a new API token '${token.name}'`,
     context_data: {
       id: user.id,
       entity_type: ENTITY_TYPE_USER,
       input: {
-        duration,
-        name,
-        token_id: tokenId,
+        duration: input.duration,
+        name: input.name,
+        token_id: token.id,
       },
     },
   });
-
   // Notify for cache invalidation
   await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
-
   return {
-    token_id: tokenId,
-    plaintext_token: token,
-    masked_token,
-    expires_at,
+    token_id: token.id,
+    plaintext_token: token_value,
+    masked_token: token.masked_token,
+    expires_at: token.expires_at,
+  };
+};
+export const addUserTokenByAdmin = async (context: AuthContext, user: AuthUser, userId: string, input: UserTokenAddInput) => {
+  // Load target user
+  const userToEdit = await internalLoadById(context, user, userId) as unknown as AuthUser;
+  if (!userToEdit) {
+    throw FunctionalError('User not found', { userId });
+  }
+  const { token, token_value, element } = await addToken(context, user, userId, input);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: `generated a new API token '${token.name}' for user '${userToEdit.user_email}'`,
+    context_data: {
+      id: userId,
+      entity_type: ENTITY_TYPE_USER,
+      input: {
+        duration: input.duration,
+        name: input.name,
+        token_id: token.id,
+      },
+    },
+  });
+  // Notify for cache invalidation
+  await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
+  return {
+    token_id: token.id,
+    plaintext_token: token_value,
+    masked_token: token.masked_token,
+    expires_at: token.expires_at,
   };
 };
 
+// Revoke token
+const revokeToken = async (context: AuthContext, user: AuthUser, targetUserId: string, tokenId: string) => {
+  // Load target user
+  const userToEdit = await internalLoadById(context, user, targetUserId) as unknown as AuthUser;
+  if (!userToEdit) {
+    throw FunctionalError('User not found', { targetUserId });
+  }
+  const tokens = userToEdit.api_tokens || [];
+  const tokenToRemove = tokens.find((t: any) => t.id === tokenId);
+  if (!tokenToRemove) {
+    throw FunctionalError('Token not found', { tokenId });
+  }
+  const updates = [{ key: apiTokens.name, value: [tokenToRemove], operation: UPDATE_OPERATION_REMOVE }];
+  const { element } = await updateAttribute(context, user, targetUserId, ENTITY_TYPE_USER, updates);
+  return { element, token: tokenToRemove, user: userToEdit };
+};
 export const revokeUserToken = async (context: AuthContext, user: AuthUser, tokenId: string) => {
-  if (!isUserHasCapability(user, 'APIACCESS_USETOKEN')) {
-    throw ForbiddenAccess('You are not allowed use API tokens');
-  }
-  // Reload user to ensure we have the latest tokens
-  const userToEdit = await internalLoadById(context, user, user.id) as unknown as AuthUser;
-  const tokens = userToEdit.api_tokens || [];
-  const tokenToRemove = tokens.find((t: any) => t.id === tokenId);
-  if (!tokenToRemove) {
-    throw FunctionalError('Token not found', { tokenId });
-  }
-
-  const updates = [{ key: apiTokens.name, value: [tokenToRemove], operation: UPDATE_OPERATION_REMOVE }];
-  const { element } = await updateAttribute(context, user, user.id, ENTITY_TYPE_USER, updates);
-
+  const { element, token } = await revokeToken(context, user, user.id, tokenId);
   await publishUserAction({
     user,
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `revoked API token '${tokenToRemove.name}'`,
+    message: `revoked API token '${token.name}'`,
     context_data: {
       id: user.id,
       entity_type: ENTITY_TYPE_USER,
@@ -167,35 +206,18 @@ export const revokeUserToken = async (context: AuthContext, user: AuthUser, toke
       },
     },
   });
-
   // Notify for cache invalidation
   await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
-
   return tokenId;
 };
-
 export const revokeUserTokenByAdmin = async (context: AuthContext, user: AuthUser, targetUserId: string, tokenId: string) => {
-  // Load target user
-  const userToEdit = await internalLoadById(context, user, targetUserId) as unknown as AuthUser;
-  if (!userToEdit) {
-    throw FunctionalError('User not found', { targetUserId });
-  }
-
-  const tokens = userToEdit.api_tokens || [];
-  const tokenToRemove = tokens.find((t: any) => t.id === tokenId);
-  if (!tokenToRemove) {
-    throw FunctionalError('Token not found', { tokenId });
-  }
-
-  const updates = [{ key: apiTokens.name, value: [tokenToRemove], operation: UPDATE_OPERATION_REMOVE }];
-  const { element } = await updateAttribute(context, user, targetUserId, ENTITY_TYPE_USER, updates);
-
+  const { element, token, user: targetUser } = await revokeToken(context, user, targetUserId, tokenId);
   await publishUserAction({
     user,
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `revoked API token '${tokenToRemove.name}' for user '${userToEdit.user_email}'`,
+    message: `revoked API token '${token.name}' for user '${targetUser.user_email}'`,
     context_data: {
       id: targetUserId,
       entity_type: ENTITY_TYPE_USER,
@@ -204,75 +226,36 @@ export const revokeUserTokenByAdmin = async (context: AuthContext, user: AuthUse
       },
     },
   });
-
   // Notify for cache invalidation
   await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
-
   return tokenId;
 };
 
-export const addUserTokenByAdmin = async (context: AuthContext, user: AuthUser, targetUserId: string, input: UserTokenAddInput) => {
-  // Load target user
-  const userToEdit = await internalLoadById(context, user, targetUserId) as unknown as AuthUser;
-  if (!userToEdit) {
-    throw FunctionalError('User not found', { targetUserId });
+/**
+ * Generate a secure random token.
+ * 48 bytes = 384 bits of entropy.
+ * Returns the plain token (to be shown once), the hash (to be stored), and a masked version.
+ */
+export const generateSecureToken = async (): Promise<GeneratedToken> => {
+  // 48 bytes -> base64 -> 64 chars
+  const random = crypto.randomBytes(48).toString('base64url');
+  const token = `flgrn_octi_tkn_${random}`;
+  const hash = await generateTokenHmac(token);
+  const masked_token = `****${token.slice(-4)}`;
+  return { token, hash, masked_token };
+};
+
+/**
+ * Hash a token using hmac algorithm.
+ * @param token the token to hash
+ */
+let hmacDerivationPromise: Promise<{ hmac: (data: string) => string }>;
+const TOKEN_DERIVATION_PATH = ['authentication', 'token'];
+export const generateTokenHmac = async (token: string): Promise<string> => {
+  if (!hmacDerivationPromise) {
+    const factory = await getPlatformCrypto();
+    hmacDerivationPromise = factory.deriveHmac(TOKEN_DERIVATION_PATH, 1);
   }
-
-  const { duration, name } = input;
-  let expires_at = null;
-  if (duration && duration !== TokenDuration.Unlimited) {
-    const durationDays: Record<string, number> = {
-      [TokenDuration.Days_30]: 30,
-      [TokenDuration.Days_60]: 60,
-      [TokenDuration.Days_90]: 90,
-      [TokenDuration.Days_365]: 365,
-    };
-    const days = durationDays[duration];
-    if (days) {
-      expires_at = DateTime.now().plus({ days }).toUTC().toString();
-    }
-  }
-
-  const { token, hash, masked_token } = await generateSecureToken();
-  const tokenId = uuid();
-  const now = DateTime.now().toUTC().toString();
-
-  const newToken = {
-    id: tokenId,
-    name,
-    hash,
-    created_at: now,
-    expires_at,
-    masked_token,
-  };
-
-  const updates = [{ key: apiTokens.name, value: [newToken], operation: UPDATE_OPERATION_ADD }];
-  const { element } = await updateAttribute(context, user, targetUserId, ENTITY_TYPE_USER, updates);
-
-  await publishUserAction({
-    user,
-    event_type: 'mutation',
-    event_scope: 'update',
-    event_access: 'administration',
-    message: `generated a new API token '${newToken.name}' for user '${userToEdit.user_email}'`,
-    context_data: {
-      id: targetUserId,
-      entity_type: ENTITY_TYPE_USER,
-      input: {
-        duration,
-        name,
-        token_id: tokenId,
-      },
-    },
-  });
-
-  // Notify for cache invalidation
-  await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
-
-  return {
-    token_id: tokenId,
-    plaintext_token: token,
-    masked_token,
-    expires_at,
-  };
+  const hmacDerivation = await hmacDerivationPromise;
+  return hmacDerivation.hmac(token);
 };

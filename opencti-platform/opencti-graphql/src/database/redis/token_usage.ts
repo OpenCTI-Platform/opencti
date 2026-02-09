@@ -18,7 +18,6 @@ const l1Cache = new LRUCache<string, DateTime>({
 });
 
 export const updateTokenUsage = async (userId: string, tokenId: string) => {
-  const redis = getClientBase();
   const key = `${REDIS_TOKEN_USAGE_PREFIX}${tokenId}`;
   const now = DateTime.now().toUTC();
   try {
@@ -28,6 +27,7 @@ export const updateTokenUsage = async (userId: string, tokenId: string) => {
       return;
     }
     const data: TokenUsage = { user: userId, token: tokenId, last_check: now.toISO() };
+    const redis = getClientBase();
     await redis.set(key, JSON.stringify(data));
     // Update L1 Cache with current check time
     l1Cache.set(key, now);

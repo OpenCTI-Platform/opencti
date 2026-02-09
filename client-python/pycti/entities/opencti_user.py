@@ -767,7 +767,7 @@ class User:
             self.opencti.admin_logger.error("[opencti_user] Missing parameter: user_id")
             return None
 
-        self.opencti.admin_logger.info("Removing API key for user", {"id": id})
+        self.opencti.admin_logger.info("Removing token for user", {"id": id})
         query = """
             mutation userAdminTokenRevoke($userId: ID!, $id: ID!) {
                 userAdminTokenRevoke(userId: $userId, id: $id)
@@ -795,9 +795,7 @@ class User:
             self.opencti.admin_logger.error("[opencti_user] Missing parameter: user_id")
             return None
 
-        self.opencti.admin_logger.info(
-            "Rotating API key for user", {"user_id": user_id}
-        )
+        self.opencti.admin_logger.info("Create token for user", {"user_id": user_id})
         query = """
             mutation userAdminTokenAdd($userId: ID!, $input: UserTokenAddInput!) {
               userAdminTokenAdd(userId: $userId, input: $input) {

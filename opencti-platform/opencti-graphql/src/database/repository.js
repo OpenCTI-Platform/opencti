@@ -24,17 +24,17 @@ export const CONNECTOR_PRIORITY_GROUP_VALUES = Object.values(ConnectorPriorityGr
 let connectorKeyPairPromise;
 const CONNECTOR_DERIVATION_PATH = ['connector', 'http'];
 export const getConnectorJwks = async () => {
-  const factory = await getPlatformCrypto();
   if (!connectorKeyPairPromise) {
+    const factory = await getPlatformCrypto();
     connectorKeyPairPromise = factory.deriveEd25519KeyPair(CONNECTOR_DERIVATION_PATH, 1);
   }
   const keyPair = await connectorKeyPairPromise;
   return JSON.stringify(keyPair.jwks);
 };
 
-export const issueConnectorJwtToken = async () => {
-  const factory = await getPlatformCrypto();
+export const issueConnectorJWT = async () => {
   if (!connectorKeyPairPromise) {
+    const factory = await getPlatformCrypto();
     connectorKeyPairPromise = factory.deriveEd25519KeyPair(CONNECTOR_DERIVATION_PATH, 1);
   }
   const keyPair = await connectorKeyPairPromise;

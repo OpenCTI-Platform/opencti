@@ -34,6 +34,8 @@ export const getChatbotProxy = async (req: Express.Request, res: Express.Respons
       return;
     }
 
+    // In that case it's acceptable to issue a JWT for each call
+    // Do not use this pattern in other place as is CPU intensive.
     const jwt = await issueAuthenticationJWT(context.user);
     const vars = {
       OPENCTI_URL: getChatbotUrl(req),

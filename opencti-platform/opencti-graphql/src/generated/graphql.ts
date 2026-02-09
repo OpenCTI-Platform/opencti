@@ -2079,6 +2079,7 @@ export enum CampaignsOrdering {
 }
 
 export enum Capabilities {
+  ApiaccessUsetoken = 'APIACCESS_USETOKEN',
   Automation = 'AUTOMATION',
   AutomationAutmanage = 'AUTOMATION_AUTMANAGE',
   Bypass = 'BYPASS',
@@ -15415,6 +15416,7 @@ export type Mutation = {
   checkXTMHubConnectivity: CheckXtmHubConnectivityResponse;
   cityAdd?: Maybe<City>;
   cityEdit?: Maybe<CityEditMutations>;
+  connectorJWT: Scalars['String']['output'];
   connectorMigrateToManaged: ManagedConnector;
   contactUsXtmHub: Success;
   containerEdit?: Maybe<ContainerEditMutations>;
@@ -15757,7 +15759,6 @@ export type Mutation = {
   threatActorIndividualRelationAdd?: Maybe<StixRefRelationship>;
   threatActorIndividualRelationDelete?: Maybe<ThreatActorIndividual>;
   token?: Maybe<Scalars['String']['output']>;
-  tokenJWTConnector: Scalars['String']['output'];
   toolAdd?: Maybe<Tool>;
   toolEdit?: Maybe<ToolEditMutations>;
   triggerActivityDelete?: Maybe<Scalars['ID']['output']>;
@@ -44074,6 +44075,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   checkXTMHubConnectivity?: Resolver<ResolversTypes['CheckXTMHubConnectivityResponse'], ParentType, ContextType>;
   cityAdd?: Resolver<Maybe<ResolversTypes['City']>, ParentType, ContextType, RequireFields<MutationCityAddArgs, 'input'>>;
   cityEdit?: Resolver<Maybe<ResolversTypes['CityEditMutations']>, ParentType, ContextType, RequireFields<MutationCityEditArgs, 'id'>>;
+  connectorJWT?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   connectorMigrateToManaged?: Resolver<ResolversTypes['ManagedConnector'], ParentType, ContextType, RequireFields<MutationConnectorMigrateToManagedArgs, 'input'>>;
   contactUsXtmHub?: Resolver<ResolversTypes['Success'], ParentType, ContextType>;
   containerEdit?: Resolver<Maybe<ResolversTypes['ContainerEditMutations']>, ParentType, ContextType, RequireFields<MutationContainerEditArgs, 'id'>>;
@@ -44416,7 +44418,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   threatActorIndividualRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationThreatActorIndividualRelationAddArgs, 'id' | 'input'>>;
   threatActorIndividualRelationDelete?: Resolver<Maybe<ResolversTypes['ThreatActorIndividual']>, ParentType, ContextType, RequireFields<MutationThreatActorIndividualRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   token?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<MutationTokenArgs>>;
-  tokenJWTConnector?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   toolAdd?: Resolver<Maybe<ResolversTypes['Tool']>, ParentType, ContextType, RequireFields<MutationToolAddArgs, 'input'>>;
   toolEdit?: Resolver<Maybe<ResolversTypes['ToolEditMutations']>, ParentType, ContextType, RequireFields<MutationToolEditArgs, 'id'>>;
   triggerActivityDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationTriggerActivityDeleteArgs, 'id'>>;

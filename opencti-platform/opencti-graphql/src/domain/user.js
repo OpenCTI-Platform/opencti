@@ -101,11 +101,10 @@ import { sanitizeUser } from '../utils/templateContextSanitizer';
 import { safeRender } from '../utils/safeEjs.client';
 import { totp } from '../utils/totp';
 import { pushAll } from '../utils/arrayUtil';
-import { generateTokenHmac } from '../utils/hash';
 import { apiTokens } from '../modules/attributes/internalObject-registrationAttributes';
 import { SignJWT } from 'jose';
-import { getPlatformCrypto, JWT_TOKEN_PREFIX } from '../utils/platformCrypto';
-import { addUserTokenByAdmin } from '../modules/user/user-domain';
+import { getPlatformCrypto } from '../utils/platformCrypto';
+import { addUserTokenByAdmin, generateTokenHmac } from '../modules/user/user-domain';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -1681,8 +1680,8 @@ export const authenticateUserByBasicAuth = async (context, req, basicAuth) => {
 let authenticationKeyPairPromise;
 const XTM1_DERIVATION_PATH = ['authentication', 'xtm1'];
 export const issueAuthenticationJWT = async (user, duration = '1h') => {
-  const factory = await getPlatformCrypto();
   if (!authenticationKeyPairPromise) {
+    const factory = await getPlatformCrypto();
     authenticationKeyPairPromise = factory.deriveEd25519KeyPair(XTM1_DERIVATION_PATH, 1);
   }
   const jwt = new SignJWT({ sub: user.id, name: user.name }).setIssuedAt().setExpirationTime(duration);
@@ -1691,8 +1690,8 @@ export const issueAuthenticationJWT = async (user, duration = '1h') => {
 };
 
 export const authenticateUserByJWT = async (context, req, token) => {
-  const factory = await getPlatformCrypto();
   if (!authenticationKeyPairPromise) {
+    const factory = await getPlatformCrypto();
     authenticationKeyPairPromise = factory.deriveEd25519KeyPair(XTM1_DERIVATION_PATH, 1);
   }
   const xmt1DerivationKeyPair = await authenticationKeyPairPromise;
@@ -1834,6 +1833,7 @@ export const sessionAuthenticateUser = async (context, req, user, provider) => {
 
 export const HEADERS_AUTHENTICATORS = [];
 
+export const JWT_TOKEN_PREFIX = 'ey';
 // This method can only be used in createAuthenticatedContext
 // If you need to check auth and create context, use directly createAuthenticatedContext method
 export const authenticateUserFromRequest = async (context, req) => {

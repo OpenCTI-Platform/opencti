@@ -50,8 +50,8 @@ const AUTH_DERIVATION_PATH = ['authentication', 'elastic'];
 let authenticationKeyPairPromise: any;
 
 const getKeyPair = async () => {
-  const factory = await getPlatformCrypto();
   if (!authenticationKeyPairPromise) {
+    const factory = await getPlatformCrypto();
     authenticationKeyPairPromise = factory.deriveAesKey(AUTH_DERIVATION_PATH, 1);
   }
   return await authenticationKeyPairPromise;

@@ -40,6 +40,7 @@ enum State {
 }
 enum Capabilities {
   BYPASS
+  APIACCESS_USETOKEN
   CONNECTORAPI
   KNOWLEDGE
   KNOWLEDGE_KNUPDATE
@@ -15794,7 +15795,7 @@ type Mutation {
   ######## INTERNAL OBJECT ENTITIES
   frontendErrorLog(message: String!, codeStack: String, componentStack: String): Boolean @auth
   token(input: UserLoginInput): String @public # Use for login
-  tokenJWTConnector: String! @auth(for: [SETTINGS_SETACCESSES])
+  connectorJWT: String! @auth(for: [SETTINGS_SETACCESSES])
   otpActivation(input: UserOTPActivationInput): MeUser @auth @allowUnprotectedOTP
   otpDeactivation: MeUser @auth
   otpUserDeactivation(id: ID!): MeUser @auth(for: [SETTINGS_SETACCESSES])
@@ -15811,8 +15812,8 @@ type Mutation {
   groupEdit(id: ID!): GroupEditMutations @auth(for: [SETTINGS_SETACCESSES])
   userAdd(input: UserAddInput!): User @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   userEdit(id: ID!): UserEditMutations @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
-  userTokenAdd(input: UserTokenAddInput!): TokenGenerated! @auth
-  userTokenRevoke(id: ID!): ID @auth
+  userTokenAdd(input: UserTokenAddInput!): TokenGenerated! @auth(for: [APIACCESS_USETOKEN])
+  userTokenRevoke(id: ID!): ID @auth(for: [APIACCESS_USETOKEN])
   userAdminTokenRevoke(userId: ID!, id: ID!): ID @auth(for: [SETTINGS_SETACCESSES])
   userAdminTokenAdd(userId: ID!, input: UserTokenAddInput!): TokenGenerated! @auth(for: [SETTINGS_SETACCESSES])
   meEdit(input: [EditInput]!, password: String): MeUser @auth
