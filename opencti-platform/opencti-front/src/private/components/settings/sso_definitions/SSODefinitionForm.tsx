@@ -331,7 +331,7 @@ const SSODefinitionForm = ({
   const updateField = async (field: SSOEditionFormInputKeys, value: unknown) => {
     if (onSubmitField) onSubmitField(field, value);
   };
-
+  const showGroupAndMapping = selectedStrategy !== 'LocalAuth' && !selectedCert;
   return (
     <Formik
       enableReinitialize={!updateField}
@@ -348,8 +348,8 @@ const SSODefinitionForm = ({
               onChange={(event, value) => handleChangeTab(value)}
             >
               <Tab label={t_i18n('Authentication Configuration')} />
-              {selectedStrategy !== 'LocalAuth' && <Tab label={t_i18n('Groups configuration')} disabled={selectedCert} />}
-              {selectedStrategy !== 'LocalAuth' && <Tab label={t_i18n('Organizations configuration')} disabled={selectedCert} />}
+              {showGroupAndMapping && <Tab label={t_i18n('Groups configuration')} />}
+              {showGroupAndMapping && <Tab label={t_i18n('Organizations configuration')} />}
             </Tabs>
           </Box>
           {currentTab === 0 && (
