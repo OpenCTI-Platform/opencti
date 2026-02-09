@@ -187,7 +187,7 @@ const SSODefinitionForm = ({
     enableDebugMode: false,
     entryPoint: '',
     // Groups
-    groups_path: selectedStrategy === 'Header' ? [] : ['groups'],
+    groups_path: ['groups'],
     groups_scope: '',
     group_attribute: '',
     group_attributes: [],
@@ -195,15 +195,15 @@ const SSODefinitionForm = ({
     groups_mapping: [],
     groups_mapping_source: [],
     groups_mapping_target: [],
-    groups_token_reference: selectedStrategy === 'Header' ? '' : 'access_token',
+    groups_token_reference: 'access_token',
     groups_read_userinfo: false,
     // Organizations
-    organizations_path: selectedStrategy === 'Header' ? [] : ['organizations'],
+    organizations_path: ['organizations'],
     organizations_scope: '',
     organizations_mapping: [],
     organizations_mapping_source: [],
     organizations_mapping_target: [],
-    organizations_token_reference: selectedStrategy === 'Header' ? '' : 'access_token',
+    organizations_token_reference: 'access_token',
     organizations_read_userinfo: false,
     // OpenID
     client_id: '',
