@@ -375,6 +375,8 @@
   "Authentication": "Authentication",
   "Authentication (AU)": "Authentication (AU)",
   "Authentication Configuration": "Authentication Configuration",
+  "Authentication configuration is currently forced by configuration to be with environment variable only, Authentication can still be configured with the UI to prepare configuration but changes will not applied until the app.authentication.force_env is removed or set to false.": "Authentication configuration is currently forced by configuration to be with environment variable only, Authentication can still be configured with the UI to prepare configuration but changes will not applied until the app.authentication.force_env is removed or set to false.",
+  "Authentication configuration is currently forced by configuration to be with environment variable only. Authentication can still be configured with the UI to prepare configuration but changes will not apply until the app.authentication.force_env is removed or set to false.": "Authentication configuration is currently forced by configuration to be with environment variable only, Authentication can still be configured with the UI to prepare configuration but changes will not applied until the app.authentication.force_env is removed or set to false.",
   "Authentication Definition": "Authentication Definition",
   "Authentication definitions": "Authentication definitions",
   "Authentication Definitions": "Authentication Definitions",

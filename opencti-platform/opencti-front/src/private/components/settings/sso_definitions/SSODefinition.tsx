@@ -15,6 +15,9 @@ export const ssoDefinitionQuery = graphql`
       ...SSODefinitionEditionFragment
       ...SSODefinitionOverviewFragment
     }
+    singleSignOnSettings {
+      is_force_env
+    }
   }
 `;
 
@@ -23,13 +26,13 @@ interface SSODefinitionComponentProps {
 }
 
 const SSODefinitionComponent = ({ queryRef }: SSODefinitionComponentProps) => {
-  const { singleSignOn } = usePreloadedQuery<SSODefinitionQuery>(ssoDefinitionQuery, queryRef);
+  const { singleSignOn, singleSignOnSettings } = usePreloadedQuery<SSODefinitionQuery>(ssoDefinitionQuery, queryRef);
   if (!singleSignOn) return <ErrorNotFound />;
 
   return (
     <>
       <SSODefinitionHeader data={singleSignOn} editionData={singleSignOn} />
-      <SSODefinitionOverview data={singleSignOn} />
+      <SSODefinitionOverview data={singleSignOn} singleSignOnSettings={singleSignOnSettings} />
     </>
 
   );

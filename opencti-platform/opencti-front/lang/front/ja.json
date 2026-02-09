@@ -375,6 +375,8 @@
   "Authentication": "認証",
   "Authentication (AU)": "認証 (AU)",
   "Authentication Configuration": "認証設定",
+  "Authentication configuration is currently forced by configuration to be with environment variable only, Authentication can still be configured with the UI to prepare configuration but changes will not applied until the app.authentication.force_env is removed or set to false.": "認証設定は現在、環境変数のみを使用するよう設定によって強制されています。認証をUIで設定して設定を準備することはできますが、app.authentication.force_envが削除されるかfalseに設定されるまで、変更は適用されません。",
+  "Authentication configuration is currently forced by configuration to be with environment variable only. Authentication can still be configured with the UI to prepare configuration but changes will not apply until the app.authentication.force_env is removed or set to false.": "認証設定は現在、環境変数のみを使用するよう設定によって強制されています。認証をUIで設定して設定を準備することはできますが、app.authentication.force_envが削除されるかfalseに設定されるまで、変更は適用されません。",
   "Authentication Definition": "認証定義",
   "Authentication definitions": "認証の定義",
   "Authentication Definitions": "認証定義",

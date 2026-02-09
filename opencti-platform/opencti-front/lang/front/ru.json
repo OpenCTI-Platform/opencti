@@ -375,6 +375,8 @@
   "Authentication": "Аутентификация",
   "Authentication (AU)": "Аутентификация (AU)",
   "Authentication Configuration": "Конфигурация аутентификации",
+  "Authentication configuration is currently forced by configuration to be with environment variable only, Authentication can still be configured with the UI to prepare configuration but changes will not applied until the app.authentication.force_env is removed or set to false.": "В настоящее время конфигурация аутентификации принудительно настраивается только с помощью переменной окружения. Аутентификацию по-прежнему можно настроить с помощью пользовательского интерфейса для подготовки конфигурации, но изменения не будут применяться до тех пор, пока app.authentication.force_env не будет удалена или установлено значение false.",
+  "Authentication configuration is currently forced by configuration to be with environment variable only. Authentication can still be configured with the UI to prepare configuration but changes will not apply until the app.authentication.force_env is removed or set to false.": "В настоящее время конфигурация аутентификации принудительно настраивается только с помощью переменной окружения. Аутентификацию по-прежнему можно настроить с помощью пользовательского интерфейса для подготовки конфигурации, но изменения не будут применяться до тех пор, пока app.authentication.force_env не будет удалена или установлено значение false.",
   "Authentication Definition": "Определение аутентификации",
   "Authentication definitions": "Определения аутентификации",
   "Authentication Definitions": "Определения аутентификации",

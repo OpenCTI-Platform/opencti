@@ -15,6 +15,7 @@ import SSODefinitionCreation from '@components/settings/sso_definitions/SSODefin
 import ItemBoolean from '../../../../components/ItemBoolean';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
+import AuthenticationDefinitionAlert from '@components/settings/sso_definitions/AuthenticationDefinitionAlert';
 
 const LOCAL_STORAGE_KEY = 'SSODefinitions';
 
@@ -103,6 +104,9 @@ const ssoDefinitionsLinesFragment = graphql`
         globalCount
       }
     }
+    singleSignOnSettings {
+      is_force_env
+    }
   }
 `;
 const SSODefinitions = () => {
@@ -182,21 +186,24 @@ const SSODefinitions = () => {
       {isEnterpriseEdition ? (
         <>
           {queryRef && (
-            <DataTable
-              dataColumns={dataColumns}
-              resolvePath={(data: SSODefinitionsLines_data$data) => data.singleSignOns?.edges?.map((e) => e?.node)}
-              storageKey={LOCAL_STORAGE_KEY}
-              initialValues={initialValues}
-              contextFilters={contextFilters}
-              lineFragment={ssoDefinitionsLineFragment}
-              preloadedPaginationProps={preloadedPaginationProps}
-              entityTypes={['SingleSignOn']}
-              searchContextFinal={{ entityTypes: ['SingleSignOn'] }}
-              disableToolBar
-              removeSelectAll
-              disableLineSelection
-              createButton={<SSODefinitionCreation paginationOptions={queryPaginationOptions} />}
-            />
+            <>
+              <AuthenticationDefinitionAlert preloadedPaginationProps={preloadedPaginationProps} />
+              <DataTable
+                dataColumns={dataColumns}
+                resolvePath={(data: SSODefinitionsLines_data$data) => data.singleSignOns?.edges?.map((e) => e?.node)}
+                storageKey={LOCAL_STORAGE_KEY}
+                initialValues={initialValues}
+                contextFilters={contextFilters}
+                lineFragment={ssoDefinitionsLineFragment}
+                preloadedPaginationProps={preloadedPaginationProps}
+                entityTypes={['SingleSignOn']}
+                searchContextFinal={{ entityTypes: ['SingleSignOn'] }}
+                disableToolBar
+                removeSelectAll
+                disableLineSelection
+                createButton={<SSODefinitionCreation paginationOptions={queryPaginationOptions} />}
+              />
+            </>
           )}
         </>
       ) : (
