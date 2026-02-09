@@ -24,7 +24,6 @@ import { getEntitiesListFromCache } from '../database/cache';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { checkUserCanShareMarkings } from './user';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
-import { getDraftContext } from '../utils/draftContext';
 import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from './backgroundTask-common';
 import { objectOrganization, RELATION_GRANTED_TO } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
@@ -269,9 +268,6 @@ const createSharingTask = async (context, type, containerId, organizationId) => 
 };
 
 export const addOrganizationRestriction = async (context, user, fromId, organizationId, directContainerSharing) => {
-  if (getDraftContext(context, user)) {
-    throw UnsupportedError('Cannot restrict organization in draft', { organizationId });
-  }
   const organizationIds = Array.isArray(organizationId) ? organizationId : [organizationId];
   const from = await internalLoadById(context, user, fromId);
   const currentGrants = from[buildRefRelationKey(RELATION_GRANTED_TO)] ?? [];
@@ -296,9 +292,6 @@ export const addOrganizationRestriction = async (context, user, fromId, organiza
 };
 
 export const removeOrganizationRestriction = async (context, user, fromId, organizationId, directContainerSharing) => {
-  if (getDraftContext(context, user)) {
-    throw UnsupportedError('Cannot remove organization restriction in draft', { organizationId });
-  }
   const organizationIds = Array.isArray(organizationId) ? organizationId : [organizationId];
   const from = await internalLoadById(context, user, fromId);
   const currentGrants = from[buildRefRelationKey(RELATION_GRANTED_TO)] ?? [];
