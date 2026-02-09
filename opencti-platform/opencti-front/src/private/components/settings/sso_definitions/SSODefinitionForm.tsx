@@ -32,7 +32,7 @@ interface SSODefinitionFormProps {
     values: SSODefinitionFormValues,
     formikHelpers: { setSubmitting: (b: boolean) => void; resetForm: () => void },
   ) => void;
-  selectedStrategy: string | null;
+  selectedStrategy: string;
   onSubmitField?: (field: SSOEditionFormInputKeys, value: unknown) => void;
   data?: SSODefinitionEditionFragment$data;
   isOpen?: boolean;

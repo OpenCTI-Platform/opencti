@@ -11,6 +11,7 @@ import { getGroupOrOrganizationMapping } from './utils/GroupOrOrganizationMappin
 import useFormikToSSOConfig from './utils/useFormikToSSOConfig';
 import SSODefinitionForm, { SSODefinitionFormValues } from '@components/settings/sso_definitions/SSODefinitionForm';
 import { getStrategyConfigEnum } from '@components/settings/sso_definitions/utils/useStrategicConfig';
+import { SingleSignOnAddInput } from '@components/settings/sso_definitions/__generated__/SSODefinitionCreationMutation.graphql';
 
 const ssoDefinitionMutation = graphql`
   mutation SSODefinitionCreationMutation(
@@ -30,7 +31,7 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
-  const [selectedStrategy, setSelectedStrategy] = useState<string | null>(null);
+  const [selectedStrategy, setSelectedStrategy] = useState<string>('');
 
   const formikToSSOConfig = useFormikToSSOConfig(selectedStrategy ?? '');
 
@@ -72,7 +73,6 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
           //   setSelectedStrategy('LocalAuth');
           //   break;
           // }
-          default: setSelectedStrategy(null);
         }
       }}
       {...props}
@@ -84,7 +84,6 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
     { setSubmitting, resetForm }: { setSubmitting: (flag: boolean) => void; resetForm: () => void },
   ) => {
     if (!formikToSSOConfig) return;
-    const selectedCert = selectedStrategy === 'ClientCert';
     const configuration = formikToSSOConfig(values);
 
     values.advancedConfigurations.forEach((conf) => {
@@ -100,34 +99,36 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
     const strategyEnum = getStrategyConfigEnum(selectedStrategy);
 
     const groups_management = {
-      group_attribute: selectedCert ? '' : values.group_attribute || null,
-      group_attributes: selectedCert ? '' : values.group_attributes || null,
-      groups_attributes: selectedCert ? '' : values.groups_attributes || null,
-      groups_path: selectedCert ? '' : values.groups_path || null,
-      groups_scope: selectedCert ? '' : values.groups_scope || null,
-      groups_mapping: selectedCert ? '' : getGroupOrOrganizationMapping(values.groups_mapping_source, values.groups_mapping_target),
+      group_attribute: values.group_attribute || null,
+      group_attributes: values.group_attributes || null,
+      groups_attributes: values.groups_attributes || null,
+      groups_path: values.groups_path || null,
+      groups_scope: values.groups_scope || null,
+      groups_mapping: getGroupOrOrganizationMapping(values.groups_mapping_source, values.groups_mapping_target),
       token_reference: values.groups_token_reference,
       read_userinfo: values.groups_read_userinfo,
     };
 
     const organizations_management = {
       token_reference: values.organizations_token_reference,
-      organizations_path: selectedCert ? '' : values.organizations_path || null,
-      organizations_scope: selectedCert ? '' : values.organizations_scope || null,
+      organizations_path: values.organizations_path || null,
+      organizations_scope: values.organizations_scope || null,
       read_userinfo: values.organizations_read_userinfo,
-      organizations_mapping: selectedCert ? '' : getGroupOrOrganizationMapping(values.organizations_mapping_source, values.organizations_mapping_target),
+      organizations_mapping: getGroupOrOrganizationMapping(values.organizations_mapping_source, values.organizations_mapping_target),
     };
 
-    const finalValues = {
+    if (!strategyEnum) return;
+
+    let finalValues: SingleSignOnAddInput = {
       name: values.name,
       identifier: values.identifier,
       label: values.label,
       enabled: values.enabled,
       strategy: strategyEnum,
       configuration,
-      groups_management,
-      organizations_management,
     };
+
+    if (selectedStrategy !== 'ClientCert') finalValues = { ...finalValues, groups_management, organizations_management };
 
     commitMutation({
       ...defaultCommitMutation,
@@ -145,7 +146,7 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        setSelectedStrategy(null);
+        setSelectedStrategy('');
       },
     });
   };
