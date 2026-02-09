@@ -14,7 +14,7 @@ import { utcDate } from '../utils/format';
 import { elIndexElements } from '../database/engine';
 import type { StixRelation, StixSighting } from '../types/stix-2-1-sro';
 import { internalFindByIds, topEntitiesList } from '../database/middleware-loader';
-import type { BasicRuleEntity, BasicStoreEntity } from '../types/store';
+import type { BasicRuleEntity, BasicStoreBase, BasicStoreEntity } from '../types/store';
 import { BASE_TYPE_ENTITY, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
 import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_HISTORY, ENTITY_TYPE_PIR_HISTORY } from '../schema/internalObject';
@@ -27,6 +27,7 @@ import { extractStixRepresentative } from '../database/stix-representative';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { RELATION_IN_PIR } from '../schema/internalRelationship';
+import { pushAll } from '../utils/arrayUtil';
 
 const HISTORY_ENGINE_KEY = conf.get('history_manager:lock_key');
 const HISTORY_WITH_INFERENCES = booleanConf('history_manager:include_inferences', false);
@@ -73,7 +74,7 @@ export const resolveGrantedRefsIds = async (context: AuthContext, events: Array<
     const eventGrantedRefsIds = (stix.extensions[STIX_EXT_OCTI].granted_refs_ids ?? []);
     const eventGrantedRefsStandardIds = (stix.extensions[STIX_EXT_OCTI].granted_refs ?? []);
     if (eventGrantedRefsIds.length === 0 && eventGrantedRefsStandardIds.length > 0) {
-      grantedRefsToResolve.push(...eventGrantedRefsStandardIds);
+      pushAll(grantedRefsToResolve, eventGrantedRefsStandardIds);
     }
   });
   const organizationByIdsMap = new Map<string, string>();
@@ -84,7 +85,7 @@ export const resolveGrantedRefsIds = async (context: AuthContext, events: Array<
     type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
     baseData: true,
     baseFields: ['standard_id', 'internal_id'],
-  });
+  }) as BasicStoreBase[];
   organizationsByIds.forEach((o) => {
     organizationByIdsMap.set(o.standard_id, o.internal_id);
   });
@@ -176,11 +177,11 @@ export const buildHistoryElementsFromEvents = async (context: AuthContext, event
       const previousMarkingRefs = (previous.object_marking_refs ?? [])
         .map((stixId) => markingsById.get(stixId)?.internal_id)
         .filter((o) => isNotEmptyField(o)) as string[];
-      eventMarkingRefs.push(...previousMarkingRefs);
+      pushAll(eventMarkingRefs, previousMarkingRefs);
       // Get related restrictions (e.g. markings of added objects in a container)
       if (updateEvent.context.related_restrictions) {
         const relatedMarkings = updateEvent.context.related_restrictions.markings ?? [];
-        eventMarkingRefs.push(...relatedMarkings);
+        pushAll(eventMarkingRefs, relatedMarkings);
       }
       // add changes
       contextData.changes = updateEvent.context.changes;
@@ -190,16 +191,16 @@ export const buildHistoryElementsFromEvents = async (context: AuthContext, event
       contextData.from_id = rel.extensions[STIX_EXT_OCTI].source_ref;
       contextData.to_id = rel.extensions[STIX_EXT_OCTI].target_ref;
       // Markings of the source/target must be taken into account to ensure data visibility restrictions
-      eventMarkingRefs.push(...(rel.extensions[STIX_EXT_OCTI].source_ref_object_marking_refs ?? []));
-      eventMarkingRefs.push(...(rel.extensions[STIX_EXT_OCTI].target_ref_object_marking_refs ?? []));
+      pushAll(eventMarkingRefs, (rel.extensions[STIX_EXT_OCTI].source_ref_object_marking_refs ?? []));
+      pushAll(eventMarkingRefs, (rel.extensions[STIX_EXT_OCTI].target_ref_object_marking_refs ?? []));
     }
     if (stix.type === STIX_TYPE_SIGHTING) {
       const sighting: StixSighting = stix as StixSighting;
       contextData.from_id = sighting.extensions[STIX_EXT_OCTI].sighting_of_ref;
       contextData.to_id = R.head(sighting.extensions[STIX_EXT_OCTI].where_sighted_refs);
       // Markings of the source/target must be taken into account to ensure data visibility restrictions
-      eventMarkingRefs.push(...(sighting.extensions[STIX_EXT_OCTI].sighting_of_ref_object_marking_refs ?? []));
-      eventMarkingRefs.push(...(sighting.extensions[STIX_EXT_OCTI].where_sighted_refs_object_marking_refs ?? []));
+      pushAll(eventMarkingRefs, (sighting.extensions[STIX_EXT_OCTI].sighting_of_ref_object_marking_refs ?? []));
+      pushAll(eventMarkingRefs, (sighting.extensions[STIX_EXT_OCTI].where_sighted_refs_object_marking_refs ?? []));
     }
     if (R.uniq(eventMarkingRefs).length > 0) {
       contextData.marking_definitions = R.uniq(eventMarkingRefs).map((n) => markingsById.get(n)?.definition ?? 'Unknown');

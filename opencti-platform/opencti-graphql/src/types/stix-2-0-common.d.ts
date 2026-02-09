@@ -7,9 +7,11 @@ export type StixId = `${string}--${v4 | v5}`;
 interface StixFile {
   name: string;
   uri: string;
-  version: string;
-  mime_type: string;
+  version?: string;
+  mime_type?: string;
   object_marking_refs: string[];
+  data?: string | undefined;
+  no_trigger_import?: boolean;
 }
 
 export interface StixObject {

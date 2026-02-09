@@ -22,7 +22,7 @@ import {
 import type { AuthContext, AuthUser } from '../types/user';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
-import type { BasicStoreEntity, BasicWorkflowStatus } from '../types/store';
+import type { BasicStoreEntity, BasicWorkflowStatus, StoreEntity } from '../types/store';
 import { getEntitiesListFromCache } from '../database/cache';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { elCount } from '../database/engine';
@@ -157,7 +157,7 @@ export const statusEditField = async (context: AuthContext, user: AuthUser, subT
   return findSubTypeById(subTypeId);
 };
 export const statusTemplateEditField = async (context: AuthContext, user: AuthUser, statusTemplateId: string, input: EditInput[]) => {
-  const { element } = await updateAttribute(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE, input);
+  const { element } = await updateAttribute<StoreEntity>(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE, input);
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -191,7 +191,7 @@ export const statusTemplateDelete = async (context: AuthContext, user: AuthUser,
   const result = await fullEntitiesList(context, user, [ENTITY_TYPE_STATUS], { filters });
   await Promise.all(result.map((status) => internalDeleteElementById(context, user, status.id, ENTITY_TYPE_STATUS)
     .then(({ element }) => notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, element, user))));
-  const deleted = await deleteElementById(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE);
+  const deleted = await deleteElementById<StoreEntity>(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE);
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -204,14 +204,14 @@ export const statusTemplateDelete = async (context: AuthContext, user: AuthUser,
 };
 export const statusTemplateEditContext = async (context: AuthContext, user: AuthUser, statusTemplateId: string, input: EditContext) => {
   await setEditContext(user, statusTemplateId, input);
-  // eslint-disable-next-line max-len
+
   return storeLoadById(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE).then((statusTemplate) => {
     return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, statusTemplate, user);
   });
 };
 export const statusTemplateCleanContext = async (context: AuthContext, user: AuthUser, statusTemplateId: string) => {
   await delEditContext(user, statusTemplateId);
-  // eslint-disable-next-line max-len
+
   return storeLoadById(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE).then((statusTemplate) => {
     return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, statusTemplate, user);
   });

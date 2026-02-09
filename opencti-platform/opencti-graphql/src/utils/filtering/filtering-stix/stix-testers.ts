@@ -56,6 +56,7 @@ import { type AuthorizedMember, isUserInAuthorizedMember } from '../../access';
 import type { AuthUser } from '../../../types/user';
 import { UnsupportedError } from '../../../config/errors';
 import type { PirInformation } from '../../../modules/pir/pir-types';
+import { pushAll } from '../../arrayUtil';
 
 // -----------------------------------------------------------------------------------
 // Testers for each possible filter.
@@ -419,17 +420,17 @@ export const testConnectedToSideEvents = (stix: any, filter: Filter) => {
 
   // advanced test between filter ids and the entity relations and refs
   // we shall aggregate all candidate fields and match the filter
-  const aggregatedStixValues = [];
+  const aggregatedStixValues: string[] = [];
   if (stix.type === STIX_TYPE_RELATION) {
-    aggregatedStixValues.push(...toValidArray(stix.target_ref)); // to
-    aggregatedStixValues.push(...toValidArray(stix.source_ref)); // from
+    pushAll(aggregatedStixValues, toValidArray(stix.target_ref)); // to
+    pushAll(aggregatedStixValues, toValidArray(stix.source_ref)); // from
   }
   if (stix.type === STIX_TYPE_SIGHTING) {
-    aggregatedStixValues.push(...(stix.where_sighted_refs ?? [])); // to
-    aggregatedStixValues.push(...toValidArray(stix.sighting_of_ref)); // from
+    pushAll(aggregatedStixValues, (stix.where_sighted_refs ?? [])); // to
+    pushAll(aggregatedStixValues, toValidArray(stix.sighting_of_ref)); // from
   }
   // refs
-  aggregatedStixValues.push(...stixRefsExtractor(stix));
+  pushAll(aggregatedStixValues, stixRefsExtractor(stix));
 
   return testStringFilter(filter, aggregatedStixValues);
 };

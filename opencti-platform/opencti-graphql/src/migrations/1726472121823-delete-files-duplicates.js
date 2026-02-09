@@ -5,6 +5,7 @@ import { ENTITY_TYPE_INTERNAL_FILE } from '../schema/internalObject';
 import { elDeleteInstances, elIndexGetAlias } from '../database/engine';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
+import { pushAll } from '../utils/arrayUtil';
 
 const message = '[MIGRATION] Delete potential files duplicates after index rollover';
 
@@ -26,7 +27,7 @@ export const up = async (next) => {
     filesGroupedById.forEach(([_, filesList]) => {
       if (filesList.length > 1) { // if a duplicate exists
         const sortedFileList = filesList.sort((a, b) => new Date(b.lastModified) - new Date(a.lastModified));
-        filesToDelete.push(...sortedFileList.slice(1));
+        pushAll(filesToDelete, sortedFileList.slice(1));
       }
     });
     const finalFilesToDelete = filesToDelete.map((h) => ({ _index: h._index, internal_id: h.internal_id }));

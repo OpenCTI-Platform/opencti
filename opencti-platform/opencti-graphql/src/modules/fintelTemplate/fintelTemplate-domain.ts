@@ -11,7 +11,7 @@ import {
   type WidgetDataSelection,
 } from '../../generated/graphql';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
-import { type BasicStoreEntityFintelTemplate, ENTITY_TYPE_FINTEL_TEMPLATE } from './fintelTemplate-types';
+import { type BasicStoreEntityFintelTemplate, ENTITY_TYPE_FINTEL_TEMPLATE, type StoreEntityFintelTemplate } from './fintelTemplate-types';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
@@ -189,7 +189,7 @@ export const fintelTemplateEditField = async (
     return i;
   });
   // edit the fintel template
-  const { element } = await updateAttribute(
+  const { element } = await updateAttribute<StoreEntityFintelTemplate>(
     context,
     user,
     templateId,
@@ -211,7 +211,7 @@ export const fintelTemplateEditField = async (
 
 export const fintelTemplateDelete = async (context: AuthContext, user: AuthUser, templateId: string) => {
   await canCustomizeTemplate(context);
-  const deleted = await deleteElementById(
+  const deleted = await deleteElementById<StoreEntityFintelTemplate>(
     context,
     user,
     templateId,

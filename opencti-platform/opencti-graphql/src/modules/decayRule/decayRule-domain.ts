@@ -23,6 +23,7 @@ import {
   ENTITY_IPV6_ADDR,
   ENTITY_URL,
 } from '../../schema/stixCyberObservable';
+import { unshiftAll } from '../../utils/arrayUtil';
 
 const DECAY_FACTOR: number = 3.0;
 
@@ -128,7 +129,7 @@ export const fieldPatchDecayRule = async (context: AuthContext, user: AuthUser, 
     }
   }
 
-  const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_DECAY_RULE, finalInput);
+  const { element } = await updateAttribute<StoreEntityDecayRule>(context, user, id, ENTITY_TYPE_DECAY_RULE, finalInput);
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -148,7 +149,7 @@ export const deleteDecayRule = async (context: AuthContext, user: AuthUser, id: 
   if (decayRule.built_in) {
     throw FunctionalError(`Cannot delete built-in decay rule ${id}`);
   }
-  const deleted = await deleteElementById(context, user, id, ENTITY_TYPE_DECAY_RULE);
+  const deleted = await deleteElementById<StoreEntityDecayRule>(context, user, id, ENTITY_TYPE_DECAY_RULE);
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -233,7 +234,7 @@ export const computeChartDecayAlgoSerie = (computeChartInput: ComputeDecayChartI
         }
         i += 1;
       }
-      decayData.unshift(...scoreInThePast);
+      unshiftAll(decayData, scoreInThePast);
     }
     return decayData;
   }

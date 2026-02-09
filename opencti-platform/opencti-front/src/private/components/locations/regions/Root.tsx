@@ -160,6 +160,7 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
               enableQuickSubscription={true}
               isOpenctiAlias={true}
               redirectToContent={true}
+              enableEnrollPlaybook={true}
             />
             <Box
               sx={{

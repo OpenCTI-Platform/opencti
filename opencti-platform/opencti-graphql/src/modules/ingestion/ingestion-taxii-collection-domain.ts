@@ -1,4 +1,4 @@
-import { type BasicStoreEntityIngestionTaxiiCollection, ENTITY_TYPE_INGESTION_TAXII_COLLECTION } from './ingestion-types';
+import { type BasicStoreEntityIngestionTaxiiCollection, ENTITY_TYPE_INGESTION_TAXII_COLLECTION, type StoreEntityIngestionTaxiiCollection } from './ingestion-types';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
 import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { BUS_TOPICS } from '../../config/conf';
@@ -51,7 +51,7 @@ export const ingestionEditField = async (context: AuthContext, user: AuthUser, i
     }
     return item;
   });
-  const { element } = await updateAttribute(context, user, ingestionId, ENTITY_TYPE_INGESTION_TAXII_COLLECTION, finalInput);
+  const { element } = await updateAttribute<StoreEntityIngestionTaxiiCollection>(context, user, ingestionId, ENTITY_TYPE_INGESTION_TAXII_COLLECTION, finalInput);
   await registerConnectorForIngestion(context, {
     id: element.id,
     type: 'TAXII-PUSH',
@@ -72,7 +72,7 @@ export const ingestionEditField = async (context: AuthContext, user: AuthUser, i
 };
 
 export const ingestionDelete = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
-  const deleted = await deleteElementById(context, user, ingestionId, ENTITY_TYPE_INGESTION_TAXII_COLLECTION);
+  const deleted = await deleteElementById<StoreEntityIngestionTaxiiCollection>(context, user, ingestionId, ENTITY_TYPE_INGESTION_TAXII_COLLECTION);
   await unregisterConnectorForIngestion(context, deleted.id);
   await publishUserAction({
     user,

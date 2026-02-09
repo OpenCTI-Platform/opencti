@@ -13,6 +13,8 @@ import { utcDate } from '../utils/format';
 import { sendAdministratorsLostConnectivityEmail } from '../modules/xtm/hub/xtm-hub-email';
 import { getEnterpriseEditionInfo } from '../modules/settings/licensing';
 
+import { pushAll } from '../utils/arrayUtil';
+
 interface AttributeUpdate {
   key: keyof BasicStoreSettings;
   value: unknown[];
@@ -44,7 +46,7 @@ export const checkXTMHubConnectivity = async (context: AuthContext, user: AuthUs
   }
 
   const emailAttributeUpdates = await handleLostConnectivityEmail(context, settings, isConnectivityActive);
-  attributeUpdates.push(...emailAttributeUpdates);
+  pushAll(attributeUpdates, emailAttributeUpdates);
 
   if (isConnectivityActive) {
     attributeUpdates.push({ key: 'xtm_hub_last_connectivity_check', value: [new Date()] });

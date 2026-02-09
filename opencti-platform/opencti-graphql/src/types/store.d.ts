@@ -79,9 +79,9 @@ interface NumberResult {
 interface StoreFile {
   id: string;
   name: string;
-  version: string;
-  mime_type: string;
-  description: string;
+  version?: string;
+  mime_type?: string;
+  description?: string;
   order?: number;
   inCarousel?: boolean;
   file_markings?: string[];
@@ -114,6 +114,7 @@ interface BasicStoreBase extends BasicStoreIdentifier {
   base_type: 'ENTITY' | 'RELATION';
   parent_types: string[];
   spec_version: string;
+  i_attributes?: { name: string; updated_at: string; confidence: number; user_id: string }[];
   created_at: Date;
   updated_at: Date;
   refreshed_at?: Date;

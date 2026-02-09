@@ -1,4 +1,4 @@
-import { type BasicStoreEntityIngestionRss, ENTITY_TYPE_INGESTION_RSS } from './ingestion-types';
+import { type BasicStoreEntityIngestionRss, ENTITY_TYPE_INGESTION_RSS, type StoreEntityIngestionRss } from './ingestion-types';
 import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { BUS_TOPICS } from '../../config/conf';
@@ -49,7 +49,7 @@ export const patchRssIngestion = async (context: AuthContext, user: AuthUser, id
 };
 
 export const ingestionEditField = async (context: AuthContext, user: AuthUser, ingestionId: string, input: EditInput[]) => {
-  const { element } = await updateAttribute(context, user, ingestionId, ENTITY_TYPE_INGESTION_RSS, input);
+  const { element } = await updateAttribute<StoreEntityIngestionRss>(context, user, ingestionId, ENTITY_TYPE_INGESTION_RSS, input);
   await registerConnectorForIngestion(context, {
     id: element.id,
     type: 'RSS',
@@ -69,7 +69,7 @@ export const ingestionEditField = async (context: AuthContext, user: AuthUser, i
 };
 
 export const ingestionDelete = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
-  const deleted = await deleteElementById(context, user, ingestionId, ENTITY_TYPE_INGESTION_RSS);
+  const deleted = await deleteElementById<StoreEntityIngestionRss>(context, user, ingestionId, ENTITY_TYPE_INGESTION_RSS);
   await unregisterConnectorForIngestion(context, deleted.id);
   await publishUserAction({
     user,

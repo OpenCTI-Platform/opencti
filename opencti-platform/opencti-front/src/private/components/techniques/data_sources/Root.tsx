@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // TODO Remove this when V6
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
@@ -113,6 +112,7 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
               </Security>
             )}
             redirectToContent={true}
+            enableEnrollPlaybook={true}
           />
           <Box
             sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 4 }}
