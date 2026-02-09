@@ -205,7 +205,7 @@ const SSODefinitions = () => {
               />
             </>
           )}
-          </>
+        </>
       ) : (
         <EnterpriseEdition feature="Authentication definitions" />
       )}
