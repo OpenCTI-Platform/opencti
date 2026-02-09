@@ -86,7 +86,7 @@ const Index = ({ settings }: IndexProps) => {
   const boxSx: SxProps = {
     px: 3,
     flex: 1,
-    overflowY: 'hidden',
+    overflowY: 'auto',
     minHeight: 0,
   };
 

@@ -15,6 +15,7 @@ import { useGraphContext } from './GraphContext';
 import GraphToolbarCorrelationTools from './components/GraphToolbarCorrelationTools';
 import GraphToolbarExpandTools, { GraphToolbarExpandToolsProps } from './components/GraphToolbarExpandTools';
 import useAuth from '../../utils/hooks/useAuth';
+import useDraftContext from '../../utils/hooks/useDraftContext';
 
 export type GraphToolbarProps = GraphToolbarContentToolsProps & GraphToolbarExpandToolsProps & GraphToolbarDisplayToolsProps;
 
@@ -25,9 +26,12 @@ const GraphToolbar = ({
   ...props
 }: GraphToolbarProps) => {
   const theme = useTheme<Theme>();
+  const draftContext = useDraftContext();
   const { bannerSettings: { bannerHeightNumber } } = useAuth();
   const navOpen = localStorage.getItem('navOpen') === 'true';
   const { selectBySearch } = useGraphInteractions();
+
+  const posBottom = draftContext ? 69 : 0;
 
   const {
     graphState: {
@@ -55,6 +59,7 @@ const GraphToolbar = ({
           overflow: 'hidden',
           transition: 'height 0.2s ease',
           marginBottom: bannerHeightNumber,
+          bottom: posBottom,
         },
       }}
     >
