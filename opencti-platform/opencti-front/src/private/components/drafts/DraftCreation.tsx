@@ -49,7 +49,7 @@ export const draftCreationMutation = graphql`
     }
 `;
 
-const DRAFTWORKPACE_TYPE = 'DraftWorkspace';
+export const DRAFTWORKPACE_TYPE = 'DraftWorkspace';
 
 interface DraftFormProps {
   updater: (
@@ -60,7 +60,7 @@ interface DraftFormProps {
   onCompleted?: () => void;
 }
 
-interface DraftAddInput {
+export interface DraftAddInput {
   name: string;
   description: string;
   objectAssignee: FieldOption[];
