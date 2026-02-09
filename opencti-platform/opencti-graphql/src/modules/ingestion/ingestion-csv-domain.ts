@@ -258,7 +258,7 @@ export const fetchCsvFromUrl = async (csvMapper: CsvMapperParsed, ingestion: Bas
   const httpClientOptions: GetHttpClient = { headers, rejectUnauthorized: false, responseType: 'arraybuffer', certificates };
   const httpClient = getHttpClient(httpClientOptions);
   const { data, headers: resultHeaders } = await httpClient.get(ingestion.uri);
-  const dataLines = data.toString().split('\n');
+  const dataLines = data.toString().split(/\r?\n/);
   const csvLines = dataLines
     .filter((line: string) => (
       (!!csvMapper.skipLineChar && !line.startsWith(csvMapper.skipLineChar))
