@@ -53,5 +53,3 @@ export const awaitUntilCondition = async (
     loopCurrent += 1;
   }
 };
-
-export default fakeDate;
