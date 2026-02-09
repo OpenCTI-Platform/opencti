@@ -465,8 +465,8 @@ const SSODefinitionForm = ({
                                 <MenuItem value="number">Number</MenuItem>
                                 <MenuItem value="boolean">Boolean</MenuItem>
                                 <MenuItem value="array">Array</MenuItem>
-                              <MenuItem value="secret">Secret</MenuItem>
-                            </Field>
+                                <MenuItem value="secret">Secret</MenuItem>
+                              </Field>
                               <IconButton
                                 color="primary"
                                 aria-label={t_i18n('Delete')}
