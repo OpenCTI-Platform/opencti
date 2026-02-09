@@ -162,6 +162,7 @@ const SSODefinitionForm = ({
 
   const validationSchema = validationSchemaConfiguration(selectedStrategy ?? '', t_i18n);
   const selectedCert = selectedStrategy === 'ClientCert';
+  const selectedHeader = selectedStrategy === 'Header';
 
   const initialValues: SSODefinitionFormValues = {
     name: '',
@@ -331,7 +332,7 @@ const SSODefinitionForm = ({
   const updateField = async (field: SSOEditionFormInputKeys, value: unknown) => {
     if (onSubmitField) onSubmitField(field, value);
   };
-  const showGroupAndMapping = selectedStrategy !== 'LocalAuth' && !selectedCert;
+  const showGroupAndMapping = selectedStrategy !== 'LocalAuth' && !selectedCert && !selectedHeader;
   return (
     <Formik
       enableReinitialize={!updateField}
@@ -399,7 +400,7 @@ const SSODefinitionForm = ({
               {selectedStrategy === 'SAML' && <SAMLConfig updateField={updateField} />}
               {selectedStrategy === 'OpenID' && <OpenIDConfig updateField={updateField} />}
               {selectedStrategy === 'LDAP' && <LDAPConfig updateField={updateField} />}
-              {!selectedCert && (
+              {!selectedCert && !selectedHeader && (
                 <FieldArray name="advancedConfigurations">
                   {({ push, remove, form }) => (
                     <>

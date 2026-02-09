@@ -72,6 +72,7 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
           //   setSelectedStrategy('LocalAuth');
           //   break;
           // }
+          default: setSelectedStrategy('');
         }
       }}
       {...props}
@@ -127,7 +128,7 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
       configuration,
     };
 
-    if (selectedStrategy !== 'ClientCert') finalValues = { ...finalValues, groups_management, organizations_management };
+    if (selectedStrategy !== 'ClientCert' || selectedStrategy !== 'Header') finalValues = { ...finalValues, groups_management, organizations_management };
 
     commitMutation({
       ...defaultCommitMutation,
