@@ -2,16 +2,19 @@ import { Page } from '@playwright/test';
 import { expect } from '../fixtures/baseFixtures';
 import type { AccessLevelLocator } from './AccessRestriction.pageModel';
 import AccessRestrictionPageModel from './AccessRestriction.pageModel';
+import DraftAddEntitiesFormPageModel from './form/draftAddEntitiesForm.pageModel';
 
 export default class DraftsPage {
   pageUrl = '/dashboard/data/import/draft';
 
   private page: Page;
   public accessRestriction: AccessRestrictionPageModel;
+  public createEntityPage: DraftAddEntitiesFormPageModel;
 
   constructor(page: Page) {
     this.page = page;
     this.accessRestriction = new AccessRestrictionPageModel(page);
+    this.createEntityPage = new DraftAddEntitiesFormPageModel(page);
   }
 
   getPage() {
@@ -57,18 +60,13 @@ export default class DraftsPage {
 
   async addEntityToDraft({ type, name }: { type: string; name: string }) {
     await this.page.getByRole('button', { name: /Create entity/i }).click();
-    await this.page.getByLabel(/Entity type/i).selectOption(type);
-    await this.page.getByLabel(/Name/i).fill(name);
-    await this.page.getByRole('button', { name: /Create/i }).click();
+    await this.createEntityPage.entityTypeField.selectOption(type);
+    await this.createEntityPage.nameField.fill(name);
+    return this.createEntityPage.getCreateButton().click();
   }
 
   getEntityInList(entityName: string) {
     return this.page.getByText(entityName, { exact: true });
-  }
-
-  // Select the top checkbox to select all entities in the list
-  async selectAllEntities() {
-    await this.page.getByRole('checkbox', { name: /Select all/i }).check();
   }
 
   // Click the "remove from draft" icon in the dataTable toolbar

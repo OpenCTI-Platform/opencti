@@ -5,13 +5,13 @@ import { expect, test } from '../fixtures/baseFixtures';
 import ReportPage from '../model/report.pageModel';
 import ReportDetailsPage from '../model/reportDetails.pageModel';
 import ReportFormPage from '../model/form/reportForm.pageModel';
-import fakeDate from '../utils';
 import AuthorFormPageModel from '../model/form/authorForm.pageModel';
 import LabelFormPageModel from '../model/form/labelForm.pageModel';
 import ExternalReferenceFormPageModel from '../model/form/externalReferenceForm.pageModel';
 import LeftBarPage from '../model/menu/leftBar.pageModel';
 // import ToolbarPageModel from '../model/toolbar.pageModel';
 import EntitiesTabPageModel from '../model/EntitiesTab.pageModel';
+import { fakeDate } from '../utils/utils';
 
 /**
  * Content of the test

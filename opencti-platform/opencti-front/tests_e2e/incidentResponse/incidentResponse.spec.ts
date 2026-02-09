@@ -5,7 +5,7 @@ import IncidentResponsePage from 'tests_e2e/model/incidentResponse.pageModel';
 import IncidentResponseFormPage from 'tests_e2e/model/form/incidentResponseForm.pageModel';
 import IncidentResponseDetailsPage from 'tests_e2e/model/incidentResponseDetails.pageModel';
 import { expect, test } from '../fixtures/baseFixtures';
-import fakeDate from '../utils';
+import { fakeDate } from '../utils/utils';
 import AuthorFormPageModel from '../model/form/authorForm.pageModel';
 import LabelFormPageModel from '../model/form/labelForm.pageModel';
 import ExternalReferenceFormPageModel from '../model/form/externalReferenceForm.pageModel';
