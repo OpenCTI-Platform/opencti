@@ -914,11 +914,11 @@ export const useBuildEntityTypeBasedFilterContext = (
     entityTypeContextFilters.push(excludedEntityTypeFilter);
   }
   if (draftId) {
-    entityTypeContextFilters.push({
+    entityTypeContextFilters.push({ // entities that are in the draft 'draftId'
       key: 'draft_ids',
       values: [draftId],
     });
-    entityTypeContextFilters.push({
+    entityTypeContextFilters.push({ // entities that are in the draft index (ie, don't take into account entities existing outside drafts but modified in a draft)
       key: 'draft_change',
       operator: 'not_nil',
       values: [],
