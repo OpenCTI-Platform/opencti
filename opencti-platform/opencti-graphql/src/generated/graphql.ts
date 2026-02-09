@@ -7323,8 +7323,12 @@ export type DraftWorkspaceWorksArgs = {
 
 export type DraftWorkspaceAddInput = {
   authorized_members?: InputMaybe<Array<MemberAccessInput>>;
+  createdBy?: InputMaybe<Scalars['String']['input']>;
+  description?: InputMaybe<Scalars['String']['input']>;
   entity_id?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
+  objectAssignee?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  objectParticipant?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
 export type DraftWorkspaceConnection = {

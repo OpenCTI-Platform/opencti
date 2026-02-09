@@ -14792,7 +14792,11 @@ type DraftWorkspaceEdge {
 
 input DraftWorkspaceAddInput {
   name: String!
+  createdBy: String
+  description: String
   entity_id: String
+  objectAssignee: [String]
+  objectParticipant: [String]
   authorized_members: [MemberAccessInput!]
 }
 
