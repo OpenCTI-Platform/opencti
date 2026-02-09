@@ -364,19 +364,18 @@ const SSODefinitionForm = ({
                 required
                 style={{ marginTop: 20 }}
               />
-              {!selectedCert && (
-                <div style={{ marginTop: 20 }}>
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="identifier"
-                    onSubmit={updateField}
-                    label={t_i18n('Authentication Name')}
-                    fullWidth
-                    required
-                  />
-                </div>
-              )}
+              <div style={{ marginTop: 20 }}>
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="identifier"
+                  onSubmit={updateField}
+                  label={t_i18n('Authentication Name')}
+                  fullWidth
+                  required
+                  disabled={selectedCert}
+                />
+              </div>
               <Field
                 component={SwitchField}
                 variant="standard"
