@@ -1,7 +1,6 @@
 import { DraftContext } from './useDraftContext';
 import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
 import useAuth from './useAuth';
-import useHelper from './useHelper';
 import useGranted, { SETTINGS, BYPASS, KNOWLEDGE, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNASKIMPORT } from './useGranted';
 import { RootMe_data$data } from '../../private/__generated__/RootMe_data.graphql';
 
@@ -26,12 +25,8 @@ describe('useGranted', () => {
     vi.resetAllMocks();
   });
 
-  const mockAuthMe = (me: MeUser, isDraftFeatureEnabled = true) => {
+  const mockAuthMe = (me: MeUser) => {
     (useAuth as Mock).mockReturnValue({ me: { id: 'user-id', ...me } });
-    // TODO remove when FF is deleted (CAPABILITIES_IN_DRAFT)
-    (useHelper as Mock).mockReturnValue({
-      isFeatureEnable: (feature: string) => feature === 'CAPABILITIES_IN_DRAFT' && isDraftFeatureEnabled,
-    });
   };
 
   // --- Core Security & Bypass ---
@@ -123,18 +118,6 @@ describe('useGranted', () => {
 
     // Explicitly asking to check the draft pool for KNOWLEDGE_KNASKIMPORT
     expect(useGranted([], false, { capabilitiesInDraft: [KNOWLEDGE_KNASKIMPORT] })).toBe(true);
-  });
-
-  // --- Feature Flag (FF) Protection ---
-
-  it('should ignore all draft logic if CAPABILITIES_IN_DRAFT feature flag is disabled', () => {
-    mockAuthMe({
-      draftContext,
-      capabilities: [{ name: KNOWLEDGE }],
-      capabilitiesInDraft: [{ name: KNOWLEDGE_KNASKIMPORT }],
-    }, false); // FF is OFF
-    expect(useGranted([KNOWLEDGE_KNASKIMPORT])).toBe(false);
-    expect(useGranted([], false, { capabilitiesInDraft: [KNOWLEDGE_KNASKIMPORT] })).toBe(false);
   });
 
   // --- Edge Cases ---
