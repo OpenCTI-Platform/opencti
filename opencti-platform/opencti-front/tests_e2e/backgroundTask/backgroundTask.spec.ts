@@ -13,7 +13,7 @@ test('Verify background tasks execution', { tag: ['@ce', '@mutation'] }, async (
   await runBackgroundTaskOnIncidentByFilter(page, false);
   await runBackgroundTaskOnIncidentBySearch(page, false);
 
-  await tasksPage.waitForTaskCompletion(page);
+  await tasksPage.waitForTaskCompletion();
 
   await searchOnDataEntitiesPerLabels(page, false);
 });
