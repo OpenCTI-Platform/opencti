@@ -2,22 +2,24 @@ import { describe, expect, it } from 'vitest';
 import { convertKeyValueToJsConfiguration } from '../../../../src/modules/singleSignOn/singleSignOn-providers';
 import type { BasicStoreEntitySingleSignOn } from '../../../../src/modules/singleSignOn/singleSignOn-types';
 import { computeLdapGroups, computeLdapOrganizations, computeLdapUserInfo } from '../../../../src/modules/singleSignOn/singleSignOn-provider-ldap';
+import { encryptAuthValue } from '../../../../src/modules/singleSignOn/singleSignOn-domain';
 
 describe('LDAP Single sign on Provider coverage tests', () => {
   describe('LDAP userInfo mapping coverage', () => {
     it('should LDAP user info with default config', async () => {
       const ldapProfile = { mail: 'ldap1@opencti.io', givenName: 'ldap1' };
+      const encryptedKey = encryptAuthValue('youShallNotPass');
       const ssoEntity: Partial<BasicStoreEntitySingleSignOn> = {
         identifier: 'ldap',
         configuration: [
           { key: 'url', type: 'string', value: 'ldap://localhost:389' },
           { key: 'bindDN', type: 'string', value: 'cn=admin,dc=example,dc=org' },
-          { key: 'bindCredentials', type: 'string', value: 'youShallNotPass' },
+          { key: 'bindCredentials', type: 'string', value: `${encryptedKey}` },
           { key: 'searchBase', type: 'string', value: 'dc=example,dc=org' },
           { key: 'searchFilter', type: 'string', value: 'mail={{username}}' },
         ],
       };
-      const ssoConfiguration: any = convertKeyValueToJsConfiguration(ssoEntity as BasicStoreEntitySingleSignOn);
+      const ssoConfiguration: any = await convertKeyValueToJsConfiguration(ssoEntity as BasicStoreEntitySingleSignOn);
 
       const result = computeLdapUserInfo(ssoConfiguration, ldapProfile);
       expect(result.email).toBe('ldap1@opencti.io');
@@ -42,7 +44,7 @@ describe('LDAP Single sign on Provider coverage tests', () => {
           { key: 'mail_attribute', type: 'string', value: 'theMail' },
         ],
       };
-      const ssoConfiguration: any = convertKeyValueToJsConfiguration(ssoEntity as BasicStoreEntitySingleSignOn);
+      const ssoConfiguration: any = await convertKeyValueToJsConfiguration(ssoEntity as BasicStoreEntitySingleSignOn);
 
       const result = computeLdapUserInfo(ssoConfiguration, ldapProfile);
       expect(result.email).toBe('samltestuser1@opencti.io');

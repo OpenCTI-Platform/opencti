@@ -26,7 +26,7 @@ describe('OpenID Single sign on Provider coverage tests', () => {
           { key: 'lastname_attribute', type: 'string', value: 'theLastName' },
         ],
       };
-      const ssoConfiguration: any = convertKeyValueToJsConfiguration(ssoEntity as BasicStoreEntitySingleSignOn);
+      const ssoConfiguration: any = await convertKeyValueToJsConfiguration(ssoEntity as BasicStoreEntitySingleSignOn);
 
       const result = computeOpenIdUserInfo(ssoConfiguration, openIdProfile);
       expect(result.email).toBe('winry.rockbell@anime.jp');

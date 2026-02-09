@@ -15,10 +15,11 @@ import { queryAsAdminWithSuccess, queryAsUserIsExpectedError, queryAsUserIsExpec
 import { ADMIN_USER, testContext, USER_PARTICIPATE, USER_SECURITY } from '../../../utils/testQuery';
 import { deleteElementById } from '../../../../src/database/middleware';
 import { ENTITY_TYPE_SINGLE_SIGN_ON } from '../../../../src/modules/singleSignOn/singleSignOn-types';
+import { ENCRYPTED_TYPE, TO_ENCRYPT_TYPE } from '../../../../src/modules/singleSignOn/singleSignOn-domain';
 
 export const SINGLE_SIGN_ON_LIST_QUERY = gql`
-    query singleSignOns($first: Int) {
-        singleSignOns(first: $first) {
+    query singleSignOns($first: Int $filters: FilterGroup) {
+        singleSignOns(first: $first, filters: $filters) {
             edges {
                 node {
                     id
@@ -26,6 +27,18 @@ export const SINGLE_SIGN_ON_LIST_QUERY = gql`
                     strategy
                     enabled
                     identifier
+                    configuration {
+                        key
+                        value
+                        type
+                    }
+                    groups_management {
+                        groups_path
+                        groups_mapping
+                    }
+                    organizations_management {
+                        organizations_mapping
+                    }
                 }
             }
         }
@@ -38,6 +51,11 @@ export const SINGLE_SIGN_ON_CREATE = gql`
             name
             strategy
             enabled
+            configuration {
+                key
+                value
+                type
+            }
         }
     }
 `;
@@ -57,9 +75,9 @@ export const SINGLE_SIGN_ON_UPDATE = gql`
             groups_path
             groups_mapping
           }
-            organizations_management {
-                organizations_mapping
-            }
+          organizations_management {
+              organizations_mapping
+          }
         }
     }
 `;
@@ -69,7 +87,59 @@ export const SINGLE_SIGN_ON_DELETE = gql`
     }
 `;
 
-describe('Single Sign On', () => {
+describe('SSO: Local strategy dedicated behaviour', () => {
+  let localStrategyId: string;
+  it('should get Local Strategy', async () => {
+    const localStrategy = await queryAsAdminWithSuccess({
+      query: SINGLE_SIGN_ON_LIST_QUERY,
+      variables: {
+        filters: {
+          mode: FilterMode.And,
+          filters: [{ key: ['strategy'], values: [StrategyType.LocalStrategy], operator: FilterOperator.Eq }],
+          filterGroups: [],
+        },
+      },
+    });
+    expect(localStrategy).toBeDefined();
+    expect(localStrategy?.data?.singleSignOns.edges[0].node.identifier).toBe('local');
+    localStrategyId = localStrategy?.data?.singleSignOns.edges[0].node.id;
+  });
+  it('should not create 2nd Local Strategy', async () => {
+    const createInput: SingleSignOnAddInput = {
+      name: 'local2',
+      strategy: StrategyType.LocalStrategy,
+      enabled: true,
+      identifier: 'local2',
+      configuration: [
+        { key: 'label', value: 'local label', type: 'string' },
+      ],
+    };
+    await queryAsUserIsExpectedError(USER_SECURITY.client, {
+      query: SINGLE_SIGN_ON_CREATE,
+      variables: { input: createInput },
+    }, 'Local Strategy already exists in database', 'FUNCTIONAL_ERROR');
+  });
+  it('should not delete Local Strategy', async () => {
+    await queryAsUserIsExpectedError(USER_SECURITY.client, {
+      query: SINGLE_SIGN_ON_DELETE,
+      variables: { id: localStrategyId },
+    }, 'Cannot delete Local Strategy', 'FUNCTIONAL_ERROR');
+  });
+  it('should delete Local Strategy', async () => {
+    await deleteElementById(testContext, ADMIN_USER, localStrategyId, ENTITY_TYPE_SINGLE_SIGN_ON);
+    const singleSignOnList = await queryAsAdminWithSuccess({
+      query: SINGLE_SIGN_ON_LIST_QUERY,
+      variables: { first: 10 },
+    });
+
+    expect(singleSignOnList).toBeDefined();
+    const ssoList = singleSignOnList?.data?.singleSignOns.edges;
+    expect(ssoList.find((item: any) => item?.node?.id === localStrategyId)).toBeUndefined();
+    expect(ssoList.find((item: any) => item?.node?.id === localStrategyId)).toBeUndefined();
+  });
+});
+
+describe('Single Sign On CRUD coverage', () => {
   let createdSingleSignOn1Id: string;
   let createdSingleSignOn2Id: string;
   const createdSingleSighOns: string[] = [];
@@ -82,8 +152,10 @@ describe('Single Sign On', () => {
       identifier: 'test1',
       configuration: [
         { key: 'callbackUrl', value: 'http://myopencti/auth/samlTestDomain/callback', type: 'string' },
-        { key: 'idpCert', value: '21341234', type: 'string' },
+        { key: 'cert', value: '21341234', type: 'string' },
         { key: 'issuer', value: 'issuer', type: 'string' },
+        { key: 'privateKey', value: 'myPK', type: 'string' },
+        { key: 'mySecret', value: 'Ilove;Mint', type: TO_ENCRYPT_TYPE },
       ],
     };
     it('should not create single sign on entity without SETAUTH capa', async () => {
@@ -102,7 +174,26 @@ describe('Single Sign On', () => {
       expect(singleSignOn?.data?.singleSignOnAdd.name).toBe('test name 1');
       createdSingleSignOn1Id = singleSignOn?.data?.singleSignOnAdd.id;
       createdSingleSighOns.push(createdSingleSignOn1Id);
+
+      const configurationData: ConfigurationTypeInput[] = singleSignOn?.data?.singleSignOnAdd?.configuration as ConfigurationTypeInput[];
+      const certData = configurationData.find((config) => config.key === 'cert') as ConfigurationTypeInput;
+      expect(certData.value).toBe('21341234');
+      const callbackUrlData = configurationData.find((config) => config.key === 'callbackUrl') as ConfigurationTypeInput;
+      expect(callbackUrlData.value).toBe('http://myopencti/auth/samlTestDomain/callback');
+      const issuerData = configurationData.find((config) => config.key === 'issuer') as ConfigurationTypeInput;
+      expect(issuerData.value).toBe('issuer');
+
+      // should be encrypted because in AUTH_SECRET_LIST list
+      const privateKeyData = configurationData.find((config) => config.key === 'privateKey') as ConfigurationTypeInput;
+      expect(privateKeyData.value).not.toBe('myPK');
+      expect(privateKeyData.type).toBe(ENCRYPTED_TYPE);
+
+      // this one is encrypted because enter as 'secret' by user
+      const customSecretData = configurationData.find((config) => config.key === 'mySecret') as ConfigurationTypeInput;
+      expect(customSecretData.value).not.toBe('Ilove;Mint');
+      expect(customSecretData.type).toBe(ENCRYPTED_TYPE);
     });
+
     it('should create another single sign on entity', async () => {
       const createInput2: SingleSignOnAddInput = {
         name: 'test name 2',
@@ -243,6 +334,29 @@ describe('Single Sign On', () => {
       expect(result?.data?.singleSignOnFieldPatch?.groups_management.groups_mapping).toStrictEqual(['/Connector:Connectors']);
     });
   });
+
+  describe('configuration migration coverage', async () => {
+    it('should migration dry run not raise errors', async () => {
+      const input: SingleSignMigrationInput = {
+        dry_run: true,
+      };
+      const result = await queryAsAdminWithSuccess({
+        query: gql`
+            mutation singleSignOnRunMigration($input: SingleSignMigrationInput!) {
+                singleSignOnRunMigration(input: $input) {
+                    name
+                    description
+                }
+            }
+        `,
+        variables: { input },
+      });
+      expect(result?.data?.singleSignOnRunMigration).toBeDefined();
+      const ssoConfig: SingleSignOnMigrationResult[] = result?.data?.singleSignOnRunMigration;
+      expect(ssoConfig[0]?.description).toMatch(/Automatically detected from local */);
+    });
+  });
+
   describe('Delete', () => {
     it('should not delete single sign on without SETAUTH capa', async () => {
       await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
@@ -267,77 +381,5 @@ describe('Single Sign On', () => {
       expect(ssoList.find((item: any) => item?.node?.id === createdSingleSignOn1Id)).toBeUndefined();
       expect(ssoList.find((item: any) => item?.node?.id === createdSingleSignOn2Id)).toBeUndefined();
     });
-  });
-
-  describe('configuration migration coverage', async () => {
-    it('should migration dry run not raise errors', async () => {
-      const input: SingleSignMigrationInput = {
-        dry_run: true,
-      };
-      const result = await queryAsAdminWithSuccess({
-        query: gql`
-            mutation singleSignOnRunMigration($input: SingleSignMigrationInput!) {
-                singleSignOnRunMigration(input: $input) {
-                    name
-                    description
-                }
-            }
-        `,
-        variables: { input },
-      });
-      expect(result?.data?.singleSignOnRunMigration).toBeDefined();
-      const ssoConfig: SingleSignOnMigrationResult[] = result?.data?.singleSignOnRunMigration;
-      expect(ssoConfig[0]?.description).toMatch(/Automatically detected from local */);
-    });
-  });
-});
-
-describe('SSO: Local strategy dedicated behaviour', () => {
-  let localStrategyId: string;
-  it('should get Local Strategy', async () => {
-    const localStrategy = await queryAsAdminWithSuccess({
-      query: SINGLE_SIGN_ON_LIST_QUERY,
-      variables: { filters: {
-        mode: FilterMode.And,
-        filters: [{ key: ['strategy'], values: [StrategyType.LocalStrategy], operator: FilterOperator.Eq }],
-        filterGroups: [],
-      } },
-    });
-    expect(localStrategy).toBeDefined();
-    expect(localStrategy?.data?.singleSignOns.edges[0].node.identifier).toBe('local');
-    localStrategyId = localStrategy?.data?.singleSignOns.edges[0].node.id;
-  });
-  it('should not create 2nd Local Strategy', async () => {
-    const createInput: SingleSignOnAddInput = {
-      name: 'local2',
-      strategy: StrategyType.LocalStrategy,
-      enabled: true,
-      identifier: 'local2',
-      configuration: [
-        { key: 'label', value: 'local label', type: 'string' },
-      ],
-    };
-    await queryAsUserIsExpectedError(USER_SECURITY.client, {
-      query: SINGLE_SIGN_ON_CREATE,
-      variables: { input: createInput },
-    }, 'Local Strategy already exists in database', 'FUNCTIONAL_ERROR');
-  });
-  it('should not delete Local Strategy', async () => {
-    await queryAsUserIsExpectedError(USER_SECURITY.client, {
-      query: SINGLE_SIGN_ON_DELETE,
-      variables: { id: localStrategyId },
-    }, 'Cannot delete Local Strategy', 'FUNCTIONAL_ERROR');
-  });
-  it('should delete Local Strategy', async () => {
-    await deleteElementById(testContext, ADMIN_USER, localStrategyId, ENTITY_TYPE_SINGLE_SIGN_ON);
-    const singleSignOnList = await queryAsAdminWithSuccess({
-      query: SINGLE_SIGN_ON_LIST_QUERY,
-      variables: { first: 10 },
-    });
-
-    expect(singleSignOnList).toBeDefined();
-    const ssoList = singleSignOnList?.data?.singleSignOns.edges;
-    expect(ssoList.find((item: any) => item?.node?.id === localStrategyId)).toBeUndefined();
-    expect(ssoList.find((item: any) => item?.node?.id === localStrategyId)).toBeUndefined();
   });
 });

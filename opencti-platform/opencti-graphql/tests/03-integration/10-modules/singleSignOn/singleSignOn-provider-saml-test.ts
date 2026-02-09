@@ -3,10 +3,13 @@ import { convertKeyValueToJsConfiguration } from '../../../../src/modules/single
 import type { BasicStoreEntitySingleSignOn } from '../../../../src/modules/singleSignOn/singleSignOn-types';
 import { type GroupsManagement, type OrganizationsManagement, StrategyType } from '../../../../src/generated/graphql';
 import { buildSAMLOptions, computeSamlGroupAndOrg, computeSamlUserInfo } from '../../../../src/modules/singleSignOn/singleSignOn-provider-saml';
+import { encryptAuthValue, ENCRYPTED_TYPE } from '../../../../src/modules/singleSignOn/singleSignOn-domain';
 
 describe('SAML Single sign on Provider coverage tests', () => {
   describe('SAML configuration coverage', () => {
     it('should build correct options for SAML', async () => {
+      const encryptedKey = await encryptAuthValue('kkkkkkkkkkkkk');
+
       const samlEntity: Partial<BasicStoreEntitySingleSignOn> = {
         strategy: StrategyType.SamlStrategy,
         configuration: [
@@ -40,6 +43,11 @@ describe('SAML Single sign on Provider coverage tests', () => {
             value: '3',
             type: 'number',
           },
+          {
+            key: 'privateKey',
+            value: `${encryptedKey}`,
+            type: ENCRYPTED_TYPE,
+          },
         ],
       };
 
@@ -51,6 +59,7 @@ describe('SAML Single sign on Provider coverage tests', () => {
         idpCert: 'MIICmzCxxxxuJ1ZY=',
         wantAuthnResponseSigned: false,
         acceptedClockSkewMs: 3,
+        privateKey: 'kkkkkkkkkkkkk',
       });
     });
   });
@@ -67,7 +76,7 @@ describe('SAML Single sign on Provider coverage tests', () => {
           { key: 'idpCert', type: 'string', value: 'totallyFakeCertGroups' },
         ],
       };
-      const ssoConfiguration: any = convertKeyValueToJsConfiguration(ssoEntity as BasicStoreEntitySingleSignOn);
+      const ssoConfiguration: any = await convertKeyValueToJsConfiguration(ssoEntity as BasicStoreEntitySingleSignOn);
 
       const result = computeSamlUserInfo(ssoConfiguration, samlProfile);
       expect(result.email).toBe('samltestuser1@opencti.io');
@@ -90,7 +99,7 @@ describe('SAML Single sign on Provider coverage tests', () => {
           { key: 'mail_attribute', type: 'string', value: 'theMail' },
         ],
       };
-      const ssoConfiguration: any = convertKeyValueToJsConfiguration(ssoEntity as BasicStoreEntitySingleSignOn);
+      const ssoConfiguration: any = await convertKeyValueToJsConfiguration(ssoEntity as BasicStoreEntitySingleSignOn);
 
       const result = computeSamlUserInfo(ssoConfiguration, samlProfile);
       expect(result.email).toBe('samltestuser1@opencti.io');
@@ -116,7 +125,7 @@ describe('SAML Single sign on Provider coverage tests', () => {
           { key: 'idpCert', type: 'string', value: 'totallyFakeCertGroups' },
         ],
       };
-      const ssoConfiguration: any = convertKeyValueToJsConfiguration(ssoEntity as BasicStoreEntitySingleSignOn);
+      const ssoConfiguration: any = await convertKeyValueToJsConfiguration(ssoEntity as BasicStoreEntitySingleSignOn);
 
       const result = computeSamlGroupAndOrg(ssoConfiguration, samlProfile, groupsManagement, undefined);
       expect(result.providerGroups).toStrictEqual(['openCTIGroupB', 'openCTIGroupC']); // no mapping for D, so should have only B and C
@@ -138,7 +147,7 @@ describe('SAML Single sign on Provider coverage tests', () => {
           { key: 'idpCert', type: 'string', value: 'totallyFakeCertGroups' },
         ],
       };
-      const ssoConfiguration: any = convertKeyValueToJsConfiguration(ssoEntity as BasicStoreEntitySingleSignOn);
+      const ssoConfiguration: any = await convertKeyValueToJsConfiguration(ssoEntity as BasicStoreEntitySingleSignOn);
 
       const result = computeSamlGroupAndOrg(ssoConfiguration, samlProfile, groupsManagement, undefined);
       expect(result.providerGroups).toStrictEqual(['openCTIGroupB', 'openCTIGroupC']); // no mapping for D, so should have only B and C
@@ -159,7 +168,7 @@ describe('SAML Single sign on Provider coverage tests', () => {
           { key: 'idpCert', type: 'string', value: 'totallyFakeCertGroups' },
         ],
       };
-      const ssoConfiguration: any = convertKeyValueToJsConfiguration(ssoEntity as BasicStoreEntitySingleSignOn);
+      const ssoConfiguration: any = await convertKeyValueToJsConfiguration(ssoEntity as BasicStoreEntitySingleSignOn);
 
       const result = computeSamlGroupAndOrg(ssoConfiguration, samlProfile, undefined, orgsManagement);
       expect(result.providerOrganizations).toStrictEqual(['OpenCTIOrgB']); // no mapping for D, so should have only B
@@ -181,7 +190,7 @@ describe('SAML Single sign on Provider coverage tests', () => {
           { key: 'organizations_default', type: 'array', value: '["OrgDefA", "OrgDefB"]' },
         ],
       };
-      const ssoConfiguration: any = convertKeyValueToJsConfiguration(ssoEntity as BasicStoreEntitySingleSignOn);
+      const ssoConfiguration: any = await convertKeyValueToJsConfiguration(ssoEntity as BasicStoreEntitySingleSignOn);
 
       const result = computeSamlGroupAndOrg(ssoConfiguration, samlProfile, undefined, orgsManagement);
       // The 2 default org in config + the one mapped from saml profile

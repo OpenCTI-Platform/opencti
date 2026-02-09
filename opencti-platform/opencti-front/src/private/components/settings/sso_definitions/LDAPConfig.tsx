@@ -43,6 +43,7 @@ const LDAPConfig = ({ updateField }: LDAPConfigProps) => {
         onSubmit={updateField}
         fullWidth
         style={{ marginTop: 20 }}
+        type="password"
       />
       <Field
         component={TextField}

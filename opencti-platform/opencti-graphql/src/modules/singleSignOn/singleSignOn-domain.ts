@@ -1,6 +1,8 @@
 import type { AuthContext, AuthUser } from '../../types/user';
 import {
+  type ConfigurationTypeInput,
   type EditInput,
+  EditOperation,
   FilterMode,
   FilterOperator,
   type SingleSignMigrationInput,
@@ -22,27 +24,70 @@ import { parseSingleSignOnRunConfiguration } from './singleSignOn-migration';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import { unregisterStrategy } from './singleSignOn-providers';
 import { EnvStrategyType, getConfigurationAdminEmail, isAuthenticationEditionLocked, isAuthenticationForcedFromEnv } from './providers-configuration';
+import { getPlatformCrypto } from '../../utils/platformCrypto';
 
 export const isConfigurationAdminUser = (user: AuthUser): boolean => {
   return user.user_email === getConfigurationAdminEmail();
 };
 
-const toEnv = (newStrategyType: StrategyType) => {
-  switch (newStrategyType) {
-    case StrategyType.LocalStrategy:
-      return EnvStrategyType.STRATEGY_LOCAL;
-    case StrategyType.SamlStrategy:
-      return EnvStrategyType.STRATEGY_SAML;
-    case StrategyType.LdapStrategy:
-      return EnvStrategyType.STRATEGY_LDAP;
-    case StrategyType.OpenIdConnectStrategy:
-      return EnvStrategyType.STRATEGY_OPENID;
-    case StrategyType.ClientCertStrategy:
-      return EnvStrategyType.STRATEGY_CERT;
-    case StrategyType.HeaderStrategy:
-      return EnvStrategyType.STRATEGY_HEADER;
+// Encryption region
+
+// Warn: if you change this list, you will need to write a migration on existing SSO entities
+export const AUTH_SECRET_LIST = [
+  'client_secret', // OpenID
+  'bindCredentials', // LDAP
+  'privateKey', // SAML
+  'decryptionPvk', // SAML
+];
+
+// Type for data that are encrypted
+export const ENCRYPTED_TYPE = 'encrypted';
+
+// Type for data that are in clear from creation and need to be encrypted
+export const TO_ENCRYPT_TYPE = 'secret';
+
+const AUTH_DERIVATION_PATH = ['authentication', 'elastic'];
+let authenticationKeyPairPromise: any;
+
+const getKeyPair = async () => {
+  const factory = await getPlatformCrypto();
+  if (!authenticationKeyPairPromise) {
+    authenticationKeyPairPromise = factory.deriveAesKey(AUTH_DERIVATION_PATH, 1);
   }
+  return await authenticationKeyPairPromise;
 };
+
+export const encryptAuthValue = async (value: string) => {
+  const keyPair = await getKeyPair();
+  const clearDataBuffer = Buffer.from(value);
+  const encryptedBuffer = await keyPair.encrypt(clearDataBuffer);
+  return encryptedBuffer.toString('base64');
+};
+
+export const decryptAuthValue = async (value: string) => {
+  const keyPair = await getKeyPair();
+  const decodedBuffer = Buffer.from(value, 'base64');
+  return await keyPair.decrypt(decodedBuffer);
+};
+
+const encryptConfigurationSecrets = async (configurationWithClear: ConfigurationTypeInput[]) => {
+  const configurationWithSecrets: ConfigurationTypeInput[] = [];
+  if (configurationWithClear) {
+    for (let i = 0; i < configurationWithClear?.length; i++) {
+      const currentConfig = configurationWithClear[i] as ConfigurationTypeInput;
+
+      if ((AUTH_SECRET_LIST.some((key) => key === currentConfig.key) && currentConfig.type !== ENCRYPTED_TYPE) || currentConfig.type === TO_ENCRYPT_TYPE) {
+        const encryptedValue = await encryptAuthValue(currentConfig.value);
+        configurationWithSecrets.push({ key: currentConfig.key, value: encryptedValue, type: ENCRYPTED_TYPE });
+      } else {
+        configurationWithSecrets.push(currentConfig);
+      }
+    }
+  }
+  return configurationWithSecrets;
+};
+
+// End Encryption region
 
 export const checkAuthenticationEditionLocked = (user: AuthUser) => {
   if (isAuthenticationEditionLocked() && !isConfigurationAdminUser(user)) {
@@ -55,16 +100,16 @@ export const checkSSOAllowed = async (context: AuthContext) => {
 };
 
 // For now it's only a logApp, but will be also send to UI via Redis.
-export const logAuthInfo = (message: string, strategyType: EnvStrategyType, meta?: any) => {
-  logApp.info(`[Auth][${strategyType}]${message}`, { meta });
+export const logAuthInfo = (message: string, strategyType: EnvStrategyType | StrategyType, meta?: any) => {
+  logApp.info(`[Auth][${strategyType.toUpperCase()}]${message}`, { meta });
 };
 
-export const logAuthWarn = (message: string, strategyType: EnvStrategyType, meta?: any) => {
-  logApp.warn(`[Auth][${strategyType}]${message}`, { meta });
+export const logAuthWarn = (message: string, strategyType: EnvStrategyType | StrategyType, meta?: any) => {
+  logApp.warn(`[Auth][${strategyType.toUpperCase()}]${message}`, { meta });
 };
 
-export const logAuthError = (message: string, strategyType: EnvStrategyType | undefined, meta?: any) => {
-  logApp.error(`[Auth][${strategyType ?? 'Not provided'}]${message}`, { meta });
+export const logAuthError = (message: string, strategyType: EnvStrategyType | StrategyType | undefined, meta?: any) => {
+  logApp.error(`[Auth][${strategyType ? strategyType.toUpperCase() : 'Not provided'}]${message}`, { meta });
 };
 
 export const findSingleSignOnById = async (context: AuthContext, user: AuthUser, id: string) => {
@@ -80,7 +125,7 @@ export const findSingleSignOnPaginated = async (context: AuthContext, user: Auth
 // For migration purpose, we need to be able to create an SSO enabled, but not start it immediately
 export const internalAddSingleSignOn = async (context: AuthContext, user: AuthUser, input: SingleSignOnAddInput, skipRegister: boolean) => {
   const defaultOps = { created_at: now(), updated_at: now() };
-  const singleSignOnInput = { ...input, ...defaultOps };
+
   if (input.strategy === StrategyType.LocalStrategy) {
     const filters = {
       mode: FilterMode.And,
@@ -92,6 +137,14 @@ export const internalAddSingleSignOn = async (context: AuthContext, user: AuthUs
       throw FunctionalError('Local Strategy already exists in database');
     }
   }
+  let configurationWithSecrets: ConfigurationTypeInput[] = [];
+  if (input.configuration) {
+    configurationWithSecrets = await encryptConfigurationSecrets(input.configuration);
+  }
+
+  // Overriding configuration
+  const singleSignOnInput = { ...input, ...defaultOps, configuration: configurationWithSecrets };
+
   const created: BasicStoreEntitySingleSignOn = await createEntity(
     context,
     user,
@@ -110,7 +163,7 @@ export const internalAddSingleSignOn = async (context: AuthContext, user: AuthUs
   });
 
   if (created.enabled && !skipRegister) {
-    logAuthInfo('Activating new strategy', toEnv(input.strategy), { identifier: input.identifier });
+    logAuthInfo('Activating new strategy', input.strategy, { identifier: input.identifier });
     await notify(BUS_TOPICS[ENTITY_TYPE_SINGLE_SIGN_ON].EDIT_TOPIC, created, user);
   }
   return created;
@@ -132,7 +185,30 @@ export const fieldPatchSingleSignOn = async (context: AuthContext, user: AuthUse
     throw FunctionalError(`Single sign on ${id} cannot be found`);
   }
 
-  const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_SINGLE_SIGN_ON, input);
+  const finalInput: EditInput[] = [];
+  for (let i = 0; i < input.length; i++) {
+    const currentInput = input[i];
+
+    if (currentInput.key === 'configuration') {
+      if (!currentInput.operation || currentInput.operation === EditOperation.Add || currentInput.operation === EditOperation.Replace) {
+        const configurationEncrypted: ConfigurationTypeInput[] = await encryptConfigurationSecrets(currentInput.value);
+        const overrideEditInput: EditInput = {
+          key: currentInput.key,
+          operation: currentInput.operation,
+          object_path: currentInput.object_path,
+          value: configurationEncrypted,
+        };
+        finalInput.push(overrideEditInput);
+      } else {
+        finalInput.push(currentInput);
+      }
+    } else {
+      finalInput.push(currentInput);
+    }
+  }
+
+  const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_SINGLE_SIGN_ON, finalInput);
+
   const singleSignOnEntityAfterUpdate: BasicStoreEntitySingleSignOn = element;
   await publishUserAction({
     user,
@@ -164,7 +240,7 @@ export const deleteSingleSignOn = async (context: AuthContext, user: AuthUser, i
   }
 
   if (singleSignOn.enabled && !isAuthenticationForcedFromEnv()) {
-    logAuthInfo('Disabling strategy', toEnv(singleSignOn.strategy), { identifier: singleSignOn.identifier });
+    logAuthInfo('Disabling strategy', singleSignOn.strategy, { identifier: singleSignOn.identifier });
     await unregisterStrategy(singleSignOn);
   }
 

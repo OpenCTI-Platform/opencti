@@ -41,6 +41,9 @@
       "email": "admin@opencti.io",
       "password": "admin",
       "token": "d434ce02-e58e-4cac-8b4c-42bf16748e84"
+    },
+    "crypto": {
+      "master_seed": "wbQnxC2ZIoohYzkXW19LiYU2V3lfoCVFkBadFd/dFAY="
     }
   },
   "platform_id": "7992a4b1-128c-4656-bf97-2018b6f1f395",

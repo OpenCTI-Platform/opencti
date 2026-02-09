@@ -70,6 +70,7 @@ const SAMLConfig = ({ updateField }: Props) => {
         onSubmit={updateField}
         fullWidth
         style={{ marginTop: 10 }}
+        type="password"
       />
       <Field
         component={SwitchField}

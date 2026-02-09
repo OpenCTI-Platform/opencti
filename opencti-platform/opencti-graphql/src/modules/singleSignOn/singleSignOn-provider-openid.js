@@ -59,7 +59,7 @@ export const computeOpenIdGroupsMapping = (groupManagement, decodedUser, userinf
 // (ssoEntity: BasicStoreEntitySingleSignOn)
 export const registerOpenIdStrategy = async (ssoEntity) => {
   const providerRef = ssoEntity.identifier || 'oic';
-  const ssoConfig = convertKeyValueToJsConfiguration(ssoEntity);
+  const ssoConfig = await convertKeyValueToJsConfiguration(ssoEntity);
   const providerName = ssoEntity?.label || providerRef;
   const ssoConfigEnriched = await enrichWithRemoteCredentials(`providers:${providerRef}`, ssoConfig);
 

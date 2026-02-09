@@ -1,5 +1,5 @@
 import type { BasicStoreEntitySingleSignOn } from './singleSignOn-types';
-import { logAuthInfo } from './singleSignOn-domain';
+import { logAuthError, logAuthInfo } from './singleSignOn-domain';
 import { AuthType, EnvStrategyType, genConfigMapper, type ProviderConfiguration, providerLoginHandler, type ProviderUserInfo } from './providers-configuration';
 import { addUserLoginCount } from '../../manager/telemetryManager';
 import { registerAuthenticationProvider } from './providers-initialization';
@@ -38,8 +38,10 @@ export const buildSAMLOptions = async (ssoEntity: BasicStoreEntitySingleSignOn) 
     const ssoOtherOptions: any = {};
     for (let i = 0; i < ssoEntity.configuration.length; i++) {
       const currentConfig = ssoEntity.configuration[i];
-      if (isNotEmptyField(currentConfig.value)) {
-        ssoOtherOptions[currentConfig.key] = parseValueAsType(currentConfig.value, currentConfig.type);
+      try {
+        ssoOtherOptions[currentConfig.key] = await parseValueAsType(currentConfig);
+      } catch (e) {
+        logAuthError(`Configuration ${currentConfig?.key} cannot be read, is ignored. Please verify your configuration.`, EnvStrategyType.STRATEGY_SAML, { cause: e });
       }
     }
     return { ...ssoOptions, ...ssoOtherOptions } as PassportSamlConfig;
@@ -106,7 +108,7 @@ export const registerSAMLStrategy = async (ssoEntity: BasicStoreEntitySingleSign
   logAuthInfo('Configuring SAML', EnvStrategyType.STRATEGY_SAML, { id: ssoEntity.id, identifier: ssoEntity.identifier, providerRef });
   const providerName = ssoEntity?.label || ssoEntity?.identifier || ssoEntity.id;
   const samlOptions: PassportSamlConfig = await buildSAMLOptions(ssoEntity);
-  const ssoConfiguration: any = convertKeyValueToJsConfiguration(ssoEntity);
+  const ssoConfiguration: any = await convertKeyValueToJsConfiguration(ssoEntity);
 
   const samlLoginCallback: VerifyWithoutRequest = (profile, done) => {
     const groupsManagement = ssoEntity.groups_management;

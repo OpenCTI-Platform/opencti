@@ -1,16 +1,23 @@
 import { afterAll, describe, expect, it, vi } from 'vitest';
 
 import { logApp } from '../../../../src/config/conf';
-import { addSingleSignOn, deleteSingleSignOn, fieldPatchSingleSignOn, findAllSingleSignOn, findSingleSignOnById } from '../../../../src/modules/singleSignOn/singleSignOn-domain';
+import {
+  addSingleSignOn,
+  deleteSingleSignOn,
+  ENCRYPTED_TYPE,
+  fieldPatchSingleSignOn,
+  findAllSingleSignOn,
+  findSingleSignOnById,
+  TO_ENCRYPT_TYPE,
+} from '../../../../src/modules/singleSignOn/singleSignOn-domain';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { StrategyType, type SingleSignOnAddInput, type EditInput } from '../../../../src/generated/graphql';
 import { PROVIDERS } from '../../../../src/modules/singleSignOn/providers-configuration';
-import type { BasicStoreEntitySingleSignOn, StixSingleSignOn, StoreEntitySingleSignOn } from '../../../../src/modules/singleSignOn/singleSignOn-types';
+import type { BasicStoreEntitySingleSignOn, ConfigurationType, StixSingleSignOn, StoreEntitySingleSignOn } from '../../../../src/modules/singleSignOn/singleSignOn-types';
 import convertSingleSignOnToStix from '../../../../src/modules/singleSignOn/singleSignOn-converter';
 import { onAuthenticationMessageAdd, onAuthenticationMessageDelete, onAuthenticationMessageEdit } from '../../../../src/modules/singleSignOn/singleSignOn-listener';
 import * as providerConfig from '../../../../src/modules/singleSignOn/providers-configuration';
 import { getFakeAuthUser } from '../../../utils/domainQueryHelper';
-import { initializeAdminUser } from '../../../../src/modules/singleSignOn/providers-initialization';
 
 describe('Single sign on Domain coverage tests', () => {
   describe('SAML coverage tests', () => {
@@ -35,6 +42,8 @@ describe('Single sign on Domain coverage tests', () => {
           { key: 'callbackUrl', value: 'http://myopencti/auth/samlTestDomain/callback', type: 'string' },
           { key: 'idpCert', value: '21341234', type: 'string' },
           { key: 'issuer', value: 'issuer', type: 'string' },
+          { key: 'privateKey', value: 'myPrivateKey', type: 'string' },
+          { key: 'custom_value_that_is_secret', value: 'theCustomValue', type: TO_ENCRYPT_TYPE },
         ],
       };
       const samlEntity = await addSingleSignOn(testContext, ADMIN_USER, input);
@@ -42,6 +51,19 @@ describe('Single sign on Domain coverage tests', () => {
       expect(samlEntity.identifier).toBe('samlTestDomain');
       expect(samlEntity.enabled).toBe(true);
       expect(samlEntity.label).toBe('Nice SAML button');
+
+      const callbackUrl = samlEntity.configuration?.find((config) => config.key === 'callbackUrl') as ConfigurationType;
+      expect(callbackUrl.value).toBe('http://myopencti/auth/samlTestDomain/callback');
+
+      // this one is encrypted because on the list of sensistive, see AUTH_SECRET_LIST
+      const privateKey = samlEntity.configuration?.find((config) => config.key === 'privateKey') as ConfigurationType;
+      expect(privateKey.value).not.toBe('myPrivateKey');
+      expect(privateKey.type).toBe(ENCRYPTED_TYPE);
+
+      // this one is encrypted because enter as 'secret' by user
+      const customSecret = samlEntity.configuration?.find((config) => config.key === 'custom_value_that_is_secret') as ConfigurationType;
+      expect(customSecret.value).not.toBe('custom_value_that_is_secret');
+      expect(customSecret.type).toBe(ENCRYPTED_TYPE);
 
       // Here there is a pub/sub on redis, let's just call the same method than listener
       await onAuthenticationMessageAdd({ instance: samlEntity });
@@ -82,7 +104,7 @@ describe('Single sign on Domain coverage tests', () => {
       expect(stixSso.label).toBe('Nice SAML button');
     });
 
-    it('should disable minimal Saml works', async () => {
+    it('should disabled minimal Saml works', async () => {
       const input: EditInput[] = [{ key: 'label', value: ['Nice SAML button V2'] }];
       await fieldPatchSingleSignOn(testContext, ADMIN_USER, minimalSsoEntity.id, input);
       const entity = await findSingleSignOnById(testContext, ADMIN_USER, minimalSsoEntity.id);
@@ -122,7 +144,7 @@ describe('Single sign on Domain coverage tests', () => {
       expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'samlTestNotOk')).toBeFalsy();
       expect(logAppErrorSpy, 'No exception should be throw, but an error message should be present')
         .toHaveBeenCalledWith(
-          `[Auth][Not provided]Error when initializing an authentication provider (id: ${samlEntity.id}, identifier: samlTestNotOk), cause: SSO configuration is empty.`,
+          `[Auth][Not provided]Error when initializing an authentication provider (id: ${samlEntity.id}, identifier: samlTestNotOk), cause: idpCert is mandatory for SAML.`,
           expect.anything(),
         );
     });
@@ -228,6 +250,12 @@ describe('Single sign on Domain coverage tests', () => {
       expect(oicEntity.identifier).toBe('openidTestDomain');
       expect(oicEntity.enabled).toBe(false);
       expect(oicEntity.label).toBe('Nice OIC button');
+
+      const client_id: ConfigurationType = oicEntity.configuration?.find((config) => config.key === 'client_id') as ConfigurationType;
+      expect(client_id.value).toBe('myoicclient');
+      const client_secret = oicEntity.configuration?.find((config) => config.key === 'client_secret') as ConfigurationType;
+      expect(client_secret.value).not.toBe('graceHopper');
+      expect(client_secret.type).toBe(ENCRYPTED_TYPE);
     });
 
     it('should missing redirect_uris throw error', async () => {
@@ -361,7 +389,7 @@ describe('Single sign on Domain coverage tests', () => {
       }
     });
 
-    it('should add new minimal OpenID provider', async () => {
+    it('should add new minimal LDAP provider', async () => {
       const input: SingleSignOnAddInput = {
         name: 'LDAP for test domain',
         strategy: StrategyType.LdapStrategy,
@@ -379,6 +407,11 @@ describe('Single sign on Domain coverage tests', () => {
 
       expect(ldapEntity.identifier).toBe('ldapTest1');
       expect(ldapEntity.enabled).toBe(true);
+      const configUrl = ldapEntity.configuration?.find((config) => config.key === 'url') as ConfigurationType;
+      expect(configUrl.value).toBe('ldap://localhost:389');
+      const bindCredentials = ldapEntity.configuration?.find((config) => config.key === 'bindCredentials') as ConfigurationType;
+      expect(bindCredentials.value).not.toBe('youShallNotPass');
+      expect(bindCredentials.type).toBe(ENCRYPTED_TYPE);
 
       // Here there is a pub/sub on redis, let's just call the same method as listener
       await onAuthenticationMessageAdd({ instance: ldapEntity });
