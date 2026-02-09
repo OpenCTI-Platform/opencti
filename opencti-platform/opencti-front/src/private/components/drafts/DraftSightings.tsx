@@ -309,7 +309,7 @@ const DraftSightings: FunctionComponent<DraftSightingsProps> = ({ isReadOnly }) 
     filters,
   } = viewStorage;
 
-  const contextFilters = useBuildEntityTypeBasedFilterContext('stix-sighting-relationship', filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext('stix-sighting-relationship', filters, { draftId });
 
   const queryPaginationOptions = {
     ...paginationOptions,

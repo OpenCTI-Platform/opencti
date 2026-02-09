@@ -1,6 +1,7 @@
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from './internalObject';
 import { ABSTRACT_BASIC_OBJECT, ABSTRACT_BASIC_RELATIONSHIP } from './general';
 import { getDraftOperations } from '../modules/draftWorkspace/draftOperations';
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 
 export const shortMapping = {
   type: 'text',
@@ -108,7 +109,7 @@ export const draftIds: AttributeDefinition = {
   editDefault: false,
   upsert: false,
   isFilterable: false,
-  entityTypes: [ABSTRACT_BASIC_OBJECT, ABSTRACT_BASIC_RELATIONSHIP],
+  entityTypes: [ENTITY_TYPE_DRAFT_WORKSPACE],
 };
 
 export const draftContext: AttributeDefinition = {
