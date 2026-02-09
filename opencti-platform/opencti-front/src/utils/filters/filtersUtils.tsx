@@ -903,7 +903,7 @@ export const useBuildEntityTypeBasedFilterContext = (
   filters: FilterGroup | undefined,
   args: BuildEntityTypeBasedFilterContextArgs = {},
 ): FilterGroup => {
-  const { excludedEntityTypesParam = null, entityTypesContext = null, draftId = null } = args;
+  const { excludedEntityTypesParam = undefined, entityTypesContext = undefined, draftId = undefined } = args;
   const entityTypes = Array.isArray(entityTypeParam) ? entityTypeParam : [entityTypeParam];
   const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, entityTypesContext ?? entityTypes);
   const entityTypeFilter = { key: 'entity_type', values: entityTypes, operator: 'eq', mode: 'or' };
