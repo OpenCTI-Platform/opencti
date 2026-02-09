@@ -49,6 +49,7 @@ enum State {
 
 enum Capabilities {
   BYPASS
+  APIACCESS_USETOKEN
   CONNECTORAPI
   KNOWLEDGE
   KNOWLEDGE_KNUPDATE
@@ -10104,7 +10105,7 @@ type Mutation {
   rulesRescan(elementId: ID!): Boolean
   frontendErrorLog(message: String!, codeStack: String, componentStack: String): Boolean
   token(input: UserLoginInput): String
-  tokenJWTConnector: String!
+  connectorJWT: String!
   otpActivation(input: UserOTPActivationInput): MeUser
   otpDeactivation: MeUser
   otpUserDeactivation(id: ID!): MeUser

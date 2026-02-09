@@ -64,7 +64,7 @@ import { getNotifiers } from '../modules/notifier/notifier-domain';
 import { PROVIDERS } from '../modules/singleSignOn/providers-configuration';
 import { RELATION_HAS_CAPABILITY_IN_DRAFT } from '../schema/internalRelationship';
 import { loadCreator } from '../database/members';
-import { issueConnectorJwtToken } from '../database/repository';
+import { issueConnectorJWT } from '../database/repository';
 
 const userResolvers = {
   Query: {
@@ -187,7 +187,7 @@ const userResolvers = {
       // User cannot be authenticated in any providers
       throw AuthenticationFailure();
     },
-    tokenJWTConnector: () => issueConnectorJwtToken(),
+    connectorJWT: () => issueConnectorJWT(),
     sessionKill: async (_, { id }, context) => {
       const { store } = applicationSession;
       const userSessionId = id.split(store.prefix)[1]; // Prefix must be removed on this case
@@ -250,7 +250,7 @@ const userResolvers = {
     sendUserMail: (_, { input }, context) => {
       return sendEmailToUser(context, context.user, input);
     },
-    userTokenAdd: (_, { input }, context) => addUserToken(context, context.user, input),
+    userTokenAdd: (_, { input }, context) => addUserToken(context, context.user, context.user.id, input),
     userTokenRevoke: async (_, { id }, context) => revokeUserToken(context, context.user, id),
     userAdminTokenRevoke: async (_, { userId, id }, context) => revokeUserTokenByAdmin(context, context.user, userId, id),
     userAdminTokenAdd: async (_, { userId, input }, context) => addUserTokenByAdmin(context, context.user, userId, input),

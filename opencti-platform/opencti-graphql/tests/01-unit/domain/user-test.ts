@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { testContext } from '../../utils/testQuery';
 import { checkPasswordInlinePolicy, isSensitiveChangesAllowed } from '../../../src/domain/user';
-import { addUserToken } from '../../../src/modules/user/user-domain';
-import { generateSecureToken } from '../../../src/utils/security';
+import { addUserToken, generateSecureToken } from '../../../src/modules/user/user-domain';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 import { updateAttribute } from '../../../src/database/middleware';
 

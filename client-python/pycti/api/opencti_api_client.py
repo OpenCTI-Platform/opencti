@@ -1196,12 +1196,12 @@ class OpenCTIApiClient:
     def token_jwt_connector(self):
         self.app_logger.info("Generating connector JWT token")
         query = """
-                mutation TokenJWTConnector {
-                    tokenJWTConnector
+                mutation ConnectorJWT {
+                    connectorJWT
                 }
              """
         query_result = self.query(query)
-        return query_result["data"]["tokenJWTConnector"]
+        return query_result["data"]["connectorJWT"]
 
     @staticmethod
     def get_attribute_in_extension(key, stix_object) -> Any:

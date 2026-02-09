@@ -759,7 +759,7 @@ class ListenQueue(threading.Thread):
                 )
                 return False
             key = PyJWK.from_dict(selected_jwk)
-            jwt.decode(token, key=key, issuer="opencti", subject="connector")
+            jwt.decode(token, key=key)
             return True
         except Exception as e:
             self.helper.connector_logger.error("Failed to get external data for %s", e)

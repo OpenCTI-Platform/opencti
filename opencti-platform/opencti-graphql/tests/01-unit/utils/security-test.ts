@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { generateSecureToken } from '../../../src/utils/security';
+import { generateSecureToken } from '../../../src/modules/user/user-domain';
 
 describe('Utils > Security', () => {
   it('should generate a secure token with correct format', async () => {
