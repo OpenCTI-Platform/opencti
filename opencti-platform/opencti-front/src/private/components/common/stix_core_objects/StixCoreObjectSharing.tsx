@@ -110,7 +110,6 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
-  const disabledInDraft = !!draftContext;
   const [displaySharing, setDisplaySharing] = useState(false);
   const userIsOrganizationEditor = useGranted([KNOWLEDGE_KNUPDATE_KNORGARESTRICT]);
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -177,16 +176,16 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
       return (
         <>
           {!handleClose && (
-            <EETooltip title={disabledInDraft ? t_i18n('Not available in draft') : t_i18n('Share with an organization')}>
+            <EETooltip title={t_i18n('Share with an organization')}>
               <ToggleButton
                 value="shared"
-                onClick={isEnterpriseEdition && !disabledInDraft ? handleOpenSharing : () => {}}
+                onClick={isEnterpriseEdition ? handleOpenSharing : () => {}}
                 size="small"
                 disabled={disabled}
               >
                 <BankPlus
                   fontSize="small"
-                  color={!disabled && !disabledInDraft && isEnterpriseEdition ? 'primary' : 'disabled'}
+                  color={!disabled && isEnterpriseEdition ? 'primary' : 'disabled'}
                 />
               </ToggleButton>
             </EETooltip>
@@ -234,7 +233,7 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
         </Typography>
         {!handleClose && (
           <>
-            <EETooltip title={disabledInDraft ? t_i18n('Not available in draft') : t_i18n('Share with an organization')}>
+            <EETooltip title={t_i18n('Share with an organization')}>
               <IconButton
                 color="primary"
                 aria-label="Label"
@@ -242,7 +241,7 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
                 style={{ float: 'left', margin: '-15px 0 0 -2px' }}
                 disabled={disabled}
               >
-                <BankPlus fontSize="small" color={!disabled && !disabledInDraft && isEnterpriseEdition ? 'primary' : 'disabled'} />
+                <BankPlus fontSize="small" color={!disabled && isEnterpriseEdition ? 'primary' : 'disabled'} />
               </IconButton>
             </EETooltip>
             <div className="clearfix" />
@@ -255,7 +254,7 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
                   variant="outlined"
                   label={truncate(edge.name, 15)}
                   onDelete={() => removeOrganization(edge.id)}
-                  disabled={disabled || disabledInDraft}
+                  disabled={disabled}
                 />
               </Tooltip>
             ))}
