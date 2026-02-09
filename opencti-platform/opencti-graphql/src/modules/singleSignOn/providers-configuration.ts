@@ -70,7 +70,7 @@ export interface ProviderUserInfo {
 export const providerLoginHandler = (userInfo: ProviderUserInfo, done: any, opts = {}) => {
   loginFromProvider(userInfo, opts)
     .then((user: any) => {
-      logApp.info('[SSO] providerLoginHandler user:', user);
+      logApp.info('[SSO] providerLoginHandler user:', { userId: user.id });
       done(null, user);
     })
     .catch((err: any) => {
