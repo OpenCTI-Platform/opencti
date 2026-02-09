@@ -26,7 +26,7 @@ const CSV_MAX_BUNDLE_SIZE_GENERATION = conf.get('app:csv_ingestion:max_bundle_si
 export interface CsvBundlerIngestionOpts {
   workId: string;
   applicantUser: AuthUser;
-  entity: BasicStoreBase | undefined;
+  entity: BasicStoreBase | undefined | null;
   csvMapper: CsvMapperParsed;
   maxRecordNumber?: number;
   connectorId: string;
@@ -234,7 +234,7 @@ export const getTestBundleObjectsFromFile = async (
 
 // Deprecated region
 export interface BundleProcessOpts {
-  entity?: BasicStoreBase;
+  entity?: BasicStoreBase | null;
   maxRecordNumber?: number;
 }
 

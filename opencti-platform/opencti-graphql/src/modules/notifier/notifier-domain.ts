@@ -24,7 +24,7 @@ import {
   NOTIFIER_CONNECTOR_UI,
   STATIC_NOTIFIERS,
 } from './notifier-statics';
-import type { BasicStoreEntityNotifier } from './notifier-types';
+import type { BasicStoreEntityNotifier, StoreEntityNotifier } from './notifier-types';
 import { ENTITY_TYPE_NOTIFIER } from './notifier-types';
 import { authorizedMembers } from '../../schema/attribute-definition';
 
@@ -69,13 +69,13 @@ export const notifierEdit = async (context: AuthContext, user: AuthUser, notifie
   };
   validateNotifier(fieldsToValidate);
   const finalInput = input.map(({ key, value }) => {
-    const item: { key: string; value: unknown } = { key, value };
+    const item: { key: string; value: any } = { key, value };
     if (key === authorizedMembers.name) {
       item.value = value.map((id) => ({ id, access_right: MEMBER_ACCESS_RIGHT_VIEW }));
     }
     return item;
   });
-  const { element: updatedElem } = await updateAttribute(context, user, notifierId, ENTITY_TYPE_NOTIFIER, finalInput);
+  const { element: updatedElem } = await updateAttribute<StoreEntityNotifier>(context, user, notifierId, ENTITY_TYPE_NOTIFIER, finalInput);
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -100,7 +100,7 @@ export const notifiersFind = (context: AuthContext, user: AuthUser, opts: QueryN
 export const getNotifiers = async (context: AuthContext, user: AuthUser, ids: string[] = []) => {
   const cacheNotifiers = await getEntitiesMapFromCache(context, user, ENTITY_TYPE_NOTIFIER);
   const missingIds = ids.filter((id) => !cacheNotifiers.has(id));
-  const notifiers = await internalFindByIds(context, user, missingIds, { type: ENTITY_TYPE_NOTIFIER });
+  const notifiers = await internalFindByIds(context, user, missingIds, { type: ENTITY_TYPE_NOTIFIER }) as StoreEntityNotifier[];
   const staticNotifiers = STATIC_NOTIFIERS.filter(({ id }) => missingIds.includes(id));
   return [
     ...(ids.filter((id) => cacheNotifiers.has(id)).map((id) => cacheNotifiers.get(id) as BasicStoreEntityNotifier)),
