@@ -114,6 +114,7 @@ import LeftBarItem from './LeftBarItem';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import logoFiligran from '../../../static/images/logo_filigran.svg';
+import { THEME_LIGHT_DEFAULT_PAPER, THEME_LIGHT_DEFAULT_BACKGROUND } from '../../../components/ThemeLight';
 
 export const SMALL_BAR_WIDTH = 55;
 export const OPEN_BAR_WIDTH = 180;
@@ -215,7 +216,7 @@ const leftBarQuery = graphql`
 const Separator = () => {
   const theme = useTheme();
   return (
-    <Divider sx={{ border: `1px solid ${theme.palette.background.default}` }} />
+    <Divider sx={{ border: `1px solid ${theme.palette.designSystem.background.bg2}` }} />
   );
 };
 
@@ -394,6 +395,15 @@ const LeftBarComponent = ({ queryRef }) => {
     submenuShowIcons: submenu_show_icons,
   };
 
+  const getBackground = () => {
+    if (theme.palette.mode === 'light') {
+      return `linear-gradient(100deg, ${THEME_LIGHT_DEFAULT_BACKGROUND} 0%, ${THEME_LIGHT_DEFAULT_PAPER} 100%)`;
+    }
+    const start = theme.palette.background?.gradient?.start ?? theme.palette.background?.default;
+    const end = theme.palette.background?.gradient?.end ?? theme.palette.background?.secondary;
+    return `linear-gradient(100deg, ${start} 0%, ${end} 100%)`;
+  };
+
   return (
     <Drawer
       variant="permanent"
@@ -406,7 +416,7 @@ const LeftBarComponent = ({ queryRef }) => {
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
-            backgroundColor: 'linear-gradient(90deg, #070D19, 0%, #0C1524, 100%)',
+            background: getBackground(),
             borderRight: '1px solid transparent',
           },
         },
