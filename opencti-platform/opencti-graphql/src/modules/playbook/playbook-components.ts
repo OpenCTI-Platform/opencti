@@ -331,10 +331,6 @@ const PLAYBOOK_REDUCING_COMPONENT: PlaybookComponent<ReduceConfiguration> = {
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
     const { filters } = playbookNode.configuration;
     const jsonFilters = JSON.parse(filters);
-    const baseMatches = await isStixMatchFilterGroup(context, SYSTEM_USER, baseData, jsonFilters);
-    if (!baseMatches) {
-      return { output_port: 'unmatch', bundle };
-    }
     const matchedElements = [baseData];
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const bundleElement = bundle.objects[index];
