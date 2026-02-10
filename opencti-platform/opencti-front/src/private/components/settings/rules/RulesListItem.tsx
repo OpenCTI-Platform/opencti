@@ -104,7 +104,7 @@ const RulesListItem = ({ rule, task, toggle }: RulesListItemProps) => {
         />
       </Grid>
       <Grid size={{ xs: 9 }}>
-        <Card title=" ">
+        <Card sx={{ overflowX: 'auto', minWidth: 0 }} title=" ">
           <div style={styleDefinition}>
             <div style={{ flex: '1' }}>
               {(rule.display?.if ?? []).map((step, index) => (
