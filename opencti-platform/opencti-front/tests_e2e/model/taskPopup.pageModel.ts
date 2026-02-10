@@ -21,6 +21,20 @@ export default class TaskPopup {
     await this.page.getByRole('button', { name: 'Launch' }).click();
   }
 
+  async launchAddMarking(markingName: string) {
+    // Launch background task on selected
+    await this.page.getByLabel('Update', { exact: true }).getByLabel('update').click();
+    await this.page.getByRole('combobox').first().click();
+    await this.page.getByRole('option', { name: 'Add' }).click();
+    await this.page.getByRole('combobox').nth(1).click();
+    await this.page.getByRole('option', { name: 'Marking definitions' }).click();
+    await this.page.getByLabel('Values').click();
+
+    await this.page.getByText(markingName).click({ timeout: 5000 });
+    await this.page.getByRole('button', { name: 'Update' }).click();
+    await this.page.getByRole('button', { name: 'Launch' }).click();
+  }
+
   async launchRemoveFromDraft() {
     await this.page.getByLabel('Remove from draft').click();
     await this.page.getByRole('button', { name: 'Launch' }).click();
