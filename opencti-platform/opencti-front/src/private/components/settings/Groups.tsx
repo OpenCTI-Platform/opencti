@@ -142,6 +142,7 @@ const Groups = () => {
         secondaryAction={false}
         keyword={searchTerm}
         createButton={<GroupCreation paginationOptions={paginationOptions} />}
+        noIcon
       >
         <QueryRenderer
           query={groupsLinesQuery}

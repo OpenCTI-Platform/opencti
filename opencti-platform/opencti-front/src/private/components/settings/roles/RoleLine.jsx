@@ -14,7 +14,6 @@ import Box from '@mui/material/Box';
 import inject18n from '../../../../components/i18n';
 import { groupsSearchQuery } from '../Groups';
 import { QueryRenderer } from '../../../../relay/environment';
-import ItemIcon from '../../../../components/ItemIcon';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
 import DangerZoneChip from '../../common/danger_zone/DangerZoneChip';
 
@@ -56,9 +55,6 @@ const RoleLineComponent = ({ fd, classes, dataColumns, node }) => {
       component={Link}
       to={`/dashboard/settings/accesses/roles/${node.id}`}
     >
-      <ListItemIcon>
-        <ItemIcon type="Role" />
-      </ListItemIcon>
       <ListItemText
         primary={(
           <>

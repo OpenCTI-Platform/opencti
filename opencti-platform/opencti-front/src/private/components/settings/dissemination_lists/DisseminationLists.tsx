@@ -16,7 +16,6 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
-import ItemIcon from '../../../../components/ItemIcon';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import Alert from '../../../../components/Alert';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
@@ -180,7 +179,6 @@ const DisseminationLists = () => {
                 preloadedPaginationProps={preloadedPaginationProps}
                 actions={(row) => <DisseminationListPopover data={row} paginationOptions={queryPaginationOptions} />}
                 createButton={<DisseminationListCreation paginationOptions={queryPaginationOptions} />}
-                icon={() => <ItemIcon type="DisseminationList" />}
               />
             )}
           </>

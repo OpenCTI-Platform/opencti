@@ -15,7 +15,6 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
-import ItemIcon from '../../../../components/ItemIcon';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import Alert from '../../../../components/Alert';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
@@ -172,7 +171,6 @@ const EmailTemplates = () => {
                 disableLineSelection
                 preloadedPaginationProps={preloadedPaginationProps}
                 createButton={<EmailTemplateCreation paginationOptions={queryPaginationOptions} />}
-                icon={() => <ItemIcon color="#afb505" type="EmailTemplate" />}
               />
             )}
           </>

@@ -211,6 +211,7 @@ class ListLines extends Component {
       inline,
       additionalFilterKeys,
       createButton,
+      noIcon,
     } = this.props;
     const exportDisabled = numberOfElements
       && ((selectedIds.length > export_max_size
@@ -220,6 +221,15 @@ class ListLines extends Component {
     const searchContextFinal = {
       ...(searchContext ?? {}),
       entityTypes: entityTypes ?? [],
+    };
+    const listItemIconMinWidth = () => {
+      if (noIcon) {
+        return 0;
+      }
+      if (handleToggleSelectAll) {
+        return 40;
+      }
+      return 56;
     };
     return (
       <div className={noPadding ? classes.containerNoPadding : classes.container}>
@@ -465,7 +475,8 @@ class ListLines extends Component {
               >
                 <ListItemIcon
                   style={{
-                    minWidth: handleToggleSelectAll ? 40 : 56,
+                    minWidth: listItemIconMinWidth(),
+                    width: noIcon ? 0 : 'auto',
                   }}
                 >
                   {handleToggleSelectAll ? (
