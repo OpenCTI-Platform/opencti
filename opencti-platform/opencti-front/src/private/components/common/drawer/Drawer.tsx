@@ -35,6 +35,9 @@ const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => c
     padding: theme.spacing(3),
     height: '100%',
     overflowY: 'auto',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(2),
   },
   mainButton: ({ bannerHeightNumber }) => ({
     position: 'fixed',
@@ -242,10 +245,8 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
             backgroundColor: theme.palette.background.drawer,
           }}
         >
-          <Stack gap={2}>
-            {renderSubHeader()}
-            {component}
-          </Stack>
+          {renderSubHeader()}
+          {component}
         </div>
       </DrawerMUI>
     </>
