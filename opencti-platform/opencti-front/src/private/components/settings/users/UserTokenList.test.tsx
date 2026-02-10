@@ -33,13 +33,13 @@ describe('Component: UserTokenList', () => {
   } as unknown as UserTokenList_node$data;
 
   it('should render list of tokens', () => {
-    testRender(<UserTokenList node={mockNode} />);
+    testRender(<UserTokenList node={mockNode} onCloseDrawer={() => {}} />);
     expect(screen.getByText('Admin View Token')).toBeInTheDocument();
     expect(screen.getByText('Unlimited')).toBeInTheDocument();
   });
 
   it('should handle token revocation via admin mutation', async () => {
-    const { user } = testRender(<UserTokenList node={mockNode} />);
+    const { user } = testRender(<UserTokenList node={mockNode} onCloseDrawer={() => {}} />);
     const commitMutationMock = commitMutation as Mock;
 
     // Click revoke
@@ -71,12 +71,12 @@ describe('Component: UserTokenList', () => {
 
   it('should render empty state', () => {
     const node = { id: 'user-id', api_tokens: [] } as unknown as UserTokenList_node$data;
-    testRender(<UserTokenList node={node} />);
+    testRender(<UserTokenList node={node} onCloseDrawer={() => {}} />);
     expect(screen.getByText(/No tokens found/)).toBeInTheDocument();
   });
 
   it('should open creation drawer', async () => {
-    const { user } = testRender(<UserTokenList node={mockNode} />);
+    const { user } = testRender(<UserTokenList node={mockNode} onCloseDrawer={() => {}} />);
     const generateButton = screen.getByRole('button', { name: 'generate-token' });
 
     await user.click(generateButton);
