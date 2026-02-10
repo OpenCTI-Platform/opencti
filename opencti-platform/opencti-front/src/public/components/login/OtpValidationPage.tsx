@@ -17,7 +17,7 @@ const OtpValidationPage = ({ settings }: OtpValidationPageProps) => {
 
   return (
     <LoginLayout settings={settings}>
-      <Stack gap={1} sx={{ width: 380 }}>
+      <Stack gap={1} sx={{ width: 500 }}>
         <AlertMfa forceDisplay />
 
         <Card
