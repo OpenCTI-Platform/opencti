@@ -2,16 +2,25 @@
 
      SSO configuration is under the [OpenCTI Enterprise Edition](https://docs.opencti.io/latest/administration/enterprise/?h=ente) license. Please read the information below to have all the information.
 
+# Using & defining SSO become an Entreprise edition feature
+In version 7, using & defining Authetnication stategies (SSO) will fall undr the Entreprise License.
+
+This means that any platform using Community edition will have to use Local authentication to be able to lgoin in their platform. You can always get a [trial license ](https://filigran.io/enterprise-editions-trial/) if you need to explore our Entreprise License offer (or to keep using SSO).
+
+
 # Migration Process
 At platform intialization, configuration file will be read. 
 If your platform is under entreprise edition license, each strategy will be converted to UI, meaning that the configuration of the specific strategy will be stored in our database and marked as migrated. It will still exists in the configuration file.
 If a strategy cannot be migrated  or failed to be migrated, then this flag won’t be applied. 
 Once a strategy is marked as migrated, when the paltform will initalize,based on the presence of this flag, the configuration present in the database will be used, otherwise, the configuration from the configuration file will be used. 
+
 This means that a SSO configuration defined in UI (and therefore in database) **will always have priority over the same configration in the configuration file.**
 
 # Avoiding having an authentication strategy that keeps appearing in the UI
 Assuming you have a configration defined in your configuration file, when upgrading to version 7, your configuration will be converted to UI (stored in database). 
+
 If for whatever reason you delete this configuration from UI, next time you will intialize your platform, you will see **the same configuration again.**
+
 This is due to the above process. To prevent this unwanted behavior, you need to delete from your configuration file the authentication strategy of that needs to be removed. This way it will stop re-appearing.
 
 # Authentications that will be migrated
