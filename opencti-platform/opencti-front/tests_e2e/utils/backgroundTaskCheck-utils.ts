@@ -4,9 +4,13 @@ import { awaitUntilCondition } from './utils';
 
 const getBackgroundTasksQuery = () => `
   query {
-    backgroundTasks() {
-      id
-      completed
+    backgroundTasks {
+      edges {
+        node {
+          id
+          completed
+        }
+      }
     }
   }
 `;
