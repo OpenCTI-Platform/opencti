@@ -51,6 +51,7 @@ const courseOfActionQuery = graphql`
       entity_type
       name
       x_opencti_aliases
+      currentUserAccessRight
       ...CourseOfAction_courseOfAction
       ...FileImportViewer_entity
       ...FileExportViewer_entity

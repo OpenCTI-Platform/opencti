@@ -56,6 +56,7 @@ const positionQuery = graphql`
       entity_type
       name
       x_opencti_aliases
+      currentUserAccessRight
       ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...Position_position

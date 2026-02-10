@@ -56,6 +56,7 @@ const eventQuery = graphql`
       entity_type
       name
       aliases
+      currentUserAccessRight
       ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...Event_event

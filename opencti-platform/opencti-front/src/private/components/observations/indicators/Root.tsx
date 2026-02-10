@@ -58,6 +58,7 @@ const indicatorQuery = graphql`
       entity_type
       name
       pattern
+      currentUserAccessRight
       ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...Indicator_indicator
       ...IndicatorDetails_indicator

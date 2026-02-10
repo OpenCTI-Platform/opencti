@@ -59,6 +59,7 @@ const cityQuery = graphql`
       name
       x_opencti_aliases
       x_opencti_graph_data
+      currentUserAccessRight
       ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...City_city
