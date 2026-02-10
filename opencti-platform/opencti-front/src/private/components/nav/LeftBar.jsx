@@ -786,7 +786,6 @@ const LeftBarComponent = ({ queryRef }) => {
           borderRight: theme.palette.mode === 'dark'
             ? '1px solid rgba(255, 255, 255, 0.12)'
             : '1px solid rgba(0, 0, 0, 0.12)',
-          background: theme.palette.background.paper,
           width: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
         }}
       >
