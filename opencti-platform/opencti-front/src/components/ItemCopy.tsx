@@ -105,8 +105,9 @@ const ItemCopy: FunctionComponent<ItemCopyProps> = ({
   const textToShow = limit ? truncate(content, limit) : content;
 
   const textElement = (
-    <div ref={textRef} className={classNameVariant()}>
+    <div className={classNameVariant()}>
       <Box
+        ref={textRef}
         sx={{
           overflow: 'hidden',
           minWidth: 0,
