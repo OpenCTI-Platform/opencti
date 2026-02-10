@@ -12,9 +12,6 @@ import { TokenList_node$data } from './__generated__/TokenList_node.graphql';
 import TokenDeleteDialog from './TokenDeleteDialog';
 
 const useStyles = makeStyles<Theme>((theme) => ({
-  table: {
-    minWidth: 650,
-  },
   empty: {
     textAlign: 'center',
     padding: 20,
@@ -124,8 +121,16 @@ export const TokenListBase: React.FC<TokenListProps> = ({ node }) => {
 
   return (
     <div>
-      <TableContainer component={Paper} variant="outlined">
-        <Table className={classes.table} size="small" aria-label="token list">
+      <TableContainer component={Paper} variant="outlined" sx={{ border: 'none' }}>
+        <Table
+          size="small"
+          aria-label="token list"
+          sx={{
+            '& .MuiTableRow-root:last-child .MuiTableCell-root': {
+              borderBottom: 'none',
+            },
+          }}
+        >
           <TableHead>
             <TableRow>
               <TableCell>{t_i18n('Name')}</TableCell>
