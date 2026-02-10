@@ -11079,7 +11079,7 @@ __metadata:
     passport-local: "npm:1.0.0"
     python-shell: "npm:5.0.0"
     ramda: "npm:0.32.0"
-    rate-limiter-flexible: "npm:9.1.0"
+    rate-limiter-flexible: "npm:9.1.1"
     semver: "npm:7.7.4"
     set-interval-async: "npm:3.0.3"
     source-map: "npm:0.7.6"
@@ -11719,10 +11719,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rate-limiter-flexible@npm:9.1.0":
-  version: 9.1.0
-  resolution: "rate-limiter-flexible@npm:9.1.0"
-  checksum: 10c0/72253f62643b08ee9e8d554e198c7d2810c175ddf80ac0b5d565d119b38bb2196e13c3dc785a907d84c180731a4516b6f73a9474fcedb44334a795fc0088ca28
+"rate-limiter-flexible@npm:9.1.1":
+  version: 9.1.1
+  resolution: "rate-limiter-flexible@npm:9.1.1"
+  checksum: 10c0/f9f44cbe88afc74924771c6b1d7bbe7250834469cf931ef475613e681ec99593b36a2341b74f1154191a451e8ca70c8db41ae2da0cf8f3a79e8fe6e86104afbb
   languageName: node
   linkType: hard
 
