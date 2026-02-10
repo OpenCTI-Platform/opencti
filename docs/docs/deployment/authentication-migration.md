@@ -2,12 +2,6 @@
 
      SSO configuration is under the [OpenCTI Enterprise Edition](https://docs.opencti.io/latest/administration/enterprise/?h=ente) license. Please read the information below to have all the information.
 
-# Using & defining SSO become an Entreprise edition feature
-In version 7, using & defining Authetnication stategies (SSO) will fall undr the Entreprise License.
-
-This means that any platform using Community edition will have to use Local authentication to be able to lgoin in their platform. You can always get a [trial license ](https://filigran.io/enterprise-editions-trial/) if you need to explore our Entreprise License offer (or to keep using SSO).
-
-
 # Migration Process
 At platform intialization, configuration file will be read. 
 If your platform is under entreprise edition license, each strategy will be converted to UI, meaning that the configuration of the specific strategy will be stored in our database and marked as migrated. It will still exists in the configuration file.
