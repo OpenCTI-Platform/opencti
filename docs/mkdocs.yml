@@ -116,8 +116,8 @@ nav:
       - Installation: deployment/installation.md
       - Configuration: deployment/configuration.md
       - Authentication: 
-        - Authentication via GUI configuration: deployment/sso-in-gui.md
-        - Migration from environement to UI: deployment/sso-migration.md
+        - Authentication via GUI configuration: deployment/authetication-in-gui.md
+        - Migration from environement variable to UI: deployment/authentication-migration.md
         - Authentication via environment variables: deployment/authentication.md
       - Telemetry: deployment/telemetry.md
       - Upgrade: deployment/upgrade.md
