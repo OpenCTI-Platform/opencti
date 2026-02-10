@@ -13,20 +13,21 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import { CancelOutlined, AddOutlined } from '@mui/icons-material';
-import { MenuItem, Grid2 as Grid } from '@mui/material';
 import IconButton from '@common/button/IconButton';
-import { Field, FieldArray, useFormikContext } from 'formik';
+import { AddOutlined, DeleteOutlined } from '@mui/icons-material';
+import { Grid2 as Grid, MenuItem, Stack } from '@mui/material';
 import { useTheme } from '@mui/styles';
-import { capitalizeFirstLetter } from '../../../../../../../utils/String';
+import { Field, FieldArray, useFormikContext } from 'formik';
+import type { Theme } from '../../../../../../../components/Theme';
+import Button from '../../../../../../../components/common/button/Button';
+import SelectField from '../../../../../../../components/fields/SelectField';
 import { useFormatter } from '../../../../../../../components/i18n';
+import { capitalizeFirstLetter } from '../../../../../../../utils/String';
 import { fieldSpacingContainerStyle } from '../../../../../../../utils/field';
 import { isEmptyField } from '../../../../../../../utils/utils';
-import type { Theme } from '../../../../../../../components/Theme';
-import SelectField from '../../../../../../../components/fields/SelectField';
+import PlaybookActionValueField from './PlaybookActionValueField';
 import { attributesMultiple, PlaybookUpdateAction, PlaybookUpdateActionsForm } from './playbookAction-types';
 import useActionFieldOptions from './useActionFieldOptions';
-import PlaybookActionValueField from './PlaybookActionValueField';
 
 interface PlaybookFlowFieldActionsProps {
   operations?: string[];
@@ -94,20 +95,6 @@ const PlaybookFlowFieldActions = ({
                   display: 'flex',
                 }}
                 >
-                  <IconButton
-                    size="small"
-                    aria-label="Delete"
-                    disabled={actions.length === 1}
-                    onClick={() => {
-                      arrayHelpers.remove(i);
-                      const newFormvalues = [...formActionsValues];
-                      newFormvalues.splice(i, 1);
-                      setFieldValue('actionsFormValues', newFormvalues);
-                    }}
-                    sx={{ position: 'absolute', top: -18, right: -18 }}
-                  >
-                    <CancelOutlined fontSize="small" />
-                  </IconButton>
                   <Grid container spacing={3} sx={{ width: '100%' }}>
                     <Grid size={{ xs: 3 }}>
                       <Field
@@ -145,28 +132,54 @@ const PlaybookFlowFieldActions = ({
                         }
                       </Field>
                     </Grid>
-                    <Grid size={{ xs: 6 }}>
+                    <Grid size={{ xs: 5 }}>
                       <PlaybookActionValueField
                         action={action}
                         index={i}
                       />
                     </Grid>
+
+                    <Grid
+                      size={{ xs: 1 }}
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <IconButton
+                        aria-label="Delete"
+                        disabled={actions.length === 1}
+                        onClick={() => {
+                          arrayHelpers.remove(i);
+                          const newFormvalues = [...formActionsValues];
+                          newFormvalues.splice(i, 1);
+                          setFieldValue('actionsFormValues', newFormvalues);
+                        }}
+                      >
+                        <DeleteOutlined />
+                      </IconButton>
+                    </Grid>
+
                   </Grid>
                 </div>
               </div>
             );
           })}
-          <IconButton
-            size="small"
-            color="secondary"
-            disabled={!actionsAreValid}
-            style={{ width: '100%', height: 20 }}
-            onClick={() => {
-              arrayHelpers.push({});
-            }}
-          >
-            <AddOutlined fontSize="small" />
-          </IconButton>
+
+          <Stack alignItems="center">
+            <Button
+              variant="tertiary"
+              color="secondary"
+              startIcon={<AddOutlined fontSize="small" />}
+              disabled={!actionsAreValid}
+              onClick={() => {
+                arrayHelpers.push({});
+              }}
+            >
+              {t_i18n('Add action')}
+            </Button>
+          </Stack>
         </div>
       )}
     />

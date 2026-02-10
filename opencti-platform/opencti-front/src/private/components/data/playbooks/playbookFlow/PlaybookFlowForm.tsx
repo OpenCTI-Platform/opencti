@@ -13,37 +13,36 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import { Field, Form, Formik, FormikConfig } from 'formik';
 import Button from '@common/button/Button';
-import { useTheme } from '@mui/styles';
+import OpenVocabField from '@components/common/form/OpenVocabField';
+import MenuItem from '@mui/material/MenuItem';
+import { Field, Form, Formik, FormikConfig } from 'formik';
 import * as Yup from 'yup';
+import TextField from '../../../../../components/TextField';
+import FormButtonContainer from '../../../../../components/common/form/FormButtonContainer';
+import PeriodicityField from '../../../../../components/fields/PeriodicityField';
+import SelectField from '../../../../../components/fields/SelectField';
 import { useFormatter } from '../../../../../components/i18n';
-import useFiltersState from '../../../../../utils/filters/useFiltersState';
 import { parse } from '../../../../../utils/Time';
+import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import { deserializeFilterGroupForFrontend, emptyFilterGroup, serializeFilterGroupForBackend } from '../../../../../utils/filters/filtersUtils';
-import PlaybookFlowFieldInPirFilters from './playbookFlowFields/PlaybookFlowFieldInPirFilters';
-import PlaybookFlowFieldTargets from './playbookFlowFields/PlaybookFlowFieldTargets';
+import useFiltersState from '../../../../../utils/filters/useFiltersState';
+import type { PlaybookComponentConfigSchema, PlaybookComponents, PlaybookConfig, PlaybookNode } from '../types/playbook-types';
+import PlaybookFlowFieldAccessRestrictions from './playbookFlowFields/PlaybookFlowFieldAccessRestrictions';
+import PlaybookFlowFieldArray, { PlaybookFlowFieldArrayProps } from './playbookFlowFields/PlaybookFlowFieldArray';
+import PlaybookFlowFieldAuthorizedMembers from './playbookFlowFields/PlaybookFlowFieldAuthorizedMembers';
+import PlaybookFlowFieldBoolean from './playbookFlowFields/PlaybookFlowFieldBoolean';
 import PlaybookFlowFieldCaseTemplates from './playbookFlowFields/PlaybookFlowFieldCaseTemplates';
 import PlaybookFlowFieldFilters from './playbookFlowFields/PlaybookFlowFieldFilters';
-import PlaybookFlowFieldAccessRestrictions from './playbookFlowFields/PlaybookFlowFieldAccessRestrictions';
-import PlaybookFlowFieldAuthorizedMembers from './playbookFlowFields/PlaybookFlowFieldAuthorizedMembers';
-import PlaybookFlowFieldOrganizations from './playbookFlowFields/PlaybookFlowFieldOrganizations';
-import PlaybookFlowFieldArray, { PlaybookFlowFieldArrayProps } from './playbookFlowFields/PlaybookFlowFieldArray';
-import PlaybookFlowFieldPeriod from './playbookFlowFields/PlaybookFlowFieldPeriod';
-import PlaybookFlowFieldTriggerTime from './playbookFlowFields/PlaybookFlowFieldTriggerTime';
+import PlaybookFlowFieldInPirFilters from './playbookFlowFields/PlaybookFlowFieldInPirFilters';
 import PlaybookFlowFieldNumber from './playbookFlowFields/PlaybookFlowFieldNumber';
-import PlaybookFlowFieldBoolean from './playbookFlowFields/PlaybookFlowFieldBoolean';
+import PlaybookFlowFieldOrganizations from './playbookFlowFields/PlaybookFlowFieldOrganizations';
+import PlaybookFlowFieldPeriod from './playbookFlowFields/PlaybookFlowFieldPeriod';
 import PlaybookFlowFieldString from './playbookFlowFields/PlaybookFlowFieldString';
+import PlaybookFlowFieldTargets from './playbookFlowFields/PlaybookFlowFieldTargets';
+import PlaybookFlowFieldTriggerTime from './playbookFlowFields/PlaybookFlowFieldTriggerTime';
 import PlaybookFlowFieldActions from './playbookFlowFields/playbookFlowFieldsActions/PlaybookFlowFieldActions';
-import TextField from '../../../../../components/TextField';
-import type { Theme } from '../../../../../components/Theme';
-import type { PlaybookComponentConfigSchema, PlaybookComponents, PlaybookConfig, PlaybookNode } from '../types/playbook-types';
 import { PlaybookUpdateAction, PlaybookUpdateActionsForm } from './playbookFlowFields/playbookFlowFieldsActions/playbookAction-types';
-import PeriodicityField from '../../../../../components/fields/PeriodicityField';
-import { fieldSpacingContainerStyle } from '../../../../../utils/field';
-import SelectField from '../../../../../components/fields/SelectField';
-import MenuItem from '@mui/material/MenuItem';
-import OpenVocabField from '@components/common/form/OpenVocabField';
 
 export type PlaybookFlowFormData
   // Component: update knowledge
@@ -78,7 +77,6 @@ const PlaybookFlowForm = ({
   onConfigReplace,
   handleClose,
 }: PlaybookFlowFormProps) => {
-  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const nodeData = (action === 'config' || action === 'replace') ? selectedNode?.data : undefined;
   const currentConfig = nodeData?.configuration ?? null;
@@ -339,12 +337,11 @@ const PlaybookFlowForm = ({
                   );
                 },
               )}
-              <div style={{ marginTop: 20, textAlign: 'right' }}>
+              <FormButtonContainer>
                 <Button
                   variant="secondary"
                   onClick={handleReset}
                   disabled={isSubmitting}
-                  style={{ marginRight: theme.spacing(2) }}
                 >
                   {t_i18n('Cancel')}
                 </Button>
@@ -356,7 +353,7 @@ const PlaybookFlowForm = ({
                     ? t_i18n('Update')
                     : t_i18n('Create')}
                 </Button>
-              </div>
+              </FormButtonContainer>
             </Form>
           );
         }}
