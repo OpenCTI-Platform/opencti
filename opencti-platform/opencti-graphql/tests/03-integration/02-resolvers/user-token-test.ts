@@ -171,7 +171,7 @@ describe('User Token behavior', () => {
     });
 
     expect(failMutationResult.errors).toBeDefined();
-    expect(failMutationResult.errors?.[0].message).toContain('You are not allowed use API tokens');
+    expect(failMutationResult.errors?.[0].message).toContain('You are not allowed to do this.');
 
     // 5. User Editor tries to use existing token -> Fail (Auth Enforcement)
     // When auth fails, executeInternalQuery might return data with null me, or throw error.
