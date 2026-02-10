@@ -24,7 +24,7 @@ This table regroups all the breaking changes introduced, with the corresponding 
 
 <a id="SSO-update-license"></a>
 
-SSO becomes an[Entreprise edition](../administration/entreprise) feature. 
+SSO becomes an[Entreprise edition](../administration/entreprise.md) feature. 
 Using SSO defined in configuration file (environement variable) to login will not be possible anymore for**Community Edition** platforms. For more information about the [migration](authentication-migration.md) & the [new associated feature (Define Authentication via UI)](authetication-in-gui.md) please browse the provided links.
 
 ## OpenCTI 6.5
