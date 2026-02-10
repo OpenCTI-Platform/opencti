@@ -347,6 +347,7 @@ const TasksList = ({ data, options }) => {
                                 key={task.actions.indexOf(action)}
                                 direction="row"
                                 gap={1}
+                                flexWrap="wrap"
                               >
                                 <Tag
                                   label={action.type}
