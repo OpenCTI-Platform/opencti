@@ -30,10 +30,8 @@ export const checkBackgroundTasksCompletion = async (
 ) => {
   const conditionPromise = async () => {
     const backgroundTasksResponse = await getBackgroundTasks(request);
-    console.log('backgroundTasksResponse', JSON.stringify(backgroundTasksResponse));
-    const backgroundTasks = await backgroundTasksResponse.json();
-    console.log('----------------backgroundTasks', JSON.stringify(backgroundTasks)); // TODO to remove
-    return backgroundTasks.every((t: { completed: boolean }) => t.completed);
+    const backgroundTasksBody = await backgroundTasksResponse.json();
+    return backgroundTasksBody.data.backgroundTasks.edges.every((t: { node: { id: string; completed: boolean } }) => t.node.completed);
   };
   return awaitUntilCondition(
     conditionPromise,
