@@ -116,6 +116,8 @@ import Typography from '@mui/material/Typography';
 import logoFiligranDark from '../../../static/images/logo_filigran_dark_theme.svg';
 import logoFiligranLight from '../../../static/images/logo_filigran_light_theme.svg';
 import { THEME_LIGHT_DEFAULT_PAPER, THEME_LIGHT_DEFAULT_BACKGROUND } from '../../../components/ThemeLight';
+import LogoTextOrange from '../../../static/images/logo_text_orange.svg';
+import LogoCollapsedOrange from '../../../static/images/logo_orange.svg';
 
 export const SMALL_BAR_WIDTH = 55;
 export const OPEN_BAR_WIDTH = 180;
@@ -262,7 +264,10 @@ const LeftBarComponent = ({ queryRef }) => {
 
   const data = usePreloadedQuery(leftBarQuery, queryRef);
   const platformTheme = data.settings?.platform_theme;
-  const logo = navOpen ? platformTheme?.theme_logo || theme.logo : platformTheme?.theme_logo_collapsed || theme.logo_collapsed;
+
+  let logo = navOpen
+    ? platformTheme?.theme_logo || (draftContext ? LogoTextOrange : theme.logo)
+    : platformTheme?.theme_logo_collapsed || (draftContext ? LogoCollapsedOrange : theme.logo_collapsed);
 
   const addMenuUnique = (menu) => {
     const joined = selectedMenu.concat(menu);
