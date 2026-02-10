@@ -360,7 +360,7 @@ describe('API Token Generation', () => {
     const input = { duration: 'UNLIMITED', name: 'Test Token' } as UserTokenAddInput;
     const context = { user: { id: 'admin' } } as AuthContext;
 
-    const result = await addUserToken(context, user, input);
+    const result = await addUserToken(context, user, user.id, input);
 
     expect(result.plaintext_token).toBeDefined();
     expect(result.plaintext_token.startsWith('flgrn_octi_tkn_')).toBe(true);
@@ -392,7 +392,7 @@ describe('API Token Generation', () => {
     const input = { duration: TokenDuration.Days_30, name: 'Expiring Token' } as UserTokenAddInput;
     const context = {} as AuthContext;
 
-    const result = await addUserToken(context, user, input);
+    const result = await addUserToken(context, user, user.id, input);
 
     expect(result.expires_at).toBeDefined();
     const expires = DateTime.fromISO(result.expires_at as string);

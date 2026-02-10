@@ -51,7 +51,7 @@ describe('User Domain', () => {
         duration: TokenDuration.Days_30,
       };
 
-      const result = await addUserToken(context, user, input);
+      const result = await addUserToken(context, user, user.id, input);
 
       // Verify result structure
       expect(result).toHaveProperty('token_id');
@@ -107,7 +107,7 @@ describe('User Domain', () => {
         duration: TokenDuration.Unlimited,
       };
 
-      const result = await addUserToken(context, user, input);
+      const result = await addUserToken(context, user, user.id, input);
 
       expect(result.expires_at).toBeNull();
       expect(publishUserAction).toHaveBeenCalled();
@@ -116,7 +116,7 @@ describe('User Domain', () => {
 
     it('should throw if user lacks capability', async () => {
       (isUserHasCapability as any).mockReturnValue(false);
-      await expect(addUserToken(context, user, { name: 'T', duration: TokenDuration.Days_30 }))
+      await expect(addUserToken(context, user, user.id, { name: 'T', duration: TokenDuration.Days_30 }))
         .rejects.toThrow('You are not allowed use API tokens');
     });
   });
