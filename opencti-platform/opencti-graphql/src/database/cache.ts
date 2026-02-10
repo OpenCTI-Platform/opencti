@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import type { BasicStoreCommon, BasicStoreIdentifier } from '../types/store';
 import { logApp } from '../config/conf';
-import { UnsupportedError } from '../config/errors';
+import { DatabaseError, UnsupportedError } from '../config/errors';
 import { telemetry } from '../config/tracing';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { StixId, StixObject } from '../types/stix-2-1-common';
@@ -11,10 +11,10 @@ import { ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
-import { wait } from './utils';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { ENTITY_TYPE_DECAY_EXCLUSION_RULE } from '../modules/decayRule/exclusions/decayExclusionRule-types';
 import { ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { pushAll } from '../utils/arrayUtil';
 
 const STORE_ENTITIES_LINKS: Record<string, string[]> = {
   // Resolved Filters in cache must be reset depending on connector/stream/triggers/playbooks/Pir/label modifications
@@ -125,23 +125,39 @@ const getEntitiesFromCache = async <T extends BasicStoreIdentifier | StixObject>
     if (!fromCache) {
       throw UnsupportedError('Cache configuration type not supported', { type });
     }
-    if (!fromCache.values) {
-      // If cache already in progress build, just wait for completion
-      if (fromCache.inProgress) {
-        while (fromCache.inProgress) {
-          await wait(100);
-        }
-        return fromCache.values ?? (type === ENTITY_TYPE_RESOLVED_FILTERS ? new Map() : []);
+    const MAX_CACHE_RETRIES = 10;
+    let retries = 0;
+    // Loop until values are available.
+    // If a concurrent fetch fails, waiters retry instead of returning empty data.
+    while (!fromCache.values) {
+      if (!fromCache.inProgress) {
+        const loadFromFn = async () => {
+          try {
+            let cacheData = await fromCache.fn();
+            if (!cacheData) {
+              // This situation must be adapted with code evolution
+              logApp.warn('[CACHE] Cache function refresh return undefined values', { type });
+              cacheData = type === ENTITY_TYPE_RESOLVED_FILTERS ? new Map() : [];
+            }
+            fromCache.values = cacheData;
+          } finally {
+            fromCache.inProgress = undefined;
+          }
+        };
+        fromCache.inProgress = loadFromFn();
       }
-      // If not in progress, re fetch the data
-      fromCache.inProgress = true;
+
       try {
-        fromCache.values = await fromCache.fn();
-      } finally {
-        fromCache.inProgress = false;
+        await fromCache.inProgress;
+      } catch (err: any) {
+        retries += 1;
+        logApp.error('[CACHE] Error loading cache', { type, attempt: retries, maxRetries: MAX_CACHE_RETRIES, cause: err });
+        if (retries >= MAX_CACHE_RETRIES) {
+          throw DatabaseError(err.message);
+        }
       }
     }
-    return fromCache.values ?? (type === ENTITY_TYPE_RESOLVED_FILTERS ? new Map() : []);
+    return fromCache.values as Promise<Array<T> | Map<string, T>>;
   };
   return telemetry(context, user, `CACHE ${type}`, {
     [SEMATTRS_DB_NAME]: 'cache_engine',
@@ -153,27 +169,25 @@ const getEntitiesFromCache = async <T extends BasicStoreIdentifier | StixObject>
 export const getEntitiesListFromCache = async <T extends BasicStoreIdentifier | StixObject>(
   context: AuthContext, user: AuthUser, type: string,
 ): Promise<Array<T>> => {
+  const data = await getEntitiesFromCache(context, user, type);
   if (type === ENTITY_TYPE_RESOLVED_FILTERS) {
-    const map = await getEntitiesFromCache(context, user, type) as Map<string, T>;
     const result: T[] = [];
-    for (const value of map.values()) {
-      result.push(value);
-    }
+    pushAll(result, (data as Map<string, T>).values());
     return result;
   }
-  return await getEntitiesFromCache(context, user, type) as T[];
+  return data as T[];
 };
 
 // get a map <id, instance> of the entities in the cache for a given type
 export const getEntitiesMapFromCache = async <T extends BasicStoreIdentifier | StixObject>(
   context: AuthContext, user: AuthUser, type: string,
 ): Promise<Map<string | StixId, T>> => {
+  const data = await getEntitiesFromCache(context, user, type);
   // Filters is already a map
   if (type === ENTITY_TYPE_RESOLVED_FILTERS) {
-    return await getEntitiesFromCache(context, user, type) as Map<string, T>; // map of <standard_id, instance>
+    return data as Map<string, T>; // map of <standard_id, instance>
   }
-  const data = await getEntitiesFromCache(context, user, type) as BasicStoreIdentifier[];
-  return buildStoreEntityMap(data); // map of <id, instance> for all the instance ids (internal_id, standard_id, stix ids)
+  return buildStoreEntityMap(data as BasicStoreIdentifier[]); // map of <id, instance> for all the instance ids (internal_id, standard_id, stix ids)
 };
 
 export const getEntityFromCache = async <T extends BasicStoreIdentifier>(context: AuthContext, user: AuthUser, type: string): Promise<T> => {
