@@ -392,24 +392,24 @@ export const ruleApplyAsync = async (context: AuthContext, user: AuthUser, eleme
     } else {
       // Otherwise, it means no processing is started yet, and we need to start it
       await redisInitializeAsyncCall(ruleApplyId);
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Timeout')), 10000),
+      const timeoutPromise = new Promise((resolve, _) =>
+        setTimeout(() => resolve({ timeout: true }), 10000),
       );
       const ruleApplyPromise = ruleApply(context, user, elementId, ruleId);
-      try {
-        await Promise.race([ruleApplyPromise, timeoutPromise]);
-        // If rule apply promise is the first to finish, we move the work to complete here
-        await redisFinishAsyncCall(ruleApplyId);
-        result = true;
-      } catch {
-        // If timeout promise is the first to finish, we do not await the rule apply but instead we return the ongoing work
-        // The work will be moved to complete when the rule apply is finished
+      const raceResult = await Promise.race([ruleApplyPromise, timeoutPromise]) as { timeout?: boolean };
+      if (raceResult?.timeout) {
+        // If timeout promise is the first to finish, we do not await the rule apply but instead we return false as a result
+        // The current call will be moved to complete when the rule apply is finished
         ruleApplyPromise.catch((err) => {
           logApp.error('[OPENCTI] Error during rule apply', { cause: err });
         }).finally(async () => {
           await redisFinishAsyncCall(ruleApplyId);
         });
         result = false;
+      } else {
+        // If rule apply promise is the first to finish, we move the work to complete here
+        await redisFinishAsyncCall(ruleApplyId);
+        result = true;
       }
     }
   } catch (err: any) {

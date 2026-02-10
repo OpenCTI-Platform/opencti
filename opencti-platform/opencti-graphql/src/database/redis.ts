@@ -508,15 +508,25 @@ export const redisInitializeWork = async (workId: string) => {
 // endregion
 // region async calls tracking
 const ASYNC_CALL_TTL = 3600;
-const ASYNC_CALL_KEY_PREFIX = 'async_status_';
+const ASYNC_CALL_KEY_PREFIX = 'async_status:';
 export const redisInitializeAsyncCall = async (asyncCallId: string) => {
-  await getClientBase().setex(ASYNC_CALL_KEY_PREFIX + asyncCallId, ASYNC_CALL_TTL, '0');
+  await getClientBase().set(
+    ASYNC_CALL_KEY_PREFIX + asyncCallId,
+    '0',
+    'EX',
+    ASYNC_CALL_TTL,
+  );
 };
 export const redisGetAsyncCall = async (asyncCallId: string) => {
   return getClientBase().get(ASYNC_CALL_KEY_PREFIX + asyncCallId);
 };
 export const redisFinishAsyncCall = async (asyncCallId: string) => {
-  await getClientBase().setex(ASYNC_CALL_KEY_PREFIX + asyncCallId, ASYNC_CALL_TTL, '1');
+  await getClientBase().set(
+    ASYNC_CALL_KEY_PREFIX + asyncCallId,
+    '1',
+    'EX',
+    ASYNC_CALL_TTL,
+  );
 };
 // endregion
 // region cluster handling
