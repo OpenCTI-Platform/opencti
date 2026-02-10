@@ -61,9 +61,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@apollo/server@npm:5.3.0":
-  version: 5.3.0
-  resolution: "@apollo/server@npm:5.3.0"
+"@apollo/server@npm:5.4.0":
+  version: 5.4.0
+  resolution: "@apollo/server@npm:5.4.0"
   dependencies:
     "@apollo/cache-control-types": "npm:^1.0.3"
     "@apollo/server-gateway-interface": "npm:^2.0.0"
@@ -78,6 +78,7 @@ __metadata:
     "@graphql-tools/schema": "npm:^10.0.0"
     async-retry: "npm:^1.2.1"
     body-parser: "npm:^2.2.2"
+    content-type: "npm:^1.0.5"
     cors: "npm:^2.8.5"
     finalhandler: "npm:^2.1.0"
     loglevel: "npm:^1.6.8"
@@ -87,7 +88,7 @@ __metadata:
     whatwg-mimetype: "npm:^4.0.0"
   peerDependencies:
     graphql: ^16.11.0
-  checksum: 10c0/39b90f09c598bef23010490e976b1a8935398fe9d4c388becb4693f0069d342e0d7cbec19cff27fce3136e058009dcc3d54b18e1c2c2939214360674825f2e92
+  checksum: 10c0/6cba28e43fffb66af1384675afe5a91efab3c0002da6f1ca025bb6e52fced12843c1ef9129b627b733f6468849568898045b38b2122cb843860b8a4196b99b9d
   languageName: node
   linkType: hard
 
@@ -10775,7 +10776,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "opencti-graphql@workspace:."
   dependencies:
-    "@apollo/server": "npm:5.3.0"
+    "@apollo/server": "npm:5.4.0"
     "@as-integrations/express5": "npm:1.1.2"
     "@aws-sdk/client-s3": "npm:3.978.0"
     "@aws-sdk/client-sts": "npm:3.978.0"
