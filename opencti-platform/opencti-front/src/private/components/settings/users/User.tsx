@@ -1,8 +1,8 @@
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import UserConfidenceLevel from '@components/settings/users/UserConfidenceLevel';
-import { DeleteForeverOutlined, DeleteOutlined } from '@mui/icons-material';
-import { ListItemButton } from '@mui/material';
+import { Add, DeleteForeverOutlined, DeleteOutlined } from '@mui/icons-material';
+import { ListItemButton, Stack } from '@mui/material';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -218,6 +218,8 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
   const [displayKillSessions, setDisplayKillSessions] = useState<boolean>(false);
   const [killing, setKilling] = useState<boolean>(false);
   const [sessionToKill, setSessionToKill] = useState<string | null>(null);
+  const [openTokenCreationDrawer, setOpenTokenCreationDrawer] = useState(false);
+
   const user = useFragment(UserFragment, data);
   const isEnterpriseEdition = useEnterpriseEdition();
   const isGrantedToAudit = useGranted([SETTINGS_SECURITYACTIVITY]);
@@ -384,8 +386,28 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                 </>
               )}
               <Grid item xs={12}>
-                <Label>{t_i18n('API Tokens')}</Label>
-                <UserTokenList node={user} />
+                <Stack gap={1}>
+                  <Label
+                    action={(
+                      <Button
+                        variant="tertiary"
+                        size="small"
+                        onClick={() => setOpenTokenCreationDrawer(true)}
+                        startIcon={<Add fontSize="small" />}
+                        aria-label="generate-token"
+                      >
+                        {t_i18n('Generate Token')}
+                      </Button>
+                    )}
+                  >{t_i18n('API Tokens')}
+                  </Label>
+
+                  <UserTokenList
+                    node={user}
+                    openDrawer={openTokenCreationDrawer}
+                    onCloseDrawer={() => setOpenTokenCreationDrawer(false)}
+                  />
+                </Stack>
               </Grid>
               {!isServiceAccount && (
                 <>

@@ -1,4 +1,3 @@
-import Button from '@common/button/Button';
 import { Delete } from '@mui/icons-material';
 import { IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
@@ -13,9 +12,6 @@ import UserTokenCreationDrawer from './UserTokenCreationDrawer';
 import { UserTokenList_node$data } from './__generated__/UserTokenList_node.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
-  container: {
-    marginTop: 0,
-  },
   empty: {
     textAlign: 'center',
     padding: 20,
@@ -39,14 +35,14 @@ const userTokenListRevokeMutation = graphql`
 
 interface UserTokenListProps {
   node: UserTokenList_node$data;
+  openDrawer?: boolean;
+  onCloseDrawer: () => void;
 }
 
-export const UserTokenList: React.FC<UserTokenListProps> = ({ node }) => {
+export const UserTokenList: React.FC<UserTokenListProps> = ({ openDrawer = false, onCloseDrawer, node }) => {
   const classes = useStyles();
   const { t_i18n, nsdt } = useFormatter();
   const [deletingToken, setDeletingToken] = useState<{ id: string; name: string } | null>(null);
-
-  const [creationOpen, setCreationOpen] = useState(false);
 
   const tokens = node.api_tokens || [];
   const now = new Date();
@@ -109,25 +105,24 @@ export const UserTokenList: React.FC<UserTokenListProps> = ({ node }) => {
   };
 
   return (
-    <div className={classes.container}>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10 }}>
-        <Button
-          size="small"
-          onClick={() => setCreationOpen(true)}
-          aria-label="generate-token"
-        >
-          {t_i18n('Generate Token')}
-        </Button>
-      </div>
+    <div>
       {tokens.length === 0 ? (
-        <Paper variant="outlined" className={classes.container}>
+        <Paper variant="outlined">
           <div className={classes.empty}>
             {t_i18n('No tokens found.')}
           </div>
         </Paper>
       ) : (
-        <TableContainer component={Paper} variant="outlined">
-          <Table size="small" aria-label="token list">
+        <TableContainer component={Paper} variant="outlined" sx={{ border: 'none' }}>
+          <Table
+            size="small"
+            aria-label="token list"
+            sx={{
+              '& .MuiTableRow-root:last-child .MuiTableCell-root': {
+                borderBottom: 'none',
+              },
+            }}
+          >
             <TableHead>
               <TableRow>
                 <TableCell>{t_i18n('Name')}</TableCell>
@@ -176,8 +171,8 @@ export const UserTokenList: React.FC<UserTokenListProps> = ({ node }) => {
 
       <UserTokenCreationDrawer
         userId={node.id}
-        open={creationOpen}
-        onClose={() => setCreationOpen(false)}
+        open={openDrawer}
+        onClose={onCloseDrawer}
       />
     </div>
   );
