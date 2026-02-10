@@ -20,6 +20,14 @@ import { commitMutation, defaultCommitMutation } from '../../../../relay/environ
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useAuth from '../../../../utils/hooks/useAuth';
+import MarkdownField from '../../../../components/fields/MarkdownField';
+import ObjectAssigneeField from '@components/common/form/ObjectAssigneeField';
+import ObjectParticipantField from '@components/common/form/ObjectParticipantField';
+import CreatedByField from '@components/common/form/CreatedByField';
+import useHelper from '../../../../utils/hooks/useHelper';
+import { useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
+import { DraftAddInput, DRAFTWORKPACE_TYPE } from '@components/drafts/DraftCreation';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
 interface LaunchImportDialogProps {
   file: ImportWorkbenchesContentFileLine_file$data | ImportFilesContentFileLine_file$data;
@@ -40,8 +48,10 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
   onSuccess,
   isDraftContext = false,
 }) => {
+  const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
   const { me: owner, settings } = useAuth();
+  const { mandatoryAttributes } = useIsMandatoryAttribute(DRAFTWORKPACE_TYPE);
   const showAllMembersLine = !settings.platform_organization?.id;
   const { connectorsForImport: connectors } = usePreloadedQuery<ImportWorksDrawerQuery>(fileWorksQuery, queryRef);
   const [selectedConnector, setSelectedConnector] = React.useState<ConnectorType | null>(null);
@@ -72,6 +82,10 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
       configuration: string;
       objectMarking: FieldOption[];
       validation_mode: string;
+      description: string;
+      objectAssignee: FieldOption[];
+      objectParticipant: FieldOption[];
+      createdBy: FieldOption | undefined;
       authorizedMembers?: AuthorizedMembersFieldValue;
     },
     { setSubmitting, resetForm }: { setSubmitting: (isSubmitting: boolean) => void; resetForm: () => void },
@@ -97,6 +111,10 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
         connectorId: connector_id,
         configuration: config,
         validationMode: validation_mode,
+        description: values.description,
+        objectAssignee: values.objectAssignee.map(({ value }) => value),
+        objectParticipant: values.objectParticipant.map(({ value }) => value),
+        createdBy: values.createdBy?.value,
         authorized_members: !authorizedMembers
           ? null
           : authorizedMembers
@@ -136,6 +154,15 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
   const invalidCsvMapper = selectedConnector?.name === 'ImportCsv'
     && selectedConnector?.configurations?.length === 0;
 
+  const draftInitialValues = useDefaultValues<DraftAddInput>(DRAFTWORKPACE_TYPE, {
+    name: '',
+    description: '',
+    objectAssignee: [],
+    objectParticipant: [],
+    createdBy: undefined,
+    authorized_members: undefined,
+  });
+
   return (
     <Formik
       enableReinitialize={true}
@@ -144,6 +171,7 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
         validation_mode: isDraftContext ? 'draft' : 'workbench',
         configuration: '',
         objectMarking: [],
+        ...draftInitialValues
       }}
       validationSchema={importValidation(!!selectedConnector?.configurations)}
       onSubmit={onSubmitImport}
@@ -196,17 +224,50 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
               </Field>
             )}
             {values.validation_mode === 'draft' && (
-              <Field
-                name="authorizedMembers"
-                component={AuthorizedMembersField}
-                owner={owner}
-                showAllMembersLine={showAllMembersLine}
-                canDeactivate
-                addMeUserWithAdminRights
-                enableAccesses
-                applyAccesses
-                style={fieldSpacingContainerStyle}
-              />
+              <>
+                  {isFeatureEnable('DRAFT_METADATA') && (
+                    <>
+                      <Field
+                        component={MarkdownField}
+                        name="description"
+                        label={t_i18n('Description')}
+                        required={mandatoryAttributes.includes('description')}
+                        fullWidth={true}
+                        multiline={true}
+                        rows="4"
+                        style={fieldSpacingContainerStyle}
+                        askAi={true}
+                      />
+                      <ObjectAssigneeField
+                        name="objectAssignee"
+                        style={fieldSpacingContainerStyle}
+                        required={mandatoryAttributes.includes('objectAssignee')}
+                      />
+                      <ObjectParticipantField
+                        name="objectParticipant"
+                        style={fieldSpacingContainerStyle}
+                        required={mandatoryAttributes.includes('objectParticipant')}
+                      />
+                      <CreatedByField
+                        name="createdBy"
+                        required={mandatoryAttributes.includes('createdBy')}
+                        style={fieldSpacingContainerStyle}
+                        setFieldValue={setFieldValue}
+                      />
+                    </>
+                  )}
+                  <Field
+                    name="authorizedMembers"
+                    component={AuthorizedMembersField}
+                    owner={owner}
+                    showAllMembersLine={showAllMembersLine}
+                    canDeactivate
+                    addMeUserWithAdminRights
+                    enableAccesses
+                    applyAccesses
+                    style={fieldSpacingContainerStyle}
+                  />
+              </>
             )}
             {selectedConnector?.configurations && selectedConnector?.configurations?.length > 0 ? (
               <Field
@@ -234,7 +295,6 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
                 setFieldValue={setFieldValue}
               />
             )}
-
             <DialogActions>
               <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
