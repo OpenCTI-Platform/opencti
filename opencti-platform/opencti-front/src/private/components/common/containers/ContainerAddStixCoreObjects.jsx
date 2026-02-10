@@ -333,13 +333,14 @@ const ContainerAddStixCoreObjects = (props) => {
         handleRemoveFilter={helpers.handleRemoveFilter}
         handleSwitchLocalMode={helpers.handleSwitchLocalMode}
         handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-        disableCards={true}
+        disableCards
         filters={filters}
         paginationOptions={searchPaginationOptions}
         numberOfElements={numberOfElements}
-        iconExtension={true}
-        parametersWithPadding={true}
-        disableExport={true}
+        iconExtension
+        checkboxExtension
+        parametersWithPadding
+        disableExport
         availableEntityTypes={targetStixCoreObjectTypes}
         entityTypes={targetStixCoreObjectTypes}
         additionalFilterKeys={{

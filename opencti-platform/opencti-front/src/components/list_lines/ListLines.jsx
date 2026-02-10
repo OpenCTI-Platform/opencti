@@ -191,6 +191,7 @@ class ListLines extends Component {
       numberOfElements,
       noHeaders,
       iconExtension,
+      checkboxExtension,
       searchVariant,
       message,
       enableGraph,
@@ -481,6 +482,19 @@ class ListLines extends Component {
                     />
                   </ListItemIcon>
                 )}
+                {checkboxExtension && (
+                  <ListItemIcon>
+                    <span
+                      style={{
+                        padding: '0 8px 0 8px',
+                        fontWeight: 700,
+                        fontSize: 12,
+                      }}
+                    >
+                    &nbsp;
+                    </span>
+                  </ListItemIcon>
+                )}
                 {iconExtension && (
                   <ListItemIcon>
                     <span
@@ -664,6 +678,7 @@ ListLines.propTypes = {
   numberOfElements: PropTypes.object,
   noHeaders: PropTypes.bool,
   iconExtension: PropTypes.bool,
+  checkboxExtension: PropTypes.bool,
   searchVariant: PropTypes.string,
   message: PropTypes.string,
   enableGraph: PropTypes.bool,
