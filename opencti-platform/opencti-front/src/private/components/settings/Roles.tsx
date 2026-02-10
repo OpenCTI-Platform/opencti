@@ -101,7 +101,6 @@ const Role = () => {
             paginationOptions={paginationOptions}
           />
         )}
-        noIcon
       >
         <QueryRenderer
           query={rolesLinesQuery}

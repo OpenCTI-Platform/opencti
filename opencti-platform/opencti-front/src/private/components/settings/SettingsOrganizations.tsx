@@ -93,7 +93,6 @@ const SettingsOrganizations = () => {
         handleSearch={helpers.handleSearch}
         keyword={paginationOptions.search}
         paginationOptions={paginationOptions}
-        noIcon
       >
         {queryRef && (
           <>
