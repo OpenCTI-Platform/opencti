@@ -31,7 +31,7 @@ const GraphToolbar = ({
   const navOpen = localStorage.getItem('navOpen') === 'true';
   const { selectBySearch } = useGraphInteractions();
 
-  const posBottom = draftContext ? 69 : 0;
+  const posBottom = draftContext ? 69 : 0; // 69 is the height of the Draft toolbar.
 
   const {
     graphState: {
