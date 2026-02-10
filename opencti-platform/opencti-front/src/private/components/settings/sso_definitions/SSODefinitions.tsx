@@ -131,12 +131,7 @@ const SSODefinitions = () => {
     strategy: {
       label: t_i18n('Authentication strategy'),
       percentWidth: 25,
-      render: (node: { strategy: string }) => (
-        <ItemBoolean
-          neutralLabel={t_i18n(node.strategy)}
-          status={null}
-        />
-      ),
+      render: (node: { strategy: string }) => <div>{node.strategy}</div>,
     },
     name: {
       label: t_i18n('Configuration name'),
@@ -155,11 +150,9 @@ const SSODefinitions = () => {
       label: t_i18n('Login Button Name'),
       percentWidth: 25,
       render: (node: { label?: string; identifier: string }) => (
-        <ItemBoolean
-          neutralLabel={node?.label || node.identifier}
-          status={null}
-        />
-      ) },
+        <div>{node.label === '' ? node.identifier : node.label}</div>
+      ),
+    },
   };
 
   const queryRef = useQueryLoading(
