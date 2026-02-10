@@ -113,7 +113,9 @@ import { LeftBarHeader } from './LeftBarHeader';
 import LeftBarItem from './LeftBarItem';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import logoFiligran from '../../../static/images/logo_filigran.svg';
+import logoFiligranDark from '../../../static/images/logo_filigran_dark_theme.svg';
+import logoFiligranLight from '../../../static/images/logo_filigran_light_theme.svg';
+import { THEME_LIGHT_DEFAULT_PAPER, THEME_LIGHT_DEFAULT_BACKGROUND } from '../../../components/ThemeLight';
 
 export const SMALL_BAR_WIDTH = 55;
 export const OPEN_BAR_WIDTH = 180;
@@ -215,7 +217,7 @@ const leftBarQuery = graphql`
 const Separator = () => {
   const theme = useTheme();
   return (
-    <Divider sx={{ border: `1px solid ${theme.palette.background.default}` }} />
+    <Divider sx={{ border: `1px solid ${theme.palette.designSystem.background.bg2}` }} />
   );
 };
 
@@ -394,6 +396,16 @@ const LeftBarComponent = ({ queryRef }) => {
     submenuShowIcons: submenu_show_icons,
   };
 
+  const isLightTheme = theme.palette.mode === 'light';
+  const getBackground = () => {
+    if (isLightTheme) {
+      return `linear-gradient(100deg, ${THEME_LIGHT_DEFAULT_BACKGROUND} 0%, ${THEME_LIGHT_DEFAULT_PAPER} 100%)`;
+    }
+    const start = theme.palette.background?.gradient?.start ?? theme.palette.background?.default;
+    const end = theme.palette.background?.gradient?.end ?? theme.palette.background?.secondary;
+    return `linear-gradient(100deg, ${start} 0%, ${end} 100%)`;
+  };
+
   return (
     <Drawer
       variant="permanent"
@@ -406,7 +418,7 @@ const LeftBarComponent = ({ queryRef }) => {
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
-            backgroundColor: 'linear-gradient(90deg, #070D19, 0%, #0C1524, 100%)',
+            background: getBackground(),
             borderRight: '1px solid transparent',
           },
         },
@@ -776,7 +788,6 @@ const LeftBarComponent = ({ queryRef }) => {
           borderRight: theme.palette.mode === 'dark'
             ? '1px solid rgba(255, 255, 255, 0.12)'
             : '1px solid rgba(0, 0, 0, 0.12)',
-          background: theme.palette.background.paper,
           width: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
         }}
       >
@@ -811,6 +822,7 @@ const LeftBarComponent = ({ queryRef }) => {
                       fontSize: '10px',
                       lineHeight: '16px',
                       opacity: 0.8,
+                      color: theme.palette.text.tertiary,
                     }}
                   >
                     {t_i18n('Made by')}
@@ -819,7 +831,7 @@ const LeftBarComponent = ({ queryRef }) => {
               }
               <img
                 alt="logo"
-                src={logoFiligran}
+                src={isLightTheme ? logoFiligranLight : logoFiligranDark}
                 width={navOpen ? 48 : 12}
                 height="12"
                 style={{

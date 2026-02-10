@@ -98,9 +98,20 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
     forceShowText = false, // For popover items
   ) => {
     const isSubItem = fontSize === 'small';
-    const iconColor = isSubItem && selected ? theme.palette.primary.main : 'inherit';
+    const iconColor = selected ? theme.palette.text.light : theme.palette.text.tertiary;
     const iconOpacity = isSubItem && selected ? 1 : 0.5;
-    const textColor = isSubItem && selected ? theme.palette.primary.main : 'inherit';
+    const getTextColor = () => {
+      if (isSubItem && selected) {
+        return theme.palette.primary.main;
+      }
+      if (isSubItem && theme.palette.leftBar.text) {
+        return theme.palette.text.light;
+      }
+      if (theme.palette.leftBar.text) {
+        return theme.palette.leftBar.text;
+      }
+      return 'inherit';
+    };
 
     return (
       <>
@@ -130,7 +141,7 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
             slotProps={{
               primary: {
                 fontSize: fontSize === 'default' ? '14px' : '12px',
-                color: textColor,
+                color: getTextColor(),
               },
             }}
           />
@@ -149,7 +160,13 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
         to={item.link}
         dense
         onClick={inCollapse ? undefined : onMenuClose}
-        sx={{ px: 2.5, py: 1 }}
+        sx={{
+          px: 2.5,
+          py: 1,
+          '&:hover': {
+            backgroundColor: theme.palette.leftBar.hover,
+          },
+        }}
       >
         {renderMenuItem(item.icon, item.label, itemSelected, submenuShowIcons, 'small', !inCollapse)}
       </MenuItem>
@@ -177,7 +194,7 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
       '&:hover': {
         backgroundColor: selected
           ? theme.palette.action?.selected
-          : theme.palette.action?.hover,
+          : theme.palette.leftBar.hover,
       },
     };
   };
@@ -214,7 +231,7 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
         </MenuItem>
 
         <Collapse in={isMenuOpen} timeout="auto" unmountOnExit>
-          <MenuList component="nav" disablePadding>
+          <MenuList component="nav" disablePadding sx={{ backgroundColor: theme.palette.designSystem.background.main }}>
             {visibleSubItems.map((item) => renderSubMenuItem(item, true))}
           </MenuList>
         </Collapse>

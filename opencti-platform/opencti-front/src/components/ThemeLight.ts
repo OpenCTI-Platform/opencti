@@ -105,6 +105,7 @@ const ThemeLight = (
     },
     text: {
       secondary: THEME_LIGHT_DEFAULT_TEXT,
+      tertiary: '#717172',
       light: '#494A50',
       disabled: '#6E7788',
     },
@@ -113,6 +114,8 @@ const ThemeLight = (
         itemBackground: '#ECECF2',
       },
       popoverItem: '#ECECF2',
+      hover: '#0015A81A',
+      text: '#18191B',
     },
     severity: {
       critical: '#EE3838',

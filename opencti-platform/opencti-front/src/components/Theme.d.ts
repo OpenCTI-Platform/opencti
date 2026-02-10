@@ -185,6 +185,7 @@ interface ExtendedBackground extends TypeBackground {
 
 interface ExtendedText extends TypeText {
   light: string;
+  tertiary: string;
 }
 
 // === Definitions for our Design System ===
@@ -262,6 +263,8 @@ interface ExtendedPaletteOptions extends PaletteOptions {
       itemBackground: string;
     };
     popoverItem: string;
+    hover: string;
+    text: string;
   };
   border: {
     primary: string;

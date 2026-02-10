@@ -445,7 +445,7 @@ const StixCoreRelationshipCreationFromEntityList = ({
                 })}
             </List>
           ) : (
-            <div style={{ padding: 20 }}>
+            <div style={{ paddingTop: 20 }}>
               {t_i18n('No entities were found for this search.')}
             </div>
           )}

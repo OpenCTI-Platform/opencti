@@ -356,19 +356,26 @@ const FilterIconButtonContainer: FunctionComponent<
                   variant={chipVariant}
                   sx={{ ...chipSx, borderRadius: 1 }}
                   label={(
-                    <FilterValues
-                      label={keyLabel}
-                      tooltip={false}
-                      currentFilter={currentFilter}
-                      handleSwitchLocalMode={helpers?.handleSwitchLocalMode ?? handleSwitchLocalMode}
-                      filtersRepresentativesMap={filtersRepresentativesMap}
-                      redirection={redirection}
-                      onClickLabel={(event) => handleChipClick(event, currentFilter?.id)}
-                      isReadWriteFilter={isReadWriteFilter}
-                      chipColor={chipColor}
-                      entityTypes={entityTypes}
-                      filtersRestrictions={filtersRestrictions}
-                    />
+                    <Box
+                      sx={{
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                    >
+                      <FilterValues
+                        label={keyLabel}
+                        tooltip={false}
+                        currentFilter={currentFilter}
+                        handleSwitchLocalMode={helpers?.handleSwitchLocalMode ?? handleSwitchLocalMode}
+                        filtersRepresentativesMap={filtersRepresentativesMap}
+                        redirection={redirection}
+                        onClickLabel={(event) => handleChipClick(event, currentFilter?.id)}
+                        isReadWriteFilter={isReadWriteFilter}
+                        chipColor={chipColor}
+                        entityTypes={entityTypes}
+                        filtersRestrictions={filtersRestrictions}
+                      />
+                    </Box>
                   )}
                   disabled={
                     disabledPossible ? displayedFilters.length === 1 : undefined

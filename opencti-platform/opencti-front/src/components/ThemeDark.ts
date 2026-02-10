@@ -104,6 +104,7 @@ const ThemeDark = (
     },
     text: {
       secondary: THEME_DARK_DEFAULT_TEXT,
+      tertiary: '#848592',
       light: '#AFB0B6',
       disabled: '#75829A',
     },
@@ -112,6 +113,8 @@ const ThemeDark = (
         itemBackground: '#253348',
       },
       popoverItem: '#070D19',
+      hover: '#253348',
+      text: '#F2F2F3',
     },
     severity: {
       critical: '#EE3838',
