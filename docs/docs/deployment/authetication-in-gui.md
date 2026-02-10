@@ -24,6 +24,9 @@ Via UI, you can configure the following stategies
 To create a new configuration, you need to have the [right capability](https://docs.opencti.io/latest/administration/users/). 
 Assuming you have it, when navigating to Parameters / Authentications, you will land on a screen to manage your authentication strategies.
 
+![Authentication overview](assets/authentication-overview.png)
+
+
 Click on the button to create a new strategy. Only the following strategies will be available:
 
 LDAP
@@ -41,6 +44,8 @@ By default, a created authentication will be enabled, meaning that it will be vi
 
 When selecting OpenID, a form will open.
 
+![OpenID creation form](assets/authentication-OpenID-creation.png)
+
 For OpenID, the following fields are mandatory:
 
 - A configuration name, allowing you to differentiate between two configurations of the same type
@@ -51,8 +56,13 @@ For OpenID, the following fields are mandatory:
 
 Once successfully created, you will land on the overview screen of your authentication.
 
+![OpenID overview](assets/authentication-OpenID-overview.png)
+
+
 #### SAML
 When selecting SAML, a form will open.
+
+![SAML creation form](assets/authentication-SAML-creation.png)
 
 For SAML, the following fields are mandatory:
 
@@ -62,6 +72,11 @@ For SAML, the following fields are mandatory:
 - SAML URL callback: the Identity Provider’s login endpoint where users are sent to authenticate
 - Identity provider encryption certificate: a mandatory parameter (PEM format) because it is used to validate the SAML response. Depending on the certificate format, it may include the header, footer, and newline (\n) characters
 - SAML URL (entry point)
+
+Once successfully created, you will land on the overview screen of your authentication.
+
+![SAML overview](assets/authentication-SAML-overview.png)
+
 
 The private_key (PEM format) is optional and is only required if you want to sign the SAML client request. It will be encrypted in the database for security reasons.
 
@@ -77,6 +92,8 @@ The private_key (PEM format) is optional and is only required if you want to sig
 #### LDAP
 When selecting LDAP, a form will open.
 
+![LDAP creation form](assets/authentication-LDAP-creation.png)
+
 For LDAP, the following fields are mandatory:
 
 - A configuration name, allowing you to differentiate between two configurations of the same type
@@ -90,14 +107,15 @@ For LDAP, the following fields are mandatory:
 
 Once successfully created, you will land on the overview screen of your authentication.
 
+![LDAP overview](assets/authentication-LDAP-overview.png)
+
 #### Certificate
 
 When using an OpenID Connect provider secured with a certificate issued by a **custom Certificate Authority (CA)** or a **self-signed certificate**, OpenCTI (running on Node.js) might not inherently trust this certificate. This can lead to connection errors like `unable to get local issuer certificate`.
 
 To resolve this, you need to instruct OpenCTI to **trust your custom CA certificate**. 
 
-When selecting Certificate a form will open:
-
+When selecting Certificate a form will open.
 
 After these steps, OpenCTI should successfully establish a secure connection with your OpenID Connect provider using your custom certificate.
 
@@ -114,6 +132,8 @@ The list of fields present in the graphical interface are the main fields that w
 In this regard, there is the possibility to add more custom values that will be used by our Passport/Node OpenID library.
 
 You need to specify a type, add the corresponding value that you want to send to Passport, and the key it will match in Passport so that you can send the correct value with the right field.
+
+![custom fields](assets/authentication-creation-addMoreFields.png)
 
 #### All passport fields
 [This Github page](https://github.com/node-saml/node-saml/blob/25c434a3ccada8777e13a1e6b34c42bbd5b9ef4b/src/types.ts#L144-L211) represents the list of fields that are supported by our passport library. It's fairly technical information, but will give you the full picture of all custom fields you can add in your authentication, on the top of the already provided fields. 
@@ -242,28 +262,38 @@ If not sufficient, in a similar way than the configuration form, you can add cus
 
 Last but not least, you can also enable an option (disbaled by default) to automatically add users to the default groups you have defined in OpenCTI, in addition to the groups you have selected. 
 
+![OpenId group mapping](assets/authentication-OpenID-groupMapping.png)
+
 
 ### SAML group mapping
 
 To create group mapping, you first need to identify within the token, the attribute that will be used to identify group.
 **Please be aware that data needs to be added with a specific format: add square bracket & each value between single quotes (even for unique value). For example: ['value1', 'value2']**
 
-If not sufficient, in a similar way than the configuration form, you can add custom values, if you need to map multiple groups from your identity provider to OpenCTI groups clicking on the option to "add a new value".
+Then, in a similar way than the configuration form, to add your mapping from your identity provider to OpenCTI groups, click on the option to "add a new value".
+
+![group mapping](assets/authentication-All-groupMapping.png)
 
 ### LDAP group mapping 
 To create group mapping, you first need to identify within the token, the attribute that will be used to identify group.
 
-If not sufficient, in a similar way than the configuration form, you can add custom values, if you need to map multiple groups from your identity provider to OpenCTI groups clicking on the option to "add a new value".
+Then, in a similar way than the configuration form, to add your mapping from your identity provider to OpenCTI groups, click on the option to "add a new value".
+
+![group mapping](assets/authentication-All-groupMapping.png)
 
 ### Headers group mapping
 To create group mapping, you first need to identify within the token, the attribute that will be used to identify group.
 
-If not sufficient, in a similar way than the configuration form, you can add custom values, if you need to map multiple groups from your identity provider to OpenCTI groups clicking on the option to "add a new value".
+Then, in a similar way than the configuration form, to add your mapping from your identity provider to OpenCTI groups, click on the option to "add a new value".
+
+![group mapping](assets/authentication-All-groupMapping.png)
 
 ### Certificate group mapping
 To create group mapping, you first need to identify within the token, the attribute that will be used to identify group.
 
-If not sufficient, in a similar way than the configuration form, you can add custom values, if you need to map multiple groups from your identity provider to OpenCTI groups clicking on the option to "add a new value".
+Then, in a similar way than the configuration form, to add your mapping from your identity provider to OpenCTI groups, click on the option to "add a new value".
+
+![group mapping](assets/authentication-All-groupMapping.png)
 
 ## Organization mapping
 For any Authentication Strategy, you can define the organization mapping, meaning to which organization in OpenCTI you want your users to belong when they will log in.
@@ -273,10 +303,12 @@ First define, the path in token.
 
 Then, you can add organization scope & access token & provide mapping by clicking on add new value.
 
+![organization mapping](assets/authentication-OpenID-orgMapping.png)
+
 ###  All other strategies
 For all other strategies, you only need to define the path in the token that should be used to define the organization mapping & define the mapping via the Add a new value button.
 
-
+![organization mapping](assets/authentication-all-orgMapping.png)
 
 ## Troubleshooting 
 Setting up a configuration correctly is always a struggle. To understand what is happening you need to have a look at your logs, available in your solution used to deploy OpenCTI.
