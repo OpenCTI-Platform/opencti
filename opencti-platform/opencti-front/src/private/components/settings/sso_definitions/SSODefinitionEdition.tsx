@@ -92,8 +92,7 @@ const SSODefinitionEdition = ({
     const configurationKeyList = getSSOConfigList(selectedStrategy ?? '');
     const groupManagementKeyList = ['group_attribute', 'groups_attributes', 'group_attributes', 'groups_path', 'groups_scope', 'groups_mapping', 'groups_token_reference', 'groups_read_userinfo'];
     const organizationsManagementKeyList = ['organizations_path', 'organizations_mapping', 'organizations_scope', 'organizations_token_reference', 'organizations_read_userinfo'];
-    console.log('value ', value);
-    console.log('value ', typeof value);
+
     const input: { key: string; value: unknown[] } = { key: field, value: [value] };
 
     if (configurationKeyList.includes(field)) {
@@ -152,8 +151,7 @@ const SSODefinitionEdition = ({
     }
 
     console.log('input : ', input);
-    return;
-
+    // return;
     editMutation({
       variables: { id: sso.id, input: [input] },
     });

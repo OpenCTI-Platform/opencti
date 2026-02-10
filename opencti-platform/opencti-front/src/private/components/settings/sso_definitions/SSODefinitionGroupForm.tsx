@@ -25,7 +25,7 @@ const SSODefinitionGroupForm = ({ isEditionMode, selectedStrategy, updateField }
     if (!name) return null;
 
     const helperText = selectedStrategy !== 'LDAP'
-      ? t_i18n('Please add square bracket & each value between single quotes (even for unique value). For example: [\'value1\', \'value2\']')
+      ? t_i18n('Please add square bracket & each value between double quotes (even for unique value). For example: ["value1", "value2"]')
       : null;
 
     return (

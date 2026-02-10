@@ -1,6 +1,7 @@
 export type ConfigurationType = { key: string; value: string; type: string };
 
 export const formatStringToArray = (value: string, stringify?: boolean) => {
+  if (!value) return null;
   try {
     const result = JSON.parse(String(value).replace(/'/g, '"'));
     return stringify ? JSON.stringify(result) : result;

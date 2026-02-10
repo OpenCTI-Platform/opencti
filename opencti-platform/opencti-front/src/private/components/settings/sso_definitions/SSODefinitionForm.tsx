@@ -297,9 +297,9 @@ const SSODefinitionForm = ({
     initialValues.advancedConfigurations = advancedConfigurations ?? [];
 
     initialValues.group_attribute = groupAttribute ?? '';
-    initialValues.group_attributes = groupAttributes.join(', ');
-    initialValues.groups_attributes = groupsAttributes.join(', ');
-    initialValues.groups_path = groupsPath.join(', ');
+    initialValues.group_attributes = JSON.stringify(groupAttributes);
+    initialValues.groups_attributes = JSON.stringify(groupsAttributes);
+    initialValues.groups_path = JSON.stringify(groupsPath);
     initialValues.groups_scope = groupsScope;
     initialValues.groups_token_reference = groupsTokenReference ?? '';
     initialValues.groups_read_userinfo = groupsReadUserInfo ?? false;
@@ -307,7 +307,7 @@ const SSODefinitionForm = ({
     initialValues.groups_mapping_source = groupsMapping.source;
     initialValues.groups_mapping_target = groupsMapping.target;
 
-    initialValues.organizations_path = organizationsPath.join(', ');
+    initialValues.organizations_path = JSON.stringify(organizationsPath);
     initialValues.organizations_scope = organizationsScope;
     initialValues.organizations_mapping = organizationsMapping.mapping;
     initialValues.organizations_mapping_source = organizationsMapping.source;
@@ -406,7 +406,7 @@ const SSODefinitionForm = ({
                     <>
                       <div style={{ display: 'flex', alignItems: 'center', marginTop: 20 }}>
                         <Typography variant="h2">{t_i18n('Add more fields')}</Typography>
-                        <Tooltip title={t_i18n('For array fields, please add square brackets & each value between single quotes (even for unique value). For example: [\'value1\', \'value2\']')}>
+                        <Tooltip title={t_i18n('For array fields, please add square brackets & each value between double quotes (even for unique value). For example: [\"value1\", \"value2\"]')}>
                           <InformationOutline
                             fontSize="small"
                             color="primary"
