@@ -1,56 +1,55 @@
-import React, { FunctionComponent, useState } from 'react';
-import { graphql, useFragment } from 'react-relay';
-import Grid from '@mui/material/Grid';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
+import UserConfidenceLevel from '@components/settings/users/UserConfidenceLevel';
 import { DeleteForeverOutlined, DeleteOutlined } from '@mui/icons-material';
+import { ListItemButton } from '@mui/material';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
-import Typography from '@mui/material/Typography';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import IconButton from '@common/button/IconButton';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@common/button/Button';
-import { Link } from 'react-router-dom';
+import { SimplePaletteColorOptions } from '@mui/material/styles/createPalette';
+import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/styles';
 import { ApexOptions } from 'apexcharts';
-import { SimplePaletteColorOptions } from '@mui/material/styles/createPalette';
-import UserConfidenceLevel from '@components/settings/users/UserConfidenceLevel';
-import Tooltip from '@mui/material/Tooltip';
-import DialogTitle from '@mui/material/DialogTitle';
-import { ListItemButton } from '@mui/material';
-import FieldOrEmpty from '../../../../components/FieldOrEmpty';
-import { useFormatter } from '../../../../components/i18n';
-import { handleError, QueryRenderer } from '../../../../relay/environment';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
-import { now, timestamp, yearsAgo } from '../../../../utils/Time';
-import UserHistory from './UserHistory';
-import { areaChartOptions } from '../../../../utils/Charts';
-import { simpleNumberFormat } from '../../../../utils/Number';
-import Transition from '../../../../components/Transition';
-import { User_user$key } from './__generated__/User_user.graphql';
-import Chart from '../../common/charts/Chart';
-import { UserSessionKillMutation } from './__generated__/UserSessionKillMutation.graphql';
-import { UserUserSessionsKillMutation } from './__generated__/UserUserSessionsKillMutation.graphql';
-import Triggers from '../common/Triggers';
-import { UserAuditsTimeSeriesQuery$data } from './__generated__/UserAuditsTimeSeriesQuery.graphql';
-import { UserOtpDeactivationMutation } from './__generated__/UserOtpDeactivationMutation.graphql';
-import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import ItemIcon from '../../../../components/ItemIcon';
-import HiddenTypesChipList from '../hidden_types/HiddenTypesChipList';
-import ItemAccountStatus from '../../../../components/ItemAccountStatus';
-import UserTokenList from './UserTokenList';
-import useGranted, { BYPASS, KNOWLEDGE, SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
-import Security from '../../../../utils/Security';
-import useAuth from '../../../../utils/hooks/useAuth';
-import type { Theme } from '../../../../components/Theme';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { EMPTY_VALUE } from '../../../../utils/String';
+import { FunctionComponent, useState } from 'react';
+import { graphql, useFragment } from 'react-relay';
+import { Link } from 'react-router-dom';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
 import Tag from '../../../../components/common/tag/Tag';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import { useFormatter } from '../../../../components/i18n';
+import ItemAccountStatus from '../../../../components/ItemAccountStatus';
+import ItemIcon from '../../../../components/ItemIcon';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
+import type { Theme } from '../../../../components/Theme';
+import Transition from '../../../../components/Transition';
+import { handleError, QueryRenderer } from '../../../../relay/environment';
+import { areaChartOptions } from '../../../../utils/Charts';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useAuth from '../../../../utils/hooks/useAuth';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import useGranted, { BYPASS, KNOWLEDGE, SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import { simpleNumberFormat } from '../../../../utils/Number';
+import Security from '../../../../utils/Security';
+import { EMPTY_VALUE } from '../../../../utils/String';
+import { now, timestamp, yearsAgo } from '../../../../utils/Time';
+import Chart from '../../common/charts/Chart';
+import Triggers from '../common/Triggers';
+import HiddenTypesChipList from '../hidden_types/HiddenTypesChipList';
+import { User_user$key } from './__generated__/User_user.graphql';
+import { UserAuditsTimeSeriesQuery$data } from './__generated__/UserAuditsTimeSeriesQuery.graphql';
+import { UserOtpDeactivationMutation } from './__generated__/UserOtpDeactivationMutation.graphql';
+import { UserSessionKillMutation } from './__generated__/UserSessionKillMutation.graphql';
+import { UserUserSessionsKillMutation } from './__generated__/UserUserSessionsKillMutation.graphql';
+import UserHistory from './UserHistory';
+import UserTokenList from './UserTokenList';
 
 const startDate = yearsAgo(1);
 const endDate = now();
@@ -385,10 +384,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                 </>
               )}
               <Grid item xs={12}>
-                <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
-                  {t_i18n('API Tokens')}
-                </Typography>
-                <div className="clearfix" />
+                <Label>{t_i18n('API Tokens')}</Label>
                 <UserTokenList node={user} />
               </Grid>
               {!isServiceAccount && (
