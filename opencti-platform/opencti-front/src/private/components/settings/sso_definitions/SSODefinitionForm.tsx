@@ -32,7 +32,7 @@ interface SSODefinitionFormProps {
     values: SSODefinitionFormValues,
     formikHelpers: { setSubmitting: (b: boolean) => void; resetForm: () => void },
   ) => void;
-  selectedStrategy: string | null;
+  selectedStrategy: string;
   onSubmitField?: (field: SSOEditionFormInputKeys, value: unknown) => void;
   data?: SSODefinitionEditionFragment$data;
   isOpen?: boolean;
@@ -161,10 +161,11 @@ const SSODefinitionForm = ({
   };
 
   const validationSchema = validationSchemaConfiguration(selectedStrategy ?? '', t_i18n);
+  const selectedCert = selectedStrategy === 'ClientCert';
 
   const initialValues: SSODefinitionFormValues = {
     name: '',
-    identifier: '',
+    identifier: selectedCert ? 'cert' : '',
     label: '',
     enabled: true,
     // SAML - OPENID - LDAP
@@ -330,7 +331,7 @@ const SSODefinitionForm = ({
   const updateField = async (field: SSOEditionFormInputKeys, value: unknown) => {
     if (onSubmitField) onSubmitField(field, value);
   };
-
+  const showGroupAndMapping = selectedStrategy !== 'LocalAuth' && !selectedCert;
   return (
     <Formik
       enableReinitialize={!updateField}
@@ -347,8 +348,8 @@ const SSODefinitionForm = ({
               onChange={(event, value) => handleChangeTab(value)}
             >
               <Tab label={t_i18n('Authentication Configuration')} />
-              {selectedStrategy !== 'LocalAuth' && <Tab label={t_i18n('Groups configuration')} />}
-              {selectedStrategy !== 'LocalAuth' && <Tab label={t_i18n('Organizations configuration')} />}
+              {showGroupAndMapping && <Tab label={t_i18n('Groups configuration')} />}
+              {showGroupAndMapping && <Tab label={t_i18n('Organizations configuration')} />}
             </Tabs>
           </Box>
           {currentTab === 0 && (
@@ -372,6 +373,7 @@ const SSODefinitionForm = ({
                   label={t_i18n('Authentication Name')}
                   fullWidth
                   required
+                  disabled={selectedCert}
                 />
               </div>
               <Field
@@ -383,7 +385,7 @@ const SSODefinitionForm = ({
                 label={t_i18n(`Enable ${selectedStrategy} authentication`)}
                 containerstyle={{ marginLeft: 2, marginTop: 20 }}
               />
-              {selectedStrategy !== 'LocalAuth' && (
+              {selectedStrategy !== 'LocalAuth' && !selectedCert && (
                 <Field
                   component={TextField}
                   variant="standard"
@@ -397,92 +399,94 @@ const SSODefinitionForm = ({
               {selectedStrategy === 'SAML' && <SAMLConfig updateField={updateField} />}
               {selectedStrategy === 'OpenID' && <OpenIDConfig updateField={updateField} />}
               {selectedStrategy === 'LDAP' && <LDAPConfig updateField={updateField} />}
-              <FieldArray name="advancedConfigurations">
-                {({ push, remove, form }) => (
-                  <>
-                    <div style={{ display: 'flex', alignItems: 'center', marginTop: 20 }}>
-                      <Typography variant="h2">{t_i18n('Add more fields')}</Typography>
-                      <Tooltip title={t_i18n('For array type, to create a list of values, add a comma between each value of your list (ex: value1, value2)')}>
-                        <InformationOutline
-                          fontSize="small"
+              {!selectedCert && (
+                <FieldArray name="advancedConfigurations">
+                  {({ push, remove, form }) => (
+                    <>
+                      <div style={{ display: 'flex', alignItems: 'center', marginTop: 20 }}>
+                        <Typography variant="h2">{t_i18n('Add more fields')}</Typography>
+                        <Tooltip title={t_i18n('For array type, to create a list of values, add a comma between each value of your list (ex: value1, value2)')}>
+                          <InformationOutline
+                            fontSize="small"
+                            color="primary"
+                            style={{ cursor: 'default', marginLeft: '10px', marginBottom: 12 }}
+                          />
+                        </Tooltip>
+                        <IconButton
                           color="primary"
-                          style={{ cursor: 'default', marginLeft: '10px', marginBottom: 12 }}
-                        />
-                      </Tooltip>
-                      <IconButton
-                        color="primary"
-                        aria-label="Add"
-                        size="default"
-                        style={{ marginBottom: 12 }}
-                        onClick={() => push({ key: '', value: '', type: 'string' })}
-                      >
-                        <Add fontSize="small" color="primary" />
-                      </IconButton>
-                    </div>
-                    {form.values.advancedConfigurations
-                      && form.values.advancedConfigurations.map(
-                        (
-                          conf: { key: string; value: string; type: string },
-                          index: number,
-                        ) => (
-                          <div
-                            key={index}
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'space-around',
-                              marginBottom: 8,
-                            }}
-                          >
-                            <Field
-                              component={TextField}
-                              variant="standard"
-                              onSubmit={() => updateField('advancedConfigurations', form.values.advancedConfigurations)}
-                              name={`advancedConfigurations[${index}].key`}
-                              label={t_i18n('Key (in passport)')}
-                              containerstyle={{ width: '20%' }}
-                            />
-                            <Field
-                              component={TextField}
-                              variant="standard"
-                              onSubmit={() => updateField('advancedConfigurations', form.values.advancedConfigurations)}
-                              name={`advancedConfigurations[${index}].value`}
-                              label={t_i18n('Value (in IDP)')}
-                              containerstyle={{ width: '20%' }}
-                            />
-                            <Field
-                              component={SelectField}
-                              variant="standard"
-                              onSubmit={() => updateField('advancedConfigurations', form.values.advancedConfigurations)}
-                              name={`advancedConfigurations[${index}].type`}
-                              label={t_i18n('Field type')}
-                              containerstyle={{ width: '20%' }}
-                            >
-                              <MenuItem value="string">String</MenuItem>
-                              <MenuItem value="number">Number</MenuItem>
-                              <MenuItem value="boolean">Boolean</MenuItem>
-                              <MenuItem value="array">Array</MenuItem>
-                              <MenuItem value="secret">Secret</MenuItem>
-                            </Field>
-                            <IconButton
-                              color="primary"
-                              aria-label={t_i18n('Delete')}
-                              style={{ marginTop: 10 }}
-                              onClick={() => {
-                                const advancedConfigurations = [...form.values.advancedConfigurations];
-                                advancedConfigurations.splice(index, 1);
-                                remove(index);
-                                updateField('advancedConfigurations', advancedConfigurations);
+                          aria-label="Add"
+                          size="default"
+                          style={{ marginBottom: 12 }}
+                          onClick={() => push({ key: '', value: '', type: 'string' })}
+                        >
+                          <Add fontSize="small" color="primary" />
+                        </IconButton>
+                      </div>
+                      {form.values.advancedConfigurations
+                        && form.values.advancedConfigurations.map(
+                          (
+                            conf: { key: string; value: string; type: string },
+                            index: number,
+                          ) => (
+                            <div
+                              key={index}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-around',
+                                marginBottom: 8,
                               }}
                             >
-                              <Delete fontSize="small" />
-                            </IconButton>
-                          </div>
-                        ),
-                      )}
-                  </>
-                )}
-              </FieldArray>
+                              <Field
+                                component={TextField}
+                                variant="standard"
+                                onSubmit={() => updateField('advancedConfigurations', form.values.advancedConfigurations)}
+                                name={`advancedConfigurations[${index}].key`}
+                                label={t_i18n('Key (in passport)')}
+                                containerstyle={{ width: '20%' }}
+                              />
+                              <Field
+                                component={TextField}
+                                variant="standard"
+                                onSubmit={() => updateField('advancedConfigurations', form.values.advancedConfigurations)}
+                                name={`advancedConfigurations[${index}].value`}
+                                label={t_i18n('Value (in IDP)')}
+                                containerstyle={{ width: '20%' }}
+                              />
+                              <Field
+                                component={SelectField}
+                                variant="standard"
+                                onSubmit={() => updateField('advancedConfigurations', form.values.advancedConfigurations)}
+                                name={`advancedConfigurations[${index}].type`}
+                                label={t_i18n('Field type')}
+                                containerstyle={{ width: '20%' }}
+                              >
+                                <MenuItem value="string">String</MenuItem>
+                                <MenuItem value="number">Number</MenuItem>
+                                <MenuItem value="boolean">Boolean</MenuItem>
+                                <MenuItem value="array">Array</MenuItem>
+                                <MenuItem value="secret">Secret</MenuItem>
+                              </Field>
+                              <IconButton
+                                color="primary"
+                                aria-label={t_i18n('Delete')}
+                                style={{ marginTop: 10 }}
+                                onClick={() => {
+                                  const advancedConfigurations = [...form.values.advancedConfigurations];
+                                  advancedConfigurations.splice(index, 1);
+                                  remove(index);
+                                  updateField('advancedConfigurations', advancedConfigurations);
+                                }}
+                              >
+                                <Delete fontSize="small" />
+                              </IconButton>
+                            </div>
+                          ),
+                        )}
+                    </>
+                  )}
+                </FieldArray>
+              )}
             </>
           )}
           {currentTab === 1 && selectedStrategy !== 'LocalAuth' && <SSODefinitionGroupForm updateField={updateField} selectedStrategy={selectedStrategy} isEditionMode={!!onSubmitField} />}

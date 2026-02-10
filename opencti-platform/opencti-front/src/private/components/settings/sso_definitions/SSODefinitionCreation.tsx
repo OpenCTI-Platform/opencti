@@ -11,6 +11,7 @@ import { getGroupOrOrganizationMapping } from './utils/GroupOrOrganizationMappin
 import useFormikToSSOConfig from './utils/useFormikToSSOConfig';
 import SSODefinitionForm, { SSODefinitionFormValues } from '@components/settings/sso_definitions/SSODefinitionForm';
 import { getStrategyConfigEnum } from '@components/settings/sso_definitions/utils/useStrategicConfig';
+import { SingleSignOnAddInput } from '@components/settings/sso_definitions/__generated__/SSODefinitionCreationMutation.graphql';
 
 const ssoDefinitionMutation = graphql`
   mutation SSODefinitionCreationMutation(
@@ -30,7 +31,7 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
-  const [selectedStrategy, setSelectedStrategy] = useState<string | null>(null);
+  const [selectedStrategy, setSelectedStrategy] = useState<string>('');
 
   const formikToSSOConfig = useFormikToSSOConfig(selectedStrategy ?? '');
 
@@ -41,8 +42,8 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
         'Create SAML',
         'Create OpenID',
         'Create LDAP',
+        'Create ClientCert',
         // 'Create Header',
-        // 'Create ClientCert',
         // 'Create LocalAuth',
       ]}
       onOptionClick={(option) => {
@@ -59,19 +60,19 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
             setSelectedStrategy('LDAP');
             break;
           }
+          case 'Create ClientCert': {
+            setSelectedStrategy('ClientCert');
+            break;
+          }
           // case 'Create Header': {
           //   setSelectedStrategy('Header');
           //   break;
           // }
-          // case 'Create ClientCert': {
-          //   setSelectedStrategy('ClientCert');
-          //   break;
-          // }
+
           // case 'Create LocalAuth': {
           //   setSelectedStrategy('LocalAuth');
           //   break;
           // }
-          default: setSelectedStrategy(null);
         }
       }}
       {...props}
@@ -83,7 +84,6 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
     { setSubmitting, resetForm }: { setSubmitting: (flag: boolean) => void; resetForm: () => void },
   ) => {
     if (!formikToSSOConfig) return;
-
     const configuration = formikToSSOConfig(values);
 
     values.advancedConfigurations.forEach((conf) => {
@@ -117,16 +117,18 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
       organizations_mapping: getGroupOrOrganizationMapping(values.organizations_mapping_source, values.organizations_mapping_target),
     };
 
-    const finalValues = {
+    if (!strategyEnum) return;
+
+    let finalValues: SingleSignOnAddInput = {
       name: values.name,
       identifier: values.identifier,
       label: values.label,
       enabled: values.enabled,
       strategy: strategyEnum,
       configuration,
-      groups_management,
-      organizations_management,
     };
+
+    if (selectedStrategy !== 'ClientCert') finalValues = { ...finalValues, groups_management, organizations_management };
 
     commitMutation({
       ...defaultCommitMutation,
@@ -144,7 +146,7 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        setSelectedStrategy(null);
+        setSelectedStrategy('');
       },
     });
   };

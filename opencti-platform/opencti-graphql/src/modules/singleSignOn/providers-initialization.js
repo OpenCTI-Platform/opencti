@@ -616,8 +616,18 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
         if (strategy === EnvStrategyType.STRATEGY_CERT) {
           const providerRef = identifier || 'cert';
           logApp.info(`[ENV-PROVIDER][CERT] Strategy found in configuration providerRef:${providerRef}`);
-          // This strategy is directly handled by express
-          PROVIDERS.push({ name: providerName, type: AuthType.AUTH_SSO, strategy, provider: providerRef });
+          if (isForcedEnv) {
+            // region backward compatibility
+            // This strategy is directly handled by express
+            PROVIDERS.push({ name: providerName, type: AuthType.AUTH_SSO, strategy, provider: providerRef });
+          } else {
+            if (isAuthenticationProviderMigrated(existingIdentifiers, providerRef)) {
+              logApp.info(`[ENV-PROVIDER][CERT] ${providerRef} already in database, skipping old configuration`);
+            } else {
+              logApp.info(`[ENV-PROVIDER][CERT] ${providerRef} is about to be converted to database configuration.`);
+              shouldRunSSOMigration = true;
+            }
+          }
         }
         // HEADER Strategies
         if (strategy === EnvStrategyType.STRATEGY_HEADER) {

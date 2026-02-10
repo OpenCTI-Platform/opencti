@@ -1,4 +1,4 @@
-export const getStrategyConfigEnum = (selectedStrategy: string | null) => {
+export const getStrategyConfigEnum = (selectedStrategy: string) => {
   switch (selectedStrategy) {
     case 'SAML': return 'SamlStrategy';
     case 'OpenID': return 'OpenIDConnectStrategy';
@@ -6,11 +6,11 @@ export const getStrategyConfigEnum = (selectedStrategy: string | null) => {
     case 'Header': return 'HeaderStrategy';
     case 'ClientCert': return 'ClientCertStrategy';
     case 'LocalAuth': return 'LocalStrategy';
-    default: return null;
+    default: return '';
   }
 };
 
-export const getStrategyConfigSelected = (selectedStrategy: string | null) => {
+export const getStrategyConfigSelected = (selectedStrategy: string) => {
   switch (selectedStrategy) {
     case 'SamlStrategy': return 'SAML';
     case 'OpenIDConnectStrategy': return 'OpenID';
@@ -18,6 +18,6 @@ export const getStrategyConfigSelected = (selectedStrategy: string | null) => {
     case 'HeaderStrategy': return 'Header';
     case 'ClientCertStrategy': return 'ClientCert';
     case 'LocalStrategy': return 'LocalAuth';
-    default: return null;
+    default: return '';
   }
 };

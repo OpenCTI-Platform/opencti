@@ -12,6 +12,7 @@ import {
   isAuthenticationActivatedByIdentifier,
   LOCAL_STRATEGY_IDENTIFIER,
   type ProviderConfiguration,
+  PROVIDERS,
 } from './providers-configuration';
 import type { BasicStoreEntitySingleSignOn, ConfigurationType } from './singleSignOn-types';
 import { AuthenticationFailure, ConfigurationError } from '../../config/errors';
@@ -120,6 +121,14 @@ export const registerLocalStrategy = async () => {
   registerAuthenticationProvider(LOCAL_STRATEGY_IDENTIFIER, localStrategy, providerConfig);
 };
 
+const registerCertStrategy = async (ssoEntity: BasicStoreEntitySingleSignOn) => {
+  const providerRef = 'cert';
+
+  logAuthInfo('Configuring Cert', EnvStrategyType.STRATEGY_CERT, { id: ssoEntity.id, identifier: ssoEntity.identifier, providerRef });
+  PROVIDERS.push({ name: providerRef, type: AuthType.AUTH_SSO, strategy: EnvStrategyType.STRATEGY_CERT, provider: providerRef });
+  logAuthInfo('Cert configured', EnvStrategyType.STRATEGY_CERT, { id: ssoEntity.id, identifier: ssoEntity.identifier, providerRef });
+};
+
 export const refreshStrategy = async (authenticationStrategy: BasicStoreEntitySingleSignOn) => {
   await unregisterStrategy(authenticationStrategy);
 
@@ -174,8 +183,11 @@ export const registerStrategy = async (authenticationStrategy: BasicStoreEntityS
               }
               break;
             case StrategyType.HeaderStrategy:
-            case StrategyType.ClientCertStrategy:
               logApp.warn(`[SSO] ${authenticationStrategy.strategy} not implemented in UI yet`);
+              break;
+            case StrategyType.ClientCertStrategy:
+              logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_CERT);
+              await registerCertStrategy(authenticationStrategy);
               break;
 
             default:
