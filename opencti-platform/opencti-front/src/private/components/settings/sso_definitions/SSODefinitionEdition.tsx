@@ -8,6 +8,7 @@ import { SSODefinitionEditionMutation } from '@components/settings/sso_definitio
 import { SSODefinitionEditionFragment$key } from '@components/settings/sso_definitions/__generated__/SSODefinitionEditionFragment.graphql';
 import { getConfigFromData, getSSOConfigList } from '@components/settings/sso_definitions/utils/getConfigAndAdvancedConfigFromData';
 import { getStrategyConfigSelected } from '@components/settings/sso_definitions/utils/useStrategicConfig';
+import { formatStringToArray } from '@components/settings/sso_definitions/utils/format';
 
 export const ssoDefinitionEditionMutation = graphql`
   mutation SSODefinitionEditionMutation($id: ID!, $input: [EditInput!]!) {
@@ -91,7 +92,8 @@ const SSODefinitionEdition = ({
     const configurationKeyList = getSSOConfigList(selectedStrategy ?? '');
     const groupManagementKeyList = ['group_attribute', 'groups_attributes', 'group_attributes', 'groups_path', 'groups_scope', 'groups_mapping', 'groups_token_reference', 'groups_read_userinfo'];
     const organizationsManagementKeyList = ['organizations_path', 'organizations_mapping', 'organizations_scope', 'organizations_token_reference', 'organizations_read_userinfo'];
-
+    console.log('value ', value);
+    console.log('value ', typeof value);
     const input: { key: string; value: unknown[] } = { key: field, value: [value] };
 
     if (configurationKeyList.includes(field)) {
@@ -119,10 +121,15 @@ const SSODefinitionEdition = ({
     }
 
     if (groupManagementKeyList.includes(field)) {
-      const arrayValueList = ['groups_path', 'group_attributes', 'groups_attributes', 'groups_mapping'];
+      const attributesFields = ['group_attributes', 'groups_attributes'];
+      const arrayValueList = ['groups_path', 'groups_mapping', ...attributesFields];
       input.key = 'groups_management';
 
-      const inputValue = getGroupOrOrganizationManagementEditInputValue(field, value, arrayValueList);
+      const currentValue = attributesFields.includes(field)
+        ? formatStringToArray(String(value))
+        : value;
+
+      const inputValue = getGroupOrOrganizationManagementEditInputValue(field, currentValue, arrayValueList);
       input.value = [{
         ...sso.groups_management,
         ...inputValue,
@@ -133,12 +140,19 @@ const SSODefinitionEdition = ({
       const arrayValueList = ['organizations_path', 'organizations_mapping'];
       input.key = 'organizations_management';
 
-      const inputValue = getGroupOrOrganizationManagementEditInputValue(field, value, arrayValueList);
+      const currentValue = field === 'organizations_path'
+        ? formatStringToArray(String(value))
+        : value;
+
+      const inputValue = getGroupOrOrganizationManagementEditInputValue(field, currentValue, arrayValueList);
       input.value = [{
         ...sso.organizations_management,
         ...inputValue,
       }];
     }
+
+    console.log('input : ', input);
+    return;
 
     editMutation({
       variables: { id: sso.id, input: [input] },

@@ -25,7 +25,7 @@ const SSODefinitionOrganizationForm = ({ isEditionMode, selectedStrategy, update
         onSubmit={updateField}
         label={t_i18n('Path in token')}
         style={fieldSpacingContainerStyle}
-        helperText={t_i18n('To create a list of values, add a comma between each value of your list (ex: value1, value2)')}
+        helperText={t_i18n('Please add square bracket & each value between single quotes (even for unique value). For example: [\'value1\', \'value2\']')}
         fullWidth
       />
       {selectedStrategy === 'OpenID' && (
@@ -62,7 +62,7 @@ const SSODefinitionOrganizationForm = ({ isEditionMode, selectedStrategy, update
         type="checkbox"
         name="organizations_read_userinfo"
         onChange={updateField}
-        label={t_i18n('Automatically add users to default groups')}
+        label={t_i18n('Automatically add users to default organizations')}
         containerstyle={{ marginLeft: 2, marginTop: 30 }}
       />
     </>

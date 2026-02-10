@@ -25,6 +25,7 @@ import SelectField from 'src/components/fields/SelectField';
 import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
+import { formatArrayValues, type ConfigurationType } from './utils/format';
 
 interface SSODefinitionFormProps {
   onCancel: () => void;
@@ -65,18 +66,18 @@ export interface SSODefinitionFormValues {
   enableDebugMode: boolean;
   entryPoint: string;
   // Groups
-  groups_path: string[];
+  groups_path: string;
   groups_scope: string;
   group_attribute: string;
-  group_attributes: string[];
-  groups_attributes: string[];
+  group_attributes: string;
+  groups_attributes: string;
   groups_mapping: string[];
   groups_mapping_source: string[];
   groups_mapping_target: string[];
   groups_token_reference: string;
   groups_read_userinfo: boolean;
   // Organizations
-  organizations_path: string[];
+  organizations_path: string;
   organizations_scope: string;
   organizations_mapping: string[];
   organizations_mapping_source: string[];
@@ -186,18 +187,18 @@ const SSODefinitionForm = ({
     enableDebugMode: false,
     entryPoint: '',
     // Groups
-    groups_path: ['groups'],
+    groups_path: 'groups',
     groups_scope: '',
     group_attribute: '',
-    group_attributes: [],
-    groups_attributes: [],
+    group_attributes: '',
+    groups_attributes: '',
     groups_mapping: [],
     groups_mapping_source: [],
     groups_mapping_target: [],
     groups_token_reference: 'access_token',
     groups_read_userinfo: false,
     // Organizations
-    organizations_path: ['organizations'],
+    organizations_path: 'organizations',
     organizations_scope: '',
     organizations_mapping: [],
     organizations_mapping_source: [],
@@ -247,9 +248,9 @@ const SSODefinitionForm = ({
   const advancedConfigurations = getAdvancedConfigFromData((data?.configuration ?? []) as ConfigurationTypeInput[], selectedStrategy ?? '');
 
   const groupAttribute = data?.groups_management?.group_attribute;
-  const groupAttributes = Array.from(data?.groups_management?.group_attributes ?? []);
-  const groupsAttributes = Array.from(data?.groups_management?.groups_attributes ?? []);
-  const groupsPath = Array.from(data?.groups_management?.groups_path ?? []);
+  const groupAttributes = data?.groups_management?.group_attributes ?? [];
+  const groupsAttributes = data?.groups_management?.groups_attributes ?? [];
+  const groupsPath = data?.groups_management?.groups_path ?? [];
   const groupsScope = data?.groups_management?.groups_scope ?? '';
   const groupsTokenReference = data?.groups_management?.token_reference;
   const groupsReadUserInfo = data?.groups_management?.read_userinfo;
@@ -296,9 +297,9 @@ const SSODefinitionForm = ({
     initialValues.advancedConfigurations = advancedConfigurations ?? [];
 
     initialValues.group_attribute = groupAttribute ?? '';
-    initialValues.group_attributes = groupAttributes;
-    initialValues.groups_attributes = groupsAttributes;
-    initialValues.groups_path = groupsPath;
+    initialValues.group_attributes = groupAttributes.join(', ');
+    initialValues.groups_attributes = groupsAttributes.join(', ');
+    initialValues.groups_path = groupsPath.join(', ');
     initialValues.groups_scope = groupsScope;
     initialValues.groups_token_reference = groupsTokenReference ?? '';
     initialValues.groups_read_userinfo = groupsReadUserInfo ?? false;
@@ -306,7 +307,7 @@ const SSODefinitionForm = ({
     initialValues.groups_mapping_source = groupsMapping.source;
     initialValues.groups_mapping_target = groupsMapping.target;
 
-    initialValues.organizations_path = organizationsPath;
+    initialValues.organizations_path = organizationsPath.join(', ');
     initialValues.organizations_scope = organizationsScope;
     initialValues.organizations_mapping = organizationsMapping.mapping;
     initialValues.organizations_mapping_source = organizationsMapping.source;
@@ -328,7 +329,7 @@ const SSODefinitionForm = ({
     initialValues.allow_self_signed = allow_self_signed ? allow_self_signed?.value === 'true' : false;
   }
 
-  const updateField = async (field: SSOEditionFormInputKeys, value: unknown) => {
+  const updateField = (field: SSOEditionFormInputKeys, value: unknown) => {
     if (onSubmitField) onSubmitField(field, value);
   };
   const showGroupAndMapping = selectedStrategy !== 'LocalAuth' && !selectedCert;
@@ -345,7 +346,7 @@ const SSODefinitionForm = ({
           <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
             <Tabs
               value={currentTab}
-              onChange={(event, value) => handleChangeTab(value)}
+              onChange={(_, value) => handleChangeTab(value)}
             >
               <Tab label={t_i18n('Authentication Configuration')} />
               {showGroupAndMapping && <Tab label={t_i18n('Groups configuration')} />}
@@ -405,7 +406,7 @@ const SSODefinitionForm = ({
                     <>
                       <div style={{ display: 'flex', alignItems: 'center', marginTop: 20 }}>
                         <Typography variant="h2">{t_i18n('Add more fields')}</Typography>
-                        <Tooltip title={t_i18n('For array type, to create a list of values, add a comma between each value of your list (ex: value1, value2)')}>
+                        <Tooltip title={t_i18n('For array fields, please add square brackets & each value between single quotes (even for unique value). For example: [\'value1\', \'value2\']')}>
                           <InformationOutline
                             fontSize="small"
                             color="primary"
@@ -425,7 +426,7 @@ const SSODefinitionForm = ({
                       {form.values.advancedConfigurations
                         && form.values.advancedConfigurations.map(
                           (
-                            conf: { key: string; value: string; type: string },
+                            conf: ConfigurationType,
                             index: number,
                           ) => (
                             <div
@@ -440,7 +441,10 @@ const SSODefinitionForm = ({
                               <Field
                                 component={TextField}
                                 variant="standard"
-                                onSubmit={() => updateField('advancedConfigurations', form.values.advancedConfigurations)}
+                                onSubmit={() => {
+                                  const newValues = formatArrayValues(form.values.advancedConfigurations);
+                                  updateField('advancedConfigurations', newValues);
+                                }}
                                 name={`advancedConfigurations[${index}].key`}
                                 label={t_i18n('Key (in passport)')}
                                 containerstyle={{ width: '20%' }}
@@ -448,7 +452,10 @@ const SSODefinitionForm = ({
                               <Field
                                 component={TextField}
                                 variant="standard"
-                                onSubmit={() => updateField('advancedConfigurations', form.values.advancedConfigurations)}
+                                onSubmit={() => {
+                                  const newValues = formatArrayValues(form.values.advancedConfigurations);
+                                  updateField('advancedConfigurations', newValues);
+                                }}
                                 name={`advancedConfigurations[${index}].value`}
                                 label={t_i18n('Value (in IDP)')}
                                 containerstyle={{ width: '20%' }}
@@ -456,7 +463,10 @@ const SSODefinitionForm = ({
                               <Field
                                 component={SelectField}
                                 variant="standard"
-                                onSubmit={() => updateField('advancedConfigurations', form.values.advancedConfigurations)}
+                                onSubmit={() => {
+                                  const newValues = formatArrayValues(form.values.advancedConfigurations);
+                                  updateField('advancedConfigurations', newValues);
+                                }}
                                 name={`advancedConfigurations[${index}].type`}
                                 label={t_i18n('Field type')}
                                 containerstyle={{ width: '20%' }}

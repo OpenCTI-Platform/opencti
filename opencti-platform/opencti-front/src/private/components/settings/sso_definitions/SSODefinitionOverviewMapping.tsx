@@ -79,18 +79,22 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
       { key: 'enabled', type: 'boolean', value: enabled, mandatory: true },
       { key: 'strategy', type: 'string', value: strategy, mandatory: true },
     ];
+
     const mandatoryField = [
       'entryPoint',
       'callbackUrl',
       'idpCert',
       'issuer',
     ];
-    configuration?.forEach((c) => {
-      const isMandatory = mandatoryField.includes(c.key);
+
+    configuration?.forEach((config) => {
+      const isMandatory = mandatoryField.includes(config.key);
+      let value = config.value;
+      if (config.type === 'array') value = JSON.parse(config.value).join(',');
       rows.push({
-        key: c.key,
-        value: c.value,
-        type: c.type,
+        key: config.key,
+        value,
+        type: config.type,
         mandatory: isMandatory,
       });
     });
