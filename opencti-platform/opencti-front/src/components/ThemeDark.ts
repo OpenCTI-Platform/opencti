@@ -476,6 +476,7 @@ const ThemeDark = (
         html: {
           scrollbarColor: `${background || THEME_DARK_DEFAULT_BACKGROUND} ${accent || THEME_DARK_DEFAULT_ACCENT}`,
           scrollbarWidth: 'thin',
+          backgroundColor: background || THEME_DARK_DEFAULT_BACKGROUND,
         },
         body: {
           background: `linear-gradient(100deg, ${background || THEME_DARK_DEFAULT_BACKGROUND} 0%, ${getAppBodyGradientEndColor(background)} 100%)`,
