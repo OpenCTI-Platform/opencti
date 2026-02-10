@@ -414,6 +414,9 @@ class User:
             user. This may not impact effective confidence depending on group
             membership.
         :type user_confidence_level: Dict
+        :param include_token: Defaults to False. Whether to include the API
+            token for the new user in the response.
+        :type include_token: bool, optional
         :param customAttributes: Custom attributes to return for the user
         :type customAttributes: str, optional
         :return: Representation of the user without sessions or API token.
@@ -438,6 +441,7 @@ class User:
         user_confidence_level = kwargs.get("user_confidence_level", None)
         custom_attributes = kwargs.get("customAttributes", None)
         user_service_account = kwargs.get("user_service_account", False)
+        include_tokens = kwargs.get("include_tokens", False)
 
         if name is None or user_email is None:
             self.opencti.admin_logger.error(
@@ -460,6 +464,7 @@ class User:
                 userAdd(input: $input) {
                     """
             + (self.properties if custom_attributes is None else custom_attributes)
+            + (self.tokens_properties if include_tokens else "")
             + """
                 }
             }
