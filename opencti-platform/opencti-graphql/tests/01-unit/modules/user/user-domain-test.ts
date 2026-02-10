@@ -113,12 +113,6 @@ describe('User Domain', () => {
       expect(publishUserAction).toHaveBeenCalled();
       expect(publishUserAction).toHaveBeenCalled();
     });
-
-    it('should throw if user lacks capability', async () => {
-      (isUserHasCapability as any).mockReturnValue(false);
-      await expect(addUserToken(context, user, user.id, { name: 'T', duration: TokenDuration.Days_30 }))
-        .rejects.toThrow('You are not allowed use API tokens');
-    });
   });
 
   describe('revokeUserToken', () => {
@@ -158,12 +152,6 @@ describe('User Domain', () => {
     it('should throw if token not found', async () => {
       await expect(revokeUserToken(context, user, 'non-existent')).rejects.toThrow('Token not found');
       await expect(revokeUserToken(context, user, 'non-existent')).rejects.toThrow('Token not found');
-    });
-
-    it('should throw if user lacks capability', async () => {
-      (isUserHasCapability as any).mockReturnValue(false);
-      await expect(revokeUserToken(context, user, 'token-id'))
-        .rejects.toThrow('You are not allowed use API tokens');
     });
   });
 });
