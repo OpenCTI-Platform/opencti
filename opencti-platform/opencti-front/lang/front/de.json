@@ -1627,7 +1627,7 @@
   "entity_Workbench": "Workbench",
   "entity_Workspace": "Arbeitsbereich",
   "entity_X509-Certificate": "X509-Zertifikat",
-  "Entry point": "Einstiegspunkt",
+  "Entry point": "SAML URL (Einstiegspunkt)",
   "EPSS Percentile": "EPSS - Perzentil",
   "EPSS Score": "EPSS - Punktzahl",
   "eql": "Elastic EQL",
