@@ -438,10 +438,9 @@ const amqpExecute = async (execute) => {
  * is possible (at-least-once semantics). Consumers should be idempotent.
  */
 export const send = async (exchangeName, routingKey, message) => {
-  let success = false;
   let attemptNumber = 0;
 
-  while (!success) {
+  while (true) {
     try {
       return await sendPersistent(exchangeName, routingKey, message);
     } catch (err) {
