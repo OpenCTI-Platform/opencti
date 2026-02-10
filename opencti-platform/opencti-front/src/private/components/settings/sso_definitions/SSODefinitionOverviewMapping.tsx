@@ -161,14 +161,6 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
       },
     ];
   };
-  const renderMandatory = (mandatory: boolean) => {
-    return (
-      <ItemBoolean
-        label={mandatory ? t_i18n('True') : t_i18n('False')}
-        status={mandatory}
-      />
-    );
-  };
   const renderValue = (row: Row) => {
     if (row.type === 'array' && Array.isArray(row.value)) {
       return (
@@ -237,9 +229,6 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
         <Grid size={{ xs: 12, md: 6 }}>
           <Typography variant="subtitle1">{t_i18n('Value')}</Typography>
         </Grid>
-        <Grid size={{ xs: 12, md: 3 }}>
-          <Typography variant="subtitle1">{t_i18n('Mandatory')}</Typography>
-        </Grid>
       </Grid>
 
       {rows.map((row) => {
@@ -265,10 +254,6 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
                 : valueIsFalse
                   ? <ItemBoolean label={t_i18n('False')} status={false} />
                   : row.value ? renderValue(row) : EMPTY_VALUE}
-            </Grid>
-
-            <Grid size={{ xs: 12, md: 3 }} sx={{ display: 'flex', alignItems: 'center' }}>
-              {renderMandatory(row.mandatory)}
             </Grid>
           </Grid>
         );
