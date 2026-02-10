@@ -211,7 +211,6 @@ class ListLines extends Component {
       inline,
       additionalFilterKeys,
       createButton,
-      noIcon,
     } = this.props;
     const exportDisabled = numberOfElements
       && ((selectedIds.length > export_max_size
@@ -221,15 +220,6 @@ class ListLines extends Component {
     const searchContextFinal = {
       ...(searchContext ?? {}),
       entityTypes: entityTypes ?? [],
-    };
-    const listItemIconMinWidth = () => {
-      if (noIcon) {
-        return 0;
-      }
-      if (handleToggleSelectAll) {
-        return 40;
-      }
-      return 56;
     };
     return (
       <div className={noPadding ? classes.containerNoPadding : classes.container}>
@@ -473,13 +463,12 @@ class ListLines extends Component {
                   <> &nbsp; </>
                 )}
               >
-                <ListItemIcon
-                  style={{
-                    minWidth: listItemIconMinWidth(),
-                    width: noIcon ? 0 : 'auto',
-                  }}
-                >
-                  {handleToggleSelectAll ? (
+                {handleToggleSelectAll && (
+                  <ListItemIcon
+                    style={{
+                      minWidth: handleToggleSelectAll ? 40 : 56,
+                    }}
+                  >
                     <Checkbox
                       edge="start"
                       checked={selectAll}
@@ -490,18 +479,8 @@ class ListLines extends Component {
                       }
                       disabled={typeof handleToggleSelectAll !== 'function'}
                     />
-                  ) : (
-                    <span
-                      style={{
-                        padding: '0 8px 0 8px',
-                        fontWeight: 700,
-                        fontSize: 12,
-                      }}
-                    >
-                    &nbsp;
-                    </span>
-                  )}
-                </ListItemIcon>
+                  </ListItemIcon>
+                )}
                 {iconExtension && (
                   <ListItemIcon>
                     <span
