@@ -102,6 +102,7 @@ const CreateSplitControlledDial: FunctionComponent<CreateSplitControlledDialProp
           role={undefined}
           transition
           disablePortal
+          placement="bottom-end"
         >
           {({ TransitionProps, placement }) => (
             <Grow
