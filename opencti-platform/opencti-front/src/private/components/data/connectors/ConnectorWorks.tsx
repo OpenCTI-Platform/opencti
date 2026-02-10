@@ -1,14 +1,15 @@
-import React, { FunctionComponent, useEffect } from 'react';
-import { createRefetchContainer, graphql, RelayRefetchProp } from 'react-relay';
-import Typography from '@mui/material/Typography';
-import { interval } from 'rxjs';
 import ConnectorWorkLine from '@components/data/connectors/ConnectorWorkLine';
-import { ConnectorWorksQuery$variables } from './__generated__/ConnectorWorksQuery.graphql';
-import { ConnectorWorks_data$data } from './__generated__/ConnectorWorks_data.graphql';
-import { useFormatter } from '../../../../components/i18n';
-import { FIVE_SECONDS } from '../../../../utils/Time';
+import { Stack } from '@mui/material';
+import Typography from '@mui/material/Typography';
+import { FunctionComponent, useEffect } from 'react';
+import { createRefetchContainer, graphql, RelayRefetchProp } from 'react-relay';
+import { interval } from 'rxjs';
 import Card from '../../../../components/common/card/Card';
 import CardTitle from '../../../../components/common/card/CardTitle';
+import { useFormatter } from '../../../../components/i18n';
+import { FIVE_SECONDS } from '../../../../utils/Time';
+import { ConnectorWorksQuery$variables } from './__generated__/ConnectorWorksQuery.graphql';
+import { ConnectorWorks_data$data } from './__generated__/ConnectorWorks_data.graphql';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -48,37 +49,35 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
   const title = `${inProgress ? t_i18n('In progress works') : t_i18n('Completed works')}${` (${works.length})`}`;
 
   return (
-    <>
-      <div>
-        <CardTitle>{title}</CardTitle>
-        {works.length === 0 && (
-          <Card>
-            <Typography align="center">
-              {t_i18n('No work')}
-            </Typography>
+    <Stack gap={1}>
+      <CardTitle>{title}</CardTitle>
+      {works.length === 0 && (
+        <Card>
+          <Typography align="center">
+            {t_i18n('No work')}
+          </Typography>
+        </Card>
+      )}
+      {works.map((workEdge) => {
+        const work = workEdge?.node;
+        if (!work) return null;
+        return (
+          <Card key={work.id}>
+            <ConnectorWorkLine
+              workId={work.id}
+              workName={work.name}
+              workStatus={work.status}
+              workReceivedTime={work.received_time}
+              workEndTime={work.completed_time}
+              workExpectedNumber={work.tracking?.import_expected_number}
+              workProcessedNumber={work.tracking?.import_processed_number}
+              workErrors={work.errors}
+              readOnly
+            />
           </Card>
-        )}
-        {works.map((workEdge) => {
-          const work = workEdge?.node;
-          if (!work) return null;
-          return (
-            <Card key={work.id}>
-              <ConnectorWorkLine
-                workId={work.id}
-                workName={work.name}
-                workStatus={work.status}
-                workReceivedTime={work.received_time}
-                workEndTime={work.completed_time}
-                workExpectedNumber={work.tracking?.import_expected_number}
-                workProcessedNumber={work.tracking?.import_processed_number}
-                workErrors={work.errors}
-                readOnly
-              />
-            </Card>
-          );
-        })}
-      </div>
-    </>
+        );
+      })}
+    </Stack>
   );
 };
 
