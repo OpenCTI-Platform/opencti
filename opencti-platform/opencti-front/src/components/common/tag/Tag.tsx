@@ -4,7 +4,7 @@ import React, { CSSProperties, ReactElement } from 'react';
 
 interface TagProps extends Omit<ChipProps, 'color'> {
   label?: string | number | ReactElement | null;
-  color?: string;
+  color?: string | null;
   onClick?: (e: React.MouseEvent) => void;
   onDelete?: (e: React.MouseEvent) => void;
   maxWidth?: number | string;

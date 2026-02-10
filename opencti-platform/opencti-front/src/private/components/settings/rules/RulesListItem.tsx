@@ -1,5 +1,5 @@
 import React, { CSSProperties } from 'react';
-import { Grid2 as Grid } from '@mui/material';
+import { Grid2 as Grid, Stack } from '@mui/material';
 import DangerZoneBlock from '@components/common/danger_zone/DangerZoneBlock';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -11,7 +11,7 @@ import { Rule, Task } from './RulesList';
 import useAuth from '../../../../utils/hooks/useAuth';
 import RuleListItemProgressBar from './RulesListItemProgressBar';
 import type { Theme } from '../../../../components/Theme';
-import Tag from './RulesListItemTag';
+import { RuleTag } from './RulesListItemTag';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
 
@@ -51,6 +51,7 @@ const RulesListItem = ({ rule, task, toggle }: RulesListItemProps) => {
     minWidth: 400,
     display: 'flex',
     alignItems: 'center',
+    textAlign: 'center',
     gap: theme.spacing(1),
   };
 
@@ -67,14 +68,15 @@ const RulesListItem = ({ rule, task, toggle }: RulesListItemProps) => {
               title={title}
               sx={style}
             >
-              <Grid container spacing={3}>
-                <Grid size={{ xs: 6 }}>
+              <Stack gap={2}>
+                <div>
                   <Label>
                     {t_i18n('Description')}
                   </Label>
-                  {t_i18n(rule.description)}
-                </Grid>
-                <Grid size={{ xs: 6 }}>
+                  <span>{t_i18n(rule.description)}</span>
+                </div>
+
+                <div>
                   <Label>
                     {t_i18n('Status')}
                   </Label>
@@ -91,43 +93,48 @@ const RulesListItem = ({ rule, task, toggle }: RulesListItemProps) => {
                       )}
                     />
                   </FormGroup>
-                </Grid>
+                </div>
+
                 {isEngineEnabled && taskWork && (
-                  <Grid size={{ xs: 12 }}>
-                    <RuleListItemProgressBar taskEnable={task.enable ?? false} work={taskWork} />
-                  </Grid>
+                  <RuleListItemProgressBar taskEnable={task.enable ?? false} work={taskWork} />
                 )}
-              </Grid>
+              </Stack>
             </Card>
           )}
         />
       </Grid>
       <Grid size={{ xs: 9 }}>
-        <Card title=" ">
+        <Card sx={{ overflowX: 'auto', minWidth: 0 }} title=" ">
           <div style={styleDefinition}>
             <div style={{ flex: '1' }}>
               {(rule.display?.if ?? []).map((step, index) => (
                 <div key={index} style={styleStep}>
-                  <Tag variant="if">{t_i18n('IF')}</Tag>
-                  <Tag color={step?.source_color}>{step?.source}</Tag>
-                  <Tag color={step?.identifier_color}>{t_i18n(step?.relation)}</Tag>
-                  <Tag color={step?.target_color}>{step?.target}</Tag>
+                  <span style={{ width: '30px', flexShrink: 0 }}>{t_i18n('IF')}</span>
+                  <RuleTag color={step?.source_color} label={step?.source} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <span>{t_i18n(step?.relation)}</span>
+                  </div>
+                  <RuleTag color={step?.target_color} label={step?.target} />
                 </div>
               ))}
             </div>
             <div style={{ textAlign: 'center' }}>
               <ArrowRightAlt fontSize="large" />
               <br />
-              <Tag variant="then">{t_i18n('THEN')}</Tag>
+              <span style={{ width: '80px' }}>{t_i18n('THEN')}</span>
             </div>
             <div style={{ flex: '1' }}>
               {(rule.display?.then ?? []).map((step, index) => {
                 return (
                   <div key={index} style={styleStep}>
-                    <Tag variant="action">{step?.action}</Tag>
-                    <Tag color={step?.source_color}>{step?.source}</Tag>
-                    {step?.relation && <Tag color={step?.identifier_color}>{t_i18n(step?.relation)}</Tag>}
-                    {step?.target && <Tag color={step?.target_color}>{step?.target}</Tag>}
+                    <RuleTag action label={step?.action} />
+                    <RuleTag color={step?.source_color} label={step?.source} />
+                    {step?.relation && (
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <span>{t_i18n(step?.relation)}</span>
+                      </div>
+                    )}
+                    {step?.target && <RuleTag color={step?.target_color} label={step?.target} />}
                   </div>
                 );
               })}

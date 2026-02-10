@@ -1,52 +1,33 @@
 import React, { CSSProperties, PropsWithChildren } from 'react';
 import { useTheme } from '@mui/material/styles';
-import Tooltip from '@mui/material/Tooltip';
 import type { Theme } from '../../../../components/Theme';
+import Tag from '@common/tag/Tag';
 
-interface RulesListItemTagProps extends PropsWithChildren {
-  variant?: 'if' | 'then' | 'action';
+interface RuleTagProps extends PropsWithChildren {
+  action?: boolean;
   color?: string | null;
+  label?: string | number | null;
 }
 
-const RulesListItemTag = ({ variant, color, children }: RulesListItemTagProps) => {
+export const RuleTag = ({ action = false, color, label }: RuleTagProps) => {
   const theme = useTheme<Theme>();
 
   const style: CSSProperties = {
-    height: 30,
-    padding: 3,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    textAlign: 'center',
-    border: color ? `1px solid ${color}` : 'transparent',
-    flex: '1',
+    flex: 1,
+    width: '100%',
+    borderRadius: 4,
   };
 
-  if (variant) {
+  if (action) {
     style.flex = '0 0 auto';
-  }
-
-  if (variant === 'if' || variant === 'then') {
-    style.border = `1px solid ${theme.palette.primary.main}`;
-  } else if (variant === 'action') {
-    style.border = `1px solid ${theme.palette.secondary.main}`;
-  }
-
-  if (variant === 'if') {
-    style.width = 30;
-  } else if (variant === 'action' || variant === 'then') {
     style.width = 80;
+    style.marginRight = theme.spacing(3);
+    style.paddingLeft = '4px';
   }
 
-  if (variant === 'if' || variant === 'action') {
-    style.marginRight = theme.spacing(3);
-  }
+  const tagColor = action ? theme.palette.secondary.main : color;
 
   return (
-    <Tooltip title={children}>
-      <div style={style}>{children}</div>
-    </Tooltip>
+    <Tag style={style} color={tagColor} label={label} labelTextTransform={action ? 'uppercase' : undefined} />
   );
 };
-
-export default RulesListItemTag;
