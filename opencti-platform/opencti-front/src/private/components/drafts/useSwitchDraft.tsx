@@ -1,5 +1,5 @@
-import { UseMutationConfig } from 'react-relay';
-import { graphql, MutationParameters } from 'relay-runtime';
+import { UseMutationConfig, graphql } from 'react-relay';
+import { MutationParameters } from 'relay-runtime';
 import useApiMutation, { UsiApiMutationOptions } from '../../../utils/hooks/useApiMutation';
 
 const mutation = graphql`
