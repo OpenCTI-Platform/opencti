@@ -148,6 +148,7 @@ nav:
             - Promote to Indicator: deployment/breaking-changes/6.2-promote-to-indicator.md
             - SAML authentication: deployment/breaking-changes/6.2-saml-authentication.md
             - New filter API: deployment/breaking-changes/5.12-filters.md
+            - SSO License update: deployment/breaking-changes/7.0-SSO-Entreprise-license.md
   - User Guide:
     - Getting started: usage/getting-started.md
     - Foundations:
