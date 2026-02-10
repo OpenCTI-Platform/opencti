@@ -51,6 +51,7 @@ const RulesListItem = ({ rule, task, toggle }: RulesListItemProps) => {
     minWidth: 400,
     display: 'flex',
     alignItems: 'center',
+    textAlign: 'center',
     gap: theme.spacing(1),
   };
 
@@ -108,9 +109,11 @@ const RulesListItem = ({ rule, task, toggle }: RulesListItemProps) => {
             <div style={{ flex: '1' }}>
               {(rule.display?.if ?? []).map((step, index) => (
                 <div key={index} style={styleStep}>
-                  <span>{t_i18n('IF')}</span>
+                  <span style={{ width: '30px', flexShrink: 0 }}>{t_i18n('IF')}</span>
                   <RuleTag color={step?.source_color} label={step?.source} />
-                  <span>{t_i18n(step?.relation)}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <span>{t_i18n(step?.relation)}</span>
+                  </div>
                   <RuleTag color={step?.target_color} label={step?.target} />
                 </div>
               ))}
@@ -118,7 +121,7 @@ const RulesListItem = ({ rule, task, toggle }: RulesListItemProps) => {
             <div style={{ textAlign: 'center' }}>
               <ArrowRightAlt fontSize="large" />
               <br />
-              <span>{t_i18n('THEN')}</span>
+              <span style={{ width: '80px' }}>{t_i18n('THEN')}</span>
             </div>
             <div style={{ flex: '1' }}>
               {(rule.display?.then ?? []).map((step, index) => {
@@ -126,7 +129,11 @@ const RulesListItem = ({ rule, task, toggle }: RulesListItemProps) => {
                   <div key={index} style={styleStep}>
                     <RuleTag action label={step?.action} />
                     <RuleTag color={step?.source_color} label={step?.source} />
-                    {step?.relation && <span>{t_i18n(step?.relation)}</span>}
+                    {step?.relation && (
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <span>{t_i18n(step?.relation)}</span>
+                      </div>
+                    )}
                     {step?.target && <RuleTag color={step?.target_color} label={step?.target} />}
                   </div>
                 );

@@ -13,7 +13,8 @@ export const RuleTag = ({ action = false, color, label }: RuleTagProps) => {
   const theme = useTheme<Theme>();
 
   const style: CSSProperties = {
-    flex: '1',
+    flex: 1,
+    width: '100%',
     borderRadius: 4,
   };
 
