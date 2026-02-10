@@ -2667,6 +2667,7 @@
   "No active connectors": "Pas de connecteurs actifs",
   "No active forms found matching your criteria": "Aucun formulaire actif trouvé correspondant à vos critères",
   "No AI Intelligence.": "Pas d'intelligence artificielle.",
+  "No authentication provider available": "Pas de fournisseur d'authentification disponible",
   "No available options": "Aucune option disponible",
   "No available playbooks for this entity": "Aucun playbook disponible pour cette entité",
   "No available public CSV feeds on this platform": "Aucun flux CSV public disponible sur cette plateforme",

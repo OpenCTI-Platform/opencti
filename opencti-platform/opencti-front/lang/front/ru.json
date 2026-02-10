@@ -2667,6 +2667,7 @@
   "No active connectors": "Нет активных коннекторов",
   "No active forms found matching your criteria": "Не найдено активных форм, соответствующих вашим критериям",
   "No AI Intelligence.": "Никакого искусственного интеллекта.",
+  "No authentication provider available": "Провайдер аутентификации отсутствует",
   "No available options": "Нет доступных вариантов",
   "No available playbooks for this entity": "Для этого объекта нет доступных учебников",
   "No available public CSV feeds on this platform": "На этой платформе нет доступных публичных CSV-каналов",
