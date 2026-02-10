@@ -308,7 +308,7 @@ Then, you can add organization scope & access token & provide mapping by clickin
 ###  All other strategies
 For all other strategies, you only need to define the path in the token that should be used to define the organization mapping & define the mapping via the Add a new value button.
 
-![organization mapping](assets/authentication-all-orgMapping.png)
+![organization mapping](assets/authentication-All-orgMapping.png)
 
 ## Troubleshooting 
 Setting up a configuration correctly is always a struggle. To understand what is happening you need to have a look at your logs, available in your solution used to deploy OpenCTI.
