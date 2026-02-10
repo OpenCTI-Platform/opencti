@@ -1,9 +1,12 @@
-import React, { FunctionComponent } from 'react';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Alert from '@mui/material/Alert';
+import { useTheme } from '@mui/styles';
+import { FunctionComponent } from 'react';
+import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 import { useFormatter } from '../../../../components/i18n';
 import ItemCopy from '../../../../components/ItemCopy';
+import { Theme } from '../../../../components/Theme';
+import { Box } from '@mui/material';
 
 interface TokenResultViewProps {
   token: string;
@@ -15,44 +18,33 @@ const TokenResultView: FunctionComponent<TokenResultViewProps> = ({
   onClose,
 }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
   // No explicit focus on Close button anymore, handled by ItemCopy focusOnMount
   // useEffect(() => { ... }, []);
 
   return (
-    <div style={{ marginTop: 20 }}>
-      <Alert severity="success" variant="outlined" style={{ marginBottom: 20 }}>
-        {t_i18n('Token generated successfully')}
+    <div>
+      <Alert severity="success" variant="outlined" sx={{ mb: 2 }}>
+        <strong>{t_i18n('Token generated successfully')}</strong>
+        <br />
+        {t_i18n('Make sure to copy your new personal access token now. You won\'t be able to see it again!')}
       </Alert>
 
-      <Typography variant="body1" gutterBottom>
-        {t_i18n('Make sure to copy your new personal access token now. You won\'t be able to see it again!')}
-      </Typography>
-
-      <div style={{
-        marginTop: 20,
-        padding: '15px',
-        backgroundColor: 'rgba(255, 255, 255, 0.05)',
-        borderRadius: 4,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-      }}
+      <Box
+        sx={{
+          padding: 2,
+          backgroundColor: theme.palette.designSystem.background.main,
+          borderRadius: 2,
+        }}
       >
-        <div style={{ flexGrow: 1, marginRight: 10, overflow: 'hidden' }}>
-          <ItemCopy content={token} variant="inLine" focusOnMount={true} />
-        </div>
-      </div>
+        <ItemCopy content={token} focusOnMount={true} />
+      </Box>
 
-      <div style={{ float: 'right', marginTop: 20 }}>
-        <Button
-          // ref={closeButtonRef}
-          variant="contained"
-          color="primary"
-          onClick={onClose}
-        >
+      <FormButtonContainer>
+        <Button onClick={onClose}>
           {t_i18n('Close')}
         </Button>
-      </div>
+      </FormButtonContainer>
     </div>
   );
 };

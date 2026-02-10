@@ -571,18 +571,11 @@ const ProfileOverviewComponent = (props) => {
             {t('OpenCTI version')}
           </Typography>
           <pre>{about.version}</pre>
-          <div style={{ display: 'flex', justifyContent: 'end', marginTop: 16, gap: 10 }}>
-            {hasAccessTokenCapability && (
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => setDisplayTokenCreation(true)}
-              >
-                {t('Generate Token')}
-              </Button>
-            )}
+
+          <Stack direction="row" justifyContent="flex-end" gap={1}>
             {hasAccessTokenCapability && isPlaygroundEnable() && (
               <Button
+                variant="secondary"
                 component={Link}
                 to="/public/graphql"
                 target="_blank"
@@ -590,7 +583,14 @@ const ProfileOverviewComponent = (props) => {
                 {t('Playground')}
               </Button>
             )}
-          </div>
+            {hasAccessTokenCapability && (
+              <Button
+                onClick={() => setDisplayTokenCreation(true)}
+              >
+                {t('Generate Token')}
+              </Button>
+            )}
+          </Stack>
           <TokenList node={me} />
         </div>
       </Card>

@@ -15,10 +15,10 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
-  Button,
   DialogTitle,
   Alert,
 } from '@mui/material';
+import Button from '@common/button/Button';
 import { Delete } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '../../../../components/Theme';
@@ -199,10 +199,17 @@ export const TokenListBase: React.FC<TokenListProps> = ({ node }) => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDelete}>
+          <Button
+            variant="secondary"
+            onClick={handleCloseDelete}
+          >
             {t_i18n('Cancel')}
           </Button>
-          <Button onClick={submitDelete} color="error" autoFocus>
+          <Button
+            intent="destructive"
+            onClick={submitDelete}
+            autoFocus
+          >
             {t_i18n('Revoke')}
           </Button>
         </DialogActions>

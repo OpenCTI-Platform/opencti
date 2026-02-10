@@ -2,11 +2,12 @@ import React, { FunctionComponent, useRef, useState, useEffect } from 'react';
 import { ContentCopyOutlined, Check } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { useFormatter } from './i18n';
 import { copyToClipboard } from '../utils/utils';
 import type { Theme } from './Theme';
 import { truncate } from '../utils/String';
+import { Box } from '@mui/material';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -27,7 +28,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   container: {
     position: 'relative',
-    paddingRight: 18,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -106,7 +106,16 @@ const ItemCopy: FunctionComponent<ItemCopyProps> = ({
 
   const textElement = (
     <div ref={textRef} className={classNameVariant()}>
-      {textToShow}
+      <Box
+        sx={{
+          overflow: 'hidden',
+          minWidth: 0,
+          textOverflow: 'ellipsis',
+          marginRight: 3,
+        }}
+      >
+        {textToShow}
+      </Box>
       <span className={variant === 'inLine' ? classes.iconInline : classes.icon}>
         <Tooltip title={copied ? t_i18n('Copied') : t_i18n('Copy')}>
           <IconButton
@@ -117,9 +126,9 @@ const ItemCopy: FunctionComponent<ItemCopyProps> = ({
             color={copied ? 'success' : 'primary'}
           >
             {copied ? (
-              <Check sx={{ fontSize: variant === 'inLine' ? 12 : 18 }} />
+              <Check sx={{ fontSize: variant === 'inLine' ? 12 : 16 }} />
             ) : (
-              <ContentCopyOutlined sx={{ fontSize: variant === 'inLine' ? 12 : 18 }} />
+              <ContentCopyOutlined sx={{ fontSize: variant === 'inLine' ? 12 : 16 }} />
             )}
           </IconButton>
         </Tooltip>
