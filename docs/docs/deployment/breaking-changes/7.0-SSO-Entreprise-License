@@ -3,7 +3,7 @@
      SSO configuration is under the [OpenCTI Enterprise Edition](https://docs.opencti.io/latest/administration/enterprise/?h=ente) license. Please read the information below to have all the information.
 
 # Using & defining SSO become an Entreprise edition feature
-In version 7, using & defining Authentication stategies (SSO) will fall undr the Entreprise License.
+In version 7, using & defining Authentication stategies (SSO) will fall under the Entreprise License.
 
 This means that any platform using Community edition will have to use Local authentication to be able to lgoin in their platform. You can always get a [trial license ](https://filigran.io/enterprise-editions-trial/) if you need to explore our Entreprise License offer (or to keep using SSO).
 

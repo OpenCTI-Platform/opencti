@@ -5,8 +5,8 @@
 # Migration Process
 At platform intialization, configuration file will be read. 
 If your platform is under entreprise edition license, each strategy will be converted to UI, meaning that the configuration of the specific strategy will be stored in our database and marked as migrated. It will still exists in the configuration file.
-If a strategy cannot be migrated  or failed to be migrated, then this flag won’t be applied. 
-Once a strategy is marked as migrated, when the paltform will initalize,based on the presence of this flag, the configuration present in the database will be used, otherwise, the configuration from the configuration file will be used. 
+If a strategy cannot be migrated  or failed to be migrated, then this flag will not be applied. 
+Once a strategy is marked as migrated, when the paltform will initalize, based on the presence of this flag, the configuration present in the database will be used, otherwise, the configuration from the configuration file will be used. 
 
 This means that a SSO configuration defined in UI (and therefore in database) **will always have priority over the same configration in the configuration file.**
 
