@@ -60,6 +60,7 @@ const individualQuery = graphql`
       entity_type
       name
       x_opencti_aliases
+      currentUserAccessRight
       ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...Individual_individual

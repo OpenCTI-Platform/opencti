@@ -60,6 +60,7 @@ const securityPlatformQuery = graphql`
       name
       x_opencti_aliases
       security_platform_type
+      currentUserAccessRight
       ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...SecurityPlatform_securityPlatform

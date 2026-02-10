@@ -58,6 +58,7 @@ const systemQuery = graphql`
       entity_type
       name
       x_opencti_aliases
+      currentUserAccessRight
       ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...System_system
