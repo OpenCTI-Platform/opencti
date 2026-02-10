@@ -4,14 +4,18 @@ import DataTablePage from '../model/DataTable.pageModel';
 import TaskPopup from '../model/taskPopup.pageModel';
 import { checkBackgroundTasksCompletion } from '../utils/backgroundTaskCheck-utils';
 import { v4 as uuid } from 'uuid';
+import FiltersPageModel from '../model/filters.pageModel';
 
 test.describe('Drafts - Entities and background tasks', { tag: ['@ce'] }, () => {
   const draftName = `Draft E2E - ${Date.now()}`;
   const malwareName = `malware in draft- ${uuid()}`;
+  const markingToApply = 'PAP:GREEN';
+
   test('should create a draft, add a malware entity, and verify its presence', async ({ page }) => {
     const Drafts = new DraftsPage(page);
     const taskPopup = new TaskPopup(page);
     const dataTable = new DataTablePage(page);
+    const filter = new FiltersPageModel(page);
 
     // navigate in the drafts list
     await Drafts.navigate();
@@ -21,10 +25,10 @@ test.describe('Drafts - Entities and background tasks', { tag: ['@ce'] }, () => 
     await expect(Drafts.getDraft(draftName)).toBeVisible();
 
     // enter in the draft
-    await page.getByText(draftName).click();
+    await Drafts.getDraft(draftName).click();
 
     // check we are in the 'entities' tab
-    await expect(page.getByRole('tab', { name: /Entities/i, selected: true })).toBeVisible();
+    await expect(page.getByRole('tab', { name: 'Entities', selected: true })).toBeVisible();
 
     // add a malware in the draft
     await Drafts.addEntityToDraft({
@@ -35,8 +39,30 @@ test.describe('Drafts - Entities and background tasks', { tag: ['@ce'] }, () => 
     // check the malware is in the list
     await expect(Drafts.getEntityInList(malwareName)).toBeVisible();
 
-    // Select all entities in the list
+    // go under the 'observables' tab and check there is not the malware
+    await page.getByRole('tab', { name: 'Observables' }).click();
+    await expect(page.getByRole('tab', { name: 'Observables', selected: true })).toBeVisible();
+    await expect(Drafts.getEntityInList(malwareName)).not.toBeVisible();
+
+    // go back to the 'entities' tab
+    await page.getByRole('tab', { name: 'Entities' }).click();
+    await expect(page.getByRole('tab', { name: 'Entities', selected: true })).toBeVisible();
+
+    // Select all entities in the list (ie. the malware we just created)
     await dataTable.getCheckAll().click();
+
+    // Launch a background task to add a label on the malware
+    await taskPopup.launchAddMarking(markingToApply);
+
+    // Wait for the background task to complete
+    await checkBackgroundTasksCompletion(page.request);
+
+    // Check the update has been done only on the malware
+    await expect(dataTable.getNumberElements(1)).toBeVisible();
+    await filter.addMarkingFilter(markingToApply);
+    await expect(dataTable.getNumberElements(1)).toBeVisible();
+    await filter.removeLastFilter();
+
     // Click the "remove from draft" icon in the toolbar
     await taskPopup.launchRemoveFromDraft();
 
@@ -45,7 +71,5 @@ test.describe('Drafts - Entities and background tasks', { tag: ['@ce'] }, () => 
 
     // Check that the malware is no longer in the list
     await expect(Drafts.getEntityInList(malwareName)).not.toBeVisible();
-
-    // TODO check other malwares have not been deleted
   });
 });

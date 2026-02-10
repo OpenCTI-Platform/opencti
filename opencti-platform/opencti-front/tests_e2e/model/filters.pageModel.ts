@@ -46,6 +46,12 @@ export default class FiltersPageModel {
     return this.addFilterInDatatable(filterKey, labelValue, deflakeButton);
   }
 
+  async addMarkingFilter(markingValue: string) {
+    const filterKey = 'Markings';
+    const deflakeButton = 'Markings =';
+    return this.addFilterInDatatable(filterKey, markingValue, deflakeButton);
+  }
+
   async addEntityTypeFilter(filterLabel: string) {
     const filterKey = 'Entity type';
     const deflakeButton = 'Entity type =';
