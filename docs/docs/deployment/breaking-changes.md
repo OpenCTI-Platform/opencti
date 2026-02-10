@@ -15,6 +15,7 @@ This table regroups all the breaking changes introduced, with the corresponding 
 | [Promote Observable API](#change-to-the-observable-promote-API)                                                        | 6.2           | 6.8        |
 | [SAML authentication parameters](#change-to-SAML-authentication)                                                       |               | 6.2        |
 | [Major changes to Filtering API](#new-filtering-API)                                                                   |               | 5.12       |
+| [Update license for SSO (& migration to UI)](#authentication-migration)                                                |               | 7.0.0      |
 
 
 
