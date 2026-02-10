@@ -1,8 +1,8 @@
 import React, { FunctionComponent, useState } from 'react';
+import Drawer from '@mui/material/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import TokenCreationForm from './TokenCreationForm';
 import TokenResultView from './TokenResultView';
-import Drawer from '../../common/drawer/Drawer';
 
 interface TokenCreationDrawerProps {
   userId: string;
@@ -30,24 +30,25 @@ const TokenCreationDrawer: FunctionComponent<TokenCreationDrawerProps> = ({
   return (
     <Drawer
       open={open}
+      anchor="right"
+      elevation={1}
+      sx={{ zIndex: 1202 }}
+      classes={{ paper: 'drawer-paper' }}
       onClose={handleClose}
-      title={generatedToken ? t_i18n('Token details') : t_i18n('Generate a new token')}
-      size="medium"
     >
-      {generatedToken ? (
-        <TokenResultView
-          token={generatedToken}
-          onClose={handleClose}
-        />
-      ) : (
-        <>
-          <TokenCreationForm
-            userId={userId}
-            onSuccess={onSuccess}
-            onClose={handleClose}
-          />
-        </>
-      )}
+      <div style={{ padding: 20 }}>
+        {generatedToken ? (
+          <>
+            <h2>{t_i18n('Token details')}</h2>
+            <TokenResultView token={generatedToken} onClose={handleClose} />
+          </>
+        ) : (
+          <>
+            <h2>{t_i18n('Generate a new token')}</h2>
+            <TokenCreationForm userId={userId} onSuccess={onSuccess} onClose={handleClose} />
+          </>
+        )}
+      </div>
     </Drawer>
   );
 };

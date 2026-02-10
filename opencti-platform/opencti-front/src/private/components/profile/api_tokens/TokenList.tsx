@@ -1,17 +1,39 @@
-import { Delete } from '@mui/icons-material';
-import { Alert, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from '@mui/material';
-import makeStyles from '@mui/styles/makeStyles';
 import React, { useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import { RecordProxy, RecordSourceSelectorProxy } from 'relay-runtime';
-import { useFormatter } from '../../../../components/i18n';
+import { RecordSourceSelectorProxy, RecordProxy } from 'relay-runtime';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  IconButton,
+  Tooltip,
+  Dialog,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
+  DialogTitle,
+  Alert,
+} from '@mui/material';
+import { Delete } from '@mui/icons-material';
+import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '../../../../components/Theme';
-import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
+import { useFormatter } from '../../../../components/i18n';
 import useGranted, { APIACCESS_USETOKEN } from '../../../../utils/hooks/useGranted';
+import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import { TokenList_node$data } from './__generated__/TokenList_node.graphql';
-import TokenDeleteDialog from './TokenDeleteDialog';
 
 const useStyles = makeStyles<Theme>((theme) => ({
+  container: {
+    marginTop: 20,
+  },
+  table: {
+    minWidth: 650,
+  },
   empty: {
     textAlign: 'center',
     padding: 20,
@@ -111,7 +133,7 @@ export const TokenListBase: React.FC<TokenListProps> = ({ node }) => {
 
   if (tokens.length === 0) {
     return (
-      <Paper variant="outlined">
+      <Paper variant="outlined" className={classes.container}>
         <div className={classes.empty}>
           {t_i18n('No tokens found. Click "Generate Token" to create one.')}
         </div>
@@ -120,17 +142,9 @@ export const TokenListBase: React.FC<TokenListProps> = ({ node }) => {
   }
 
   return (
-    <div>
-      <TableContainer component={Paper} variant="outlined" sx={{ border: 'none' }}>
-        <Table
-          size="small"
-          aria-label="token list"
-          sx={{
-            '& .MuiTableRow-root:last-child .MuiTableCell-root': {
-              borderBottom: 'none',
-            },
-          }}
-        >
+    <div className={classes.container}>
+      <TableContainer component={Paper} variant="outlined">
+        <Table className={classes.table} size="small" aria-label="token list">
           <TableHead>
             <TableRow>
               <TableCell>{t_i18n('Name')}</TableCell>
@@ -172,13 +186,27 @@ export const TokenListBase: React.FC<TokenListProps> = ({ node }) => {
           </TableBody>
         </Table>
       </TableContainer>
-
-      <TokenDeleteDialog
-        token={deletingToken}
+      <Dialog
         open={deletingToken !== null}
         onClose={handleCloseDelete}
-        onDelete={submitDelete}
-      />
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">{t_i18n('Revoke API Token')}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            {t_i18n('Do you want to revoke the token')} <strong>{deletingToken?.name}</strong>?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDelete}>
+            {t_i18n('Cancel')}
+          </Button>
+          <Button onClick={submitDelete} color="error" autoFocus>
+            {t_i18n('Revoke')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };

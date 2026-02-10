@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { Field, Form, Formik, FormikHelpers } from 'formik';
 import * as Yup from 'yup';
 import MenuItem from '@mui/material/MenuItem';
-import Button from '@common/button/Button';
+import Button from '@mui/material/Button';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/fields/SelectField';
@@ -11,7 +11,6 @@ import { graphql } from 'react-relay';
 import { PayloadError, RecordSourceSelectorProxy } from 'relay-runtime';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import { UserTokenCreationFormMutation$data } from './__generated__/UserTokenCreationFormMutation.graphql';
-import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 
 interface UserTokenCreationFormProps {
   userId: string;
@@ -127,7 +126,7 @@ const UserTokenCreationForm: FunctionComponent<UserTokenCreationFormProps> = ({
       onSubmit={onSubmit}
     >
       {({ submitForm, isSubmitting }) => (
-        <Form>
+        <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
             component={TextField}
             variant="standard"
@@ -149,21 +148,25 @@ const UserTokenCreationForm: FunctionComponent<UserTokenCreationFormProps> = ({
             <MenuItem value="365">{t_i18n('1 year')}</MenuItem>
             <MenuItem value="legacy">{t_i18n('Unlimited')}</MenuItem>
           </Field>
-          <FormButtonContainer>
+          <div style={{ float: 'right', marginTop: 20 }}>
             <Button
-              variant="secondary"
+              variant="contained"
+              color="secondary"
               onClick={onClose}
+              style={{ marginRight: 10 }}
               disabled={isSubmitting}
             >
               {t_i18n('Cancel')}
             </Button>
             <Button
+              variant="contained"
+              color="primary"
               onClick={submitForm}
               disabled={isSubmitting}
             >
               {t_i18n('Generate')}
             </Button>
-          </FormButtonContainer>
+          </div>
         </Form>
       )}
     </Formik>

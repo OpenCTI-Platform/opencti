@@ -1,17 +1,38 @@
-import { Delete } from '@mui/icons-material';
-import { IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from '@mui/material';
-import makeStyles from '@mui/styles/makeStyles';
 import React, { useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import { RecordProxy, RecordSourceSelectorProxy } from 'relay-runtime';
+import { RecordSourceSelectorProxy, RecordProxy } from 'relay-runtime';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  IconButton,
+  Tooltip,
+  Dialog,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
+  DialogTitle,
+} from '@mui/material';
+import { Delete, Add } from '@mui/icons-material';
+import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
-import TokenDeleteDialog from '../../profile/api_tokens/TokenDeleteDialog';
 import UserTokenCreationDrawer from './UserTokenCreationDrawer';
 import { UserTokenList_node$data } from './__generated__/UserTokenList_node.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
+  container: {
+    marginTop: 0,
+  },
+  table: {
+    minWidth: 650,
+  },
   empty: {
     textAlign: 'center',
     padding: 20,
@@ -35,14 +56,14 @@ const userTokenListRevokeMutation = graphql`
 
 interface UserTokenListProps {
   node: UserTokenList_node$data;
-  openDrawer?: boolean;
-  onCloseDrawer: () => void;
 }
 
-export const UserTokenList: React.FC<UserTokenListProps> = ({ openDrawer = false, onCloseDrawer, node }) => {
+export const UserTokenList: React.FC<UserTokenListProps> = ({ node }) => {
   const classes = useStyles();
   const { t_i18n, nsdt } = useFormatter();
   const [deletingToken, setDeletingToken] = useState<{ id: string; name: string } | null>(null);
+
+  const [creationOpen, setCreationOpen] = useState(false);
 
   const tokens = node.api_tokens || [];
   const now = new Date();
@@ -105,24 +126,28 @@ export const UserTokenList: React.FC<UserTokenListProps> = ({ openDrawer = false
   };
 
   return (
-    <div>
+    <div className={classes.container}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10 }}>
+        <Button
+          variant="contained"
+          color="primary"
+          size="small"
+          startIcon={<Add />}
+          onClick={() => setCreationOpen(true)}
+          aria-label="generate-token"
+        >
+          {t_i18n('Generate')}
+        </Button>
+      </div>
       {tokens.length === 0 ? (
-        <Paper variant="outlined">
+        <Paper variant="outlined" className={classes.container}>
           <div className={classes.empty}>
             {t_i18n('No tokens found.')}
           </div>
         </Paper>
       ) : (
-        <TableContainer component={Paper} variant="outlined" sx={{ border: 'none' }}>
-          <Table
-            size="small"
-            aria-label="token list"
-            sx={{
-              '& .MuiTableRow-root:last-child .MuiTableCell-root': {
-                borderBottom: 'none',
-              },
-            }}
-          >
+        <TableContainer component={Paper} variant="outlined">
+          <Table className={classes.table} size="small" aria-label="token list">
             <TableHead>
               <TableRow>
                 <TableCell>{t_i18n('Name')}</TableCell>
@@ -161,18 +186,31 @@ export const UserTokenList: React.FC<UserTokenListProps> = ({ openDrawer = false
           </Table>
         </TableContainer>
       )}
-
-      <TokenDeleteDialog
-        token={deletingToken}
+      <Dialog
         open={deletingToken !== null}
         onClose={handleCloseDelete}
-        onDelete={submitDelete}
-      />
-
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">{t_i18n('Revoke API Token')}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            {t_i18n('Do you want to revoke the token')} <strong>{deletingToken?.name}</strong>?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDelete}>
+            {t_i18n('Cancel')}
+          </Button>
+          <Button onClick={submitDelete} color="error" autoFocus>
+            {t_i18n('Revoke')}
+          </Button>
+        </DialogActions>
+      </Dialog>
       <UserTokenCreationDrawer
         userId={node.id}
-        open={openDrawer}
-        onClose={onCloseDrawer}
+        open={creationOpen}
+        onClose={() => setCreationOpen(false)}
       />
     </div>
   );
