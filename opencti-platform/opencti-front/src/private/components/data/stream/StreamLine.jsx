@@ -6,16 +6,16 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { ListItemButton } from '@mui/material';
+import Chip from '@mui/material/Chip';
 import { MoreVert, Stream } from '@mui/icons-material';
 import { compose } from 'ramda';
 import Slide from '@mui/material/Slide';
 import Skeleton from '@mui/material/Skeleton';
 import StreamPopover from './StreamPopover';
+import StreamConsumersDrawer from './StreamConsumersDrawer';
 import inject18n from '../../../../components/i18n';
-import FilterIconButton from '../../../../components/FilterIconButton';
 import ItemCopy from '../../../../components/ItemCopy';
 import ItemBoolean from '../../../../components/ItemBoolean';
-import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
 import Security from '../../../../utils/Security';
 import { TAXIIAPI_SETCOLLECTIONS } from '../../../../utils/hooks/useGranted';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
@@ -44,12 +44,13 @@ const styles = (theme) => ({
     textOverflow: 'ellipsis',
     paddingRight: 10,
   },
-  filtersItem: {
+  consumersItem: {
     height: 40,
     display: 'flex',
     alignItems: 'center',
     float: 'left',
     paddingRight: 10,
+    gap: 8,
   },
   goIcon: {
     position: 'absolute',
@@ -72,92 +73,139 @@ const styles = (theme) => ({
 });
 
 class StreamLineLineComponent extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      displayConsumers: false,
+    };
+  }
+
+  handleOpenConsumers() {
+    this.setState({ displayConsumers: true });
+  }
+
+  handleCloseConsumers() {
+    this.setState({ displayConsumers: false });
+  }
+
+  computeConsumersHealth() {
+    const { node, t } = this.props;
+    const { consumers } = node;
+    if (!consumers || consumers.length === 0) {
+      return { count: 0, label: t('No consumers'), hexColor: null };
+    }
+    const ONE_HOUR = 3600;
+    const ONE_DAY = 86400;
+    const hasOutOfDepth = consumers.some((c) => c.estimatedOutOfDepth !== null && c.estimatedOutOfDepth <= 0);
+    const hasCritical = consumers.some((c) => c.estimatedOutOfDepth !== null && c.estimatedOutOfDepth > 0 && c.estimatedOutOfDepth < ONE_HOUR);
+    const hasWarning = consumers.some((c) => c.estimatedOutOfDepth !== null && c.estimatedOutOfDepth >= ONE_HOUR && c.estimatedOutOfDepth < ONE_DAY);
+    if (hasOutOfDepth || hasCritical) {
+      return { count: consumers.length, label: `${consumers.length} - ${t('At risk')}`, hexColor: '#c62828' };
+    }
+    if (hasWarning) {
+      return { count: consumers.length, label: `${consumers.length} - ${t('Degraded')}`, hexColor: '#d84315' };
+    }
+    return { count: consumers.length, label: `${consumers.length} - ${t('Healthy')}`, hexColor: '#2e7d32' };
+  }
+
   render() {
     const { classes, node, dataColumns, paginationOptions, t } = this.props;
-    const filters = deserializeFilterGroupForFrontend(node.filters);
+    const health = this.computeConsumersHealth();
     return (
-      <ListItem
-        divider={true}
-        disablePadding
-        secondaryAction={(
-          <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
-            <StreamPopover
-              streamCollection={node}
-              paginationOptions={paginationOptions}
-            />
-          </Security>
-        )}
-      >
-        <ListItemButton
-          classes={{ root: classes.item }}
-          component="a"
-          href={`/stream/${node.id}`}
-          target="_blank"
+      <>
+        <ListItem
+          divider={true}
+          disablePadding
+          secondaryAction={(
+            <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
+              <StreamPopover
+                streamCollection={node}
+                paginationOptions={paginationOptions}
+              />
+            </Security>
+          )}
         >
-          <ListItemIcon classes={{ root: classes.itemIcon }}>
-            <Stream />
-          </ListItemIcon>
-          <ListItemText
-            primary={(
-              <>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.name.width }}
-                >
-                  {node.name}
-                </div>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.description.width }}
-                >
-                  <FieldOrEmpty source={node.description}>{node.description}</FieldOrEmpty>
-                </div>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.id.width, paddingRight: 10 }}
-                >
-                  <ItemCopy content={node.id} variant="inLine" />
-                </div>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.stream_public.width }}
-                >
-                  <ItemBoolean
-                    variant="inList"
-                    label={node.stream_public ? t('Yes') : t('No')}
-                    status={node.stream_public}
-                  />
-                </div>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.stream_live.width }}
-                >
-                  <ItemBoolean
-                    variant="inList"
-                    label={node.stream_live ? t('Started') : t('Stopped')}
-                    status={node.stream_live}
-                  />
-                </div>
-                <div
-                  className={classes.filtersItem}
-                  style={{ width: dataColumns.filters.width }}
-                >
-                  {isFilterGroupNotEmpty(filters)
-                    ? (
-                        <FilterIconButton
-                          filters={filters}
-                          dataColumns={dataColumns}
-                          styleNumber={3}
-                          entityTypes={['Stix-Filtering']}
-                        />
-                      )
-                    : '-'}
-                </div>
-              </>
-            )}
-          />
-        </ListItemButton>
-      </ListItem>
+          <ListItemButton
+            classes={{ root: classes.item }}
+            onClick={this.handleOpenConsumers.bind(this)}
+          >
+            <ListItemIcon classes={{ root: classes.itemIcon }}>
+              <Stream />
+            </ListItemIcon>
+            <ListItemText
+              primary={(
+                <>
+                  <div
+                    className={classes.bodyItem}
+                    style={{ width: dataColumns.name.width }}
+                  >
+                    {node.name}
+                  </div>
+                  <div
+                    className={classes.bodyItem}
+                    style={{ width: dataColumns.description.width }}
+                  >
+                    <FieldOrEmpty source={node.description}>{node.description}</FieldOrEmpty>
+                  </div>
+                  <div
+                    className={classes.bodyItem}
+                    style={{ width: dataColumns.id.width, paddingRight: 10 }}
+                  >
+                    <ItemCopy content={node.id} variant="inLine" />
+                  </div>
+                  <div
+                    className={classes.bodyItem}
+                    style={{ width: dataColumns.stream_public.width }}
+                  >
+                    <ItemBoolean
+                      variant="inList"
+                      label={node.stream_public ? t('Yes') : t('No')}
+                      status={node.stream_public}
+                    />
+                  </div>
+                  <div
+                    className={classes.bodyItem}
+                    style={{ width: dataColumns.stream_live.width }}
+                  >
+                    <ItemBoolean
+                      variant="inList"
+                      label={node.stream_live ? t('Started') : t('Stopped')}
+                      status={node.stream_live}
+                    />
+                  </div>
+                  <div
+                    className={classes.consumersItem}
+                    style={{ width: dataColumns.consumers.width }}
+                  >
+                    {health.count === 0
+                      ? <span style={{ color: '#9e9e9e' }}>-</span>
+                      : (
+                          <Chip
+                            label={health.label}
+                            style={{
+                              fontSize: 12,
+                              lineHeight: '12px',
+                              borderRadius: 4,
+                              height: 20,
+                              backgroundColor: `${health.hexColor}33`,
+                              color: health.hexColor,
+                              border: `2px solid ${health.hexColor}`,
+                            }}
+                          />
+                        )}
+                  </div>
+                </>
+              )}
+            />
+          </ListItemButton>
+        </ListItem>
+        <StreamConsumersDrawer
+          streamCollectionId={node.id}
+          streamCollectionName={node.name}
+          open={this.state.displayConsumers}
+          onClose={this.handleCloseConsumers.bind(this)}
+        />
+      </>
     );
   }
 }
@@ -180,6 +228,10 @@ const StreamLineFragment = createFragmentContainer(StreamLineLineComponent, {
       filters
       stream_public
       stream_live
+      consumers {
+        connectionId
+        estimatedOutOfDepth
+      }
       ...StreamCollectionEdition_streamCollection
     }
   `,
@@ -267,7 +319,7 @@ class StreamDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.filters.width }}
+                style={{ width: dataColumns.consumers.width }}
               >
                 <Skeleton
                   animation="wave"

@@ -10,6 +10,9 @@ import { addFilter } from '../utils/filtering/filtering-utils';
 import { validateFilterGroupForStixMatch } from '../utils/filtering/filtering-stix/stix-filtering';
 import { authorizedMembers } from '../schema/attribute-definition';
 import { TAXIIAPI } from './user';
+import { getConsumersForCollection } from '../graphql/streamConsumerRegistry';
+import { fetchStreamInfo, fetchStreamProductionRate } from '../database/stream/stream-handler';
+import { utcDate } from '../utils/format';
 
 // Stream graphQL handlers
 export const createStreamCollection = async (context, user, input) => {
@@ -99,5 +102,67 @@ export const streamCollectionEditContext = async (context, user, collectionId, i
   await setEditContext(user, collectionId, input);
   return storeLoadById(context, user, collectionId, ENTITY_TYPE_STREAM_COLLECTION).then((collectionToReturn) => {
     return notify(BUS_TOPICS[ENTITY_TYPE_STREAM_COLLECTION].EDIT_TOPIC, collectionToReturn, user);
+  });
+};
+
+// Stream consumer monitoring
+export const getStreamCollectionConsumers = async (collectionId) => {
+  // getConsumersForCollection is now async and reads from Redis (all instances)
+  const consumers = await getConsumersForCollection(collectionId);
+  if (consumers.length === 0) {
+    return [];
+  }
+  const streamInfo = await fetchStreamInfo();
+  const productionRate = await fetchStreamProductionRate();
+  const streamHeadTimestamp = parseInt(streamInfo.lastEventId.split('-')[0], 10);
+  const streamStartTimestamp = parseInt(streamInfo.firstEventId.split('-')[0], 10);
+
+  return consumers.map((consumer) => {
+    const consumerTimestamp = consumer.lastEventId
+      ? parseInt(consumer.lastEventId.split('-')[0], 10)
+      : 0;
+    // Rates come pre-computed from Redis (flushed periodically by the owning instance)
+    const { deliveryRate, processingRate, resolutionRate } = consumer;
+
+    // Time lag: how far behind the consumer is from the stream head (in seconds)
+    const timeLagMs = consumerTimestamp > 0 ? streamHeadTimestamp - consumerTimestamp : 0;
+    const timeLag = timeLagMs / 1000;
+
+    // Buffer: how far the consumer is from the oldest event in the stream
+    const bufferMs = consumerTimestamp > 0 ? consumerTimestamp - streamStartTimestamp : 0;
+
+    // Estimated time to out of depth:
+    // If the consumer is falling behind (productionRate > processingRate), compute
+    // how long until the buffer is exhausted and trimming catches up to the consumer.
+    let estimatedOutOfDepth = null;
+    if (consumerTimestamp > 0 && consumerTimestamp < streamStartTimestamp) {
+      // Consumer is already out of depth
+      estimatedOutOfDepth = 0;
+    } else if (processingRate > 0 && productionRate > processingRate) {
+      const netLagRate = productionRate - processingRate;
+      // buffer in seconds / net lag rate gives estimated seconds to out of depth
+      const bufferSeconds = bufferMs / 1000;
+      if (netLagRate > 0 && bufferSeconds > 0) {
+        estimatedOutOfDepth = bufferSeconds / netLagRate;
+      }
+    }
+    // If consumer is keeping up (processingRate >= productionRate), estimatedOutOfDepth stays null
+
+    return {
+      connectionId: consumer.connectionId,
+      userId: consumer.userId,
+      userEmail: consumer.userEmail,
+      connectedAt: consumer.connectedAt,
+      lastEventId: consumer.lastEventId || '',
+      lastEventDate: consumerTimestamp > 0 ? utcDate(consumerTimestamp).toISOString() : null,
+      streamProductionRate: Math.round(productionRate * 100) / 100,
+      consumerDeliveryRate: Math.round(deliveryRate * 100) / 100,
+      consumerProcessingRate: Math.round(processingRate * 100) / 100,
+      consumerResolutionRate: Math.round(resolutionRate * 100) / 100,
+      timeLag: Math.round(timeLag * 100) / 100,
+      estimatedOutOfDepth: estimatedOutOfDepth !== null
+        ? Math.round(estimatedOutOfDepth * 100) / 100
+        : null,
+    };
   });
 };

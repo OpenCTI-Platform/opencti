@@ -47,6 +47,7 @@ import { createAuthenticatedContext } from '../http/httpAuthenticatedContext';
 import { EVENT_CURRENT_VERSION } from '../database/stream/stream-utils';
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
 import { doYield } from '../utils/eventloop-utils';
+import { registerConsumer, unregisterConsumer, trackEventDelivered, trackEventsProcessed, trackMissingResolution, startConsumerMetricsFlush } from './streamConsumerRegistry';
 
 const broadcastClients = {};
 const queryIndices = [...READ_STIX_INDICES, READ_INDEX_STIX_META_OBJECTS];
@@ -72,7 +73,13 @@ const createBroadcastClient = (channel) => {
     expirationTime: channel.expirationTime,
     setLastEventId: (id) => channel.setLastEventId(id),
     close: () => channel.close(),
-    sendEvent: async (eventId, topic, event) => channel.sendEvent(eventId, topic, event),
+    sendEvent: async (eventId, topic, event) => {
+      await channel.sendEvent(eventId, topic, event);
+      // Track event delivery in consumer registry (skip heartbeat and connected events)
+      if (eventId && topic !== 'heartbeat') {
+        trackEventDelivered(channel.id);
+      }
+    },
     sendConnected: async (streamInfo) => channel.sendEvent(undefined, 'connected', streamInfo),
   };
 };
@@ -237,6 +244,9 @@ const createSseMiddleware = () => {
       }
       client.close();
       delete broadcastClients[client.id];
+      unregisterConsumer(client.id).catch((err) => {
+        logApp.error('[STREAM] Error during consumer unregister', { cause: err });
+      });
       logApp.info(`[STREAM] Closing stream processor for ${client.id}`);
       processor.shutdown();
       closed = true;
@@ -342,6 +352,8 @@ const createSseMiddleware = () => {
         return;
       }
       const { client } = createSseChannel(req, res, startStreamId);
+      // Register consumer in the stream consumer registry
+      await registerConsumer(client.id, DEFAULT_LIVE_STREAM, user.id, user.user_email);
       const opts = { autoReconnect: true, bufferTime: 0 };
       const processor = createStreamProcessor(user.user_email, async (elements, lastEventId) => {
         // Process the event messages
@@ -353,6 +365,8 @@ const createSseMiddleware = () => {
           }
         }
         client.setLastEventId(lastEventId);
+        // Track processed events in the consumer registry
+        trackEventsProcessed(client.id, elements.length, lastEventId);
       }, opts);
       await initBroadcasting(req, res, client, processor);
       await processor.start(startStreamId);
@@ -402,6 +416,7 @@ const createSseMiddleware = () => {
         const origin = { referer: EVENT_TYPE_DEPENDENCIES };
         const content = { data: missingData, message, origin, version: EVENT_CURRENT_VERSION };
         await channel.sendEvent(eventId, EVENT_TYPE_CREATE, content);
+        trackMissingResolution(channel.id);
         cache.set(missingData.id, 'hit');
       }
     }
@@ -427,6 +442,7 @@ const createSseMiddleware = () => {
             const origin = { referer: EVENT_TYPE_DEPENDENCIES };
             const content = { data: stixRelation, message, origin, version: EVENT_CURRENT_VERSION };
             await channel.sendEvent(eventId, EVENT_TYPE_CREATE, content);
+            trackMissingResolution(channel.id);
             cache.set(stixRelation.id, 'hit');
           }
         }
@@ -504,6 +520,7 @@ const createSseMiddleware = () => {
         const origin = { referer: EVENT_TYPE_DEPENDENCIES };
         const content = { data: stix, message, origin, version: EVENT_CURRENT_VERSION };
         await channel.sendEvent(eventId, type, content);
+        trackMissingResolution(channel.id);
       }
     }
   };
@@ -568,6 +585,8 @@ const createSseMiddleware = () => {
 
       // Create channel.
       const { channel, client } = createSseChannel(req, res, startStreamId);
+      // Register consumer in the stream consumer registry
+      await registerConsumer(client.id, id, user.id, user.user_email);
       // If empty start date, stream all results corresponding to the filters
       // We need to fetch from this start date until the stream existence
       if (isNotEmptyField(recoverIsoDate) && isEmptyField(startIsoDate)) {
@@ -658,6 +677,8 @@ const createSseMiddleware = () => {
           }
         }
         channel.setLastEventId(lastEventId);
+        // Track processed events in the consumer registry
+        trackEventsProcessed(client.id, elements.length, lastEventId);
         const newComputed = await computeUserAndCollection(req, res, { id, user, context });
         streamFilters = newComputed.streamFilters;
         collection = newComputed.collection;
@@ -715,6 +736,8 @@ const createSseMiddleware = () => {
       sendErrorStatus(req, res, 500);
     }
   };
+  // Start periodic flush of consumer metrics to Redis
+  startConsumerMetricsFlush();
   return {
     shutdown: () => {
       Object.values(broadcastClients).forEach((c) => c.close());

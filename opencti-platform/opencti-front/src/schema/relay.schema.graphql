@@ -710,6 +710,21 @@ type RemoteStreamCollection {
   filters: String
 }
 
+type StreamCollectionConsumer {
+  connectionId: String!
+  userId: String!
+  userEmail: String
+  connectedAt: DateTime!
+  lastEventId: String!
+  lastEventDate: DateTime
+  streamProductionRate: Float!
+  consumerDeliveryRate: Float!
+  consumerProcessingRate: Float!
+  consumerResolutionRate: Float!
+  timeLag: Float!
+  estimatedOutOfDepth: Float
+}
+
 type StreamCollection {
   id: ID!
   name: String
@@ -718,6 +733,7 @@ type StreamCollection {
   stream_live: Boolean
   stream_public: Boolean
   authorized_members: [MemberAccess!]
+  consumers: [StreamCollectionConsumer!]!
 }
 
 type StreamCollectionConnection {

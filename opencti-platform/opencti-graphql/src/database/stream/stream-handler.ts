@@ -18,7 +18,7 @@ import {
 } from './stream-utils';
 import { DatabaseError } from '../../config/errors';
 import { getDraftContext } from '../../utils/draftContext';
-import { rawRedisStreamClient } from '../redis-stream';
+import { rawRedisStreamClient, getStreamProductionRate as rawGetStreamProductionRate } from '../redis-stream';
 import { telemetry } from '../../config/tracing';
 
 const streamClient: RawStreamClient = rawRedisStreamClient;
@@ -145,6 +145,12 @@ export const fetchStreamEventsRangeFromEventId = async <T extends BaseEvent> (
 ) => {
   return streamClient.rawFetchStreamEventsRangeFromEventId(startEventId, callback, opts);
 };
+
+// region stream monitoring
+export const fetchStreamProductionRate = async () => {
+  return rawGetStreamProductionRate();
+};
+// endregion
 
 // region opencti notification stream
 export const storeNotificationEvent = async <T extends StreamNotifEvent>(_context: AuthContext, event: T) => {

@@ -237,6 +237,51 @@ const rawStoreActivityEvent = async (event: ActivityStreamEvent) => {
 };
 // endregion
 
+// region stream production rate tracking
+const RATE_SAMPLE_INTERVAL_MS = 10000; // Cache production rate for 10 seconds
+let lastSampleTime: number = 0;
+let lastSampleLastId: string = '';
+let lastSampleStreamSize: number = 0;
+let cachedProductionRate: number = 0;
+
+export const getStreamProductionRate = async (): Promise<number> => {
+  const now = Date.now();
+  if (now - lastSampleTime < RATE_SAMPLE_INTERVAL_MS && lastSampleTime > 0) {
+    return cachedProductionRate;
+  }
+  try {
+    const info = await rawFetchStreamInfo();
+    if (lastSampleTime > 0 && lastSampleLastId) {
+      const timeDelta = (now - lastSampleTime) / 1000;
+      if (timeDelta > 0) {
+        const lastIdTime = parseInt(info.lastEventId.split('-')[0], 10);
+        const prevIdTime = parseInt(lastSampleLastId.split('-')[0], 10);
+        const eventTimeDelta = (lastIdTime - prevIdTime) / 1000;
+        // Use size delta as primary metric when available
+        const sizeDelta = info.streamSize - lastSampleStreamSize;
+        if (sizeDelta > 0 && eventTimeDelta > 0) {
+          // Stream grew: rate = new events / time elapsed in event timestamps
+          cachedProductionRate = sizeDelta / eventTimeDelta;
+        } else if (eventTimeDelta > 0) {
+          // Stream at max size (trimming active): estimate from timestamp progression
+          // When trimming is active, the stream size stays roughly constant
+          // so we use the time progression of event IDs
+          cachedProductionRate = Math.max(0, sizeDelta / timeDelta);
+        } else {
+          cachedProductionRate = 0;
+        }
+      }
+    }
+    lastSampleTime = now;
+    lastSampleLastId = info.lastEventId;
+    lastSampleStreamSize = info.streamSize;
+  } catch (err) {
+    logApp.error('Failed to compute stream production rate', { cause: err });
+  }
+  return cachedProductionRate;
+};
+// endregion
+
 export const rawRedisStreamClient: RawStreamClient = {
   initializeStreams: async () => {},
   rawPushToStream,

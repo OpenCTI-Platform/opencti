@@ -91,9 +91,10 @@ const Stream = () => {
         width: '10%',
         isSortable: true,
       },
-      filters: {
-        label: 'Filters',
+      consumers: {
+        label: 'Consumers',
         width: '35%',
+        isSortable: false,
       },
     };
     return (
