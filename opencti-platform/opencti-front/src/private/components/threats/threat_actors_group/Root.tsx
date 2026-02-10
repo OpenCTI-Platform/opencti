@@ -59,6 +59,7 @@ const ThreatActorGroupQuery = graphql`
       name
       aliases
       x_opencti_graph_data
+      currentUserAccessRight
       ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...StixCoreObjectKnowledgeBar_stixCoreObject @arguments(relatedRelationshipTypes: $relatedRelationshipTypes)
       ...ThreatActorGroup_ThreatActorGroup

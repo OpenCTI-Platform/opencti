@@ -54,6 +54,7 @@ const dataComponentQuery = graphql`
       entity_type
       name
       x_opencti_graph_data
+      currentUserAccessRight
       ...DataComponent_dataComponent
       ...DataComponentKnowledge_dataComponent
       ...FileImportViewer_entity

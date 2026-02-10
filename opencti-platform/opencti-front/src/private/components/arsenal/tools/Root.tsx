@@ -57,6 +57,7 @@ const toolQuery = graphql`
       name
       aliases
       x_opencti_graph_data
+      currentUserAccessRight
       ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...Tool_tool

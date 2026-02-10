@@ -60,6 +60,7 @@ const regionQuery = graphql`
       name
       x_opencti_aliases
       x_opencti_graph_data
+      currentUserAccessRight
       ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...Region_region

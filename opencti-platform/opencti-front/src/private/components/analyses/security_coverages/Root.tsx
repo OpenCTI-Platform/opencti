@@ -51,6 +51,7 @@ const securityCoverageQuery = graphql`
       objectMarking {
         id
       }
+      currentUserAccessRight
       ...SecurityCoverage_securityCoverage
       ...SecurityCoverageKnowledge_securityCoverage
       ...FileImportViewer_entity

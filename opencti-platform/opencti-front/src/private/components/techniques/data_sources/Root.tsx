@@ -53,6 +53,7 @@ const dataSourceQuery = graphql`
       entity_type
       name
       x_opencti_graph_data
+      currentUserAccessRight
       ...DataSource_dataSource
       ...DataSourceKnowledge_dataSource
       ...FileImportViewer_entity

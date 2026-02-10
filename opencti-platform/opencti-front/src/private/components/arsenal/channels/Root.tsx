@@ -57,6 +57,7 @@ const channelQuery = graphql`
       name
       aliases
       x_opencti_graph_data
+      currentUserAccessRight
       ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...Channel_channel
