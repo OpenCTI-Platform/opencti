@@ -15764,6 +15764,7 @@ export type Mutation = {
   threatActorIndividualRelationAdd?: Maybe<StixRefRelationship>;
   threatActorIndividualRelationDelete?: Maybe<ThreatActorIndividual>;
   token?: Maybe<Scalars['String']['output']>;
+  tokenJWTConnector: Scalars['String']['output'];
   toolAdd?: Maybe<Tool>;
   toolEdit?: Maybe<ToolEditMutations>;
   triggerActivityDelete?: Maybe<Scalars['ID']['output']>;
@@ -44433,6 +44434,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   threatActorIndividualRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationThreatActorIndividualRelationAddArgs, 'id' | 'input'>>;
   threatActorIndividualRelationDelete?: Resolver<Maybe<ResolversTypes['ThreatActorIndividual']>, ParentType, ContextType, RequireFields<MutationThreatActorIndividualRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   token?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<MutationTokenArgs>>;
+  tokenJWTConnector?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   toolAdd?: Resolver<Maybe<ResolversTypes['Tool']>, ParentType, ContextType, RequireFields<MutationToolAddArgs, 'input'>>;
   toolEdit?: Resolver<Maybe<ResolversTypes['ToolEditMutations']>, ParentType, ContextType, RequireFields<MutationToolEditArgs, 'id'>>;
   triggerActivityDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationTriggerActivityDeleteArgs, 'id'>>;

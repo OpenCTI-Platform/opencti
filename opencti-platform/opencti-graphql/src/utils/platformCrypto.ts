@@ -8,6 +8,7 @@ import { enrichWithRemoteCredentials } from '../config/credentials';
 import { confNameToEnvName } from '../config/conf';
 import { ConfigurationError, UnsupportedError } from '../config/errors';
 
+export const JWT_TOKEN_PREFIX = 'ey';
 const hkdfAsync = promisify(crypto.hkdf);
 const toHex = (buffer: Buffer) => buffer.toString('hex');
 const zeroBuffer = Buffer.alloc(0);
