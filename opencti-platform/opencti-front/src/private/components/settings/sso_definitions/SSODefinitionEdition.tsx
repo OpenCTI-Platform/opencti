@@ -150,8 +150,6 @@ const SSODefinitionEdition = ({
       }];
     }
 
-    console.log('input : ', input);
-    // return;
     editMutation({
       variables: { id: sso.id, input: [input] },
     });

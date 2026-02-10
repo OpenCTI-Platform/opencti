@@ -124,7 +124,7 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
     };
 
     if (selectedStrategy !== 'ClientCert') finalValues = { ...finalValues, groups_management, organizations_management };
-    console.log('finalValues : ', finalValues);
+
     commitMutation({
       ...defaultCommitMutation,
       mutation: ssoDefinitionMutation,
