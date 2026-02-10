@@ -113,7 +113,7 @@ const SSODefinitions = () => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Authentication Definitions | Security | Settings'));
+  setTitle(t_i18n('Authentication | Security | Settings'));
   const initialValues = {
     searchTerm: '',
     sortBy: 'name',
@@ -180,7 +180,7 @@ const SSODefinitions = () => {
       <Breadcrumbs elements={[
         { label: t_i18n('Settings') },
         { label: t_i18n('Security') },
-        { label: t_i18n('Authentication definitions'), current: true }]}
+        { label: t_i18n('Authentication'), current: true }]}
       />
       <AccessesMenu />
       {isEnterpriseEdition ? (
