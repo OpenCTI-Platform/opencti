@@ -483,30 +483,12 @@ class ListLines extends Component {
                   </ListItemIcon>
                 )}
                 {checkboxExtension && (
-                  <ListItemIcon>
-                    <span
-                      style={{
-                        padding: '0 8px 0 8px',
-                        fontWeight: 700,
-                        fontSize: 12,
-                      }}
-                    >
-                    &nbsp;
-                    </span>
-                  </ListItemIcon>
+                  <span style={{ width: '56px' }}>
+                  </span>
                 )}
                 {iconExtension && (
-                  <ListItemIcon>
-                    <span
-                      style={{
-                        padding: '0 8px 0 8px',
-                        fontWeight: 700,
-                        fontSize: 12,
-                      }}
-                    >
-                    &nbsp;
-                    </span>
-                  </ListItemIcon>
+                  <span style={{ width: '56px' }}>
+                  </span>
                 )}
                 <ListItemText
                   primary={(
