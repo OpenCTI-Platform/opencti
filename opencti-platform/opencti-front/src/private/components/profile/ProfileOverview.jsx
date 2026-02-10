@@ -1,40 +1,40 @@
-import React, { useEffect, useState } from 'react';
-import TokenCreationDrawer from './api_tokens/TokenCreationDrawer';
-import TokenList from './api_tokens/TokenList';
-import * as PropTypes from 'prop-types';
-import { createFragmentContainer, graphql } from 'react-relay';
-import { Field, Form, Formik } from 'formik';
-import qrcode from 'qrcode';
-import withStyles from '@mui/styles/withStyles';
-import { compose, pick } from 'ramda';
-import * as Yup from 'yup';
-import MenuItem from '@mui/material/MenuItem';
-import Typography from '@mui/material/Typography';
-import { Link } from 'react-router-dom';
-import { LockOutlined, NoEncryptionOutlined } from '@mui/icons-material';
-import Alert from '@mui/material/Alert';
-import Dialog from '@mui/material/Dialog';
-import { useTheme } from '@mui/styles';
-import { ListItem, ListItemText, Stack, Switch } from '@mui/material';
 import Button from '@common/button/Button';
 import Card from '@common/card/Card';
-import NotifierField from '../common/form/NotifierField';
-import inject18n, { useFormatter } from '../../../components/i18n';
-import TextField from '../../../components/TextField';
+import { LockOutlined, NoEncryptionOutlined } from '@mui/icons-material';
+import { ListItem, ListItemText, Stack, Switch } from '@mui/material';
+import Alert from '@mui/material/Alert';
+import Dialog from '@mui/material/Dialog';
+import MenuItem from '@mui/material/MenuItem';
+import { useTheme } from '@mui/styles';
+import withStyles from '@mui/styles/withStyles';
+import { Field, Form, Formik } from 'formik';
+import * as PropTypes from 'prop-types';
+import qrcode from 'qrcode';
+import { compose, pick } from 'ramda';
+import { useEffect, useState } from 'react';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { Link } from 'react-router-dom';
+import * as Yup from 'yup';
+import { availableLanguage } from '../../../components/AppIntlProvider';
+import Label from '../../../components/common/label/Label';
 import SelectField from '../../../components/fields/SelectField';
-import { commitMutation, MESSAGING$, QueryRenderer } from '../../../relay/environment';
-import useGranted, { KNOWLEDGE, APIACCESS_USETOKEN } from '../../../utils/hooks/useGranted';
+import inject18n, { useFormatter } from '../../../components/i18n';
 import Loader from '../../../components/Loader';
+import TextField from '../../../components/TextField';
+import OtpInputField, { OTP_CODE_SIZE } from '../../../public/components/login/OtpInputField';
+import { commitMutation, MESSAGING$, QueryRenderer } from '../../../relay/environment';
 import { convertOrganizations } from '../../../utils/edition';
+import { fieldSpacingContainerStyle } from '../../../utils/field';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import useGranted, { APIACCESS_USETOKEN, KNOWLEDGE } from '../../../utils/hooks/useGranted';
+import useHelper from '../../../utils/hooks/useHelper';
+import NotifierField from '../common/form/NotifierField';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
 import PasswordPolicies from '../common/form/PasswordPolicies';
-import { fieldSpacingContainerStyle } from '../../../utils/field';
-import OtpInputField, { OTP_CODE_SIZE } from '../../../public/components/login/OtpInputField';
-import { availableLanguage } from '../../../components/AppIntlProvider';
-import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import ProfileLocalStorage from './ProfileLocalStorage';
-import useHelper from '../../../utils/hooks/useHelper';
 import DashboardSettings from '../DashboardSettings';
+import TokenCreationDrawer from './api_tokens/TokenCreationDrawer';
+import TokenList from './api_tokens/TokenList';
+import ProfileLocalStorage from './ProfileLocalStorage';
 
 const styles = () => ({
   container: {
@@ -561,31 +561,30 @@ const ProfileOverviewComponent = (props) => {
       </Card>
       <Card title={t('API access')}>
         <div>
-          <Typography variant="h4" gutterBottom={true}>
-            {t('OpenCTI version')}
-          </Typography>
+          <Label>{t('OpenCTI version')}</Label>
           <pre>{about.version}</pre>
-          <div style={{ display: 'flex', justifyContent: 'end', marginTop: 16, gap: 10 }}>
-            {hasAccessTokenCapability && (
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => setDisplayTokenCreation(true)}
-              >
-                {t('Generate Token')}
-              </Button>
-            )}
-            {hasAccessTokenCapability && isPlaygroundEnable() && (
-              <Button
-                component={Link}
-                to="/public/graphql"
-                target="_blank"
-              >
-                {t('Playground')}
-              </Button>
-            )}
-          </div>
-          <TokenList node={me} />
+          <Stack gap={2}>
+            <Stack direction="row" justifyContent="flex-end" gap={1}>
+              {hasAccessTokenCapability && isPlaygroundEnable() && (
+                <Button
+                  variant="secondary"
+                  component={Link}
+                  to="/public/graphql"
+                  target="_blank"
+                >
+                  {t('Playground')}
+                </Button>
+              )}
+              {hasAccessTokenCapability && (
+                <Button
+                  onClick={() => setDisplayTokenCreation(true)}
+                >
+                  {t('Generate Token')}
+                </Button>
+              )}
+            </Stack>
+            <TokenList node={me} />
+          </Stack>
         </div>
       </Card>
       <ProfileLocalStorage />
