@@ -25,6 +25,7 @@ import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import { unregisterStrategy } from './singleSignOn-providers';
 import { EnvStrategyType, getConfigurationAdminEmail, isAuthenticationEditionLocked, isAuthenticationForcedFromEnv } from './providers-configuration';
 import { getPlatformCrypto } from '../../utils/platformCrypto';
+import { isNotEmptyField } from '../../database/utils';
 
 export const isConfigurationAdminUser = (user: AuthUser): boolean => {
   return user.user_email === getConfigurationAdminEmail();
@@ -77,8 +78,10 @@ const encryptConfigurationSecrets = async (configurationWithClear: Configuration
       const currentConfig = configurationWithClear[i] as ConfigurationTypeInput;
 
       if ((AUTH_SECRET_LIST.some((key) => key === currentConfig.key) && currentConfig.type !== ENCRYPTED_TYPE) || currentConfig.type === TO_ENCRYPT_TYPE) {
-        const encryptedValue = await encryptAuthValue(currentConfig.value);
-        configurationWithSecrets.push({ key: currentConfig.key, value: encryptedValue, type: ENCRYPTED_TYPE });
+        if (isNotEmptyField(currentConfig.value)) {
+          const encryptedValue = await encryptAuthValue(currentConfig.value);
+          configurationWithSecrets.push({ key: currentConfig.key, value: encryptedValue, type: ENCRYPTED_TYPE });
+        }
       } else {
         configurationWithSecrets.push(currentConfig);
       }
@@ -99,7 +102,7 @@ export const checkSSOAllowed = async (context: AuthContext) => {
   if (!await isEnterpriseEdition(context)) throw UnsupportedError('Enterprise licence is required');
 };
 
-// For now it's only a logApp, but will be also send to UI via Redis.
+// For now, it's only a logApp, but will be also send to UI via Redis.
 export const logAuthInfo = (message: string, strategyType: EnvStrategyType | StrategyType, meta?: any) => {
   logApp.info(`[Auth][${strategyType.toUpperCase()}]${message}`, { meta });
 };

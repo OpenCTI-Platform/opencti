@@ -333,6 +333,31 @@ describe('Single Sign On CRUD coverage', () => {
       expect(result?.data?.singleSignOnFieldPatch?.groups_management.groups_path).toStrictEqual(['member']);
       expect(result?.data?.singleSignOnFieldPatch?.groups_management.groups_mapping).toStrictEqual(['/Connector:Connectors']);
     });
+
+    it('should not edit empty value in input', async () => {
+      const editFieldInConfig: EditInput = {
+        key: 'configuration',
+        value: [
+          { key: 'callbackUrl', value: 'http://myopencti/auth/samlTestDomain/callback', type: 'string' },
+          { key: 'idpCert', value: '21341234', type: 'string' },
+          { key: 'issuer', value: 'issuer', type: 'string' },
+          { key: 'newKey', value: 'newKey', type: 'string' },
+          { key: 'issuer2', value: 'issuer2', type: 'string' },
+          { key: 'privateKey', value: '', type: 'string' },
+        ],
+      };
+
+      const result = await queryAsAdminWithSuccess({
+        query: SINGLE_SIGN_ON_UPDATE,
+        variables: {
+          id: createdSingleSignOn1Id,
+          input: [editFieldInConfig],
+        },
+      });
+      expect(result?.data?.singleSignOnFieldPatch).toBeDefined();
+      const configurationData: ConfigurationTypeInput[] = result?.data?.singleSignOnFieldPatch?.configuration as ConfigurationTypeInput[];
+      expect(configurationData).not.toContainEqual({ key: 'privateKey' });
+    });
   });
 
   describe('configuration migration coverage', async () => {
