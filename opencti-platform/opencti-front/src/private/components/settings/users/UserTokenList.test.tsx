@@ -75,11 +75,14 @@ describe('Component: UserTokenList', () => {
     expect(screen.getByText(/No tokens found/)).toBeInTheDocument();
   });
 
-  it('should open creation drawer', async () => {
-    const { user } = testRender(<UserTokenList node={mockNode} onCloseDrawer={() => {}} />);
-    const generateButton = screen.getByRole('button', { name: 'generate-token' });
-
-    await user.click(generateButton);
+  it('should open creation drawer when openDrawer prop is true', () => {
+    testRender(
+      <UserTokenList
+        node={mockNode}
+        openDrawer={true}
+        onCloseDrawer={() => {}}
+      />,
+    );
 
     expect(screen.getByText('Generate a new token')).toBeInTheDocument();
   });
