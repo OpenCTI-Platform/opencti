@@ -137,24 +137,19 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
     const unknownSectorId = 'a8c03ed6-cc9e-444d-9146-66c64220fff9';
     const concatAll = R.reduce(R.concat, []);
     // Extract all sectors
-    const sectors = R.pipe(
-      R.filter(
-        (n) => n.node.to.entity_type === 'Sector' && !n.node.to.isSubSector,
-      ),
-      R.map((n) => ({
+    const sectors = data.stixCoreRelationships.edges
+      .filter((n) => n.node.to.entity_type === 'Sector' && !n.node.to.isSubSector)
+      .map((n) => ({
         id: n.node.to.id,
         name: n.node.to.name,
         description: n.node.to.description,
         subSectors: {},
         subsectors_text: '',
         relations: [],
-      })),
-    )(data.stixCoreRelationships.edges);
-    const subSectors = R.pipe(
-      R.filter(
-        (n) => n.node.to.entity_type === 'Sector' && n.node.to.isSubSector,
-      ),
-      R.map((n) => ({
+      }));
+    const subSectors = data.stixCoreRelationships.edges
+      .filter((n) => n.node.to.entity_type === 'Sector' && n.node.to.isSubSector)
+      .map((n) => ({
         id: n.node.to.id,
         name: n.node.to.name,
         parentSectors: R.map(
@@ -167,14 +162,13 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
           n.node.to.parentSectors.edges,
         ),
         relations: [],
-      })),
-    )(data.stixCoreRelationships.edges);
+      }));
     const subSectorsParentSectors = concatAll(
       R.pluck('parentSectors', subSectors),
     );
     const organizations = data.stixCoreRelationships.edges
-        .filter((n) => n.node.to.entity_type === 'Organization')
-        .map((n) => ({
+      .filter((n) => n.node.to.entity_type === 'Organization')
+      .map((n) => ({
         id: n.node.to.id,
         name: n.node.to.name,
         sectors: n.node.to.sectors.edges.map(
@@ -194,11 +188,9 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
           })),
         relations: [],
       }));
-    const organizationsSectors = concatAll(R.pluck('sectors', organizations));
+    const organizationsSectors = concatAll(organizations.flatMap((e) => e.sectors));
     const organizationsTopLevelSectors = organizationsSectors.filter((n) => !n.isSubSector);
-    const organizationsParentSectors = concatAll(
-      R.pluck('parentSectors', organizationsSectors),
-    );
+    const organizationsParentSectors = concatAll(organizationsSectors.flatMap((e) => e.parentSectors));
     const finalSectors = R.pipe(
       R.concat(subSectorsParentSectors),
       R.concat(organizationsTopLevelSectors),
