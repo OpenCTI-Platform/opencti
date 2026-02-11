@@ -9,6 +9,7 @@ import { now } from '../Time';
 import { AuthorizedMembers, authorizedMembersToOptions, INPUT_AUTHORIZED_MEMBERS } from '../authorizedMembers';
 import useConfidenceLevel from './useConfidenceLevel';
 import { FieldOption } from '../field';
+import useHelper from './useHelper';
 
 const DEFAULT_CONFIDENCE = 75;
 
@@ -95,8 +96,13 @@ const useDefaultValues = <Values extends FormikValues>(
   const { getEffectiveConfidenceLevel } = useConfidenceLevel();
   const { me } = useAuth();
 
+  const { isFeatureEnable } = useHelper();
+  const isDraftWorkflowFeatureEnabled = isFeatureEnable('DRAFT_WORKFLOW');
   const entitySettings = useEntitySettings(id).at(0);
   if (!entitySettings) {
+    if (id === 'DraftWorkspace' && !isDraftWorkflowFeatureEnabled) {
+      return { entitySettings, mandatoryAttributes: ['name'] };
+    }
     throw Error(`Invalid type for setting: ${id}`);
   }
   const defaultValuesAttributes = [...entitySettings.defaultValuesAttributes];
