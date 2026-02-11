@@ -17,7 +17,6 @@ describe('Header Single sign on Provider coverage tests', () => {
     it('should Header user info with advanced config works', async () => {
       const headerProfile = { theName: 'Winry', theMail: 'winry.rockbell@anime.jp', theFirstname: 'Winry Mechanic expert', theLastName: 'Rockbell' };
       const ssoEntity: Partial<BasicStoreEntitySingleSignOn> = {
-        identifier: 'openid',
         configuration: [
           { key: 'account_attribute', type: 'string', value: 'theName' },
           { key: 'header_email', type: 'string', value: 'theMail' },
@@ -25,8 +24,7 @@ describe('Header Single sign on Provider coverage tests', () => {
           { key: 'header_lastname', type: 'string', value: 'theLastName' },
         ],
       };
-      const ssoConfiguration: any = convertKeyValueToJsConfiguration(ssoEntity as BasicStoreEntitySingleSignOn);
-
+      const ssoConfiguration: any = await convertKeyValueToJsConfiguration(ssoEntity as BasicStoreEntitySingleSignOn);
       const result = computeHeaderUserInfo(ssoConfiguration, headerProfile);
       expect(result.email).toBe('winry.rockbell@anime.jp');
       expect(result.name).toBe('Winry');
