@@ -20,54 +20,11 @@ import { FilterChipPopover, FilterChipsParameter } from './filters/FilterChipPop
 import { FilterRepresentative } from './filters/FiltersModel';
 import { filterValuesContentQuery } from './FilterValuesContent';
 import { PageContainerContext } from './PageContainer';
+import { useTheme } from '@mui/material/styles';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  operatorDefault: {
-    borderRadius: 4,
-    fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: theme.palette.action?.selected,
-    padding: '0 8px',
-    display: 'flex',
-    alignItems: 'center',
-    cursor: 'pointer',
-    '&:hover': {
-      backgroundColor: theme.palette.action?.disabled,
-      textDecorationLine: 'underline',
-    },
-  },
-  operatorDefaultReadOnly: {
-    borderRadius: 4,
-    fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: theme.palette.action?.selected,
-    padding: '0 8px',
-    display: 'flex',
-    alignItems: 'center',
-  },
-  operatorInLine: {
-    borderRadius: 4,
-    fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: theme.palette.action?.selected,
-    height: 20,
-    padding: '0 8px',
-    marginRight: 5,
-    marginLeft: 5,
-    cursor: 'pointer',
-    '&:hover': {
-      backgroundColor: theme.palette.action?.disabled,
-      textDecorationLine: 'underline',
-    },
-  },
-  operatorInLineReadOnly: {
-    borderRadius: 4,
-    fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: theme.palette.action?.selected,
-    height: 20,
-    padding: '0 8px',
-    marginRight: 5,
-    marginLeft: 5,
-  },
+const useStyles = makeStyles<Theme>(() => ({
   chipLabel: {
     lineHeight: '32px',
     maxWidth: 400,
@@ -140,6 +97,7 @@ const FilterIconButtonContainer: FunctionComponent<
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
+  const theme = useTheme();
 
   const { inPageContainer } = useContext(PageContainerContext);
 
@@ -216,32 +174,39 @@ const FilterIconButtonContainer: FunctionComponent<
       handleRemoveFilter(filterKey, filterOperator ?? undefined);
     }
   };
+
   const isReadWriteFilter = !!(helpers || handleRemoveFilter);
   let filterStyle: CSSProperties | undefined = undefined;
-  let classOperator = classes.operatorDefault;
+  let operatorStyle: CSSProperties = {
+    borderRadius: 4,
+    fontFamily: 'Consolas, monaco, monospace',
+    backgroundColor: theme.palette.action?.selected,
+    padding: '0 8px',
+    display: 'flex',
+    alignItems: 'center',
+  };
   let margin = inPageContainer ? '0 0 0 0' : '0 0 8px 0';
 
-  const filterInLineStyle = {
-    fontSize: 12,
-    height: 20,
-    borderRadius: 4,
-    lineHeight: '32px',
-  };
-
-  if (!isReadWriteFilter) {
-    classOperator = classes.operatorDefaultReadOnly;
-    if (filterIconButtonVariant === 'inLine') {
-      filterStyle = filterInLineStyle;
-      classOperator = classes.operatorInLineReadOnly;
-    }
+  if (filterIconButtonVariant === 'inLine') {
+    filterStyle = {
+      fontSize: 12,
+      height: 20,
+      borderRadius: 4,
+      lineHeight: '32px',
+    };
+    operatorStyle = {
+      borderRadius: 4,
+      fontFamily: 'Consolas, monaco, monospace',
+      backgroundColor: theme.palette.action?.selected,
+      padding: '0 8px',
+      height: 20,
+      marginRight: 5,
+      marginLeft: 5,
+    };
+    if (isReadWriteFilter) margin = '0 0 0 0';
   } else if (filterIconButtonVariant === 'inForm') {
     margin = '10px 0 10px 0';
-  } else if (filterIconButtonVariant === 'inLine') {
-    filterStyle = filterInLineStyle;
-    classOperator = classes.operatorInLine;
-    margin = '0 0 0 0';
-  }
-  if (filterIconButtonVariant === 'TagLike') {
+  } else if (filterIconButtonVariant === 'TagLike') {
     filterStyle = { height: 25 };
   }
 
@@ -386,7 +351,8 @@ const FilterIconButtonContainer: FunctionComponent<
                 }}
               >
                 <FilterIconButtonGlobalMode
-                  classOperator={classOperator}
+                  operatorStyle={operatorStyle}
+                  isOperatorClickable={isReadWriteFilter}
                   globalMode={globalMode}
                   handleSwitchGlobalMode={() => {
                     if (helpers?.handleSwitchGlobalMode) {
