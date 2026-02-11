@@ -197,7 +197,8 @@ input ChannelAddInput {
     fileMarkings: [String]
     files: [Upload]
     filesMarkings: [[String]]
-    noTriggerImport: Boolean
+    noTriggerImport: [Boolean]
+    embedded: [Boolean]
     upsertOperations: [EditInput!]
 }
 
