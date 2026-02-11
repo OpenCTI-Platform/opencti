@@ -14,7 +14,7 @@ import { createRefetchContainer, graphql } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
-import { ListItemButton } from '@mui/material';
+import { Box, ListItemButton } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
 import { yearFormat } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
@@ -137,24 +137,19 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
     const unknownSectorId = 'a8c03ed6-cc9e-444d-9146-66c64220fff9';
     const concatAll = R.reduce(R.concat, []);
     // Extract all sectors
-    const sectors = R.pipe(
-      R.filter(
-        (n) => n.node.to.entity_type === 'Sector' && !n.node.to.isSubSector,
-      ),
-      R.map((n) => ({
+    const sectors = data.stixCoreRelationships.edges
+      .filter((n) => n.node.to.entity_type === 'Sector' && !n.node.to.isSubSector)
+      .map((n) => ({
         id: n.node.to.id,
         name: n.node.to.name,
         description: n.node.to.description,
         subSectors: {},
         subsectors_text: '',
         relations: [],
-      })),
-    )(data.stixCoreRelationships.edges);
-    const subSectors = R.pipe(
-      R.filter(
-        (n) => n.node.to.entity_type === 'Sector' && n.node.to.isSubSector,
-      ),
-      R.map((n) => ({
+      }));
+    const subSectors = data.stixCoreRelationships.edges
+      .filter((n) => n.node.to.entity_type === 'Sector' && n.node.to.isSubSector)
+      .map((n) => ({
         id: n.node.to.id,
         name: n.node.to.name,
         parentSectors: R.map(
@@ -167,46 +162,35 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
           n.node.to.parentSectors.edges,
         ),
         relations: [],
-      })),
-    )(data.stixCoreRelationships.edges);
+      }));
     const subSectorsParentSectors = concatAll(
       R.pluck('parentSectors', subSectors),
     );
-    const organizations = R.pipe(
-      R.filter((n) => n.node.to.entity_type === 'Organization'),
-      R.map((n) => ({
+    const organizations = data.stixCoreRelationships.edges
+      .filter((n) => n.node.to.entity_type === 'Organization')
+      .map((n) => ({
         id: n.node.to.id,
         name: n.node.to.name,
-        sectors: R.map(
+        sectors: n.node.to.sectors.edges.map(
           (o) => ({
             id: o.node.id,
             name: o.node.name,
             isSubSector: o.node.isSubSector,
             subSectors: {},
-            parentSectors: R.map(
+            parentSectors: o.node.parentSectors.edges.map(
               (p) => ({
                 id: p.node.id,
                 name: p.node.name,
                 subSectors: {},
                 relations: [],
-              }),
-              o.node.parentSectors.edges,
-            ),
+              })),
             relations: [],
-          }),
-          n.node.to.sectors.edges,
-        ),
+          })),
         relations: [],
-      })),
-    )(data.stixCoreRelationships.edges);
-    const organizationsSectors = concatAll(R.pluck('sectors', organizations));
-    const organizationsTopLevelSectors = R.filter(
-      (n) => !n.isSubSector,
-      organizationsSectors,
-    );
-    const organizationsParentSectors = concatAll(
-      R.pluck('parentSectors', organizationsSectors),
-    );
+      }));
+    const organizationsSectors = concatAll(organizations.flatMap((e) => e.sectors));
+    const organizationsTopLevelSectors = organizationsSectors.filter((n) => !n.isSubSector);
+    const organizationsParentSectors = concatAll(organizationsSectors.flatMap((e) => e.parentSectors));
     const finalSectors = R.pipe(
       R.concat(subSectorsParentSectors),
       R.concat(organizationsTopLevelSectors),
@@ -373,9 +357,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                 {exportDisabled && (
                   <Tooltip
                     title={`${
-                      t(
-                        'Export is disabled because too many entities are targeted (maximum number of entities is: ',
-                      ) + export_max_size
+                      t('Export is disabled because too many entities are targeted (maximum number of entities is: ') + export_max_size
                     })`}
                   >
                     <span>
@@ -463,9 +445,13 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                           )}
                         >
                           <ListItemButton
-                            classes={{ root: classes.nested }}
                             component={Link}
                             to={link}
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 3,
+                            }}
                           >
                             <ListItemIcon className={classes.itemIcon}>
                               <ItemIcon
@@ -474,22 +460,30 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                             </ListItemIcon>
                             <ListItemText
                               primary={
-                                stixCoreRelationship.to.id === sector.id ? (
-                                  <em>{t('Direct targeting of this sector')}</em>
-                                ) : (
-                                  stixCoreRelationship.to.name
-                                )
+                                stixCoreRelationship.to.id === sector.id
+                                  ? <em>{t('Direct targeting of this sector')}</em>
+                                  : stixCoreRelationship.to.name
                               }
                               secondary={renderRelationshipDescription(stixCoreRelationship.description, stixCoreRelationship.inferred)}
                             />
-                            <ItemMarkings
-                              variant="inList"
-                              markingDefinitions={stixCoreRelationship.objectMarking ?? []}
-                              limit={1}
-                            />
-                            <ItemYears
-                              years={stixCoreRelationship.years}
-                            />
+                            <Box
+                              sx={{
+                                width: 150,
+                                marginRight: 6,
+                                display: 'flex',
+                                justifyContent: 'center',
+                              }}
+                            >
+                              <ItemMarkings
+                                markingDefinitions={stixCoreRelationship.objectMarking ?? []}
+                                limit={1}
+                              />
+                            </Box>
+                            <Box sx={{ marginRight: 8 }}>
+                              <ItemYears
+                                years={stixCoreRelationship.years}
+                              />
+                            </Box>
                           </ListItemButton>
                         </ListItem>
                       );
