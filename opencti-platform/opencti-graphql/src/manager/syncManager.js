@@ -1,9 +1,7 @@
-import EventSource from 'eventsource';
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
-import conf, { booleanConf, getPlatformHttpProxyAgent, logApp } from '../config/conf';
+import conf, { booleanConf, logApp } from '../config/conf';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { TYPE_LOCK_ERROR } from '../config/errors';
-import Queue from '../utils/queue';
 import { ENTITY_TYPE_SYNC } from '../schema/internalObject';
 import { patchSync } from '../domain/connector';
 import { lockResources } from '../lock/master-lock';
@@ -16,70 +14,56 @@ import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { getHttpClient } from '../utils/http-client';
 import { createSyncHttpUri, httpBase } from '../domain/connector-utils';
 import { EVENT_CURRENT_VERSION } from '../database/stream/stream-utils';
+import { storeSyncConsumerMetrics, clearSyncConsumerMetrics } from '../graphql/syncConsumerMetrics';
 
 const SYNC_MANAGER_KEY = conf.get('sync_manager:lock_key') || 'sync_manager_lock';
 const SCHEDULE_TIME = conf.get('sync_manager:interval') || 10000;
 const WAIT_TIME_ACTION = 2000;
 
+// Parse a raw SSE text block into a structured event
+const parseSSEEvent = (raw) => {
+  let eventType = 'message';
+  let data = '';
+  let id = '';
+  for (const line of raw.split('\n')) {
+    if (line.startsWith('event:')) eventType = line.slice(6).trim();
+    else if (line.startsWith('data:')) data += line.slice(5).trim();
+    else if (line.startsWith('id:')) id = line.slice(3).trim();
+  }
+  return { type: eventType, data, lastEventId: id };
+};
+
 const syncManagerInstance = (syncId) => {
-  const MIN_QUEUE_SIZE = 100;
-  const MAX_QUEUE_SIZE = 500;
-  const lDelay = 0;
-  const hDelay = 1000;
   // Variables
   let connectionId = null;
-  let eventsQueue;
-  let eventSource;
+  let connectedAt = null; // ISO string, when the sync connected to the remote stream
   let lastState;
   let lastStateSaveTime;
-  const handleEvent = (event) => {
-    const { type, data, lastEventId } = event;
-    const { data: stixData, context, version, event_id } = JSON.parse(data);
-    if (version === EVENT_CURRENT_VERSION) {
-      eventsQueue.enqueue({ id: lastEventId, type, data: stixData, context, event_id });
-    }
-  };
-  const startStreamListening = (sseUri, syncElement) => {
+  let lastEventDate; // Track the last saved event date (ISO string) for reconnection
+  let running = false;
+  let abortController = null;
+  // Async generator that yields SSE events from a raw HTTP stream.
+  // Backpressure is natural: when the consumer is busy processing an event,
+  // the generator is suspended, bytes are not read from the socket,
+  // TCP receive buffer fills up, and flow control throttles the server.
+  const streamEvents = async function* (sseUri, syncElement) {
     const { token, ssl_verify: ssl = false } = syncElement;
-    eventsQueue = new Queue();
-    eventSource = new EventSource(sseUri, {
-      rejectUnauthorized: ssl,
-      headers: !isEmptyField(token) ? { authorization: `Bearer ${token}` } : undefined,
-      agent: getPlatformHttpProxyAgent(sseUri),
-    });
-    eventSource.on('heartbeat', ({ lastEventId, type }) => {
-      eventsQueue.enqueue({ id: lastEventId, type });
-    });
-    eventSource.on('create', (d) => handleEvent(d));
-    eventSource.on('update', (d) => handleEvent(d));
-    eventSource.on('delete', (d) => handleEvent(d));
-    eventSource.on('merge', (d) => handleEvent(d));
-    eventSource.on('connected', (d) => {
-      connectionId = JSON.parse(d.data).connectionId;
-      logApp.info(`[OPENCTI] Sync ${syncId}: listening ${eventSource.url} with id ${connectionId}`);
-    });
-    eventSource.on('error', (error) => {
-      logApp.warn('[OPENCTI] Sync stream error', { id: syncId, manager: 'SYNC_MANAGER', cause: error });
-    });
-  };
-  const manageBackPressure = async (httpClient, { uri }, currentDelay) => {
-    if (connectionId) {
-      const connectionManagement = `${httpBase(uri)}stream/connection/${connectionId}`;
-      const currentQueueLength = eventsQueue.getLength();
-      // If queue length keeps increasing even with an increased delay, we keep increasing the delay until we are able to go back below MIN_QUEUE_SIZE
-      if (currentQueueLength > MAX_QUEUE_SIZE && currentDelay * MAX_QUEUE_SIZE < hDelay * (currentQueueLength - MAX_QUEUE_SIZE)) {
-        const newDelay = currentDelay + hDelay;
-        await httpClient.post(connectionManagement, { delay: newDelay });
-        logApp.info(`[OPENCTI] Sync ${syncId}: connection setup to use ${newDelay} delay`);
-        return newDelay;
-      }
-      if (currentQueueLength < MIN_QUEUE_SIZE && currentDelay !== lDelay) {
-        await httpClient.post(connectionManagement, { delay: lDelay });
-        logApp.info(`[OPENCTI] Sync ${syncId}: connection setup to use ${lDelay} delay`);
-        return lDelay;
+    const headers = !isEmptyField(token) ? { authorization: `Bearer ${token}` } : undefined;
+    abortController = new AbortController();
+    const streamClient = getHttpClient({ headers, rejectUnauthorized: ssl, responseType: 'stream' });
+    const response = await streamClient.get(sseUri, { signal: abortController.signal });
+    const stream = response.data; // Node.js Readable stream
+    let buffer = '';
+    for await (const chunk of stream) {
+      buffer += chunk.toString();
+      // SSE events are separated by double newlines
+      const parts = buffer.split('\n\n');
+      buffer = parts.pop(); // Keep the last (potentially incomplete) part
+      for (const rawEvent of parts) {
+        if (rawEvent.trim() === '') continue;
+        yield parseSSEEvent(rawEvent);
       }
     }
-    return currentDelay;
   };
   const transformDataWithReverseIdAndFilesData = async (sync, httpClient, data, context) => {
     const { uri } = sync;
@@ -100,7 +84,7 @@ const syncManagerInstance = (syncId) => {
     }
     return { data: processingData, previous_standard: idOperation?.value };
   };
-  const saveCurrentState = async (context, type, sync, eventId) => {
+  const saveCurrentState = async (context, type, eventId) => {
     const currentTime = new Date().getTime();
     const [time] = eventId.split('-');
     const dateTime = parseInt(time, 10);
@@ -108,20 +92,22 @@ const syncManagerInstance = (syncId) => {
     if (lastStateSaveTime === undefined || (dateTime !== lastState && (currentTime - lastStateSaveTime) > 15000)) {
       logApp.info(`[OPENCTI] Sync ${syncId}: saving state from ${type} to ${eventId}/${eventDate}`);
       await patchSync(context, SYSTEM_USER, syncId, { current_state_date: eventDate });
-      eventSource.updateUrl(createSyncHttpUri(sync, eventDate, false));
       lastState = dateTime;
       lastStateSaveTime = currentTime;
+      lastEventDate = eventDate;
     }
   };
-  const isRunning = () => eventSource && eventSource.readyState !== 2; // CLOSED,
+  const isRunning = () => running;
   return {
     id: syncId,
     stop: () => {
       logApp.info(`[OPENCTI] Sync ${syncId}: stopping manager`);
-      eventSource.close();
-      eventsQueue = null;
+      running = false;
+      if (abortController) abortController.abort();
+      clearSyncConsumerMetrics(syncId).catch(() => {});
     },
     start: async (context) => {
+      running = true;
       logApp.info(`[OPENCTI] Sync ${syncId}: starting manager`);
       const sync = await storeLoadById(context, SYSTEM_USER, syncId, ENTITY_TYPE_SYNC);
       const synchronized = sync.synchronized ?? false;
@@ -130,45 +116,80 @@ const syncManagerInstance = (syncId) => {
       const httpClientOptions = { headers, rejectUnauthorized: ssl, responseType: 'arraybuffer' };
       const httpClient = getHttpClient(httpClientOptions);
       lastState = sync.current_state_date;
-      const sseUri = createSyncHttpUri(sync, lastState, false);
-      startStreamListening(sseUri, sync);
-      let currentDelay = lDelay;
-      let currentEvent = null;
-      while (isRunning()) {
-        // Get the next event in the queue only if not in retry state
-        currentEvent = currentEvent ?? eventsQueue.dequeue();
-        if (currentEvent) {
-          try {
-            currentDelay = await manageBackPressure(httpClient, sync, currentDelay);
-            const { id: eventId, type: eventType, data, context: eventContext, event_id } = currentEvent;
-            if (eventType === 'heartbeat') {
-              await saveCurrentState(context, eventType, sync, eventId);
-            } else {
-              const { data: syncData, previous_standard } = await transformDataWithReverseIdAndFilesData(sync, httpClient, data, eventContext);
-              const enrichedEvent = JSON.stringify({ id: eventId, type: eventType, data: syncData, context: eventContext });
-              const content = Buffer.from(enrichedEvent, 'utf-8').toString('base64');
-              // Applicant_id should be a userId coming from synchronizer
-              await pushToWorkerForConnector(sync.internal_id, {
-                type: 'event',
-                event_id,
-                synchronized,
-                previous_standard,
-                update: true,
-                applicant_id: sync.user_id ?? OPENCTI_SYSTEM_UUID,
-                content,
-              });
-              await saveCurrentState(context, 'event', sync, eventId);
+      lastEventDate = sync.current_state_date;
+      // Reconnection loop: on stream error/close, reconnect from the last saved state.
+      // This replaces EventSource's built-in auto-reconnect.
+      while (running) {
+        try {
+          const sseUri = createSyncHttpUri(sync, lastEventDate ?? lastState, false);
+          for await (const event of streamEvents(sseUri, sync)) {
+            if (!running) break;
+            const { type: eventType, data: eventData, lastEventId } = event;
+            // Handle connection event
+            if (eventType === 'connected') {
+              const connectedData = JSON.parse(eventData);
+              connectionId = connectedData.connectionId;
+              connectedAt = new Date().toISOString();
+              logApp.info(`[OPENCTI] Sync ${syncId}: listening ${sseUri} with id ${connectionId}`);
+              continue;
             }
-            // Clear the current event to dequeue the next one
-            // If error occurs, keep the current event to retry it undefinitely as only exception can be generated
-            // by pushToWorkerForConnector or saveCurrentState
-            currentEvent = null;
-          } catch (e) {
-            logApp.error('[OPENCTI-MODULE] Sync manager event handling error', { cause: e, id: syncId, manager: 'SYNC_MANAGER' });
+            // Handle heartbeat - just save state, no data to process
+            if (eventType === 'heartbeat') {
+              await saveCurrentState(context, eventType, lastEventId);
+              continue;
+            }
+            // Handle consumer_metrics - store metrics received from the remote stream
+            if (eventType === 'consumer_metrics') {
+              try {
+                const metrics = JSON.parse(eventData);
+                const syncConnectedAt = connectedAt || new Date().toISOString();
+                const syncConnectionId = connectionId || '';
+                await storeSyncConsumerMetrics(syncId, syncConnectionId, syncConnectedAt, metrics, lastEventId);
+              } catch (metricsError) {
+                logApp.warn('[OPENCTI] Sync: Error storing consumer metrics', { syncId, cause: metricsError });
+              }
+              continue;
+            }
+            // Handle data events (create, update, delete, merge)
+            const { data: stixData, context: eventContext, version, event_id } = JSON.parse(eventData);
+            if (version !== EVENT_CURRENT_VERSION) continue;
+            // Process the event with retry: if pushToWorkerForConnector or saveCurrentState fails,
+            // retry indefinitely until it succeeds or the manager is stopped.
+            let processed = false;
+            while (!processed && running) {
+              try {
+                const { data: syncData, previous_standard } = await transformDataWithReverseIdAndFilesData(sync, httpClient, stixData, eventContext);
+                const enrichedEvent = JSON.stringify({ id: lastEventId, type: eventType, data: syncData, context: eventContext });
+                const content = Buffer.from(enrichedEvent, 'utf-8').toString('base64');
+                await pushToWorkerForConnector(sync.internal_id, {
+                  type: 'event',
+                  event_id,
+                  synchronized,
+                  previous_standard,
+                  update: true,
+                  applicant_id: sync.user_id ?? OPENCTI_SYSTEM_UUID,
+                  content,
+                });
+                await saveCurrentState(context, 'event', lastEventId);
+                processed = true;
+              } catch (processingError) {
+                logApp.error('[OPENCTI-MODULE] Sync manager event handling error, retrying...', {
+                  cause: processingError, id: syncId, manager: 'SYNC_MANAGER',
+                });
+                await wait(5000);
+              }
+            }
           }
-        } else {
-          // Only wait when queue is empty to avoid CPU spinning
-          await wait(100);
+          // Stream ended cleanly (server closed) — reconnect if still running
+          if (running) {
+            logApp.info(`[OPENCTI] Sync ${syncId}: stream ended, reconnecting...`);
+          }
+        } catch (streamError) {
+          if (!running) break; // Abort was intentional (stop() was called)
+          logApp.warn('[OPENCTI] Sync stream error, reconnecting...', {
+            id: syncId, manager: 'SYNC_MANAGER', cause: streamError,
+          });
+          await wait(5000);
         }
       }
       logApp.info(`[OPENCTI] Sync ${syncId}: manager stopped`);

@@ -16,6 +16,7 @@ import { isEmptyField, wait, waitInSec } from './utils';
 import { utcDate } from '../utils/format';
 import { UnsupportedError } from '../config/errors';
 import { asyncMap } from '../utils/data-processing';
+import { roundRate } from '../utils/consumer-metrics';
 
 // region opencti data stream
 const REDIS_LIVE_STREAM_NAME = `${REDIS_PREFIX}${LIVE_STREAM_NAME}`;
@@ -278,7 +279,7 @@ export const getStreamProductionRate = async (): Promise<number> => {
   } catch (err) {
     logApp.error('Failed to compute stream production rate', { cause: err });
   }
-  return cachedProductionRate;
+  return roundRate(cachedProductionRate);
 };
 // endregion
 

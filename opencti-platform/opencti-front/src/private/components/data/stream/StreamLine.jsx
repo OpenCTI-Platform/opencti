@@ -96,10 +96,9 @@ class StreamLineLineComponent extends Component {
     }
     const ONE_HOUR = 3600;
     const ONE_DAY = 86400;
-    const hasOutOfDepth = consumers.some((c) => c.estimatedOutOfDepth !== null && c.estimatedOutOfDepth <= 0);
     const hasCritical = consumers.some((c) => c.estimatedOutOfDepth !== null && c.estimatedOutOfDepth > 0 && c.estimatedOutOfDepth < ONE_HOUR);
     const hasWarning = consumers.some((c) => c.estimatedOutOfDepth !== null && c.estimatedOutOfDepth >= ONE_HOUR && c.estimatedOutOfDepth < ONE_DAY);
-    if (hasOutOfDepth || hasCritical) {
+    if (hasCritical) {
       return { count: consumers.length, label: `${consumers.length} - ${t('At risk')}`, hexColor: '#c62828' };
     }
     if (hasWarning) {

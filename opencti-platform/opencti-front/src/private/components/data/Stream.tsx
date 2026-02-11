@@ -78,12 +78,12 @@ const Stream = () => {
       },
       id: {
         label: 'Stream ID',
-        width: '15%',
+        width: '35%',
         isSortable: true,
       },
       stream_public: {
         label: 'Public',
-        width: '8%',
+        width: '10%',
         isSortable: true,
       },
       stream_live: {
@@ -93,7 +93,7 @@ const Stream = () => {
       },
       consumers: {
         label: 'Consumers',
-        width: '35%',
+        width: '15%',
         isSortable: false,
       },
     };

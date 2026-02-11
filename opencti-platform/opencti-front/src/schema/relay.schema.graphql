@@ -717,10 +717,10 @@ type StreamCollectionConsumer {
   connectedAt: DateTime!
   lastEventId: String!
   lastEventDate: DateTime
-  streamProductionRate: Float!
-  consumerDeliveryRate: Float!
-  consumerProcessingRate: Float!
-  consumerResolutionRate: Float!
+  productionRate: Float!
+  deliveryRate: Float!
+  processingRate: Float!
+  resolutionRate: Float!
   timeLag: Float!
   estimatedOutOfDepth: Float
 }
@@ -887,6 +887,7 @@ type Synchronizer {
   synchronized: Boolean
   queue_messages: Int!
   toConfigurationExport: String!
+  consumer_metrics: StreamCollectionConsumer
 }
 
 type SynchronizerEdge {

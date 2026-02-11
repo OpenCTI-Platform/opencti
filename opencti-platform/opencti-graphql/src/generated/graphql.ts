@@ -30480,13 +30480,13 @@ export type StreamCollectionConsumer = {
   __typename?: 'StreamCollectionConsumer';
   connectedAt: Scalars['DateTime']['output'];
   connectionId: Scalars['String']['output'];
-  consumerDeliveryRate: Scalars['Float']['output'];
-  consumerProcessingRate: Scalars['Float']['output'];
-  consumerResolutionRate: Scalars['Float']['output'];
+  deliveryRate: Scalars['Float']['output'];
   estimatedOutOfDepth?: Maybe<Scalars['Float']['output']>;
   lastEventDate?: Maybe<Scalars['DateTime']['output']>;
   lastEventId: Scalars['String']['output'];
-  streamProductionRate: Scalars['Float']['output'];
+  processingRate: Scalars['Float']['output'];
+  productionRate: Scalars['Float']['output'];
+  resolutionRate: Scalars['Float']['output'];
   timeLag: Scalars['Float']['output'];
   userEmail?: Maybe<Scalars['String']['output']>;
   userId: Scalars['String']['output'];
@@ -30764,6 +30764,7 @@ export enum SupportPackageOrdering {
 
 export type Synchronizer = {
   __typename?: 'Synchronizer';
+  consumer_metrics?: Maybe<StreamCollectionConsumer>;
   current_state_date?: Maybe<Scalars['DateTime']['output']>;
   id: Scalars['ID']['output'];
   listen_deletion: Scalars['Boolean']['output'];
@@ -47473,13 +47474,13 @@ export type StreamCollectionConnectionResolvers<ContextType = any, ParentType ex
 export type StreamCollectionConsumerResolvers<ContextType = any, ParentType extends ResolversParentTypes['StreamCollectionConsumer'] = ResolversParentTypes['StreamCollectionConsumer']> = ResolversObject<{
   connectedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   connectionId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  consumerDeliveryRate?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
-  consumerProcessingRate?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
-  consumerResolutionRate?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  deliveryRate?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   estimatedOutOfDepth?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   lastEventDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   lastEventId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  streamProductionRate?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  processingRate?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  productionRate?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  resolutionRate?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   timeLag?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   userEmail?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   userId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -47586,6 +47587,7 @@ export type SupportPackageEdgeResolvers<ContextType = any, ParentType extends Re
 }>;
 
 export type SynchronizerResolvers<ContextType = any, ParentType extends ResolversParentTypes['Synchronizer'] = ResolversParentTypes['Synchronizer']> = ResolversObject<{
+  consumer_metrics?: Resolver<Maybe<ResolversTypes['StreamCollectionConsumer']>, ParentType, ContextType>;
   current_state_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   listen_deletion?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;

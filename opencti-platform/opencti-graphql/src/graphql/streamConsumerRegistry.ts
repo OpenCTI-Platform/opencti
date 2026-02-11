@@ -32,7 +32,7 @@ interface LocalConsumerTracking {
   lastEventId: string;
   eventsSentCount: number;
   eventsProcessedCount: number;
-  resolutionsSentCount: number; // dependency/missing resolution events sent
+  resolutionsSentCount: number;
   recentDeliveries: RateBucket[];
   recentProcessed: RateBucket[];
   recentResolutions: RateBucket[];
@@ -48,6 +48,7 @@ export interface RedisConsumerData {
   lastEventId: string;
   eventsSentCount: number;
   eventsProcessedCount: number;
+  resolutionsSentCount: number;
   deliveryRate: number;
   processingRate: number;
   resolutionRate: number; // dependency/missing resolution events per second
@@ -105,12 +106,7 @@ const collectionSetKey = (collectionId: string) => `${COLLECTION_SET_PREFIX}${co
  * Register a new consumer. Writes to Redis + creates local tracking entry.
  * Called when an SSE connection is established.
  */
-export const registerConsumer = async (
-  connectionId: string,
-  collectionId: string,
-  userId: string,
-  userEmail: string,
-): Promise<void> => {
+export const registerConsumer = async (connectionId: string, collectionId: string, userId: string, userEmail: string): Promise<void> => {
   const now_ms = Date.now();
   const connectedAt = new Date(now_ms).toISOString();
 
@@ -181,11 +177,12 @@ export const unregisterConsumer = async (connectionId: string): Promise<void> =>
  * Track events delivered to a consumer (after filtering).
  * Synchronous, in-memory only -- hot path.
  */
-export const trackEventDelivered = (connectionId: string, count: number = 1): void => {
+export const trackEventDelivered = (connectionId: string, count: number, lastEventId: string): void => {
   const consumer = localConsumers.get(connectionId);
   if (consumer) {
     const now_ms = Date.now();
     consumer.eventsSentCount += count;
+    consumer.lastEventId = lastEventId;
     consumer.recentDeliveries = addToBuckets(consumer.recentDeliveries, count, now_ms);
   }
 };
@@ -208,11 +205,12 @@ export const trackEventsProcessed = (connectionId: string, count: number, lastEv
  * Track missing resolution / dependency events sent to a consumer.
  * Synchronous, in-memory only -- hot path.
  */
-export const trackMissingResolution = (connectionId: string, count: number = 1): void => {
+export const trackMissingResolution = (connectionId: string, count: number, lastEventId: string): void => {
   const consumer = localConsumers.get(connectionId);
   if (consumer) {
     const now_ms = Date.now();
     consumer.resolutionsSentCount += count;
+    consumer.lastEventId = lastEventId;
     consumer.recentResolutions = addToBuckets(consumer.recentResolutions, count, now_ms);
   }
 };
@@ -222,8 +220,9 @@ export const trackMissingResolution = (connectionId: string, count: number = 1):
  * Called periodically by the flush interval.
  */
 const flushMetricsToRedis = async (): Promise<void> => {
-  if (localConsumers.size === 0) return;
-
+  if (localConsumers.size === 0) {
+    return;
+  }
   try {
     const client = getClientBase();
     const pipeline = client.pipeline();
@@ -271,15 +270,31 @@ export const startConsumerMetricsFlush = (): void => {
   logApp.info('[STREAM] Consumer metrics flush started');
 };
 
+// Data shape returned by getLocalConsumerMetrics (synchronous, in-memory only)
+export interface ConsumerMetricsSnapshot {
+  eventsSentCount: number;
+  eventsProcessedCount: number;
+  resolutionsSentCount: number;
+  deliveryRate: number; // events/sec delivered to the client (after filtering)
+  processingRate: number; // events/sec processed from the stream (before filtering)
+  resolutionRate: number; // dependency resolution events/sec
+}
+
 /**
- * Stop the periodic metrics flush. For clean shutdown.
+ * Get current metrics for a local consumer from in-memory tracking.
+ * Synchronous, no Redis call — safe to call from the heartbeat hot path.
+ * Returns undefined if the consumer is not tracked locally.
  */
-export const stopConsumerMetricsFlush = (): void => {
-  if (flushInterval) {
-    clearInterval(flushInterval);
-    flushInterval = null;
-    logApp.info('[STREAM] Consumer metrics flush stopped');
-  }
+export const getLocalConsumerMetrics = (connectionId: string): ConsumerMetricsSnapshot | undefined => {
+  const consumer = localConsumers.get(connectionId);
+  return {
+    eventsSentCount: consumer?.eventsSentCount ?? 0,
+    eventsProcessedCount: consumer?.eventsProcessedCount ?? 0,
+    resolutionsSentCount: consumer?.resolutionsSentCount ?? 0,
+    deliveryRate: consumer ? Math.round(computeRate(consumer.recentDeliveries) * 100) / 100 : 0,
+    processingRate: consumer ? Math.round(computeRate(consumer.recentProcessed) * 100) / 100 : 0,
+    resolutionRate: consumer ? Math.round(computeRate(consumer.recentResolutions) * 100) / 100 : 0,
+  };
 };
 
 /**
@@ -322,6 +337,7 @@ export const getConsumersForCollection = async (collectionId: string): Promise<R
           lastEventId: hash.lastEventId || '',
           eventsSentCount: parseInt(hash.eventsSentCount || '0', 10),
           eventsProcessedCount: parseInt(hash.eventsProcessedCount || '0', 10),
+          resolutionsSentCount: parseInt(hash.resolutionsSentCount || '0', 10),
           deliveryRate: parseFloat(hash.deliveryRate || '0'),
           processingRate: parseFloat(hash.processingRate || '0'),
           resolutionRate: parseFloat(hash.resolutionRate || '0'),

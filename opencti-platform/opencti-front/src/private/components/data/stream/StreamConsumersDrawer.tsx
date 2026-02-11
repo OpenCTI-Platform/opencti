@@ -1,11 +1,16 @@
 import React, { FunctionComponent, useCallback, useEffect, useState } from 'react';
 import { graphql } from 'react-relay';
+import Accordion from '@mui/material/Accordion';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import { ExpandMore, InfoOutlined } from '@mui/icons-material';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip';
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/styles';
 import Drawer from '../../common/drawer/Drawer';
@@ -27,10 +32,10 @@ const streamConsumersQuery = graphql`
         connectedAt
         lastEventId
         lastEventDate
-        streamProductionRate
-        consumerDeliveryRate
-        consumerProcessingRate
-        consumerResolutionRate
+        productionRate
+        deliveryRate
+        processingRate
+        resolutionRate
         timeLag
         estimatedOutOfDepth
       }
@@ -45,10 +50,10 @@ interface StreamCollectionConsumer {
   connectedAt: string;
   lastEventId: string;
   lastEventDate: string | null;
-  streamProductionRate: number;
-  consumerDeliveryRate: number;
-  consumerProcessingRate: number;
-  consumerResolutionRate: number;
+  productionRate: number;
+  deliveryRate: number;
+  processingRate: number;
+  resolutionRate: number;
   timeLag: number;
   estimatedOutOfDepth: number | null | undefined;
 }
@@ -74,15 +79,19 @@ const formatDuration = (seconds: number): string => {
   return parts.join(' ');
 };
 
+const eventIdToDate = (eventId: string, dateFormatter: (date: string | Date) => string): string | null => {
+  if (!eventId) return null;
+  const ts = parseInt(eventId.split('-')[0], 10);
+  if (Number.isNaN(ts) || ts <= 0) return null;
+  return dateFormatter(new Date(ts).toISOString());
+};
+
 const getOutOfDepthStatus = (
   estimatedOutOfDepth: number | null | undefined,
   t_i18n: (key: string) => string,
 ): { label: string; hexColor: string } => {
   if (!estimatedOutOfDepth) {
-    return { label: t_i18n('Keeping up'), hexColor: '#2e7d32' };
-  }
-  if (estimatedOutOfDepth <= 0) {
-    return { label: t_i18n('Out of depth'), hexColor: '#c62828' };
+    return { label: t_i18n('Healthy'), hexColor: '#2e7d32' };
   }
   const ONE_HOUR = 3600;
   const ONE_DAY = 86400;
@@ -99,35 +108,45 @@ interface MetricBlockProps {
   label: string;
   value: string;
   theme: Theme;
+  tooltip?: string;
 }
 
-const MetricBlock: FunctionComponent<MetricBlockProps> = ({ label, value, theme }) => (
-  <Paper
-    variant="outlined"
-    className="paper-for-grid"
-    sx={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: theme.spacing(1.5),
-      height: '100%',
-    }}
-  >
-    <Typography
-      variant="caption"
-      sx={{ color: theme?.palette?.text?.secondary, textAlign: 'center' }}
+const MetricBlock: FunctionComponent<MetricBlockProps> = ({ label, value, theme, tooltip }) => {
+  return (
+    <Paper
+      variant="outlined"
+      className="paper-for-grid"
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: theme.spacing(2),
+        height: '100%',
+      }}
     >
-      {label}
-    </Typography>
-    <Typography
-      variant="h6"
-      sx={{ color: theme.palette.primary.main, fontWeight: 600, marginTop: 0.5 }}
-    >
-      {value}
-    </Typography>
-  </Paper>
-);
+      <Typography
+        variant="caption"
+        sx={{ color: theme?.palette?.text?.secondary, textAlign: 'center' }}
+      >
+        {label}
+      </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, marginTop: 0.5 }}>
+        <Typography
+          variant="body1"
+          sx={{ fontWeight: 600 }}
+        >
+          {value}
+        </Typography>
+        {tooltip && (
+          <Tooltip title={tooltip} arrow>
+            <InfoOutlined sx={{ fontSize: 16, color: theme?.palette?.text?.secondary, cursor: 'pointer' }} />
+          </Tooltip>
+        )}
+      </Box>
+    </Paper>
+  );
+};
 
 const StreamConsumersDrawer: FunctionComponent<StreamConsumersDrawerProps> = ({
   streamCollectionId,
@@ -135,7 +154,7 @@ const StreamConsumersDrawer: FunctionComponent<StreamConsumersDrawerProps> = ({
   open,
   onClose,
 }) => {
-  const { t_i18n, fldt } = useFormatter();
+  const { t_i18n, fldt, nsdt } = useFormatter();
   const theme = useTheme<Theme>();
   const [consumers, setConsumers] = useState<readonly StreamCollectionConsumer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -171,84 +190,102 @@ const StreamConsumersDrawer: FunctionComponent<StreamConsumersDrawerProps> = ({
   const renderConsumerCard = (consumer: StreamCollectionConsumer) => {
     const depthStatus = getOutOfDepthStatus(consumer.estimatedOutOfDepth, t_i18n);
     return (
-      <Paper
+      <Accordion
         key={consumer.connectionId}
+        defaultExpanded={true}
         variant="outlined"
+        disableGutters
         sx={{
-          padding: theme.spacing(2),
-          marginBottom: theme.spacing(2),
+          marginBottom: theme.spacing(1),
+          '&:before': { display: 'none' },
+          borderRadius: 1,
         }}
       >
-        {/* Card header: user info + depth status */}
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: theme.spacing(2),
-          }}
+        <AccordionSummary
+          expandIcon={<ExpandMore />}
+          sx={{ minHeight: 56 }}
         >
-          <Box>
-            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-              {consumer.userEmail || consumer.userId}
-            </Typography>
-            <Typography variant="caption" sx={{ color: theme?.palette?.text?.secondary }}>
-              {t_i18n('Connected since')} {fldt(consumer.connectedAt)}
-            </Typography>
-          </Box>
-          <Chip
-            label={depthStatus.label}
-            style={{
-              fontSize: 12,
-              lineHeight: '12px',
-              borderRadius: 4,
-              height: 25,
-              backgroundColor: `${depthStatus.hexColor}33`,
-              color: depthStatus.hexColor,
-              border: `2px solid ${depthStatus.hexColor}`,
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              width: '100%',
+              paddingRight: theme.spacing(1),
             }}
-          />
-        </Box>
-        {/* Metrics grid */}
-        <Grid container spacing={2}>
-          <Grid item xs={4}>
-            <MetricBlock
-              label={t_i18n('Stream rate')}
-              value={`${consumer.streamProductionRate} /s`}
-              theme={theme}
+          >
+            <Box>
+              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                {consumer.userEmail || consumer.userId}
+              </Typography>
+              <Typography variant="caption" sx={{ color: theme?.palette?.text?.secondary }}>
+                {t_i18n('Connected since')} {fldt(consumer.connectedAt)}
+              </Typography>
+            </Box>
+            <Chip
+              label={depthStatus.label}
+              style={{
+                fontSize: 12,
+                lineHeight: '12px',
+                borderRadius: 4,
+                height: 25,
+                width: 125,
+                textAlign: 'center',
+                backgroundColor: `${depthStatus.hexColor}33`,
+                color: depthStatus.hexColor,
+                border: `2px solid ${depthStatus.hexColor}`,
+              }}
             />
+          </Box>
+        </AccordionSummary>
+        <AccordionDetails sx={{ paddingTop: 0 }}>
+          <Grid container spacing={2}>
+            <Grid item xs={4}>
+              <MetricBlock
+                label={t_i18n('Stream rate')}
+                value={`${consumer.productionRate} /s`}
+                theme={theme}
+              />
+            </Grid>
+            <Grid item xs={4}>
+              <MetricBlock
+                label={t_i18n('Processing rate')}
+                value={`${consumer.processingRate} /s`}
+                theme={theme}
+              />
+            </Grid>
+            <Grid item xs={4}>
+              <MetricBlock
+                label={t_i18n('Resolution rate')}
+                value={`${consumer.resolutionRate} /s`}
+                theme={theme}
+              />
+            </Grid>
+            <Grid item xs={4}>
+              <MetricBlock
+                label={t_i18n('Delivery rate')}
+                value={`${consumer.deliveryRate} /s`}
+                theme={theme}
+              />
+            </Grid>
+            <Grid item xs={4}>
+              <MetricBlock
+                label={t_i18n('Last event ID')}
+                value={eventIdToDate(consumer.lastEventId, nsdt) ?? '-'}
+                tooltip={consumer.lastEventId || undefined}
+                theme={theme}
+              />
+            </Grid>
+            <Grid item xs={4}>
+              <MetricBlock
+                label={t_i18n('Time lag')}
+                value={consumer.timeLag > 0 ? formatDuration(consumer.timeLag) : t_i18n('None')}
+                theme={theme}
+              />
+            </Grid>
           </Grid>
-
-          <Grid item xs={4}>
-            <MetricBlock
-              label={t_i18n('Processing rate')}
-              value={`${consumer.consumerProcessingRate} /s`}
-              theme={theme}
-            />
-          </Grid>
-          <Grid item xs={4}>
-            <MetricBlock
-              label={t_i18n('Resolution rate')}
-              value={`${consumer.consumerResolutionRate} /s`}
-              theme={theme}
-            />
-          </Grid>
-          <Grid item xs={4}>
-            <MetricBlock
-              label={t_i18n('Delivery rate')}
-              value={`${consumer.consumerDeliveryRate} /s`}
-              theme={theme}
-            />
-          </Grid>
-          <Grid item xs={4}>
-            <MetricBlock
-              label={t_i18n('Time lag')}
-              value={consumer.timeLag > 0 ? formatDuration(consumer.timeLag) : t_i18n('None')}
-              theme={theme}
-            />
-          </Grid>
-        </Grid>
-      </Paper>
+        </AccordionDetails>
+      </Accordion>
     );
   };
 
