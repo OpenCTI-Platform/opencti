@@ -30,7 +30,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     borderRadius: 4,
     lineHeight: '32px',
   },
-  operator1: {
+  operatorDefault: {
     borderRadius: 4,
     fontFamily: 'Consolas, monaco, monospace',
     backgroundColor: theme.palette.action?.selected,
@@ -43,28 +43,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
       textDecorationLine: 'underline',
     },
   },
-  operator1ReadOnly: {
-    borderRadius: 4,
-    fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: theme.palette.action?.selected,
-    padding: '0 8px',
-    display: 'flex',
-    alignItems: 'center',
-  },
-  operator2: {
-    borderRadius: 4,
-    fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: theme.palette.action?.selected,
-    padding: '0 8px',
-    display: 'flex',
-    alignItems: 'center',
-    cursor: 'pointer',
-    '&:hover': {
-      backgroundColor: theme.palette.action?.disabled,
-      textDecorationLine: 'underline',
-    },
-  },
-  operator2ReadOnly: {
+  operatorDefaultReadOnly: {
     borderRadius: 4,
     fontFamily: 'Consolas, monaco, monospace',
     backgroundColor: theme.palette.action?.selected,
@@ -173,7 +152,7 @@ const FilterIconButtonContainer: FunctionComponent<
   const globalMode = filters.mode;
   const itemRefToPopover = useRef(null);
   const oldItemRefToPopover = useRef(null);
-  let classFilter = classes.filter1;
+  let classFilter = undefined;
   const filtersRepresentativesMap = new Map<string, FilterRepresentative>(
     filtersRepresentatives.map((n: FilterRepresentative) => [n.id, n]),
   );
@@ -239,20 +218,15 @@ const FilterIconButtonContainer: FunctionComponent<
     }
   };
   const isReadWriteFilter = !!(helpers || handleRemoveFilter);
-  let classOperator = classes.operator1;
+  let classOperator = classes.operatorDefault;
   let margin = inPageContainer ? '0 0 0 0' : '0 0 8px 0';
   if (!isReadWriteFilter) {
-    classOperator = classes.operator1ReadOnly;
-    if (styleNumber === 2) {
-      classFilter = classes.filter2;
-      classOperator = classes.operator2ReadOnly;
-    } else if (styleNumber === 3) {
+    classOperator = classes.operatorDefaultReadOnly;
+    if (styleNumber === 3) {
       classFilter = classes.filter3;
       classOperator = classes.operator3ReadOnly;
     }
   } else if (styleNumber === 2) {
-    classFilter = classes.filter2;
-    classOperator = classes.operator2;
     margin = '10px 0 10px 0';
   } else if (styleNumber === 3) {
     classFilter = classes.filter3;

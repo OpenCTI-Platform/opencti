@@ -278,7 +278,7 @@ interface DisplayFilterGroupProps {
   filterObj: FilterGroup;
   filterMode: string;
   filtersRepresentativesMap: Map<string, FilterRepresentative>;
-  classFilter: string;
+  classFilter?: string;
   classChipLabel: string;
 }
 
