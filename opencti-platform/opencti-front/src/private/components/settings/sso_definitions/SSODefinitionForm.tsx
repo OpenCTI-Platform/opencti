@@ -406,7 +406,7 @@ const SSODefinitionForm = ({
                     <>
                       <div style={{ display: 'flex', alignItems: 'center', marginTop: 20 }}>
                         <Typography variant="h2">{t_i18n('Add more fields')}</Typography>
-                        <Tooltip title={t_i18n('For array fields, please add square brackets & each value between double quotes (even for unique value). For example: [\"value1\", \"value2\"]')}>
+                        <Tooltip title={t_i18n('For array fields, please add square brackets & each value between double quotes (even for unique value). For example: ["value1", "value2"]')}>
                           <InformationOutline
                             fontSize="small"
                             color="primary"
