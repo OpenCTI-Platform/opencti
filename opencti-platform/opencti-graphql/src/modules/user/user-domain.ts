@@ -20,6 +20,7 @@ import { internalLoadById } from '../../database/middleware-loader';
 import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../../database/utils';
 import { apiTokens } from '../attributes/internalObject-registrationAttributes';
 import { getPlatformCrypto } from '../../utils/platformCrypto';
+import { memoize } from '../../utils/memoize';
 
 // -- Existing Logic --
 export const userAlreadyExists = async (context: AuthContext, name: string) => {
@@ -249,13 +250,12 @@ export const generateSecureToken = async (): Promise<GeneratedToken> => {
  * Hash a token using hmac algorithm.
  * @param token the token to hash
  */
-let hmacDerivationPromise: Promise<{ hmac: (data: string) => string }>;
-const TOKEN_DERIVATION_PATH = ['authentication', 'token'];
+const hmacDerivation = memoize(async () => {
+  const factory = await getPlatformCrypto();
+  return factory.deriveHmac(['authentication', 'token'], 1);
+});
+
 export const generateTokenHmac = async (token: string): Promise<string> => {
-  if (!hmacDerivationPromise) {
-    const factory = await getPlatformCrypto();
-    hmacDerivationPromise = factory.deriveHmac(TOKEN_DERIVATION_PATH, 1);
-  }
-  const hmacDerivation = await hmacDerivationPromise;
-  return hmacDerivation.hmac(token);
+  const { hmac } = await hmacDerivation();
+  return hmac(Buffer.from(token));
 };

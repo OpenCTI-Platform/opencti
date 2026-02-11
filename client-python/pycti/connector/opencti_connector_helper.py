@@ -46,7 +46,7 @@ from botocore.config import Config as BotoConfig
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from filigran_sseclient import SSEClient
-from jwt import PyJWK
+from jwt import PyJWKSet
 from pika.exceptions import NackError, UnroutableError
 from pydantic import TypeAdapter
 
@@ -528,7 +528,7 @@ class ListenQueue(threading.Thread):
         self.port = connector_config["connection"]["port"]
         self.user = connector_config["connection"]["user"]
         self.password = connector_config["connection"]["pass"]
-        self.connector_jwks = json.loads(connector_config["connector_jwks"])
+        self.connector_jwks = PyJWKSet.from_json(connector_config["connector_jwks"])
         self.queue_name = connector_config["listen"]
         self.exit_event = threading.Event()
         self.thread = None
@@ -744,7 +744,7 @@ class ListenQueue(threading.Thread):
                         "Failing reporting the processing"
                     )
 
-    def is_token_valid(self, token, jwks):
+    def is_token_valid(self, token):
         """
         Returns True if the signature is valid and token is not expired.
         Returns False otherwise.
@@ -752,14 +752,13 @@ class ListenQueue(threading.Thread):
         try:
             unverified_header = jwt.get_unverified_header(token)
             used_kid = unverified_header["kid"]
-            selected_jwk = jwks.get(used_kid)
-            if selected_jwk is None:
+            key = self.connector_jwks[used_kid]
+            if key is None:
                 self.helper.connector_logger.error(
                     "Error: Public key not found in JWKS."
                 )
                 return False
-            key = PyJWK.from_dict(selected_jwk)
-            jwt.decode(token, key=key)
+            jwt.decode(token, key=key, algorithms=[key.algorithm_name], issuer='opencti', subject='connector')
             return True
         except Exception as e:
             self.helper.connector_logger.error("Failed to get external data for %s", e)
@@ -786,7 +785,7 @@ class ListenQueue(threading.Thread):
         # 01. Check the authentication
         authorization: str = request.headers.get("Authorization", "")
         items = authorization.split() if isinstance(authorization, str) else []
-        if self.is_token_valid(items[1], self.connector_jwks) is False:
+        if self.is_token_valid(items[1]) is False:
             return JSONResponse(
                 status_code=401, content={"error": "Invalid credentials"}
             )

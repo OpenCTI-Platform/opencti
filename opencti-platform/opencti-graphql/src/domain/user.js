@@ -105,6 +105,7 @@ import { apiTokens } from '../modules/attributes/internalObject-registrationAttr
 import { SignJWT } from 'jose';
 import { getPlatformCrypto } from '../utils/platformCrypto';
 import { addUserTokenByAdmin, generateTokenHmac } from '../modules/user/user-domain';
+import { memoize } from '../utils/memoize';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -1677,24 +1678,19 @@ export const authenticateUserByBasicAuth = async (context, req, basicAuth) => {
   throw FunctionalError('Cannot identify user with basic auth');
 };
 
-let authenticationKeyPairPromise;
-const XTM1_DERIVATION_PATH = ['authentication', 'xtm1'];
+const getJWTKeyPair = memoize(async () => {
+  const factory = await getPlatformCrypto();
+  return factory.deriveEd25519KeyPair(['authentication', 'xtm1'], 1);
+});
+
 export const issueAuthenticationJWT = async (user, duration = '1h') => {
-  if (!authenticationKeyPairPromise) {
-    const factory = await getPlatformCrypto();
-    authenticationKeyPairPromise = factory.deriveEd25519KeyPair(XTM1_DERIVATION_PATH, 1);
-  }
+  const xmt1DerivationKeyPair = await getJWTKeyPair();
   const jwt = new SignJWT({ sub: user.id, name: user.name }).setIssuedAt().setExpirationTime(duration);
-  const xmt1DerivationKeyPair = await authenticationKeyPairPromise;
   return await xmt1DerivationKeyPair.signJwt(jwt);
 };
 
 export const authenticateUserByJWT = async (context, req, token) => {
-  if (!authenticationKeyPairPromise) {
-    const factory = await getPlatformCrypto();
-    authenticationKeyPairPromise = factory.deriveEd25519KeyPair(XTM1_DERIVATION_PATH, 1);
-  }
-  const xmt1DerivationKeyPair = await authenticationKeyPairPromise;
+  const xmt1DerivationKeyPair = await getJWTKeyPair();
   const verified = await xmt1DerivationKeyPair.verifyJwt(token);
   const userId = verified.payload.sub;
   return await authenticateUserByUserId(context, req, userId);
