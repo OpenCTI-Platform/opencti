@@ -77,7 +77,7 @@ The below capabilities are applicable to the whole application.
     [Please read the dedicated page to have all information](enterprise.md)
 
 The override of capabilities in drafts allows you to differentiate capabilities that your users have in a draft from the ones they have in the main context. This is useful when you want your analysts to work only in a draft environment, without impacting your main database. 
-It is not possible to have less capabilities in draft that you have in main context.
+It is not possible to have fewer capabilities in draft than you have in the main context.
 
 The below capabilities are applicable to the draft mode only: 
 
