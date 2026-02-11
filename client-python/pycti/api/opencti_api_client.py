@@ -1193,7 +1193,7 @@ class OpenCTIApiClient:
         result = self.query(query, {"id": id})
         return json.loads(result["data"]["stix"])
 
-    def token_jwt_connector(self):
+    def connector_jwt(self):
         self.app_logger.info("Generating connector JWT token")
         query = """
                 mutation ConnectorJWT {

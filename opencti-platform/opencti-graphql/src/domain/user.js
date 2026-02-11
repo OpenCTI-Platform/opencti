@@ -1720,9 +1720,7 @@ export const authenticateUserByToken = async (context, req, token) => {
       }
     }
     // Update token usage
-    if (matchingToken) {
-      await updateTokenUsage(user.id, matchingToken.id);
-    }
+    await updateTokenUsage(matchingToken);
     return internalAuthenticateUser(context, req, user);
   }
   throw FunctionalError('Cannot identify user with token');

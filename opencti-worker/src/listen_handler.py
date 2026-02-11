@@ -39,7 +39,7 @@ class ListenHandler:
             or (now - self._connector_jwt_issued_at).total_seconds()
             >= JWT_REFRESH_INTERVAL_SECONDS
         ):
-            self._connector_jwt = self.api.token_jwt_connector()
+            self._connector_jwt = self.api.connector_jwt()
             self._connector_jwt_issued_at = now
         return self._connector_jwt
 

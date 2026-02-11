@@ -1,7 +1,7 @@
 import { v4 as uuid } from 'uuid';
 import { DateTime } from 'luxon';
 import * as crypto from 'crypto';
-import type { AuthContext, AuthUser } from '../../types/user';
+import type { AuthContext, AuthUser, UserApiToken } from '../../types/user';
 import { addUser, findUserPaginated } from '../../domain/user';
 import { SYSTEM_USER } from '../../utils/access';
 import type { BasicGroupEntity } from '../../types/store';
@@ -84,7 +84,7 @@ export interface GeneratedToken {
 }
 
 // Add token
-const addToken = async (context: AuthContext, user: AuthUser, userId: string, input: UserTokenAddInput) => {
+const addToken = async (context: AuthContext, user: AuthUser, targetUser: AuthUser, input: UserTokenAddInput, auditMessage: (token: UserApiToken) => string) => {
   const { duration, name } = input;
   let expires_at = null;
   if (duration && duration !== TokenDuration.Unlimited) {
@@ -112,35 +112,34 @@ const addToken = async (context: AuthContext, user: AuthUser, userId: string, in
     masked_token,
   };
   const updates = [{ key: apiTokens.name, value: [newToken], operation: UPDATE_OPERATION_ADD }];
-  const { element } = await updateAttribute(context, user, userId, ENTITY_TYPE_USER, updates);
-  return { token: newToken, token_value: token, element };
-};
-export const addUserToken = async (context: AuthContext, user: AuthUser, userId: string, input: UserTokenAddInput) => {
-  const { token, token_value, element } = await addToken(context, user, userId, input);
+  const { element } = await updateAttribute(context, user, targetUser.id, ENTITY_TYPE_USER, updates);
   await publishUserAction({
     user,
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `generated a new API token '${token.name}'`,
+    message: auditMessage(newToken),
     context_data: {
-      id: user.id,
+      id: targetUser.id,
       entity_type: ENTITY_TYPE_USER,
       input: {
         duration: input.duration,
         name: input.name,
-        token_id: token.id,
+        token_id: tokenId,
       },
     },
   });
   // Notify for cache invalidation
-  await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
+  await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, targetUser);
   return {
-    token_id: token.id,
-    plaintext_token: token_value,
-    masked_token: token.masked_token,
-    expires_at: token.expires_at,
+    token_id: tokenId,
+    plaintext_token: token,
+    masked_token: masked_token,
+    expires_at,
   };
+};
+export const addUserToken = async (context: AuthContext, user: AuthUser, input: UserTokenAddInput) => {
+  return await addToken(context, user, user, input, (token) => `generated a new API token '${token.name}'`);
 };
 export const addUserTokenByAdmin = async (context: AuthContext, user: AuthUser, userId: string, input: UserTokenAddInput) => {
   // Load target user
@@ -148,88 +147,45 @@ export const addUserTokenByAdmin = async (context: AuthContext, user: AuthUser, 
   if (!userToEdit) {
     throw FunctionalError('User not found', { userId });
   }
-  const { token, token_value, element } = await addToken(context, user, userId, input);
-  await publishUserAction({
-    user,
-    event_type: 'mutation',
-    event_scope: 'update',
-    event_access: 'administration',
-    message: `generated a new API token '${token.name}' for user '${userToEdit.user_email}'`,
-    context_data: {
-      id: userId,
-      entity_type: ENTITY_TYPE_USER,
-      input: {
-        duration: input.duration,
-        name: input.name,
-        token_id: token.id,
-      },
-    },
-  });
-  // Notify for cache invalidation
-  await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
-  return {
-    token_id: token.id,
-    plaintext_token: token_value,
-    masked_token: token.masked_token,
-    expires_at: token.expires_at,
-  };
+  return await addToken(context, user, userToEdit, input, (token) => `generated a new API token '${token.name}' for user '${userToEdit.user_email}'`);
 };
 
 // Revoke token
-const revokeToken = async (context: AuthContext, user: AuthUser, targetUserId: string, tokenId: string) => {
-  // Load target user
-  const userToEdit = await internalLoadById(context, user, targetUserId) as unknown as AuthUser;
-  if (!userToEdit) {
-    throw FunctionalError('User not found', { targetUserId });
-  }
-  const tokens = userToEdit.api_tokens || [];
+const revokeToken = async (context: AuthContext, user: AuthUser, targetUser: AuthUser, tokenId: string, auditMessage: (token: UserApiToken) => string) => {
+  const tokens = targetUser.api_tokens || [];
   const tokenToRemove = tokens.find((t: any) => t.id === tokenId);
   if (!tokenToRemove) {
     throw FunctionalError('Token not found', { tokenId });
   }
   const updates = [{ key: apiTokens.name, value: [tokenToRemove], operation: UPDATE_OPERATION_REMOVE }];
-  const { element } = await updateAttribute(context, user, targetUserId, ENTITY_TYPE_USER, updates);
-  return { element, token: tokenToRemove, user: userToEdit };
+  const { element } = await updateAttribute(context, user, targetUser.id, ENTITY_TYPE_USER, updates);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: auditMessage(tokenToRemove),
+    context_data: {
+      id: targetUser.id,
+      entity_type: ENTITY_TYPE_USER,
+      input: {
+        token_id: tokenId,
+      },
+    },
+  });
+  // Notify for cache invalidation
+  await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
+  return tokenId;
 };
 export const revokeUserToken = async (context: AuthContext, user: AuthUser, tokenId: string) => {
-  const { element, token } = await revokeToken(context, user, user.id, tokenId);
-  await publishUserAction({
-    user,
-    event_type: 'mutation',
-    event_scope: 'update',
-    event_access: 'administration',
-    message: `revoked API token '${token.name}'`,
-    context_data: {
-      id: user.id,
-      entity_type: ENTITY_TYPE_USER,
-      input: {
-        token_id: tokenId,
-      },
-    },
-  });
-  // Notify for cache invalidation
-  await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
-  return tokenId;
+  return await revokeToken(context, user, user, tokenId, (token) => `revoked API token '${token.name}'`);
 };
 export const revokeUserTokenByAdmin = async (context: AuthContext, user: AuthUser, targetUserId: string, tokenId: string) => {
-  const { element, token, user: targetUser } = await revokeToken(context, user, targetUserId, tokenId);
-  await publishUserAction({
-    user,
-    event_type: 'mutation',
-    event_scope: 'update',
-    event_access: 'administration',
-    message: `revoked API token '${token.name}' for user '${targetUser.user_email}'`,
-    context_data: {
-      id: targetUserId,
-      entity_type: ENTITY_TYPE_USER,
-      input: {
-        token_id: tokenId,
-      },
-    },
-  });
-  // Notify for cache invalidation
-  await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
-  return tokenId;
+  const userToEdit = await internalLoadById(context, user, targetUserId) as unknown as AuthUser;
+  if (!userToEdit) {
+    throw FunctionalError('User not found', { targetUserId });
+  }
+  return await revokeToken(context, user, userToEdit, tokenId, (token) => `revoked API token '${token.name}' for user '${userToEdit.user_email}'`);
 };
 
 /**

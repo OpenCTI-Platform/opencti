@@ -758,7 +758,14 @@ class ListenQueue(threading.Thread):
                     "Error: Public key not found in JWKS."
                 )
                 return False
-            jwt.decode(token, key=key, algorithms=[key.algorithm_name], issuer='opencti', subject='connector')
+
+            jwt.decode(
+                token,
+                key=key,
+                algorithms=[key.algorithm_name],
+                issuer="opencti",
+                subject="connector",
+            )
             return True
         except Exception as e:
             self.helper.connector_logger.error("Failed to get external data for %s", e)
@@ -785,7 +792,11 @@ class ListenQueue(threading.Thread):
         # 01. Check the authentication
         authorization: str = request.headers.get("Authorization", "")
         items = authorization.split() if isinstance(authorization, str) else []
-        if self.is_token_valid(items[1]) is False:
+        if (
+            len(items) != 2
+            or items[0].lower() != "bearer"
+            or self.is_token_valid(items[1]) is False
+        ):
             return JSONResponse(
                 status_code=401, content={"error": "Invalid credentials"}
             )

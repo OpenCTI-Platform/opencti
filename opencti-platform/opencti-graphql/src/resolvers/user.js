@@ -250,7 +250,7 @@ const userResolvers = {
     sendUserMail: (_, { input }, context) => {
       return sendEmailToUser(context, context.user, input);
     },
-    userTokenAdd: (_, { input }, context) => addUserToken(context, context.user, context.user.id, input),
+    userTokenAdd: (_, { input }, context) => addUserToken(context, context.user, input),
     userTokenRevoke: async (_, { id }, context) => revokeUserToken(context, context.user, id),
     userAdminTokenRevoke: async (_, { userId, id }, context) => revokeUserTokenByAdmin(context, context.user, userId, id),
     userAdminTokenAdd: async (_, { userId, input }, context) => addUserTokenByAdmin(context, context.user, userId, input),

@@ -51,7 +51,7 @@ describe('User Domain', () => {
         duration: TokenDuration.Days_30,
       };
 
-      const result = await addUserToken(context, user, user.id, input);
+      const result = await addUserToken(context, user, input);
 
       // Verify result structure
       expect(result).toHaveProperty('token_id');
@@ -107,7 +107,7 @@ describe('User Domain', () => {
         duration: TokenDuration.Unlimited,
       };
 
-      const result = await addUserToken(context, user, user.id, input);
+      const result = await addUserToken(context, user, input);
 
       expect(result.expires_at).toBeNull();
       expect(publishUserAction).toHaveBeenCalled();
