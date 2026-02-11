@@ -4,7 +4,6 @@ import Dialog from '@common/dialog/Dialog';
 import { OpenInBrowserOutlined } from '@mui/icons-material';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
-import Grid from '@mui/material/Grid';
 import Tooltip from '@mui/material/Tooltip';
 import { useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
@@ -45,41 +44,49 @@ const ExternalReferenceDetailsComponent = ({
 
   return (
     <div style={{ height: '100%' }}>
-      <Card title={t_i18n('Details')}>
-        <Grid container={true} spacing={3}>
-          <Grid item xs={6}>
-            <Label>
-              {t_i18n('External ID')}
-            </Label>
-            {externalReference.external_id ?? EMPTY_VALUE}
-            <Label
-              sx={{ marginTop: 2 }}
-            >
-              {t_i18n('Creators')}
-            </Label>
-            <ItemCreators creators={externalReference.creators ?? []} />
-          </Grid>
-          <Grid item xs={6}>
-            <Label action={(
-              <Tooltip title={t_i18n('Browse the link')}>
-                <IconButton
-                  onClick={() => handleOpenExternalLink(externalReference.url ?? '')}
-                  color="primary"
-                  disabled={!externalReference.url}
-                >
-                  <OpenInBrowserOutlined />
-                </IconButton>
-              </Tooltip>
-            )}
-            >
-              {t_i18n('URL')}
-            </Label>
-            <pre style={{ minHeight: 35 }}>
-              {externalReference.url}
-            </pre>
-          </Grid>
-        </Grid>
+      <Card
+        title={t_i18n('Details')}
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2,
+        }}
+      >
+        <div>
+          <Label>
+            {t_i18n('External ID')}
+          </Label>
+          <span>{externalReference.external_id ?? EMPTY_VALUE}</span>
+        </div>
+
+        <div>
+          <Label action={(
+            <Tooltip title={t_i18n('Browse the link')}>
+              <IconButton
+                onClick={() => handleOpenExternalLink(externalReference.url ?? '')}
+                color="primary"
+                disabled={!externalReference.url}
+              >
+                <OpenInBrowserOutlined />
+              </IconButton>
+            </Tooltip>
+          )}
+          >
+            {t_i18n('URL')}
+          </Label>
+          {
+            externalReference.url
+              ? <pre style={{ minHeight: 35 }}>{externalReference.url}</pre>
+              : <span>{EMPTY_VALUE}</span>
+          }
+        </div>
+
+        <div>
+          <Label>{t_i18n('Creators')}</Label>
+          <ItemCreators creators={externalReference.creators ?? []} />
+        </div>
       </Card>
+
       <Dialog
         open={displayExternalLink}
         onClose={handleCloseExternalLink}
