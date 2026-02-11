@@ -12,6 +12,7 @@ import useFormikToSSOConfig from './utils/useFormikToSSOConfig';
 import SSODefinitionForm, { SSODefinitionFormValues } from '@components/settings/sso_definitions/SSODefinitionForm';
 import { getStrategyConfigEnum } from '@components/settings/sso_definitions/utils/useStrategicConfig';
 import { SingleSignOnAddInput } from '@components/settings/sso_definitions/__generated__/SSODefinitionCreationMutation.graphql';
+import { formatAdvancedConfigurationForCreation, formatStringToArray } from './utils/format';
 
 const ssoDefinitionMutation = graphql`
   mutation SSODefinitionCreationMutation(
@@ -84,25 +85,19 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
     { setSubmitting, resetForm }: { setSubmitting: (flag: boolean) => void; resetForm: () => void },
   ) => {
     if (!formikToSSOConfig) return;
-    const configuration = formikToSSOConfig(values);
+    const mainConfigs = formikToSSOConfig(values);
 
-    values.advancedConfigurations.forEach((conf) => {
-      if (conf.key && conf.value && conf.type) {
-        configuration.push({
-          key: conf.key,
-          value: conf.value,
-          type: conf.type,
-        });
-      }
-    });
+    const advancedConfigs = formatAdvancedConfigurationForCreation(values.advancedConfigurations);
+
+    const configuration = [...mainConfigs, ...advancedConfigs];
 
     const strategyEnum = getStrategyConfigEnum(selectedStrategy);
 
     const groups_management = {
       group_attribute: values.group_attribute || null,
-      group_attributes: values.group_attributes || null,
-      groups_attributes: values.groups_attributes || null,
-      groups_path: values.groups_path || null,
+      group_attributes: formatStringToArray(values.group_attributes) || null,
+      groups_attributes: formatStringToArray(values.groups_attributes) || null,
+      groups_path: values.groups_path ? [values.groups_path] : null,
       groups_scope: values.groups_scope || null,
       groups_mapping: getGroupOrOrganizationMapping(values.groups_mapping_source, values.groups_mapping_target),
       token_reference: values.groups_token_reference,
@@ -110,11 +105,11 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
     };
 
     const organizations_management = {
-      token_reference: values.organizations_token_reference,
-      organizations_path: values.organizations_path || null,
+      organizations_path: formatStringToArray(values.organizations_path) || null,
       organizations_scope: values.organizations_scope || null,
-      read_userinfo: values.organizations_read_userinfo,
       organizations_mapping: getGroupOrOrganizationMapping(values.organizations_mapping_source, values.organizations_mapping_target),
+      read_userinfo: values.organizations_read_userinfo,
+      token_reference: values.organizations_token_reference,
     };
 
     if (!strategyEnum) return;

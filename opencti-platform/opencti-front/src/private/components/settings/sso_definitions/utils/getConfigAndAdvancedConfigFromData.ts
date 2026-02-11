@@ -58,19 +58,9 @@ export const getSSOConfigList = (strategy: string) => {
 export const getAdvancedConfigFromData = (config: ConfigTypeArray, strategy: string): ConfigurationTypeInput[] => {
   const configKeys = getSSOConfigList(strategy);
 
-  const finalConfig: Config[] = [];
-  for (let i = 0; i < config.length; i++) {
-    const item = config[i];
-    if (!configKeys.includes(item.key)) {
-      if (item.type === 'encrypted') {
-        finalConfig.push({ key: item.key, value: '******', type: 'secret' });
-      } else {
-        finalConfig.push(item);
-      }
-    }
-  }
-
-  return finalConfig;
+  return config
+    .filter((item) => !configKeys.includes(item.key))
+    .map((item) => (item.type === 'encrypted' ? { key: item.key, value: '******', type: 'secret' } : item));
 };
 
 export const getConfigFromData = (config: ConfigTypeArray, strategy: string): ConfigurationTypeInput[] => {

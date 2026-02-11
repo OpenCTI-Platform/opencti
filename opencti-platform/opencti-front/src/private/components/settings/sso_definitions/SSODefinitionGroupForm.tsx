@@ -24,6 +24,10 @@ const SSODefinitionGroupForm = ({ isEditionMode, selectedStrategy, updateField }
 
     if (!name) return null;
 
+    const helperText = selectedStrategy !== 'LDAP'
+      ? t_i18n('Please add square bracket & each value between double quotes (even for unique value). For example: ["value1", "value2"]')
+      : null;
+
     return (
       <Field
         component={TextField}
@@ -33,7 +37,7 @@ const SSODefinitionGroupForm = ({ isEditionMode, selectedStrategy, updateField }
         label={t_i18n('Attribute in token')}
         style={fieldSpacingContainerStyle}
         fullWidth
-        helperText={t_i18n('To create a list of values, add a comma between each value of your list (ex: value1, value2)')}
+        helperText={helperText}
       />
     );
   };
