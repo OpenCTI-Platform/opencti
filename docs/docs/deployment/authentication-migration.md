@@ -13,7 +13,7 @@ This means that a SSO configuration defined in UI (and therefore in database) **
 # Avoiding having an authentication strategy that keeps appearing in the UI
 Assuming you have a configration defined in your configuration file, when upgrading to version 7, your configuration will be converted to UI (stored in database). 
 
-If for whatever reason you delete this configuration from UI, next time you will intialize your platform, you will see **the same configuration again.**
+If for whatever reason you delete this configuration from UI, next time you will initialize your platform, you will see **the same configuration again.**
 
 This is due to the above process. To prevent this unwanted behavior, you need to delete from your configuration file the authentication strategy of that needs to be removed. This way it will stop re-appearing.
 
