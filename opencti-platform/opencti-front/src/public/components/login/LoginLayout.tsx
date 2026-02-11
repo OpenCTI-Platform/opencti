@@ -103,7 +103,7 @@ const LoginLayout = ({ settings, children }: LoginLayoutProps) => {
           <LoginLogo data={settings} />
           {children}
         </Stack>
-        <Box flex={2} sx={asideSx}>
+        <Box flex={1} sx={asideSx}>
           {!isWhitemarkEnable && (
             <>
               <LogoBaseline />

@@ -46,7 +46,7 @@ const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
 
   return (
     <LoginLayout settings={settings}>
-      <Stack gap={1} sx={{ width: 380 }}>
+      <Stack gap={1} sx={{ width: 500 }}>
         <ConsentMessage
           value={checked}
           data={settings}
