@@ -89,7 +89,7 @@ Depending on the draft operation of the data, the ingestion process will be slig
 Given that in draft you can see your platform, it is important to highlight that:
 
 - [Capabilities](../administration/users.md) will apply in draft: a user without the ability to create or update knowledge won't be able to create or update knowledge in draft. Additionally, this user won't be able to approve a draft either.
-- [Override of capabilities in draft](../administration/users.md) will apply in draft: a user with only create knowledge as Draft capability will be able to create a draft. Import knowledge in Draft capability will be needed to create a draf via file upload (& import corresponding knowledge).
+- [Override of capabilities in draft](../administration/users.md) will apply in draft: a user with only create knowledge as Draft capability will be able to create a draft. Import knowledge in Draft capability is needed to create a draft via file upload and to import the corresponding knowledge.
 - [Confidence level](reliability-confidence.md) applies in draft: confidence level will apply in draft, in the exact same way that they are enforced in the platform.
 - [Markings](../administration/segregation.md) will apply in draft: if you are not able to see data in the platform, then you won't be able to see it in draft either.
 - [Data segregation](../administration/organization-segregation.md): if you have enabled data segregation and an entity has not been shared with you, when accessing a draft, this entity will remain not accessible to you. Additionally, if in the meantime, this entity has been shared to you, this entity will remain hidden from you in draft, since the draft has been created before the access has been granted to you.
