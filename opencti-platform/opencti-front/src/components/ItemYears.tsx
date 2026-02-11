@@ -1,5 +1,4 @@
 import React from 'react';
-import { CSSProperties } from '@mui/styles/withStyles';
 import { EMPTY_VALUE } from '../utils/String';
 import Tag from '@common/tag/Tag';
 
