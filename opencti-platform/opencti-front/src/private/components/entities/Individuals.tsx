@@ -88,6 +88,7 @@ const Individuals = () => {
             <IndividualCreation paginationOptions={paginationOptions} />
           </Security>
         )}
+        iconExtension
       >
         {queryRef && (
           <React.Suspense

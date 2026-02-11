@@ -188,6 +188,7 @@ const CsvMappers = () => {
                   </>
                 </>
               )}
+              iconExtension
             >
               <React.Suspense
                 fallback={<Loader variant={LoaderVariant.inElement} />}

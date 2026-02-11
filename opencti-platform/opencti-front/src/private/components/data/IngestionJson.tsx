@@ -122,6 +122,7 @@ const IngestionJson = () => {
             />
           </Security>
         )}
+        iconExtension
       >
         {queryRef && (
           <React.Suspense

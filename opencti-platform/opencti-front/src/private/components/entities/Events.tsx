@@ -94,6 +94,7 @@ const Events = () => {
             <EventCreation paginationOptions={paginationOptions} />
           </Security>
         )}
+        iconExtension
       >
         {queryRef && (
           <React.Suspense

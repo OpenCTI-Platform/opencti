@@ -127,6 +127,7 @@ const Sync = () => {
               </>
             </Security>
           )}
+          iconExtension
         >
           <QueryRenderer
             query={SyncLinesQuery}

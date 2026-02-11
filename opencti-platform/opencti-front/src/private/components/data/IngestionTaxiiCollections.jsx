@@ -70,6 +70,7 @@ const IngestionTaxiiCollections = () => {
             <IngestionTaxiiCollectionCreation paginationOptions={paginationOptions} />
           </Security>
         )}
+        iconExtension
       >
         <QueryRenderer
           query={IngestionTaxiiCollectionLinesQuery}

@@ -96,6 +96,7 @@ const Organizations = () => {
             <OrganizationCreation paginationOptions={paginationOptions} />
           </Security>
         )}
+        iconExtension
       >
         {queryRef && (
           <React.Suspense
