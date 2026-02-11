@@ -22,7 +22,7 @@ export default class TaskPopup {
   }
 
   async launchRemoveFromDraft() {
-    await this.page.getByLabel('Remove from draft', { exact: true }).getByLabel('remove from draft').click();
+    await this.page.getByLabel('Remove from draft', { exact: true }).getByLabel('remove_from_draft').click();
     await this.page.getByRole('button', { name: 'Launch' }).click();
   }
 }

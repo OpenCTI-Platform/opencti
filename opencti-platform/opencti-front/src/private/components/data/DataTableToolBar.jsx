@@ -2550,7 +2550,7 @@ class DataTableToolBar extends Component {
                         <Tooltip title={t('Remove from draft')}>
                           <IconButton
                             color="primary"
-                            aria-label="input"
+                            aria-label="remove_from_draft"
                             onClick={this.handleLaunchRemoveFromDraft.bind(this)}
                             size="small"
                             disabled={
