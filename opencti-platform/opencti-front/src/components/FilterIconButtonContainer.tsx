@@ -89,12 +89,18 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
+export type FilterIconButtonVariant
+  = undefined // default style (variant is undefined) is the one for filters applied in datatables
+    | 'inLine' // for filters in a datatable line
+    | 'inForm' // for filters in a form
+    | 'TagLike'; // for filters with the Tag style
+
 interface FilterIconButtonContainerProps {
   filters: FilterGroup;
   handleRemoveFilter?: (key: string, op?: string) => void;
   handleSwitchGlobalMode?: () => void;
   handleSwitchLocalMode?: (filter: Filter) => void;
-  filterIconButtonVariant?: string; // 'inLine' or 'inForm' or 'TagLike' (if empty: default style like in datatables)
+  filterIconButtonVariant?: FilterIconButtonVariant;
   dataColumns?: DataColumns;
   disabledPossible?: boolean;
   redirection?: boolean;

@@ -5,7 +5,7 @@ import useQueryLoading from '../utils/hooks/useQueryLoading';
 import { DataColumns } from './list_lines';
 
 import { Filter, FilterGroup, handleFilterHelpers } from '../utils/filters/filtersHelpers-types';
-import FilterIconButtonContainer from './FilterIconButtonContainer';
+import FilterIconButtonContainer, { FilterIconButtonVariant } from './FilterIconButtonContainer';
 import { filterValuesContentQuery } from './FilterValuesContent';
 import { FilterValuesContentQuery } from './__generated__/FilterValuesContentQuery.graphql';
 import { FilterChipsParameter } from './filters/FilterChipPopover';
@@ -16,7 +16,7 @@ export interface FilterIconButtonProps {
   handleRemoveFilter?: (key: string, op?: string) => void;
   handleSwitchGlobalMode?: () => void;
   handleSwitchLocalMode?: (filter: Filter) => void;
-  filterIconButtonVariant?: string;
+  filterIconButtonVariant?: FilterIconButtonVariant;
   chipColor?: ChipOwnProps['color'];
   dataColumns?: DataColumns;
   disabledPossible?: boolean;
@@ -150,7 +150,8 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
         ...filters,
         filters:
           filters.filters.filter((currentFilter) => !availableFilterKeys || availableFilterKeys?.some((currentKey) => currentFilter.key === currentKey)),
-      } : undefined;
+      }
+    : undefined;
   if (displayedFilters && isFilterGroupNotEmpty(displayedFilters)) { // to avoid running the FiltersRepresentatives query if filters are empty
     return (
       <FilterIconButtonWithRepresentativesQuery
