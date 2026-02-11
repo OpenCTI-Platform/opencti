@@ -58,6 +58,7 @@ const DraftToolbarComponent = ({
         flexDirection: 'row',
         background: theme.palette.designSystem.background.bg4,
         borderTop: `1px solid ${theme.palette.designSystem.alert.warning.primary}`,
+        zIndex: theme.zIndex.appBar + 1,
       }}
     >
       <Typography variant="h6">{draft.name}</Typography>

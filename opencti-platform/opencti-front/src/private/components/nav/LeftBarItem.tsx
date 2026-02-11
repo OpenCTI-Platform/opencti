@@ -104,7 +104,7 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
     const iconOpacity = isSubItem && selected ? 1 : 0.5;
 
     const getTextColor = () => {
-      if (draftContext) {
+      if (isSubItem && draftContext && selected) {
         return theme.palette.designSystem.alert.warning.primary;
       }
       if (isSubItem && selected) {

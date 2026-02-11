@@ -265,9 +265,9 @@ const LeftBarComponent = ({ queryRef }) => {
   const data = usePreloadedQuery(leftBarQuery, queryRef);
   const platformTheme = data.settings?.platform_theme;
 
-  let logo = navOpen
-    ? platformTheme?.theme_logo || (draftContext ? LogoTextOrange : theme.logo)
-    : platformTheme?.theme_logo_collapsed || (draftContext ? LogoCollapsedOrange : theme.logo_collapsed);
+  const navOpenLogo = platformTheme?.theme_logo || (draftContext ? LogoTextOrange : theme.logo);
+  const navCloseLogo = platformTheme?.theme_logo_collapsed || (draftContext ? LogoCollapsedOrange : theme.logo_collapsed);
+  let logo = navOpen ? navOpenLogo : navCloseLogo;
 
   const addMenuUnique = (menu) => {
     const joined = selectedMenu.concat(menu);
