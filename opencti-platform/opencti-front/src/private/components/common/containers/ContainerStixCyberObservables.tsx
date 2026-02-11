@@ -1,12 +1,12 @@
-import React, { FunctionComponent, MouseEvent } from 'react';
+import React, { FunctionComponent } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import useCopy from '../../../../utils/hooks/useCopy';
-import useAuth, { UserContext } from '../../../../utils/hooks/useAuth';
+import useAuth from '../../../../utils/hooks/useAuth';
 import ExportContextProvider from '../../../../utils/ExportContextProvider';
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
-import { emptyFilterGroup, isFilterGroupNotEmpty, useGetDefaultFilterObject, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, isFilterGroupNotEmpty, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../../../utils/filters/filtersUtils';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import ContainerAddStixCoreObjectsInLine from './ContainerAddStixCoreObjectsInLine';
@@ -22,12 +22,6 @@ import {
 } from '@components/common/containers/__generated__/ContainerStixCyberObservablesLinesPaginationQuery.graphql';
 import { ContainerStixCyberObservablesLines_data$data } from '@components/common/containers/__generated__/ContainerStixCyberObservablesLines_data.graphql';
 import ContainerStixCoreObjectPopover from '@components/common/containers/ContainerStixCoreObjectPopover';
-import { resolveLink } from '../../../../utils/Entity';
-import { typesWithNoAnalysesTab } from '../../../../utils/hooks/useAttributes';
-import Chip from '@mui/material/Chip';
-import { useTheme } from '@mui/material/styles';
-import { useFormatter } from '../../../../components/i18n';
-import { useNavigate } from 'react-router-dom';
 
 const containerStixCyberObservableLineFragment = graphql`
     fragment ContainerStixCyberObservablesLine_node on StixCyberObservable {
@@ -199,9 +193,6 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<
 > = ({ container, enableReferences }) => {
   const LOCAL_STORAGE_KEY = `container-${container.id}-stixCyberObservables`;
   const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
-  const theme = useTheme();
-  const { n } = useFormatter();
-  const navigate = useNavigate();
 
   const initialValues = {
     filters: {
@@ -244,9 +235,7 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<
       .map((o) => ({ id: o?.node.id, value: o?.node.observable_value }))
       .filter((o) => o.id) as { id: string; value: string }[];
   };
-
-  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['Stix-Cyber-Observable']);
-  const contextFilters = {
+  const filtersContext = {
     mode: 'and',
     filters: [
       {
@@ -256,8 +245,9 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<
         mode: 'or',
       },
     ],
-    filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
+    filterGroups: filters && isFilterGroupNotEmpty(filters) ? [filters] : [],
   };
+  const contextFilters = useBuildEntityTypeBasedFilterContext('Stix-Cyber-Observable', filtersContext);
   const queryPaginationOptions = {
     ...paginationOptions,
     types: ['Stix-Cyber-Observable'],
@@ -323,48 +313,6 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<
       label: 'Analyses',
       percentWidth: 8,
       isSortable: false,
-      render: ({ id, entity_type, containersNumber }) => {
-        const analysesNumber = containersNumber?.total;
-        const link = `${resolveLink(entity_type)}/${id}`;
-        const linkAnalyses = `${link}/analyses`;
-        const analysesChipStyle: React.CSSProperties = {
-          fontSize: 13,
-          lineHeight: '12px',
-          height: 20,
-          textTransform: 'uppercase',
-          borderRadius: 4,
-        };
-        return (
-          <>
-            {typesWithNoAnalysesTab.includes(entity_type)
-              ? (
-                  <Chip
-                    style={analysesChipStyle}
-                    label={n(analysesNumber)}
-                  />
-                )
-              : (
-                  <Chip
-                    sx={{
-                      ...analysesChipStyle,
-                      cursor: 'pointer',
-                      '&:hover': {
-                        backgroundColor: theme.palette.primary.main,
-                      },
-                    }}
-                    label={n(analysesNumber)}
-                    onClick={(e: MouseEvent<HTMLDivElement>) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      navigate(linkAnalyses);
-                    }}
-                  />
-                )
-            }
-          </>
-        );
-      },
-
     },
     objectMarking: {
       label: 'Marking',
@@ -375,54 +323,50 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<
 
   return (
     <div data-testid="container-observables-pages">
-      <UserContext.Consumer>
-        {() => (
-          <ExportContextProvider>
-            {queryRef && (
-              <DataTable
-                storageKey={LOCAL_STORAGE_KEY}
-                initialValues={initialValues}
-                lineFragment={containerStixCyberObservableLineFragment}
-                preloadedPaginationProps={preloadedPaginationProps}
-                resolvePath={(data: ContainerStixCyberObservablesLines_data$data) => data.container?.objects?.edges?.map((n) => n?.node)}
-                dataColumns={dataColumns}
-                contextFilters={contextFilters}
-                handleCopy={handleCopy}
-                exportContext={{ entity_id: container.id, entity_type: 'Stix-Cyber-Observable' }}
-                availableEntityTypes={['Stix-Cyber-Observable']}
-                searchContextFinal={{ entityTypes: ['Stix-Cyber-Observable'] }}
-                createButton={(
-                  <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                    <ContainerAddStixCoreObjectsInLine
-                      containerId={container.id}
-                      targetStixCoreObjectTypes={['Stix-Cyber-Observable']}
-                      containerStixCoreObjects={[...(container.objects?.edges ?? [])]}
-                      paginationOptions={queryPaginationOptions}
-                      enableReferences={enableReferences}
-                    />
-                  </Security>
-                )}
-                actions={(row) => {
-                  return (
-                    <div onClick={(e) => e.stopPropagation()}>
-                      <ContainerStixCoreObjectPopover
-                        containerId={container.id}
-                        toId={row.id}
-                        relationshipType="object"
-                        paginationKey="Pagination_objects"
-                        paginationOptions={queryPaginationOptions}
-                        selectedElements={selectedElements}
-                        setSelectedElements={setSelectedElements}
-                        enableReferences={enableReferences}
-                      />
-                    </div>
-                  );
-                }}
-              />
+      <ExportContextProvider>
+        {queryRef && (
+          <DataTable
+            storageKey={LOCAL_STORAGE_KEY}
+            initialValues={initialValues}
+            lineFragment={containerStixCyberObservableLineFragment}
+            preloadedPaginationProps={preloadedPaginationProps}
+            resolvePath={(data: ContainerStixCyberObservablesLines_data$data) => data.container?.objects?.edges?.map((n) => n?.node)}
+            dataColumns={dataColumns}
+            contextFilters={contextFilters}
+            handleCopy={handleCopy}
+            exportContext={{ entity_id: container.id, entity_type: 'Stix-Cyber-Observable' }}
+            availableEntityTypes={['Stix-Cyber-Observable']}
+            searchContextFinal={{ entityTypes: ['Stix-Cyber-Observable'] }}
+            createButton={(
+              <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <ContainerAddStixCoreObjectsInLine
+                  containerId={container.id}
+                  targetStixCoreObjectTypes={['Stix-Cyber-Observable']}
+                  containerStixCoreObjects={[...(container.objects?.edges ?? [])]}
+                  paginationOptions={queryPaginationOptions}
+                  enableReferences={enableReferences}
+                />
+              </Security>
             )}
-          </ExportContextProvider>
+            actions={(row) => {
+              return (
+                <div onClick={(e) => e.stopPropagation()}>
+                  <ContainerStixCoreObjectPopover
+                    containerId={container.id}
+                    toId={row.id}
+                    relationshipType="object"
+                    paginationKey="Pagination_objects"
+                    paginationOptions={queryPaginationOptions}
+                    selectedElements={selectedElements}
+                    setSelectedElements={setSelectedElements}
+                    enableReferences={enableReferences}
+                  />
+                </div>
+              );
+            }}
+          />
         )}
-      </UserContext.Consumer>
+      </ExportContextProvider>
     </div>
   );
 };
