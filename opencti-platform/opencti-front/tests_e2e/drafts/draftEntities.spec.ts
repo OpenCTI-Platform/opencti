@@ -9,7 +9,7 @@ import FiltersPageModel from '../model/filters.pageModel';
 test.describe('Drafts - Entities and background tasks', { tag: ['@ce'] }, () => {
   const draftName = `Draft E2E - ${Date.now()}`;
   const malwareName = `malware in draft- ${uuid()}`;
-  const markingToApply = 'PAP:GREEN';
+  const labelToApply = 'background-task-filter-add-label';
 
   test('should create a draft, add a malware entity, and verify its presence', async ({ page, request }) => {
     const Drafts = new DraftsPage(page);
@@ -52,16 +52,24 @@ test.describe('Drafts - Entities and background tasks', { tag: ['@ce'] }, () => 
     await dataTable.getCheckAll().click();
 
     // Launch a background task to add a label on the malware
-    await taskPopup.launchAddMarking(markingToApply);
+    await taskPopup.launchAddLabel(labelToApply);
+
+    // Need to wait after click on "Launch" that the popup goes away.
+    await expect(taskPopup.getPage().getByText('Launch a background task')).not.toBeVisible({ timeout: 3000 });
 
     // Wait for the background task to complete
     await checkBackgroundTasksCompletion(request);
 
     // Check the update has been done only on the malware
     await expect(dataTable.getNumberElements(1)).toBeVisible();
-    await filter.addMarkingFilter(markingToApply);
+
+    // Filter by the applied label and check the malware is still in the list
+    await filter.addFilter('Label', labelToApply);
     await expect(dataTable.getNumberElements(1)).toBeVisible();
-    await filter.removeLastFilter();
+    await expect(Drafts.getEntityInList(malwareName)).toBeVisible();
+
+    // Select all entities in the list (ie the malware we just created)
+    await dataTable.getCheckAll().click();
 
     // Click the "remove from draft" icon in the toolbar
     await taskPopup.launchRemoveFromDraft();
