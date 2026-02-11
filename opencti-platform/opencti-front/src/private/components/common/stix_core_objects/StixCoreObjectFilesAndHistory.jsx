@@ -32,6 +32,14 @@ import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapper
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import useAuth from '../../../../utils/hooks/useAuth';
 import AuthorizedMembersField from '../form/AuthorizedMembersField';
+import useHelper from '../../../../utils/hooks/useHelper';
+import { useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
+import { DRAFTWORKPACE_TYPE } from '@components/drafts/DraftCreation';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import MarkdownField from '../../../../components/fields/MarkdownField';
+import ObjectAssigneeField from '@components/common/form/ObjectAssigneeField';
+import ObjectParticipantField from '@components/common/form/ObjectParticipantField';
+import CreatedByField from '@components/common/form/CreatedByField';
 
 const styles = (theme) => ({
   container: {
@@ -138,8 +146,10 @@ const StixCoreObjectFilesAndHistory = ({
   withoutRelations,
   bypassEntityId,
 }) => {
+  const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
   const { me: owner, settings } = useAuth();
+  const { mandatoryAttributes } = useIsMandatoryAttribute(DRAFTWORKPACE_TYPE);
   const showAllMembersLine = !settings.platform_organization?.id;
   const draftContext = useDraftContext();
   const [fileToImport, setFileToImport] = useState(null);
@@ -181,6 +191,10 @@ const StixCoreObjectFilesAndHistory = ({
         bypassEntityId: bypassEntityId ? id : null,
         configuration: config,
         validationMode: validation_mode,
+        description: values.description,
+        objectAssignee: values.objectAssignee.map(({ value }) => value),
+        objectParticipant: values.objectParticipant.map(({ value }) => value),
+        createdBy: values.createdBy?.value,
         authorized_members: !authorizedMembers
           ? null
           : authorizedMembers
@@ -269,6 +283,16 @@ const StixCoreObjectFilesAndHistory = ({
     const hasUserChoiceCsvMapperRepresentations = resolveHasUserChoiceParsedCsvMapper(selectedCsvMapper);
     setHasUserChoiceCsvMapper(hasUserChoiceCsvMapperRepresentations);
   };
+
+  const draftInitialValues = useDefaultValues(DRAFTWORKPACE_TYPE, {
+    name: '',
+    description: '',
+    objectAssignee: [],
+    objectParticipant: [],
+    createdBy: undefined,
+    authorized_members: undefined,
+  });
+
   return (
     <div className={classes.container} data-testid="sco-data-file-and-history">
       <Grid
@@ -305,7 +329,7 @@ const StixCoreObjectFilesAndHistory = ({
       </Grid>
       <Formik
         enableReinitialize={true}
-        initialValues={{ connector_id: '', validation_mode: draftContext ? 'draft' : 'workbench', configuration: '', objectMarking: [] }}
+        initialValues={{ connector_id: '', validation_mode: draftContext ? 'draft' : 'workbench', configuration: '', objectMarking: [], ...draftInitialValues }}
         validationSchema={importValidation(t_i18n, selectedConnector?.configurations?.length > 0)}
         onSubmit={onSubmitImport}
         onReset={handleCloseImport}
@@ -369,17 +393,50 @@ const StixCoreObjectFilesAndHistory = ({
                 </Field>
               )}
               {values.validation_mode === 'draft' && (
-                <Field
-                  name="authorizedMembers"
-                  component={AuthorizedMembersField}
-                  owner={owner}
-                  showAllMembersLine={showAllMembersLine}
-                  canDeactivate
-                  addMeUserWithAdminRights
-                  enableAccesses
-                  applyAccesses
-                  style={fieldSpacingContainerStyle}
-                />
+                <>
+                    {isFeatureEnable('DRAFT_METADATA') && (
+                      <>
+                        <Field
+                          component={MarkdownField}
+                          name="description"
+                          label={t_i18n('Description')}
+                          required={mandatoryAttributes.includes('description')}
+                          fullWidth={true}
+                          multiline={true}
+                          rows="4"
+                          style={fieldSpacingContainerStyle}
+                          askAi={true}
+                        />
+                        <ObjectAssigneeField
+                          name="objectAssignee"
+                          style={fieldSpacingContainerStyle}
+                          required={mandatoryAttributes.includes('objectAssignee')}
+                        />
+                        <ObjectParticipantField
+                          name="objectParticipant"
+                          style={fieldSpacingContainerStyle}
+                          required={mandatoryAttributes.includes('objectParticipant')}
+                        />
+                        <CreatedByField
+                          name="createdBy"
+                          required={mandatoryAttributes.includes('createdBy')}
+                          style={fieldSpacingContainerStyle}
+                          setFieldValue={setFieldValue}
+                        />
+                      </>
+                    )}
+                    <Field
+                      name="authorizedMembers"
+                      component={AuthorizedMembersField}
+                      owner={owner}
+                      showAllMembersLine={showAllMembersLine}
+                      canDeactivate
+                      addMeUserWithAdminRights
+                      enableAccesses
+                      applyAccesses
+                      style={fieldSpacingContainerStyle}
+                    />
+                </>
               )}
               {selectedConnector?.configurations?.length > 0
                 ? (
