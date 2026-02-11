@@ -45,7 +45,7 @@ export const computeOrganizationsMapping = (ssoEntity: BasicStoreEntitySingleSig
 
 export const registerHeadertrategy = async (ssoEntity: BasicStoreEntitySingleSignOn) => {
   const providerRef = ssoEntity.identifier || 'header';
-  const ssoConfig = convertKeyValueToJsConfiguration(ssoEntity);
+  const ssoConfig = await convertKeyValueToJsConfiguration(ssoEntity);
   const providerName = ssoConfig?.label || providerRef;
 
   logAuthInfo('Configuring Header', EnvStrategyType.STRATEGY_HEADER, { id: ssoEntity.id, identifier: ssoEntity.identifier, providerRef });

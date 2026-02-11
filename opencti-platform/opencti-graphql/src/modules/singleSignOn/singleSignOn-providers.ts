@@ -1,5 +1,4 @@
 import { StrategyType } from '../../generated/graphql';
-import { logApp } from '../../config/conf';
 import LocalStrategy from 'passport-local';
 import { login } from '../../domain/user';
 import { addUserLoginCount } from '../../manager/telemetryManager';
@@ -24,7 +23,7 @@ import { GraphQLError } from 'graphql/index';
 import { registerOpenIdStrategy } from './singleSignOn-provider-openid';
 import { registerHeadertrategy } from './singleSignOn-provider-header';
 
-export const parseValueAsType = async (config: ConfigurationType) => {
+export const parseValueAsType = async (config: ConfigurationType): Promise<string | number | any[] | boolean> => {
   if (isNotEmptyField(config.value) && isNotEmptyField(config.key) && isNotEmptyField(config.type)) {
     if (config.type.toLowerCase() === 'number') {
       return +config.value;
@@ -45,7 +44,7 @@ export const parseValueAsType = async (config: ConfigurationType) => {
   }
 };
 
-export const convertKeyValueToJsConfiguration = async (ssoEntity: BasicStoreEntitySingleSignOn) => {
+export const convertKeyValueToJsConfiguration = async (ssoEntity: BasicStoreEntitySingleSignOn): Promise<any> => {
   if (ssoEntity.configuration) {
     const ssoConfiguration: any = {};
     for (let i = 0; i < ssoEntity.configuration.length; i++) {
