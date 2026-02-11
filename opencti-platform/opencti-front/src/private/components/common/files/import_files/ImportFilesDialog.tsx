@@ -359,20 +359,6 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
     createdBy: undefined,
   });
 
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2, t_i18n('Name must be at least 2 characters')),
-    description: Yup.string().nullable(),
-    objectAssignee: Yup.array().nullable(),
-    objectParticipant: Yup.array().nullable(),
-    createdBy: Yup.object().nullable(),
-    authorized_members: Yup.array().nullable(),
-  }, mandatoryAttributes);
-
-  const draftWorkspaceValidator = useDynamicSchemaCreationValidation(
-    mandatoryAttributes,
-    basicShape,
-  );
-
   const optionsContext = useFormik<OptionsFormValues>({
     enableReinitialize: true,
     initialValues: {
@@ -381,7 +367,6 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
       validationMode: importMode === 'manual' ? 'draft' : undefined,
       ...draftDefaultValues,
     },
-    validationSchema: draftWorkspaceValidator,
     onSubmit,
   });
 
