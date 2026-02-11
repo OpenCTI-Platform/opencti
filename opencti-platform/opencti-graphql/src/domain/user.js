@@ -1831,26 +1831,6 @@ export const JWT_TOKEN_PREFIX = 'ey';
 // This method can only be used in createAuthenticatedContext
 // If you need to check auth and create context, use directly createAuthenticatedContext method
 export const authenticateUserFromRequest = async (context, req) => {
-  const sessionUser = req.session?.user;
-  // region If user already have a session
-  if (sessionUser) {
-    const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
-    const logged = platformUsers.get(sessionUser.id);
-    const authUser = { ...sessionUser, ...logged };
-    return userWithOrigin(req, authUser);
-  }
-  // endregion
-  // region Direct authentication
-  // If user not identified, try headers authentication
-  if (HEADERS_AUTHENTICATORS.length > 0) {
-    for (let i = 0; i < HEADERS_AUTHENTICATORS.length; i += 1) {
-      const headProvider = HEADERS_AUTHENTICATORS[i];
-      const user = await headProvider.reqLoginHandler(req);
-      if (user) {
-        return await authenticateUserByUserId(context, req, user.id);
-      }
-    }
-  }
   // If user not identified, try to extract token from bearer
   const bearerToken = extractTokenFromBearer(req.headers.authorization);
   if (bearerToken) {
@@ -1869,6 +1849,27 @@ export const authenticateUserFromRequest = async (context, req) => {
     } catch (err) {
       logApp.warn('Error resolving user by token', { cause: err });
       return undefined;
+    }
+  }
+
+  const sessionUser = req.session?.user;
+  // region If user already have a session
+  if (sessionUser) {
+    const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+    const logged = platformUsers.get(sessionUser.id);
+    const authUser = { ...sessionUser, ...logged };
+    return userWithOrigin(req, authUser);
+  }
+  // endregion
+  // region Direct authentication
+  // If user not identified, try headers authentication
+  if (HEADERS_AUTHENTICATORS.length > 0) {
+    for (let i = 0; i < HEADERS_AUTHENTICATORS.length; i += 1) {
+      const headProvider = HEADERS_AUTHENTICATORS[i];
+      const user = await headProvider.reqLoginHandler(req);
+      if (user) {
+        return await authenticateUserByUserId(context, req, user.id);
+      }
     }
   }
   // If no bearer specified, try with basic auth
