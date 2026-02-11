@@ -325,6 +325,11 @@ Please be careful before disabling it:
 
 - you should ensure that you have at least another authentication working (meaning that not only you get successfully authenticated, but that both your group mapping & organization mapping are correct) before disabling it.
 
+## Disable UI configuration panel.
+
+It is possible to disable the configuration panel, please go in [configuration, section **Functional customization**](confiugration.md) to see which variable to use.
+
+
 
 
 
