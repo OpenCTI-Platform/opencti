@@ -25,7 +25,7 @@ const SSODefinitionOrganizationForm = ({ isEditionMode, selectedStrategy, update
         onSubmit={updateField}
         label={t_i18n('Path in token')}
         style={fieldSpacingContainerStyle}
-        helperText={t_i18n('Please add square bracket & each value between single quotes (even for unique value). For example: [\'value1\', \'value2\']')}
+        helperText={t_i18n('Please add square bracket & each value between double quotes (even for unique value). For example: ["value1", "value2"]')}
         fullWidth
       />
       {selectedStrategy === 'OpenID' && (
