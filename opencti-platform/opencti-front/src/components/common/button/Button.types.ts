@@ -6,6 +6,7 @@ export type MuiColor
   = | 'primary'
     | 'secondary'
     | 'error'
+    | 'warn'
     | 'success';
 
 export type ButtonColorKey = ButtonIntent | Exclude<MuiColor, 'inherit'>;

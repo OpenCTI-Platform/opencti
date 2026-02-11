@@ -11,6 +11,7 @@ import logoXTMHubLight from '../../../static/images/logo_xtm_hub_light.svg';
 import logoXTMHubDark from '../../../static/images/logo_xtm_hub_dark.svg';
 import { isNotEmptyField } from '../../../utils/utils';
 import { Theme } from '../../../components/Theme';
+import useDraftContext from '../../../utils/hooks/useDraftContext';
 
 interface PopoverListItemProps {
   logoSrc: string;
@@ -105,6 +106,7 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
+  const draftContext = useDraftContext();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -158,7 +160,10 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
         />
 
         {navOpen && (
-          <IconButton onClick={handleClickPopover}>
+          <IconButton
+            color={draftContext ? 'warn' : 'default'}
+            onClick={handleClickPopover}
+          >
             <ArrowDropDown
               sx={{
                 transform: open ? 'rotate(180deg)' : 'rotate(0deg)',

@@ -36,6 +36,7 @@ import { useNavigate } from 'react-router-dom';
 import TagsOverflow from '../common/tag/TagsOverflow';
 import { VocabularyDefinition } from '../../utils/hooks/useVocabularyCategory';
 import { EMPTY_VALUE } from '../../utils/String';
+import { Stack } from '@mui/material';
 
 const chipStyle: CSSProperties = {
   fontSize: '12px',
@@ -66,10 +67,15 @@ export const defaultRender: NonNullable<DataTableColumn['render']> = (
   return (
     <FieldOrEmpty source={data}>
       <Tooltip title={displayedData}>
-        <div style={{ maxWidth: '100%', display: 'flex' }}>
+        <Stack
+          direction="row"
+          gap={1}
+          alignItems="center"
+          sx={{ maxWidth: '100%' }}
+        >
           <Truncate>{displayedData}</Truncate>
           {displayDraftChip && <DraftChip />}
-        </div>
+        </Stack>
       </Tooltip>
     </FieldOrEmpty>
   );

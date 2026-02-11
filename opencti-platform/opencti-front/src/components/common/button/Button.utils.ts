@@ -65,6 +65,13 @@ export const getColorDefinitions = (theme: Theme): Record<ButtonColorKey, ColorD
       text: theme.palette.error.contrastText ?? '',
       border: theme.palette.error.main ?? '',
     },
+    warn: {
+      main: theme.palette.designSystem.alert.warning.primary ?? '',
+      hover: theme.palette.designSystem.alert.warning.secondary ?? '',
+      focus: theme.palette.designSystem.alert.warning.secondary ?? '',
+      text: theme.palette.primary.contrastText ?? '',
+      border: theme.palette.designSystem.alert.warning.primary ?? '',
+    },
   };
 };
 

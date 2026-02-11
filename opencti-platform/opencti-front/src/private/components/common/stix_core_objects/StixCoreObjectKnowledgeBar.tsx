@@ -18,6 +18,7 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../../settings/settings_messages/SettingsMessagesBanner';
 import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 const stixCoreObjectKnowledgeBarFragment = graphql`
   fragment StixCoreObjectKnowledgeBar_stixCoreObject on StixCoreObject
@@ -125,6 +126,7 @@ const StixCoreObjectKnowledgeBar = ({
   attribution,
 }: StixCoreObjectKnowledgeBarProps) => {
   const theme = useTheme<Theme>();
+  const draftContext = useDraftContext();
   const { bannerSettings, schema } = useAuth();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const {
@@ -399,6 +401,7 @@ const StixCoreObjectKnowledgeBar = ({
           overflow: 'auto',
           padding: 0,
           zIndex: 2,
+          paddingBottom: draftContext ? '69px' : 0, // Add 69px in case DraftToolbar is opened
           background: theme.palette.background.nav,
         },
       }}

@@ -13,29 +13,29 @@ import { hexToRGB } from '../../../utils/Colors';
 import type { Theme } from '../../../components/Theme';
 
 export const draftWorksFragment = graphql`
-    fragment DraftWorksFragment on DraftWorkspace {
+  fragment DraftWorksFragment on DraftWorkspace {
+    id
+    works {
       id
-      works {
-          id
-          name
-          connector {
-              id
-              name
-          }
-          status
-          timestamp
-          received_time
-          completed_time
+      name
+      connector {
+        id
+        name
       }
+      status
+      timestamp
+      received_time
+      completed_time
     }
+  }
 `;
 
 export const draftWorksQuery = graphql`
-    query DraftWorksQuery($id: String!) {
-      draftWorkspace(id: $id) {
-        ...DraftWorksFragment
-      }
+  query DraftWorksQuery($id: String!) {
+    draftWorkspace(id: $id) {
+      ...DraftWorksFragment
     }
+  }
 `;
 
 const LOCAL_STORAGE_KEY = 'draft_works';

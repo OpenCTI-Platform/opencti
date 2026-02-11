@@ -4,6 +4,7 @@ import { useTheme } from '@mui/styles';
 import React, { useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Theme } from '../../../components/Theme';
+import useDraftContext from '../../../utils/hooks/useDraftContext';
 
 interface SubMenuItem {
   type?: string;
@@ -53,6 +54,7 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
 }) => {
   const location = useLocation();
   const theme = useTheme<Theme>();
+  const draftContext = useDraftContext();
   const anchorRef = useRef<HTMLLIElement | null>(null);
 
   const visibleSubItems = subItems.filter(
@@ -100,7 +102,11 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
     const isSubItem = fontSize === 'small';
     const iconColor = selected ? theme.palette.text.light : theme.palette.text.tertiary;
     const iconOpacity = isSubItem && selected ? 1 : 0.5;
+
     const getTextColor = () => {
+      if (isSubItem && draftContext && selected) {
+        return theme.palette.designSystem.alert.warning.primary;
+      }
       if (isSubItem && selected) {
         return theme.palette.primary.main;
       }
@@ -182,13 +188,15 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
   };
 
   const getMenuStyles = (selected: boolean): SxProps => {
+    const draftBg = theme.palette.designSystem.alert.warning.primary;
+    const defaultBg = draftContext ? draftBg : theme.palette.primary.main;
     return {
       px: 2,
       pr: 1,
       py: 0,
       height: '36px',
-      borderLeft: selected ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
-      backgroundColor: selected ? alpha(theme.palette.primary.main || '#00FF00', 0.1) : 'transparent',
+      borderLeft: selected ? `2px solid ${defaultBg}` : '2px solid transparent',
+      backgroundColor: selected ? alpha(defaultBg || '#00FF00', 0.1) : 'transparent',
       display: 'flex',
       alignItems: 'center',
       '&:hover': {
@@ -244,7 +252,6 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
     <>
       <MenuItem
         ref={anchorRef}
-        selected={isParentSelected}
         dense
         onClick={handleParentClick}
         onMouseEnter={() => onMenuOpen(id)}

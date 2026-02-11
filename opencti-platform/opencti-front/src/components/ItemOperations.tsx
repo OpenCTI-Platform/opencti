@@ -1,9 +1,8 @@
-import Chip from '@mui/material/Chip';
-import React, { FunctionComponent } from 'react';
+import { FunctionComponent } from 'react';
 import { useTheme } from '@mui/styles';
 import type { Theme } from './Theme';
 import { useFormatter } from './i18n';
-import { chipInListBasicStyle } from '../utils/chipStyle';
+import Tag from './common/tag/Tag';
 
 interface ItemOperationsProps {
   draftOperation?: string;
@@ -12,61 +11,41 @@ interface ItemOperationsProps {
 const ItemOperations: FunctionComponent<ItemOperationsProps> = ({ draftOperation }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
+
   const operationStylesLight = {
-    green: {
-      backgroundColor: theme.palette.designSystem.tertiary.green[800],
-      color: theme.palette.common.white,
-    },
-    red: {
-      backgroundColor: theme.palette.designSystem.tertiary.red[700],
-      color: theme.palette.common.white,
-    },
-    yellow: {
-      backgroundColor: theme.palette.designSystem.tertiary.yellow[400],
-      color: theme.palette.common.white,
-    },
-    lightYellow: {
-      backgroundColor: theme.palette.designSystem.tertiary.orange[500],
-      color: theme.palette.common.white,
-    },
+    green: theme.palette.designSystem.tertiary.green[800],
+    red: theme.palette.designSystem.tertiary.red[700],
+    yellow: theme.palette.designSystem.tertiary.yellow[400],
+    lightYellow: theme.palette.designSystem.tertiary.orange[500],
   };
-
   const operationStylesDark = {
-    green: {
-      backgroundColor: theme.palette.designSystem.tertiary.green[800],
-    },
-    red: {
-      backgroundColor: theme.palette.designSystem.tertiary.red[700],
-    },
-    yellow: {
-      backgroundColor: theme.palette.designSystem.tertiary.yellow[400],
-    },
-    lightYellow: {
-      backgroundColor: theme.palette.designSystem.tertiary.orange[500],
-    },
+    green: theme.palette.designSystem.tertiary.green[800],
+    red: theme.palette.designSystem.tertiary.red[700],
+    yellow: theme.palette.designSystem.tertiary.yellow[400],
+    lightYellow: theme.palette.designSystem.tertiary.orange[500],
   };
 
-  const getChipStyle = () => {
+  const getChipColor = () => {
     switch (draftOperation) {
       case 'create':
         return theme.palette.mode === 'light'
-          ? { ...operationStylesLight.green }
-          : { ...operationStylesDark.green };
+          ? operationStylesLight.green
+          : operationStylesDark.green;
       case 'update':
         return theme.palette.mode === 'light'
-          ? { ...operationStylesLight.yellow }
-          : { ...operationStylesDark.yellow };
+          ? operationStylesLight.yellow
+          : operationStylesDark.yellow;
       case 'update_linked':
         return theme.palette.mode === 'light'
-          ? { ...operationStylesLight.lightYellow }
-          : { ...operationStylesDark.lightYellow };
+          ? operationStylesLight.lightYellow
+          : operationStylesDark.lightYellow;
       case 'delete':
       case 'delete_linked':
         return theme.palette.mode === 'light'
-          ? { ...operationStylesLight.red }
-          : { ...operationStylesDark.red };
+          ? operationStylesLight.red
+          : operationStylesDark.red;
       default:
-        return {};
+        return undefined;
     }
   };
 
@@ -88,20 +67,10 @@ const ItemOperations: FunctionComponent<ItemOperationsProps> = ({ draftOperation
   };
 
   return (
-    <Chip
-      title={getChipTitle()}
+    <Tag
+      tooltipTitle={getChipTitle()}
       label={draftOperation}
-      variant="outlined"
-      style={{
-        ...getChipStyle(),
-        ...{
-          ...chipInListBasicStyle,
-          lineHeight: '12px',
-          marginRight: 7,
-          width: 120,
-          textTransform: 'uppercase',
-        },
-      }}
+      color={getChipColor()}
     />
   );
 };

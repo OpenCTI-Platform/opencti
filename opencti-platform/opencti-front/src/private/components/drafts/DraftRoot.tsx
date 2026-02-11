@@ -1,23 +1,17 @@
-// TODO Remove this when V6
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 import React, { Suspense, useEffect } from 'react';
 import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import DraftEntities from '@components/drafts/DraftEntities';
-import { DraftContextBannerMutation } from '@components/drafts/__generated__/DraftContextBannerMutation.graphql';
-import { draftContextBannerMutation } from '@components/drafts/DraftContextBanner';
 import DraftRelationships from '@components/drafts/DraftRelationships';
 import DraftSightings from '@components/drafts/DraftSightings';
 import { DraftRootQuery } from '@components/drafts/__generated__/DraftRootQuery.graphql';
-import { graphql, useFragment, usePreloadedQuery, useQueryLoader } from 'react-relay';
+import { graphql, PreloadedQuery, useFragment, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import { interval } from 'rxjs';
 import ConnectorWorkLine from '@components/data/connectors/ConnectorWorkLine';
 import Paper from '@mui/material/Paper';
 import ImportFilesContent from '@components/data/import/ImportFilesContent';
-import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import ErrorNotFound from '../../../components/ErrorNotFound';
@@ -28,6 +22,8 @@ import { RelayError } from '../../../relay/relayTypes';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { TEN_SECONDS } from '../../../utils/Time';
 import useGranted, { KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/useGranted';
+import useSwitchDraft from './useSwitchDraft';
+import { DraftRootFragment$key } from './__generated__/DraftRootFragment.graphql';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -66,6 +62,7 @@ const draftRootFragment = graphql`
       }
     }
     validationWork {
+      id
       name
       received_time
       processed_time
@@ -85,7 +82,13 @@ const draftRootFragment = graphql`
   }
 `;
 
-const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
+interface RootDraftComponentProps {
+  draftId: string;
+  refetch: () => void;
+  queryRef: PreloadedQuery<DraftRootQuery>;
+}
+
+const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentProps) => {
   const location = useLocation();
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
@@ -96,18 +99,20 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
     return (<ErrorNotFound />);
   }
 
-  const { name, objectsCount, draft_status, validationWork } = useFragment(draftRootFragment, draftWorkspace);
+  const {
+    name,
+    objectsCount,
+    draft_status,
+    validationWork,
+  } = useFragment<DraftRootFragment$key>(draftRootFragment, draftWorkspace);
   const isDraftReadOnly = draft_status !== 'open';
 
   // switch to draft
-  const [commitSwitchToDraft] = useApiMutation<DraftContextBannerMutation>(draftContextBannerMutation);
+  const { enterDraft } = useSwitchDraft();
 
   useEffect(() => {
     if (!isDraftReadOnly && (!draftContext || draftContext.id !== draftId)) {
-      commitSwitchToDraft({
-        variables: {
-          input: [{ key: 'draft_context', value: [draftId] }],
-        },
+      enterDraft(draftId, {
         onCompleted: () => {
           MESSAGING$.notifySuccess(<span>{t_i18n('You are now in Draft Mode')}</span>);
         },
@@ -117,7 +122,7 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
         },
       });
     }
-  }, [commitSwitchToDraft]);
+  }, [enterDraft]);
 
   useEffect(() => {
     // Refresh

@@ -173,7 +173,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
         '& .MuiDrawer-paper': {
           zIndex: theme.zIndex.appBar - 1,
           width: 350,
-          padding: '10px 0 20px 0',
+          paddingBottom: draftContext ? '89px' : '20px', // Add 69px in case DraftToolbar is opened
           paddingTop: `calc(16px + 64px + ${settingsMessagesBannerHeight ?? 0}px)`, // 16 for margin, 64 for top bar,
         },
       }}
