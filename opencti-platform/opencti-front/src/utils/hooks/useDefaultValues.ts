@@ -101,7 +101,7 @@ const useDefaultValues = <Values extends FormikValues>(
   const entitySettings = useEntitySettings(id).at(0);
   if (!entitySettings) {
     if (id === 'DraftWorkspace' && !isDraftWorkflowFeatureEnabled) {
-      return { entitySettings, mandatoryAttributes: ['name'] };
+      return initialValues;
     }
     throw Error(`Invalid type for setting: ${id}`);
   }
