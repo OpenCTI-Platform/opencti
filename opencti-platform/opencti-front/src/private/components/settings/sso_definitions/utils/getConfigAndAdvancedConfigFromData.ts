@@ -20,7 +20,7 @@ const samlConfigKeys = [
 const openIDConfigKeys = [
   'client_id',
   'client_secret',
-  'redirect_uris',
+  'redirect_uri',
   'issuer',
 ];
 

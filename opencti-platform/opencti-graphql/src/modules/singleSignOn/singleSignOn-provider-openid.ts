@@ -82,9 +82,9 @@ export const registerOpenIdStrategy = async (ssoEntity: BasicStoreEntitySingleSi
     throw ConfigurationError('client_secret is mandatory for OpenID', { id: ssoEntity.id, name: ssoEntity.name, identifier: ssoEntity.identifier });
   }
 
-  const callbackURL = Boolean(ssoConfig.redirect_uris?.[0]) && URL.parse(ssoConfig.redirect_uris[0]);
+  const callbackURL: string | undefined = ssoConfig.redirect_uri;
   if (!callbackURL) {
-    throw ConfigurationError('redirect_uris is mandatory for OpenID', { id: ssoEntity.id, name: ssoEntity.name, identifier: ssoEntity.identifier });
+    throw ConfigurationError('redirect_uri is mandatory for OpenID', { id: ssoEntity.id, name: ssoEntity.name, identifier: ssoEntity.identifier });
   }
 
   // Here we use directly the config and not the mapped one.

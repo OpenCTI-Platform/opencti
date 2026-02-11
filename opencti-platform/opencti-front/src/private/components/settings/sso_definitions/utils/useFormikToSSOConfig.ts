@@ -94,9 +94,9 @@ const useFormikToSSOConfig = (selectedStrategy: string) => {
         type: 'string',
       },
       {
-        key: 'redirect_uris',
-        value: JSON.stringify(values.redirect_uris),
-        type: 'array',
+        key: 'redirect_uri',
+        value: values.redirect_uri,
+        type: 'string',
       },
     ];
   };

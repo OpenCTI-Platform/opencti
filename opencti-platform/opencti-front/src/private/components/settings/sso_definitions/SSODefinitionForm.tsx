@@ -87,7 +87,7 @@ export interface SSODefinitionFormValues {
   // OpenID
   client_id: string;
   client_secret: string;
-  redirect_uris: string[];
+  redirect_uri: string;
   // LDAP
   url: string;
   bindDN: string;
@@ -127,7 +127,7 @@ const validationSchemaConfiguration = (selectedStrategy: string, t_i18n: (s: str
         issuer: Yup.string().required(t_i18n('This field is required')),
         client_id: Yup.string().required(t_i18n('This field is required')),
         client_secret: Yup.string().required(t_i18n('This field is required')),
-        redirect_uris: Yup.array().of(Yup.string().required(t_i18n('This field is required'))),
+        redirect_uri: Yup.string().required(t_i18n('This field is required')),
       });
     }
     case 'LDAP': {
@@ -208,7 +208,7 @@ const SSODefinitionForm = ({
     // OpenID
     client_id: '',
     client_secret: '',
-    redirect_uris: [''],
+    redirect_uri: '',
     // LDAP
     url: '',
     bindDN: '',
@@ -264,7 +264,7 @@ const SSODefinitionForm = ({
 
   const clientId = data?.configuration?.find((e) => e.key === 'client_id');
   const clientSecret = data?.configuration?.find((e) => e.key === 'client_secret');
-  const redirectUris = data?.configuration?.find((e) => e.key === 'redirect_uris');
+  const redirectUri = data?.configuration?.find((e) => e.key === 'redirect_uri');
 
   const url = data?.configuration?.find((e) => e.key === 'url');
   const bindDN = data?.configuration?.find((e) => e.key === 'bindDN');
@@ -317,7 +317,7 @@ const SSODefinitionForm = ({
 
     initialValues.client_id = clientId?.value ?? '';
     initialValues.client_secret = clientSecret?.value ?? '';
-    initialValues.redirect_uris = redirectUris?.value ? JSON.parse(redirectUris.value) : [''];
+    initialValues.redirect_uri = redirectUri?.value ?? '';
 
     initialValues.url = url?.value ?? '';
     initialValues.bindDN = bindDN?.value ?? '';

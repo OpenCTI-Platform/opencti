@@ -424,7 +424,7 @@ describe('Migration of SSO environment test coverage', () => {
         { key: 'issuer', type: 'string', value: 'http://localhost:9999/realms/master' },
         { key: 'client_id', type: 'string', value: 'openctioid' },
         { key: 'client_secret', type: 'string', value: 'youShallNotPass' },
-        { key: 'redirect_uris', type: 'array', value: '["http://localhost:4000/auth/oic/callback"]' },
+        { key: 'redirect_uri', type: 'string', value: 'http://localhost:4000/auth/oic/callback' },
       ]);
     });
 
@@ -461,7 +461,7 @@ describe('Migration of SSO environment test coverage', () => {
         { key: 'issuer', type: 'string', value: 'http://localhost:9999/realms/master' },
         { key: 'client_id', type: 'string', value: 'openctioid' },
         { key: 'client_secret', type: 'string', value: 'youShallNotPass' },
-        { key: 'redirect_uris', type: 'array', value: '["http://localhost:4000/auth/oic/callback"]' },
+        { key: 'redirect_uri', type: 'string', value: 'http://localhost:4000/auth/oic/callback' },
         { key: 'entry_point', type: 'string', value: 'http://localhost:7777/realms/master/protocol/oic' },
         { key: 'default_scopes', type: 'array', value: '["myopenid","myemail","myprofile"]' },
         { key: 'logout_remote', type: 'boolean', value: 'false' },
@@ -503,7 +503,7 @@ describe('Migration of SSO environment test coverage', () => {
         { key: 'issuer', type: 'string', value: 'http://localhost:9999/realms/master' },
         { key: 'client_id', type: 'string', value: 'openctioid' },
         { key: 'client_secret', type: 'string', value: 'youShallNotPass' },
-        { key: 'redirect_uris', type: 'array', value: '["http://localhost:4000/auth/oic/callback"]' },
+        { key: 'redirect_uri', type: 'string', value: 'http://localhost:4000/auth/oic/callback' },
         { key: 'logout_remote', type: 'boolean', value: 'true' },
         { key: 'prevent_default_groups', type: 'boolean', value: 'false' },
       ]);
@@ -555,7 +555,7 @@ describe('Migration of SSO environment test coverage', () => {
         { key: 'issuer', type: 'string', value: 'http://localhost:9999/realms/master' },
         { key: 'client_id', type: 'string', value: 'oic_orgs' },
         { key: 'client_secret', type: 'string', value: 'youShallNotPass' },
-        { key: 'redirect_uris', type: 'array', value: '["http://localhost:4000/auth/oic_orgs/callback"]' },
+        { key: 'redirect_uri', type: 'string', value: 'http://localhost:4000/auth/oic_orgs/callback' },
         { key: 'logout_remote', type: 'boolean', value: 'true' },
         { key: 'prevent_default_groups', type: 'boolean', value: 'false' },
       ]);
@@ -604,7 +604,7 @@ describe('Migration of SSO environment test coverage', () => {
         { key: 'issuer', type: 'string', value: 'http://localhost:9999/realms/master' },
         { key: 'client_id', type: 'string', value: 'openctioid' },
         { key: 'client_secret', type: 'string', value: 'youShallNotPass' },
-        { key: 'redirect_uris', type: 'array', value: '["http://localhost:4000/auth/oic/callback"]' },
+        { key: 'redirect_uri', type: 'string', value: 'http://localhost:4000/auth/oic/callback' },
       ]);
       expect(multiOicConfigurations[1].strategy).toBe('OpenIDConnectStrategy');
       expect(multiOicConfigurations[1].label).toBe('oic_2');
@@ -613,7 +613,7 @@ describe('Migration of SSO environment test coverage', () => {
         { key: 'issuer', type: 'string', value: 'http://localhost:9999/realms/master' },
         { key: 'client_id', type: 'string', value: 'openctioid' },
         { key: 'client_secret', type: 'string', value: 'youShallNotPass' },
-        { key: 'redirect_uris', type: 'array', value: '["http://localhost:4000/auth/oic/callback"]' },
+        { key: 'redirect_uri', type: 'string', value: 'http://localhost:4000/auth/oic/callback' },
       ]);
     });
 
@@ -648,7 +648,7 @@ describe('Migration of SSO environment test coverage', () => {
         { key: 'issuer', type: 'string', value: 'http://localhost:9999/realms/master' },
         { key: 'client_id', type: 'string', value: 'openctioid' },
         { key: 'client_secret', type: 'string', value: 'youShallNotPass' },
-        { key: 'redirect_uris', type: 'array', value: '["http://localhost:4000/auth/oic/callback"]' },
+        { key: 'redirect_uri', type: 'string', value: 'http://localhost:4000/auth/oic/callback' },
       ]);
 
       expect(defaultValuesConfiguration.groups_management).toStrictEqual({
@@ -701,8 +701,6 @@ describe('Migration of SSO environment test coverage', () => {
       expect(cyberArkConfig.strategy).toBe('OpenIDConnectStrategy');
       expect(cyberArkConfig.label).toBe('My OpenId with CyberArk');
       expect(cyberArkConfig.enabled).toBeTruthy();
-
-      const credentialsProviderResult = cyberArkConfig;
     });
   });
   describe('Dry run of LDAP migrations', () => {
