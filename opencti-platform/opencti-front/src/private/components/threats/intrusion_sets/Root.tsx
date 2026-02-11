@@ -63,6 +63,7 @@ const intrusionSetQuery = graphql`
         id
       }
       x_opencti_graph_data
+      currentUserAccessRight
       securityCoverage {
         id
         coverage_information {

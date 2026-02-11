@@ -58,6 +58,7 @@ const infrastructureQuery = graphql`
       name
       aliases
       x_opencti_graph_data
+      currentUserAccessRight
       ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...Infrastructure_infrastructure
       ...InfrastructureKnowledge_infrastructure

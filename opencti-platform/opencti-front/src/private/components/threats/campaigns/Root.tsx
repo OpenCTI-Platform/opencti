@@ -59,6 +59,7 @@ const campaignQuery = graphql`
       name
       aliases
       x_opencti_graph_data
+      currentUserAccessRight
       securityCoverage {
         id
         coverage_information {
