@@ -3881,9 +3881,12 @@ const internalCreateEntityRaw = async (
       }
     }
     // Handle single file upload (backward compatibility)
+    // Propagate noTriggerImport/embedded from input, handling both scalar and array forms
     if (!isEmptyField(resolvedInput.file)) {
       const file_markings = isNotEmptyField(resolvedInput.fileMarkings) ? resolvedInput.fileMarkings : resolvedInput.objectMarking?.map(({ id }: { id: string }) => id);
-      filesToUpload.push({ file: resolvedInput.file, markings: file_markings, noTriggerImport: false, embedded: false });
+      const singleNoTrigger = Array.isArray(resolvedInput.noTriggerImport) ? (resolvedInput.noTriggerImport[0] ?? false) : (resolvedInput.noTriggerImport ?? false);
+      const singleEmbedded = Array.isArray(resolvedInput.embedded) ? (resolvedInput.embedded[0] ?? false) : (resolvedInput.embedded ?? false);
+      filesToUpload.push({ file: resolvedInput.file, markings: file_markings, noTriggerImport: singleNoTrigger, embedded: singleEmbedded });
     }
     // Process all files to upload
     if (filesToUpload.length > 0) {

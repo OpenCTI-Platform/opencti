@@ -204,9 +204,12 @@ const generateFileInputsForUpsert = async (context, user, resolvedElement, updat
     }
   }
   // Handle single file upload (backward compatibility)
+  // Propagate noTriggerImport/embedded from input, handling both scalar and array forms
   if (!isEmptyField(updatePatch.file)) {
     const file_markings = isNotEmptyField(updatePatch.fileMarkings) ? updatePatch.fileMarkings : updatePatch.objectMarking?.map(({ id }) => id);
-    filesToUpload.push({ file: updatePatch.file, markings: file_markings, noTriggerImport: false, embedded: false });
+    const singleNoTrigger = Array.isArray(updatePatch.noTriggerImport) ? (updatePatch.noTriggerImport[0] ?? false) : (updatePatch.noTriggerImport ?? false);
+    const singleEmbedded = Array.isArray(updatePatch.embedded) ? (updatePatch.embedded[0] ?? false) : (updatePatch.embedded ?? false);
+    filesToUpload.push({ file: updatePatch.file, markings: file_markings, noTriggerImport: singleNoTrigger, embedded: singleEmbedded });
   }
 
   if (filesToUpload.length === 0) {
