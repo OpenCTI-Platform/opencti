@@ -276,7 +276,7 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
             value={currentTab}
             onChange={(event, value) => setCurrentTab(value)}
           >
-            <Tab label={t_i18n('SSO configuration')} sx={{ textTransform: 'none' }} />
+            <Tab label={t_i18n('Authentication configuration')} sx={{ textTransform: 'none' }} />
             {!selectedCert && (<Tab label={t_i18n('Groups configuration')} />)}
             {!selectedCert && (<Tab label={t_i18n('Organizations configuration')} />)}
           </Tabs>
