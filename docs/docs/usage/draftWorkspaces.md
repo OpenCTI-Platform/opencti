@@ -58,7 +58,7 @@ In addition to these lists of entities modified, a file tab is also available.
 
 ![Draft files](assets/draftWorkspace-file-tab.png)
 
-In this tab, additional files can be uploaded and imported within the draft workspace without impact the main knowledge base. These files will only be visible in the current draft.
+In this tab, additional files can be uploaded and imported within the draft workspace without impacting the main knowledge base. These files will only be visible in the current draft.
 
 ### Top bar actions
 
