@@ -1,16 +1,12 @@
 import { ImportFilesProvider, importFilesQuery, InitialValues, useImportFilesContext } from '@components/common/files/import_files/ImportFilesContext';
-import ImportFilesFormSelector from '@components/common/files/import_files/ImportFilesFormSelector';
-import ImportFilesFormView from '@components/common/files/import_files/ImportFilesFormView';
 import ImportFilesOptions from '@components/common/files/import_files/ImportFilesOptions';
 import ImportFilesStepper from '@components/common/files/import_files/ImportFilesStepper';
-import ImportFilesToggleMode from '@components/common/files/import_files/ImportFilesToggleMode';
 import ImportFilesUploadProgress from '@components/common/files/import_files/ImportFilesUploadProgress';
 import ImportFilesToggleMode from '@components/common/files/import_files/ImportFilesToggleMode';
 import ImportFilesFormSelector from '@components/common/files/import_files/ImportFilesFormSelector';
 import ImportFilesFormView from '@components/common/files/import_files/ImportFilesFormView';
-import { DraftAddInput, draftCreationMutation, DRAFTWORKPACE_TYPE } from '@components/drafts/DraftCreation';
+import { DraftAddInput, draftCreationMutation, DRAFTWORKSPACE_TYPE } from '@components/drafts/DraftCreation';
 import { DraftCreationMutation, DraftCreationMutation$data } from '@components/drafts/__generated__/DraftCreationMutation.graphql';
-import { ImportFilesProvider, importFilesQuery, InitialValues, useImportFilesContext } from '@components/common/files/import_files/ImportFilesContext';
 import ImportFilesUploader from '@components/common/files/import_files/ImportFilesUploader';
 import { ImportFilesContextQuery } from '@components/common/files/import_files/__generated__/ImportFilesContextQuery.graphql';
 import {
@@ -23,8 +19,6 @@ import {
 } from '@components/common/files/import_files/__generated__/ImportFilesDialogGlobalMutation.graphql';
 import { AssociatedEntityOption } from '@components/common/form/AssociatedEntityField';
 import { AuthorizedMembersFieldValue } from '@components/common/form/AuthorizedMembersField';
-import { draftCreationMutation } from '@components/drafts/DraftCreation';
-import { DraftCreationMutation, DraftCreationMutation$data } from '@components/drafts/__generated__/DraftCreationMutation.graphql';
 import { Box, DialogActions } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import { FormikConfig, FormikErrors, useFormik } from 'formik';
@@ -47,9 +41,8 @@ import useBulkCommit from '../../../../../utils/hooks/useBulkCommit';
 import useDraftContext from '../../../../../utils/hooks/useDraftContext';
 import { KNOWLEDGE_KNASKIMPORT } from '../../../../../utils/hooks/useGranted';
 import { hasCustomColor } from '../../../../../utils/theme';
-import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../../utils/hooks/useEntitySettings';
+import { useIsMandatoryAttribute } from '../../../../../utils/hooks/useEntitySettings';
 import useDefaultValues from '../../../../../utils/hooks/useDefaultValues';
-import * as Yup from 'yup';
 import useSwitchDraft from '../../../drafts/useSwitchDraft';
 
 export const CSV_MAPPER_NAME = '[FILE] CSV Mapper import';
@@ -134,7 +127,7 @@ export type OptionsFormValues = {
 
 const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
   const { t_i18n } = useFormatter();
-  const { mandatoryAttributes } = useIsMandatoryAttribute(DRAFTWORKPACE_TYPE);
+  const { mandatoryAttributes } = useIsMandatoryAttribute(DRAFTWORKSPACE_TYPE);
 
   const theme = useTheme<Theme>();
 
@@ -351,7 +344,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
     }
   };
 
-  const draftDefaultValues = useDefaultValues<DraftAddInput>(DRAFTWORKPACE_TYPE, {
+  const draftDefaultValues = useDefaultValues<DraftAddInput>(DRAFTWORKSPACE_TYPE, {
     name: '',
     description: '',
     objectAssignee: [],

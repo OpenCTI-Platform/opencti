@@ -34,7 +34,7 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import AuthorizedMembersField from '../form/AuthorizedMembersField';
 import useHelper from '../../../../utils/hooks/useHelper';
 import { useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
-import { DRAFTWORKPACE_TYPE } from '@components/drafts/DraftCreation';
+import { DRAFTWORKSPACE_TYPE } from '@components/drafts/DraftCreation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import ObjectAssigneeField from '@components/common/form/ObjectAssigneeField';
@@ -149,7 +149,7 @@ const StixCoreObjectFilesAndHistory = ({
   const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
   const { me: owner, settings } = useAuth();
-  const { mandatoryAttributes } = useIsMandatoryAttribute(DRAFTWORKPACE_TYPE);
+  const { mandatoryAttributes } = useIsMandatoryAttribute(DRAFTWORKSPACE_TYPE);
   const showAllMembersLine = !settings.platform_organization?.id;
   const draftContext = useDraftContext();
   const [fileToImport, setFileToImport] = useState(null);
@@ -284,7 +284,7 @@ const StixCoreObjectFilesAndHistory = ({
     setHasUserChoiceCsvMapper(hasUserChoiceCsvMapperRepresentations);
   };
 
-  const draftInitialValues = useDefaultValues(DRAFTWORKPACE_TYPE, {
+  const draftInitialValues = useDefaultValues(DRAFTWORKSPACE_TYPE, {
     name: '',
     description: '',
     objectAssignee: [],

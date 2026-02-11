@@ -49,7 +49,7 @@ export const draftCreationMutation = graphql`
     }
 `;
 
-export const DRAFTWORKPACE_TYPE = 'DraftWorkspace';
+export const DRAFTWORKSPACE_TYPE = 'DraftWorkspace';
 
 interface DraftFormProps {
   updater: (
@@ -73,7 +73,7 @@ const DraftCreationForm: React.FC<DraftFormProps> = ({ updater, onCompleted, onR
   const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
   const { me: owner, settings } = useAuth();
-  const { mandatoryAttributes } = useIsMandatoryAttribute(DRAFTWORKPACE_TYPE);
+  const { mandatoryAttributes } = useIsMandatoryAttribute(DRAFTWORKSPACE_TYPE);
   const showAllMembersLine = !settings.platform_organization?.id;
   const canEditAuthorizedMembers = useGranted([KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]);
 
@@ -134,7 +134,7 @@ const DraftCreationForm: React.FC<DraftFormProps> = ({ updater, onCompleted, onR
     });
   };
 
-  const initialValues = useDefaultValues<DraftAddInput>(DRAFTWORKPACE_TYPE, {
+  const initialValues = useDefaultValues<DraftAddInput>(DRAFTWORKSPACE_TYPE, {
     name: '',
     description: '',
     objectAssignee: [],

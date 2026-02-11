@@ -26,7 +26,7 @@ import ObjectParticipantField from '@components/common/form/ObjectParticipantFie
 import CreatedByField from '@components/common/form/CreatedByField';
 import useHelper from '../../../../utils/hooks/useHelper';
 import { useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
-import { DraftAddInput, DRAFTWORKPACE_TYPE } from '@components/drafts/DraftCreation';
+import { DraftAddInput, DRAFTWORKSPACE_TYPE } from '@components/drafts/DraftCreation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
 interface LaunchImportDialogProps {
@@ -51,7 +51,7 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
   const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
   const { me: owner, settings } = useAuth();
-  const { mandatoryAttributes } = useIsMandatoryAttribute(DRAFTWORKPACE_TYPE);
+  const { mandatoryAttributes } = useIsMandatoryAttribute(DRAFTWORKSPACE_TYPE);
   const showAllMembersLine = !settings.platform_organization?.id;
   const { connectorsForImport: connectors } = usePreloadedQuery<ImportWorksDrawerQuery>(fileWorksQuery, queryRef);
   const [selectedConnector, setSelectedConnector] = React.useState<ConnectorType | null>(null);
@@ -154,7 +154,7 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
   const invalidCsvMapper = selectedConnector?.name === 'ImportCsv'
     && selectedConnector?.configurations?.length === 0;
 
-  const draftInitialValues = useDefaultValues<DraftAddInput>(DRAFTWORKPACE_TYPE, {
+  const draftInitialValues = useDefaultValues<DraftAddInput>(DRAFTWORKSPACE_TYPE, {
     name: '',
     description: '',
     objectAssignee: [],
@@ -171,7 +171,7 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
         validation_mode: isDraftContext ? 'draft' : 'workbench',
         configuration: '',
         objectMarking: [],
-        ...draftInitialValues
+        ...draftInitialValues,
       }}
       validationSchema={importValidation(!!selectedConnector?.configurations)}
       onSubmit={onSubmitImport}

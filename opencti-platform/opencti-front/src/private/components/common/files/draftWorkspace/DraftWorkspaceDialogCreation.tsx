@@ -23,7 +23,7 @@ import ObjectParticipantField from '@components/common/form/ObjectParticipantFie
 import CreatedByField from '@components/common/form/CreatedByField';
 import useHelper from '../../../../../utils/hooks/useHelper';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../../utils/hooks/useEntitySettings';
-import { DraftAddInput, DRAFTWORKPACE_TYPE } from '@components/drafts/DraftCreation';
+import { DraftAddInput, DRAFTWORKSPACE_TYPE } from '@components/drafts/DraftCreation';
 import useDefaultValues from '../../../../../utils/hooks/useDefaultValues';
 
 const draftWorkspaceDialogCreationMutation = graphql`
@@ -52,7 +52,7 @@ const DraftWorkspaceDialogCreation: FunctionComponent<DraftWorkspaceCreationProp
   const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
   const { me: owner, settings } = useAuth();
-  const { mandatoryAttributes } = useIsMandatoryAttribute(DRAFTWORKPACE_TYPE);
+  const { mandatoryAttributes } = useIsMandatoryAttribute(DRAFTWORKSPACE_TYPE);
   const showAllMembersLine = !settings.platform_organization?.id;
   const [commit] = useApiMutation<DraftWorkspaceDialogCreationMutation>(
     draftWorkspaceDialogCreationMutation,
@@ -117,7 +117,7 @@ const DraftWorkspaceDialogCreation: FunctionComponent<DraftWorkspaceCreationProp
     });
   };
 
-  const initialValues = useDefaultValues<DraftAddInput>(DRAFTWORKPACE_TYPE, {
+  const initialValues = useDefaultValues<DraftAddInput>(DRAFTWORKSPACE_TYPE, {
     name: '',
     description: '',
     objectAssignee: [],

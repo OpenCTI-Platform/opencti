@@ -20,7 +20,7 @@ import ObjectParticipantField from '@components/common/form/ObjectParticipantFie
 import CreatedByField from '@components/common/form/CreatedByField';
 import useHelper from '../../../../../utils/hooks/useHelper';
 import { useIsMandatoryAttribute } from '../../../../../utils/hooks/useEntitySettings';
-import { DRAFTWORKPACE_TYPE } from '@components/drafts/DraftCreation';
+import { DRAFTWORKSPACE_TYPE } from '@components/drafts/DraftCreation';
 
 interface ImportFilesOptionsProps {
   optionsFormikContext: FormikContextType<OptionsFormValues>;
@@ -34,7 +34,7 @@ const ImportFilesOptions = ({
   const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
   const { me: owner, settings } = useAuth();
-  const { mandatoryAttributes } = useIsMandatoryAttribute(DRAFTWORKPACE_TYPE);
+  const { mandatoryAttributes } = useIsMandatoryAttribute(DRAFTWORKSPACE_TYPE);
   const showAllMembersLine = !settings.platform_organization?.id;
   const {
     importMode,
