@@ -7,6 +7,7 @@ import {
   deleteSingleSignOn,
   runSingleSignOnRunMigration,
   getSingleSignOnSettings,
+  excludeEncryptedConfigurationKeys,
 } from './singleSignOn-domain';
 
 const singleSignOnResolver: Resolvers = {
@@ -14,6 +15,9 @@ const singleSignOnResolver: Resolvers = {
     singleSignOn: (_, { id }, context) => findSingleSignOnById(context, context.user, id),
     singleSignOns: (_, args, context) => findSingleSignOnPaginated(context, context.user, args),
     singleSignOnSettings: (_, __, ___) => getSingleSignOnSettings(),
+  },
+  SingleSignOn: {
+    configuration: (singleSignOn) => excludeEncryptedConfigurationKeys(singleSignOn),
   },
   Mutation: {
     singleSignOnAdd: (_, { input }, context) => {

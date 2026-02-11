@@ -76,14 +76,13 @@ const encryptConfigurationSecrets = async (configurationWithClear: Configuration
   if (configurationWithClear) {
     for (let i = 0; i < configurationWithClear?.length; i++) {
       const currentConfig = configurationWithClear[i] as ConfigurationTypeInput;
-
-      if ((AUTH_SECRET_LIST.some((key) => key === currentConfig.key) && currentConfig.type !== ENCRYPTED_TYPE) || currentConfig.type === TO_ENCRYPT_TYPE) {
-        if (isNotEmptyField(currentConfig.value)) {
+      if (isNotEmptyField(currentConfig.value)) {
+        if ((AUTH_SECRET_LIST.some((key) => key === currentConfig.key) && currentConfig.type !== ENCRYPTED_TYPE) || currentConfig.type === TO_ENCRYPT_TYPE) {
           const encryptedValue = await encryptAuthValue(currentConfig.value);
           configurationWithSecrets.push({ key: currentConfig.key, value: encryptedValue, type: ENCRYPTED_TYPE });
+        } else {
+          configurationWithSecrets.push(currentConfig);
         }
-      } else {
-        configurationWithSecrets.push(currentConfig);
       }
     }
   }
@@ -113,6 +112,10 @@ export const logAuthWarn = (message: string, strategyType: EnvStrategyType | Str
 
 export const logAuthError = (message: string, strategyType: EnvStrategyType | StrategyType | undefined, meta?: any) => {
   logApp.error(`[Auth][${strategyType ? strategyType.toUpperCase() : 'Not provided'}]${message}`, { meta });
+};
+
+export const excludeEncryptedConfigurationKeys = (singleSignOn: BasicStoreEntitySingleSignOn) => {
+  return singleSignOn.configuration?.filter((config) => (config.type !== ENCRYPTED_TYPE));
 };
 
 export const findSingleSignOnById = async (context: AuthContext, user: AuthUser, id: string) => {
