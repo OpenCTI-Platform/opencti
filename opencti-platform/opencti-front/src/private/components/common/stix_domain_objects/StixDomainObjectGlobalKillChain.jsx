@@ -216,7 +216,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                                 />
                               </ListItemIcon>
                               <ListItemText
-                                sx={{ marginRight: 8 }}
+                                sx={{ marginRight: 8, width: '100%' }}
                                 primary={domainObjectPrimaryText}
                                 secondary={(
                                   <MarkdownDisplay
@@ -229,6 +229,9 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                               <Box
                                 sx={{
                                   width: 150,
+                                  marginRight: 6,
+                                  display: 'flex',
+                                  justifyContent: 'center',
                                 }}
                               >
                                 <ItemMarkings

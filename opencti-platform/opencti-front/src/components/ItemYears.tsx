@@ -8,15 +8,9 @@ interface ItemYearsProps {
 }
 
 const ItemYears = ({ years }: ItemYearsProps) => {
-  const chipStyle: CSSProperties = {
-    fontSize: 12,
-    lineHeight: '12px',
-    height: 20,
-    marginRight: 8,
-  };
   return (
     <Tag
-      sx={chipStyle}
+      sx={{ marginRight: 8 }}
       label={years === '1970 - 5138' ? EMPTY_VALUE : years}
     />
   );
