@@ -17,7 +17,8 @@ import { fromB64, toB64 } from '../../../../utils/String';
 import { ErrorBoundary } from '../../Error';
 import { deserializeDashboardManifestForFrontend, serializeDashboardManifestForBackend } from '../../../../utils/filters/filtersUtils';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { Stack } from '@mui/material';
+import { Stack, Box } from '@mui/material';
+import { useTheme } from '@mui/styles';
 
 const dashboardLayoutMutation = graphql`
   mutation DashboardLayoutMutation($id: ID!, $input: [EditInput!]!) {
@@ -58,6 +59,7 @@ const dashboardFragment = graphql`
 `;
 
 const DashboardComponent = ({ data, noToolbar = false }) => {
+  const theme = useTheme();
   const [commitWidgetImportMutation] = useApiMutation(dashboardImportWidgetMutation);
 
   const workspace = useFragment(dashboardFragment, data);
@@ -263,11 +265,15 @@ const DashboardComponent = ({ data, noToolbar = false }) => {
   };
 
   return (
-    <div
+    <Box
       id="container"
-      style={{
+      sx={{
         margin: '0 -20px 0 -20px',
         marginTop: noToolbar ? -20 : 10,
+        '& .react-grid-item.react-grid-placeholder': {
+          border: `2px solid ${theme.palette.primary.main}`,
+          borderRadius: 1,
+        },
       }}
     >
       {!noToolbar && (
@@ -313,7 +319,9 @@ const DashboardComponent = ({ data, noToolbar = false }) => {
             <div
               key={widget.id}
               data-grid={widgetsLayouts[widget.id]}
-              style={{ display: 'relative' }}
+              style={{
+                display: 'relative',
+              }}
             >
               <ErrorBoundary>
                 {widget.id === idToResize ? <div /> : (
@@ -352,7 +360,7 @@ const DashboardComponent = ({ data, noToolbar = false }) => {
           );
         })}
       </ReactGridLayout>
-    </div>
+    </Box>
   );
 };
 
