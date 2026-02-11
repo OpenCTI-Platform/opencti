@@ -5,7 +5,7 @@ import { computeGroupsMapping, computeOrganizationsMapping, computeHeaderUserInf
 
 describe('Header Single sign on Provider coverage tests', () => {
   describe('Header userInfo mapping coverage', () => {
-    it('should Header user info with default config', async () => {
+    it('should Header user info with default config', () => {
       const HeaderProfile = { name: 'Winry', email: 'winry.rockbell@anime.jp', given_name: 'Winry Mechanic expert', family_name: 'Rockbell' };
       const result = computeHeaderUserInfo({}, HeaderProfile);
       expect(result.email).toBe('winry.rockbell@anime.jp');
@@ -34,7 +34,7 @@ describe('Header Single sign on Provider coverage tests', () => {
   });
 
   describe('Header groups and org mapping coverage', () => {
-    it('should Header group mapping be computed correctly with default', async () => {
+    it('should Header group mapping be computed correctly with default', () => {
       const headers: Record<string, string> = { 'X-MY-USER-GROUPS': 'headerGroupA' };
       const req = { header: (key: string) => headers[key] };
       const groupManagementConfig: Partial <BasicStoreEntitySingleSignOn> = {
@@ -48,7 +48,7 @@ describe('Header Single sign on Provider coverage tests', () => {
       expect(result).toStrictEqual(['openCTIGroupA']);
     });
 
-    it('should Header group mapping be computed correctly with splitter', async () => {
+    it('should Header group mapping be computed correctly with splitter', () => {
       const headers: Record<string, string> = { 'X-MY-USER-GROUPS': 'headerGroupA;headerGroupB' };
       const req = { header: (key: string) => headers[key] };
       const groupManagementConfig: Partial <BasicStoreEntitySingleSignOn> = {
@@ -62,7 +62,7 @@ describe('Header Single sign on Provider coverage tests', () => {
       expect(result).toStrictEqual(['openCTIGroupA', 'openCTIGroupB']);
     });
 
-    it('should Header org mapping be computed correctly with default org', async () => {
+    it('should Header org mapping be computed correctly with default org', () => {
       const headers: Record<string, string> = { 'X-MY-USER-ORG': 'headerOrgA;headerOrgB' };
       const req = { header: (key: string) => headers[key] };
       const orgManagementConfig: Partial <BasicStoreEntitySingleSignOn> = {
