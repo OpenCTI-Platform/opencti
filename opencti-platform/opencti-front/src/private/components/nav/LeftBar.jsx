@@ -39,6 +39,8 @@ import {
 import Divider from '@mui/material/Divider';
 import Drawer from '@mui/material/Drawer';
 import MenuList from '@mui/material/MenuList';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 import { createStyles, makeStyles, useTheme } from '@mui/styles';
 import {
   AccountMultipleOutline,
@@ -69,8 +71,10 @@ import {
 import React, { useRef, useState } from 'react';
 import { graphql, usePreloadedQuery } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
+import { THEME_LIGHT_DEFAULT_BACKGROUND, THEME_LIGHT_DEFAULT_PAPER } from '../../../components/ThemeLight';
 import { useFormatter } from '../../../components/i18n';
 import { MESSAGING$ } from '../../../relay/environment';
+import logoFiligranDark from '../../../static/images/logo_filigran_dark_theme.svg';
 import Security from '../../../utils/Security';
 import useAuth from '../../../utils/hooks/useAuth';
 import useDimensions from '../../../utils/hooks/useDimensions';
@@ -105,17 +109,12 @@ import useGranted, {
   TAXIIAPI,
   VIRTUAL_ORGANIZATION_ADMIN,
 } from '../../../utils/hooks/useGranted';
-import useImportAccess from '../../../utils/hooks/useImportAccess';
 import useHelper from '../../../utils/hooks/useHelper';
+import useImportAccess from '../../../utils/hooks/useImportAccess';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import { LeftBarHeader } from './LeftBarHeader';
 import LeftBarItem from './LeftBarItem';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
-import logoFiligranDark from '../../../static/images/logo_filigran_dark_theme.svg';
-import logoFiligranLight from '../../../static/images/logo_filigran_light_theme.svg';
-import { THEME_LIGHT_DEFAULT_PAPER, THEME_LIGHT_DEFAULT_BACKGROUND } from '../../../components/ThemeLight';
 import LogoTextOrange from '../../../static/images/logo_text_orange.svg';
 import LogoCollapsedOrange from '../../../static/images/logo_orange.svg';
 
@@ -836,7 +835,7 @@ const LeftBarComponent = ({ queryRef }) => {
               }
               <img
                 alt="logo"
-                src={isLightTheme ? logoFiligranLight : logoFiligranDark}
+                src={logoFiligranDark}
                 width={navOpen ? 48 : 12}
                 height="12"
                 style={{
