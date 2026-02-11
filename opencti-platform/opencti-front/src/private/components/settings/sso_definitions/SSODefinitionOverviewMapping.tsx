@@ -70,6 +70,8 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
 
   type Row = { key: string; value: unknown; type: string; mandatory: boolean };
 
+  console.log('strategy', strategy);
+
   const getSsoConfigRows = (): Row[] => {
     const rows: Row[] = [
       { key: 'name', value: name, type: 'string', mandatory: true },
@@ -104,7 +106,7 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
 
   const getGroupsRows = (): Row[] => {
     if (!groups_management) return [];
-    return [
+    const rows: Row[] = [
       {
         key: 'group_attributes',
         value: groups_management.group_attributes,
@@ -136,6 +138,9 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
         mandatory: false,
       },
     ];
+    return rows.filter(
+      (row) => !(strategy === 'OpenIDConnectStrategy' && row.key === 'group_attributes'),
+    );
   };
 
   const getOrganizationsRows = (): Row[] => {
