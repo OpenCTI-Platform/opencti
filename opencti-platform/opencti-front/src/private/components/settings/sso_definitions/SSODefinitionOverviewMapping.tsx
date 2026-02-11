@@ -194,6 +194,7 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
       },
     ];
   };
+
   const renderValue = (row: Row) => {
     if (row.type === 'array' && Array.isArray(row.value)) {
       return (
