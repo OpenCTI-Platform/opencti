@@ -14,6 +14,8 @@ import ItemBoolean from '../../../../components/ItemBoolean';
 import Tooltip from '@mui/material/Tooltip';
 import AccessesMenu from '@components/settings/AccessesMenu';
 import { EMPTY_VALUE } from '../../../../utils/String';
+import Card from '@common/card/Card';
+import { ConfigTypeArray, getAdvancedConfigFromData, getConfigFromData } from '@components/settings/sso_definitions/utils/getConfigAndAdvancedConfigFromData';
 
 export const ssoDefinitionOverviewMappingFragment = graphql`
   fragment SSODefinitionOverviewMappingFragment on SingleSignOn {
@@ -70,8 +72,8 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
 
   type Row = { key: string; value: unknown; type: string; mandatory: boolean };
 
-  const getSsoConfigRows = (): Row[] => {
-    const rows: Row[] = [
+  const getSsoConfigRows = (): { defaultRows: Row[]; advancedRows: Row[] } => {
+    const baseRows: Row[] = [
       { key: 'name', value: name, type: 'string', mandatory: true },
       { key: 'identifier', type: 'string', value: identifier, mandatory: true },
       { key: 'label', type: 'string', value: label, mandatory: false },
@@ -80,11 +82,32 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
       { key: 'strategy', type: 'string', value: strategy, mandatory: true },
     ];
 
-    const mandatoryField = [
-      'entryPoint',
-      'callbackUrl',
-      'idpCert',
-      'issuer',
+    const mandatoryField = ['entryPoint', 'callbackUrl', 'idpCert', 'issuer'];
+
+    if (!configuration || configuration.length === 0) {
+      return {
+        defaultRows: baseRows,
+        advancedRows: [],
+      };
+    }
+
+    const configArray: ConfigTypeArray = configuration.map((config) => ({
+      key: config.key,
+      value: config.value ?? '',
+      type: config.type ?? 'string',
+    }));
+
+    const defaultConfig = getConfigFromData(configArray, strategy);
+    const advancedConfig = getAdvancedConfigFromData(configArray, strategy);
+
+    const defaultRows: Row[] = [
+      ...baseRows,
+      ...defaultConfig.map((config) => ({
+        key: config.key,
+        value: config.value,
+        type: config.type,
+        mandatory: mandatoryField.includes(config.key),
+      })),
     ];
 
     configuration?.forEach((config) => {
@@ -99,7 +122,14 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
       });
     });
 
-    return rows;
+    const advancedRows: Row[] = advancedConfig.map((config) => ({
+      key: config.key,
+      value: config.value,
+      type: config.type,
+      mandatory: false,
+    }));
+
+    return { defaultRows, advancedRows };
   };
 
   const getGroupsRows = (): Row[] => {
@@ -223,52 +253,53 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
     );
   };
 
-  const renderRows = (rows: Row[]) => (
-    <Box sx={{ mt: 2 }}>
-      <Grid container sx={{ mb: 1, fontWeight: 600 }}>
-        <Grid size={{ xs: 12, md: 3 }}>
-          <Typography variant="subtitle1">{t_i18n('Key')}</Typography>
-        </Grid>
-        <Grid size={{ xs: 12, md: 6 }}>
-          <Typography variant="subtitle1">{t_i18n('Value')}</Typography>
-        </Grid>
-      </Grid>
-
-      {rows.map((row) => {
-        const valueIsTrue = row.value == 'true' || (row.key === 'enabled' && row.value);
-        const valueIsFalse = row.value == 'false' || (row.key === 'enabled' && !row.value);
-        return (
-          <Grid
-            container
-            key={row.key}
-            sx={{
-              py: 1,
-              borderTop: '1px solid',
-              borderColor: 'divider',
-            }}
-          >
-            <Grid size={{ xs: 12, md: 3 }} sx={{ display: 'flex', alignItems: 'center' }}>
-              <Typography variant="body1">{row.key}</Typography>
+  const renderRows = (rows: Row[], title: string) => (
+    <div style={{ marginTop: '20px' }}>
+      <Card title={title}>
+        <Box>
+          <Grid container sx={{ mb: 1, fontWeight: 600 }}>
+            <Grid size={{ xs: 12, md: 3 }}>
+              <Typography variant="subtitle1">{t_i18n('Key')}</Typography>
             </Grid>
-
-            <Grid size={{ xs: 12, md: 6 }} sx={{ display: 'flex', alignItems: 'center' }}>
-              {valueIsTrue
-                ? <ItemBoolean label={t_i18n('True')} status={true} />
-                : valueIsFalse
-                  ? <ItemBoolean label={t_i18n('False')} status={false} />
-                  : row.value ? renderValue(row) : EMPTY_VALUE}
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Typography variant="subtitle1">{t_i18n('Value')}</Typography>
             </Grid>
           </Grid>
-        );
-      })}
-    </Box>
+          {rows.map((row) => {
+            const valueIsTrue = row.value == 'true' || (row.key === 'enabled' && row.value);
+            const valueIsFalse = row.value == 'false' || (row.key === 'enabled' && !row.value);
+            return (
+              <Grid
+                container
+                key={row.key}
+                sx={{
+                  py: 1,
+                  borderTop: '1px solid',
+                  borderColor: 'divider',
+                }}
+              >
+                <Grid size={{ xs: 12, md: 3 }} sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Typography variant="body1">{row.key}</Typography>
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }} sx={{ display: 'flex', alignItems: 'center' }}>
+                  {valueIsTrue
+                    ? <ItemBoolean label={t_i18n('True')} status={true} />
+                    : valueIsFalse
+                      ? <ItemBoolean label={t_i18n('False')} status={false} />
+                      : row.value ? renderValue(row) : EMPTY_VALUE}
+                </Grid>
+              </Grid>
+            );
+          })}
+        </Box>
+      </Card>
+    </div>
   );
 
-  const rowsByTab = [
-    getSsoConfigRows(),
-    getGroupsRows(),
-    getOrganizationsRows(),
-  ];
+  const { defaultRows, advancedRows } = getSsoConfigRows();
+  const groupsRows = getGroupsRows();
+  const organizationsRows = getOrganizationsRows();
+
   const selectedCert = strategy === 'ClientCertStrategy';
   const selectedLocal = strategy === 'LocalStrategy';
   return (
@@ -285,7 +316,21 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
             {!selectedCert && !selectedLocal && (<Tab label={t_i18n('Organizations configuration')} />)}
           </Tabs>
         </Box>
-        {renderRows(rowsByTab[currentTab])}
+
+        {currentTab === 0 && (
+          <>
+            {renderRows(defaultRows, t_i18n('Default configuration'))}
+            {advancedRows.length > 0 && renderRows(advancedRows, t_i18n('Added configuration'))}
+          </>
+        )}
+
+        {currentTab === 1 && !selectedCert && !selectedLocal && (
+          renderRows(groupsRows, t_i18n('Groups configuration'))
+        )}
+
+        {currentTab === 2 && !selectedCert && !selectedLocal && (
+          renderRows(organizationsRows, t_i18n('Organizations configuration'))
+        )}
       </Grid>
     </div>
   );
