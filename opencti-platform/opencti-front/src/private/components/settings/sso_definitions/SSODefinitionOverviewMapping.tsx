@@ -70,8 +70,6 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
 
   type Row = { key: string; value: unknown; type: string; mandatory: boolean };
 
-  console.log('strategy', strategy);
-
   const getSsoConfigRows = (): Row[] => {
     const rows: Row[] = [
       { key: 'name', value: name, type: 'string', mandatory: true },
@@ -205,7 +203,7 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
       );
     }
 
-    const MAX_LEN = 70;
+    const MAX_LEN = 60;
     const truncate = (value: string) =>
       value && value.length > MAX_LEN ? `${value.slice(0, MAX_LEN)}…` : value;
     return (
@@ -272,6 +270,7 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
     getOrganizationsRows(),
   ];
   const selectedCert = strategy === 'ClientCertStrategy';
+  const selectedLocal = strategy === 'LocalStrategy';
   return (
     <div style={{ paddingRight: '200px' }}>
       <AccessesMenu />
@@ -282,8 +281,8 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
             onChange={(event, value) => setCurrentTab(value)}
           >
             <Tab label={t_i18n('Authentication configuration')} sx={{ textTransform: 'none' }} />
-            {!selectedCert && (<Tab label={t_i18n('Groups configuration')} />)}
-            {!selectedCert && (<Tab label={t_i18n('Organizations configuration')} />)}
+            {!selectedCert && !selectedLocal && (<Tab label={t_i18n('Groups configuration')} />)}
+            {!selectedCert && !selectedLocal && (<Tab label={t_i18n('Organizations configuration')} />)}
           </Tabs>
         </Box>
         {renderRows(rowsByTab[currentTab])}
