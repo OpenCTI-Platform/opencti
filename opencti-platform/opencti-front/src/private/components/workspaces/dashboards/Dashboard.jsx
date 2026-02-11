@@ -18,6 +18,7 @@ import { ErrorBoundary } from '../../Error';
 import { deserializeDashboardManifestForFrontend, serializeDashboardManifestForBackend } from '../../../../utils/filters/filtersUtils';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { Stack } from '@mui/material';
+import { useTheme } from '@mui/styles';
 
 const dashboardLayoutMutation = graphql`
   mutation DashboardLayoutMutation($id: ID!, $input: [EditInput!]!) {
@@ -58,6 +59,7 @@ const dashboardFragment = graphql`
 `;
 
 const DashboardComponent = ({ data, noToolbar = false }) => {
+  const theme = useTheme();
   const [commitWidgetImportMutation] = useApiMutation(dashboardImportWidgetMutation);
 
   const workspace = useFragment(dashboardFragment, data);
@@ -309,11 +311,17 @@ const DashboardComponent = ({ data, noToolbar = false }) => {
             />
           );
 
+          const isResizing = idToResize === widget.id;
+
           return (
             <div
               key={widget.id}
               data-grid={widgetsLayouts[widget.id]}
-              style={{ display: 'relative' }}
+              style={{
+                display: 'relative',
+                border: isResizing ? `1px solid ${theme.palette.primary.main}` : 'none',
+                borderRadius: 4,
+              }}
             >
               <ErrorBoundary>
                 {widget.id === idToResize ? <div /> : (
