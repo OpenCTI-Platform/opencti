@@ -24,7 +24,10 @@ import { PageContainerContext } from './PageContainer';
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
-  filter3: {
+  filterTagLike: {
+    height: 25,
+  },
+  filterInLine: {
     fontSize: 12,
     height: 20,
     borderRadius: 4,
@@ -51,7 +54,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     display: 'flex',
     alignItems: 'center',
   },
-  operator3: {
+  operatorInLine: {
     borderRadius: 4,
     fontFamily: 'Consolas, monaco, monospace',
     backgroundColor: theme.palette.action?.selected,
@@ -65,7 +68,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
       textDecorationLine: 'underline',
     },
   },
-  operator3ReadOnly: {
+  operatorInLineReadOnly: {
     borderRadius: 4,
     fontFamily: 'Consolas, monaco, monospace',
     backgroundColor: theme.palette.action?.selected,
@@ -91,7 +94,7 @@ interface FilterIconButtonContainerProps {
   handleRemoveFilter?: (key: string, op?: string) => void;
   handleSwitchGlobalMode?: () => void;
   handleSwitchLocalMode?: (filter: Filter) => void;
-  styleNumber?: number;
+  filterIconButtonVariant?: string; // 'inLine' or 'inForm' or 'TagLike' (if empty: default style like in datatables)
   dataColumns?: DataColumns;
   disabledPossible?: boolean;
   redirection?: boolean;
@@ -118,7 +121,7 @@ const FilterIconButtonContainer: FunctionComponent<
   filters,
   handleSwitchGlobalMode,
   handleSwitchLocalMode,
-  styleNumber,
+  filterIconButtonVariant,
   disabledPossible,
   redirection,
   filtersRepresentativesQueryRef,
@@ -222,16 +225,19 @@ const FilterIconButtonContainer: FunctionComponent<
   let margin = inPageContainer ? '0 0 0 0' : '0 0 8px 0';
   if (!isReadWriteFilter) {
     classOperator = classes.operatorDefaultReadOnly;
-    if (styleNumber === 3) {
-      classFilter = classes.filter3;
-      classOperator = classes.operator3ReadOnly;
+    if (filterIconButtonVariant === 'inLine') {
+      classFilter = classes.filterInLine;
+      classOperator = classes.operatorInLineReadOnly;
     }
-  } else if (styleNumber === 2) {
+  } else if (filterIconButtonVariant === 'inForm') {
     margin = '10px 0 10px 0';
-  } else if (styleNumber === 3) {
-    classFilter = classes.filter3;
-    classOperator = classes.operator3;
+  } else if (filterIconButtonVariant === 'inLine') {
+    classFilter = classes.filterInLine;
+    classOperator = classes.operatorInLine;
     margin = '0 0 0 0';
+  }
+  if (filterIconButtonVariant === 'TagLike') {
+    classFilter = classes.filterTagLike;
   }
 
   let boxStyle = {
@@ -245,7 +251,7 @@ const FilterIconButtonContainer: FunctionComponent<
   };
 
   if (!isReadWriteFilter) {
-    if (styleNumber !== 2) {
+    if (filterIconButtonVariant !== 'inForm') {
       boxStyle = {
         margin: '0 0 0 0',
         display: 'flex',
@@ -369,7 +375,7 @@ const FilterIconButtonContainer: FunctionComponent<
             {isNotLastFilter && (
               <Box
                 sx={{
-                  padding: styleNumber === 3 ? '0 4px' : '0',
+                  padding: filterIconButtonVariant === 'inLine' ? '0 4px' : '0',
                   display: 'flex',
                 }}
               >

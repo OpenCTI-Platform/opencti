@@ -205,7 +205,7 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
                   <FilterIconButton
                     filters={filters}
                     dataColumns={dataColumns}
-                    styleNumber={3}
+                    filterIconButtonVariant="inLine"
                     redirection
                     entityTypes={data.instance_trigger ? ['Instance'] : ['Stix-Core-Object', 'Stix-Filtering']}
                   />

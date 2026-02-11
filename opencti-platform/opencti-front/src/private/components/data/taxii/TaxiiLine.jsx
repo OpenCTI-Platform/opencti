@@ -135,7 +135,7 @@ class TaxiiLineLineComponent extends Component {
                         <FilterIconButton
                           filters={filters}
                           dataColumns={dataColumns}
-                          styleNumber={3}
+                          filterIconButtonVariant="inLine"
                         />
                       )
                     : EMPTY_VALUE}

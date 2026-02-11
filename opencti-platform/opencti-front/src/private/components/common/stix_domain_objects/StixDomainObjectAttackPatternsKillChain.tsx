@@ -460,7 +460,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
           <FilterIconButton
             filters={filters}
             helpers={helpers}
-            styleNumber={2}
+            filterIconButtonVariant="inForm"
             redirection
             searchContext={{ entityTypes: ['Attack-Pattern'] }}
           />

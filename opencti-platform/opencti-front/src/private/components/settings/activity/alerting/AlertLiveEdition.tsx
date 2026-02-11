@@ -205,7 +205,7 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({
           {filters && (
             <FilterIconButton
               filters={filters}
-              styleNumber={2}
+              filterIconButtonVariant="inForm"
               helpers={helpers}
               entityTypes={['History']}
             />

@@ -343,7 +343,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                         key="connector-filter-icon-button"
                         filters={filters}
                         helpers={helpers}
-                        styleNumber={2}
+                        filterIconButtonVariant="inForm"
                         searchContext={filtersSearchContext}
                         entityTypes={connectorFiltersScope}
                       />
