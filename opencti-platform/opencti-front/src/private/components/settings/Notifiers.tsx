@@ -95,6 +95,7 @@ const Notifiers = () => {
           'There are two built-in notifiers in the platform: User Interface and Default Mailer. They are not configurable and you can create your custom ones here.',
         )}
         createButton={<NotifierCreation paginationOptions={paginationOptions} />}
+        iconExtension
       >
         {queryRef && (
           <React.Suspense

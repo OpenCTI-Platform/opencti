@@ -191,6 +191,7 @@ const Alerting: FunctionComponent = () => {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         createButton={<AlertCreation paginationOptions={paginationOptions} />}
+        iconExtension
       >
         {queryRef && (
           <React.Suspense

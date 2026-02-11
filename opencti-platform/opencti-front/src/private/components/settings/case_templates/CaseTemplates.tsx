@@ -77,6 +77,7 @@ const CaseTemplates = () => {
         displayImport={false}
         keyword={searchTerm}
         createButton={<CaseTemplateCreation paginationOptions={paginationOptions} />}
+        iconExtension
       >
         {queryRef && (
           <>

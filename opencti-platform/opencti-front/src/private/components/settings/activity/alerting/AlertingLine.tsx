@@ -6,8 +6,7 @@ import { BackupTableOutlined, CampaignOutlined, MoreVert } from '@mui/icons-mate
 import Skeleton from '@mui/material/Skeleton';
 import { graphql, useFragment } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
-import { Theme } from '@mui/material/styles/createTheme';
-import Chip from '@mui/material/Chip';
+import { Theme } from '../../../../../components/Theme';
 import Box from '@mui/material/Box';
 import IconButton from '@common/button/IconButton';
 import { DataColumns } from '../../../../../components/list_lines';
@@ -18,8 +17,10 @@ import { AlertingLine_node$key } from './__generated__/AlertingLine_node.graphql
 import { AlertingPaginationQuery$variables } from './__generated__/AlertingPaginationQuery.graphql';
 import AlertingPopover from './AlertingPopover';
 import { deserializeFilterGroupForFrontend } from '../../../../../utils/filters/filtersUtils';
-import { chipInListBasicStyle } from '../../../../../utils/chipStyle';
 import { HandleAddFilter } from '../../../../../utils/hooks/useLocalStorage';
+import Tag from '@common/tag/Tag';
+import { useTheme } from '@mui/styles';
+import { Stack } from '@mui/material';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -46,23 +47,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   itemIconDisabled: {
     color: theme.palette.grey?.[700],
-  },
-  chipInList: {
-    fontSize: 12,
-    height: 20,
-    float: 'left',
-    width: 100,
-    marginRight: 10,
-  },
-  chipInList2: {
-    ...chipInListBasicStyle,
-    textTransform: 'uppercase',
-  },
-  chipInList3: {
-    fontSize: 12,
-    height: 20,
-    float: 'left',
-    marginRight: 10,
   },
 }));
 
@@ -101,6 +85,7 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
   paginationOptions,
 }) => {
   const classes = useStyles();
+  const theme = useTheme<Theme>();
   const { t_i18n, nt } = useFormatter();
   const data = useFragment(alertingLineFragment, node);
   const filters = deserializeFilterGroupForFrontend(data.filters);
@@ -127,15 +112,13 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.trigger_type.width }}
             >
-              <Chip
-                color={data.trigger_type === 'live' ? 'warning' : 'secondary'}
-                classes={{ root: classes.chipInList2 }}
+              <Tag
+                color={data.trigger_type === 'live' ? theme.palette.severity.high : theme.palette.severity.low}
                 label={
                   data.trigger_type === 'live'
                     ? t_i18n('Live trigger')
                     : t_i18n('Regular digest')
                 }
-                variant="outlined"
               />
             </div>
             <div
@@ -152,7 +135,12 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
                 && data.notifiers.length > 0
                 && data.notifiers
                   .map<React.ReactNode>((n) => (
-                    <code key={n.id}>{n.name}</code>
+                    <div
+                      key={n.id}
+                      style={{ maxWidth: '350px', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                    >
+                      <code>{n.name}</code>
+                    </div>
                   ))
                   .reduce((prev, curr) => [prev, ', ', curr])}
             </div>
@@ -165,12 +153,14 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
               />
             )}
             {data.trigger_type === 'digest' && (
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.filters.width }}
+              <Stack
+                direction="row"
+                gap={1}
+                flexWrap="nowrap"
+                overflow="hidden"
+                textOverflow="ellipsis"
               >
-                <Chip
-                  classes={{ root: classes.chipInList3 }}
+                <Tag
                   label={(
                     <span>
                       <strong>{t_i18n('Period: ')}</strong>
@@ -179,8 +169,7 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
                   )}
                 />
                 {currentTime.length > 1 && (
-                  <Chip
-                    classes={{ root: classes.chipInList3 }}
+                  <Tag
                     label={(
                       <span>
                         <strong>{t_i18n('Day: ')}</strong>
@@ -190,8 +179,7 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
                   />
                 )}
                 {data.trigger_time && data.trigger_time.length > 0 && (
-                  <Chip
-                    classes={{ root: classes.chipInList3 }}
+                  <Tag
                     label={(
                       <span>
                         <strong>{t_i18n('Time: ')}</strong>
@@ -200,7 +188,7 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
                     )}
                   />
                 )}
-              </div>
+              </Stack>
             )}
           </div>
         )}

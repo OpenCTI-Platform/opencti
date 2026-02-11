@@ -87,6 +87,7 @@ const Positions: FunctionComponent = () => {
             <PositionCreation paginationOptions={paginationOptions} />
           </Security>
         )}
+        iconExtension
       >
         {queryRef && (
           <React.Suspense

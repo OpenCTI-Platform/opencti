@@ -87,6 +87,7 @@ const Cities: FunctionComponent = () => {
             <CityCreation paginationOptions={paginationOptions} />
           </Security>
         )}
+        iconExtension
       >
         {queryRef && (
           <React.Suspense

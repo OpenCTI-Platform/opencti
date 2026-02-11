@@ -90,6 +90,7 @@ const AdministrativeAreas: FunctionComponent = () => {
             <AdministrativeAreaCreation paginationOptions={paginationOptions} />
           </Security>
         )}
+        iconExtension
       >
         {queryRef && (
           <React.Suspense

@@ -259,6 +259,7 @@ const Audit = () => {
         numberOfElements={numberOfElements}
         handleExportCsv={handleExportCsv}
         entityTypes={types}
+        iconExtension
       >
         {queryRef && (
           <React.Suspense
