@@ -3,7 +3,7 @@ import Chip from '@mui/material/Chip';
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import Tooltip from '@mui/material/Tooltip';
 import makeStyles from '@mui/styles/makeStyles';
-import React, { Fragment, FunctionComponent, useContext, useEffect, useRef } from 'react';
+import React, { CSSProperties, Fragment, FunctionComponent, useContext, useEffect, useRef } from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { convertOperatorToIcon, filterOperatorsWithIcon, FilterSearchContext, FiltersRestrictions, isFilterEditable, useFilterDefinition } from '../utils/filters/filtersUtils';
 import { truncate } from '../utils/String';
@@ -24,15 +24,6 @@ import { PageContainerContext } from './PageContainer';
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
-  filterTagLike: {
-    height: 25,
-  },
-  filterInLine: {
-    fontSize: 12,
-    height: 20,
-    borderRadius: 4,
-    lineHeight: '32px',
-  },
   operatorDefault: {
     borderRadius: 4,
     fontFamily: 'Consolas, monaco, monospace',
@@ -161,7 +152,6 @@ const FilterIconButtonContainer: FunctionComponent<
   const globalMode = filters.mode;
   const itemRefToPopover = useRef(null);
   const oldItemRefToPopover = useRef(null);
-  let classFilter = undefined;
   const filtersRepresentativesMap = new Map<string, FilterRepresentative>(
     filtersRepresentatives.map((n: FilterRepresentative) => [n.id, n]),
   );
@@ -227,23 +217,32 @@ const FilterIconButtonContainer: FunctionComponent<
     }
   };
   const isReadWriteFilter = !!(helpers || handleRemoveFilter);
+  let filterStyle: CSSProperties | undefined = undefined;
   let classOperator = classes.operatorDefault;
   let margin = inPageContainer ? '0 0 0 0' : '0 0 8px 0';
+
+  const filterInLineStyle = {
+    fontSize: 12,
+    height: 20,
+    borderRadius: 4,
+    lineHeight: '32px',
+  };
+
   if (!isReadWriteFilter) {
     classOperator = classes.operatorDefaultReadOnly;
     if (filterIconButtonVariant === 'inLine') {
-      classFilter = classes.filterInLine;
+      filterStyle = filterInLineStyle;
       classOperator = classes.operatorInLineReadOnly;
     }
   } else if (filterIconButtonVariant === 'inForm') {
     margin = '10px 0 10px 0';
   } else if (filterIconButtonVariant === 'inLine') {
-    classFilter = classes.filterInLine;
+    filterStyle = filterInLineStyle;
     classOperator = classes.operatorInLine;
     margin = '0 0 0 0';
   }
   if (filterIconButtonVariant === 'TagLike') {
-    classFilter = classes.filterTagLike;
+    filterStyle = { height: 25 };
   }
 
   let boxStyle = {
@@ -338,7 +337,8 @@ const FilterIconButtonContainer: FunctionComponent<
                       ? itemRefToPopover
                       : null
                   }
-                  classes={{ root: classFilter, label: classes.chipLabel }}
+                  style={filterStyle}
+                  classes={{ label: classes.chipLabel }}
                   variant={chipVariant}
                   sx={{ ...chipSx, borderRadius: 1 }}
                   label={(
@@ -423,7 +423,7 @@ const FilterIconButtonContainer: FunctionComponent<
           filtersRepresentativesMap={filtersRepresentativesMap}
           filterObj={filters}
           filterMode={filters.mode}
-          classFilter={classFilter}
+          filterStyle={filterStyle}
           classChipLabel={classes.chipLabel}
         />
       )}

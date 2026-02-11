@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { useFormatter } from './i18n';
+import { Box } from '@mui/material';
 
 interface FilterIconButtonGlobalModeProps {
   classOperator: string;
@@ -15,9 +16,9 @@ const FilterIconButtonGlobalMode: FunctionComponent<
 }) => {
   const { t_i18n } = useFormatter();
   return (
-    <div className={classOperator} onClick={handleSwitchGlobalMode}>
+    <Box className={classOperator} onClick={handleSwitchGlobalMode}>
       {t_i18n(globalMode.toLowerCase())}
-    </div>
+    </Box>
   );
 };
 

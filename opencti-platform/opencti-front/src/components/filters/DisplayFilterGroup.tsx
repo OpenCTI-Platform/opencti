@@ -1,4 +1,4 @@
-import React, { Fragment, FunctionComponent, useState } from 'react';
+import React, { CSSProperties, Fragment, FunctionComponent, useState } from 'react';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import { InformationOutline } from 'mdi-material-ui';
@@ -278,7 +278,7 @@ interface DisplayFilterGroupProps {
   filterObj: FilterGroup;
   filterMode: string;
   filtersRepresentativesMap: Map<string, FilterRepresentative>;
-  classFilter?: string;
+  filterStyle?: CSSProperties;
   classChipLabel: string;
 }
 
@@ -286,7 +286,7 @@ const DisplayFilterGroup: FunctionComponent<DisplayFilterGroupProps> = ({
   filterObj,
   filterMode,
   filtersRepresentativesMap,
-  classFilter,
+  filterStyle,
   classChipLabel,
 }) => {
   const { filterGroups } = filterObj;
@@ -302,7 +302,8 @@ const DisplayFilterGroup: FunctionComponent<DisplayFilterGroupProps> = ({
   return (
     <>
       <Chip
-        classes={{ root: classFilter, label: classChipLabel }}
+        style={filterStyle}
+        classes={{ label: classChipLabel }}
         color="warning"
         onClick={handleClickOpen}
         label={(

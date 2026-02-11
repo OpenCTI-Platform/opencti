@@ -150,7 +150,7 @@ const TaskFilterValue = ({
           filtersRepresentativesMap={filtersRepresentativesMap}
           filterObj={filters}
           filterMode={filters.mode}
-          classFilter={classes.filter}
+          filterStyle={{ margin: '5px 10px 5px 0' }}
           classChipLabel={classes.chipLabel}
         />
       )}
