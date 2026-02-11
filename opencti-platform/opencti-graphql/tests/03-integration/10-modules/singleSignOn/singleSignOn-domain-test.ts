@@ -40,7 +40,7 @@ describe('Single sign on Domain coverage tests', () => {
         configuration: [
           { key: 'callbackUrl', value: 'http://myopencti/auth/samlTestDomain/callback', type: 'string' },
           { key: 'idpCert', value: '21341234', type: 'string' },
-          { key: 'issuer', value: 'issuer', type: 'string' },
+          { key: 'issuer', value: 'https://issuer.example.net', type: 'string' },
           { key: 'privateKey', value: 'myPrivateKey', type: 'string' },
           { key: 'custom_value_that_is_secret', value: 'theCustomValue', type: TO_ENCRYPT_TYPE },
         ],
@@ -71,7 +71,7 @@ describe('Single sign on Domain coverage tests', () => {
         configuration: [
           { key: 'callbackUrl', value: 'http://myopencti/auth/samlTestDomainLogout/callback', type: 'string' },
           { key: 'idpCert', value: '21341234', type: 'string' },
-          { key: 'issuer', value: 'issuer', type: 'string' },
+          { key: 'issuer', value: 'https://issuer.example.net', type: 'string' },
           { key: 'logout_remote', value: 'true', type: 'boolean' },
         ],
       };
@@ -231,7 +231,7 @@ describe('Single sign on Domain coverage tests', () => {
           { key: 'redirect_uri', value: 'http://fake.invalid', type: 'string' },
           { key: 'client_secret', value: 'graceHopper', type: 'string' },
           { key: 'client_id', value: 'myoicclient', type: 'string' },
-          { key: 'issuer', value: 'issuer', type: 'string' },
+          { key: 'issuer', value: 'https://issuer.example.net', type: 'string' },
         ],
       };
       const oicEntity = await addSingleSignOn(testContext, ADMIN_USER, input);
@@ -285,7 +285,7 @@ describe('Single sign on Domain coverage tests', () => {
         configuration: [
           { key: 'redirect_uri', value: 'http://fake.invalid', type: 'string' },
           { key: 'client_secret', value: 'graceHopper', type: 'string' },
-          { key: 'issuer', value: 'issuer', type: 'string' },
+          { key: 'issuer', value: 'https://issuer.example.net', type: 'string' },
         ],
       };
       const oicEntity = await addSingleSignOn(testContext, ADMIN_USER, input);
@@ -345,7 +345,7 @@ describe('Single sign on Domain coverage tests', () => {
         configuration: [
           { key: 'redirect_uri', value: 'http://fake.invalid', type: 'string' },
           { key: 'client_id', value: 'myoicclient', type: 'string' },
-          { key: 'issuer', value: 'issuer', type: 'string' },
+          { key: 'issuer', value: 'https://issuer.example.net', type: 'string' },
         ],
       };
       const oicEntity = await addSingleSignOn(testContext, ADMIN_USER, input);
