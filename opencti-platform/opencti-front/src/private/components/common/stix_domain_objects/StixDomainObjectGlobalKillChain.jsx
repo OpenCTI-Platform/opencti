@@ -239,9 +239,11 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                                   limit={1}
                                 />
                               </Box>
-                              <ItemYears
-                                years={stixDomainObject.years}
-                              />
+                              <Box sx={{ marginRight: 8 }}>
+                                <ItemYears
+                                  years={stixDomainObject.years}
+                                />
+                              </Box>
                             </ListItemButton>
                           </ListItem>
                         );

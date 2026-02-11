@@ -7,9 +7,9 @@ interface ItemYearsProps {
 }
 
 const ItemYears = ({ years }: ItemYearsProps) => {
+  console.log('years', years);
   return (
     <Tag
-      sx={{ marginRight: 8 }}
       label={years === '1970 - 5138' ? EMPTY_VALUE : years}
     />
   );
