@@ -142,7 +142,6 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
             primary={itemLabel}
             sx={{
               pt: 0.1,
-              opacity: fontSize === 'default' || selected ? 1 : 0.6,
             }}
             slotProps={{
               primary: {
