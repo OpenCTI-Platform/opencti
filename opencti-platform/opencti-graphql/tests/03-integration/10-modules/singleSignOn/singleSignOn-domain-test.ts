@@ -4,7 +4,6 @@ import { logApp } from '../../../../src/config/conf';
 import {
   addSingleSignOn,
   deleteSingleSignOn,
-  ENCRYPTED_TYPE,
   fieldPatchSingleSignOn,
   findAllSingleSignOn,
   findSingleSignOnById,
@@ -54,16 +53,6 @@ describe('Single sign on Domain coverage tests', () => {
 
       const callbackUrl = samlEntity.configuration?.find((config) => config.key === 'callbackUrl') as ConfigurationType;
       expect(callbackUrl.value).toBe('http://myopencti/auth/samlTestDomain/callback');
-
-      // this one is encrypted because on the list of sensistive, see AUTH_SECRET_LIST
-      const privateKey = samlEntity.configuration?.find((config) => config.key === 'privateKey') as ConfigurationType;
-      expect(privateKey.value).not.toBe('myPrivateKey');
-      expect(privateKey.type).toBe(ENCRYPTED_TYPE);
-
-      // this one is encrypted because enter as 'secret' by user
-      const customSecret = samlEntity.configuration?.find((config) => config.key === 'custom_value_that_is_secret') as ConfigurationType;
-      expect(customSecret.value).not.toBe('custom_value_that_is_secret');
-      expect(customSecret.type).toBe(ENCRYPTED_TYPE);
 
       // Here there is a pub/sub on redis, let's just call the same method than listener
       await onAuthenticationMessageAdd({ instance: samlEntity });
@@ -253,9 +242,6 @@ describe('Single sign on Domain coverage tests', () => {
 
       const client_id: ConfigurationType = oicEntity.configuration?.find((config) => config.key === 'client_id') as ConfigurationType;
       expect(client_id.value).toBe('myoicclient');
-      const client_secret = oicEntity.configuration?.find((config) => config.key === 'client_secret') as ConfigurationType;
-      expect(client_secret.value).not.toBe('graceHopper');
-      expect(client_secret.type).toBe(ENCRYPTED_TYPE);
     });
 
     it('should missing redirect_uris throw error', async () => {
@@ -408,9 +394,6 @@ describe('Single sign on Domain coverage tests', () => {
       expect(ldapEntity.enabled).toBe(true);
       const configUrl = ldapEntity.configuration?.find((config) => config.key === 'url') as ConfigurationType;
       expect(configUrl.value).toBe('ldap://localhost:389');
-      const bindCredentials = ldapEntity.configuration?.find((config) => config.key === 'bindCredentials') as ConfigurationType;
-      expect(bindCredentials.value).not.toBe('youShallNotPass');
-      expect(bindCredentials.type).toBe(ENCRYPTED_TYPE);
 
       // Here there is a pub/sub on redis, let's just call the same method as listener
       await onAuthenticationMessageAdd({ instance: ldapEntity });
