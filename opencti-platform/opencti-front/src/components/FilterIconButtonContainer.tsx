@@ -2,7 +2,6 @@ import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import Tooltip from '@mui/material/Tooltip';
-import makeStyles from '@mui/styles/makeStyles';
 import React, { CSSProperties, Fragment, FunctionComponent, useContext, useEffect, useRef } from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { convertOperatorToIcon, filterOperatorsWithIcon, FilterSearchContext, FiltersRestrictions, isFilterEditable, useFilterDefinition } from '../utils/filters/filtersUtils';
@@ -11,7 +10,6 @@ import { FilterValuesContentQuery } from './__generated__/FilterValuesContentQue
 import FilterValues from './filters/FilterValues';
 import { useFormatter } from './i18n';
 import { DataColumns } from './list_lines';
-import type { Theme } from './Theme';
 
 import { Filter, FilterGroup, handleFilterHelpers } from '../utils/filters/filtersHelpers-types';
 import FilterIconButtonGlobalMode from './FilterIconButtonGlobalMode';
@@ -21,21 +19,6 @@ import { FilterRepresentative } from './filters/FiltersModel';
 import { filterValuesContentQuery } from './FilterValuesContent';
 import { PageContainerContext } from './PageContainer';
 import { useTheme } from '@mui/material/styles';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>(() => ({
-  chipLabel: {
-    lineHeight: '32px',
-    maxWidth: 400,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    display: 'flex',
-    alignItems: 'center',
-    gap: 4,
-  },
-}));
 
 export type FilterIconButtonVariant
   = undefined // default style (variant is undefined) is the one for filters applied in datatables
@@ -96,7 +79,6 @@ const FilterIconButtonContainer: FunctionComponent<
   setFilterChipsParams,
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const theme = useTheme();
 
   const { inPageContainer } = useContext(PageContainerContext);
@@ -264,7 +246,7 @@ const FilterIconButtonContainer: FunctionComponent<
           ? 'outlined'
           : 'filled';
         // darken the bg color when filled (quickfix for 'warning' and 'success' chipColor unreadable with regardingOf filter)
-        const chipSx = (chipColor === 'warning' || chipColor === 'success') && chipVariant === 'filled'
+        const chipBackgroundColorStyle = (chipColor === 'warning' || chipColor === 'success') && chipVariant === 'filled'
           ? { bgcolor: `${chipColor}.dark` }
           : undefined;
         const authorizeFilterRemoving = !(filtersRestrictions?.preventRemoveFor?.includes(filterKey))
@@ -302,10 +284,22 @@ const FilterIconButtonContainer: FunctionComponent<
                       ? itemRefToPopover
                       : null
                   }
-                  style={filterStyle}
-                  classes={{ label: classes.chipLabel }}
                   variant={chipVariant}
-                  sx={{ ...chipSx, borderRadius: 1 }}
+                  sx={{
+                    ...filterStyle,
+                    ...chipBackgroundColorStyle,
+                    borderRadius: 1,
+                    '& .MuiChip-label': {
+                      lineHeight: '32px',
+                      maxWidth: 400,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4,
+                    },
+                  }}
                   label={(
                     <Box
                       sx={{
@@ -390,7 +384,6 @@ const FilterIconButtonContainer: FunctionComponent<
           filterObj={filters}
           filterMode={filters.mode}
           filterStyle={filterStyle}
-          classChipLabel={classes.chipLabel}
         />
       )}
     </Box>

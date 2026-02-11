@@ -279,7 +279,6 @@ interface DisplayFilterGroupProps {
   filterMode: string;
   filtersRepresentativesMap: Map<string, FilterRepresentative>;
   filterStyle?: CSSProperties;
-  classChipLabel: string;
 }
 
 const DisplayFilterGroup: FunctionComponent<DisplayFilterGroupProps> = ({
@@ -287,7 +286,6 @@ const DisplayFilterGroup: FunctionComponent<DisplayFilterGroupProps> = ({
   filterMode,
   filtersRepresentativesMap,
   filterStyle,
-  classChipLabel,
 }) => {
   const { filterGroups } = filterObj;
   const [open, setOpen] = useState(false);
@@ -303,7 +301,18 @@ const DisplayFilterGroup: FunctionComponent<DisplayFilterGroupProps> = ({
     <>
       <Chip
         style={filterStyle}
-        classes={{ label: classChipLabel }}
+        sx={{
+          '& .MuiChip-label': {
+            lineHeight: '32px',
+            maxWidth: 400,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 4,
+          },
+        }}
         color="warning"
         onClick={handleClickOpen}
         label={(
