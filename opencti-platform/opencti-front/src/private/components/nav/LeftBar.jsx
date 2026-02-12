@@ -74,7 +74,7 @@ import { useNavigate } from 'react-router-dom';
 import { THEME_LIGHT_DEFAULT_BACKGROUND, THEME_LIGHT_DEFAULT_PAPER } from '../../../components/ThemeLight';
 import { useFormatter } from '../../../components/i18n';
 import { MESSAGING$ } from '../../../relay/environment';
-import logoFiligranDark from '../../../static/images/logo_filigran_dark_theme.svg';
+import logoFiligran from '../../../static/images/logo_filigran_full.svg';
 import Security from '../../../utils/Security';
 import useAuth from '../../../utils/hooks/useAuth';
 import useDimensions from '../../../utils/hooks/useDimensions';
@@ -835,7 +835,7 @@ const LeftBarComponent = ({ queryRef }) => {
               }
               <img
                 alt="logo"
-                src={logoFiligranDark}
+                src={logoFiligran}
                 width={navOpen ? 48 : 12}
                 height="12"
                 style={{
