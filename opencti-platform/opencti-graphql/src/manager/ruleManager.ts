@@ -394,7 +394,7 @@ export const ruleApplyAsync = async (context: AuthContext, user: AuthUser, eleme
       // In any case, we have to start it over
       await redisInitializeAsyncCall(ruleApplyId);
       const timeoutPromise = wait(10000, { timeout: true });
-      const ruleApplyPromise = async () => {
+      const fullRuleApply = async () => {
         try {
           await ruleApply(context, user, elementId, ruleId);
         } catch (err: any) {
@@ -403,7 +403,8 @@ export const ruleApplyAsync = async (context: AuthContext, user: AuthUser, eleme
         await redisFinishAsyncCall(ruleApplyId);
         await lock?.unlock();
       };
-      const raceResult = await Promise.race([ruleApplyPromise, timeoutPromise]) as { timeout?: boolean };
+      const fullRuleApplyPromise = fullRuleApply();
+      const raceResult = await Promise.race([fullRuleApplyPromise, timeoutPromise]) as { timeout?: boolean };
       return !raceResult?.timeout;
     }
   } catch (err: any) {
