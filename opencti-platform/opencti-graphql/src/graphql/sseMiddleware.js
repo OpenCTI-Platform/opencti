@@ -47,7 +47,7 @@ import { createAuthenticatedContext } from '../http/httpAuthenticatedContext';
 import { EVENT_CURRENT_VERSION } from '../database/stream/stream-utils';
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
 import { doYield } from '../utils/eventloop-utils';
-import { registerConsumer, startConsumerMetricsFlush, trackEventDelivered, trackEventsProcessed, trackMissingResolution, unregisterConsumer } from './streamConsumerRegistry';
+import { registerConsumer, trackEventDelivered, trackEventsProcessed, trackMissingResolution, unregisterConsumer } from './streamConsumerRegistry';
 import { getStreamConsumerInformation } from '../domain/stream';
 
 const broadcastClients = {};
@@ -308,9 +308,7 @@ const createSseMiddleware = () => {
         }
         res.flush();
         // Track event delivery in consumer registry (skip heartbeat and connected events)
-        if (eventId && topic !== 'heartbeat' && topic !== 'consumer_metrics') {
-          trackEventDelivered(channel.id, 1, lastEventId);
-        }
+        await trackEventDelivered(channel.id, 1, lastEventId);
       },
       close: () => {
         logApp.info('[STREAM] Closing SSE channel', { clientId: channel.userId });
@@ -368,7 +366,7 @@ const createSseMiddleware = () => {
           const instanceAccessible = await isUserCanAccessStixElement(context, user, data.data);
           if (instanceAccessible) {
             // Track processed events in the consumer registry
-            trackEventsProcessed(client.id, elements.length, lastEventId);
+            await trackEventsProcessed(client.id, elements.length, lastEventId);
             await client.sendEvent(eventId, event, data);
           }
         }
@@ -422,7 +420,7 @@ const createSseMiddleware = () => {
         const origin = { referer: EVENT_TYPE_DEPENDENCIES };
         const content = { data: missingData, message, origin, version: EVENT_CURRENT_VERSION };
         await channel.sendEvent(eventId, EVENT_TYPE_CREATE, content);
-        trackMissingResolution(channel.id, 1, eventId);
+        await trackMissingResolution(channel.id, 1, eventId);
         cache.set(missingData.id, 'hit');
       }
     }
@@ -448,7 +446,7 @@ const createSseMiddleware = () => {
             const origin = { referer: EVENT_TYPE_DEPENDENCIES };
             const content = { data: stixRelation, message, origin, version: EVENT_CURRENT_VERSION };
             await channel.sendEvent(eventId, EVENT_TYPE_CREATE, content);
-            trackMissingResolution(channel.id, 1, eventId);
+            await trackMissingResolution(channel.id, 1, eventId);
             cache.set(stixRelation.id, 'hit');
           }
         }
@@ -526,7 +524,7 @@ const createSseMiddleware = () => {
         const origin = { referer: EVENT_TYPE_DEPENDENCIES };
         const content = { data: stix, message, origin, version: EVENT_CURRENT_VERSION };
         await channel.sendEvent(eventId, type, content);
-        trackMissingResolution(channel.id, 1, eventId);
+        await trackMissingResolution(channel.id, 1, eventId);
       }
     }
   };
@@ -682,7 +680,7 @@ const createSseMiddleware = () => {
                   }
                 }
                 // Track processed events in the consumer registry
-                trackEventsProcessed(client.id, elements.length, lastEventId);
+                await trackEventsProcessed(client.id, elements.length, lastEventId);
               }
             }
           }
@@ -750,7 +748,6 @@ const createSseMiddleware = () => {
     }
   };
   // Start periodic flush of consumer metrics to Redis
-  startConsumerMetricsFlush();
   return {
     shutdown: () => {
       Object.values(broadcastClients).forEach((c) => c.close());

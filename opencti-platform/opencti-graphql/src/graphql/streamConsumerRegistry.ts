@@ -10,7 +10,6 @@ import { getClientBase } from '../database/redis';
 
 const SLIDING_WINDOW_SIZE = 60; // Keep 60 seconds of rate data
 const SLIDING_WINDOW_BUCKET_MS = 1000; // 1-second buckets
-const FLUSH_INTERVAL_MS = 5000; // Flush metrics to Redis every 5 seconds
 const CONSUMER_TTL_SECONDS = 60; // Redis key TTL; refreshed on each flush
 const STALE_CUTOFF_MS = CONSUMER_TTL_SECONDS * 1000;
 
@@ -58,7 +57,6 @@ export interface RedisConsumerData {
 // -- In-memory state (local to this instance) --
 
 const localConsumers = new Map<string, LocalConsumerTracking>();
-let flushInterval: ReturnType<typeof setInterval> | null = null;
 
 // -- Sliding window helpers --
 
@@ -177,13 +175,14 @@ export const unregisterConsumer = async (connectionId: string): Promise<void> =>
  * Track events delivered to a consumer (after filtering).
  * Synchronous, in-memory only -- hot path.
  */
-export const trackEventDelivered = (connectionId: string, count: number, lastEventId: string): void => {
+export const trackEventDelivered = async (connectionId: string, count: number, lastEventId: string): Promise<void> => {
   const consumer = localConsumers.get(connectionId);
   if (consumer) {
     const now_ms = Date.now();
     consumer.eventsSentCount += count;
     consumer.lastEventId = lastEventId;
     consumer.recentDeliveries = addToBuckets(consumer.recentDeliveries, count, now_ms);
+    await flushMetricsToRedis();
   }
 };
 
@@ -191,13 +190,14 @@ export const trackEventDelivered = (connectionId: string, count: number, lastEve
  * Track events processed from Redis stream (before filtering).
  * Synchronous, in-memory only -- hot path.
  */
-export const trackEventsProcessed = (connectionId: string, count: number, lastEventId: string): void => {
+export const trackEventsProcessed = async (connectionId: string, count: number, lastEventId: string): Promise<void> => {
   const consumer = localConsumers.get(connectionId);
   if (consumer) {
     const now_ms = Date.now();
     consumer.eventsProcessedCount += count;
     consumer.lastEventId = lastEventId;
     consumer.recentProcessed = addToBuckets(consumer.recentProcessed, count, now_ms);
+    await flushMetricsToRedis();
   }
 };
 
@@ -205,34 +205,35 @@ export const trackEventsProcessed = (connectionId: string, count: number, lastEv
  * Track missing resolution / dependency events sent to a consumer.
  * Synchronous, in-memory only -- hot path.
  */
-export const trackMissingResolution = (connectionId: string, count: number, lastEventId: string): void => {
+export const trackMissingResolution = async (connectionId: string, count: number, lastEventId: string): Promise<void> => {
   const consumer = localConsumers.get(connectionId);
   if (consumer) {
     const now_ms = Date.now();
     consumer.resolutionsSentCount += count;
     consumer.lastEventId = lastEventId;
     consumer.recentResolutions = addToBuckets(consumer.recentResolutions, count, now_ms);
+    await flushMetricsToRedis();
   }
 };
 
+const FLUSH_INTERVAL_MS = 10000; // Flush metrics to Redis every 10 seconds
+let lastFlush = undefined as number | undefined;
 /**
  * Flush local metrics to Redis for all consumers on this instance.
  * Called periodically by the flush interval.
  */
 const flushMetricsToRedis = async (): Promise<void> => {
-  if (localConsumers.size === 0) {
+  const now_ms = Date.now();
+  if (localConsumers.size === 0 || (lastFlush && now_ms - lastFlush < FLUSH_INTERVAL_MS)) {
     return;
   }
   try {
     const client = getClientBase();
     const pipeline = client.pipeline();
-    const now_ms = Date.now();
-
     for (const consumer of localConsumers.values()) {
       const deliveryRate = computeRate(consumer.recentDeliveries);
       const processingRate = computeRate(consumer.recentProcessed);
       const resolutionRate = computeRate(consumer.recentResolutions);
-
       const key = consumerRedisKey(consumer.connectionId);
       pipeline.hset(key, {
         lastEventId: consumer.lastEventId,
@@ -245,29 +246,14 @@ const flushMetricsToRedis = async (): Promise<void> => {
         lastUpdate: String(now_ms),
       });
       pipeline.expire(key, CONSUMER_TTL_SECONDS);
-
       // Refresh sorted set score
       pipeline.zadd(collectionSetKey(consumer.collectionId), now_ms, consumer.connectionId);
     }
-
     await pipeline.exec();
+    lastFlush = now_ms;
   } catch (err) {
     logApp.error('[STREAM] Error flushing consumer metrics to Redis', { cause: err });
   }
-};
-
-/**
- * Start the periodic metrics flush to Redis.
- * Should be called once at SSE middleware initialization.
- */
-export const startConsumerMetricsFlush = (): void => {
-  if (flushInterval) return; // Already running
-  flushInterval = setInterval(() => {
-    flushMetricsToRedis().catch((err) => {
-      logApp.error('[STREAM] Metrics flush error', { cause: err });
-    });
-  }, FLUSH_INTERVAL_MS);
-  logApp.info('[STREAM] Consumer metrics flush started');
 };
 
 // Data shape returned by getLocalConsumerMetrics (synchronous, in-memory only)
