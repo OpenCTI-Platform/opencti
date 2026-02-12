@@ -87,6 +87,7 @@ interface StixObject {
   type: string;
   spec_version: string;
   object_marking_refs?: Array<StixId>; // optional
+  object_refs?: Array<StixId>; // optional
   // TODO Implement granular_markings
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtension;
