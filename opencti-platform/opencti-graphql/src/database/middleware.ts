@@ -31,6 +31,7 @@ import {
   fillTimeSeries,
   INDEX_INFERRED_RELATIONSHIPS,
   inferIndexFromConceptType,
+  isDraftIndex,
   isEmptyField,
   isInferredIndex,
   isNotEmptyField,
@@ -2844,6 +2845,14 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
         updateAsInstance._id = lastElementVersion._id;
         updateAsInstance.draft_change = getDraftChanges(lastElementVersion, updatedInputs);
         await elUpdateElement(context, user, updateAsInstance);
+        // If entity was outside of draft before update, we need to check draft index of the updated entity
+        updatedInstance.draft_change = getDraftChanges(lastElementVersion, updatedInputs);
+        if (!isDraftIndex(lastElementVersion._index)) {
+          const draftElementVersion = await internalLoadById(context, user, initial.internal_id);
+          updatedInstance._index = draftElementVersion._index;
+          updatedInstance._id = draftElementVersion._id;
+          updatedInstance.draft_ids = draftElementVersion.draft_ids;
+        }
       }
     } else if (impactedInputs.length > 0) {
       const updateAsInstance = partialInstanceWithInputs(updatedInstance, impactedInputs) as BasicStoreBase;
