@@ -115,7 +115,9 @@ nav:
       - Overview: deployment/overview.md
       - Installation: deployment/installation.md
       - Configuration: deployment/configuration.md
-      - Authentication: deployment/authentication.md
+      - Authentication: 
+        - Authentication via GUI configuration: deployment/authetication-in-gui.md
+        - Authentication via environment variables: deployment/authentication.md
       - Telemetry: deployment/telemetry.md
       - Upgrade: deployment/upgrade.md
     - Ecosystem:
@@ -145,6 +147,7 @@ nav:
             - Promote to Indicator: deployment/breaking-changes/6.2-promote-to-indicator.md
             - SAML authentication: deployment/breaking-changes/6.2-saml-authentication.md
             - New filter API: deployment/breaking-changes/5.12-filters.md
+            - SSO Migration from environment variable to UI: deployment/breaking-changes/7.0-SSO-authentication-migration.md
   - User Guide:
     - Getting started: usage/getting-started.md
     - Foundations:

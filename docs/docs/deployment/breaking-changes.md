@@ -8,13 +8,62 @@ Please follow the migration guides if you need to upgrade your platform.
 
 This table regroups all the breaking changes introduced, with the corresponding version in which the change was implemented.
 
-| Change                                                                                                                 | Deprecated in | Changed in |
-|:-----------------------------------------------------------------------------------------------------------------------|:--------------|:-----------|
-| [GenerationScenario Mutations in OpenCTI - OpenBAS](#generation-scenario-mutation-openti-openbas-with-placeholders)    | 6.5           | 6.8        |
-| [Removing bi-directional stream connectors](#removing-some-stream-connectors)                                          | 6.3           | 6.6        |
-| [Promote Observable API](#change-to-the-observable-promote-API)                                                        | 6.2           | 6.8        |
-| [SAML authentication parameters](#change-to-SAML-authentication)                                                       |               | 6.2        |
-| [Major changes to Filtering API](#new-filtering-API)                                                                   |               | 5.12       |
+| Change                                                                                                              | Deprecated in | Changed in |
+|:--------------------------------------------------------------------------------------------------------------------|:--------------|:-----------|
+| [SSO, cryptography and tokens management](#cryptography-and-tokens-management)                                      | -             | 7.x        |
+| [GenerationScenario Mutations in OpenCTI - OpenBAS](#generation-scenario-mutation-openti-openbas-with-placeholders) | 6.5           | 6.8        |
+| [Removing bi-directional stream connectors](#removing-some-stream-connectors)                                       | 6.3           | 6.6        |
+| [Promote Observable API](#change-to-the-observable-promote-API)                                                     | 6.2           | 6.8        |
+| [SAML authentication parameters](#change-to-SAML-authentication)                                                    |               | 6.2        |
+| [Major changes to Filtering API](#new-filtering-API)                                                                |               | 5.12       |
+| [Update license for SSO (& migration to UI)](#SSO-update-license)                                                |               | 7.0.0      |
+
+
+<a id="cryptography-and-tokens-management"></a>
+## OpenCTI 7.{date}.0
+
+<a id="SSO-update-license"></a>
+### Licensing change for SSO
+
+SSO becomes an [Enterprise edition](../administration/enterprise.md) feature.
+Using SSO defined in configuration file (environment variable) to login will not be possible anymore for **Community Edition** platforms. 
+Local authentication will still be available with complex policies and 2FA. If you need more time to migrate, its always possible to get a [trial license](https://filigran.io/enterprise-editions-trial/)
+
+#### UI configuration authentication
+Additionally, authentication strategies will be converted to UI.
+For more information read the [migration process](./breaking-changes/7.0-SSO-authentication-migration.md) and the [new associated feature (Define Authentication via UI)](authentication-in-gui.md) pages.
+
+### Breaking changes
+
+#### Mandatory Cryptography configuration
+
+Upgrading to OpenCTI 7.x requires to configure the cryptography key in the application configuration.
+
+!!! warning "Cryptography configuration"
+
+    - Env variable: APP__CRYPTOGRAPHY_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    - Configuration file: app { cryptography_key = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" }
+
+#### Tokens management
+
+Security improvement replacing the legacy **single cleartext `api_token` per user** with a
+modern **multi-token system** featuring HMAC-hashed storage, expiration policies, per-token usage tracking,
+and capability-based access control. Connector-to-platform authentication is upgraded from raw token
+passthrough to **JWT-based mutual authentication** using platform-derived Ed25519 key pairs.
+
+All existing tokens are automatically migrated to the new system.
+**After migration existing tokens will be encrypted and so no longer be retrievable by the user.**
+
+!!! warning "GraphQL API breaking changes"
+
+    - `User.api_token` → `User.api_tokens` (type changed from `String!` to `[ApiToken!]!`)
+    - `MeUser.api_token` → `MeUser.api_tokens`
+    - `meTokenRenew` mutation removed
+    - `UserEditMutations.tokenRenew` mutation removed
+
+!!! warning "Python client breaking changes"
+    - `MeUser.api_token` → `MeUser.api_tokens`
+    - `token_renew()` method removed, replaced by `create_token()` / `remove_token()`
 
 ## OpenCTI 6.5
 
