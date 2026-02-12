@@ -40,7 +40,7 @@ describe('Single sign on Domain coverage tests', () => {
         configuration: [
           { key: 'callbackUrl', value: 'http://myopencti/auth/samlTestDomain/callback', type: 'string' },
           { key: 'idpCert', value: '21341234', type: 'string' },
-          { key: 'issuer', value: 'issuer', type: 'string' },
+          { key: 'issuer', value: 'https://issuer.example.net', type: 'string' },
           { key: 'privateKey', value: 'myPrivateKey', type: 'string' },
           { key: 'custom_value_that_is_secret', value: 'theCustomValue', type: TO_ENCRYPT_TYPE },
         ],
@@ -71,7 +71,7 @@ describe('Single sign on Domain coverage tests', () => {
         configuration: [
           { key: 'callbackUrl', value: 'http://myopencti/auth/samlTestDomainLogout/callback', type: 'string' },
           { key: 'idpCert', value: '21341234', type: 'string' },
-          { key: 'issuer', value: 'issuer', type: 'string' },
+          { key: 'issuer', value: 'https://issuer.example.net', type: 'string' },
           { key: 'logout_remote', value: 'true', type: 'boolean' },
         ],
       };
@@ -228,10 +228,10 @@ describe('Single sign on Domain coverage tests', () => {
         enabled: false,
         label: 'Nice OIC button',
         configuration: [
-          { key: 'redirect_uris', value: '["http://fake.invalid"]', type: 'array' },
+          { key: 'redirect_uri', value: 'http://fake.invalid', type: 'string' },
           { key: 'client_secret', value: 'graceHopper', type: 'string' },
           { key: 'client_id', value: 'myoicclient', type: 'string' },
-          { key: 'issuer', value: 'issuer', type: 'string' },
+          { key: 'issuer', value: 'https://issuer.example.net', type: 'string' },
         ],
       };
       const oicEntity = await addSingleSignOn(testContext, ADMIN_USER, input);
@@ -244,10 +244,10 @@ describe('Single sign on Domain coverage tests', () => {
       expect(client_id.value).toBe('myoicclient');
     });
 
-    it('should missing redirect_uris throw error', async () => {
+    it('should missing redirect_uri throw error', async () => {
       const logAppErrorSpy = vi.spyOn(logApp, 'error');
       const input: SingleSignOnAddInput = {
-        name: 'OpenID for test domain no redirect_uris',
+        name: 'OpenID for test domain no redirect_uri',
         strategy: StrategyType.OpenIdConnectStrategy,
         identifier: 'openidTestKo1',
         enabled: true,
@@ -255,7 +255,7 @@ describe('Single sign on Domain coverage tests', () => {
         configuration: [
           { key: 'client_secret', value: 'graceHopper', type: 'string' },
           { key: 'client_id', value: 'myoicclient', type: 'string' },
-          { key: 'issuer', value: 'issuer', type: 'string' },
+          { key: 'issuer', value: 'https://issuer.example.net', type: 'string' },
         ],
       };
       const oicEntity = await addSingleSignOn(testContext, ADMIN_USER, input);
@@ -269,7 +269,7 @@ describe('Single sign on Domain coverage tests', () => {
 
       expect(logAppErrorSpy, 'No exception should be throw, but an error message should be present')
         .toHaveBeenCalledWith(
-          `[Auth][Not provided]Error when initializing an authentication provider (id: ${oicEntity.id}, identifier: openidTestKo1), cause: redirect_uris is mandatory for OpenID.`,
+          `[Auth][Not provided]Error when initializing an authentication provider (id: ${oicEntity.id}, identifier: openidTestKo1), cause: redirect_uri is mandatory for OpenID.`,
           expect.anything(),
         );
     });
@@ -283,9 +283,9 @@ describe('Single sign on Domain coverage tests', () => {
         enabled: true,
         label: 'Nice OIC button',
         configuration: [
-          { key: 'redirect_uris', value: '["http://fake.invalid"]', type: 'array' },
+          { key: 'redirect_uri', value: 'http://fake.invalid', type: 'string' },
           { key: 'client_secret', value: 'graceHopper', type: 'string' },
-          { key: 'issuer', value: 'issuer', type: 'string' },
+          { key: 'issuer', value: 'https://issuer.example.net', type: 'string' },
         ],
       };
       const oicEntity = await addSingleSignOn(testContext, ADMIN_USER, input);
@@ -313,7 +313,7 @@ describe('Single sign on Domain coverage tests', () => {
         enabled: true,
         label: 'Nice OIC button',
         configuration: [
-          { key: 'redirect_uris', value: '["http://fake.invalid"]', type: 'array' },
+          { key: 'redirect_uri', value: 'http://fake.invalid', type: 'string' },
           { key: 'client_secret', value: 'graceHopper', type: 'string' },
           { key: 'client_id', value: 'myoicclient', type: 'string' },
         ],
@@ -343,9 +343,9 @@ describe('Single sign on Domain coverage tests', () => {
         enabled: true,
         label: 'Nice OIC button',
         configuration: [
-          { key: 'redirect_uris', value: '["http://fake.invalid"]', type: 'array' },
+          { key: 'redirect_uri', value: 'http://fake.invalid', type: 'string' },
           { key: 'client_id', value: 'myoicclient', type: 'string' },
-          { key: 'issuer', value: 'issuer', type: 'string' },
+          { key: 'issuer', value: 'https://issuer.example.net', type: 'string' },
         ],
       };
       const oicEntity = await addSingleSignOn(testContext, ADMIN_USER, input);

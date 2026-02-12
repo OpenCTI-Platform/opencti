@@ -177,6 +177,13 @@ const computeConfiguration = (envConfiguration: any, strategy: StrategyType) => 
       } else if (configKey === CREDENTIALS_PROVIDER_KEY) {
         skipped_configuration.push(configKey);
         logApp.warn(`[SSO CONVERSION] ${configKey} is not supported yet, ignored during conversion`);
+      } else if (configKey === 'redirect_uris' && strategy === StrategyType.OpenIdConnectStrategy) {
+        const currentConfig: ConfigurationTypeInput = {
+          key: 'redirect_uri',
+          type: 'string',
+          value: mappedConfig[configKey][0],
+        };
+        configuration.push(currentConfig);
       } else {
         // 5. Everything else is configuration
         const currentValue = mappedConfig[configKey];

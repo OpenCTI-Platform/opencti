@@ -10,7 +10,7 @@ export interface ConfigurationType {
   type: string;
 }
 
-interface OrganizationsManagement {
+export interface OrganizationsManagement {
   organizations_path?: string[];
   organizations_mapping: string[];
   token_reference?: string;
@@ -19,7 +19,7 @@ interface OrganizationsManagement {
   organizations_header?: string;
 }
 
-interface GroupsManagement {
+export interface GroupsManagement {
   group_attributes?: string[];
   group_attribute?: string;
   groups_path?: string[];
