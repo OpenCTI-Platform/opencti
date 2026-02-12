@@ -107,11 +107,48 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
       })),
     ];
 
+    const getLabelTranslation = (key: string) => {
+      switch (key) {
+        case 'issuer': return t_i18n('issuer');
+
+        // SAML
+        case 'callbackUrl': return t_i18n('SAML Callback URL');
+        case 'idpCert': return t_i18n('Identity Provider Encryption Certificate');
+        case 'privateKey': return t_i18n('Private key');
+        case 'entryPoint': return t_i18n('Entry point');
+        case 'wantAssertionsSigned': return t_i18n('Want assertion signed');
+        case 'wantAuthnResponseSigned': return t_i18n('Requires SAML responses to be signed');
+        case 'loginIdpDirectly': return t_i18n('Allow login from identity provider directly');
+        case 'logout_remote': return t_i18n('Allow logout from Identity provider directly');
+        case 'providerMethod': return t_i18n('Method of Provider metadata');
+        case 'signingCert': return t_i18n('Identity Provider Signing Certificate');
+        case 'ssoBindingType': return t_i18n('SSO Binding type');
+        case 'forceReauthentication': return t_i18n('Force re-authentication even if user has valid SSO session');
+        case 'auto_create_group': return t_i18n('auto-create group');
+        // LDAP
+        case 'url': return t_i18n('URL');
+        case 'bindDN': return t_i18n('SSO Binding type');
+        case 'bindCredentials': return t_i18n('Bind credentials');
+        case 'searchBase': return t_i18n('Search base');
+        case 'searchFilter': return t_i18n('Search filter');
+        case 'groupSearchBase': return t_i18n('Group search base');
+        case 'groupSearchFilter': return t_i18n('Group search filter');
+        case 'allow_self_signed': return t_i18n('Allow self signed');
+
+        // OPENID
+        case 'client_id': return t_i18n('Client ID');
+        case 'client_secret': return t_i18n('Client Secret');
+        case 'redirect_uri': return t_i18n('Redirect url value');
+
+        default: return key;
+      }
+    };
+
     configuration?.forEach((config) => {
       let value = config.value;
       if (config.type === 'array') value = JSON.parse(config.value).join(',');
       baseConfig.push({
-        key: config.key,
+        key: getLabelTranslation(config.key),
         value,
         type: config.type,
       });
@@ -128,29 +165,42 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
 
   const getGroupsRows = (): Row[] => {
     if (!groups_management) return [];
+    const getGrouptLabelTranslation = (key: string) => {
+      switch (key) {
+        // Groups
+        case 'groups_mapping': return t_i18n('Groups mapping value');
+        case 'group_attributes': return t_i18n('Attribute in token');
+        case 'groups_path': return t_i18n('Group path');
+        case 'groups_read_userinfo': return t_i18n('Automatically add users to default groups');
+        case 'read_userinfo': return t_i18n('read_userinfo');
+        case 'groups_scope': return t_i18n('Group scope');
+        case 'groups_token_reference': return t_i18n('Access token');
+        default: return key;
+      }
+    };
     const rows: Row[] = [
       {
-        key: 'group_attributes',
+        key: getGrouptLabelTranslation('group_attributes'),
         value: groups_management.group_attributes,
         type: 'array',
       },
       {
-        key: 'groups_path',
+        key: getGrouptLabelTranslation('groups_path'),
         value: groups_management.groups_path,
         type: 'array',
       },
       {
-        key: 'groups_mapping',
+        key: getGrouptLabelTranslation('groups_mapping'),
         value: groups_management.groups_mapping,
         type: 'array',
       },
       {
-        key: 'read_userinfo',
+        key: getGrouptLabelTranslation('read_userinfo'),
         value: groups_management.read_userinfo,
         type: 'boolean',
       },
       {
-        key: 'token_reference',
+        key: getGrouptLabelTranslation('token_reference'),
         value: groups_management.token_reference,
         type: 'string',
       },
@@ -162,19 +212,29 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
 
   const getOrganizationsRows = (): Row[] => {
     if (!organizations_management) return [];
+    const getOrgtLabelTranslation = (key: string) => {
+      switch (key) {
+        // Organizations
+        case 'organizations_mapping': return t_i18n('Organizations mapping value');
+        case 'organizations_path': return t_i18n('Path in token');
+        case 'organizations_scope': return t_i18n('Organizations scope');
+        case 'organizations_token_reference': return t_i18n('Access token');
+        default: return key;
+      }
+    };
     return [
       {
-        key: 'organizations_path',
+        key: getOrgtLabelTranslation('organizations_path'),
         value: organizations_management.organizations_path,
         type: 'array',
       },
       {
-        key: 'organizations_mapping',
+        key: getOrgtLabelTranslation('organizations_mapping'),
         value: organizations_management.organizations_mapping,
         type: 'array',
       },
       {
-        key: 'organizations_scope',
+        key: getOrgtLabelTranslation('organizations_scope'),
         value: organizations_management.organizations_scope,
         type: 'array',
       },
