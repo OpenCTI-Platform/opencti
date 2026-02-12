@@ -29,7 +29,7 @@ export const computeOpenIdUserInfo = (ssoConfig: any, user_attribute_obj: any) =
   return { email, name, firstname, lastname };
 };
 
-export const computeOpenIdOrganizationsMapping = (orgsManagement: OrganizationsManagement | undefined, decodedUser: any, userinfo: any, orgaDefault: string[]) => {
+export const computeOpenIdOrganizationsMapping = (orgsManagement: OrganizationsManagement | undefined, decodedUser: any, userinfo: ProviderUserInfo, orgaDefault: string[]) => {
   const readUserinfo = orgsManagement?.read_userinfo || false;
   const orgasMapping = orgsManagement?.organizations_mapping || [];
   const orgaPath = orgsManagement?.organizations_path || ['organizations'];
