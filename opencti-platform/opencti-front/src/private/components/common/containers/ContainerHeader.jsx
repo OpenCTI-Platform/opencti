@@ -571,7 +571,7 @@ const ContainerHeader = (props) => {
         <React.Suspense fallback={<span />}>
           <HeaderMainEntityLayout
             title={title}
-            hideTitle={knowledge}
+            isNestedHeader={knowledge}
             rightActions={(
               <>
                 {!knowledge && (
