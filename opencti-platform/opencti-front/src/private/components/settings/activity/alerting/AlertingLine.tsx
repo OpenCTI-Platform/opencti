@@ -148,7 +148,7 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
               <FilterIconButton
                 filters={filters}
                 dataColumns={dataColumns}
-                styleNumber={3}
+                variant="small"
                 redirection
               />
             )}

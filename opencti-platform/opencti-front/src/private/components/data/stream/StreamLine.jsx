@@ -148,7 +148,7 @@ class StreamLineLineComponent extends Component {
                         <FilterIconButton
                           filters={filters}
                           dataColumns={dataColumns}
-                          styleNumber={3}
+                          variant="small"
                           entityTypes={['Stix-Filtering']}
                         />
                       )

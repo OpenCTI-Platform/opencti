@@ -15,6 +15,7 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import makeStyles from '@mui/styles/makeStyles';
+import Box from '@mui/material/Box';
 import {
   StixDomainObjectThreatKnowledgeContainersNumberQuery$data,
 } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectThreatKnowledgeContainersNumberQuery.graphql';
@@ -479,15 +480,19 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
       </div>
       <div className="clearfix" />
       {viewType !== 'diamond' && (
-        <FilterIconButton
-          styleNumber={2}
-          helpers={helpers}
-          filters={filters}
-          handleRemoveFilter={helpers.handleRemoveFilter}
-          handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-          handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-          entityTypes={['stix-core-relationship']}
-        />
+        <Box sx={{
+          marginTop: theme.spacing(1),
+        }}
+        >
+          <FilterIconButton
+            helpers={helpers}
+            filters={filters}
+            handleRemoveFilter={helpers.handleRemoveFilter}
+            handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+            handleSwitchLocalMode={helpers.handleSwitchLocalMode}
+            entityTypes={['stix-core-relationship']}
+          />
+        </Box>
       )}
       {viewType === 'diamond' ? (
         <QueryRenderer

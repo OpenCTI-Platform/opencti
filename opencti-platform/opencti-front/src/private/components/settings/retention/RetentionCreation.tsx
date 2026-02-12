@@ -29,6 +29,7 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field
 import type { Theme } from '../../../../components/Theme';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
+import { useTheme } from '@mui/material/styles';
 
 const useStyles = makeStyles<Theme>(() => ({
   text: {
@@ -76,6 +77,8 @@ interface RetentionFormValues {
 const RetentionCreation = ({ paginationOptions }: { paginationOptions: RetentionLinesPaginationQuery$variables }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const theme = useTheme();
+
   const [filters, helpers] = useFiltersState();
   const [verified, setVerified] = useState(false);
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Core-Object', 'stix-core-relationship']);
@@ -244,7 +247,9 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                   <Box sx={{
                     paddingTop: 4,
                     display: 'flex',
-                    gap: 1,
+                    alignItems: 'center',
+                    gap: theme.spacing(1),
+                    marginBottom: theme.spacing(1),
                   }}
                   >
                     <Filters
@@ -256,7 +261,6 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                   <FilterIconButton
                     filters={filters}
                     helpers={helpers}
-                    styleNumber={2}
                     redirection
                     searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
                   />

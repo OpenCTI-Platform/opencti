@@ -20,6 +20,7 @@ import { AlertingPaginationQuery$variables } from './__generated__/AlertingPagin
 import { AlertLiveEdition_trigger$key } from './__generated__/AlertLiveEdition_trigger.graphql';
 import { alertEditionQuery } from './AlertEditionQuery';
 import { liveActivityTriggerValidation } from './AlertLiveCreation';
+import { useTheme } from '@mui/material/styles';
 
 interface AlertLiveEditionProps {
   handleClose: () => void;
@@ -67,6 +68,7 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({
   handleClose,
 }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme();
   const data = usePreloadedQuery<AlertEditionQuery>(
     alertEditionQuery,
     queryRef,
@@ -184,9 +186,11 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({
           />
           <Box
             sx={{
-              display: 'flex',
-              gap: 1,
               marginTop: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: theme.spacing(1),
+              marginBottom: theme.spacing(1),
             }}
           >
             <Filters
@@ -205,7 +209,6 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({
           {filters && (
             <FilterIconButton
               filters={filters}
-              styleNumber={2}
               helpers={helpers}
               entityTypes={['History']}
             />

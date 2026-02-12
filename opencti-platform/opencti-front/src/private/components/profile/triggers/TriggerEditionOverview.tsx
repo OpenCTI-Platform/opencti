@@ -35,6 +35,7 @@ import TriggersField from './TriggersField';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import SwitchField from '../../../../components/fields/SwitchField';
+import { useTheme } from '@mui/material/styles';
 
 export const triggerMutationFieldPatch = graphql`
   mutation TriggerEditionOverviewFieldPatchMutation(
@@ -94,6 +95,7 @@ interface TriggerEditionFormValues {
 
 const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = ({ data, handleClose, paginationOptions }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme();
   const defaultInstanceTriggerFilters = {
     ...emptyFilterGroup,
     filters: [getDefaultFilterObject('connectedToId', useFilterDefinition('connectedToId', ['Instance']))],
@@ -484,7 +486,9 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
               <Box sx={{
                 marginTop: '20px',
                 display: 'flex',
-                gap: 1,
+                alignItems: 'center',
+                gap: theme.spacing(1),
+                marginBottom: theme.spacing(1),
               }}
               >
                 {!instanceTrigger
@@ -509,7 +513,6 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
                       redirection
                       entityTypes={['Instance']}
                       filtersRestrictions={{ preventLocalModeSwitchingFor: ['connectedToId'], preventRemoveFor: ['connectedToId'] }}
-                      styleNumber={2}
                     />
                   ) : (
                     <FilterIconButton
@@ -518,7 +521,6 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
                       redirection
                       searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
                       entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering']}
-                      styleNumber={2}
                     />
                   )
               }

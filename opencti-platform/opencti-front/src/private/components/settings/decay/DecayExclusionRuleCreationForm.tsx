@@ -17,6 +17,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { emptyFilterGroup, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import Alert from 'src/components/Alert';
+import { useTheme } from '@mui/material/styles';
 
 const decayExclusionRuleCreationFormAddMutation = graphql`
   mutation DecayExclusionRuleCreationFormAddMutation($input: DecayExclusionRuleAddInput!) {
@@ -52,6 +53,7 @@ export const enabledFilters = ['creator_id', 'createdBy', 'objectMarking', 'obje
 
 const DecayExclusionRuleCreationForm = ({ updater, onReset, onCompleted }: DecayExclusionRuleCreationFormProps) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme();
   const [commit] = useApiMutation(decayExclusionRuleCreationFormAddMutation);
   const [filters, filterHelpers] = useFiltersState(emptyFilterGroup);
   const onSubmit: FormikConfig<DecayExclusionRuleCreationFormData>['onSubmit'] = (
@@ -129,7 +131,9 @@ const DecayExclusionRuleCreationForm = ({ updater, onReset, onCompleted }: Decay
             <Box sx={{
               paddingTop: '20px',
               display: 'flex',
-              gap: 1,
+              alignItems: 'center',
+              gap: theme.spacing(1),
+              marginBottom: theme.spacing(1),
             }}
             >
               <Filters
@@ -141,7 +145,6 @@ const DecayExclusionRuleCreationForm = ({ updater, onReset, onCompleted }: Decay
             <FilterIconButton
               filters={filters}
               helpers={filterHelpers}
-              styleNumber={2}
               searchContext={{ entityTypes: ['Indicator'] }}
             />
             <Field

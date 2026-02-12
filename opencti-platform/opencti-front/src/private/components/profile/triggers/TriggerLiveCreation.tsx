@@ -33,11 +33,7 @@ import { TriggersLinesPaginationQuery$variables } from './__generated__/Triggers
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-}));
+import { useTheme } from '@mui/material/styles';
 
 // region live
 export const triggerLiveKnowledgeCreationMutation = graphql`
@@ -90,7 +86,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
   recipientId,
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
+  const theme = useTheme();
   const defaultInstanceTriggerFilters = {
     ...emptyFilterGroup,
     filters: [getDefaultFilterObject('connectedToId', useFilterDefinition('connectedToId', ['Instance']))],
@@ -229,9 +225,11 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
         />
         <Box
           sx={{
-            display: 'flex',
-            gap: 1,
             marginTop: '20px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: theme.spacing(1),
+            marginBottom: theme.spacing(1),
           }}
         >
           {(!instance_trigger
@@ -284,7 +282,6 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
             handleSwitchLocalMode: () => undefined, // connectedToId filter can only have the 'or' local mode
           }}
           filtersRestrictions={{ preventLocalModeSwitchingFor: ['connectedToId'], preventRemoveFor: ['connectedToId'] }}
-          styleNumber={2}
         />
       ) : (
         <FilterIconButton
@@ -293,7 +290,6 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
           redirection
           searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
           entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering']}
-          styleNumber={2}
         />
       )}
     </React.Fragment>
@@ -360,7 +356,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
           <>
             <DialogTitle>{t_i18n('Create a live trigger')}</DialogTitle>
             <DialogContent>{liveFields(setFieldValue, values)}</DialogContent>
-            <DialogActions classes={{ root: classes.dialogActions }}>
+            <DialogActions>
               <Button onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
               </Button>

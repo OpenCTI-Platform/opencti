@@ -2,8 +2,7 @@ import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import Tooltip from '@mui/material/Tooltip';
-import makeStyles from '@mui/styles/makeStyles';
-import React, { Fragment, FunctionComponent, useContext, useEffect, useRef } from 'react';
+import React, { CSSProperties, Fragment, FunctionComponent, useContext, useEffect, useRef } from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { convertOperatorToIcon, filterOperatorsWithIcon, FilterSearchContext, FiltersRestrictions, isFilterEditable, useFilterDefinition } from '../utils/filters/filtersUtils';
 import { truncate } from '../utils/String';
@@ -11,7 +10,6 @@ import { FilterValuesContentQuery } from './__generated__/FilterValuesContentQue
 import FilterValues from './filters/FilterValues';
 import { useFormatter } from './i18n';
 import { DataColumns } from './list_lines';
-import type { Theme } from './Theme';
 
 import { Filter, FilterGroup, handleFilterHelpers } from '../utils/filters/filtersHelpers-types';
 import FilterIconButtonGlobalMode from './FilterIconButtonGlobalMode';
@@ -20,99 +18,19 @@ import { FilterChipPopover, FilterChipsParameter } from './filters/FilterChipPop
 import { FilterRepresentative } from './filters/FiltersModel';
 import { filterValuesContentQuery } from './FilterValuesContent';
 import { PageContainerContext } from './PageContainer';
+import { useTheme } from '@mui/material/styles';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  filter3: {
-    fontSize: 12,
-    height: 20,
-    borderRadius: 4,
-    lineHeight: '32px',
-  },
-  operator1: {
-    borderRadius: 4,
-    fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: theme.palette.action?.selected,
-    padding: '0 8px',
-    display: 'flex',
-    alignItems: 'center',
-    cursor: 'pointer',
-    '&:hover': {
-      backgroundColor: theme.palette.action?.disabled,
-      textDecorationLine: 'underline',
-    },
-  },
-  operator1ReadOnly: {
-    borderRadius: 4,
-    fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: theme.palette.action?.selected,
-    padding: '0 8px',
-    display: 'flex',
-    alignItems: 'center',
-  },
-  operator2: {
-    borderRadius: 4,
-    fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: theme.palette.action?.selected,
-    padding: '0 8px',
-    display: 'flex',
-    alignItems: 'center',
-    cursor: 'pointer',
-    '&:hover': {
-      backgroundColor: theme.palette.action?.disabled,
-      textDecorationLine: 'underline',
-    },
-  },
-  operator2ReadOnly: {
-    borderRadius: 4,
-    fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: theme.palette.action?.selected,
-    padding: '0 8px',
-    display: 'flex',
-    alignItems: 'center',
-  },
-  operator3: {
-    borderRadius: 4,
-    fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: theme.palette.action?.selected,
-    height: 20,
-    padding: '0 8px',
-    marginRight: 5,
-    marginLeft: 5,
-    cursor: 'pointer',
-    '&:hover': {
-      backgroundColor: theme.palette.action?.disabled,
-      textDecorationLine: 'underline',
-    },
-  },
-  operator3ReadOnly: {
-    borderRadius: 4,
-    fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: theme.palette.action?.selected,
-    height: 20,
-    padding: '0 8px',
-    marginRight: 5,
-    marginLeft: 5,
-  },
-  chipLabel: {
-    lineHeight: '32px',
-    maxWidth: 400,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    display: 'flex',
-    alignItems: 'center',
-    gap: 4,
-  },
-}));
+export type FilterIconButtonVariant
+  = undefined // default variant (variant is undefined), for filters applied in datatables or widgets for instance
+    | 'small' // small variant, for filters in a datatable line for instance
+    | 'tag'; // for filters with a style similar as the Tag component, in an entity Overview for instance
 
 interface FilterIconButtonContainerProps {
   filters: FilterGroup;
   handleRemoveFilter?: (key: string, op?: string) => void;
   handleSwitchGlobalMode?: () => void;
   handleSwitchLocalMode?: (filter: Filter) => void;
-  styleNumber?: number;
+  variant?: FilterIconButtonVariant;
   dataColumns?: DataColumns;
   disabledPossible?: boolean;
   redirection?: boolean;
@@ -139,7 +57,7 @@ const FilterIconButtonContainer: FunctionComponent<
   filters,
   handleSwitchGlobalMode,
   handleSwitchLocalMode,
-  styleNumber,
+  variant,
   disabledPossible,
   redirection,
   filtersRepresentativesQueryRef,
@@ -160,7 +78,7 @@ const FilterIconButtonContainer: FunctionComponent<
   setFilterChipsParams,
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
+  const theme = useTheme();
 
   const { inPageContainer } = useContext(PageContainerContext);
 
@@ -173,7 +91,6 @@ const FilterIconButtonContainer: FunctionComponent<
   const globalMode = filters.mode;
   const itemRefToPopover = useRef(null);
   const oldItemRefToPopover = useRef(null);
-  let classFilter = classes.filter1;
   const filtersRepresentativesMap = new Map<string, FilterRepresentative>(
     filtersRepresentatives.map((n: FilterRepresentative) => [n.id, n]),
   );
@@ -238,26 +155,38 @@ const FilterIconButtonContainer: FunctionComponent<
       handleRemoveFilter(filterKey, filterOperator ?? undefined);
     }
   };
+
   const isReadWriteFilter = !!(helpers || handleRemoveFilter);
-  let classOperator = classes.operator1;
+  let filterStyle: CSSProperties | undefined = undefined;
+  let operatorStyle: CSSProperties = {
+    borderRadius: 4,
+    fontFamily: 'Consolas, monaco, monospace',
+    backgroundColor: theme.palette.action?.selected,
+    padding: '0 8px',
+    display: 'flex',
+    alignItems: 'center',
+  };
   let margin = inPageContainer ? '0 0 0 0' : '0 0 8px 0';
-  if (!isReadWriteFilter) {
-    classOperator = classes.operator1ReadOnly;
-    if (styleNumber === 2) {
-      classFilter = classes.filter2;
-      classOperator = classes.operator2ReadOnly;
-    } else if (styleNumber === 3) {
-      classFilter = classes.filter3;
-      classOperator = classes.operator3ReadOnly;
-    }
-  } else if (styleNumber === 2) {
-    classFilter = classes.filter2;
-    classOperator = classes.operator2;
-    margin = '10px 0 10px 0';
-  } else if (styleNumber === 3) {
-    classFilter = classes.filter3;
-    classOperator = classes.operator3;
-    margin = '0 0 0 0';
+
+  if (variant === 'small') {
+    filterStyle = {
+      fontSize: 12,
+      height: 20,
+      borderRadius: 4,
+      lineHeight: '32px',
+    };
+    operatorStyle = {
+      borderRadius: 4,
+      fontFamily: 'Consolas, monaco, monospace',
+      backgroundColor: theme.palette.action?.selected,
+      padding: '0 8px',
+      height: 20,
+      marginRight: 5,
+      marginLeft: 5,
+    };
+    if (isReadWriteFilter) margin = '0 0 0 0';
+  } else if (variant === 'tag') {
+    filterStyle = { height: 25 };
   }
 
   let boxStyle = {
@@ -271,17 +200,15 @@ const FilterIconButtonContainer: FunctionComponent<
   };
 
   if (!isReadWriteFilter) {
-    if (styleNumber !== 2) {
-      boxStyle = {
-        margin: '0 0 0 0',
-        display: 'flex',
-        flexWrap: 'no-wrap',
-        gap: 0,
-        overflow: 'hidden',
-        backgroundColor: 'none',
-        borderRadius: '0px',
-      };
-    }
+    boxStyle = {
+      margin: '0 0 0 0',
+      display: 'flex',
+      flexWrap: 'no-wrap',
+      gap: 0,
+      overflow: 'hidden',
+      backgroundColor: 'none',
+      borderRadius: '0px',
+    };
   }
 
   return (
@@ -314,7 +241,7 @@ const FilterIconButtonContainer: FunctionComponent<
           ? 'outlined'
           : 'filled';
         // darken the bg color when filled (quickfix for 'warning' and 'success' chipColor unreadable with regardingOf filter)
-        const chipSx = (chipColor === 'warning' || chipColor === 'success') && chipVariant === 'filled'
+        const chipBackgroundColorStyle = (chipColor === 'warning' || chipColor === 'success') && chipVariant === 'filled'
           ? { bgcolor: `${chipColor}.dark` }
           : undefined;
         const authorizeFilterRemoving = !(filtersRestrictions?.preventRemoveFor?.includes(filterKey))
@@ -352,9 +279,22 @@ const FilterIconButtonContainer: FunctionComponent<
                       ? itemRefToPopover
                       : null
                   }
-                  classes={{ root: classFilter, label: classes.chipLabel }}
                   variant={chipVariant}
-                  sx={{ ...chipSx, borderRadius: 1 }}
+                  sx={{
+                    ...filterStyle,
+                    ...chipBackgroundColorStyle,
+                    borderRadius: 1,
+                    '& .MuiChip-label': {
+                      lineHeight: '32px',
+                      maxWidth: 400,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4,
+                    },
+                  }}
                   label={(
                     <Box
                       sx={{
@@ -395,12 +335,13 @@ const FilterIconButtonContainer: FunctionComponent<
             {isNotLastFilter && (
               <Box
                 sx={{
-                  padding: styleNumber === 3 ? '0 4px' : '0',
+                  padding: variant === 'small' ? '0 4px' : '0',
                   display: 'flex',
                 }}
               >
                 <FilterIconButtonGlobalMode
-                  classOperator={classOperator}
+                  operatorStyle={operatorStyle}
+                  isOperatorClickable={isReadWriteFilter}
                   globalMode={globalMode}
                   handleSwitchGlobalMode={() => {
                     if (helpers?.handleSwitchGlobalMode) {
@@ -437,8 +378,7 @@ const FilterIconButtonContainer: FunctionComponent<
           filtersRepresentativesMap={filtersRepresentativesMap}
           filterObj={filters}
           filterMode={filters.mode}
-          classFilter={classFilter}
-          classChipLabel={classes.chipLabel}
+          filterStyle={filterStyle}
         />
       )}
     </Box>

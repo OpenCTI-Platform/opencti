@@ -11,7 +11,7 @@ import { InformationOutline } from 'mdi-material-ui';
 import Button from '@common/button/Button';
 import Box from '@mui/material/Box';
 import MenuItem from '@mui/material/MenuItem';
-import inject18n from '../../../../components/i18n';
+import inject18n, { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
@@ -22,6 +22,7 @@ import Drawer from '../../common/drawer/Drawer';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import SelectField from '../../../../components/fields/SelectField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { useTheme } from '@mui/material/styles';
 
 const styles = (theme) => ({
   header: {
@@ -75,16 +76,19 @@ const RetentionCheckMutation = graphql`
     }
 `;
 
-const retentionValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  max_retention: Yup.number().min(1, t('This field must be >= 1')),
-});
-
 const RetentionEditionContainer = (props) => {
-  const { t, classes, open, handleClose, retentionRule } = props;
+  const { classes, open, handleClose, retentionRule } = props;
+  const theme = useTheme();
+  const { t_i18n } = useFormatter();
   const initialValues = R.pickAll(['name', 'max_retention', 'retention_unit'], retentionRule);
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(props.retentionRule?.filters ?? undefined));
   const [verified, setVerified] = useState(true);
+
+  const retentionValidation = Yup.object().shape({
+    name: Yup.string().required(t_i18n('This field is required')),
+    max_retention: Yup.number().min(1, t_i18n('This field must be >= 1')),
+  });
+
   const onSubmit = (values, { setSubmitting }) => {
     const inputValues = Object.entries({
       ...values,
@@ -120,7 +124,7 @@ const RetentionEditionContainer = (props) => {
       onCompleted: (data) => {
         setVerified(true);
         MESSAGING$.notifySuccess(
-          t(`Retention policy will delete ${data.retentionRuleCheck} elements`),
+          t_i18n(`Retention policy will delete ${data.retentionRuleCheck} elements`),
         );
       },
       onError: () => {
@@ -130,14 +134,14 @@ const RetentionEditionContainer = (props) => {
   };
   return (
     <Drawer
-      title={t('Update a retention policy')}
+      title={t_i18n('Update a retention policy')}
       open={open}
       onClose={handleClose}
     >
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
-        validationSchema={retentionValidation(t)}
+        validationSchema={retentionValidation}
         onSubmit={onSubmit}
       >
         {({ isSubmitting, submitForm, values }) => (
@@ -146,26 +150,26 @@ const RetentionEditionContainer = (props) => {
               component={TextField}
               variant="standard"
               name="name"
-              label={t('Name')}
+              label={t_i18n('Name')}
               fullWidth={true}
             />
             <Field
               component={SelectField}
               variant="standard"
               name="retention_unit"
-              label={t('Unit')}
+              label={t_i18n('Unit')}
               fullWidth={true}
               containerstyle={fieldSpacingContainerStyle}
             >
-              <MenuItem value="minutes">{t('minutes')}</MenuItem>
-              <MenuItem value="hours">{t('hours')}</MenuItem>
-              <MenuItem value="days">{t('days')}</MenuItem>
+              <MenuItem value="minutes">{t_i18n('minutes')}</MenuItem>
+              <MenuItem value="hours">{t_i18n('hours')}</MenuItem>
+              <MenuItem value="days">{t_i18n('days')}</MenuItem>
             </Field>
             <Field
               component={TextField}
               variant="standard"
               name="max_retention"
-              label={t('Maximum retention')}
+              label={t_i18n('Maximum retention')}
               onChange={() => setVerified(false)}
               fullWidth={true}
               style={{ marginTop: 20 }}
@@ -174,7 +178,7 @@ const RetentionEditionContainer = (props) => {
                   endAdornment: (
                     <InputAdornment position="end">
                       <Tooltip
-                        title={t(
+                        title={t_i18n(
                           'All objects matching the filters that have not been updated since this amount of units will be deleted',
                         )}
                       >
@@ -196,7 +200,9 @@ const RetentionEditionContainer = (props) => {
                     sx={{
                       paddingTop: 4,
                       display: 'flex',
-                      gap: 1,
+                      alignItems: 'center',
+                      gap: theme.spacing(1),
+                      marginBottom: theme.spacing(1),
                     }}
                   >
                     <Filters
@@ -230,7 +236,6 @@ const RetentionEditionContainer = (props) => {
                   <FilterIconButton
                     filters={filters}
                     helpers={helpers}
-                    styleNumber={2}
                     redirection
                     searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
                   />
@@ -244,7 +249,7 @@ const RetentionEditionContainer = (props) => {
                 disabled={isSubmitting}
                 classes={{ root: classes.button }}
               >
-                {t('Verify')}
+                {t_i18n('Verify')}
               </Button>
               <Button
                 color="primary"
@@ -252,7 +257,7 @@ const RetentionEditionContainer = (props) => {
                 classes={{ root: classes.button }}
                 disabled={!verified || isSubmitting}
               >
-                {t('Update')}
+                {t_i18n('Update')}
               </Button>
             </div>
           </Form>

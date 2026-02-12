@@ -25,6 +25,7 @@ import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
+import { useTheme } from '@mui/material/styles';
 
 interface StreamCollectionCreationProps {
   paginationOptions: PaginationOptions;
@@ -87,6 +88,7 @@ const StreamCollectionCreation: FunctionComponent<StreamCollectionCreationProps>
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const theme = useTheme();
 
   const onSubmit: FormikConfig<StreamCollectionCreationForm>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
     const jsonFilters = serializeFilterGroupForBackend(filters);
@@ -189,9 +191,13 @@ const StreamCollectionCreation: FunctionComponent<StreamCollectionCreationProps>
                   />
                 )}
               </Alert>
-              <Box sx={{ paddingTop: 4,
+              <Box sx={{
+                marginTop: '20px',
                 display: 'flex',
-                gap: 1 }}
+                alignItems: 'center',
+                gap: theme.spacing(1),
+                marginBottom: theme.spacing(1),
+              }}
               >
                 <Filters
                   availableFilterKeys={stixFilters}
@@ -202,7 +208,6 @@ const StreamCollectionCreation: FunctionComponent<StreamCollectionCreationProps>
               <FilterIconButton
                 filters={filters}
                 helpers={helpers}
-                styleNumber={2}
                 redirection
                 searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
                 entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering']}

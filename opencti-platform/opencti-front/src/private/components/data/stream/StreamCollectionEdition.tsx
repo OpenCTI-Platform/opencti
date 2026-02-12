@@ -6,7 +6,6 @@ import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import AlertTitle from '@mui/material/AlertTitle';
 import Alert from '@mui/material/Alert';
-import makeStyles from '@mui/styles/makeStyles';
 import Box from '@mui/material/Box';
 import { StreamCollectionEdition_streamCollection$data } from '@components/data/stream/__generated__/StreamCollectionEdition_streamCollection.graphql';
 import { FormikConfig } from 'formik/dist/types';
@@ -20,19 +19,7 @@ import FilterIconButton from '../../../../components/FilterIconButton';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { convertAuthorizedMembers } from '../../../../utils/edition';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  alert: {
-    width: '100%',
-    marginTop: 20,
-  },
-  message: {
-    width: '100%',
-    overflow: 'hidden',
-  },
-}));
+import { useTheme } from '@mui/material/styles';
 
 interface StreamCollectionCreationForm {
   restricted_members: FieldOption[] | null;
@@ -59,8 +46,8 @@ const streamCollectionValidation = (requiredSentence: string) => Yup.object().sh
 });
 
 const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: StreamCollectionEdition_streamCollection$data }> = ({ streamCollection }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const theme = useTheme();
   const initialValues = { ...streamCollection,
     restricted_members: convertAuthorizedMembers(streamCollection),
     stream_public: streamCollection.stream_public ?? null,
@@ -154,7 +141,14 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
           />
           <Alert
             icon={false}
-            classes={{ root: classes.alert, message: classes.message }}
+            sx={{
+              width: '100%',
+              marginTop: 20,
+              '& .MuiAlert-message': {
+                width: '100%',
+                overflow: 'hidden',
+              },
+            }}
             severity="warning"
             variant="outlined"
             style={{ position: 'relative' }}
@@ -180,9 +174,11 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
             )}
           </Alert>
           <Box sx={{
-            paddingTop: 4,
+            marginTop: '20px',
             display: 'flex',
-            gap: 1,
+            alignItems: 'center',
+            gap: theme.spacing(1),
+            marginBottom: theme.spacing(1),
           }}
           >
             <Filters
@@ -193,7 +189,6 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
           </Box>
           <FilterIconButton
             filters={filters}
-            styleNumber={2}
             helpers={helpers}
             redirection={true}
             searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}

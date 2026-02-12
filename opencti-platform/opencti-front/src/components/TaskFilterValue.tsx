@@ -25,16 +25,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     backgroundColor: theme.palette.background.accent,
     margin: '5px 10px 5px 0',
   },
-  chipLabel: {
-    lineHeight: '32px',
-    maxWidth: 400,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    display: 'flex',
-    alignItems: 'center',
-    gap: 4,
-  },
 }));
 
 const TaskFilterValue = ({
@@ -150,8 +140,7 @@ const TaskFilterValue = ({
           filtersRepresentativesMap={filtersRepresentativesMap}
           filterObj={filters}
           filterMode={filters.mode}
-          classFilter={classes.filter}
-          classChipLabel={classes.chipLabel}
+          filterStyle={{ margin: '5px 10px 5px 0' }}
         />
       )}
     </>

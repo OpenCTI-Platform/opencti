@@ -18,6 +18,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import TextField from '../../../../components/TextField';
 import { enabledFilters } from './DecayExclusionRuleCreationForm';
+import { useTheme } from '@mui/material/styles';
 
 export const decayExclusionRuleEditionFieldPatch = graphql`
   mutation DecayExclusionRuleEditionFieldPatchMutation($id: ID!, $input: [EditInput!]!) {
@@ -48,6 +49,7 @@ const decayExclusionRuleEditionValidator = (t: (value: string) => string) => {
 
 const DecayExclusionRuleEdition = ({ data, isOpen, onClose }: DecayExclusionRuleEditionProps) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme();
   const [filters, filterHelpers] = useFiltersState(
     deserializeFilterGroupForFrontend(data.decay_exclusion_filters) ?? emptyFilterGroup,
     deserializeFilterGroupForFrontend(data.decay_exclusion_filters) ?? emptyFilterGroup,
@@ -132,7 +134,9 @@ const DecayExclusionRuleEdition = ({ data, isOpen, onClose }: DecayExclusionRule
               <Box sx={{
                 paddingTop: '20px',
                 display: 'flex',
-                gap: 1,
+                alignItems: 'center',
+                gap: theme.spacing(1),
+                marginBottom: theme.spacing(1),
               }}
               >
                 <Filters
@@ -144,7 +148,6 @@ const DecayExclusionRuleEdition = ({ data, isOpen, onClose }: DecayExclusionRule
               <FilterIconButton
                 filters={filters}
                 helpers={filterHelpers}
-                styleNumber={2}
                 searchContext={{ entityTypes: ['Indicator'] }}
               />
               <div style={{ marginTop: 20, textAlign: 'right' }}>

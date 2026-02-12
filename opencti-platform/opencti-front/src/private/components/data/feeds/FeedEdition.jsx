@@ -21,7 +21,7 @@ import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Box from '@mui/material/Box';
 import Drawer from '../../common/drawer/Drawer';
-import inject18n from '../../../../components/i18n';
+import inject18n, { useFormatter } from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/fields/SelectField';
@@ -43,6 +43,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { convertAuthorizedMembers } from '../../../../utils/edition';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useAttributes from '../../../../utils/hooks/useAttributes';
+import { useTheme } from '@mui/material/styles';
 
 const styles = (theme) => ({
   header: {
@@ -149,7 +150,9 @@ const feedValidation = (t) => Yup.object().shape({
 });
 
 const FeedEditionContainer = (props) => {
-  const { t, classes, feed, handleClose, open } = props;
+  const { classes, feed, handleClose, open } = props;
+  const theme = useTheme();
+  const { t_i18n } = useFormatter();
   const { ignoredAttributesInFeeds } = useAttributes();
   const [selectedTypes, setSelectedTypes] = useState(feed.feed_types);
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(feed.filters));
@@ -286,7 +289,7 @@ const FeedEditionContainer = (props) => {
 
   return (
     <Drawer
-      title={t('Update a feed')}
+      title={t_i18n('Update a feed')}
       open={open}
       onClose={handleClose}
     >
@@ -299,7 +302,7 @@ const FeedEditionContainer = (props) => {
               ...R.pipe(
                 R.pathOr([], ['scoTypes', 'edges']),
                 R.map((n) => ({
-                  label: t(`entity_${n.node.label}`),
+                  label: t_i18n(`entity_${n.node.label}`),
                   value: n.node.label,
                   type: n.node.label,
                 })),
@@ -310,7 +313,7 @@ const FeedEditionContainer = (props) => {
               ...R.pipe(
                 R.pathOr([], ['sdoTypes', 'edges']),
                 R.map((n) => ({
-                  label: t(`entity_${n.node.label}`),
+                  label: t_i18n(`entity_${n.node.label}`),
                   value: n.node.label,
                   type: n.node.label,
                 })),
@@ -325,7 +328,7 @@ const FeedEditionContainer = (props) => {
               <Formik
                 initialValues={initialValues}
                 enableReinitialize={true}
-                validationSchema={feedValidation(t)}
+                validationSchema={feedValidation(t_i18n)}
                 onSubmit={onSubmit}
                 onReset={onReset}
               >
@@ -335,14 +338,14 @@ const FeedEditionContainer = (props) => {
                       component={TextField}
                       variant="standard"
                       name="name"
-                      label={t('Name')}
+                      label={t_i18n('Name')}
                       fullWidth={true}
                     />
                     <Field
                       component={TextField}
                       variant="standard"
                       name="description"
-                      label={t('Description')}
+                      label={t_i18n('Description')}
                       fullWidth={true}
                       style={{ marginTop: 20 }}
                     />
@@ -354,21 +357,21 @@ const FeedEditionContainer = (props) => {
                       style={{ position: 'relative' }}
                     >
                       <AlertTitle>
-                        {t('Make this feed public and available to anyone')}
+                        {t_i18n('Make this feed public and available to anyone')}
                       </AlertTitle>
                       <Field
                         component={SwitchField}
                         type="checkbox"
                         name="feed_public"
                         containerstyle={{ marginLeft: 2, marginTop: 20 }}
-                        label={t('Public feed')}
+                        label={t_i18n('Public feed')}
                       />
                       {!values.feed_public && (
                         <ObjectMembersField
                           label="Accessible for"
                           style={fieldSpacingContainerStyle}
                           multiple={true}
-                          helpertext={t('Leave the field empty to grant all authenticated users')}
+                          helpertext={t_i18n('Leave the field empty to grant all authenticated users')}
                           name="authorized_members"
                         />
                       )}
@@ -377,7 +380,7 @@ const FeedEditionContainer = (props) => {
                       component={TextField}
                       variant="standard"
                       name="separator"
-                      label={t('Separator')}
+                      label={t_i18n('Separator')}
                       fullWidth={true}
                       style={{ marginTop: 20 }}
                     />
@@ -386,7 +389,7 @@ const FeedEditionContainer = (props) => {
                       variant="standard"
                       type="number"
                       name="rolling_time"
-                      label={t('Rolling time (in minutes)')}
+                      label={t_i18n('Rolling time (in minutes)')}
                       fullWidth={true}
                       style={{ marginTop: 20 }}
                       slotProps={{
@@ -394,7 +397,7 @@ const FeedEditionContainer = (props) => {
                           endAdornment: (
                             <InputAdornment position="end">
                               <Tooltip
-                                title={t(
+                                title={t_i18n(
                                   'Return all objects matching the filters that have been updated since this amount of minutes',
                                 )}
                               >
@@ -413,19 +416,19 @@ const FeedEditionContainer = (props) => {
                       component={SelectField}
                       variant="standard"
                       name="feed_date_attribute"
-                      label={t('Base attribute')}
+                      label={t_i18n('Base attribute')}
                       fullWidth={true}
                       multiple={false}
                       containerstyle={{ width: '100%', marginTop: 20 }}
-                    ><MenuItem key="created_at" value="created_at">{t('Creation date')}</MenuItem>
-                      <MenuItem key="updated_at" value="updated_at">{t('Update date')}</MenuItem>
+                    ><MenuItem key="created_at" value="created_at">{t_i18n('Creation date')}</MenuItem>
+                      <MenuItem key="updated_at" value="updated_at">{t_i18n('Update date')}</MenuItem>
                     </Field>
                     <Field
                       component={SelectField}
                       variant="standard"
                       name="feed_types"
                       onChange={(_, value) => handleSelectTypes(value)}
-                      label={t('Entity types')}
+                      label={t_i18n('Entity types')}
                       fullWidth={true}
                       multiple={true}
                       containerstyle={{ width: '100%', marginTop: 20 }}
@@ -440,12 +443,16 @@ const FeedEditionContainer = (props) => {
                       component={SwitchField}
                       type="checkbox"
                       name="include_header"
-                      label={t('Include headers in the feed')}
+                      label={t_i18n('Include headers in the feed')}
                       containerstyle={{ marginTop: 20 }}
                     />
-                    <Box sx={{ paddingTop: 4,
+                    <Box sx={{
+                      paddingTop: 4,
                       display: 'flex',
-                      gap: 1 }}
+                      alignItems: 'center',
+                      gap: theme.spacing(1),
+                      marginBottom: theme.spacing(1),
+                    }}
                     >
                       <Filters
                         availableFilterKeys={availableFilterKeys}
@@ -456,7 +463,6 @@ const FeedEditionContainer = (props) => {
                     <FilterIconButton
                       filters={filters}
                       helpers={helpers}
-                      styleNumber={2}
                       redirection
                       searchContext={{ entityTypes: selectedTypes }}
                     />
@@ -477,7 +483,7 @@ const FeedEditionContainer = (props) => {
                                 <MuiTextField
                                   variant="standard"
                                   name="attribute"
-                                  label={t('Column')}
+                                  label={t_i18n('Column')}
                                   fullWidth={true}
                                   value={feedAttributes[i].attribute}
                                   onChange={(event) => handleChangeField(i, event.target.value)
@@ -494,7 +500,7 @@ const FeedEditionContainer = (props) => {
                                     className={classes.formControl}
                                   >
                                     <InputLabel>
-                                      {t(`entity_${selectedType}`)}
+                                      {t_i18n(`entity_${selectedType}`)}
                                     </InputLabel>
                                     <QueryRenderer
                                       query={
@@ -594,14 +600,14 @@ const FeedEditionContainer = (props) => {
                         disabled={isSubmitting}
                         classes={{ root: classes.button }}
                       >
-                        {t('Cancel')}
+                        {t_i18n('Cancel')}
                       </Button>
                       <Button
                         onClick={submitForm}
                         disabled={isSubmitting || !areAttributesValid()}
                         classes={{ root: classes.button }}
                       >
-                        {t('Update')}
+                        {t_i18n('Update')}
                       </Button>
                     </div>
                   </Form>

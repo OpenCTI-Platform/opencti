@@ -167,7 +167,7 @@ const Pirs = () => {
             key={pir_filters}
             filters={JSON.parse(pir_filters)}
             entityTypes={['Stix-Core-Object']}
-            styleNumber={3}
+            variant="small"
           />
         </div>
       ),
