@@ -47,7 +47,7 @@ On top of organization management and segregation, use authorized members to res
 
 ### Override of capabilities in draft 
 
-On top of Role Bas Access Control, we have added the ability to work on ‘drafts’ and control publishing access. By allowing users to have some specific capabilities limited to draft, it is possible to restrict user from editing or creating data in the main database. This provide additionnal control over who can do what in the platfom. Please go to User and [RBAC page](/users.md) for more information.
+On top of Role Based Access Control (RBAC), we have added the ability to work on drafts and control publishing access. By allowing users to have specific capabilities limited to drafts, it is possible to restrict users from editing or creating data in the main database. This provides additional control over who can do what in the platform. Please go to the [Users and RBAC page](users.md) for more information.
 
 ### Full text indexing
 
