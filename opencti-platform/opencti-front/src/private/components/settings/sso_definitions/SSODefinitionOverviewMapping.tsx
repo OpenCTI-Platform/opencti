@@ -320,8 +320,8 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
 
         {currentTab === 0 && (
           <>
-            {renderRows(defaultRows, t_i18n('Default configuration'))}
-            {advancedRows.length > 0 && renderRows(advancedRows, t_i18n('Added configuration'))}
+            {renderRows(defaultRows, t_i18n('Base configuration'))}
+            {advancedRows.length > 0 && renderRows(advancedRows, t_i18n('Advanced configuration'))}
           </>
         )}
 
