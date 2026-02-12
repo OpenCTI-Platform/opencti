@@ -1,5 +1,5 @@
 import { StixCoreRelationshipEditionOverviewQuery } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipEditionOverviewQuery.graphql';
-import React from 'react';
+import React, { Suspense } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -49,10 +49,12 @@ const StixCoreRelationshipEditionContainer = (props: StixCoreRelationshipEdition
   if (!contextQueryRef) return null;
 
   return (
-    <StixCoreRelationshipEditionContainerContent
-      {...props}
-      contextQueryRef={contextQueryRef}
-    />
+    <Suspense>
+      <StixCoreRelationshipEditionContainerContent
+        {...props}
+        contextQueryRef={contextQueryRef}
+      />
+    </Suspense>
   );
 };
 
