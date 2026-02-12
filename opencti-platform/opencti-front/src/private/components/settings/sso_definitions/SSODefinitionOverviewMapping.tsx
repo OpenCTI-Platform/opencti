@@ -110,7 +110,7 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
     configuration?.forEach((config) => {
       let value = config.value;
       if (config.type === 'array') value = JSON.parse(config.value).join(',');
-      defaultRows.push({
+      baseConfig.push({
         key: config.key,
         value,
         type: config.type,
@@ -121,7 +121,6 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
       key: config.key,
       value: config.value,
       type: config.type,
-      mandatory: false,
     }));
 
     return { defaultRows, advancedRows };
