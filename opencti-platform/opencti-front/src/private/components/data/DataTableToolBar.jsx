@@ -2604,13 +2604,9 @@ class DataTableToolBar extends Component {
               </Toolbar>
               <Dialog
                 open={this.state.displayTask}
-                keepMounted={true}
-                slots={{ transition: Transition }}
                 onClose={this.handleCloseTask.bind(this)}
-                maxWidth="md"
                 data-testid="background-task-popup"
                 title={t('Launch a background task')}
-
               >
                 <DialogContentText>
                   {`${n(numberOfSelectedElements)} ${t('selected element(s)')}`}
@@ -3067,10 +3063,6 @@ class DataTableToolBar extends Component {
                 </div>
               </Drawer>
               <Dialog
-                slotProps={{ paper: { elevation: 1 } }}
-                fullWidth={true}
-                maxWidth="sm"
-                slots={{ transition: Transition }}
                 open={this.state.displayAddInContainer}
                 onClose={() => this.setState({ displayAddInContainer: false })}
                 title={t('Add in container')}
@@ -3150,14 +3142,14 @@ class DataTableToolBar extends Component {
                 <IconButton
                   onClick={() => this.setState({ containerCreation: true })}
                   edge="end"
-                  style={{ position: 'absolute', top: 68, right: 48 }}
+                  style={{ position: 'absolute', top: 80, right: 50 }}
                 >
                   <AddOutlined />
                 </IconButton>
 
                 <DialogActions>
                   <Button
-                    varient="secondary"
+                    variant="secondary"
                     onClick={() => this.setState({ displayAddInContainer: false })
                     }
                   >
@@ -3186,10 +3178,6 @@ class DataTableToolBar extends Component {
                 </DialogActions>
               </Dialog>
               <Dialog
-                slotProps={{ paper: { elevation: 1 } }}
-                fullWidth={true}
-                maxWidth="sm"
-                slots={{ transition: Transition }}
                 open={this.state.displayShare}
                 onClose={() => this.setState({ displayShare: false })}
                 title={t('Share with organizations')}
@@ -3278,10 +3266,6 @@ class DataTableToolBar extends Component {
                 </DialogActions>
               </Dialog>
               <Dialog
-                slotProps={{ paper: { elevation: 1 } }}
-                fullWidth={true}
-                maxWidth="sm"
-                slots={{ transition: Transition }}
                 open={this.state.displayUnshare}
                 onClose={() => this.setState({ displayUnshare: false })}
                 title={t('Unshare with organizations')}
