@@ -102,6 +102,7 @@ const resolveEnvFile = (env) => {
   return filePath;
 };
 export const DEV_MODE = environment !== 'production';
+export const TEST_MODE = environment === 'test';
 const externalConfigurationFile = nconf.get('conf');
 export const NODE_INSTANCE_ID = nconf.get('app:node_identifier') || uuid();
 export const PLATFORM_INSTANCE_ID = `platform:instance:${NODE_INSTANCE_ID}`;

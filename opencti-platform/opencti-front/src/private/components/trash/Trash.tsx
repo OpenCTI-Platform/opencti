@@ -14,14 +14,14 @@ import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocum
 import DataTable from '../../../components/dataGrid/DataTable';
 import { graphql } from 'react-relay';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
-import { TrashDeleteOperationsLines_data$data } from './__generated__/TrashDeleteOperationsLines_data.graphql';
-import { TrashDeleteOperationsLinesPaginationQuery, TrashDeleteOperationsLinesPaginationQuery$variables } from './__generated__/TrashDeleteOperationsLinesPaginationQuery.graphql';
 import ItemEntityType from '../../../components/ItemEntityType';
 import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 import { TrashDeleteOperationLine_node$data } from './__generated__/TrashDeleteOperationLine_node.graphql';
 import DeleteOperationPopover from './DeleteOperationPopover';
 import { EMPTY_VALUE } from '../../../utils/String';
+import { TrashDeleteOperationsLinesPaginationQuery, TrashDeleteOperationsLinesPaginationQuery$variables } from './__generated__/TrashDeleteOperationsLinesPaginationQuery.graphql';
+import { TrashDeleteOperationsLines_data$data } from './__generated__/TrashDeleteOperationsLines_data.graphql';
 
 const DeleteOperationFragment = graphql`
   fragment TrashDeleteOperationLine_node on DeleteOperation {

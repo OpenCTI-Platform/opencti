@@ -2,7 +2,7 @@ import { type AttributeDefinition, files, xOpenctiStixIds } from '../../schema/a
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { ABSTRACT_STIX_OBJECT } from '../../schema/general';
 
-const stixObjectAttributes: Array<AttributeDefinition> = [
+const stixObjectAttributes: Array<AttributeDefinition<any>> = [
   xOpenctiStixIds,
   files,
 ];

@@ -49,7 +49,7 @@ interface HistoryContext {
   pir_ids?: Array<string>;
   pir_score?: number;
   pir_match_from?: boolean;
-  changes?: Array<Change>;
+  history_changes?: Array<Change>;
 }
 
 export interface HistoryData extends BasicStoreEntity {
@@ -184,7 +184,7 @@ export const buildHistoryElementsFromEvents = async (context: AuthContext, event
         pushAll(eventMarkingRefs, relatedMarkings);
       }
       // add changes
-      contextData.changes = updateEvent.context.changes;
+      contextData.history_changes = updateEvent.context.changes;
     }
     if (stix.type === STIX_TYPE_RELATION) {
       const rel: StixRelation = stix as StixRelation;

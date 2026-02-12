@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
 import { graphql, usePreloadedQuery, useRefetchableFragment } from 'react-relay';
-import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@common/button/IconButton';
+import { useFormatter } from 'src/components/i18n';
+import { FIVE_SECONDS } from 'src/utils/Time';
+import useInterval from 'src/utils/hooks/useInterval';
+import HistoryDrawer from '@components/common/drawer/HistoryDrawer';
 import ListItem from '@mui/material/ListItem';
 import { ListItemButton } from '@mui/material';
 import List from '@mui/material/List';
-import HistoryDrawer from '@components/common/drawer/HistoryDrawer';
 import StixCoreRelationshipHistoryLine from '@components/common/stix_core_relationships/StixCoreRelationshipHistoryLine';
-import { useFormatter } from '../../../../components/i18n';
-import useInterval from '../../../../utils/hooks/useInterval';
-import { FIVE_SECONDS } from '../../../../utils/Time';
 import Card from '../../../../components/common/card/Card';
 
 export const stixCoreRelationshipHistoryLinesQuery = graphql`
@@ -19,6 +17,9 @@ export const stixCoreRelationshipHistoryLinesQuery = graphql`
     $orderMode: OrderingMode
     $filters: FilterGroup
     $search: String
+    $tz: String
+    $locale: String
+    $unit_system: String
   ) {
     ...StixCoreRelationshipHistoryLines_data
   }
@@ -38,7 +39,12 @@ const StixCoreRelationshipHistoryLinesFragment = graphql`
       edges {
         node {
           id
-          ...StixCoreRelationshipHistoryLine_node
+          context_data(tz: $tz, locale: $locale, unit_system: $unit_system) {
+            changes {
+              field
+            }
+          }
+          ...StixCoreRelationshipHistoryLine_node @arguments(tz: $tz, locale: $locale, unit_system: $unit_system)
         }
       }
     }
@@ -50,9 +56,7 @@ const StixCoreRelationshipHistoryLines = ({ queryRef, isRelationLog, paginationO
   const [open, setOpen] = useState(false);
   const [selectedLog, setSelectedLog] = useState(null);
   const queryData = usePreloadedQuery(stixCoreRelationshipHistoryLinesQuery, queryRef);
-  const [data, refetch] = useRefetchableFragment(
-    StixCoreRelationshipHistoryLinesFragment, queryData,
-  );
+  const [data, refetch] = useRefetchableFragment(StixCoreRelationshipHistoryLinesFragment, queryData);
 
   useInterval(() => {
     // Refresh the history every interval
@@ -60,8 +64,8 @@ const StixCoreRelationshipHistoryLines = ({ queryRef, isRelationLog, paginationO
   }, FIVE_SECONDS);
   const logs = data?.logs.edges ?? [];
 
-  const handleOpen = (log) => {
-    setSelectedLog(log);
+  const handleOpen = (logId) => {
+    setSelectedLog(logId);
     setOpen(true);
   };
   const handleClose = () => {
@@ -71,46 +75,31 @@ const StixCoreRelationshipHistoryLines = ({ queryRef, isRelationLog, paginationO
 
   return (
     <Card title={t_i18n('Most recent history')}>
+      <HistoryDrawer
+        open={open}
+        onClose={handleClose}
+        title={t_i18n('Relationship log details')}
+        logId={selectedLog}
+      />
       {logs.length > 0 ? (
         <List>
-          {logs.map((logEdge) => {
+          {logs.filter((l) => !!l).map((logEdge) => {
             const log = logEdge.node;
+            const hasChanges = (log.context_data?.changes ?? []).length > 0;
             return (
               <React.Fragment key={log.id}>
-                <ListItem
-                  dense={true}
-                  divider={true}
-                  disablePadding
-                  secondaryAction={(
-                    <>
-                      <Tooltip title={t_i18n('Browse the link')}>
-                        <IconButton
-                          onClick={() => handleOpen(log)}
-                          color="primary"
-                        >
-                        </IconButton>
-                      </Tooltip>
-                    </>
-                  )}
-                >
+                <ListItem dense={true} divider={true} disablePadding>
                   <ListItemButton
-                    style={{ margin: 0, height: 60 }}
-                    onClick={() => handleOpen(log)}
+                    style={{ margin: 0, height: 60, cursor: hasChanges ? 'pointer' : 'default' }}
+                    disableRipple={!hasChanges}
+                    onClick={() => {
+                      if (hasChanges) {
+                        handleOpen(log.id);
+                      }
+                    }}
                   >
-                    <StixCoreRelationshipHistoryLine
-                      key={log.id}
-                      nodeRef={log}
-                      isRelation={isRelationLog}
-                    />
+                    <StixCoreRelationshipHistoryLine key={log.id} nodeRef={log} isRelation={isRelationLog} />
                   </ListItemButton>
-                  <HistoryDrawer
-                    key={log.id}
-                    open={open}
-                    onClose={handleClose}
-                    title={t_i18n('Relationship log details')}
-                    node={selectedLog}
-                    isRelation
-                  />
                 </ListItem>
               </React.Fragment>
             );

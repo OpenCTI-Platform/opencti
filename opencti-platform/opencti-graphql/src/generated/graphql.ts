@@ -3475,15 +3475,6 @@ export enum CatalogsOrdering {
   Name = 'name'
 }
 
-export type Change = {
-  __typename?: 'Change';
-  added?: Maybe<Array<Scalars['String']['output']>>;
-  field: Scalars['String']['output'];
-  new?: Maybe<Array<Scalars['String']['output']>>;
-  previous?: Maybe<Array<Scalars['String']['output']>>;
-  removed?: Maybe<Array<Scalars['String']['output']>>;
-};
-
 export type ChangePasswordInput = {
   newPassword: Scalars['String']['input'];
   otp: Scalars['String']['input'];
@@ -4560,7 +4551,7 @@ export enum ContainersOrdering {
 
 export type ContextData = {
   __typename?: 'ContextData';
-  changes?: Maybe<Array<Maybe<Change>>>;
+  changes?: Maybe<Array<Maybe<HistoryChange>>>;
   commit?: Maybe<Scalars['String']['output']>;
   entity_id?: Maybe<Scalars['String']['output']>;
   entity_name?: Maybe<Scalars['String']['output']>;
@@ -10013,6 +10004,13 @@ export type HealthConnectorStatusInput = {
   started_at: Scalars['DateTime']['input'];
 };
 
+export type HistoryChange = {
+  __typename?: 'HistoryChange';
+  changes_added?: Maybe<Array<Scalars['String']['output']>>;
+  changes_removed?: Maybe<Array<Scalars['String']['output']>>;
+  field: Scalars['String']['output'];
+};
+
 export type Hostname = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
   __typename?: 'Hostname';
   cases?: Maybe<CaseConnection>;
@@ -13859,6 +13857,13 @@ export type Log = {
   user?: Maybe<Creator>;
   user_id: Scalars['String']['output'];
   user_metadata?: Maybe<Scalars['JSON']['output']>;
+};
+
+
+export type LogContext_DataArgs = {
+  locale?: InputMaybe<Scalars['String']['input']>;
+  tz?: InputMaybe<Scalars['String']['input']>;
+  unit_system?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type LogConnection = {
@@ -22311,6 +22316,7 @@ export type Query = {
   attackPattern?: Maybe<AttackPattern>;
   attackPatterns?: Maybe<AttackPatternConnection>;
   attackPatternsMatrix?: Maybe<AttackPatternsMatrix>;
+  audit?: Maybe<Log>;
   audits?: Maybe<LogConnection>;
   auditsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   auditsMultiTimeSeries?: Maybe<Array<Maybe<MultiTimeSeries>>>;
@@ -22471,6 +22477,7 @@ export type Query = {
   languages?: Maybe<LanguageConnection>;
   location?: Maybe<Location>;
   locations?: Maybe<LocationConnection>;
+  log?: Maybe<Log>;
   logs?: Maybe<LogConnection>;
   logsWorkerConfig?: Maybe<LogsWorkerConfig>;
   malware?: Maybe<Malware>;
@@ -22735,6 +22742,11 @@ export type QueryAttackPatternsArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
   toStix?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+
+export type QueryAuditArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -23866,6 +23878,11 @@ export type QueryLocationsArgs = {
   search?: InputMaybe<Scalars['String']['input']>;
   toStix?: InputMaybe<Scalars['Boolean']['input']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type QueryLogArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -36835,7 +36852,6 @@ export type ResolversTypes = ResolversObject<{
   CatalogConnection: ResolverTypeWrapper<Omit<CatalogConnection, 'edges'> & { edges: Array<ResolversTypes['CatalogEdge']> }>;
   CatalogEdge: ResolverTypeWrapper<Omit<CatalogEdge, 'node'> & { node: ResolversTypes['Catalog'] }>;
   CatalogsOrdering: CatalogsOrdering;
-  Change: ResolverTypeWrapper<Change>;
   ChangePasswordInput: ChangePasswordInput;
   Channel: ResolverTypeWrapper<BasicStoreEntityChannel>;
   ChannelAddInput: ChannelAddInput;
@@ -37100,6 +37116,7 @@ export type ResolversTypes = ResolversObject<{
   HashedObservable: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['HashedObservable']>;
   HeaderInput: HeaderInput;
   HealthConnectorStatusInput: HealthConnectorStatusInput;
+  HistoryChange: ResolverTypeWrapper<HistoryChange>;
   Hostname: ResolverTypeWrapper<Omit<Hostname, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   HostnameAddInput: HostnameAddInput;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
@@ -37879,7 +37896,6 @@ export type ResolversParentTypes = ResolversObject<{
   Catalog: GraphqlCatalog;
   CatalogConnection: Omit<CatalogConnection, 'edges'> & { edges: Array<ResolversParentTypes['CatalogEdge']> };
   CatalogEdge: Omit<CatalogEdge, 'node'> & { node: ResolversParentTypes['Catalog'] };
-  Change: Change;
   ChangePasswordInput: ChangePasswordInput;
   Channel: BasicStoreEntityChannel;
   ChannelAddInput: ChannelAddInput;
@@ -38104,6 +38120,7 @@ export type ResolversParentTypes = ResolversObject<{
   HashedObservable: ResolversInterfaceTypes<ResolversParentTypes>['HashedObservable'];
   HeaderInput: HeaderInput;
   HealthConnectorStatusInput: HealthConnectorStatusInput;
+  HistoryChange: HistoryChange;
   Hostname: Omit<Hostname, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   HostnameAddInput: HostnameAddInput;
   ID: Scalars['ID']['output'];
@@ -39787,14 +39804,6 @@ export type CatalogEdgeResolvers<ContextType = any, ParentType extends Resolvers
   node?: Resolver<ResolversTypes['Catalog'], ParentType, ContextType>;
 }>;
 
-export type ChangeResolvers<ContextType = any, ParentType extends ResolversParentTypes['Change'] = ResolversParentTypes['Change']> = ResolversObject<{
-  added?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
-  field?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  new?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
-  previous?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
-  removed?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
-}>;
-
 export type ChannelResolvers<ContextType = any, ParentType extends ResolversParentTypes['Channel'] = ResolversParentTypes['Channel']> = ResolversObject<{
   aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
@@ -40185,7 +40194,7 @@ export type ContainerEditMutationsResolvers<ContextType = any, ParentType extend
 }>;
 
 export type ContextDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['ContextData'] = ResolversParentTypes['ContextData']> = ResolversObject<{
-  changes?: Resolver<Maybe<Array<Maybe<ResolversTypes['Change']>>>, ParentType, ContextType>;
+  changes?: Resolver<Maybe<Array<Maybe<ResolversTypes['HistoryChange']>>>, ParentType, ContextType>;
   commit?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -42027,6 +42036,12 @@ export type HashedObservableResolvers<ContextType = any, ParentType extends Reso
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
 }>;
 
+export type HistoryChangeResolvers<ContextType = any, ParentType extends ResolversParentTypes['HistoryChange'] = ResolversParentTypes['HistoryChange']> = ResolversObject<{
+  changes_added?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  changes_removed?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  field?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
 export type HostnameResolvers<ContextType = any, ParentType extends ResolversParentTypes['Hostname'] = ResolversParentTypes['Hostname']> = ResolversObject<{
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<HostnameCasesArgs>>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<HostnameConnectorsArgs>>;
@@ -43333,7 +43348,7 @@ export type LocationEditMutationsResolvers<ContextType = any, ParentType extends
 }>;
 
 export type LogResolvers<ContextType = any, ParentType extends ResolversParentTypes['Log'] = ResolversParentTypes['Log']> = ResolversObject<{
-  context_data?: Resolver<Maybe<ResolversTypes['ContextData']>, ParentType, ContextType>;
+  context_data?: Resolver<Maybe<ResolversTypes['ContextData']>, ParentType, ContextType, Partial<LogContext_DataArgs>>;
   context_uri?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   event_scope?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -45708,6 +45723,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   attackPattern?: Resolver<Maybe<ResolversTypes['AttackPattern']>, ParentType, ContextType, Partial<QueryAttackPatternArgs>>;
   attackPatterns?: Resolver<Maybe<ResolversTypes['AttackPatternConnection']>, ParentType, ContextType, Partial<QueryAttackPatternsArgs>>;
   attackPatternsMatrix?: Resolver<Maybe<ResolversTypes['AttackPatternsMatrix']>, ParentType, ContextType>;
+  audit?: Resolver<Maybe<ResolversTypes['Log']>, ParentType, ContextType, RequireFields<QueryAuditArgs, 'id'>>;
   audits?: Resolver<Maybe<ResolversTypes['LogConnection']>, ParentType, ContextType, Partial<QueryAuditsArgs>>;
   auditsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryAuditsDistributionArgs, 'field' | 'operation'>>;
   auditsMultiTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['MultiTimeSeries']>>>, ParentType, ContextType, RequireFields<QueryAuditsMultiTimeSeriesArgs, 'interval' | 'operation' | 'startDate'>>;
@@ -45867,6 +45883,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   languages?: Resolver<Maybe<ResolversTypes['LanguageConnection']>, ParentType, ContextType, Partial<QueryLanguagesArgs>>;
   location?: Resolver<Maybe<ResolversTypes['Location']>, ParentType, ContextType, RequireFields<QueryLocationArgs, 'id'>>;
   locations?: Resolver<Maybe<ResolversTypes['LocationConnection']>, ParentType, ContextType, Partial<QueryLocationsArgs>>;
+  log?: Resolver<Maybe<ResolversTypes['Log']>, ParentType, ContextType, RequireFields<QueryLogArgs, 'id'>>;
   logs?: Resolver<Maybe<ResolversTypes['LogConnection']>, ParentType, ContextType, Partial<QueryLogsArgs>>;
   logsWorkerConfig?: Resolver<Maybe<ResolversTypes['LogsWorkerConfig']>, ParentType, ContextType>;
   malware?: Resolver<Maybe<ResolversTypes['Malware']>, ParentType, ContextType, Partial<QueryMalwareArgs>>;
@@ -49542,7 +49559,6 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Catalog?: CatalogResolvers<ContextType>;
   CatalogConnection?: CatalogConnectionResolvers<ContextType>;
   CatalogEdge?: CatalogEdgeResolvers<ContextType>;
-  Change?: ChangeResolvers<ContextType>;
   Channel?: ChannelResolvers<ContextType>;
   ChannelConnection?: ChannelConnectionResolvers<ContextType>;
   ChannelEdge?: ChannelEdgeResolvers<ContextType>;
@@ -49705,6 +49721,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   GroupsManagement?: GroupsManagementResolvers<ContextType>;
   Hash?: HashResolvers<ContextType>;
   HashedObservable?: HashedObservableResolvers<ContextType>;
+  HistoryChange?: HistoryChangeResolvers<ContextType>;
   Hostname?: HostnameResolvers<ContextType>;
   IPv4Addr?: IPv4AddrResolvers<ContextType>;
   IPv6Addr?: IPv6AddrResolvers<ContextType>;

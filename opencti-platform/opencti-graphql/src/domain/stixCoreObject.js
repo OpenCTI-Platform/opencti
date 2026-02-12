@@ -104,14 +104,15 @@ import { AI_BUS } from '../modules/ai/ai-types';
 import { lockResources } from '../lock/master-lock';
 import { editAuthorizedMembers } from '../utils/authorizedMembers';
 import { elRemoveElementFromDraft } from '../database/draft-engine';
-import { FILES_UPDATE_KEY, getDraftChanges, isDraftFile } from '../database/draft-utils';
+import { getDraftChanges, isDraftFile } from '../database/draft-utils';
 import { askJobImport } from './connector';
-import { authorizedMembers } from '../schema/attribute-definition';
+import { authorizedMembers, files as fileAttribute } from '../schema/attribute-definition';
 import { cleanHtmlTags } from '../utils/ai/cleanHtmlTags';
 
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
 import { findById as findDraftById } from '../modules/draftWorkspace/draftWorkspace-domain';
+import { buildTranslatedIdsMap } from '../database/data-changes';
 
 const AI_INSIGHTS_REFRESH_TIMEOUT = conf.get('ai:insights_refresh_timeout');
 const aiResponseCache = {};
@@ -885,13 +886,12 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
     }
     // Patch the updated_at to force live stream evolution
     const eventFile = storeFileConverter(user, up);
-    const files = [...(previous.x_opencti_files ?? []).filter((f) => f.id !== up.id), eventFile];
-    const nonResolvedFiles = files.map((f) => {
+    const currentFiles = [...(previous.x_opencti_files ?? []).filter((f) => f.id !== up.id), eventFile];
+    const nonResolvedFiles = currentFiles.map((f) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { [INPUT_MARKINGS]: markingInput, ...nonResolvedFile } = f;
       return nonResolvedFile;
     });
-
     const elementWithUpdatedFiles = {
       _index: previous._index,
       internal_id: internalId,
@@ -901,12 +901,12 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
     };
     if (getDraftContext(context, user)) {
       elementWithUpdatedFiles._id = previous._id;
-      const eventFileInput = { key: FILES_UPDATE_KEY, value: [up.id], operation: UPDATE_OPERATION_ADD };
+      const eventFileInput = { key: fileAttribute.name, value: [up.id], operation: UPDATE_OPERATION_ADD };
       elementWithUpdatedFiles.draft_change = getDraftChanges(previous, [eventFileInput]);
     }
     await elUpdateElement(context, user, elementWithUpdatedFiles);
     // Stream event generation
-    const fileMarkings = R.uniq(R.flatten(files.filter((f) => f.file_markings).map((f) => f.file_markings)));
+    const fileMarkings = R.uniq(R.flatten(currentFiles.filter((f) => f.file_markings).map((f) => f.file_markings)));
     let fileMarkingsPromise = Promise.resolve();
     if (fileMarkings.length > 0) {
       const argsMarkings = { type: ENTITY_TYPE_MARKING_DEFINITION, toMap: true, baseData: true };
@@ -914,7 +914,7 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
     }
     const fileMarkingsMap = await fileMarkingsPromise;
     const resolvedFiles = [];
-    files.forEach((f) => {
+    currentFiles.forEach((f) => {
       if (isNotEmptyField(f.file_markings)) {
         resolvedFiles.push({ ...f, [INPUT_MARKINGS]: f.file_markings.map((m) => fileMarkingsMap[m]).filter((fm) => fm) });
       } else {
@@ -930,20 +930,15 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
       }
     }
     // store the update event
-    if (addedExternalRef) {
-      const newExternalRefs = [...(previous[INPUT_EXTERNAL_REFS] ?? []), addedExternalRef];
-      const instance = { ...previous, x_opencti_files: resolvedFiles, [INPUT_EXTERNAL_REFS]: newExternalRefs };
-      const message = is_upsert
-        ? `adds a new version of \`${up.name}\` in \`files\` and \`external_references\``
-        : `adds \`${up.name}\` in \`files\` and \`external_references\``;
-      await storeUpdateEvent(context, user, previous, instance, message, [], { noHistory: embedded ?? false });
-    } else {
-      const instance = { ...previous, x_opencti_files: resolvedFiles };
-      const message = is_upsert
-        ? `adds a new version of \`${up.name}\` in \`files\``
-        : `adds \`${up.name}\` in \`files\``;
-      await storeUpdateEvent(context, user, previous, instance, message, [], { noHistory: embedded ?? false });
-    }
+    const newExternalRefs = [...(previous[INPUT_EXTERNAL_REFS] ?? [])];
+    if (addedExternalRef) newExternalRefs.push(addedExternalRef);
+    const instance = { ...previous, x_opencti_files: resolvedFiles, [INPUT_EXTERNAL_REFS]: newExternalRefs };
+    const translated = buildTranslatedIdsMap(eventFile.file_markings ?? [], fileMarkingsMap);
+    const changes = [{
+      field: previous.entity_type + '--' + fileAttribute.name,
+      changes_added: [{ raw: JSON.stringify(eventFile), translated }],
+    }];
+    await storeUpdateEvent(context, user, previous, instance, changes, { noHistory: embedded ?? false });
     // Add in activity only for notifications
     const contextData = buildContextDataForFile(previous, filePath, up.name, up.metaData.file_markings, { is_upsert });
     await publishUserAction({
@@ -1026,13 +1021,18 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
     };
     if (getDraftContext(context, user)) {
       elementWithUpdatedFiles._id = previous._id;
-      const eventFileInput = { key: FILES_UPDATE_KEY, value: [fileId], operation: UPDATE_OPERATION_REMOVE };
+      const eventFileInput = { key: fileAttribute.name, value: [fileId], operation: UPDATE_OPERATION_REMOVE };
       elementWithUpdatedFiles.draft_change = getDraftChanges(previous, [eventFileInput]);
     }
     await elUpdateElement(context, user, elementWithUpdatedFiles);
     // Stream event generation
     const instance = { ...previous, x_opencti_files: files };
-    await storeUpdateEvent(context, user, previous, instance, `removes \`${baseDocument.name}\` in \`files\``, []);
+    const eventFile = storeFileConverter(user, baseDocument);
+    const changes = [{
+      field: previous.entity_type + '--' + fileAttribute.name,
+      changes_removed: [{ raw: JSON.stringify(eventFile) }],
+    }];
+    await storeUpdateEvent(context, user, previous, instance, changes, []);
     // Add in activity only for notifications
     const contextData = buildContextDataForFile(previous, fileId, baseDocument.name);
     await publishUserAction({

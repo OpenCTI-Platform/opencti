@@ -67,9 +67,9 @@ describe('Case Incident Response resolver standard behavior', () => {
       query: CREATE_QUERY,
       variables: {
         input: {
-          name: 'Case Incident Response'
-        }
-      }
+          name: 'Case Incident Response',
+        },
+      },
     });
     expect(caseIncidentResponseData).not.toBeNull();
     caseIncidentResponse = caseIncidentResponseData?.data?.caseIncidentAdd;

@@ -1,6 +1,12 @@
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from './internalObject';
 import { ABSTRACT_BASIC_OBJECT, ABSTRACT_BASIC_RELATIONSHIP } from './general';
 import { getDraftOperations } from '../modules/draftWorkspace/draftOperations';
+import type { BasicStoreIdentifier } from '../types/store';
+import type { AuthorizedMembers } from '../utils/authorizedMembers';
+import { DefaultFormating, type Formating } from '../utils/humanize';
+import type { StixId, StixObject } from '../types/stix-2-1-common';
+import { TEST_MODE } from '../config/conf';
+import type { OpenCTIFile } from '../modules/internal/document/document-types';
 
 export const shortMapping = {
   type: 'text',
@@ -22,10 +28,8 @@ export type Checker = (fromType: string, toType: string) => boolean;
 export type AttrType = 'string' | 'date' | 'numeric' | 'boolean' | 'object' | 'ref';
 
 export type MandatoryType = 'internal' | 'external' | 'customizable' | 'no';
-// internal =
-// external =
-// customizable =
-// no = impossible to change to mandatory in the dynamic configuration
+
+export type BasicStoreAttribute = object | string;
 
 type BasicDefinition = {
   name: string; // name in the database
@@ -39,14 +43,20 @@ type BasicDefinition = {
   editDefault: boolean; // TO CHECK ?????
   update?: boolean; // If attribute can be updated (null = true)
   featureFlag?: string; // if attribute is on feature flag, null by default
+  requiredCapabilities?: string[];
 };
 
-export type MappingDefinition = AttributeDefinition & {
+type GetRawIdsFn<T extends BasicStoreAttribute> = (item: T, getEntitiesMapFromCache:
+<Z extends BasicStoreIdentifier | StixObject>(type: string) => Promise<Map<string | StixId, Z>>) => Promise<{ id: string; source?: string }[]>;
+
+type RepresentativeFn<T extends BasicStoreAttribute> = (item: T, dict: Record<string, string>, opts: Formating) => string;
+
+export type MappingDefinition<T extends BasicStoreAttribute = BasicStoreAttribute> = AttributeDefinition<T> & {
   associatedFilterKeys?: { key: string; label: string }[]; // filter key and their label, to add if key is different from: 'parentAttributeName.nestedAttributeName'
 };
 
-export type BasicObjectDefinition = BasicDefinition & {
-  mappings: MappingDefinition[];
+export type BasicObjectDefinition<T extends BasicStoreAttribute = BasicStoreAttribute> = ObjectDefinition<T> & {
+  mappings: MappingDefinition<T>[];
   // if the object attribute can be used for sorting, we need to know how
   sortBy?: {
     path: string; // path leading to the value that serves for sorting
@@ -56,34 +66,28 @@ export type BasicObjectDefinition = BasicDefinition & {
 export type DateAttribute = { type: 'date' } & BasicDefinition;
 export type BooleanAttribute = { type: 'boolean' } & BasicDefinition;
 export type NumericAttribute = { type: 'numeric'; precision: 'integer' | 'long' | 'float'; scalable?: boolean } & BasicDefinition;
-export type IdAttribute = { type: 'string'; format: 'id'; entityTypes: string[] } & BasicDefinition;
+export type IdAttribute = { type: 'string'; format: 'id'; entityTypes: string[]; attrRawIds?: GetRawIdsFn<string>; representative?: RepresentativeFn<string> } & BasicDefinition;
 export type TextAttribute = { type: 'string'; format: 'short' | 'text' } & BasicDefinition;
 export type EnumAttribute = { type: 'string'; format: 'enum'; values: string[] } & BasicDefinition;
 export type VocabAttribute = { type: 'string'; format: 'vocabulary'; vocabularyCategory: string } & BasicDefinition;
-export type JsonAttribute = { type: 'string'; format: 'json'; multiple: false; schemaDef?: Record<string, any> } & BasicDefinition;
-export type FlatObjectAttribute = { type: 'object'; format: 'flat' } & BasicDefinition;
-export type ObjectAttribute = { type: 'object'; format: 'standard' } & BasicObjectDefinition;
-export type NestedObjectAttribute = { type: 'object'; format: 'nested' } & BasicObjectDefinition;
-export type RefAttribute = { type: 'ref'; databaseName: string; stixName: string; isRefExistingForTypes: Checker; datable?: boolean; toTypes: string[] } & BasicDefinition;
+export type JsonAttribute = { type: 'string'; format: 'json'; attrRawIds?: GetRawIdsFn<string>; representative?: RepresentativeFn<string>; multiple: false; schemaDef?: Record<string, any> } & BasicDefinition;
+export type ObjectDefinition<T extends BasicStoreAttribute = BasicStoreAttribute> = { type: 'object'; attrRawIds?: GetRawIdsFn<T>; representative?: RepresentativeFn<T> } & BasicDefinition;
+export type FlatObjectAttribute<T extends BasicStoreAttribute> = { type: 'object'; format: 'flat' } & ObjectDefinition<T>;
+export type ObjectAttribute<T extends BasicStoreAttribute = BasicStoreAttribute> = { type: 'object'; format: 'standard' } & BasicObjectDefinition<T>;
+export type NestedObjectAttribute<T extends BasicStoreAttribute = BasicStoreAttribute> = { type: 'object'; format: 'nested' } & BasicObjectDefinition<T>;
+export type RefAttribute = { type: 'ref'; attrRawIds?: GetRawIdsFn<string>; databaseName: string; stixName: string; isRefExistingForTypes: Checker; datable?: boolean; toTypes: string[] } & BasicDefinition;
 export type StringAttribute = IdAttribute | TextAttribute | EnumAttribute | VocabAttribute | JsonAttribute;
-export type ComplexAttribute = FlatObjectAttribute | ObjectAttribute | NestedObjectAttribute;
-export type ComplexAttributeWithMappings = ObjectAttribute | NestedObjectAttribute;
+export type ComplexAttribute<T extends BasicStoreAttribute = BasicStoreAttribute> = FlatObjectAttribute<T> | ObjectAttribute<T> | NestedObjectAttribute<T>;
+export type ComplexAttributeWithMappings<T extends BasicStoreAttribute = BasicStoreAttribute> = ObjectAttribute<T> | NestedObjectAttribute<T>;
 
-export type AttributeDefinition = NumericAttribute | DateAttribute | BooleanAttribute | StringAttribute | ComplexAttribute | RefAttribute;
+export type AttributeDefinition<T extends BasicStoreAttribute = BasicStoreAttribute> = NumericAttribute | DateAttribute | BooleanAttribute
+  | StringAttribute | ComplexAttribute<T> | RefAttribute;
 
 export const shortStringFormats = ['id', 'short', 'enum', 'vocabulary'];
 export const longStringFormats = ['text', 'json'];
 
-// -- Type guards TS --
-export const isNumericAttribute = (attribute: AttributeDefinition): attribute is NumericAttribute => attribute.type === 'numeric';
-export const isDateAttribute = (attribute: AttributeDefinition): attribute is DateAttribute => attribute.type === 'date';
-export const isBooleanAttribute = (attribute: AttributeDefinition): attribute is BooleanAttribute => attribute.type === 'boolean';
-export const isStringAttribute = (attribute: AttributeDefinition): attribute is StringAttribute => attribute.type === 'string';
-export const isComplexAttribute = (attribute: AttributeDefinition): attribute is ComplexAttribute => attribute.type === 'object';
-export const isRefAttribute = (attribute: AttributeDefinition): attribute is RefAttribute => attribute.type === 'ref';
-
 // -- GLOBAL --
-export const id: AttributeDefinition = {
+export const id: IdAttribute = {
   name: 'id',
   label: 'Id',
   type: 'string',
@@ -97,7 +101,7 @@ export const id: AttributeDefinition = {
   entityTypes: [ABSTRACT_BASIC_OBJECT, ABSTRACT_BASIC_RELATIONSHIP],
 };
 
-export const draftIds: AttributeDefinition = {
+export const draftIds: IdAttribute = {
   name: 'draft_ids',
   label: 'Draft ids',
   type: 'string',
@@ -111,7 +115,7 @@ export const draftIds: AttributeDefinition = {
   entityTypes: [ABSTRACT_BASIC_OBJECT, ABSTRACT_BASIC_RELATIONSHIP],
 };
 
-export const draftContext: AttributeDefinition = {
+export const draftContext: TextAttribute = {
   name: 'draft_context',
   label: 'Current draft context',
   type: 'string',
@@ -123,7 +127,7 @@ export const draftContext: AttributeDefinition = {
   isFilterable: true,
 };
 
-export const draftChange: AttributeDefinition = {
+export const draftChange: ObjectAttribute = {
   name: 'draft_change',
   label: 'Draft change',
   type: 'object',
@@ -140,7 +144,7 @@ export const draftChange: AttributeDefinition = {
   ],
 };
 
-export const iAttributes: AttributeDefinition = {
+export const iAttributes: ObjectAttribute = {
   name: 'i_attributes',
   label: 'Attributes',
   type: 'object',
@@ -159,7 +163,7 @@ export const iAttributes: AttributeDefinition = {
   ],
 };
 
-export const internalId: AttributeDefinition = {
+export const internalId: IdAttribute = {
   name: 'internal_id',
   label: 'Internal id',
   type: 'string',
@@ -173,7 +177,7 @@ export const internalId: AttributeDefinition = {
   entityTypes: [ABSTRACT_BASIC_OBJECT, ABSTRACT_BASIC_RELATIONSHIP],
 };
 
-export const creators: AttributeDefinition = {
+export const creators: IdAttribute = {
   name: 'creator_id',
   label: 'Creators',
   type: 'string',
@@ -187,7 +191,7 @@ export const creators: AttributeDefinition = {
   isFilterable: true,
 };
 
-export const standardId: AttributeDefinition = {
+export const standardId: TextAttribute = {
   name: 'standard_id',
   label: 'Standard id',
   type: 'string',
@@ -200,7 +204,7 @@ export const standardId: AttributeDefinition = {
   isFilterable: false,
 };
 
-export const iAliasedIds: AttributeDefinition = {
+export const iAliasedIds: TextAttribute = {
   name: 'i_aliases_ids',
   label: 'Internal aliases',
   type: 'string',
@@ -213,7 +217,7 @@ export const iAliasedIds: AttributeDefinition = {
   isFilterable: false,
 };
 
-export const lastEventId: AttributeDefinition = {
+export const lastEventId: TextAttribute = {
   name: 'lastEventId',
   label: 'Last event id',
   type: 'string',
@@ -225,7 +229,7 @@ export const lastEventId: AttributeDefinition = {
   isFilterable: false,
 };
 
-export const files: AttributeDefinition = {
+export const files: ObjectAttribute<OpenCTIFile> = {
   name: 'x_opencti_files',
   label: 'Files',
   type: 'object',
@@ -246,10 +250,19 @@ export const files: AttributeDefinition = {
     { name: 'order', label: 'Order in carousel', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'file_markings', label: 'Markings', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, isFilterable: true },
   ],
+  attrRawIds: async (item, _) => {
+    const { file_markings = [] } = item;
+    return file_markings.map((id) => ({ id }));
+  },
+  representative: (item, translate, _ = DefaultFormating): string => {
+    const fileMarkingsIds = item.file_markings ?? [];
+    const markings = fileMarkingsIds.map((id) => translate[id]).join(', ');
+    return item.name + (markings.length > 0 ? ' (' + markings + ')' : '');
+  },
 };
 
-export const changes: AttributeDefinition = {
-  name: 'changes',
+export const changes: NestedObjectAttribute = {
+  name: 'history_changes',
   label: 'Detail changes',
   type: 'object',
   format: 'nested',
@@ -260,14 +273,40 @@ export const changes: AttributeDefinition = {
   isFilterable: false,
   mappings: [
     { name: 'field', label: 'Field', type: 'string', format: 'short', editDefault: false, mandatoryType: 'external', multiple: true, upsert: true, isFilterable: false },
-    { name: 'added', label: 'Added value', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
-    { name: 'removed', label: 'Removed value', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
-    { name: 'previous', label: 'Previous value', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
-    { name: 'new', label: 'New value', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
+    {
+      name: 'changes_added',
+      label: 'Added value',
+      type: 'object',
+      format: 'standard',
+      editDefault: false,
+      mandatoryType: 'no',
+      multiple: true,
+      upsert: true,
+      isFilterable: false,
+      mappings: [
+        { name: 'raw', label: 'Raw', type: 'string', format: 'text', editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: false },
+        { name: 'translated', label: 'Translated', type: 'string', format: 'text', editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: false },
+      ],
+    },
+    {
+      name: 'changes_removed',
+      label: 'Removed value',
+      type: 'object',
+      format: 'standard',
+      editDefault: false,
+      mandatoryType: 'no',
+      multiple: true,
+      upsert: true,
+      isFilterable: false,
+      mappings: [
+        { name: 'raw', label: 'Raw', type: 'string', format: 'text', editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: false },
+        { name: 'translated', label: 'Translated', type: 'string', format: 'text', editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: false },
+      ],
+    },
   ],
 };
 
-export const authorizedMembers: AttributeDefinition = {
+export const authorizedMembers: NestedObjectAttribute<AuthorizedMembers> = {
   name: 'restricted_members',
   label: 'Authorized members',
   type: 'object',
@@ -277,6 +316,18 @@ export const authorizedMembers: AttributeDefinition = {
   multiple: true,
   upsert: false,
   isFilterable: false,
+  requiredCapabilities: ['KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS'],
+  attrRawIds: async (item, _) => {
+    const { groups_restriction_ids = [], id } = item;
+    const groups = groups_restriction_ids ?? [];
+    const ids = [id, ...groups];
+    return ids.map((id) => ({ id }));
+  },
+  representative: (item, translate, _ = DefaultFormating): string => {
+    const groupIds = item.groups_restriction_ids ?? [];
+    const organizationGroups = groupIds.map((id) => translate[id]).join(', ');
+    return translate[item.id] + (groupIds.length > 0 ? ' x [' + organizationGroups + ']' : '') + ' (' + item.access_right + ')';
+  },
   mappings: [
     id,
     { name: 'access_right', label: 'Access right', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
@@ -284,7 +335,7 @@ export const authorizedMembers: AttributeDefinition = {
   ],
 };
 
-export const authorizedMembersActivationDate: AttributeDefinition = {
+export const authorizedMembersActivationDate: DateAttribute = {
   name: 'authorized_members_activation_date',
   label: 'Authorized members activation date',
   type: 'date',
@@ -293,9 +344,10 @@ export const authorizedMembersActivationDate: AttributeDefinition = {
   multiple: false,
   upsert: false,
   isFilterable: false,
+  requiredCapabilities: TEST_MODE ? [] : ['KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS'],
 };
 
-export const authorizedAuthorities: AttributeDefinition = {
+export const authorizedAuthorities: TextAttribute = {
   name: 'authorized_authorities',
   label: 'Authorized authorities',
   type: 'string',
@@ -307,7 +359,7 @@ export const authorizedAuthorities: AttributeDefinition = {
   isFilterable: false,
 };
 
-export const metrics: AttributeDefinition = {
+export const metrics: NestedObjectAttribute = {
   name: 'metrics',
   label: 'Entity metrics',
   type: 'object',
@@ -325,7 +377,7 @@ export const metrics: AttributeDefinition = {
 
 // -- ENTITY TYPE --
 
-export const parentTypes: AttributeDefinition = {
+export const parentTypes: TextAttribute = {
   name: 'parent_types',
   label: 'Parent types',
   type: 'string',
@@ -338,7 +390,7 @@ export const parentTypes: AttributeDefinition = {
   isFilterable: false,
 };
 
-export const baseType: AttributeDefinition = {
+export const baseType: TextAttribute = {
   name: 'base_type',
   label: 'Base type',
   type: 'string',
@@ -351,7 +403,7 @@ export const baseType: AttributeDefinition = {
   isFilterable: false,
 };
 
-export const entityType: AttributeDefinition = {
+export const entityType: TextAttribute = {
   name: 'entity_type',
   label: 'Entity type',
   type: 'string',
@@ -364,7 +416,7 @@ export const entityType: AttributeDefinition = {
   isFilterable: true, // filterable only for abstract types in filterKeysSchema
 };
 
-export const entityLocationType: AttributeDefinition = {
+export const entityLocationType: TextAttribute = {
   name: 'x_opencti_location_type',
   label: 'Location type',
   type: 'string',
@@ -377,7 +429,7 @@ export const entityLocationType: AttributeDefinition = {
   isFilterable: false,
 };
 
-export const relationshipType: AttributeDefinition = {
+export const relationshipType: TextAttribute = {
   name: 'relationship_type',
   label: 'Relationship type',
   type: 'string',
@@ -390,7 +442,7 @@ export const relationshipType: AttributeDefinition = {
   isFilterable: true,
 };
 
-export const xOpenctiType: AttributeDefinition = {
+export const xOpenctiType: TextAttribute = {
   name: 'x_opencti_type',
   label: 'Type',
   type: 'string',
@@ -403,7 +455,7 @@ export const xOpenctiType: AttributeDefinition = {
   isFilterable: true,
 };
 
-export const errors: AttributeDefinition = {
+export const errors: ObjectAttribute = {
   name: 'errors',
   label: 'Errors',
   type: 'object',
@@ -422,7 +474,7 @@ export const errors: AttributeDefinition = {
   ],
 };
 
-export const coverageInformation: AttributeDefinition = {
+export const coverageInformation: NestedObjectAttribute = {
   name: 'coverage_information',
   label: 'Coverage',
   type: 'object',
@@ -439,7 +491,7 @@ export const coverageInformation: AttributeDefinition = {
   ],
 };
 
-export const opinionsMetrics: AttributeDefinition = {
+export const opinionsMetrics: ObjectAttribute = {
   name: 'opinions_metrics',
   label: 'Opinion metrics',
   type: 'object',
@@ -461,7 +513,7 @@ export const opinionsMetrics: AttributeDefinition = {
 
 // IDS
 
-export const xOpenctiStixIds: AttributeDefinition = {
+export const xOpenctiStixIds: TextAttribute = {
   name: 'x_opencti_stix_ids',
   label: 'STIX IDs',
   type: 'string',
@@ -475,7 +527,7 @@ export const xOpenctiStixIds: AttributeDefinition = {
 
 // ALIASES
 
-export const xOpenctiAliases: AttributeDefinition = {
+export const xOpenctiAliases: TextAttribute = {
   name: 'x_opencti_aliases',
   label: 'X_Aliases',
   type: 'string',
@@ -487,7 +539,7 @@ export const xOpenctiAliases: AttributeDefinition = {
   isFilterable: false, // special filter key 'alias' (to filer on both 'aliases' and 'x_opencti_aliases') is added in filterKeysSchema
 };
 
-export const aliases: AttributeDefinition = {
+export const aliases: TextAttribute = {
   name: 'aliases',
   label: 'Aliases',
   type: 'string',
@@ -501,7 +553,7 @@ export const aliases: AttributeDefinition = {
 
 // OTHERS
 
-export const created: AttributeDefinition = {
+export const created: DateAttribute = {
   name: 'created',
   label: 'Original creation date',
   type: 'date',
@@ -511,7 +563,7 @@ export const created: AttributeDefinition = {
   upsert: true,
   isFilterable: true,
 };
-export const modified: AttributeDefinition = {
+export const modified: DateAttribute = {
   name: 'modified',
   label: 'Modified',
   type: 'date',
@@ -521,7 +573,7 @@ export const modified: AttributeDefinition = {
   upsert: false,
   isFilterable: false, // use updated_at filter
 };
-export const xOpenctiModifiedAt: AttributeDefinition = {
+export const xOpenctiModifiedAt: DateAttribute = {
   name: 'x_opencti_modified_at',
   label: 'Last update',
   type: 'date',
@@ -532,7 +584,7 @@ export const xOpenctiModifiedAt: AttributeDefinition = {
   isFilterable: false,
 };
 
-export const createdAt: AttributeDefinition = {
+export const createdAt: DateAttribute = {
   name: 'created_at',
   label: 'Platform creation date',
   type: 'date',
@@ -543,7 +595,7 @@ export const createdAt: AttributeDefinition = {
   upsert: false,
   isFilterable: true,
 };
-export const updatedAt: AttributeDefinition = {
+export const updatedAt: DateAttribute = {
   name: 'updated_at',
   label: 'Modification date',
   type: 'date',
@@ -554,7 +606,7 @@ export const updatedAt: AttributeDefinition = {
   upsert: false,
   isFilterable: true,
 };
-export const refreshedAt: AttributeDefinition = {
+export const refreshedAt: DateAttribute = {
   name: 'refreshed_at',
   label: 'Freshness date',
   type: 'date',
@@ -566,7 +618,7 @@ export const refreshedAt: AttributeDefinition = {
   isFilterable: true,
 };
 
-export const revoked: AttributeDefinition = {
+export const revoked: BooleanAttribute = {
   name: 'revoked',
   label: 'Revoked',
   type: 'boolean',
@@ -577,7 +629,7 @@ export const revoked: AttributeDefinition = {
   isFilterable: false,
 };
 
-export const confidence: AttributeDefinition = {
+export const confidence: NumericAttribute = {
   name: 'confidence',
   label: 'Confidence',
   type: 'numeric',
@@ -590,7 +642,7 @@ export const confidence: AttributeDefinition = {
   isFilterable: true,
 };
 
-export const xOpenctiReliability: AttributeDefinition = {
+export const xOpenctiReliability: VocabAttribute = {
   name: 'x_opencti_reliability',
   label: 'Reliability',
   type: 'string',
@@ -603,7 +655,7 @@ export const xOpenctiReliability: AttributeDefinition = {
   isFilterable: false, // use special filter key 'computed_reliability'
 };
 
-export const lang: AttributeDefinition = {
+export const lang: TextAttribute = {
   name: 'lang',
   label: 'Lang',
   type: 'string',
@@ -615,7 +667,7 @@ export const lang: AttributeDefinition = {
   isFilterable: false,
 };
 
-export const identityClass: AttributeDefinition = {
+export const identityClass: TextAttribute = {
   name: 'identity_class',
   label: 'Identity class',
   type: 'string',
