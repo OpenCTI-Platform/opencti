@@ -214,10 +214,11 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
                   }
                   if (externalReference.url) {
                     return (
-                      <div key={externalReference.id}>
+                      <React.Fragment key={externalReference.id}>
                         <ListItem
                           dense={true}
                           divider={true}
+                          disablePadding
                           secondaryAction={(
                             <Stack direction="row" gap={1}>
                               <Tooltip title={t('Browse the link')}>
@@ -289,14 +290,15 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
                             ))}
                           </List>
                         )}
-                      </div>
+                      </React.Fragment>
                     );
                   }
                   return (
-                    <div key={externalReference.id}>
+                    <React.Fragment key={externalReference.id}>
                       <ListItem
                         dense={true}
                         divider={true}
+                        disablePadding
                         secondaryAction={(
                           <>
                             <Security needs={[KNOWLEDGE_KNUPLOAD]}>
@@ -349,7 +351,7 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
                           ))}
                         </List>
                       )}
-                    </div>
+                    </React.Fragment>
                   );
                 },
               )}
