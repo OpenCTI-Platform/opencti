@@ -248,7 +248,7 @@ let cachedProductionRate: number = 0;
 export const getStreamProductionRate = async (): Promise<number> => {
   const now = Date.now();
   if (now - lastSampleTime < RATE_SAMPLE_INTERVAL_MS && lastSampleTime > 0) {
-    return cachedProductionRate;
+    return roundRate(cachedProductionRate);
   }
   try {
     const info = await rawFetchStreamInfo();
