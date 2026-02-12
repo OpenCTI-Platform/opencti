@@ -44,7 +44,7 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
         'Create OpenID',
         'Create LDAP',
         'Create ClientCert',
-        // 'Create Header',
+        'Create Header',
         // 'Create LocalAuth',
       ]}
       onOptionClick={(option) => {
@@ -65,15 +65,15 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
             setSelectedStrategy('ClientCert');
             break;
           }
-          // case 'Create Header': {
-          //   setSelectedStrategy('Header');
-          //   break;
-          // }
-
+          case 'Create Header': {
+            setSelectedStrategy('Header');
+            break;
+          }
           // case 'Create LocalAuth': {
           //   setSelectedStrategy('LocalAuth');
           //   break;
           // }
+          default: setSelectedStrategy('');
         }
       }}
       {...props}
@@ -123,7 +123,7 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
       configuration,
     };
 
-    if (selectedStrategy !== 'ClientCert') finalValues = { ...finalValues, groups_management, organizations_management };
+    if (selectedStrategy !== 'ClientCert' && selectedStrategy !== 'Header') finalValues = { ...finalValues, groups_management, organizations_management };
 
     commitMutation({
       ...defaultCommitMutation,

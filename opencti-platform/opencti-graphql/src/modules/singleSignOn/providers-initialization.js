@@ -634,59 +634,68 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
           // This strategy is directly handled on the fly on graphql
           const providerRef = identifier || 'header';
           logApp.info(`[ENV-PROVIDER][HEADER] Strategy found in configuration providerRef:${providerRef}`);
-          const reqLoginHandler = async (req) => {
-            // Group computations
-            const isGroupMapping = isNotEmptyField(mappedConfig.groups_management) && isNotEmptyField(mappedConfig.groups_management?.groups_mapping);
-            const computeGroupsMapping = () => {
-              const groupsMapping = mappedConfig.groups_management?.groups_mapping || [];
-              const groupsSplitter = mappedConfig.groups_management?.groups_splitter || ',';
-              const availableGroups = (req.header(mappedConfig.groups_management?.groups_header) ?? '').split(groupsSplitter);
-              const groupsMapper = genConfigMapper(groupsMapping);
-              return availableGroups.map((a) => groupsMapper[a]).filter((r) => isNotEmptyField(r));
+          if (isForcedEnv) {
+            const reqLoginHandler = async (req) => {
+              // Group computations
+              const isGroupMapping = isNotEmptyField(mappedConfig.groups_management) && isNotEmptyField(mappedConfig.groups_management?.groups_mapping);
+              const computeGroupsMapping = () => {
+                const groupsMapping = mappedConfig.groups_management?.groups_mapping || [];
+                const groupsSplitter = mappedConfig.groups_management?.groups_splitter || ',';
+                const availableGroups = (req.header(mappedConfig.groups_management?.groups_header) ?? '').split(groupsSplitter);
+                const groupsMapper = genConfigMapper(groupsMapping);
+                return availableGroups.map((a) => groupsMapper[a]).filter((r) => isNotEmptyField(r));
+              };
+              const mappedGroups = isGroupMapping ? computeGroupsMapping() : [];
+              // Organization computations
+              const isOrgaMapping = isNotEmptyField(mappedConfig.organizations_default) || isNotEmptyField(mappedConfig.organizations_management);
+              const computeOrganizationsMapping = () => {
+                const orgaDefault = mappedConfig.organizations_default ?? [];
+                const orgasMapping = mappedConfig.organizations_management?.organizations_mapping || [];
+                const orgasSplitter = mappedConfig.organizations_management?.organizations_splitter || ',';
+                const availableOrgas = (req.header(mappedConfig.organizations_management?.organizations_header) ?? '').split(orgasSplitter);
+                const orgasMapper = genConfigMapper(orgasMapping);
+                return [...orgaDefault, ...availableOrgas.map((a) => orgasMapper[a]).filter((r) => isNotEmptyField(r))];
+              };
+              const organizationsToAssociate = isOrgaMapping ? computeOrganizationsMapping() : [];
+              // Build the user login
+              const email = req.header(mappedConfig.header_email);
+              if (isEmptyField(email) || !validator.isEmail(email)) {
+                return null;
+              }
+              const name = req.header(mappedConfig.header_name);
+              const firstname = req.header(mappedConfig.header_firstname);
+              const lastname = req.header(mappedConfig.header_lastname);
+              const opts = {
+                providerGroups: mappedGroups,
+                providerOrganizations: organizationsToAssociate,
+                autoCreateGroup: mappedConfig.auto_create_group ?? false,
+              };
+              const provider_metadata = { headers_audit: mappedConfig.headers_audit };
+              addUserLoginCount();
+              return new Promise((resolve) => {
+                providerLoginHandler({ email, name, firstname, provider_metadata, lastname }, (err, user) => {
+                  resolve(user);
+                }, opts);
+              });
             };
-            const mappedGroups = isGroupMapping ? computeGroupsMapping() : [];
-            // Organization computations
-            const isOrgaMapping = isNotEmptyField(mappedConfig.organizations_default) || isNotEmptyField(mappedConfig.organizations_management);
-            const computeOrganizationsMapping = () => {
-              const orgaDefault = mappedConfig.organizations_default ?? [];
-              const orgasMapping = mappedConfig.organizations_management?.organizations_mapping || [];
-              const orgasSplitter = mappedConfig.organizations_management?.organizations_splitter || ',';
-              const availableOrgas = (req.header(mappedConfig.organizations_management?.organizations_header) ?? '').split(orgasSplitter);
-              const orgasMapper = genConfigMapper(orgasMapping);
-              return [...orgaDefault, ...availableOrgas.map((a) => orgasMapper[a]).filter((r) => isNotEmptyField(r))];
+            const headerProvider = {
+              name: providerName,
+              reqLoginHandler,
+              type: AuthType.AUTH_REQ,
+              strategy,
+              logout_uri: mappedConfig.logout_uri,
+              provider: providerRef,
             };
-            const organizationsToAssociate = isOrgaMapping ? computeOrganizationsMapping() : [];
-            // Build the user login
-            const email = req.header(mappedConfig.header_email);
-            if (isEmptyField(email) || !validator.isEmail(email)) {
-              return null;
+            PROVIDERS.push(headerProvider);
+            HEADERS_AUTHENTICATORS.push(headerProvider);
+          } else {
+            if (isAuthenticationProviderMigrated(existingIdentifiers, providerRef)) {
+              logApp.info(`[ENV-PROVIDER][HEADER] ${providerRef} already in database, skipping old configuration`);
+            } else {
+              logApp.info(`[ENV-PROVIDER][HEADER] ${providerRef} is about to be converted to database configuration.`);
+              shouldRunSSOMigration = true;
             }
-            const name = req.header(mappedConfig.header_name);
-            const firstname = req.header(mappedConfig.header_firstname);
-            const lastname = req.header(mappedConfig.header_lastname);
-            const opts = {
-              providerGroups: mappedGroups,
-              providerOrganizations: organizationsToAssociate,
-              autoCreateGroup: mappedConfig.auto_create_group ?? false,
-            };
-            const provider_metadata = { headers_audit: mappedConfig.headers_audit };
-            addUserLoginCount();
-            return new Promise((resolve) => {
-              providerLoginHandler({ email, name, firstname, provider_metadata, lastname }, (err, user) => {
-                resolve(user);
-              }, opts);
-            });
-          };
-          const headerProvider = {
-            name: providerName,
-            reqLoginHandler,
-            type: AuthType.AUTH_REQ,
-            strategy,
-            logout_uri: mappedConfig.logout_uri,
-            provider: providerRef,
-          };
-          PROVIDERS.push(headerProvider);
-          HEADERS_AUTHENTICATORS.push(headerProvider);
+          }
         }
       }
     }
