@@ -330,9 +330,15 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                   >
                     {t_i18n('Trigger filters')}
                   </Label>
-                  <Box sx={{ display: 'flex', gap: 1, paddingTop: '4px' }}>
+                  <Box sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: theme.spacing(1),
+                    marginBottom: theme.spacing(1),
+                  }}
+                  >
                     <Filters
-                      availableFilterKeys={connectorAvailableFilterKeys}
+                      availableFilterKeys={['entity_type']}
                       helpers={helpers}
                       searchContext={filtersSearchContext}
                     />
@@ -343,7 +349,6 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                         key="connector-filter-icon-button"
                         filters={filters}
                         helpers={helpers}
-                        variant="inForm"
                         searchContext={filtersSearchContext}
                         entityTypes={connectorFiltersScope}
                       />

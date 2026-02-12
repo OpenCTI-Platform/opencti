@@ -6,6 +6,7 @@ import { emptyFilterGroup, isFilterGroupNotEmpty, sanitizeFiltersStructure, useA
 import useFiltersState from '../../utils/filters/useFiltersState';
 
 import FilterIconButton from '../FilterIconButton';
+import { useTheme } from '@mui/material/styles';
 
 interface BasicFilterInputProps {
   filter?: Filter;
@@ -23,6 +24,7 @@ const FilterFiltersInput: FunctionComponent<BasicFilterInputProps> = ({
   filterValues,
   disabled = false,
 }) => {
+  const theme = useTheme();
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Core-Object']);
   const [filters, filterHelpers] = useFiltersState(filterValues ?? emptyFilterGroup);
   const handleFiltersChange = (currentFilter: FilterGroup | undefined) => {
@@ -56,7 +58,9 @@ const FilterFiltersInput: FunctionComponent<BasicFilterInputProps> = ({
       <Box sx={{
         paddingTop: 1,
         display: 'flex',
-        gap: 1,
+        alignItems: 'center',
+        gap: theme.spacing(1),
+        marginBottom: theme.spacing(1),
       }}
       >
         <Filters
@@ -69,7 +73,6 @@ const FilterFiltersInput: FunctionComponent<BasicFilterInputProps> = ({
       <FilterIconButton
         filters={filters}
         helpers={filterHelpers}
-        variant="inForm"
         redirection
         searchContext={{ entityTypes: ['Stix-Core-Object'] }}
       />

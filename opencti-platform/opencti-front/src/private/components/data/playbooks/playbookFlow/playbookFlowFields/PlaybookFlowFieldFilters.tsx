@@ -18,6 +18,7 @@ import FilterIconButton from '../../../../../../components/FilterIconButton';
 import Filters from '../../../../common/lists/Filters';
 import useFiltersState from '../../../../../../utils/filters/useFiltersState';
 import { stixFilters, useAvailableFilterKeysForEntityTypes } from '../../../../../../utils/filters/filtersUtils';
+import { useTheme } from '@mui/material/styles';
 
 interface PlaybookFlowFieldFiltersProps {
   componentId: string | null;
@@ -28,6 +29,7 @@ const PlaybookFlowFieldFilters = ({
   componentId,
   filtersState,
 }: PlaybookFlowFieldFiltersProps) => {
+  const theme = useTheme();
   const [filters, helpers] = filtersState;
   const availableQueryFilterKeys = useAvailableFilterKeysForEntityTypes(
     ['Stix-Core-Object', 'stix-core-relationship'],
@@ -56,7 +58,14 @@ const PlaybookFlowFieldFilters = ({
 
   return (
     <div>
-      <Box sx={{ display: 'flex', gap: 1, marginTop: 4 }}>
+      <Box sx={{
+        marginTop: 4,
+        display: 'flex',
+        alignItems: 'center',
+        gap: theme.spacing(1),
+        marginBottom: theme.spacing(1),
+      }}
+      >
         <Filters
           helpers={helpers}
           availableFilterKeys={availableFilterKeys}
@@ -68,7 +77,6 @@ const PlaybookFlowFieldFilters = ({
         helpers={helpers}
         entityTypes={entityTypes}
         searchContext={searchContext}
-        variant="inForm"
         redirection
       />
     </div>

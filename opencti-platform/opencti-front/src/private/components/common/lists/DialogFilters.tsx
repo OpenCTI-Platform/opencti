@@ -62,13 +62,12 @@ const DialogFilters: FunctionComponent<DialogFiltersProps> = ({
         maxWidth="md"
       >
         <DialogTitle>{t_i18n('Advanced search')}</DialogTitle>
-        <DialogContent style={{ paddingTop: 10 }}>
+        <DialogContent style={{ paddingTop: 10, paddingBottom: 10 }}>
           <FilterIconButton
             filters={filters}
             handleRemoveFilter={defaultHandleRemoveFilter}
             handleSwitchGlobalMode={handleSwitchGlobalMode}
             handleSwitchLocalMode={handleSwitchLocalMode}
-            variant="inForm"
             searchContext={searchContext}
             availableEntityTypes={availableEntityTypes}
             availableRelationshipTypes={availableRelationshipTypes}

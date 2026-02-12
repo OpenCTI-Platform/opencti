@@ -54,6 +54,7 @@ import { PaginationOptions } from '../../../../components/list_lines';
 import { FilterDefinition } from '../../../../utils/hooks/useAuth';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
+import { useTheme } from '@mui/material/styles';
 
 export const feedCreationAllTypesQuery = graphql`
     query FeedCreationAllTypesQuery {
@@ -166,6 +167,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
   const { onDrawerClose, open, paginationOptions, isDuplicated, feed } = props;
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const theme = useTheme();
 
   const [selectedTypes, setSelectedTypes] = useState(feed?.feed_types ?? []);
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(feed?.filters) ?? emptyFilterGroup);
@@ -499,9 +501,13 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                         label={t_i18n('Include headers in the feed')}
                         containerstyle={{ marginTop: 20 }}
                       />
-                      <Box sx={{ paddingTop: 4,
+                      <Box sx={{
+                        paddingTop: 4,
                         display: 'flex',
-                        gap: 1 }}
+                        alignItems: 'center',
+                        gap: theme.spacing(1),
+                        marginBottom: theme.spacing(1),
+                      }}
                       >
                         <Filters
                           availableFilterKeys={availableFilterKeys}
@@ -512,7 +518,6 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                       <FilterIconButton
                         filters={filters}
                         helpers={helpers}
-                        variant="inForm"
                         redirection
                         searchContext={{ entityTypes: selectedTypes }}
                       />

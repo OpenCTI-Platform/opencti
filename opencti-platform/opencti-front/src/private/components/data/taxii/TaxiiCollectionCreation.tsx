@@ -9,15 +9,13 @@ import AlertTitle from '@mui/material/AlertTitle';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import Box from '@mui/material/Box';
-import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
-import type { Theme } from '../../../../components/Theme';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
-import { useAvailableFilterKeysForEntityTypes, emptyFilterGroup, isFilterGroupNotEmpty, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, isFilterGroupNotEmpty, serializeFilterGroupForBackend, useAvailableFilterKeysForEntityTypes } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
@@ -25,6 +23,7 @@ import useFiltersState from '../../../../utils/filters/useFiltersState';
 import { PaginationOptions } from '../../../../components/list_lines';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
+import { useTheme } from '@mui/material/styles';
 
 interface TaxiiCollectionCreationProps {
   paginationOptions: PaginationOptions;
@@ -38,19 +37,6 @@ interface TaxiiCollectionCreationForm {
   taxii_public?: boolean;
   score_to_confidence?: boolean;
 }
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>(() => ({
-  alert: {
-    width: '100%',
-    marginTop: 20,
-  },
-  message: {
-    width: '100%',
-    overflow: 'hidden',
-  },
-}));
 
 const TaxiiCollectionCreationMutation = graphql`
     mutation TaxiiCollectionCreationMutation($input: TaxiiCollectionAddInput!) {
@@ -90,7 +76,7 @@ const CreateTaxiiCollectionControlledDial = (props: DrawerControlledDialProps) =
 
 const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> = ({ paginationOptions }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
+  const theme = useTheme();
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
 
   const onSubmit: FormikConfig<TaxiiCollectionCreationForm>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
@@ -165,7 +151,14 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
               />
               <Alert
                 icon={false}
-                classes={{ root: classes.alert, message: classes.message }}
+                sx={{
+                  width: '100%',
+                  marginTop: 20,
+                  '& .MuiAlert-message': {
+                    width: '100%',
+                    overflow: 'hidden',
+                  },
+                }}
                 severity="warning"
                 variant="outlined"
                 style={{ position: 'relative' }}
@@ -213,7 +206,9 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
               <Box sx={{
                 paddingTop: 4,
                 display: 'flex',
-                gap: 1,
+                alignItems: 'center',
+                gap: theme.spacing(1),
+                marginBottom: theme.spacing(1),
               }}
               >
                 <Filters
@@ -225,7 +220,6 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
               <FilterIconButton
                 filters={filters}
                 helpers={helpers}
-                variant="inForm"
                 redirection
                 searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
               />

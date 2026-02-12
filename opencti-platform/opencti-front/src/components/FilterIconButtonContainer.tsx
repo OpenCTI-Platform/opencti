@@ -23,7 +23,6 @@ import { useTheme } from '@mui/material/styles';
 export type FilterIconButtonVariant
   = undefined // default variant (variant is undefined), for filters applied in datatables or widgets for instance
     | 'small' // small variant, for filters in a datatable line for instance
-    | 'inForm' // default variant with margin, for filters in a form for instance
     | 'tag'; // for filters with a style similar as the Tag component, in an entity Overview for instance
 
 interface FilterIconButtonContainerProps {
@@ -186,8 +185,6 @@ const FilterIconButtonContainer: FunctionComponent<
       marginLeft: 5,
     };
     if (isReadWriteFilter) margin = '0 0 0 0';
-  } else if (variant === 'inForm') {
-    margin = '10px 0 10px 0';
   } else if (variant === 'tag') {
     filterStyle = { height: 25 };
   }
@@ -202,7 +199,7 @@ const FilterIconButtonContainer: FunctionComponent<
     borderRadius: hasSavedFilters ? '4px' : '0px',
   };
 
-  if (!isReadWriteFilter && variant !== 'inForm') {
+  if (!isReadWriteFilter) {
     boxStyle = {
       margin: '0 0 0 0',
       display: 'flex',

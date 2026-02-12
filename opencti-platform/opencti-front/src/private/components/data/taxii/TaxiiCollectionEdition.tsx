@@ -7,7 +7,6 @@ import AlertTitle from '@mui/material/AlertTitle';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import Box from '@mui/material/Box';
-import makeStyles from '@mui/styles/makeStyles';
 import { TaxiiCollectionEdition_taxiiCollection$data } from '@components/data/taxii/__generated__/TaxiiCollectionEdition_taxiiCollection.graphql';
 import { FormikConfig } from 'formik/dist/types';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
@@ -20,19 +19,7 @@ import FilterIconButton from '../../../../components/FilterIconButton';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { convertAuthorizedMembers } from '../../../../utils/edition';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  alert: {
-    width: '100%',
-    marginTop: 20,
-  },
-  message: {
-    width: '100%',
-    overflow: 'hidden',
-  },
-}));
+import { useTheme } from '@mui/material/styles';
 
 interface TaxiiCollectionCreationForm {
   restricted_members: FieldOption[] | null;
@@ -65,7 +52,7 @@ const taxiiCollectionValidation = (requiredSentence: string) => Yup.object().sha
 
 const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: TaxiiCollectionEdition_taxiiCollection$data }> = ({ taxiiCollection }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
+  const theme = useTheme();
   const initialValues = {
     name: taxiiCollection.name ?? '',
     description: taxiiCollection.description ?? '',
@@ -163,7 +150,14 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
           />
           <Alert
             icon={false}
-            classes={{ root: classes.alert, message: classes.message }}
+            sx={{
+              width: '100%',
+              marginTop: 20,
+              '& .MuiAlert-message': {
+                width: '100%',
+                overflow: 'hidden',
+              },
+            }}
             severity="warning"
             variant="outlined"
             style={{ position: 'relative' }}
@@ -204,7 +198,14 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
               label={t_i18n('Copy OpenCTI scores to confidence level for indicators')}
             />
           </Box>
-          <Box sx={{ paddingTop: 4, display: 'flex', gap: 1 }}>
+          <Box sx={{
+            paddingTop: 4,
+            display: 'flex',
+            alignItems: 'center',
+            gap: theme.spacing(1),
+            marginBottom: theme.spacing(1),
+          }}
+          >
             <Filters
               availableFilterKeys={availableFilterKeys}
               helpers={helpers}
@@ -214,7 +215,6 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
           <FilterIconButton
             filters={filters}
             helpers={helpers}
-            variant="inForm"
             redirection
             searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
           />

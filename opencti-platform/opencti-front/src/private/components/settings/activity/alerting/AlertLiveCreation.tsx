@@ -28,14 +28,7 @@ import { TriggersLinesPaginationQuery$variables } from '../../../profile/trigger
 import { AlertLiveCreationActivityMutation, AlertLiveCreationActivityMutation$data } from './__generated__/AlertLiveCreationActivityMutation.graphql';
 import FormButtonContainer from '../../../../../components/common/form/FormButtonContainer';
 import Drawer from '../../../common/drawer/Drawer';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>(() => ({
-  dialogActions: {
-    padding: '0 17px 20px 0',
-  },
-}));
+import { useTheme } from '@mui/material/styles';
 
 export const triggerLiveActivityCreationMutation = graphql`
     mutation AlertLiveCreationActivityMutation($input: TriggerActivityLiveAddInput!) {
@@ -79,7 +72,7 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
   creationCallback,
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
+  const theme = useTheme();
   const [filters, helpers] = useFiltersState();
   const onReset = () => {
     handleClose?.();
@@ -141,9 +134,11 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
         <span>
           <Box
             sx={{
-              display: 'flex',
-              gap: 1,
               marginTop: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: theme.spacing(1),
+              marginBottom: theme.spacing(1),
             }}
           >
             <Filters
@@ -187,7 +182,6 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
       <FilterIconButton
         filters={filters}
         redirection
-        variant="inForm"
         helpers={helpers}
         entityTypes={['History']}
       />
@@ -255,7 +249,10 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
           <div>
             <DialogTitle>{t_i18n('Create a live activity trigger')}</DialogTitle>
             <DialogContent>{liveFields(setFieldValue, values)}</DialogContent>
-            <DialogActions classes={{ root: classes.dialogActions }}>
+            <DialogActions style={{
+              padding: '0 17px 20px 0',
+            }}
+            >
               <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
               </Button>
