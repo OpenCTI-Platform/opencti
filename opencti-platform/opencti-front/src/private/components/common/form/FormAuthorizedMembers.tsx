@@ -57,7 +57,6 @@ const FormAuthorizedMembers = ({
             handleClose();
           }}
           title={t_i18n('Manage access restriction')}
-          size="small"
         >
           <Form>
             {open && ( // To trigger form initialization correctly (because removed from DOM)

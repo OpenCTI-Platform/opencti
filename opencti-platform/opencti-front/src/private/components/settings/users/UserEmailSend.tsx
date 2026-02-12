@@ -115,7 +115,10 @@ const UserEmailSend = ({ userId, isOpen, onSubmit, outlined }: UserEmailSendProp
               />
             </Form>
             <DialogActions>
-              <Button variant="secondary">
+              <Button
+                variant="secondary"
+                onClick={handleReset}
+              >
                 {t_i18n('Close')}
               </Button>
               <Button
