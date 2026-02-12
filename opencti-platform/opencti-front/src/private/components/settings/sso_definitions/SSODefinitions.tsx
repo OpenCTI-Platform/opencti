@@ -77,7 +77,7 @@ const ssoDefinitionsLinesFragment = graphql`
     cursor: { type: "ID" }
     orderBy: {
         type: "SingleSignOnOrdering"
-        defaultValue: name
+        defaultValue: strategy
     }
     orderMode: { type: "OrderingMode", defaultValue: asc }
     filters: { type: "FilterGroup" }
@@ -113,10 +113,10 @@ const SSODefinitions = () => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Authentication Definitions | Security | Settings'));
+  setTitle(t_i18n('Authentication | Security | Settings'));
   const initialValues = {
     searchTerm: '',
-    sortBy: 'name',
+    sortBy: 'strategy',
     orderAsc: true,
     filters: emptyFilterGroup,
   };
@@ -131,35 +131,33 @@ const SSODefinitions = () => {
     strategy: {
       label: t_i18n('Authentication strategy'),
       percentWidth: 25,
-      render: (node: { strategy: string }) => (
-        <ItemBoolean
-          neutralLabel={t_i18n(node.strategy)}
-          status={null}
-        />
-      ),
+      isSortable: true,
+      render: (node: { strategy: string }) => <div>{node.strategy}</div>,
     },
     name: {
       label: t_i18n('Configuration name'),
       percentWidth: 25,
+      isSortable: false,
       render: (node: { name: string }) => <div>{node.name}</div>,
+    },
+    label: {
+      label: t_i18n('Login Button Name'),
+      percentWidth: 25,
+      isSortable: false,
+      render: (node: { label?: string; identifier: string }) => (
+        <div>{node.label === '' ? node.identifier : node.label}</div>
+      ),
     },
     enabled: {
       label: t_i18n('Enabled'),
       percentWidth: 25,
+      isSortable: false,
       render: (node: { enabled: boolean }) => (
         node.enabled
           ? <ItemBoolean label={t_i18n('True')} status={true} />
           : <ItemBoolean label={t_i18n('False')} status={false} />
-      ) },
-    label: {
-      label: t_i18n('Login Button Name'),
-      percentWidth: 25,
-      render: (node: { label?: string; identifier: string }) => (
-        <ItemBoolean
-          neutralLabel={node?.label || node.identifier}
-          status={null}
-        />
-      ) },
+      ),
+    },
   };
 
   const queryRef = useQueryLoading(
@@ -180,7 +178,7 @@ const SSODefinitions = () => {
       <Breadcrumbs elements={[
         { label: t_i18n('Settings') },
         { label: t_i18n('Security') },
-        { label: t_i18n('Authentication definitions'), current: true }]}
+        { label: t_i18n('Authentication'), current: true }]}
       />
       <AccessesMenu />
       {isEnterpriseEdition ? (

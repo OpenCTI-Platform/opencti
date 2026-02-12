@@ -2,8 +2,6 @@ import React, { FunctionComponent, useRef, useState } from 'react';
 import Button, { ButtonVariant } from '@common/button/Button';
 import { ClickAwayListener, Grow, Paper, Popper, MenuItem, MenuList } from '@mui/material';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import { useTheme } from '@mui/styles';
-import { Theme } from '@mui/material/styles/createTheme';
 import { DrawerControlledDialProps } from '../private/components/common/drawer/Drawer';
 import { useFormatter } from './i18n';
 import { ButtonColorKey, type ButtonSize } from '@common/button/Button.types';
@@ -28,7 +26,6 @@ const CreateSplitControlledDial: FunctionComponent<CreateSplitControlledDialProp
   options = [],
   onOptionClick,
 }) => {
-  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
 
   const valueString = entityType
@@ -85,7 +82,7 @@ const CreateSplitControlledDial: FunctionComponent<CreateSplitControlledDialProp
         color={color}
         size={size}
         ref={anchorRef}
-        sx={style ?? { marginLeft: theme.spacing(1) }}
+        sx={style}
         onClick={hasOptions ? handleToggle : handleMainClickNoOptions}
         title={defaultButtonValue}
         endIcon={hasOptions ? <ArrowDropDownIcon /> : undefined}
@@ -102,6 +99,7 @@ const CreateSplitControlledDial: FunctionComponent<CreateSplitControlledDialProp
           role={undefined}
           transition
           disablePortal
+          placement="bottom-end"
         >
           {({ TransitionProps, placement }) => (
             <Grow

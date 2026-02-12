@@ -512,14 +512,14 @@ const SSODefinitionForm = ({
                 variant="secondary"
                 onClick={handleReset}
                 disabled={isSubmitting}
-                style={{ marginLeft: theme.spacing(2) }}
+                style={{ marginLeft: theme.spacing(1) }}
               >
                 {t_i18n('Cancel')}
               </Button>
               <Button
                 onClick={submitForm}
                 disabled={isSubmitting}
-                style={{ marginLeft: theme.spacing(2) }}
+                style={{ marginLeft: theme.spacing(1) }}
               >
                 {t_i18n('Create')}
               </Button>

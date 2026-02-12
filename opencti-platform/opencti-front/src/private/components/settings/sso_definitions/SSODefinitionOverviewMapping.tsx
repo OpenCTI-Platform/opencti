@@ -70,6 +70,8 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
 
   type Row = { key: string; value: unknown; type: string; mandatory: boolean };
 
+  console.log('strategy', strategy);
+
   const getSsoConfigRows = (): Row[] => {
     const rows: Row[] = [
       { key: 'name', value: name, type: 'string', mandatory: true },
@@ -104,7 +106,7 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
 
   const getGroupsRows = (): Row[] => {
     if (!groups_management) return [];
-    return [
+    const rows: Row[] = [
       {
         key: 'group_attributes',
         value: groups_management.group_attributes,
@@ -136,6 +138,9 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
         mandatory: false,
       },
     ];
+    return rows.filter(
+      (row) => !(strategy === 'OpenIDConnectStrategy' && row.key === 'group_attributes'),
+    );
   };
 
   const getOrganizationsRows = (): Row[] => {
@@ -160,14 +165,6 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
         mandatory: false,
       },
     ];
-  };
-  const renderMandatory = (mandatory: boolean) => {
-    return (
-      <ItemBoolean
-        label={mandatory ? t_i18n('True') : t_i18n('False')}
-        status={mandatory}
-      />
-    );
   };
   const renderValue = (row: Row) => {
     if (row.type === 'array' && Array.isArray(row.value)) {
@@ -237,9 +234,6 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
         <Grid size={{ xs: 12, md: 6 }}>
           <Typography variant="subtitle1">{t_i18n('Value')}</Typography>
         </Grid>
-        <Grid size={{ xs: 12, md: 3 }}>
-          <Typography variant="subtitle1">{t_i18n('Mandatory')}</Typography>
-        </Grid>
       </Grid>
 
       {rows.map((row) => {
@@ -266,10 +260,6 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
                   ? <ItemBoolean label={t_i18n('False')} status={false} />
                   : row.value ? renderValue(row) : EMPTY_VALUE}
             </Grid>
-
-            <Grid size={{ xs: 12, md: 3 }} sx={{ display: 'flex', alignItems: 'center' }}>
-              {renderMandatory(row.mandatory)}
-            </Grid>
           </Grid>
         );
       })}
@@ -291,7 +281,7 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
             value={currentTab}
             onChange={(event, value) => setCurrentTab(value)}
           >
-            <Tab label={t_i18n('SSO configuration')} sx={{ textTransform: 'none' }} />
+            <Tab label={t_i18n('Authentication configuration')} sx={{ textTransform: 'none' }} />
             {!selectedCert && (<Tab label={t_i18n('Groups configuration')} />)}
             {!selectedCert && (<Tab label={t_i18n('Organizations configuration')} />)}
           </Tabs>

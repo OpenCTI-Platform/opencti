@@ -4,7 +4,6 @@ import React from 'react';
 import { SSODefinitionFormValues } from '@components/settings/sso_definitions/SSODefinitionForm';
 import { useFormatter } from 'src/components/i18n';
 import { fieldSpacingContainerStyle } from 'src/utils/field';
-import SwitchField from 'src/components/fields/SwitchField';
 import GroupAndOrganizationMapping from '@components/settings/sso_definitions/mapping/GroupAndOrganizationMapping';
 
 type SSODefinitionOrganizationFormProps = {
@@ -55,15 +54,6 @@ const SSODefinitionOrganizationForm = ({ isEditionMode, selectedStrategy, update
         name="organizations_mapping"
         label={t_i18n('Organization mapping value')}
         updateField={updateField}
-      />
-      <Field
-        component={SwitchField}
-        variant="standard"
-        type="checkbox"
-        name="organizations_read_userinfo"
-        onChange={updateField}
-        label={t_i18n('Automatically add users to default organizations')}
-        containerstyle={{ marginLeft: 2, marginTop: 30 }}
       />
     </>
   );

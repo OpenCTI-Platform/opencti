@@ -34,7 +34,7 @@ const SSODefinitionHeader = (
   const [isEditionOpen, setIsEditionOpen] = useState(false);
 
   const breadcrumb = [
-    { label: t_i18n('Authentication Definitions'), link: '/dashboard/settings/accesses/authentications' },
+    { label: t_i18n('Authentication'), link: '/dashboard/settings/accesses/authentications' },
     { label: strategy, current: true },
   ];
 
@@ -47,7 +47,7 @@ const SSODefinitionHeader = (
             <TitleMainEntity sx={{ flex: 1 }}>
               {name}
             </TitleMainEntity>
-            <div style={{ display: 'flex', gap: 4 }}>
+            <div style={{ display: 'flex', gap: 8 }}>
               <SSODefinitionPopover data={sso} />
               <Button
                 onClick={() => setIsEditionOpen(true)}
