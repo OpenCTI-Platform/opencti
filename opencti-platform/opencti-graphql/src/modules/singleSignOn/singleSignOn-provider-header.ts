@@ -5,8 +5,6 @@ import { AuthType, EnvStrategyType, genConfigMapper, providerLoginHandler, PROVI
 import type { BasicStoreEntitySingleSignOn } from './singleSignOn-types';
 import { logApp } from '../../config/conf';
 import { isEmptyField, isNotEmptyField } from '../../database/utils';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-expect-error
 import validator from 'validator';
 import { addUserLoginCount } from '../../manager/telemetryManager';
 import { HEADERS_AUTHENTICATORS } from '../../domain/user';
