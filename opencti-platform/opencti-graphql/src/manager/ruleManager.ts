@@ -7,7 +7,7 @@ import { redisFinishAsyncCall, redisGetAsyncCall, redisGetManagerEventState, red
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { createEntity, patchAttribute, stixLoadById, storeLoadByIdWithRefs } from '../database/middleware';
-import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, isNotEmptyField, READ_DATA_INDICES } from '../database/utils';
+import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, isNotEmptyField, READ_DATA_INDICES, wait } from '../database/utils';
 import { ABSTRACT_STIX_RELATIONSHIP, OPENCTI_NAMESPACE, RULE_PREFIX } from '../schema/general';
 import { ENTITY_TYPE_RULE_MANAGER } from '../schema/internalObject';
 import { ALREADY_DELETED_ERROR, FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
@@ -393,27 +393,18 @@ export const ruleApplyAsync = async (context: AuthContext, user: AuthUser, eleme
       // Otherwise, it means that either the rule apply wasn't started yet, or the node processing it went down and that the call couldn't finish.
       // In any case, we have to start it over
       await redisInitializeAsyncCall(ruleApplyId);
-      const timeoutPromise = new Promise((resolve, _) =>
-        setTimeout(() => resolve({ timeout: true }), 10000),
-      );
-      const ruleApplyPromise = ruleApply(context, user, elementId, ruleId);
-      const raceResult = await Promise.race([ruleApplyPromise, timeoutPromise]) as { timeout?: boolean };
-      if (raceResult?.timeout) {
-        // If timeout promise is the first to finish, we do not await the rule apply but instead we return false as a result
-        // The current call will be moved to complete when the rule apply is finished
-        ruleApplyPromise.catch((err) => {
+      const timeoutPromise = wait(10000, { timeout: true });
+      const ruleApplyPromise = async () => {
+        try {
+          await ruleApply(context, user, elementId, ruleId);
+        } catch (err: any) {
           logApp.error('[OPENCTI] Error during rule apply', { cause: err });
-        }).finally(async () => {
-          await redisFinishAsyncCall(ruleApplyId);
-          await lock?.unlock();
-        });
-        return false;
-      } else {
-        // If rule apply promise is the first to finish, we move the work to complete here
+        }
         await redisFinishAsyncCall(ruleApplyId);
         await lock?.unlock();
-        return true;
-      }
+      };
+      const raceResult = await Promise.race([ruleApplyPromise, timeoutPromise]) as { timeout?: boolean };
+      return !raceResult?.timeout;
     }
   } catch (err: any) {
     if (err.name === TYPE_LOCK_ERROR) {

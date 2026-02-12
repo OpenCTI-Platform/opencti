@@ -340,8 +340,8 @@ export const computeAverage = (numbers: number[]): number => {
   return Math.round(sum / numbers.length || 0);
 };
 
-export const wait = (ms: number): Promise<void> => {
-  return new Promise((resolve) => setTimeout(() => resolve(), ms));
+export const wait = <T> (ms: number, resolveResult?: T): Promise<void | T> => {
+  return new Promise((resolve) => setTimeout(() => resolve(resolveResult), ms));
 };
 
 export const waitInSec = (sec: number): Promise<void> => wait(sec * 1000);

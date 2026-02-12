@@ -507,7 +507,7 @@ export const redisInitializeWork = async (workId: string) => {
 };
 // endregion
 // region async calls tracking
-const ASYNC_CALL_TTL = 3600;
+const ASYNC_CALL_TTL = 300;
 const asyncCallKey = (id: string) => `async_status:${id}`;
 export const redisInitializeAsyncCall = async (asyncCallId: string) => {
   await getClientBase().set(
