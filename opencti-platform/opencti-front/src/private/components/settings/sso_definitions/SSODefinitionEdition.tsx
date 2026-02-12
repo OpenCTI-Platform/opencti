@@ -3,7 +3,7 @@ import { graphql, useFragment } from 'react-relay';
 import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import SSODefinitionForm, { SSOEditionFormInputKeys } from '@components/settings/sso_definitions/SSODefinitionForm';
+import SSODefinitionForm, { SSODefinitionFormValues, SSOEditionFormInputKeys } from '@components/settings/sso_definitions/SSODefinitionForm';
 import { SSODefinitionEditionMutation } from '@components/settings/sso_definitions/__generated__/SSODefinitionEditionMutation.graphql';
 import { SSODefinitionEditionFragment$key } from '@components/settings/sso_definitions/__generated__/SSODefinitionEditionFragment.graphql';
 import { getConfigFromData, getSSOConfigList } from '@components/settings/sso_definitions/utils/getConfigAndAdvancedConfigFromData';
@@ -155,6 +155,17 @@ const SSODefinitionEdition = ({
     });
   };
 
+  const onUpdate = (
+    values: SSODefinitionFormValues,
+    { setSubmitting, resetForm }: { setSubmitting: (flag: boolean) => void; resetForm: () => void },
+  ) => {
+    console.log('values : ', values);
+    return;
+    editMutation({
+      variables: { id: sso.id, input: [values] },
+    });
+  };
+
   const strategyConfigSelected = getStrategyConfigSelected(selectedStrategy);
 
   return (
@@ -163,7 +174,7 @@ const SSODefinitionEdition = ({
       open={isOpen}
       onClose={onClose}
     >
-      <SSODefinitionForm onCancel={onClose} onSubmitField={onEdit} data={sso} selectedStrategy={strategyConfigSelected} />
+      <SSODefinitionForm onCancel={onClose} onSubmit={onUpdate} data={sso} selectedStrategy={strategyConfigSelected} isEditing />
     </Drawer>
   );
 };

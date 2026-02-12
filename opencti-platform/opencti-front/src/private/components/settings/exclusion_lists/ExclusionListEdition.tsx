@@ -248,7 +248,6 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
           )
         : <Loader />
       }
-
     </Drawer>
   );
 };

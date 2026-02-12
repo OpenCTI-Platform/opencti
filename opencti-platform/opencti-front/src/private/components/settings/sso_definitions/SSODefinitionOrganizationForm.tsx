@@ -8,12 +8,12 @@ import SwitchField from 'src/components/fields/SwitchField';
 import GroupAndOrganizationMapping from '@components/settings/sso_definitions/mapping/GroupAndOrganizationMapping';
 
 type SSODefinitionOrganizationFormProps = {
-  isEditionMode: boolean;
+  // isEditionMode: boolean;
   selectedStrategy: string | null;
-  updateField: (field: keyof SSODefinitionFormValues, value: unknown) => void;
+  // updateField: (field: keyof SSODefinitionFormValues, value: unknown) => void;
 };
 
-const SSODefinitionOrganizationForm = ({ isEditionMode, selectedStrategy, updateField }: SSODefinitionOrganizationFormProps) => {
+const SSODefinitionOrganizationForm = ({ selectedStrategy }: SSODefinitionOrganizationFormProps) => {
   const { t_i18n } = useFormatter();
 
   return (
@@ -22,7 +22,7 @@ const SSODefinitionOrganizationForm = ({ isEditionMode, selectedStrategy, update
         component={TextField}
         variant="standard"
         name="organizations_path"
-        onSubmit={updateField}
+        // onSubmit={updateField}
         label={t_i18n('Path in token')}
         style={fieldSpacingContainerStyle}
         helperText={t_i18n('Please add square bracket & each value between double quotes (even for unique value). For example: ["value1", "value2"]')}
@@ -34,7 +34,7 @@ const SSODefinitionOrganizationForm = ({ isEditionMode, selectedStrategy, update
             component={TextField}
             variant="standard"
             name="organizations_scope"
-            onSubmit={updateField}
+            // onSubmit={updateField}
             label="Organizations scope"
             style={fieldSpacingContainerStyle}
             fullWidth
@@ -43,7 +43,7 @@ const SSODefinitionOrganizationForm = ({ isEditionMode, selectedStrategy, update
             component={TextField}
             variant="standard"
             name="organizations_token_reference"
-            onSubmit={updateField}
+            // onSubmit={updateField}
             label="Access token"
             style={fieldSpacingContainerStyle}
             fullWidth
@@ -51,17 +51,17 @@ const SSODefinitionOrganizationForm = ({ isEditionMode, selectedStrategy, update
         </>
       )}
       <GroupAndOrganizationMapping
-        isEditionMode={isEditionMode}
+        // isEditionMode={isEditionMode}
         name="organizations_mapping"
         label={t_i18n('Organization mapping value')}
-        updateField={updateField}
+        // updateField={updateField}
       />
       <Field
         component={SwitchField}
         variant="standard"
         type="checkbox"
         name="organizations_read_userinfo"
-        onChange={updateField}
+        // onChange={updateField}
         label={t_i18n('Automatically add users to default organizations')}
         containerstyle={{ marginLeft: 2, marginTop: 30 }}
       />

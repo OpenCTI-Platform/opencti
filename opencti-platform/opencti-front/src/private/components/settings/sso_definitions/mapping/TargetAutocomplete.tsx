@@ -6,20 +6,20 @@ import { useFormatter } from 'src/components/i18n';
 
 type TargetAutocompleteProps = {
   fieldName: string;
-  handleChange: (_: React.SyntheticEvent, value: string) => void;
+  // handleChange: (_: React.SyntheticEvent, value: string) => void;
   itemIcon: string;
   label: string;
   options: string[];
-  value: string;
+  // value: string;
 };
 
 const TargetAutocomplete = ({
   fieldName,
-  handleChange,
+  // handleChange,
   itemIcon,
   label,
   options,
-  value,
+  // value,
 }: TargetAutocompleteProps) => {
   const { t_i18n } = useFormatter();
 
@@ -34,10 +34,10 @@ const TargetAutocomplete = ({
         label: label,
       }}
       noOptionsText={t_i18n('No available options')}
-      value={value}
+      // value={value}
       options={options}
-      onChange={handleChange}
-      onInputChange={handleChange}
+      // onChange={handleChange}
+      // onInputChange={handleChange}
       renderOption={(renderProps: React.HTMLAttributes<HTMLLIElement>, option: string) => {
         return (
           <li {...renderProps}>
