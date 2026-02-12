@@ -27,11 +27,11 @@ import { ENTITY_TYPE_CONTAINER_REPORT, isStixDomainObjectContainer } from '../..
 import type { CyberObjectExtension, StixBundle, StixCyberObject, StixObject, StixOpenctiExtension } from '../../types/stix-2-1-common';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-2-1-extensions';
 import { connectorsForPlaybook } from '../../database/repository';
-import { fullEntitiesList, fullRelationsList, storeLoadById } from '../../database/middleware-loader';
+import { fullEntitiesList, fullRelationsList, internalFindByIds, storeLoadById } from '../../database/middleware-loader';
 import { getEntityFromCache } from '../../database/cache';
 import { logApp } from '../../config/conf';
 import { isEmptyField, isNotEmptyField, READ_RELATIONSHIPS_INDICES, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED } from '../../database/utils';
-import { stixLoadByIds } from '../../database/middleware';
+import { stixLoadById, stixLoadByIds } from '../../database/middleware';
 import { usableNotifiers } from '../notifier/notifier-domain';
 import { convertToNotificationUser, type DigestEvent, EVENT_NOTIFICATION_VERSION } from '../../manager/notificationManager';
 import { storeNotificationEvent } from '../../database/stream/stream-handler';
@@ -284,13 +284,25 @@ const PLAYBOOK_REDUCING_COMPONENT: PlaybookComponent<ReduceConfiguration> = {
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
     const { filters } = playbookNode.configuration;
     const jsonFilters = JSON.parse(filters);
-    const matchedElements = [baseData];
-    for (let index = 0; index < bundle.objects.length; index += 1) {
-      const bundleElement = bundle.objects[index];
-      const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, bundleElement, jsonFilters);
-      if (isMatch && baseData.id !== bundleElement.id) matchedElements.push(bundleElement);
+    const matchedElements: StixObject[] = [baseData];
+    const matchedRefIds: typeof baseData.object_refs = [];
+    const objectRefs = baseData.object_refs ?? [];
+    for (const ref of objectRefs) {
+      const stixObject = await stixLoadById(context, SYSTEM_USER, ref);
+      const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, stixObject, jsonFilters);
+      if (isMatch) {
+        matchedElements.push(stixObject as StixObject);
+        matchedRefIds.push(ref);
+      }
     }
+    baseData.object_refs = matchedRefIds;
+
     const newBundle = { ...bundle, objects: matchedElements };
+
+    if (matchedRefIds.length === 0) {
+      return { output_port: 'unmatch', bundle };
+    }
+
     return { output_port: 'out', bundle: newBundle };
   },
 };
