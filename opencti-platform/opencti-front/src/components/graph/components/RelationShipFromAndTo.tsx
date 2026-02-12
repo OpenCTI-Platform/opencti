@@ -1,6 +1,4 @@
 import React, { FunctionComponent } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
-import Typography from '@mui/material/Typography';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import { useFormatter } from '../../i18n';
@@ -8,14 +6,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { RelationShipFromAndToQuery } from './__generated__/RelationShipFromAndToQuery.graphql';
 import { truncate } from '../../../utils/String';
 import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  label: {
-    marginTop: '20px',
-  },
-}));
+import Label from '@common/label/Label';
 
 const relationShipFromAndToQuery = graphql`
   query RelationShipFromAndToQuery($id: String!) {
@@ -144,7 +135,6 @@ interface RelationShipFromAndToComponentProps {
 const RelationShipFromAndToComponent: FunctionComponent<
   RelationShipFromAndToComponentProps
 > = ({ queryRef, direction }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const entity = usePreloadedQuery<RelationShipFromAndToQuery>(
     relationShipFromAndToQuery,
@@ -156,12 +146,14 @@ const RelationShipFromAndToComponent: FunctionComponent<
   }
   return (
     <React.Fragment>
-      <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t_i18n(direction === 'From' ? 'Source' : 'Target')}
-      </Typography>
-      <Tooltip title={getMainRepresentative(stixCoreObject)}>
-        <span>{truncate(getMainRepresentative(stixCoreObject), 40)}</span>
-      </Tooltip>
+      <div>
+        <Label>
+          {t_i18n(direction === 'From' ? 'Source' : 'Target')}
+        </Label>
+        <Tooltip title={getMainRepresentative(stixCoreObject)}>
+          <span>{truncate(getMainRepresentative(stixCoreObject), 40)}</span>
+        </Tooltip>
+      </div>
     </React.Fragment>
   );
 };

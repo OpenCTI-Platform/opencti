@@ -8,12 +8,14 @@ interface ItemEntityTypeProps {
   entityType: string;
   showIcon?: boolean;
   isRestricted?: boolean;
+  maxWidth?: string;
 }
 
 const ItemEntityType: FunctionComponent<ItemEntityTypeProps> = ({
   entityType,
   showIcon = false,
   isRestricted = false,
+  maxWidth,
 }) => {
   const { t_i18n } = useFormatter();
 
@@ -41,6 +43,7 @@ const ItemEntityType: FunctionComponent<ItemEntityTypeProps> = ({
       label={getLabel()}
       icon={getIcon() ?? undefined}
       color={isRestricted ? itemColor('Restricted') : itemColor(entityType)}
+      maxWidth={maxWidth}
     />
   );
 };

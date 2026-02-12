@@ -1,12 +1,12 @@
 import React, { FunctionComponent } from 'react';
 import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
-import { hexToRGB, itemColor } from '../../../utils/Colors';
 import RelationShipFromAndTo from './RelationShipFromAndTo';
 import ItemMarkings from '../../ItemMarkings';
 import { useFormatter } from '../../i18n';
 import { GraphLink } from '../graph.types';
+import Label from '@common/label/Label';
+import Tag from '@common/tag/Tag';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -30,21 +30,10 @@ const BasicRelationshipDetails: FunctionComponent<BasicRelationshipDetailsProps>
   const { t_i18n } = useFormatter();
   return (
     <div>
-      <Typography variant="h3" gutterBottom={true} className={classes.label}>
+      <Label>
         {t_i18n('Relation type')}
-      </Typography>
-      <Chip
-        classes={{ root: classes.chipInList }}
-        style={{
-          backgroundColor: hexToRGB(
-            itemColor(relation.relationship_type),
-            0.08,
-          ),
-          color: itemColor(relation.relationship_type),
-          border: `1px solid ${itemColor(
-            relation.relationship_type,
-          )}`,
-        }}
+      </Label>
+      <Tag
         label={t_i18n(`relationship_${relation.relationship_type}`)}
       />
       {relation.source_id && (

@@ -11,7 +11,6 @@ import IconButton from '@common/button/IconButton';
 import { Link } from 'react-router-dom';
 import { OpenInNewOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
-import { Typography } from '@mui/material';
 import EntityDetails from './EntityDetails';
 import RelationshipDetails from './RelationshipDetails';
 import { useFormatter } from '../../i18n';
@@ -21,10 +20,11 @@ import BasicRelationshipDetails from './BasicRelationshipDetails';
 import { GraphLink, GraphNode, isGraphLink, isGraphNode } from '../graph.types';
 import { useGraphContext } from '../GraphContext';
 import useGraphInteractions from '../utils/useGraphInteractions';
+import Label from '../../../components/common/label/Label';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles<Theme>(() => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
     position: 'fixed',
     top: '50%',
@@ -37,6 +37,10 @@ const useStyles = makeStyles<Theme>(() => ({
     padding: '20px 0 20px 20px',
     zIndex: 900,
     borderRadius: 4,
+    border: 'none',
+    backgroundColor: theme.palette.background.default,
+    boxShadow: theme.palette.mode === 'light' ? '0 0px 8px 0px rgba(7, 13, 25, .2)' : `0 0px 8px 0px ${theme.palette.background.default}`,
+    gap: '8px',
   },
   external: {
     marginTop: -2,
@@ -45,8 +49,8 @@ const useStyles = makeStyles<Theme>(() => ({
 }));
 
 const EntitiesDetailsRightsBar = () => {
-  const classes = useStyles();
   const theme = useTheme<Theme>();
+  const classes = useStyles(theme);
   const { t_i18n } = useFormatter();
   const { selectDetailsPreviewObject } = useGraphInteractions();
 
@@ -116,17 +120,16 @@ const EntitiesDetailsRightsBar = () => {
       variant="permanent"
       anchor="right"
       classes={{ paper: classes.drawerPaper }}
-      PaperProps={{ variant: 'outlined' }}
       transitionDuration={theme.transitions.duration.enteringScreen}
     >
-      <Typography variant="h3" sx={{ marginBottom: 3 }}>
+      <Label>
         {t_i18n('', {
           id: 'objects selected',
           values: {
             count: uniqSelectedEntities.length,
           },
         })}
-      </Typography>
+      </Label>
       <div style={{ display: 'flex' }}>
         <FormControl fullWidth={true} size="small" style={{ flex: 'grow' }}>
           <InputLabel id="label" variant="outlined">
@@ -162,7 +165,6 @@ const EntitiesDetailsRightsBar = () => {
           </Tooltip>
         )}
       </div>
-      <div className="clearfix" />
       <div
         style={{
           height: '100%',
