@@ -527,18 +527,6 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
               )
             }
           </Box>
-
-          <DialogActions>
-            {(!uploadStatus || uploadStatus === 'success') && (
-              <Button
-                onClick={() => handleClose()}
-                variant="secondary"
-              >
-                {uploadStatus === 'success' ? t_i18n('Close') : t_i18n('Cancel')}
-              </Button>
-            )}
-            {renderActions}
-          </DialogActions>
         </>
       ) : (
         <ImportFilesUploadProgress
@@ -548,6 +536,18 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
           BulkResult={BulkResult}
         />
       )}
+
+      <DialogActions>
+        {(!uploadStatus || uploadStatus === 'success') && (
+          <Button
+            onClick={() => handleClose()}
+            variant="secondary"
+          >
+            {uploadStatus === 'success' ? t_i18n('Close') : t_i18n('Cancel')}
+          </Button>
+        )}
+        {renderActions}
+      </DialogActions>
     </Dialog>
   );
 };
