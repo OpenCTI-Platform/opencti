@@ -10,6 +10,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import type { Theme } from '../../../../components/Theme';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../../components/i18n';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -53,13 +54,23 @@ const StixCoreObjectContentBar: FunctionComponent<
   const enableZoom = handleZoomIn && handleZoomOut && currentZoom;
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
+  const draftContext = useDraftContext();
+  const posBottom = draftContext ? 69 : 0; // 69 is the height of the Draft toolbar.
 
   return (
     <Drawer
       anchor="bottom"
       variant="permanent"
       classes={{ paper: classes.bottomNav }}
-      PaperProps={{ variant: 'elevation', elevation: 1 }}
+      slotProps={{
+        paper: {
+          variant: 'elevation',
+          elevation: 1,
+          style: {
+            bottom: posBottom,
+          },
+        },
+      }}
     >
       <div
         style={{

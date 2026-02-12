@@ -1,13 +1,13 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
-import * as R from 'ramda';
-import withStyles from '@mui/styles/withStyles';
+import makeStyles from '@mui/styles/makeStyles';
 import Drawer from '@mui/material/Drawer';
 import Slide from '@mui/material/Slide';
 import DataTableToolBar from './DataTableToolBar';
 import { UserContext } from '../../../utils/hooks/useAuth';
+import useDraftContext from '../../../utils/hooks/useDraftContext';
 
-const styles = () => ({
+const useStyles = makeStyles(() => ({
   bottomNav: {
     padding: 0,
     zIndex: 1,
@@ -29,7 +29,7 @@ const styles = () => ({
     height: 50,
     overflow: 'hidden',
   },
-});
+}));
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -38,100 +38,93 @@ Transition.displayName = 'TransitionSlide';
 
 export const maxNumberOfObservablesToCopy = 1000;
 
-class ToolBar extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      navOpen: localStorage.getItem('navOpen') === 'true',
-      promoteToContainer: true,
-    };
+const ToolBar = (props) => {
+  const {
+    numberOfSelectedElements,
+    handleClearSelectedElements,
+    selectedElements,
+    deSelectedElements,
+    selectAll,
+    filters,
+    container,
+    variant,
+    deleteDisable,
+    mergeDisable,
+    trashOperationsEnabled,
+    warning,
+    warningMessage,
+    type,
+    noAuthor,
+    noWarning,
+    noMarking,
+    handleCopy,
+    search,
+    taskScope,
+  } = props;
+  const classes = useStyles();
+  const draftContext = useDraftContext();
+  const navOpen = localStorage.getItem('navOpen') === 'true';
+  const isOpen = numberOfSelectedElements > 0;
+  const posBottom = draftContext ? 69 : 0; // 69 is the height of the Draft toolbar.
+
+  let paperClass;
+  switch (variant) {
+    case 'large':
+      paperClass = classes.bottomNavWithLargePadding;
+      break;
+    case 'medium':
+      paperClass = classes.bottomNavWithMediumPadding;
+      break;
+    default:
+      paperClass = classes.bottomNav;
   }
 
-  render() {
-    const {
-      classes,
-      numberOfSelectedElements,
-      handleClearSelectedElements,
-      selectedElements,
-      deSelectedElements,
-      selectAll,
-      filters,
-      container,
-      variant,
-      deleteDisable,
-      mergeDisable,
-      trashOperationsEnabled,
-      warning,
-      warningMessage,
-      type,
-      noAuthor,
-      noWarning,
-      noMarking,
-      handleCopy,
-      search,
-      taskScope,
-    } = this.props;
-    const { navOpen } = this.state;
-    const isOpen = numberOfSelectedElements > 0;
-    let paperClass;
-    switch (variant) {
-      case 'large':
-        paperClass = classes.bottomNavWithLargePadding;
-        break;
-      case 'medium':
-        paperClass = classes.bottomNavWithMediumPadding;
-        break;
-      default:
-        paperClass = classes.bottomNav;
-    }
-    return (
-      <UserContext.Consumer>
-        {({ bannerSettings }) => (
-          <Drawer
-            anchor="bottom"
-            variant="persistent"
-            classes={{ paper: paperClass }}
-            open={isOpen}
-            PaperProps={{
-              variant: 'elevation',
-              elevation: 1,
-              style: {
-                marginLeft: navOpen ? 180 : 55,
-                bottom: bannerSettings.bannerHeightNumber,
-              },
-            }}
-          >
-            <DataTableToolBar
-              search={search}
-              numberOfSelectedElements={numberOfSelectedElements}
-              handleClearSelectedElements={handleClearSelectedElements}
-              selectedElements={selectedElements}
-              deSelectedElements={deSelectedElements}
-              selectAll={selectAll}
-              filters={filters}
-              container={container}
-              variant={variant}
-              deleteDisable={deleteDisable}
-              warning={warning}
-              warningMessage={warningMessage}
-              type={type}
-              noAuthor={noAuthor}
-              noWarning={noWarning}
-              noMarking={noMarking}
-              mergeDisable={mergeDisable}
-              trashOperationsEnabled={trashOperationsEnabled}
-              handleCopy={handleCopy}
-              taskScope={taskScope}
-            />
-          </Drawer>
-        )}
-      </UserContext.Consumer>
-    );
-  }
-}
+  return (
+    <UserContext.Consumer>
+      {({ bannerSettings }) => (
+        <Drawer
+          anchor="bottom"
+          variant="persistent"
+          classes={{ paper: paperClass }}
+          open={isOpen}
+          PaperProps={{
+            variant: 'elevation',
+            elevation: 1,
+            style: {
+              marginLeft: navOpen ? 180 : 55,
+              bottom: (bannerSettings?.bannerHeightNumber ?? 0) + posBottom,
+            },
+          }}
+        >
+          <DataTableToolBar
+            search={search}
+            numberOfSelectedElements={numberOfSelectedElements}
+            handleClearSelectedElements={handleClearSelectedElements}
+            selectedElements={selectedElements}
+            deSelectedElements={deSelectedElements}
+            selectAll={selectAll}
+            filters={filters}
+            container={container}
+            variant={variant}
+            deleteDisable={deleteDisable}
+            warning={warning}
+            warningMessage={warningMessage}
+            type={type}
+            noAuthor={noAuthor}
+            noWarning={noWarning}
+            noMarking={noMarking}
+            mergeDisable={mergeDisable}
+            trashOperationsEnabled={trashOperationsEnabled}
+            handleCopy={handleCopy}
+            taskScope={taskScope}
+          />
+        </Drawer>
+      )}
+    </UserContext.Consumer>
+  );
+};
 
 ToolBar.propTypes = {
-  classes: PropTypes.object,
   numberOfSelectedElements: PropTypes.number,
   handleClearSelectedElements: PropTypes.func,
   selectedElements: PropTypes.object,
@@ -154,4 +147,4 @@ ToolBar.propTypes = {
   taskScope: PropTypes.string,
 };
 
-export default R.compose(withStyles(styles))(ToolBar);
+export default ToolBar;
