@@ -1,33 +1,30 @@
-import React, { useEffect, useState, ChangeEvent, SyntheticEvent } from 'react';
-import { graphql } from 'react-relay';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
-import { AddOutlined, MoveToInboxOutlined } from '@mui/icons-material';
-import ToggleButton from '@mui/material/ToggleButton';
-import Dialog from '@mui/material/Dialog';
-import { DialogTitle } from '@mui/material';
-import DialogContent from '@mui/material/DialogContent';
 import IconButton from '@common/button/IconButton';
-import Autocomplete from '@mui/material/Autocomplete';
-import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
-import Tooltip from '@mui/material/Tooltip';
-import { Link } from 'react-router-dom';
-import InputAdornment from '@mui/material/InputAdornment';
-import useApiMutation from 'src/utils/hooks/useApiMutation';
+import Dialog from '@common/dialog/Dialog';
+import { StixCoreObjectContainerContainersQuery$data } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContainerContainersQuery.graphql';
 import {
   type BackgroundTaskActionInput,
   type StixCoreObjectContainerTaskAddMutation,
 } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContainerTaskAddMutation.graphql';
+import { AddOutlined, MoveToInboxOutlined } from '@mui/icons-material';
+import Autocomplete from '@mui/material/Autocomplete';
+import Checkbox from '@mui/material/Checkbox';
+import DialogActions from '@mui/material/DialogActions';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import InputAdornment from '@mui/material/InputAdornment';
+import TextField from '@mui/material/TextField';
+import ToggleButton from '@mui/material/ToggleButton';
+import Tooltip from '@mui/material/Tooltip';
 import { AutocompleteInputChangeReason } from '@mui/material/useAutocomplete/useAutocomplete';
-import { StixCoreObjectContainerContainersQuery$data } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContainerContainersQuery.graphql';
-import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
+import { ChangeEvent, SyntheticEvent, useEffect, useState } from 'react';
+import { graphql } from 'react-relay';
+import { Link } from 'react-router-dom';
+import useApiMutation from 'src/utils/hooks/useApiMutation';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
-import Transition from '../../../../components/Transition';
 import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
+import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
 
 const stixCoreObjectContainerTaskAddMutation = graphql`
   mutation StixCoreObjectContainerTaskAddMutation($input: ListTaskAddInput!) {
@@ -173,104 +170,98 @@ const StixCoreObjectContainer = ({ elementId }: StixCoreObjectContainerProps) =>
         </ToggleButton>
       </Tooltip>
       <Dialog
-        slotProps={{ paper: { elevation: 1 } }}
-        fullWidth={true}
-        maxWidth="sm"
-        slots={{ transition: Transition }}
         open={displayAddInContainer}
         onClose={handleToggleAddInContainer(false)}
+        title={t_i18n('Add in container')}
       >
-        <DialogTitle>{t_i18n('Add in container')}</DialogTitle>
-        <DialogContent>
-          <StixDomainObjectCreation
-            inputValue={searchInputValue}
-            open={isContainerCreationDrawerOpen}
-            display={true}
-            speeddial={true}
-            stixDomainObjectTypes={['Container']}
-            handleClose={handleToggleContainerCreationDrawer(false)}
-            creationCallback={(data: StixDomainObjectCreationCallbackType) => {
-              const newContainer: OptionListType = {
-                label: data.representative?.main ? data.representative.main : data.name,
-                id: data.id,
-                type: data.entity_type,
-              };
-              setOptionList([...optionList, newContainer]);
-              handleChangeActionInputValues([...selectedContainers, newContainer]);
-            }}
-            confidence={undefined}
-            defaultCreatedBy={undefined}
-            onCompleted={undefined}
-            defaultMarkingDefinitions={undefined}
-            isFromBulkRelation={undefined}
-            paginationKey={undefined}
-            paginationOptions={undefined}
-          />
-          <Autocomplete
-            sx={{
-              '.MuiAutocomplete-inputRoot.MuiInput-root': {
-                pr: '50px',
-              },
-            }}
-            size="small"
-            fullWidth
-            selectOnFocus
-            autoHighlight
-            filterOptions={(options) => options} // used to block internal filtering of the material-ui component
-            value={selectedContainers}
-            multiple
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="standard"
-                label={t_i18n('Values')}
-                fullWidth={true}
-                slotProps={{
-                  input: {
-                    ...params.InputProps,
-                    endAdornment: (
-                      <>
-                        <InputAdornment position="end">
-                          <IconButton
-                            onClick={handleToggleContainerCreationDrawer(true)}
-                            size="small"
-                          >
-                            <AddOutlined />
-                          </IconButton>
-                        </InputAdornment>
-                        {params.InputProps.endAdornment}
-                      </>
-                    ),
-                  },
-                }}
-              />
-            )}
-            noOptionsText={t_i18n('No available options')}
-            options={optionList}
-            onInputChange={handleSearch}
-            inputValue={searchInputValue}
-            onChange={(_, currentSelectedOptions: OptionListType[]) => handleChangeActionInputValues(currentSelectedOptions)}
-            renderOption={(props, option) => (
-              <li {...props} key={option.id}>
-                <div style={{ padding: '4px' }}>
-                  <ItemIcon type={option.type} />
-                </div>
-                <div style={{ marginLeft: 10 }}>{option.label}</div>
-              </li>
-            )}
-            disableClearable
-          />
-          <FormControlLabel
-            style={{ marginTop: 20 }}
-            control={(
-              <Checkbox
-                checked={includeNeighbours}
-                onChange={handleChangeIncludeNeighboursOption}
-              />
-            )}
-            label={t_i18n('Also include first neighbours')}
-          />
-        </DialogContent>
+        <StixDomainObjectCreation
+          inputValue={searchInputValue}
+          open={isContainerCreationDrawerOpen}
+          display={true}
+          speeddial={true}
+          stixDomainObjectTypes={['Container']}
+          handleClose={handleToggleContainerCreationDrawer(false)}
+          creationCallback={(data: StixDomainObjectCreationCallbackType) => {
+            const newContainer: OptionListType = {
+              label: data.representative?.main ? data.representative.main : data.name,
+              id: data.id,
+              type: data.entity_type,
+            };
+            setOptionList([...optionList, newContainer]);
+            handleChangeActionInputValues([...selectedContainers, newContainer]);
+          }}
+          confidence={undefined}
+          defaultCreatedBy={undefined}
+          onCompleted={undefined}
+          defaultMarkingDefinitions={undefined}
+          isFromBulkRelation={undefined}
+          paginationKey={undefined}
+          paginationOptions={undefined}
+        />
+        <Autocomplete
+          sx={{
+            '.MuiAutocomplete-inputRoot.MuiInput-root': {
+              pr: '50px',
+            },
+          }}
+          size="small"
+          fullWidth
+          selectOnFocus
+          autoHighlight
+          filterOptions={(options) => options} // used to block internal filtering of the material-ui component
+          value={selectedContainers}
+          multiple
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              variant="standard"
+              label={t_i18n('Values')}
+              fullWidth={true}
+              slotProps={{
+                input: {
+                  ...params.InputProps,
+                  endAdornment: (
+                    <>
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={handleToggleContainerCreationDrawer(true)}
+                          size="small"
+                        >
+                          <AddOutlined />
+                        </IconButton>
+                      </InputAdornment>
+                      {params.InputProps.endAdornment}
+                    </>
+                  ),
+                },
+              }}
+            />
+          )}
+          noOptionsText={t_i18n('No available options')}
+          options={optionList}
+          onInputChange={handleSearch}
+          inputValue={searchInputValue}
+          onChange={(_, currentSelectedOptions: OptionListType[]) => handleChangeActionInputValues(currentSelectedOptions)}
+          renderOption={(props, option) => (
+            <li {...props} key={option.id}>
+              <div style={{ padding: '4px' }}>
+                <ItemIcon type={option.type} />
+              </div>
+              <div style={{ marginLeft: 10 }}>{option.label}</div>
+            </li>
+          )}
+          disableClearable
+        />
+        <FormControlLabel
+          style={{ marginTop: 20 }}
+          control={(
+            <Checkbox
+              checked={includeNeighbours}
+              onChange={handleChangeIncludeNeighboursOption}
+            />
+          )}
+          label={t_i18n('Also include first neighbours')}
+        />
         <DialogActions>
           <Button variant="secondary" onClick={handleToggleAddInContainer(false)}>
             {t_i18n('Cancel')}

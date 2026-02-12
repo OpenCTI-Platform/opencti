@@ -1,10 +1,8 @@
 import Button from '@common/button/Button';
+import Dialog from '@common/dialog/Dialog';
 import Drawer from '@components/common/drawer/Drawer';
 import { AddOutlined, ContentPasteGoOutlined } from '@mui/icons-material';
 import { GridTypeMap } from '@mui/material';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
 import Tooltip from '@mui/material/Tooltip';
 import { Form, Formik } from 'formik';
 import { FunctionComponent, MutableRefObject, useState } from 'react';
@@ -111,69 +109,64 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
   return (
     <div style={{ height: '100%' }}>
       <Dialog
-        slotProps={{ paper: { elevation: 1 } }}
         open={openCaseTemplate}
         onClose={() => setOpenCaseTemplate(false)}
-        fullWidth={true}
-        maxWidth="md"
+        title={t_i18n('Apply case templates')}
       >
-        <DialogTitle>{t_i18n('Apply case templates')}</DialogTitle>
-        <DialogContent>
-          <Formik
-            initialValues={{ caseTemplates: [] }}
-            onSubmit={(values, { setSubmitting, setErrors }) => {
-              commit({
-                variables: {
-                  id: caseId,
-                  caseTemplatesId: values.caseTemplates.map(
-                    ({ value }) => value,
-                  ),
-                  connections: [
-                    generateConnectionId({
-                      key: 'Pagination_tasks',
-                      params: tasksFilters,
-                    }),
-                  ],
-                },
-                onCompleted: () => {
-                  setSubmitting(false);
-                  setOpenCaseTemplate(false);
-                },
-                onError: (error: Error) => {
-                  handleErrorInForm(error, setErrors);
-                  setSubmitting(false);
-                },
-              });
-            }}
-          >
-            {({ setFieldValue, submitForm, handleReset, isSubmitting }) => (
-              <Form style={{ minWidth: 400 }}>
-                <CaseTemplateField
-                  onChange={setFieldValue}
-                  label="Case templates"
-                />
-                <FormButtonContainer>
-                  <Button
-                    variant="secondary"
-                    onClick={() => {
-                      handleReset();
-                      setOpenCaseTemplate(false);
-                    }}
-                    disabled={isSubmitting}
-                  >
-                    {t_i18n('Cancel')}
-                  </Button>
-                  <Button
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                  >
-                    {t_i18n('Apply')}
-                  </Button>
-                </FormButtonContainer>
-              </Form>
-            )}
-          </Formik>
-        </DialogContent>
+        <Formik
+          initialValues={{ caseTemplates: [] }}
+          onSubmit={(values, { setSubmitting, setErrors }) => {
+            commit({
+              variables: {
+                id: caseId,
+                caseTemplatesId: values.caseTemplates.map(
+                  ({ value }) => value,
+                ),
+                connections: [
+                  generateConnectionId({
+                    key: 'Pagination_tasks',
+                    params: tasksFilters,
+                  }),
+                ],
+              },
+              onCompleted: () => {
+                setSubmitting(false);
+                setOpenCaseTemplate(false);
+              },
+              onError: (error: Error) => {
+                handleErrorInForm(error, setErrors);
+                setSubmitting(false);
+              },
+            });
+          }}
+        >
+          {({ setFieldValue, submitForm, handleReset, isSubmitting }) => (
+            <Form style={{ minWidth: 400 }}>
+              <CaseTemplateField
+                onChange={setFieldValue}
+                label="Case templates"
+              />
+              <FormButtonContainer>
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    handleReset();
+                    setOpenCaseTemplate(false);
+                  }}
+                  disabled={isSubmitting}
+                >
+                  {t_i18n('Cancel')}
+                </Button>
+                <Button
+                  onClick={submitForm}
+                  disabled={isSubmitting}
+                >
+                  {t_i18n('Apply')}
+                </Button>
+              </FormButtonContainer>
+            </Form>
+          )}
+        </Formik>
       </Dialog>
       <Drawer
         open={open}

@@ -1,31 +1,29 @@
-import React, { useRef, useState } from 'react';
-import { createFragmentContainer, graphql } from 'react-relay';
-import { Link } from 'react-router-dom';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
+import Dialog from '@common/dialog/Dialog';
+import { Add } from '@mui/icons-material';
+import { ListItem, ListItemButton } from '@mui/material';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContentText from '@mui/material/DialogContentText';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Button from '@common/button/Button';
-import IconButton from '@common/button/IconButton';
-import { Add } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
-import { ListItem, ListItemButton } from '@mui/material';
+import { useRef, useState } from 'react';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { Link } from 'react-router-dom';
+import Label from '../../../../components/common/label/Label';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
+import ItemPatternType from '../../../../components/ItemPatternType';
+import { commitMutation } from '../../../../relay/environment';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import Security from '../../../../utils/Security';
+import { insertNode } from '../../../../utils/store';
 import StixCyberObservableAddIndicators from './StixCyberObservableAddIndicators';
 import StixCyberObservableIndicatorPopover from './StixCyberObservableIndicatorPopover';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import { commitMutation } from '../../../../relay/environment';
-import ItemPatternType from '../../../../components/ItemPatternType';
-import Transition from '../../../../components/Transition';
-import { insertNode } from '../../../../utils/store';
-import Label from '../../../../components/common/label/Label';
 
 const inlineStyles = {
   pattern_type: {
@@ -206,18 +204,14 @@ const StixCyberObservableIndicatorsComponent = ({ stixCyberObservable }) => {
       </List>
       <Dialog
         open={isCreateIndicatorMenuOpen}
-        slotProps={{ paper: { elevation: 1 } }}
-        keepMounted={true}
-        slots={{ transition: Transition }}
         onClose={handleCloseCreateIndicatorMenu}
+        title={t_i18n('Are you sure?')}
       >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n(
-              'Do you want to create a STIX Indicator from this observable?',
-            )}
-          </DialogContentText>
-        </DialogContent>
+        <DialogContentText>
+          {t_i18n(
+            'Do you want to create a STIX Indicator from this observable?',
+          )}
+        </DialogContentText>
         <DialogActions>
           <Button
             variant="secondary"

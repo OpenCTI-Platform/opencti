@@ -1,22 +1,19 @@
-import React, { useState } from 'react';
-import { createFragmentContainer, graphql } from 'react-relay';
-import Grid from '@mui/material/Grid';
-import { OpenInBrowserOutlined } from '@mui/icons-material';
-import IconButton from '@common/button/IconButton';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
+import Dialog from '@common/dialog/Dialog';
+import { OpenInBrowserOutlined } from '@mui/icons-material';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContentText from '@mui/material/DialogContentText';
+import Grid from '@mui/material/Grid';
 import Tooltip from '@mui/material/Tooltip';
-import DialogTitle from '@mui/material/DialogTitle';
-import { ExternalReferenceDetails_externalReference$data } from './__generated__/ExternalReferenceDetails_externalReference.graphql';
-import { useFormatter } from '../../../../components/i18n';
-import ItemCreators from '../../../../components/ItemCreators';
-import Transition from '../../../../components/Transition';
+import { useState } from 'react';
+import { createFragmentContainer, graphql } from 'react-relay';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
+import { useFormatter } from '../../../../components/i18n';
+import ItemCreators from '../../../../components/ItemCreators';
 import { EMPTY_VALUE } from '../../../../utils/String';
+import { ExternalReferenceDetails_externalReference$data } from './__generated__/ExternalReferenceDetails_externalReference.graphql';
 
 interface ExternalReferenceDetailsComponentProps {
   externalReference: ExternalReferenceDetails_externalReference$data;
@@ -84,20 +81,14 @@ const ExternalReferenceDetailsComponent = ({
         </Grid>
       </Card>
       <Dialog
-        slotProps={{ paper: { elevation: 1 } }}
         open={displayExternalLink}
-        keepMounted={true}
-        slots={{ transition: Transition }}
         onClose={handleCloseExternalLink}
+        title={t_i18n('Are you sure?')}
+        size="small"
       >
-        <DialogTitle>
-          {t_i18n('Are you sure?')}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to browse this external link?')}
-          </DialogContentText>
-        </DialogContent>
+        <DialogContentText>
+          {t_i18n('Do you want to browse this external link?')}
+        </DialogContentText>
         <DialogActions>
           <Button variant="secondary" onClick={handleCloseExternalLink}>{t_i18n('Cancel')}</Button>
           <Button onClick={handleBrowseExternalLink}>

@@ -1,34 +1,32 @@
-import React, { useState } from 'react';
+import Button from '@common/button/Button';
+import Dialog from '@common/dialog/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import Grid from '@mui/material/Grid';
+import MenuItem from '@mui/material/MenuItem';
+import withStyles from '@mui/styles/withStyles';
+import { Field, Form, Formik } from 'formik';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { compose, filter, flatten, fromPairs, includes, map, uniq, zip } from 'ramda';
-import * as Yup from 'yup';
-import Grid from '@mui/material/Grid';
-import withStyles from '@mui/styles/withStyles';
-import { ConnectionHandler } from 'relay-runtime';
-import MenuItem from '@mui/material/MenuItem';
+import { useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import { Field, Form, Formik } from 'formik';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@common/button/Button';
+import { ConnectionHandler } from 'relay-runtime';
+import * as Yup from 'yup';
+import SelectField from '../../../../components/fields/SelectField';
+import inject18n, { useFormatter } from '../../../../components/i18n';
+import Loader from '../../../../components/Loader';
+import { commitMutation, handleErrorInForm, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
+import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { markingDefinitionsLinesSearchQuery } from '../../settings/MarkingDefinitionsQuery';
+import ObjectMarkingField from '../form/ObjectMarkingField';
 import { useInitCreateRelationshipContext } from '../stix_core_relationships/CreateRelationshipContextProvider';
 import DraftWorkspaceViewer from './draftWorkspace/DraftWorkspaceViewer';
-import ObjectMarkingField from '../form/ObjectMarkingField';
 import FileExportViewer from './FileExportViewer';
-import FileImportViewer from './FileImportViewer';
-import SelectField from '../../../../components/fields/SelectField';
-import { commitMutation, handleErrorInForm, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
-import inject18n, { useFormatter } from '../../../../components/i18n';
-import { markingDefinitionsLinesSearchQuery } from '../../settings/MarkingDefinitionsQuery';
-import Loader from '../../../../components/Loader';
 import FileExternalReferencesViewer from './FileExternalReferencesViewer';
-import WorkbenchFileViewer from './workbench/WorkbenchFileViewer';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import FileImportViewer from './FileImportViewer';
 import PictureManagementViewer from './PictureManagementViewer';
-import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
+import WorkbenchFileViewer from './workbench/WorkbenchFileViewer';
 
 const styles = (theme) => ({
   container: {
@@ -336,76 +334,71 @@ const FileManager = ({
           {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
             <Form style={{ margin: '0 0 20px 0' }}>
               <Dialog
-                slotProps={{ paper: { elevation: 1 } }}
                 open={!!fileToImport}
-                keepMounted={true}
                 onClose={handleCloseImport}
-                fullWidth={true}
+                title={t('Launch an import')}
               >
-                <DialogTitle>{t('Launch an import')}</DialogTitle>
-                <DialogContent>
+                <Field
+                  component={SelectField}
+                  variant="standard"
+                  name="connector_id"
+                  label={t('Connector')}
+                  fullWidth={true}
+                  containerstyle={{ width: '100%' }}
+                  onChange={handleSelectConnector}
+                >
+                  {(connectorsImport || []).map((connector, i) => {
+                    const disabled = !fileToImport
+                      || (connector.connector_scope.length > 0
+                        && !includes(
+                          fileToImport.metaData.mimetype,
+                          connector.connector_scope,
+                        ));
+                    return (
+                      <MenuItem
+                        key={i}
+                        value={connector.id}
+                        disabled={disabled || !connector.active}
+                      >
+                        {connector.name}
+                      </MenuItem>
+                    );
+                  })}
+                </Field>
+                {selectedConnector?.configurations?.length > 0 && (
                   <Field
                     component={SelectField}
                     variant="standard"
-                    name="connector_id"
-                    label={t('Connector')}
+                    name="configuration"
+                    label={t('Configuration')}
                     fullWidth={true}
-                    containerstyle={{ width: '100%' }}
-                    onChange={handleSelectConnector}
+                    containerstyle={{ marginTop: 20, width: '100%' }}
+                    onChange={(_, value) => onCsvMapperSelection(value)}
                   >
-                    {(connectorsImport || []).map((connector, i) => {
-                      const disabled = !fileToImport
-                        || (connector.connector_scope.length > 0
-                          && !includes(
-                            fileToImport.metaData.mimetype,
-                            connector.connector_scope,
-                          ));
+                    {selectedConnector.configurations.map((config) => {
                       return (
                         <MenuItem
-                          key={i}
-                          value={connector.id}
-                          disabled={disabled || !connector.active}
+                          key={config.id}
+                          value={config.configuration}
                         >
-                          {connector.name}
+                          {config.name}
                         </MenuItem>
                       );
                     })}
                   </Field>
-                  {selectedConnector?.configurations?.length > 0 && (
-                    <Field
-                      component={SelectField}
-                      variant="standard"
-                      name="configuration"
-                      label={t('Configuration')}
-                      fullWidth={true}
-                      containerstyle={{ marginTop: 20, width: '100%' }}
-                      onChange={(_, value) => onCsvMapperSelection(value)}
-                    >
-                      {selectedConnector.configurations.map((config) => {
-                        return (
-                          <MenuItem
-                            key={config.id}
-                            value={config.configuration}
-                          >
-                            {config.name}
-                          </MenuItem>
-                        );
-                      })}
-                    </Field>
-                  )}
-                  {selectedConnector?.name === 'ImportCsv'
-                    && hasUserChoiceCsvMapper
-                    && (
-                      <>
-                        <ObjectMarkingField
-                          name="objectMarking"
-                          style={fieldSpacingContainerStyle}
-                          setFieldValue={setFieldValue}
-                        />
-                      </>
-                    )
-                  }
-                </DialogContent>
+                )}
+                {selectedConnector?.name === 'ImportCsv'
+                  && hasUserChoiceCsvMapper
+                  && (
+                    <>
+                      <ObjectMarkingField
+                        name="objectMarking"
+                        style={fieldSpacingContainerStyle}
+                        setFieldValue={setFieldValue}
+                      />
+                    </>
+                  )
+                }
                 <DialogActions>
                   <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                     {t('Cancel')}
@@ -438,21 +431,18 @@ const FileManager = ({
           {({ submitForm, handleReset, isSubmitting, resetForm, setFieldValue }) => (
             <Form style={{ margin: '0 0 20px 0' }}>
               <Dialog
-                slotProps={{ paper: { elevation: 1 } }}
                 open={openExport}
-                keepMounted={true}
                 onClose={resetForm}
-                fullWidth={true}
                 data-testid="FileManagerExportDialog"
+                title={t('Generate an export')}
               >
-                <DialogTitle>{t('Generate an export')}</DialogTitle>
                 <QueryRenderer
                   query={markingDefinitionsLinesSearchQuery}
                   variables={{ first: 200 }}
                   render={({ props }) => {
                     if (props && props.markingDefinitions) {
                       return (
-                        <DialogContent>
+                        <>
                           <Field
                             component={SelectField}
                             variant="standard"
@@ -502,7 +492,7 @@ const FileManager = ({
                             style={fieldSpacingContainerStyle}
                             setFieldValue={setFieldValue}
                           />
-                        </DialogContent>
+                        </>
                       );
                     }
                     return <Loader variant="inElement" />;

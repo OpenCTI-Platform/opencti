@@ -1,39 +1,38 @@
-import React, { FunctionComponent, useEffect, useState } from 'react';
-import { Field, Form, Formik } from 'formik';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@common/button/Button';
-import * as Yup from 'yup';
-import { graphql } from 'react-relay';
-import { FormikConfig, FormikHelpers } from 'formik/dist/types';
-import { RecordSourceSelectorProxy } from 'relay-runtime';
-import CustomFileUploader from '@components/common/files/CustomFileUploader';
+import Dialog from '@common/dialog/Dialog';
+import FormButtonContainer from '@common/form/FormButtonContainer';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
+import CustomFileUploader from '@components/common/files/CustomFileUploader';
 import { DataSourcesLinesPaginationQuery$variables } from '@components/techniques/__generated__/DataSourcesLinesPaginationQuery.graphql';
-import CreatedByField from '../../common/form/CreatedByField';
-import ObjectLabelField from '../../common/form/ObjectLabelField';
-import ObjectMarkingField from '../../common/form/ObjectMarkingField';
+import { Stack } from '@mui/material';
+import { Field, Form, Formik } from 'formik';
+import { FormikConfig, FormikHelpers } from 'formik/dist/types';
+import { FunctionComponent, useEffect, useState } from 'react';
+import { graphql } from 'react-relay';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
+import * as Yup from 'yup';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
+import BulkTextModal from '../../../../components/fields/BulkTextField/BulkTextModal';
+import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
-import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import { handleErrorInForm } from '../../../../relay/environment';
-import { insertNode } from '../../../../utils/store';
-import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
-import ConfidenceField from '../../common/form/ConfidenceField';
-import OpenVocabField from '../../common/form/OpenVocabField';
-import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
-import { DataSourceCreationMutation, DataSourceCreationMutation$variables } from './__generated__/DataSourceCreationMutation.graphql';
-import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
-import { splitMultilines } from '../../../../utils/String';
-import BulkTextModal from '../../../../components/fields/BulkTextField/BulkTextModal';
 import ProgressBar from '../../../../components/ProgressBar';
-import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
-import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
-import FormButtonContainer from '@common/form/FormButtonContainer';
+import { handleErrorInForm } from '../../../../relay/environment';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import { insertNode } from '../../../../utils/store';
+import { splitMultilines } from '../../../../utils/String';
+import ConfidenceField from '../../common/form/ConfidenceField';
+import CreatedByField from '../../common/form/CreatedByField';
+import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
+import ObjectLabelField from '../../common/form/ObjectLabelField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
+import OpenVocabField from '../../common/form/OpenVocabField';
+import { DataSourceCreationMutation, DataSourceCreationMutation$variables } from './__generated__/DataSourceCreationMutation.graphql';
 
 const dataSourceMutation = graphql`
   mutation DataSourceCreationMutation($input: DataSourceAddInput!) {
@@ -367,21 +366,24 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
   const renderContextual = () => (
     <div style={{ display: display ? 'block' : 'none' }}>
       {CreateNarrativeControlledDialContextual}
-      <Dialog open={open} onClose={handleClose} slotProps={{ paper: { elevation: 1 } }}>
-        <DialogTitle>
-          {t_i18n('Create a data source')}
-          <BulkTextModalButton onClick={() => setBulkOpen(true)} />
-        </DialogTitle>
-        <DialogContent>
-          <DataSourceCreationForm
-            inputValue={inputValue}
-            updater={updater}
-            onCompleted={handleClose}
-            onReset={handleClose}
-            bulkModalOpen={bulkOpen}
-            onBulkModalClose={() => setBulkOpen(false)}
-          />
-        </DialogContent>
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        title={(
+          <Stack direction="row" justifyContent="space-between" alignContent="center">
+            {t_i18n('Create a data source')}
+            <BulkTextModalButton onClick={() => setBulkOpen(true)} />
+          </Stack>
+        )}
+      >
+        <DataSourceCreationForm
+          inputValue={inputValue}
+          updater={updater}
+          onCompleted={handleClose}
+          onReset={handleClose}
+          bulkModalOpen={bulkOpen}
+          onBulkModalClose={() => setBulkOpen(false)}
+        />
       </Dialog>
     </div>
   );

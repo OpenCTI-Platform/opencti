@@ -1,9 +1,7 @@
 import Button from '@common/button/Button';
+import Dialog from '@common/dialog/Dialog';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
-import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import * as R from 'ramda';
@@ -287,6 +285,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
           slotProps={{ paper: { elevation: 1 } }}
           open={handleCloseContextual ? openContextual : open}
           onClose={handleCloseContextual || handleClose}
+          title={t_i18n('Create an external reference')}
         >
           <Formik<ExternalReferenceAddInput>
             enableReinitialize={true}
@@ -305,45 +304,42 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
           >
             {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
               <Form>
-                <DialogTitle>{t_i18n('Create an external reference')}</DialogTitle>
-                <DialogContent>
-                  <Field
-                    component={TextField}
-                    name="source_name"
-                    label={t_i18n('Source name')}
-                    fullWidth={true}
+                <Field
+                  component={TextField}
+                  name="source_name"
+                  label={t_i18n('Source name')}
+                  fullWidth={true}
+                />
+                <Field
+                  component={TextField}
+                  name="external_id"
+                  id="external_id"
+                  label={t_i18n('External ID')}
+                  fullWidth={true}
+                  style={{ marginTop: 20 }}
+                />
+                <Field
+                  component={TextField}
+                  name="url"
+                  label={t_i18n('URL')}
+                  fullWidth={true}
+                  style={{ marginTop: 20 }}
+                />
+                {!dryrun && (
+                  <CustomFileUploader
+                    setFieldValue={setFieldValue}
+                    isEmbeddedInExternalReferenceCreation={isEmbeddedInExternalReferenceCreation}
                   />
-                  <Field
-                    component={TextField}
-                    name="external_id"
-                    id="external_id"
-                    label={t_i18n('External ID')}
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
-                  />
-                  <Field
-                    component={TextField}
-                    name="url"
-                    label={t_i18n('URL')}
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
-                  />
-                  {!dryrun && (
-                    <CustomFileUploader
-                      setFieldValue={setFieldValue}
-                      isEmbeddedInExternalReferenceCreation={isEmbeddedInExternalReferenceCreation}
-                    />
-                  )}
-                  <Field
-                    component={MarkdownField}
-                    name="description"
-                    label={t_i18n('Description')}
-                    fullWidth={true}
-                    multiline={true}
-                    rows="4"
-                    style={{ marginTop: 20, marginBottom: 20 }}
-                  />
-                </DialogContent>
+                )}
+                <Field
+                  component={MarkdownField}
+                  name="description"
+                  label={t_i18n('Description')}
+                  fullWidth={true}
+                  multiline={true}
+                  rows="4"
+                  style={{ marginTop: 20, marginBottom: 20 }}
+                />
                 <DialogActions>
                   <Button
                     variant="secondary"

@@ -1,11 +1,11 @@
-import React, { FunctionComponent, useState } from 'react';
+import Button from '@common/button/Button';
+import Dialog from '@common/dialog/Dialog';
+import { DialogActions, DialogContentText } from '@mui/material';
+import { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
-import { Dialog, DialogActions, DialogTitle } from '@mui/material';
-import Button from '@common/button/Button';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import Transition from '../../../../components/Transition';
 
 export const roleDeletionMutation = graphql`
   mutation RoleDeletionDialogMutation($id: ID!) {
@@ -54,12 +54,11 @@ const RoleDeletionDialog: FunctionComponent<RoleDeletionDialogProps> = ({
   return (
     <Dialog
       open={isOpen}
-      PaperProps={{ elevation: 1 }}
       keepMounted={true}
-      TransitionComponent={Transition}
       onClose={handleClose}
+      title={t_i18n('Are you sure?')}
     >
-      <DialogTitle>{t_i18n('Do you want to delete this role?')}</DialogTitle>
+      <DialogContentText>{t_i18n('Do you want to delete this role?')}</DialogContentText>
       <DialogActions>
         <Button
           variant="secondary"

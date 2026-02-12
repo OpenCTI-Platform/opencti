@@ -1,47 +1,44 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
-import * as R from 'ramda';
+import Button from '@common/button/Button';
+import Card from '@common/card/Card';
+import Dialog from '@common/dialog/Dialog';
+import { ArrowRightAlt } from '@mui/icons-material';
+import { alpha } from '@mui/material';
+import Chip from '@mui/material/Chip';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContentText from '@mui/material/DialogContentText';
+import Divider from '@mui/material/Divider';
+import Grid from '@mui/material/Grid';
 import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
+import * as PropTypes from 'prop-types';
+import * as R from 'ramda';
+import { Component } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import Grid from '@mui/material/Grid';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
-import Dialog from '@mui/material/Dialog';
-import { ArrowRightAlt } from '@mui/icons-material';
-import Chip from '@mui/material/Chip';
-import Divider from '@mui/material/Divider';
-import Button from '@common/button/Button';
-import DialogTitle from '@mui/material/DialogTitle';
-import StixCoreRelationshipInference from '../../common/stix_core_relationships/StixCoreRelationshipInference';
-import withRouter from '../../../../utils/compat_router/withRouter';
+import { Link } from 'react-router-dom';
+import CardTitle from '../../../../components/common/card/CardTitle';
+import Label from '../../../../components/common/label/Label';
+import inject18n from '../../../../components/i18n';
+import ItemAuthor from '../../../../components/ItemAuthor';
+import ItemConfidence from '../../../../components/ItemConfidence';
+import ItemCreators from '../../../../components/ItemCreators';
+import ItemIcon from '../../../../components/ItemIcon';
+import ItemMarkings from '../../../../components/ItemMarkings';
+import ItemStatus from '../../../../components/ItemStatus';
+import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import { commitMutation } from '../../../../relay/environment';
 import { itemColor } from '../../../../utils/Colors';
+import withRouter from '../../../../utils/compat_router/withRouter';
 import { resolveLink } from '../../../../utils/Entity';
 import { truncate } from '../../../../utils/String';
-import inject18n from '../../../../components/i18n';
-import ItemIcon from '../../../../components/ItemIcon';
-import ItemConfidence from '../../../../components/ItemConfidence';
-import { commitMutation } from '../../../../relay/environment';
-import { stixSightingRelationshipEditionFocus } from './StixSightingRelationshipEditionOverview';
-import ItemAuthor from '../../../../components/ItemAuthor';
 import StixSightingRelationshipExternalReferences from '../../analyses/external_references/StixSightingRelationshipExternalReferences';
-import StixSightingRelationshipLatestHistory from './StixSightingRelationshipLatestHistory';
-import ItemStatus from '../../../../components/ItemStatus';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
-import StixSightingRelationshipSharing from './StixSightingRelationshipSharing';
-import ItemCreators from '../../../../components/ItemCreators';
-import ItemMarkings from '../../../../components/ItemMarkings';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
-import StixSightingRelationshipLabelsView from './StixSightingRelationshipLabelsView';
-import Transition from '../../../../components/Transition';
-import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import StixCoreRelationshipInference from '../../common/stix_core_relationships/StixCoreRelationshipInference';
 import { stixSightingRelationshipEditionDeleteMutation } from './StixSightingRelationshipEdition';
-import Card from '@common/card/Card';
-import { alpha } from '@mui/material';
-import Label from '../../../../components/common/label/Label';
-import CardTitle from '../../../../components/common/card/CardTitle';
+import { stixSightingRelationshipEditionFocus } from './StixSightingRelationshipEditionOverview';
+import StixSightingRelationshipLabelsView from './StixSightingRelationshipLabelsView';
+import StixSightingRelationshipLatestHistory from './StixSightingRelationshipLatestHistory';
+import StixSightingRelationshipSharing from './StixSightingRelationshipSharing';
 
 const styles = (theme) => ({
   container: {
@@ -544,19 +541,12 @@ class StixSightingRelationshipContainer extends Component {
         </Grid>
         <Dialog
           open={this.state.displayDelete}
-          slotProps={{ paper: { elevation: 1 } }}
-          keepMounted={true}
-          slots={{ transition: Transition }}
           onClose={this.handleCloseDelete.bind(this)}
+          title={t('Are you sure?')}
         >
-          <DialogTitle>
-            {t('Are you sure?')}
-          </DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              {t('Do you want to delete this sighting?')}
-            </DialogContentText>
-          </DialogContent>
+          <DialogContentText>
+            {t('Do you want to delete this sighting?')}
+          </DialogContentText>
           <DialogActions>
             <Button
               variant="secondary"

@@ -1,10 +1,10 @@
-import MoreVert from '@mui/icons-material/MoreVert';
 import Button from '@common/button/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import IconButton from '@common/button/IconButton';
+import Dialog from '@common/dialog/Dialog';
+import Drawer from '@components/common/drawer/Drawer';
+import MoreVert from '@mui/icons-material/MoreVert';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContentText from '@mui/material/DialogContentText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { PopoverProps } from '@mui/material/Popover';
@@ -13,17 +13,15 @@ import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import { useParams } from 'react-router-dom';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import Drawer from '@components/common/drawer/Drawer';
+import DeleteDialog from '../../../../components/DeleteDialog';
 import { useFormatter } from '../../../../components/i18n';
-import Transition from '../../../../components/Transition';
 import { commitMutation } from '../../../../relay/environment';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import { deleteNode } from '../../../../utils/store';
 import { CaseTemplateTasksLine_node$data } from './__generated__/CaseTemplateTasksLine_node.graphql';
 import { CaseTemplateTasksLinesPaginationQuery$data } from './__generated__/CaseTemplateTasksLinesPaginationQuery.graphql';
 import CaseTemplateTasksEdition from './CaseTemplateTasksEdition';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import DeleteDialog from '../../../../components/DeleteDialog';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -153,16 +151,12 @@ const CaseTemplateTasksPopover: FunctionComponent<CaseTemplateTasksPopoverProps>
       </Drawer>
       <Dialog
         open={displayUnlink}
-        slotProps={{ paper: { elevation: 1 } }}
-        keepMounted={true}
-        slots={{ transition: Transition }}
         onClose={handleCloseUnlink}
+        title={t_i18n('Are you sure?')}
       >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to unlink this task template ?')}
-          </DialogContentText>
-        </DialogContent>
+        <DialogContentText>
+          {t_i18n('Do you want to unlink this task template ?')}
+        </DialogContentText>
         <DialogActions>
           <Button variant="secondary" onClick={handleCloseUnlink} disabled={unlinking}>
             {t_i18n('Cancel')}

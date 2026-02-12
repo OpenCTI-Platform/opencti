@@ -1,23 +1,21 @@
-import { graphql, useQueryLoader } from 'react-relay';
-import React, { FunctionComponent, useState } from 'react';
-import { PopoverProps } from '@mui/material/Popover';
+import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
+import Dialog from '@common/dialog/Dialog';
+import { IngestionJsonEditionContainerQuery } from '@components/data/ingestionJson/__generated__/IngestionJsonEditionContainerQuery.graphql';
+import { IngestionJsonLinesPaginationQuery$variables } from '@components/data/ingestionJson/__generated__/IngestionJsonLinesPaginationQuery.graphql';
+import { IngestionJsonCreationContainer } from '@components/data/ingestionJson/IngestionJsonCreation';
+import IngestionJsonEditionContainer, { ingestionJsonEditionContainerQuery } from '@components/data/ingestionJson/IngestionJsonEditionContainer';
 import MoreVert from '@mui/icons-material/MoreVert';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContentText from '@mui/material/DialogContentText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import Button from '@common/button/Button';
-import DialogActions from '@mui/material/DialogActions';
-import IngestionJsonEditionContainer, { ingestionJsonEditionContainerQuery } from '@components/data/ingestionJson/IngestionJsonEditionContainer';
-import { IngestionJsonCreationContainer } from '@components/data/ingestionJson/IngestionJsonCreation';
-import { IngestionJsonLinesPaginationQuery$variables } from '@components/data/ingestionJson/__generated__/IngestionJsonLinesPaginationQuery.graphql';
-import { IngestionJsonEditionContainerQuery } from '@components/data/ingestionJson/__generated__/IngestionJsonEditionContainerQuery.graphql';
-import { deleteNode } from '../../../../utils/store';
+import { PopoverProps } from '@mui/material/Popover';
+import React, { FunctionComponent, useState } from 'react';
+import { graphql, useQueryLoader } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
-import Transition from '../../../../components/Transition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { deleteNode } from '../../../../utils/store';
 
 export const ingestionJsonPopoverEditionPatch = graphql`
   mutation IngestionJsonPopoverPatchMutation($id: ID!, $input: [EditInput!]!) {
@@ -237,17 +235,13 @@ const IngestionJsonPopover: FunctionComponent<IngestionJsonPopoverProps> = ({
           </React.Suspense>
         )}
         <Dialog
-          slotProps={{ paper: { elevation: 1 } }}
           open={displayDelete}
-          keepMounted
-          slots={{ transition: Transition }}
           onClose={handleCloseDelete}
+          title={t_i18n('Are you sure?')}
         >
-          <DialogContent>
-            <DialogContentText>
-              {t_i18n('Do you want to delete this JSON feed?')}
-            </DialogContentText>
-          </DialogContent>
+          <DialogContentText>
+            {t_i18n('Do you want to delete this JSON feed?')}
+          </DialogContentText>
           <DialogActions>
             <Button
               variant="secondary"
@@ -265,17 +259,13 @@ const IngestionJsonPopover: FunctionComponent<IngestionJsonPopoverProps> = ({
           </DialogActions>
         </Dialog>
         <Dialog
-          slotProps={{ paper: { elevation: 1 } }}
           open={displayResetState}
-          keepMounted
-          slots={{ transition: Transition }}
           onClose={handleCloseResetState}
+          title={t_i18n('Are you sure?')}
         >
-          <DialogContent>
-            <DialogContentText>
-              {t_i18n('Do you want to reset the state of this JSON feed?')}
-            </DialogContentText>
-          </DialogContent>
+          <DialogContentText>
+            {t_i18n('Do you want to reset the state of this JSON feed?')}
+          </DialogContentText>
           <DialogActions>
             <Button
               variant="secondary"
@@ -293,17 +283,13 @@ const IngestionJsonPopover: FunctionComponent<IngestionJsonPopoverProps> = ({
           </DialogActions>
         </Dialog>
         <Dialog
-          slotProps={{ paper: { elevation: 1 } }}
           open={displayStart}
-          keepMounted={true}
-          slots={{ transition: Transition }}
           onClose={handleCloseStart}
+          title={t_i18n('Are you sure?')}
         >
-          <DialogContent>
-            <DialogContentText>
-              {t_i18n('Do you want to start this JSON feed?')}
-            </DialogContentText>
-          </DialogContent>
+          <DialogContentText>
+            {t_i18n('Do you want to start this JSON feed?')}
+          </DialogContentText>
           <DialogActions>
             <Button
               variant="secondary"
@@ -321,17 +307,13 @@ const IngestionJsonPopover: FunctionComponent<IngestionJsonPopoverProps> = ({
           </DialogActions>
         </Dialog>
         <Dialog
-          slotProps={{ paper: { elevation: 1 } }}
           open={displayStop}
-          keepMounted={true}
-          slots={{ transition: Transition }}
           onClose={handleCloseStop}
+          title={t_i18n('Are you sure?')}
         >
-          <DialogContent>
-            <DialogContentText>
-              {t_i18n('Do you want to stop this JSON feed?')}
-            </DialogContentText>
-          </DialogContent>
+          <DialogContentText>
+            {t_i18n('Do you want to stop this JSON feed?')}
+          </DialogContentText>
           <DialogActions>
             <Button
               variant="secondary"

@@ -1,8 +1,9 @@
 import Button from '@common/button/Button';
+import Dialog from '@common/dialog/Dialog';
+import FormButtonContainer from '@common/form/FormButtonContainer';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import ConfidenceField from '@components/common/form/ConfidenceField';
 import { AttackPatternsLinesPaginationQuery$variables } from '@components/techniques/__generated__/AttackPatternsLinesPaginationQuery.graphql';
-import { Dialog, DialogContent, DialogTitle } from '@mui/material';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import { FunctionComponent, useState } from 'react';
@@ -10,10 +11,9 @@ import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import * as Yup from 'yup';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import TextField from '../../../../components/TextField';
-import FormButtonContainer from '@common/form/FormButtonContainer';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
+import TextField from '../../../../components/TextField';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -314,16 +314,17 @@ const AttackPatternCreation = ({
     }}
     >
       {CreateAttackPatternControlledDialContextual}
-      <Dialog open={open} onClose={handleClose} slotProps={{ paper: { elevation: 1 } }}>
-        <DialogTitle>{t_i18n('Create an attack pattern')}</DialogTitle>
-        <DialogContent>
-          <AttackPatternCreationForm
-            inputValue={inputValue}
-            updater={updater}
-            onCompleted={handleClose}
-            onReset={handleClose}
-          />
-        </DialogContent>
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        title={t_i18n('Create an attack pattern')}
+      >
+        <AttackPatternCreationForm
+          inputValue={inputValue}
+          updater={updater}
+          onCompleted={handleClose}
+          onReset={handleClose}
+        />
       </Dialog>
     </div>
   );

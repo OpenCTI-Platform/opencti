@@ -1,23 +1,21 @@
-import React, { FunctionComponent, useState } from 'react';
-import { graphql, useFragment } from 'react-relay';
-import { deepOrange, deepPurple, green, indigo, lightGreen, orange, pink, red, teal, yellow } from '@mui/material/colors';
-import Paper from '@mui/material/Paper';
-import Avatar from '@mui/material/Avatar';
-import { DeleteOutlined, LinkOffOutlined, LinkOutlined } from '@mui/icons-material';
-import { LinkVariantPlus, LinkVariantRemove, Merge } from 'mdi-material-ui';
-import Tooltip from '@mui/material/Tooltip';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
-import makeStyles from '@mui/styles/makeStyles';
+import Dialog from '@common/dialog/Dialog';
 import { UserHistoryLine_node$key } from '@components/settings/users/__generated__/UserHistoryLine_node.graphql';
+import { DeleteOutlined, LinkOffOutlined, LinkOutlined } from '@mui/icons-material';
+import Avatar from '@mui/material/Avatar';
+import { deepOrange, deepPurple, green, indigo, lightGreen, orange, pink, red, teal, yellow } from '@mui/material/colors';
+import DialogActions from '@mui/material/DialogActions';
+import Paper from '@mui/material/Paper';
+import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles';
+import { LinkVariantPlus, LinkVariantRemove, Merge } from 'mdi-material-ui';
+import { FunctionComponent, useState } from 'react';
+import { graphql, useFragment } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
+import ItemIcon from '../../../../components/ItemIcon';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import type { Theme } from '../../../../components/Theme';
-import ItemIcon from '../../../../components/ItemIcon';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -363,18 +361,14 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
       <div className={classes.line} />
       <Dialog
         open={open}
-        slotProps={{ paper: { elevation: 1 } }}
         onClose={handleClose}
-        fullWidth={true}
+        title={t_i18n('Commit message')}
       >
-        <DialogTitle>{t_i18n('Commit message')}</DialogTitle>
-        <DialogContent>
-          <MarkdownDisplay
-            content={log.context_data?.message}
-            remarkGfmPlugin={true}
-            commonmark={true}
-          />
-        </DialogContent>
+        <MarkdownDisplay
+          content={log.context_data?.message}
+          remarkGfmPlugin={true}
+          commonmark={true}
+        />
         <DialogActions>
           <Button onClick={handleClose}>
             {t_i18n('Close')}

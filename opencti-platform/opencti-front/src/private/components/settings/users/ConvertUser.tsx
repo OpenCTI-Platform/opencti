@@ -1,17 +1,15 @@
-import React, { FunctionComponent, useState } from 'react';
-import Dialog from '@mui/material/Dialog';
-import Alert from '@mui/material/Alert';
-import { DialogTitle } from '@mui/material';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
-import { graphql } from 'react-relay';
+import Dialog from '@common/dialog/Dialog';
+import Alert from '@mui/material/Alert';
+import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
 import { useTheme } from '@mui/styles';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import Transition from '../../../../components/Transition';
+import { FunctionComponent, useState } from 'react';
+import { graphql } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
+import Transition from '../../../../components/Transition';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const convertUserMutation = graphql`
   mutation ConvertUserMutation(
@@ -92,30 +90,24 @@ const ConvertUser: FunctionComponent<ConvertUserProps> = ({ userId, userServiceA
       </Button>
       <Dialog
         open={openDialog}
-        slotProps={{ paper: { elevation: 1 } }}
-        keepMounted={true}
         slots={{ transition: Transition }}
-        maxWidth="sm"
-        fullWidth={true}
         onClose={() => {
           handleClose();
         }}
+        title={userServiceAccount ? t_i18n('Convert Service account into User') : t_i18n('Convert User into Service account')}
       >
-        <DialogTitle>{userServiceAccount ? t_i18n('Convert Service account into User') : t_i18n('Convert User into Service account')}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            <Alert
-              severity="warning"
-              variant="outlined"
-              color="dangerZone"
-              style={{
-                borderColor: theme.palette.dangerZone.main,
-              }}
-            >
-              {getAlertText()}
-            </Alert>
-          </DialogContentText>
-        </DialogContent>
+        <DialogContentText>
+          <Alert
+            severity="warning"
+            variant="outlined"
+            color="dangerZone"
+            style={{
+              borderColor: theme.palette.dangerZone.main,
+            }}
+          >
+            {getAlertText()}
+          </Alert>
+        </DialogContentText>
         <DialogActions>
           <Button
             variant="secondary"

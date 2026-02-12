@@ -1,27 +1,24 @@
-import React, { useState } from 'react';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
+import Dialog from '@common/dialog/Dialog';
+import { TrashDeleteOperationsLinesPaginationQuery$variables } from '@components/trash/__generated__/TrashDeleteOperationsLinesPaginationQuery.graphql';
+import MoreVert from '@mui/icons-material/MoreVert';
 import Alert from '@mui/material/Alert';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContentText from '@mui/material/DialogContentText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Button from '@common/button/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import MoreVert from '@mui/icons-material/MoreVert';
-import { graphql } from 'react-relay';
 import { PopoverProps } from '@mui/material/Popover';
-import IconButton from '@common/button/IconButton';
-import DialogTitle from '@mui/material/DialogTitle';
+import React, { useState } from 'react';
+import { graphql } from 'react-relay';
 import { Link } from 'react-router-dom';
-import { DeleteOperationPopoverRestoreMutation, DeleteOperationPopoverRestoreMutation$data } from './__generated__/DeleteOperationPopoverRestoreMutation.graphql';
-import { DeleteOperationPopoverConfirmMutation } from './__generated__/DeleteOperationPopoverConfirmMutation.graphql';
 import { useFormatter } from '../../../components/i18n';
-import Transition from '../../../components/Transition';
-import { RelayError } from '../../../relay/relayTypes';
 import { MESSAGING$ } from '../../../relay/environment';
-import { deleteNode } from '../../../utils/store';
+import { RelayError } from '../../../relay/relayTypes';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
-import { TrashDeleteOperationsLinesPaginationQuery$variables } from '@components/trash/__generated__/TrashDeleteOperationsLinesPaginationQuery.graphql';
+import { deleteNode } from '../../../utils/store';
+import { DeleteOperationPopoverConfirmMutation } from './__generated__/DeleteOperationPopoverConfirmMutation.graphql';
+import { DeleteOperationPopoverRestoreMutation, DeleteOperationPopoverRestoreMutation$data } from './__generated__/DeleteOperationPopoverRestoreMutation.graphql';
 
 const deleteOperationPopoverConfirmMutation = graphql`
   mutation DeleteOperationPopoverConfirmMutation($id: ID!) {
@@ -151,31 +148,22 @@ const DeleteOperationPopover: React.FC<DeleteOperationPopoverProps> = ({ mainEnt
       </Menu>
 
       <Dialog
-        slotProps={{ paper: { elevation: 1 } }}
         open={displayConfirm}
-        keepMounted={true}
-        slots={{ transition: Transition }}
         onClose={handleCloseConfirm}
-        maxWidth="sm"
-        fullWidth={true}
+        title={t_i18n('Are you sure?')}
       >
-        <DialogTitle>
-          {t_i18n('Are you sure?')}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {confirmOperation === 'delete' && (
-              <Alert severity="warning" variant="outlined">
-                {t_i18n('', { id: 'The main object and the ... relationships/references linked to it will be deleted permanently.', values: { count: deletedCount - 1 } })}
-                <br />
-                {t_i18n('This operation cannot be undone.')}
-              </Alert>
-            )}
-            {confirmOperation === 'restore' && (
-              t_i18n('', { id: 'The main object and the ... relationships/references linked to it will be restored.', values: { count: deletedCount - 1 } })
-            )}
-          </DialogContentText>
-        </DialogContent>
+        <DialogContentText>
+          {confirmOperation === 'delete' && (
+            <Alert severity="warning" variant="outlined">
+              {t_i18n('', { id: 'The main object and the ... relationships/references linked to it will be deleted permanently.', values: { count: deletedCount - 1 } })}
+              <br />
+              {t_i18n('This operation cannot be undone.')}
+            </Alert>
+          )}
+          {confirmOperation === 'restore' && (
+            t_i18n('', { id: 'The main object and the ... relationships/references linked to it will be restored.', values: { count: deletedCount - 1 } })
+          )}
+        </DialogContentText>
         <DialogActions>
           <Button variant="secondary" onClick={handleCloseConfirm} disabled={deleting || restoring}>
             {t_i18n('Cancel')}

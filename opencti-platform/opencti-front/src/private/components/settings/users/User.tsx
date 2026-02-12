@@ -1,56 +1,53 @@
-import React, { FunctionComponent, useState } from 'react';
-import { graphql, useFragment } from 'react-relay';
-import Grid from '@mui/material/Grid';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
+import Dialog from '@common/dialog/Dialog';
+import UserConfidenceLevel from '@components/settings/users/UserConfidenceLevel';
+import { UserUserRenewTokenMutation } from '@components/settings/users/__generated__/UserUserRenewTokenMutation.graphql';
 import { DeleteForeverOutlined, DeleteOutlined, RefreshOutlined, Visibility, VisibilityOff } from '@mui/icons-material';
+import { ListItemButton } from '@mui/material';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContentText from '@mui/material/DialogContentText';
+import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import IconButton from '@common/button/IconButton';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@common/button/Button';
-import { Link } from 'react-router-dom';
+import Tooltip from '@mui/material/Tooltip';
+import { SimplePaletteColorOptions } from '@mui/material/styles/createPalette';
 import { useTheme } from '@mui/styles';
 import { ApexOptions } from 'apexcharts';
-import { SimplePaletteColorOptions } from '@mui/material/styles/createPalette';
-import UserConfidenceLevel from '@components/settings/users/UserConfidenceLevel';
-import { UserUserRenewTokenMutation } from '@components/settings/users/__generated__/UserUserRenewTokenMutation.graphql';
-import Tooltip from '@mui/material/Tooltip';
-import DialogTitle from '@mui/material/DialogTitle';
-import { ListItemButton } from '@mui/material';
+import { FunctionComponent, useState } from 'react';
+import { graphql, useFragment } from 'react-relay';
+import { Link } from 'react-router-dom';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
-import { useFormatter } from '../../../../components/i18n';
-import { handleError, QueryRenderer } from '../../../../relay/environment';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
-import { now, timestamp, yearsAgo } from '../../../../utils/Time';
-import UserHistory from './UserHistory';
-import { areaChartOptions } from '../../../../utils/Charts';
-import { simpleNumberFormat } from '../../../../utils/Number';
-import Transition from '../../../../components/Transition';
-import { User_user$key } from './__generated__/User_user.graphql';
-import Chart from '../../common/charts/Chart';
-import { UserSessionKillMutation } from './__generated__/UserSessionKillMutation.graphql';
-import { UserUserSessionsKillMutation } from './__generated__/UserUserSessionsKillMutation.graphql';
-import Triggers from '../common/Triggers';
-import { UserAuditsTimeSeriesQuery$data } from './__generated__/UserAuditsTimeSeriesQuery.graphql';
-import { UserOtpDeactivationMutation } from './__generated__/UserOtpDeactivationMutation.graphql';
-import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import ItemIcon from '../../../../components/ItemIcon';
-import HiddenTypesChipList from '../hidden_types/HiddenTypesChipList';
 import ItemAccountStatus from '../../../../components/ItemAccountStatus';
-import useGranted, { BYPASS, KNOWLEDGE, SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
-import Security from '../../../../utils/Security';
-import useAuth from '../../../../utils/hooks/useAuth';
-import type { Theme } from '../../../../components/Theme';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import ItemCopy from '../../../../components/ItemCopy';
-import { EMPTY_VALUE, maskString } from '../../../../utils/String';
+import ItemIcon from '../../../../components/ItemIcon';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
+import type { Theme } from '../../../../components/Theme';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
 import Tag from '../../../../components/common/tag/Tag';
+import { useFormatter } from '../../../../components/i18n';
+import { handleError, QueryRenderer } from '../../../../relay/environment';
+import { areaChartOptions } from '../../../../utils/Charts';
+import { simpleNumberFormat } from '../../../../utils/Number';
+import Security from '../../../../utils/Security';
+import { EMPTY_VALUE, maskString } from '../../../../utils/String';
+import { now, timestamp, yearsAgo } from '../../../../utils/Time';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useAuth from '../../../../utils/hooks/useAuth';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import useGranted, { BYPASS, KNOWLEDGE, SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import Chart from '../../common/charts/Chart';
+import Triggers from '../common/Triggers';
+import HiddenTypesChipList from '../hidden_types/HiddenTypesChipList';
+import UserHistory from './UserHistory';
+import { UserAuditsTimeSeriesQuery$data } from './__generated__/UserAuditsTimeSeriesQuery.graphql';
+import { UserOtpDeactivationMutation } from './__generated__/UserOtpDeactivationMutation.graphql';
+import { UserSessionKillMutation } from './__generated__/UserSessionKillMutation.graphql';
+import { UserUserSessionsKillMutation } from './__generated__/UserUserSessionsKillMutation.graphql';
+import { User_user$key } from './__generated__/User_user.graphql';
 
 const startDate = yearsAgo(1);
 const endDate = now();
@@ -802,19 +799,12 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
       </Grid>
       <Dialog
         open={displayKillSession}
-        slotProps={{ paper: { elevation: 1 } }}
-        keepMounted={true}
-        slots={{ transition: Transition }}
         onClose={handleCloseKillSession}
+        title={t_i18n('Are you sure?')}
       >
-        <DialogTitle>
-          {t_i18n('Are you sure?')}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to kill this session?')}
-          </DialogContentText>
-        </DialogContent>
+        <DialogContentText>
+          {t_i18n('Do you want to kill this session?')}
+        </DialogContentText>
         <DialogActions>
           <Button variant="secondary" onClick={handleCloseKillSession} disabled={killing}>
             {t_i18n('Cancel')}
@@ -829,19 +819,12 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
       </Dialog>
       <Dialog
         open={displayKillSessions}
-        slotProps={{ paper: { elevation: 1 } }}
-        keepMounted={true}
-        slots={{ transition: Transition }}
         onClose={handleCloseKillSessions}
+        title={t_i18n('Are you sure?')}
       >
-        <DialogTitle>
-          {t_i18n('Are you sure?')}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to kill all the sessions of this user?')}
-          </DialogContentText>
-        </DialogContent>
+        <DialogContentText>
+          {t_i18n('Do you want to kill all the sessions of this user?')}
+        </DialogContentText>
         <DialogActions>
           <Button variant="secondary" onClick={handleCloseKillSessions} disabled={killing}>
             {t_i18n('Cancel')}
@@ -856,19 +839,12 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
       </Dialog>
       <Dialog
         open={displayRenewToken}
-        slotProps={{ paper: { elevation: 1 } }}
-        keepMounted={true}
-        slots={{ transition: Transition }}
         onClose={handleCloseRenewToken}
+        title={t_i18n('Are you sure?')}
       >
-        <DialogTitle>
-          {t_i18n('Are you sure?')}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to revoke this user token ? Once the token is revoked all access are forbidden, please verify that the token is not used by connectors or other API calls before revoking.')}
-          </DialogContentText>
-        </DialogContent>
+        <DialogContentText>
+          {t_i18n('Do you want to revoke this user token ? Once the token is revoked all access are forbidden, please verify that the token is not used by connectors or other API calls before revoking.')}
+        </DialogContentText>
         <DialogActions>
           <Button variant="secondary" onClick={handleCloseRenewToken}>
             {t_i18n('Cancel')}

@@ -1,20 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import { graphql } from 'react-relay';
-import ToggleButton from '@mui/material/ToggleButton';
-import { SendOutline, Send } from 'mdi-material-ui';
-import Dialog from '@mui/material/Dialog';
-import { DialogTitle } from '@mui/material';
-import DialogContent from '@mui/material/DialogContent';
-import { Form, Formik } from 'formik';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
+import Dialog from '@common/dialog/Dialog';
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import EmailTemplateField, { EmailTemplate, EmailTemplateFieldOption } from '@components/common/form/EmailTemplateField';
+import DialogActions from '@mui/material/DialogActions';
+import ToggleButton from '@mui/material/ToggleButton';
+import { Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
-import IconButton from '@common/button/IconButton';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { handleError, MESSAGING$ } from '../../../../relay/environment';
+import { Send, SendOutline } from 'mdi-material-ui';
+import { useEffect, useState } from 'react';
+import { graphql } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
+import { handleError, MESSAGING$ } from '../../../../relay/environment';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const userEmailSendMutation = graphql`
   mutation UserEmailSendMutation($input: SendUserMailInput!) {
@@ -105,23 +103,22 @@ const UserEmailSend = ({ userId, isOpen, onSubmit, outlined }: UserEmailSendProp
       >
         {({ setFieldValue, submitForm, handleReset, isSubmitting }) => (
           <Dialog
-            slotProps={{ paper: { elevation: 1 } }}
             open={isEmailTemplateSelectionShown}
             onClose={() => handleReset()}
-            fullWidth={true}
+            title={t_i18n('Send email with selected email template')}
           >
-            <DialogTitle>{t_i18n('Send email with selected email template')}</DialogTitle>
-            <DialogContent style={{ overflowY: 'hidden' }}>
-              <Form>
-                <EmailTemplateField
-                  name="emailTemplate"
-                  label={t_i18n('Email template')}
-                  onChange={setFieldValue}
-                />
-              </Form>
-            </DialogContent>
+            <Form>
+              <EmailTemplateField
+                name="emailTemplate"
+                label={t_i18n('Email template')}
+                onChange={setFieldValue}
+              />
+            </Form>
             <DialogActions>
-              <Button variant="secondary">
+              <Button
+                variant="secondary"
+                onClick={handleReset}
+              >
                 {t_i18n('Close')}
               </Button>
               <Button

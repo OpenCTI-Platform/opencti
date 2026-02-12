@@ -1,38 +1,37 @@
-import React, { FunctionComponent, useEffect, useState } from 'react';
-import { Field, Form, Formik } from 'formik';
 import Button from '@common/button/Button';
-import * as Yup from 'yup';
-import { graphql } from 'react-relay';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import { RecordSourceSelectorProxy } from 'relay-runtime';
-import { FormikConfig } from 'formik/dist/types';
+import Dialog from '@common/dialog/Dialog';
+import FormButtonContainer from '@common/form/FormButtonContainer';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import ConfidenceField from '@components/common/form/ConfidenceField';
-import { useFormatter } from '../../../../components/i18n';
-import { handleErrorInForm } from '../../../../relay/environment';
-import CreatedByField from '../../common/form/CreatedByField';
-import ObjectLabelField from '../../common/form/ObjectLabelField';
-import ObjectMarkingField from '../../common/form/ObjectMarkingField';
+import { Stack } from '@mui/material';
+import { Field, Form, Formik } from 'formik';
+import { FormikConfig } from 'formik/dist/types';
+import { FunctionComponent, useEffect, useState } from 'react';
+import { graphql } from 'react-relay';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
+import * as Yup from 'yup';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
+import BulkTextModal from '../../../../components/fields/BulkTextField/BulkTextModal';
+import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import MarkdownField from '../../../../components/fields/MarkdownField';
-import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
+import { useFormatter } from '../../../../components/i18n';
+import ProgressBar from '../../../../components/ProgressBar';
+import { handleErrorInForm } from '../../../../relay/environment';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
+import { splitMultilines } from '../../../../utils/String';
+import CustomFileUploader from '../../common/files/CustomFileUploader';
+import CreatedByField from '../../common/form/CreatedByField';
+import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
+import ObjectLabelField from '../../common/form/ObjectLabelField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import { NarrativeCreationMutation, NarrativeCreationMutation$variables } from './__generated__/NarrativeCreationMutation.graphql';
 import { NarrativesLinesPaginationQuery$variables } from './__generated__/NarrativesLinesPaginationQuery.graphql';
-import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
-import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import CustomFileUploader from '../../common/files/CustomFileUploader';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
-import { splitMultilines } from '../../../../utils/String';
-import BulkTextModal from '../../../../components/fields/BulkTextField/BulkTextModal';
-import ProgressBar from '../../../../components/ProgressBar';
-import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
-import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
-import FormButtonContainer from '@common/form/FormButtonContainer';
 
 const narrativeMutation = graphql`
   mutation NarrativeCreationMutation($input: NarrativeAddInput!) {
@@ -370,21 +369,24 @@ const NarrativeCreation: FunctionComponent<NarrativeCreationProps> = ({
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
         {CreateNarrativeControlledDialContextual}
-        <Dialog open={open} onClose={handleClose} slotProps={{ paper: { elevation: 1 } }}>
-          <DialogTitle>
-            {t_i18n('Create a narrative')}
-            <BulkTextModalButton onClick={() => setBulkOpen(true)} />
-          </DialogTitle>
-          <DialogContent>
-            <NarrativeCreationForm
-              inputValue={inputValue}
-              updater={updater}
-              onCompleted={handleClose}
-              onReset={handleClose}
-              bulkModalOpen={bulkOpen}
-              onBulkModalClose={() => setBulkOpen(false)}
-            />
-          </DialogContent>
+        <Dialog
+          open={open}
+          onClose={handleClose}
+          title={(
+            <Stack direction="row" justifyContent="space-between" alignContent="center">
+              {t_i18n('Create a narrative')}
+              <BulkTextModalButton onClick={() => setBulkOpen(true)} />
+            </Stack>
+          )}
+        >
+          <NarrativeCreationForm
+            inputValue={inputValue}
+            updater={updater}
+            onCompleted={handleClose}
+            onReset={handleClose}
+            bulkModalOpen={bulkOpen}
+            onBulkModalClose={() => setBulkOpen(false)}
+          />
         </Dialog>
       </div>
     );

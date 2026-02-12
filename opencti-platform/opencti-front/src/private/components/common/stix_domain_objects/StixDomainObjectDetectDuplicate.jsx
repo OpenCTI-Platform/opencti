@@ -1,25 +1,22 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import Slide from '@mui/material/Slide';
 import IconButton from '@common/button/IconButton';
+import Dialog from '@common/dialog/Dialog';
+import { VisibilityOutlined } from '@mui/icons-material';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { VisibilityOutlined } from '@mui/icons-material';
+import withStyles from '@mui/styles/withStyles';
+import * as PropTypes from 'prop-types';
+import { compose } from 'ramda';
+import { Component } from 'react';
 import { Link } from 'react-router-dom';
-import { stixDomainObjectsLinesSearchQuery } from './StixDomainObjectsLines';
-import { fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
-import { EMPTY_VALUE, truncate } from '../../../../utils/String';
-import { resolveLink } from '../../../../utils/Entity';
 import ItemMarkings from '../../../../components/ItemMarkings';
+import { fetchQuery } from '../../../../relay/environment';
+import { resolveLink } from '../../../../utils/Entity';
+import { EMPTY_VALUE, truncate } from '../../../../utils/String';
+import { stixDomainObjectsLinesSearchQuery } from './StixDomainObjectsLines';
 
 const styles = () => ({
   dialogPaper: {
@@ -32,11 +29,6 @@ const styles = () => ({
     color: '#ff9800',
   },
 });
-
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
-Transition.displayName = 'TransitionSlide';
 
 class StixDomainObjectDetectDuplicate extends Component {
   constructor(props) {
@@ -110,57 +102,47 @@ class StixDomainObjectDetectDuplicate extends Component {
           ''
         )}
         <Dialog
-          slotProps={{ paper: { elevation: 1 } }}
           open={this.state.open}
-          fullWidth={true}
-          maxWidth="md"
-          keepMounted={true}
-          slots={{ transition: Transition }}
           onClose={this.handleClose.bind(this)}
-          classes={{ paper: classes.dialogPaper }}
+          title={t('Potential duplicate entities')}
         >
-          <DialogTitle>{t('Potential duplicate entities')}</DialogTitle>
-          <DialogContent dividers={true}>
-            <div className={classes.container}>
-              <List>
-                {potentialDuplicates.map((element) => {
-                  const link = resolveLink(element.node.entity_type);
-                  return (
-                    <ListItem
-                      key={element.node.id}
-                      dense={true}
-                      divider={true}
-                      secondaryAction={(
-                        <IconButton
-                          component={Link}
-                          to={`${link}/${element.node.id}`}
-                        >
-                          <VisibilityOutlined />
-                        </IconButton>
-                      )}
+          <List>
+            {potentialDuplicates.map((element) => {
+              const link = resolveLink(element.node.entity_type);
+              return (
+                <ListItem
+                  key={element.node.id}
+                  dense={true}
+                  divider={true}
+                  secondaryAction={(
+                    <IconButton
+                      component={Link}
+                      to={`${link}/${element.node.id}`}
                     >
-                      <ListItemIcon>
-                        <ItemIcon type={element.node.entity_type} />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={element.node.name}
-                        secondary={truncate(element.node.description, 60)}
-                      />
-                      <div style={{ marginRight: 50 }}>
-                        {element.node.createdBy?.name ?? EMPTY_VALUE}
-                      </div>
-                      <div style={{ marginRight: 50 }}>
-                        <ItemMarkings
-                          variant="inList"
-                          markingDefinitions={element.node.objectMarking ?? []}
-                        />
-                      </div>
-                    </ListItem>
-                  );
-                })}
-              </List>
-            </div>
-          </DialogContent>
+                      <VisibilityOutlined />
+                    </IconButton>
+                  )}
+                >
+                  <ListItemIcon>
+                    <ItemIcon type={element.node.entity_type} />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={element.node.name}
+                    secondary={truncate(element.node.description, 60)}
+                  />
+                  <div style={{ marginRight: 50 }}>
+                    {element.node.createdBy?.name ?? EMPTY_VALUE}
+                  </div>
+                  <div style={{ marginRight: 50 }}>
+                    <ItemMarkings
+                      variant="inList"
+                      markingDefinitions={element.node.objectMarking ?? []}
+                    />
+                  </div>
+                </ListItem>
+              );
+            })}
+          </List>
         </Dialog>
       </span>
     );

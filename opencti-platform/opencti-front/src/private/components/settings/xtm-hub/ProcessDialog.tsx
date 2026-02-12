@@ -1,6 +1,5 @@
+import Dialog from '@common/dialog/Dialog';
 import React, { FunctionComponent } from 'react';
-import { Dialog, DialogContent, DialogTitle, IconButton } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
 
 interface ProcessDialogProps {
   open: boolean;
@@ -19,37 +18,10 @@ const ProcessDialog: FunctionComponent<ProcessDialogProps> = ({
     <Dialog
       open={open}
       onClose={onClose}
-      slotProps={{ paper: { elevation: 1 } }}
-      maxWidth="md"
-      fullWidth
+      title={title}
+      showCloseButton
     >
-      <DialogTitle sx={{ m: 0, p: 2 }}>
-        {title}
-        <IconButton
-          aria-label="close"
-          onClick={onClose}
-          sx={{
-            position: 'absolute',
-            right: 8,
-            top: 8,
-            color: (theme) => theme.palette.grey[500],
-          }}
-        >
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
-
-      <DialogContent
-        dividers
-        sx={{
-          p: 0,
-          position: 'relative',
-          padding: (theme) => `0 ${theme.spacing(2)} ${theme.spacing(2)} ${theme.spacing(2)}`,
-          border: 'none',
-        }}
-      >
-        {children}
-      </DialogContent>
+      {children}
     </Dialog>
   );
 };

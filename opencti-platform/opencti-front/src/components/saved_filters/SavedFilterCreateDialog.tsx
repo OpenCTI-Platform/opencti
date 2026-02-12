@@ -1,16 +1,14 @@
-import React, { useState, ChangeEvent } from 'react';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
-import Dialog from '@mui/material/Dialog';
-import { useFormatter } from 'src/components/i18n';
+import Dialog from '@common/dialog/Dialog';
+import DialogActions from '@mui/material/DialogActions';
 import TextField from '@mui/material/TextField';
+import { ChangeEvent, useState } from 'react';
 import { graphql } from 'react-relay';
 import { useDataTableContext } from 'src/components/dataGrid/components/DataTableContext';
-import { insertNode } from 'src/utils/store';
+import { useFormatter } from 'src/components/i18n';
 import { type SavedFiltersSelectionData } from 'src/components/saved_filters/SavedFilterSelection';
 import { SavedFilterCreateDialogMutation$data } from 'src/components/saved_filters/__generated__/SavedFilterCreateDialogMutation.graphql';
+import { insertNode } from 'src/utils/store';
 import useApiMutation from '../../utils/hooks/useApiMutation';
 import getSavedFilterScopeFilter from './getSavedFilterScopeFilter';
 
@@ -85,21 +83,17 @@ const SavedFilterCreateDialog = ({ isOpen, onClose, setCurrentSavedFilter }: Sav
   return (
     <Dialog
       open={isOpen}
-      slotProps={{ paper: { elevation: 1 } }}
       onClose={onClose}
-      fullWidth
-      maxWidth="xs"
+      size="small"
+      title={t_i18n('Save filter')}
     >
-      <DialogTitle>{t_i18n('Save filter')}</DialogTitle>
-      <DialogContent>
-        <TextField
-          label={t_i18n('Name')}
-          placeholder={t_i18n('My saved filter')}
-          fullWidth
-          value={filterName}
-          onChange={handleChange}
-        />
-      </DialogContent>
+      <TextField
+        label={t_i18n('Name')}
+        placeholder={t_i18n('My saved filter')}
+        fullWidth
+        value={filterName}
+        onChange={handleChange}
+      />
       <DialogActions>
         <Button variant="secondary" onClick={onClose}>{t_i18n('Cancel')}</Button>
         <Button onClick={handleSubmitSaveFilter} disabled={!filterName}>{t_i18n('Save')}</Button>

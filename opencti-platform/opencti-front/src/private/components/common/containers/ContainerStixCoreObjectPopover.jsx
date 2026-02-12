@@ -1,31 +1,28 @@
-import React, { Component } from 'react';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
+import Dialog from '@common/dialog/Dialog';
+import MoreVert from '@mui/icons-material/MoreVert';
+import Alert from '@mui/material/Alert';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContentText from '@mui/material/DialogContentText';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import withStyles from '@mui/styles/withStyles';
+import withTheme from '@mui/styles/withTheme';
+import { Form, Formik } from 'formik';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { compose } from 'ramda';
+import { Component } from 'react';
 import { graphql } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
-import withTheme from '@mui/styles/withTheme';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import Button from '@common/button/Button';
-import IconButton from '@common/button/IconButton';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import MoreVert from '@mui/icons-material/MoreVert';
 import { ConnectionHandler } from 'relay-runtime';
-import Alert from '@mui/material/Alert';
-import { Form, Formik } from 'formik';
-import DialogTitle from '@mui/material/DialogTitle';
-import CommitMessage from '../form/CommitMessage';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import { serializeObjectB64 } from '../../../../utils/object';
 import Security from '../../../../utils/Security';
 import { deleteElementByValue } from '../../../../utils/utils';
-import Transition from '../../../../components/Transition';
-import { serializeObjectB64 } from '../../../../utils/object';
+import CommitMessage from '../form/CommitMessage';
 
 const styles = (theme) => ({
   container: {
@@ -311,20 +308,14 @@ class ContainerStixCoreObjectPopover extends Component {
           </Security>
         </Menu>
         <Dialog
-          slotProps={{ paper: { elevation: 1 } }}
           open={this.state.displayDeleteMapping}
-          keepMounted={true}
-          slots={{ transition: Transition }}
           onClose={this.handleCloseDeleteMapping.bind(this)}
+          title={t('Are you sure?')}
+          size="small"
         >
-          <DialogTitle>
-            {t('Are you sure?')}
-          </DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              {t('Do you want to delete the mapping for this entity?')}
-            </DialogContentText>
-          </DialogContent>
+          <DialogContentText>
+            {t('Do you want to delete the mapping for this entity?')}
+          </DialogContentText>
           <DialogActions>
             <Button
               variant="secondary"
@@ -342,20 +333,14 @@ class ContainerStixCoreObjectPopover extends Component {
           </DialogActions>
         </Dialog>
         <Dialog
-          slotProps={{ paper: { elevation: 1 } }}
           open={this.state.displayRemove}
-          keepMounted={true}
-          slots={{ transition: Transition }}
           onClose={this.handleCloseRemove.bind(this)}
+          title={t('Are you sure?')}
+          size="small"
         >
-          <DialogTitle>
-            {t('Are you sure?')}
-          </DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              {t('Do you want to remove the entity from this container?')}
-            </DialogContentText>
-          </DialogContent>
+          <DialogContentText>
+            {t('Do you want to remove the entity from this container?')}
+          </DialogContentText>
           <DialogActions>
             <Button
               variant="secondary"
@@ -399,25 +384,19 @@ class ContainerStixCoreObjectPopover extends Component {
           </Formik>
         )}
         <Dialog
-          slotProps={{ paper: { elevation: 1 } }}
           open={this.state.displayDelete}
-          keepMounted={true}
-          slots={{ transition: Transition }}
           onClose={this.handleCloseDelete.bind(this)}
+          title={t('Are you sure?')}
+          size="small"
         >
-          <DialogTitle>
-            {t('Are you sure?')}
-          </DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              {t('Do you want to delete this entity?')}
-              <Alert severity="warning" variant="outlined" style={{ marginTop: 20 }}>
-                {t(
-                  'You are about to completely delete the entity from the platform (not only from the container), be sure of what you are doing.',
-                )}
-              </Alert>
-            </DialogContentText>
-          </DialogContent>
+          <DialogContentText>
+            {t('Do you want to delete this entity?')}
+            <Alert severity="warning" variant="outlined" style={{ marginTop: 20 }}>
+              {t(
+                'You are about to completely delete the entity from the platform (not only from the container), be sure of what you are doing.',
+              )}
+            </Alert>
+          </DialogContentText>
           <DialogActions>
             <Button
               variant="secondary"

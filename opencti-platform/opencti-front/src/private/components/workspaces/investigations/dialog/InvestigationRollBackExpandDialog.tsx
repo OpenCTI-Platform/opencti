@@ -1,12 +1,9 @@
-import React from 'react';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
+import Dialog from '@common/dialog/Dialog';
+import DialogActions from '@mui/material/DialogActions';
 import { useParams } from 'react-router-dom';
-import { useInvestigationState } from '../utils/useInvestigationState';
 import { useFormatter } from '../../../../../components/i18n';
+import { useInvestigationState } from '../utils/useInvestigationState';
 
 type InvestigationRollBackExpandDialogProps = {
   closeDialog: () => void;
@@ -39,17 +36,12 @@ const InvestigationRollBackExpandDialog = ({
 
   return (
     <Dialog
-      slotProps={{ paper: { elevation: 1 } }}
       open={isOpen}
       onClose={closeDialog}
-      fullWidth={true}
-      maxWidth="sm"
+      title={t_i18n('Revert to Pre-Expansion State')}
     >
-      <DialogTitle>{t_i18n('Revert to Pre-Expansion State')}</DialogTitle>
-      <DialogContent>
-        <p>{t_i18n('Last expansion')}: {getLastRollBackExpandDate()}</p>
-        <p>{t_i18n('All add or remove actions done on the graph after the last expansion will be lost.')}</p>
-      </DialogContent>
+      <p>{t_i18n('Last expansion')}: {getLastRollBackExpandDate()}</p>
+      <p>{t_i18n('All add or remove actions done on the graph after the last expansion will be lost.')}</p>
       <DialogActions>
         <Button variant="secondary" onClick={closeDialog}>{t_i18n('Cancel')}</Button>
         <Button onClick={handleSubmit}>{t_i18n('Validate')}</Button>

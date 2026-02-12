@@ -1,13 +1,9 @@
-import { Field, Form, Formik } from 'formik';
-import Dialog from '@mui/material/Dialog';
-import { DialogTitle } from '@mui/material';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
-import React from 'react';
-import { FormikHelpers } from 'formik/dist/types';
+import Dialog from '@common/dialog/Dialog';
 import AuthorizedMembersField, { AuthorizedMembersFieldValue } from '@components/common/form/AuthorizedMembersField';
-import Transition from '../../../../components/Transition';
+import DialogActions from '@mui/material/DialogActions';
+import { Field, Form, Formik } from 'formik';
+import { FormikHelpers } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
 import { Creator } from '../../../../utils/authorizedMembers';
 
@@ -56,34 +52,27 @@ const FormAuthorizedMembers = ({
       {({ submitForm, isSubmitting, dirty, handleReset }) => (
         <Dialog
           open={open}
-          slotProps={{ paper: { elevation: 1 } }}
-          keepMounted={true}
-          slots={{ transition: Transition }}
-          maxWidth="sm"
-          fullWidth={true}
           onClose={() => {
             handleReset();
             handleClose();
           }}
+          title={t_i18n('Manage access restriction')}
         >
-          <DialogTitle>{t_i18n('Manage access restriction')}</DialogTitle>
-          <DialogContent>
-            <Form>
-              {open && ( // To trigger form initialization correctly (because removed from DOM)
-                <Field
-                  name="authorizedMembers"
-                  component={AuthorizedMembersField}
-                  owner={owner}
-                  showAllMembersLine={showAllMembersLine}
-                  canDeactivate={canDeactivate}
-                  addMeUserWithAdminRights
-                  isCanUseEnable={isCanUseEnable}
-                  customInfoMessage={customInfoMessage}
-                  isDraftEntity={isDraftEntity}
-                />
-              )}
-            </Form>
-          </DialogContent>
+          <Form>
+            {open && ( // To trigger form initialization correctly (because removed from DOM)
+              <Field
+                name="authorizedMembers"
+                component={AuthorizedMembersField}
+                owner={owner}
+                showAllMembersLine={showAllMembersLine}
+                canDeactivate={canDeactivate}
+                addMeUserWithAdminRights
+                isCanUseEnable={isCanUseEnable}
+                customInfoMessage={customInfoMessage}
+                isDraftEntity={isDraftEntity}
+              />
+            )}
+          </Form>
           <DialogActions>
             <Button
               variant="secondary"

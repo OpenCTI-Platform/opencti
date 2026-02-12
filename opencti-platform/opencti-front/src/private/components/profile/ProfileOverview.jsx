@@ -1,43 +1,41 @@
-import React, { useEffect, useState } from 'react';
-import * as PropTypes from 'prop-types';
-import { createFragmentContainer, graphql } from 'react-relay';
-import { Field, Form, Formik } from 'formik';
-import qrcode from 'qrcode';
-import withStyles from '@mui/styles/withStyles';
-import { compose, pick } from 'ramda';
-import * as Yup from 'yup';
-import MenuItem from '@mui/material/MenuItem';
-import Typography from '@mui/material/Typography';
-import { Link } from 'react-router-dom';
-import { LockOutlined, NoEncryptionOutlined, Visibility, VisibilityOff } from '@mui/icons-material';
-import Alert from '@mui/material/Alert';
-import DialogContent from '@mui/material/DialogContent';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import { useTheme } from '@mui/styles';
-import { ListItem, ListItemText, Stack, Switch } from '@mui/material';
 import Button from '@common/button/Button';
 import Card from '@common/card/Card';
-import NotifierField from '../common/form/NotifierField';
-import inject18n, { useFormatter } from '../../../components/i18n';
-import TextField from '../../../components/TextField';
-import SelectField from '../../../components/fields/SelectField';
-import { commitMutation, MESSAGING$, QueryRenderer } from '../../../relay/environment';
-import useGranted, { KNOWLEDGE, OPENCTI_ADMIN_UUID } from '../../../utils/hooks/useGranted';
-import Loader from '../../../components/Loader';
-import { convertOrganizations } from '../../../utils/edition';
-import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
-import PasswordPolicies from '../common/form/PasswordPolicies';
-import { fieldSpacingContainerStyle } from '../../../utils/field';
-import OtpInputField, { OTP_CODE_SIZE } from '../../../public/components/login/OtpInputField';
-import ItemCopy from '../../../components/ItemCopy';
+import Dialog from '@common/dialog/Dialog';
+import { LockOutlined, NoEncryptionOutlined, Visibility, VisibilityOff } from '@mui/icons-material';
+import { ListItem, ListItemText, Stack, Switch } from '@mui/material';
+import Alert from '@mui/material/Alert';
+import MenuItem from '@mui/material/MenuItem';
+import Typography from '@mui/material/Typography';
+import { useTheme } from '@mui/styles';
+import withStyles from '@mui/styles/withStyles';
+import { Field, Form, Formik } from 'formik';
+import * as PropTypes from 'prop-types';
+import qrcode from 'qrcode';
+import { compose, pick } from 'ramda';
+import { useEffect, useState } from 'react';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { Link } from 'react-router-dom';
+import * as Yup from 'yup';
 import { availableLanguage } from '../../../components/AppIntlProvider';
+import ItemCopy from '../../../components/ItemCopy';
+import Loader from '../../../components/Loader';
+import TextField from '../../../components/TextField';
+import IconButton from '../../../components/common/button/IconButton';
+import SelectField from '../../../components/fields/SelectField';
+import inject18n, { useFormatter } from '../../../components/i18n';
+import OtpInputField, { OTP_CODE_SIZE } from '../../../public/components/login/OtpInputField';
+import { commitMutation, MESSAGING$, QueryRenderer } from '../../../relay/environment';
 import { maskString } from '../../../utils/String';
+import { convertOrganizations } from '../../../utils/edition';
+import { fieldSpacingContainerStyle } from '../../../utils/field';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import ProfileLocalStorage from './ProfileLocalStorage';
+import useGranted, { KNOWLEDGE, OPENCTI_ADMIN_UUID } from '../../../utils/hooks/useGranted';
 import useHelper from '../../../utils/hooks/useHelper';
 import DashboardSettings from '../DashboardSettings';
-import IconButton from '../../../components/common/button/IconButton';
+import NotifierField from '../common/form/NotifierField';
+import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
+import PasswordPolicies from '../common/form/PasswordPolicies';
+import ProfileLocalStorage from './ProfileLocalStorage';
 
 const styles = () => ({
   container: {
@@ -171,7 +169,7 @@ const Otp = ({ closeFunction, secret, uri }) => {
         <Alert
           severity="error"
           variant="outlined"
-          style={{ margin: '0 0 15px 0' }}
+          style={{ margin: '15px 0' }}
         >
           {error}
         </Alert>
@@ -179,7 +177,7 @@ const Otp = ({ closeFunction, secret, uri }) => {
         <Alert
           severity="info"
           variant="outlined"
-          style={{ margin: '0 0 15px 0' }}
+          style={{ margin: '15px 0' }}
         >
           {t_i18n('Type the code generated in your application')}
         </Alert>
@@ -301,13 +299,9 @@ const ProfileOverviewComponent = (props) => {
         slotProps={{ paper: { elevation: 1 } }}
         keepMounted={false}
         onClose={() => setDisplay2FA(false)}
+        title={t('Enable two-factor authentication')}
       >
-        <DialogTitle style={{ textAlign: 'center' }}>
-          {t('Enable two-factor authentication')}
-        </DialogTitle>
-        <DialogContent>
-          <OtpComponent closeFunction={() => setDisplay2FA(false)} />
-        </DialogContent>
+        <OtpComponent closeFunction={() => setDisplay2FA(false)} />
       </Dialog>
       <Card title={`${t('Profile')} ${external && `(${t('external')})`}`}>
         <Formik

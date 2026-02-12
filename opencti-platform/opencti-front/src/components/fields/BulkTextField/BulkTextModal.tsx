@@ -1,8 +1,9 @@
-import { DialogTitle, DialogContent, Alert, Dialog, DialogActions, TextField, Typography, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
-import React, { useEffect, useState } from 'react';
 import Button from '@common/button/Button';
-import { useFormatter } from '../../i18n';
+import Dialog from '@common/dialog/Dialog';
+import { Alert, DialogActions, FormControl, InputLabel, MenuItem, Select, Stack, TextField, Typography } from '@mui/material';
+import { useEffect, useState } from 'react';
 import { splitMultilines } from '../../../utils/String';
+import { useFormatter } from '../../i18n';
 
 interface BulkTextModalProps {
   open: boolean;
@@ -53,13 +54,11 @@ const BulkTextModal = ({
     <Dialog
       open={open}
       onClose={onClose}
-      fullWidth={true}
-      slotProps={{ paper: { elevation: 1 } }}
+      title={title || t_i18n('Create multiple entities')}
     >
-      <DialogTitle>{title || t_i18n('Create multiple entities')}</DialogTitle>
-      <DialogContent style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <Stack gap={2}>
         <Alert severity="info" variant="outlined">
-          <Typography>
+          <Typography variant="body2">
             {t_i18n('If you are adding more than 50 values, please upload them through')} <a href="/dashboard/data/import">{t_i18n('Imports')}</a>
           </Typography>
         </Alert>
@@ -98,7 +97,7 @@ const BulkTextModal = ({
             {t_i18n('You have more than 50 values')}
           </Alert>
         )}
-      </DialogContent>
+      </Stack>
 
       <DialogActions>
         <Button variant="secondary" onClick={close}>

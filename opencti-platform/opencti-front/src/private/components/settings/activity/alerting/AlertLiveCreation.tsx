@@ -1,14 +1,13 @@
 import Button from '@common/button/Button';
+import Dialog from '@common/dialog/Dialog';
 import Box from '@mui/material/Box';
-import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import * as Yup from 'yup';
+import FormButtonContainer from '../../../../../components/common/form/FormButtonContainer';
 import MarkdownField from '../../../../../components/fields/MarkdownField';
 import FilterIconButton from '../../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../../components/i18n';
@@ -19,13 +18,12 @@ import { serializeFilterGroupForBackend } from '../../../../../utils/filters/fil
 import useFiltersState from '../../../../../utils/filters/useFiltersState';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { insertNode } from '../../../../../utils/store';
+import Drawer from '../../../common/drawer/Drawer';
 import NotifierField from '../../../common/form/NotifierField';
 import ObjectMembersField from '../../../common/form/ObjectMembersField';
 import Filters from '../../../common/lists/Filters';
 import { TriggersLinesPaginationQuery$variables } from '../../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
 import { AlertLiveCreationActivityMutation, AlertLiveCreationActivityMutation$data } from './__generated__/AlertLiveCreationActivityMutation.graphql';
-import FormButtonContainer from '../../../../../components/common/form/FormButtonContainer';
-import Drawer from '../../../common/drawer/Drawer';
 import { useTheme } from '@mui/material/styles';
 
 export const triggerLiveActivityCreationMutation = graphql`
@@ -235,7 +233,7 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
       disableRestoreFocus={true}
       open={open ?? false}
       onClose={handleClose}
-      slotProps={{ paper: { elevation: 1 } }}
+      title={t_i18n('Create a live activity trigger')}
     >
       <Formik
         initialValues={liveInitialValues}
@@ -245,12 +243,8 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
       >
         {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
           <div>
-            <DialogTitle>{t_i18n('Create a live activity trigger')}</DialogTitle>
-            <DialogContent>{liveFields(setFieldValue, values)}</DialogContent>
-            <DialogActions style={{
-              padding: '0 17px 20px 0',
-            }}
-            >
+            {liveFields(setFieldValue, values)}
+            <DialogActions>
               <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
               </Button>

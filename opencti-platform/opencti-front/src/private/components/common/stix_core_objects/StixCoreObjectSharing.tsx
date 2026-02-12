@@ -1,31 +1,29 @@
-import React, { FunctionComponent, useState } from 'react';
-import { graphql } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
-import Chip from '@mui/material/Chip';
-import { AccountBalanceOutlined } from '@mui/icons-material';
-import { BankPlus } from 'mdi-material-ui';
-import Tooltip from '@mui/material/Tooltip';
-import type { FormikHelpers } from 'formik/dist/types';
-import ToggleButton from '@mui/material/ToggleButton';
-import { Form, Formik } from 'formik';
-import Dialog from '@mui/material/Dialog';
-import { DialogTitle } from '@mui/material';
-import DialogContent from '@mui/material/DialogContent';
-import Typography from '@mui/material/Typography';
 import IconButton from '@common/button/IconButton';
+import Dialog from '@common/dialog/Dialog';
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
+import { AccountBalanceOutlined } from '@mui/icons-material';
+import Chip from '@mui/material/Chip';
+import DialogActions from '@mui/material/DialogActions';
+import ToggleButton from '@mui/material/ToggleButton';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
+import makeStyles from '@mui/styles/makeStyles';
+import { Form, Formik } from 'formik';
+import type { FormikHelpers } from 'formik/dist/types';
+import { BankPlus } from 'mdi-material-ui';
+import { FunctionComponent, useState } from 'react';
+import { graphql } from 'react-relay';
 import { Link } from 'react-router-dom';
-import ObjectOrganizationField from '../form/ObjectOrganizationField';
-import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import { truncate } from '../../../../utils/String';
-import { StixCoreObjectSharingQuery$data } from './__generated__/StixCoreObjectSharingQuery.graphql';
-import useDraftContext from '../../../../utils/hooks/useDraftContext';
-import useGranted, { KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/hooks/useGranted';
-import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import type { Theme } from '../../../../components/Theme';
+import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import useGranted, { KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/hooks/useGranted';
+import { truncate } from '../../../../utils/String';
+import ObjectOrganizationField from '../form/ObjectOrganizationField';
+import { StixCoreObjectSharingQuery$data } from './__generated__/StixCoreObjectSharingQuery.graphql';
 
 // region types
 interface ContainerHeaderSharedProps {
@@ -200,22 +198,18 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
           >
             {({ submitForm, handleReset, isSubmitting }) => (
               <Dialog
-                slotProps={{ paper: { elevation: 1 } }}
                 open={open || displaySharing}
                 onClose={() => handleReset()}
-                fullWidth={true}
+                title={t_i18n('Share with an organization')}
               >
-                <DialogTitle>{t_i18n('Share with an organization')}</DialogTitle>
-                <DialogContent style={{ overflowY: 'hidden' }}>
-                  <Form>
-                    <ObjectOrganizationField
-                      name="objectOrganization"
-                      style={{ width: '100%' }}
-                      label={t_i18n('Organization')}
-                      multiple={false}
-                    />
-                  </Form>
-                </DialogContent>
+                <Form>
+                  <ObjectOrganizationField
+                    name="objectOrganization"
+                    style={{ width: '100%' }}
+                    label={t_i18n('Organization')}
+                    multiple={false}
+                  />
+                </Form>
                 <DialogActions>
                   <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                     {t_i18n('Close')}
@@ -223,7 +217,6 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
                   <Button
                     onClick={submitForm}
                     disabled={isSubmitting}
-                    // color="secondary"
                   >
                     {t_i18n('Share')}
                   </Button>
@@ -277,22 +270,18 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
         >
           {({ submitForm, handleReset, isSubmitting }) => (
             <Dialog
-              slotProps={{ paper: { elevation: 1 } }}
               open={open || displaySharing}
               onClose={() => handleReset()}
-              fullWidth={true}
+              title={t_i18n('Share with an organization')}
             >
-              <DialogTitle>{t_i18n('Share with an organization')}</DialogTitle>
-              <DialogContent style={{ overflowY: 'hidden' }}>
-                <Form>
-                  <ObjectOrganizationField
-                    name="objectOrganization"
-                    style={{ width: '100%' }}
-                    label={t_i18n('Organization')}
-                    multiple={false}
-                  />
-                </Form>
-              </DialogContent>
+              <Form>
+                <ObjectOrganizationField
+                  name="objectOrganization"
+                  style={{ width: '100%' }}
+                  label={t_i18n('Organization')}
+                  multiple={false}
+                />
+              </Form>
               <DialogActions>
                 <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                   {t_i18n('Close')}

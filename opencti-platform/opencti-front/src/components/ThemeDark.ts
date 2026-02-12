@@ -16,6 +16,7 @@ export const THEME_DARK_DEFAULT_ACCENT = '#0f1e38';
 export const THEME_DARK_DEFAULT_PAPER = '#09101e';
 export const THEME_DARK_DEFAULT_TEXT = '#F2F2F3';
 const THEME_DARK_DEFAULT_NAV = '#070d19';
+export const THEME_DARK_DIALOG_BACKGROUND = '#0F1D34';
 
 const getAppBodyGradientEndColor = (background: string | null): string => {
   if (background && background !== THEME_DARK_DEFAULT_BACKGROUND) {
@@ -376,6 +377,39 @@ const ThemeDark = (
         },
       },
     },
+    MuiDialog: {
+      styleOverrides: {
+        paper: {
+          backgroundImage: 'none',
+          backgroundColor: paper === THEME_DARK_DEFAULT_PAPER
+            ? '#0F1D34'
+            : (paper ?? '#0F1D34'),
+          borderRadius: 4,
+        },
+      },
+    },
+    MuiDialogTitle: {
+      defaultProps: {
+        variant: 'h5',
+      },
+    },
+    MuiDialogActions: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          gap: theme.spacing(1),
+          padding: 0,
+          marginTop: theme.spacing(4),
+          marginLeft: 0,
+          '& .MuiButton-root': {
+            textTransform: 'none',
+          },
+          // Override the default margin-left
+          '& > :not(style) ~ :not(style)': {
+            marginLeft: 0,
+          },
+        }),
+      },
+    },
     MuiToggleButtonGroup: {
       defaultProps: {
         size: 'small',
@@ -648,15 +682,6 @@ const ThemeDark = (
           display: 'inline-block',
           '&::first-letter': {
             textTransform: 'uppercase',
-          },
-        },
-      },
-    },
-    MuiDialogActions: {
-      styleOverrides: {
-        root: {
-          '& .MuiButton-root': {
-            textTransform: 'none',
           },
         },
       },

@@ -1,6 +1,6 @@
 import React from 'react';
 import Button from '@common/button/Button';
-import { Box, TextField } from '@mui/material';
+import { Box, Stack, TextField } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import { Field, Formik } from 'formik';
 import { FormikHelpers } from 'formik/dist/types';
@@ -72,7 +72,7 @@ const ImportFilesFreeText = ({ onSubmit, onClose, initialContent }: ImportFilesF
                 htmlInput: { style: { padding: 8 } },
               }}
             />
-            <Box sx={{ display: 'flex', marginLeft: 'auto' }}>
+            <Stack direction="row" gap={1} justifyContent="flex-end" sx={{ width: '100%' }}>
               <Button
                 variant="secondary"
                 disabled={isSubmitting}
@@ -89,7 +89,7 @@ const ImportFilesFreeText = ({ onSubmit, onClose, initialContent }: ImportFilesF
               >
                 {t_i18n('Create file')}
               </Button>
-            </Box>
+            </Stack>
           </Box>
         );
       }}

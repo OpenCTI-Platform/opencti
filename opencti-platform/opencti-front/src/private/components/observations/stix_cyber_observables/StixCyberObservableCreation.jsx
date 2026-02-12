@@ -1,12 +1,10 @@
 import Button from '@common/button/Button';
+import Dialog from '@common/dialog/Dialog';
 import FormButtonContainer from '@common/form/FormButtonContainer';
 import Drawer from '@components/common/drawer/Drawer';
 import { Add } from '@mui/icons-material';
 import Alert from '@mui/lab/Alert';
-import { ListItemButton } from '@mui/material';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
+import { ListItemButton, Stack } from '@mui/material';
 import Fab from '@mui/material/Fab';
 import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
@@ -1031,28 +1029,26 @@ const StixCyberObservableCreation = ({
         )}
         <Dialog
           open={speeddial ? open : status.open}
-          slotProps={{ paper: { elevation: 1 } }}
           onClose={speeddial ? handleClose : localHandleClose}
-          fullWidth={true}
+          title={(
+            <Stack direction="row" alignItems="center" justifyContent="space-between">
+              {t_i18n('Create an observable')}
+              {!isFromBulkRelation && status.type
+                ? (
+                    <BulkTextModalButton
+                      sx={{ marginRight: 0 }}
+                      onClick={() => setBulkOpen(true)}
+                      title={t_i18n('Create multiple observables')}
+                      disabled={!bulkConf}
+                    />
+                  )
+                : <></>
+              }
+            </Stack>
+          )}
         >
-          <DialogTitle style={{ display: 'flex', justifyContent: 'space-between' }}>
-            {t_i18n('Create an observable')}
-            {!isFromBulkRelation && status.type
-              ? (
-                  <BulkTextModalButton
-                    sx={{ marginRight: 0 }}
-                    onClick={() => setBulkOpen(true)}
-                    title={t_i18n('Create multiple observables')}
-                    disabled={!bulkConf}
-                  />
-                )
-              : <></>
-            }
-          </DialogTitle>
-          <DialogContent style={{ paddingTop: 0 }}>
-            {renderUnavailableBulkMessage()}
-            {!status.type ? renderList() : renderForm()}
-          </DialogContent>
+          {renderUnavailableBulkMessage()}
+          {!status.type ? renderList() : renderForm()}
         </Dialog>
       </div>
     );

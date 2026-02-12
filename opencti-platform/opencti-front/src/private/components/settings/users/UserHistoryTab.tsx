@@ -1,31 +1,32 @@
-import React, { FunctionComponent, useState } from 'react';
-import { graphql, useFragment } from 'react-relay';
-import { Avatar, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Tooltip } from '@mui/material';
-import { DeleteOutlined, StorageOutlined } from '@mui/icons-material';
-import { Link } from 'react-router-dom';
-import { LinkVariantPlus, LinkVariantRemove, Merge, VectorRadius } from 'mdi-material-ui';
-import { v4 as uuid } from 'uuid';
-import { deepOrange, green, indigo, lightGreen, orange, pink, red, teal, yellow } from '@mui/material/colors';
 import Button from '@common/button/Button';
+import Dialog from '@common/dialog/Dialog';
+import { DeleteOutlined, StorageOutlined } from '@mui/icons-material';
+import { Avatar, DialogActions, IconButton, Tooltip } from '@mui/material';
+import { deepOrange, green, indigo, lightGreen, orange, pink, red, teal, yellow } from '@mui/material/colors';
 import { useTheme } from '@mui/styles';
-import { UserHistoryTab_user$key } from './__generated__/UserHistoryTab_user.graphql';
+import { LinkVariantPlus, LinkVariantRemove, Merge, VectorRadius } from 'mdi-material-ui';
+import { FunctionComponent, useState } from 'react';
+import { graphql, useFragment } from 'react-relay';
+import { Link } from 'react-router-dom';
+import { v4 as uuid } from 'uuid';
 import DataTable from '../../../../components/dataGrid/DataTable';
-import { emptyFilterGroup, GqlFilterGroup } from '../../../../utils/filters/filtersUtils';
-import { userHistoryLineFragment } from './UserHistoryLine';
-import { userHistoryLinesFragment, userHistoryLinesQuery } from './UserHistoryLines';
-import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { UserHistoryLinesQuery, UserHistoryLinesQuery$variables } from './__generated__/UserHistoryLinesQuery.graphql';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import { UserHistoryLines_data$data } from './__generated__/UserHistoryLines_data.graphql';
-import useGranted, { KNOWLEDGE, SETTINGS_SECURITYACTIVITY } from '../../../../utils/hooks/useGranted';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
-import type { Theme } from '../../../../components/Theme';
-import { UserHistoryLine_node$data } from './__generated__/UserHistoryLine_node.graphql';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import type { Theme } from '../../../../components/Theme';
+import { emptyFilterGroup, GqlFilterGroup } from '../../../../utils/filters/filtersUtils';
+import useGranted, { KNOWLEDGE, SETTINGS_SECURITYACTIVITY } from '../../../../utils/hooks/useGranted';
+import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { EMPTY_VALUE } from '../../../../utils/String';
+import { UserHistoryLine_node$data } from './__generated__/UserHistoryLine_node.graphql';
+import { UserHistoryLines_data$data } from './__generated__/UserHistoryLines_data.graphql';
+import { UserHistoryLinesQuery, UserHistoryLinesQuery$variables } from './__generated__/UserHistoryLinesQuery.graphql';
+import { UserHistoryTab_user$key } from './__generated__/UserHistoryTab_user.graphql';
+import { userHistoryLineFragment } from './UserHistoryLine';
+import { userHistoryLinesFragment, userHistoryLinesQuery } from './UserHistoryLines';
 
 const LOCAL_STORAGE_KEY = 'audits';
 
@@ -333,18 +334,14 @@ const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({
       )}
       <Dialog
         open={open}
-        slotProps={{ paper: { elevation: 1 } }}
         onClose={handleClose}
-        fullWidth={true}
+        title={t_i18n('Commit message')}
       >
-        <DialogTitle>{t_i18n('Commit message')}</DialogTitle>
-        <DialogContent>
-          <MarkdownDisplay
-            content={message}
-            remarkGfmPlugin={true}
-            commonmark={true}
-          />
-        </DialogContent>
+        <MarkdownDisplay
+          content={message}
+          remarkGfmPlugin={true}
+          commonmark={true}
+        />
         <DialogActions>
           <Button onClick={handleClose}>
             {t_i18n('Close')}

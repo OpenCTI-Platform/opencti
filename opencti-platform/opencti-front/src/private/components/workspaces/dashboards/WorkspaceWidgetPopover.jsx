@@ -1,21 +1,19 @@
-import { useState } from 'react';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
+import Dialog from '@common/dialog/Dialog';
 import MoreVert from '@mui/icons-material/MoreVert';
-import handleWidgetExportJson from '../../../../utils/widget/widgetExportHandler';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContentText from '@mui/material/DialogContentText';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import { useState } from 'react';
+import DeleteDialog from '../../../../components/DeleteDialog';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
-import { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted';
-import WorkspaceWidgetConfig from './WorkspaceWidgetConfig';
-import Transition from '../../../../components/Transition';
-import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
+import { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted';
+import handleWidgetExportJson from '../../../../utils/widget/widgetExportHandler';
+import WorkspaceWidgetConfig from './WorkspaceWidgetConfig';
 
 const WorkspaceWidgetPopover = ({
   onUpdate,
@@ -86,17 +84,13 @@ const WorkspaceWidgetPopover = ({
       />
       <Dialog
         open={displayDuplicate}
-        slotProps={{ paper: { elevation: 1 } }}
-        keepMounted={true}
-        slots={{ transition: Transition }}
         onClose={() => setDisplayDuplicate(false)}
         className="noDrag"
+        title={t_i18n('Are you sure?')}
       >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to duplicate this widget?')}
-          </DialogContentText>
-        </DialogContent>
+        <DialogContentText>
+          {t_i18n('Do you want to duplicate this widget?')}
+        </DialogContentText>
         <DialogActions>
           <Button variant="secondary" onClick={() => setDisplayDuplicate(false)}>
             {t_i18n('Cancel')}

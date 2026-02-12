@@ -1,14 +1,11 @@
-import React, { useState } from 'react';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import Dialog from '@mui/material/Dialog';
+import Button from '@common/button/Button';
+import Dialog from '@common/dialog/Dialog';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@common/button/Button';
-import { useFormatter } from '../../../components/i18n';
-import Transition from '../../../components/Transition';
+import React, { useState } from 'react';
 import Card from '../../../components/common/card/Card';
+import { useFormatter } from '../../../components/i18n';
 
 const ProfileLocalStorage: React.FC = () => {
   const { t_i18n } = useFormatter();
@@ -36,26 +33,19 @@ const ProfileLocalStorage: React.FC = () => {
       {/* Confirmation dialog */}
       <Dialog
         open={displayConfirmation}
-        slotProps={{ paper: { elevation: 1 } }}
-        keepMounted={false}
-        slots={{ transition: Transition }}
         onClose={() => setDisplayConfirmation(false)}
+        title={t_i18n('Clear local storage')}
       >
-        <DialogTitle>
-          {t_i18n('Clear local storage')}
-        </DialogTitle>
-        <DialogContent>
-          <Alert
-            icon={false}
-            severity="warning"
-            variant="outlined"
-            sx={{ color: 'text.primary' }}
-          >
-            <AlertTitle style={{ marginBottom: 0, fontWeight: 400 }}>
-              {t_i18n('This will erase all the views settings you have made. All these changes will be lost. Are you sure?')}
-            </AlertTitle>
-          </Alert>
-        </DialogContent>
+        <Alert
+          icon={false}
+          severity="warning"
+          variant="outlined"
+          sx={{ color: 'text.primary' }}
+        >
+          <AlertTitle style={{ marginBottom: 0, fontWeight: 400 }}>
+            {t_i18n('This will erase all the views settings you have made. All these changes will be lost. Are you sure?')}
+          </AlertTitle>
+        </Alert>
         <DialogActions>
           <Button
             variant="secondary"

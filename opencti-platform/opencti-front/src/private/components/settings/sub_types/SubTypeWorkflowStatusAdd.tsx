@@ -1,20 +1,18 @@
-import React, { FunctionComponent, useState } from 'react';
-import { Field, Form, Formik } from 'formik';
 import Button from '@common/button/Button';
-import Fab from '@mui/material/Fab';
+import Dialog from '@common/dialog/Dialog';
 import { Add } from '@mui/icons-material';
-import { graphql } from 'react-relay';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
+import Fab from '@mui/material/Fab';
 import makeStyles from '@mui/styles/makeStyles';
+import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
+import { FunctionComponent, useState } from 'react';
+import { graphql } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import StatusTemplateField from '../../common/form/StatusTemplateField';
 import { StatusForm, statusValidation } from './statusFormUtils';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles({
@@ -97,27 +95,23 @@ const SubTypeWorkflowStatusAdd: FunctionComponent<
           <Form>
             <Dialog
               open={open}
-              slotProps={{ paper: { elevation: 1 } }}
               onClose={handleClose}
-              fullWidth={true}
+              title={t_i18n('Create a status')}
             >
-              <DialogTitle>{t_i18n('Create a status')}</DialogTitle>
-              <DialogContent>
-                <StatusTemplateField
-                  name="template"
-                  setFieldValue={setFieldValue}
-                  helpertext=""
-                />
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="order"
-                  label={t_i18n('Order')}
-                  fullWidth={true}
-                  type="number"
-                  style={{ marginTop: 20 }}
-                />
-              </DialogContent>
+              <StatusTemplateField
+                name="template"
+                setFieldValue={setFieldValue}
+                helpertext=""
+              />
+              <Field
+                component={TextField}
+                variant="standard"
+                name="order"
+                label={t_i18n('Order')}
+                fullWidth={true}
+                type="number"
+                style={{ marginTop: 20 }}
+              />
               <DialogActions>
                 <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                   {t_i18n('Cancel')}

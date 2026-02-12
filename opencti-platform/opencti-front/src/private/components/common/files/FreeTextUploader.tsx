@@ -1,24 +1,22 @@
-import React, { useState } from 'react';
-import { graphql } from 'react-relay';
-import IconButton, { type IconButtonOwnProps } from '@mui/material/IconButton';
-import { TextFieldsOutlined } from '@mui/icons-material';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
-import Dialog from '@mui/material/Dialog';
+import Dialog from '@common/dialog/Dialog';
+import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
+import { TextFieldsOutlined } from '@mui/icons-material';
+import DialogActions from '@mui/material/DialogActions';
+import IconButton, { type IconButtonOwnProps } from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import { Field, Formik, FormikHelpers } from 'formik';
-import DialogTitle from '@mui/material/DialogTitle';
+import { useState } from 'react';
+import { graphql } from 'react-relay';
 import * as Yup from 'yup';
-import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
-import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
-import { now } from '../../../../utils/Time';
-import { isValidStixBundle } from '../../../../utils/String';
-import { KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
+import { isValidStixBundle } from '../../../../utils/String';
+import { now } from '../../../../utils/Time';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
+import { KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 
 const freeTextUploaderGlobalMutation = graphql`
   mutation FreeTextUploaderGlobalMutation($file: Upload!, $fileMarkings: [String]) {
@@ -137,32 +135,29 @@ const FreeTextUploader = ({ color, entityId, onUploadSuccess, size }: FreeTextUp
         >
           {({ handleReset, isSubmitting, setFieldValue, submitForm }) => (
             <Dialog
-              fullWidth={true}
               onClose={handleClose}
               open={isOpen}
-              slotProps={{ paper: { elevation: 1 } }}
+              title={t_i18n('Free text import')}
             >
-              <DialogTitle>{t_i18n('Free text import')}</DialogTitle>
-              <DialogContent>
-                <Field
-                  component={TextField}
-                  fullWidth={true}
-                  label={t_i18n('Content')}
-                  multiline={true}
-                  name="content"
-                  rows="8"
-                  variant="standard"
-                />
-                <ObjectMarkingField
-                  label={t_i18n('File marking definition levels')}
-                  name="fileMarkings"
-                  style={fieldSpacingContainerStyle}
-                  onChange={() => {
-                  }}
-                  setFieldValue={setFieldValue}
-                  required={false}
-                />
-              </DialogContent>
+              <Field
+                component={TextField}
+                fullWidth={true}
+                label={t_i18n('Content')}
+                multiline={true}
+                name="content"
+                rows="8"
+                variant="standard"
+              />
+              <ObjectMarkingField
+                label={t_i18n('File marking definition levels')}
+                name="fileMarkings"
+                style={fieldSpacingContainerStyle}
+                onChange={() => {
+                }}
+                setFieldValue={setFieldValue}
+                required={false}
+              />
+
               <DialogActions>
                 <Button
                   variant="secondary"

@@ -286,14 +286,12 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
                 variant="secondary"
                 onClick={handleReset}
                 disabled={isSubmitting}
-                sx={{ marginLeft: 2 }}
               >
                 {t_i18n('Cancel')}
               </Button>
               <Button
                 onClick={submitForm}
                 disabled={isSubmitting}
-                sx={{ marginLeft: 2 }}
               >
                 {t_i18n('Create')}
               </Button>

@@ -1,19 +1,16 @@
-import React, { FunctionComponent } from 'react';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
-import FormGroup from '@mui/material/FormGroup';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Switch from '@mui/material/Switch';
+import Dialog from '@common/dialog/Dialog';
+import { ContainerStixCoreObjectsSuggestedMappingQuery$data } from '@components/common/containers/__generated__/ContainerStixCoreObjectsSuggestedMappingQuery.graphql';
+import { CheckCircleOutlined } from '@mui/icons-material';
 import Box from '@mui/material/Box';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContentText from '@mui/material/DialogContentText';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormGroup from '@mui/material/FormGroup';
+import Switch from '@mui/material/Switch';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
-import { CheckCircleOutlined } from '@mui/icons-material';
-import { ContainerStixCoreObjectsSuggestedMappingQuery$data } from '@components/common/containers/__generated__/ContainerStixCoreObjectsSuggestedMappingQuery.graphql';
-import Transition from '../../../../components/Transition';
+import { FunctionComponent } from 'react';
 import { useFormatter } from '../../../../components/i18n';
 
 interface ContainerStixCoreObjectsMappingHeaderProps {
@@ -55,20 +52,13 @@ const ContainerStixCoreObjectsMappingHeader: FunctionComponent<ContainerStixCore
   return (
     <>
       <Dialog
-        slotProps={{ paper: { elevation: 1 } }}
         open={openValidate}
-        keepMounted
-        slots={{ transition: Transition }}
         onClose={() => setOpenValidate(false)}
+        title={t_i18n('Are you sure?')}
       >
-        <DialogTitle>
-          {t_i18n('Are you sure?')}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('You are about to validate this mapping, it will add suggested entities to your container.')}
-          </DialogContentText>
-        </DialogContent>
+        <DialogContentText>
+          {t_i18n('You are about to validate this mapping, it will add suggested entities to your container.')}
+        </DialogContentText>
         <DialogActions>
           <Button
             variant="secondary"
@@ -86,17 +76,13 @@ const ContainerStixCoreObjectsMappingHeader: FunctionComponent<ContainerStixCore
         </DialogActions>
       </Dialog>
       <Dialog
-        slotProps={{ paper: { elevation: 1 } }}
         open={openClearMapping}
-        keepMounted
-        slots={{ transition: Transition }}
         onClose={() => setOpenClearMapping(false)}
+        title={t_i18n('Are you sure?')}
       >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to delete the mapping of this content?')}
-          </DialogContentText>
-        </DialogContent>
+        <DialogContentText>
+          {t_i18n('Do you want to delete the mapping of this content?')}
+        </DialogContentText>
         <DialogActions>
           <Button
             variant="secondary"

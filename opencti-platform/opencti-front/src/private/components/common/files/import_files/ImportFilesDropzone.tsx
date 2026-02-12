@@ -80,7 +80,7 @@ const ImportFilesDropzone = ({
       <Typography variant="h3" sx={{ marginBlock: 2 }}>
         {t_i18n('Drag and drop files to import')}
       </Typography>
-      <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
         <Button component="label" size="small">
           {t_i18n('Browse files')}
           <input type="file" hidden multiple onChange={handleFileChange} />

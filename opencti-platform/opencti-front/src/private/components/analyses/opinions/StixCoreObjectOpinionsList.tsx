@@ -1,22 +1,20 @@
-import React, { FunctionComponent } from 'react';
-import { graphql, usePreloadedQuery } from 'react-relay';
-import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
+import Dialog from '@common/dialog/Dialog';
+import { ListItemButton } from '@mui/material';
 import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { Link } from 'react-router-dom';
 import Tooltip from '@mui/material/Tooltip';
-import { ListItemButton } from '@mui/material';
-import ListItem from '@mui/material/ListItem';
-import OpinionPopover from './OpinionPopover';
-import { EMPTY_VALUE, truncate } from '../../../../utils/String';
-import ItemMarkings from '../../../../components/ItemMarkings';
-import { StixCoreObjectOpinionsListQuery } from './__generated__/StixCoreObjectOpinionsListQuery.graphql';
+import { FunctionComponent } from 'react';
+import { graphql, usePreloadedQuery } from 'react-relay';
+import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
+import { Link } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
+import ItemMarkings from '../../../../components/ItemMarkings';
+import { EMPTY_VALUE, truncate } from '../../../../utils/String';
+import { StixCoreObjectOpinionsListQuery } from './__generated__/StixCoreObjectOpinionsListQuery.graphql';
+import OpinionPopover from './OpinionPopover';
 
 export const stixCoreObjectOpinionsListQuery = graphql`
   query StixCoreObjectOpinionsListQuery(
@@ -63,83 +61,77 @@ const StixCoreObjectOpinionsList: FunctionComponent<StixCoreObjectOpinionsListPr
   const { opinions } = usePreloadedQuery<StixCoreObjectOpinionsListQuery>(stixCoreObjectOpinionsListQuery, queryRef);
   return (
     <Dialog
-      slotProps={{ paper: { elevation: 1 } }}
       open={open}
       onClose={handleClose}
-      fullWidth={true}
-      maxWidth="md"
+      size="large"
+      title={t_i18n('List of opinions')}
     >
-      <DialogTitle>
-        {t_i18n('List of opinions')}
-      </DialogTitle>
-      <DialogContent>
-        <List>
-          {opinions && (opinions.edges ?? []).map((opinionEdge) => {
-            const opinion = opinionEdge?.node;
-            return (
-              <ListItem
-                key={opinion?.id}
-                divider={true}
-                disablePadding
-                secondaryAction={opinion
-                  && (
-                    <OpinionPopover
-                      opinion={opinion}
-                      variant="inList"
-                      onDelete={() => {
-                        onDelete();
-                        handleClose();
-                      }}
-                    />
-                  )
-                }
-              >
-                <ListItemButton
-                  component={Link}
-                  to={`/dashboard/analyses/opinions/${opinion?.id}`}
-                >
-                  <ListItemIcon>
-                    <ItemIcon type="Opinion" />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={opinion?.opinion}
-                    secondary={(
-                      <Tooltip title={opinion?.explanation}>
-                        <span>{truncate(opinion?.explanation, 80)}</span>
-                      </Tooltip>
-                    )}
-                    sx={{
-                      flex: 'none',
-                      width: '400px',
-                      marginRight: '50px',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
+      <List>
+        {opinions && (opinions.edges ?? []).map((opinionEdge) => {
+          const opinion = opinionEdge?.node;
+          return (
+            <ListItem
+              key={opinion?.id}
+              divider={true}
+              disablePadding
+              secondaryAction={opinion
+                && (
+                  <OpinionPopover
+                    opinion={opinion}
+                    variant="inList"
+                    onDelete={() => {
+                      onDelete();
+                      handleClose();
                     }}
                   />
-                  <Tooltip title={opinion?.createdBy?.name ?? EMPTY_VALUE}>
-                    <div style={{
-                      marginRight: 50,
-                      width: '200px',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
-                    >
-                      {opinion?.createdBy?.name ?? EMPTY_VALUE}
-                    </div>
-                  </Tooltip>
-                  <div style={{ marginRight: 50 }}>
-                    <ItemMarkings
-                      markingDefinitions={opinion?.objectMarking ?? []}
-                      limit={1}
-                    />
+                )
+              }
+            >
+              <ListItemButton
+                component={Link}
+                to={`/dashboard/analyses/opinions/${opinion?.id}`}
+              >
+                <ListItemIcon>
+                  <ItemIcon type="Opinion" />
+                </ListItemIcon>
+                <ListItemText
+                  primary={opinion?.opinion}
+                  secondary={(
+                    <Tooltip title={opinion?.explanation}>
+                      <span>{truncate(opinion?.explanation, 80)}</span>
+                    </Tooltip>
+                  )}
+                  sx={{
+                    flex: 'none',
+                    width: '400px',
+                    marginRight: '50px',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                />
+                <Tooltip title={opinion?.createdBy?.name ?? EMPTY_VALUE}>
+                  <div style={{
+                    marginRight: 50,
+                    width: '200px',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                  >
+                    {opinion?.createdBy?.name ?? EMPTY_VALUE}
                   </div>
-                </ListItemButton>
-              </ListItem>
-            );
-          })}
-        </List>
-      </DialogContent>
+                </Tooltip>
+                <div style={{ marginRight: 50 }}>
+                  <ItemMarkings
+                    markingDefinitions={opinion?.objectMarking ?? []}
+                    limit={1}
+                  />
+                </div>
+              </ListItemButton>
+            </ListItem>
+          );
+        })}
+      </List>
     </Dialog>
   );
 };

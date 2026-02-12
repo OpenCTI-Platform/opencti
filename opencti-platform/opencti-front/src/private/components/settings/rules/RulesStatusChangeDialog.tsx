@@ -1,16 +1,13 @@
-import React from 'react';
-import DialogContent from '@mui/material/DialogContent';
+import Button from '@common/button/Button';
+import Dialog from '@common/dialog/Dialog';
 import Alert from '@mui/material/Alert';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@common/button/Button';
-import Dialog from '@mui/material/Dialog';
 import { useTheme } from '@mui/material/styles';
 import { graphql } from 'react-relay';
-import Transition from '../../../../components/Transition';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { MESSAGING$ } from '../../../../relay/environment';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const ruleActivationMutation = graphql`
   mutation RulesStatusChangeDialogActivationMutation($id: ID!, $enable: Boolean!) {
@@ -75,22 +72,17 @@ const RulesStatusChangeDialog = ({
 
   return (
     <Dialog
-      keepMounted
       open={status !== undefined}
-      slotProps={{ paper: { elevation: 1 } }}
-      slots={{ transition: Transition }}
       onClose={close}
     >
-      <DialogContent>
-        <Alert
-          severity="warning"
-          variant="outlined"
-          color="dangerZone"
-          style={{ borderColor: theme.palette.dangerZone.main }}
-        >
-          {status && labels[status].description}
-        </Alert>
-      </DialogContent>
+      <Alert
+        severity="warning"
+        variant="outlined"
+        color="dangerZone"
+        style={{ borderColor: theme.palette.dangerZone.main }}
+      >
+        {status && labels[status].description}
+      </Alert>
       <DialogActions>
         <Button variant="secondary" onClick={close} disabled={processing}>
           {t_i18n('Cancel')}

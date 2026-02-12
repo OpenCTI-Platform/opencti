@@ -1,43 +1,41 @@
-import React, { FunctionComponent, useState } from 'react';
-import { Field, Form, Formik } from 'formik';
 import Button from '@common/button/Button';
-import Fab from '@mui/material/Fab';
-import { Add } from '@mui/icons-material';
-import * as Yup from 'yup';
-import { graphql } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
-import { RecordSourceSelectorProxy } from 'relay-runtime';
-import { FormikConfig } from 'formik/dist/types';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
+import Dialog from '@common/dialog/Dialog';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { IndicatorsLinesPaginationQuery$variables } from '@components/observations/__generated__/IndicatorsLinesPaginationQuery.graphql';
+import { Add } from '@mui/icons-material';
+import Fab from '@mui/material/Fab';
+import makeStyles from '@mui/styles/makeStyles';
+import { Field, Form, Formik } from 'formik';
+import { FormikConfig } from 'formik/dist/types';
+import { FunctionComponent, useState } from 'react';
+import { graphql } from 'react-relay';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
+import * as Yup from 'yup';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
+import TextField from '../../../../components/TextField';
+import type { Theme } from '../../../../components/Theme';
+import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
+import MarkdownField from '../../../../components/fields/MarkdownField';
+import SwitchField from '../../../../components/fields/SwitchField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
-import TextField from '../../../../components/TextField';
-import CreatedByField from '../../common/form/CreatedByField';
-import ObjectLabelField from '../../common/form/ObjectLabelField';
-import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import TypesField from '../TypesField';
-import SwitchField from '../../../../components/fields/SwitchField';
-import MarkdownField from '../../../../components/fields/MarkdownField';
-import KillChainPhasesField from '../../common/form/KillChainPhasesField';
-import ConfidenceField from '../../common/form/ConfidenceField';
-import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import DateTimePickerField from '../../../../components/DateTimePickerField';
-import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
-import OpenVocabField from '../../common/form/OpenVocabField';
-import { insertNode } from '../../../../utils/store';
-import type { Theme } from '../../../../components/Theme';
-import { IndicatorCreationMutation, IndicatorCreationMutation$variables } from './__generated__/IndicatorCreationMutation.graphql';
 import { parse } from '../../../../utils/Time';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import { insertNode } from '../../../../utils/store';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
+import ConfidenceField from '../../common/form/ConfidenceField';
+import CreatedByField from '../../common/form/CreatedByField';
+import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
+import KillChainPhasesField from '../../common/form/KillChainPhasesField';
+import ObjectLabelField from '../../common/form/ObjectLabelField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
+import OpenVocabField from '../../common/form/OpenVocabField';
+import TypesField from '../TypesField';
+import { IndicatorCreationMutation, IndicatorCreationMutation$variables } from './__generated__/IndicatorCreationMutation.graphql';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -452,16 +450,13 @@ const IndicatorCreation: FunctionComponent<IndicatorCreationProps> = ({ paginati
         <Dialog
           open={open}
           onClose={handleClose}
-          slotProps={{ paper: { elevation: 1 } }}
+          title={t_i18n('Create an indicator')}
         >
-          <DialogTitle>{t_i18n('Create an indicator')}</DialogTitle>
-          <DialogContent>
-            <IndicatorCreationForm
-              updater={updater}
-              onCompleted={handleClose}
-              onReset={onReset}
-            />
-          </DialogContent>
+          <IndicatorCreationForm
+            updater={updater}
+            onCompleted={handleClose}
+            onReset={onReset}
+          />
         </Dialog>
       </div>
     );

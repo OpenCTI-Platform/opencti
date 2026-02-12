@@ -1,10 +1,7 @@
 import Button from '@common/button/Button';
+import Dialog from '@common/dialog/Dialog';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
-import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik, FormikConfig } from 'formik';
 import { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
@@ -15,19 +12,10 @@ import FormButtonContainer from '../../../../components/common/form/FormButtonCo
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
-import type { Theme } from '../../../../components/Theme';
 import { commitMutation, defaultCommitMutation, handleErrorInForm } from '../../../../relay/environment';
 import { insertNode } from '../../../../utils/store';
 import { StatusTemplateAddInput, StatusTemplateCreationContextualMutation$data } from './__generated__/StatusTemplateCreationContextualMutation.graphql';
 import { StatusTemplatesLinesPaginationQuery$variables } from './__generated__/StatusTemplatesLinesPaginationQuery.graphql';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>(() => ({
-  dialog: {
-    overflow: 'hidden',
-  },
-}));
 
 const statusTemplateMutation = graphql`
   mutation StatusTemplateCreationMutation($input: StatusTemplateAddInput!) {
@@ -74,7 +62,6 @@ const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = (
   open,
   paginationOptions,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const statusTemplateValidation = Yup.object().shape({
     name: Yup.string().required(t_i18n('This field is required')),
@@ -211,27 +198,23 @@ const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = (
             <Form>
               <Dialog
                 open={open}
-                slotProps={{ paper: { elevation: 1 } }}
                 onClose={handleClose}
-                fullWidth={true}
+                title={t_i18n('Create a status template')}
               >
-                <DialogTitle>{t_i18n('Create a status template')}</DialogTitle>
-                <DialogContent classes={{ root: classes.dialog }}>
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="name"
-                    label={t_i18n('Name')}
-                    fullWidth={true}
-                  />
-                  <Field
-                    component={ColorPickerField}
-                    name="color"
-                    label={t_i18n('Color')}
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
-                  />
-                </DialogContent>
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="name"
+                  label={t_i18n('Name')}
+                  fullWidth={true}
+                />
+                <Field
+                  component={ColorPickerField}
+                  name="color"
+                  label={t_i18n('Color')}
+                  fullWidth={true}
+                  style={{ marginTop: 20 }}
+                />
                 <DialogActions>
                   <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                     {t_i18n('Cancel')}

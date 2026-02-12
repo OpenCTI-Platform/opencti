@@ -1,30 +1,27 @@
-import React, { useState } from 'react';
-import { graphql, useFragment } from 'react-relay';
-import { deepOrange, deepPurple, green, indigo, pink, red, teal, yellow } from '@mui/material/colors';
-import Badge from '@mui/material/Badge';
-import Avatar from '@mui/material/Avatar';
-import { AddOutlined, DeleteOutlined, EditOutlined, HelpOutlined, LinkOffOutlined, LinkOutlined, OpenInBrowserOutlined } from '@mui/icons-material';
-import { LinkVariantPlus, LinkVariantRemove, Merge } from 'mdi-material-ui';
-import Tooltip from '@mui/material/Tooltip';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
-import Dialog from '@mui/material/Dialog';
+import IconButton from '@common/button/IconButton';
+import Dialog from '@common/dialog/Dialog';
+import { AddOutlined, DeleteOutlined, EditOutlined, HelpOutlined, LinkOffOutlined, LinkOutlined, OpenInBrowserOutlined } from '@mui/icons-material';
+import { ListItemButton } from '@mui/material';
+import Avatar from '@mui/material/Avatar';
+import Badge from '@mui/material/Badge';
+import { deepOrange, deepPurple, green, indigo, pink, red, teal, yellow } from '@mui/material/colors';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContentText from '@mui/material/DialogContentText';
 import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import DialogContentText from '@mui/material/DialogContentText';
-import IconButton from '@common/button/IconButton';
-import { Link } from 'react-router-dom';
-import ListItem from '@mui/material/ListItem';
-import { ListItemButton } from '@mui/material';
 import Paper from '@mui/material/Paper';
+import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/styles';
+import { LinkVariantPlus, LinkVariantRemove, Merge } from 'mdi-material-ui';
+import { useState } from 'react';
+import { graphql, useFragment } from 'react-relay';
+import { Link } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
-import MarkdownDisplay from '../../../../components/MarkdownDisplay';
-import Transition from '../../../../components/Transition';
 import ItemIcon from '../../../../components/ItemIcon';
+import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { truncate } from '../../../../utils/String';
 
 export const StixCoreObjectHistoryFragment = graphql`
@@ -313,19 +310,15 @@ const StixCoreObjectHistoryLine = ({ node, isRelation }) => {
       }}
       />
       <Dialog
-        slotProps={{ paper: { elevation: 1 } }}
         open={open}
         onClose={handleClose}
-        fullWidth={true}
+        title={t_i18n('Commit message')}
       >
-        <DialogTitle>{t_i18n('Commit message')}</DialogTitle>
-        <DialogContent>
-          <MarkdownDisplay
-            content={data.context_data.commit}
-            remarkGfmPlugin={true}
-            commonmark={true}
-          />
-        </DialogContent>
+        <MarkdownDisplay
+          content={data.context_data.commit}
+          remarkGfmPlugin={true}
+          commonmark={true}
+        />
         <DialogActions>
           <Button color="primary" onClick={handleClose}>
             {t_i18n('Close')}
@@ -333,17 +326,13 @@ const StixCoreObjectHistoryLine = ({ node, isRelation }) => {
         </DialogActions>
       </Dialog>
       <Dialog
-        slotProps={{ paper: { elevation: 1 } }}
         open={displayExternalLink}
-        keepMounted={true}
-        slots={{ transition: Transition }}
         onClose={handleCloseExternalLink}
+        title={t_i18n('Do you want to browse this external link?')}
       >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to browse this external link?')}
-          </DialogContentText>
-        </DialogContent>
+        <DialogContentText>
+          {t_i18n('Do you want to browse this external link?')}
+        </DialogContentText>
         <DialogActions>
           <Button variant="secondary" onClick={handleCloseExternalLink}>
             {t_i18n('Cancel')}

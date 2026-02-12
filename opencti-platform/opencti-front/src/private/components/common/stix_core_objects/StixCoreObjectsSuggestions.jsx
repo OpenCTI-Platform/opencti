@@ -1,30 +1,15 @@
-import React, { useState } from 'react';
 import Button from '@common/button/Button';
-import {
-  Badge,
-  CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  List,
-  ListItem,
-  ListItemText,
-  MenuItem,
-  Select,
-  ToggleButton,
-  Tooltip,
-} from '@mui/material';
+import Dialog from '@common/dialog/Dialog';
 import { AddTaskOutlined, AssistantOutlined } from '@mui/icons-material';
-import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
-import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
-import { stixCoreRelationshipCreationMutation } from '../stix_core_relationships/StixCoreRelationshipCreation';
-import { containerAddStixCoreObjectsLinesRelationAddMutation } from '../containers/ContainerAddStixCoreObjectsLines';
+import { Badge, CircularProgress, DialogActions, IconButton, List, ListItem, ListItemText, MenuItem, Select, ToggleButton, Tooltip } from '@mui/material';
+import { useState } from 'react';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
-import Transition from '../../../../components/Transition';
 import { useFormatter } from '../../../../components/i18n';
+import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
+import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { containerAddStixCoreObjectsLinesRelationAddMutation } from '../containers/ContainerAddStixCoreObjectsLines';
+import { stixCoreRelationshipCreationMutation } from '../stix_core_relationships/StixCoreRelationshipCreation';
 
 const StixCoreObjectsSuggestionsComponent = (props) => {
   const { t_i18n } = useFormatter();
@@ -337,88 +322,82 @@ const StixCoreObjectsSuggestionsComponent = (props) => {
                     </ToggleButton>
                   </Tooltip>
                   <Dialog
-                    slotProps={{ paper: { elevation: 1 } }}
                     open={displaySuggestions}
-                    slots={{ transition: Transition }}
                     onClose={() => setDisplaySuggestions(false)}
-                    maxWidth="md"
-                    fullWidth={true}
+                    title={t_i18n('Suggestions')}
                   >
-                    <DialogTitle>{t_i18n('Suggestions')}</DialogTitle>
-                    <DialogContent dividers={true}>
-                      <List>
-                        {suggestions.map((suggestion) => (
-                          <ListItem
-                            key={suggestion.type}
-                            disableGutters={true}
-                            divider={true}
-                            secondaryAction={(
-                              <Tooltip title={t_i18n('Apply the suggestion')}>
-                                <IconButton
-                                  edge="end"
-                                  aria-label="apply"
-                                  onClick={() => applySuggestion(
-                                    suggestion.type,
-                                    containerProps.container.objects.edges.map(
-                                      (o) => ({
-                                        ...o.node,
-                                        types: o.types,
-                                      }),
-                                    ),
+                    <List>
+                      {suggestions.map((suggestion) => (
+                        <ListItem
+                          key={suggestion.type}
+                          disableGutters={true}
+                          divider={true}
+                          secondaryAction={(
+                            <Tooltip title={t_i18n('Apply the suggestion')}>
+                              <IconButton
+                                edge="end"
+                                aria-label="apply"
+                                onClick={() => applySuggestion(
+                                  suggestion.type,
+                                  containerProps.container.objects.edges.map(
+                                    (o) => ({
+                                      ...o.node,
+                                      types: o.types,
+                                    }),
+                                  ),
+                                )
+                                }
+                                color={
+                                  applied.some(
+                                    (a) => a[suggestion.type]
+                                      === selectedEntity[suggestion.type],
                                   )
-                                  }
-                                  color={
-                                    applied.some(
-                                      (a) => a[suggestion.type]
-                                        === selectedEntity[suggestion.type],
-                                    )
-                                      ? 'success'
-                                      : 'primary'
-                                  }
-                                  disabled={
-                                    applying.includes(suggestion.type)
-                                    || !selectedEntity[suggestion.type]
-                                  }
-                                >
-                                  {applying.includes(suggestion.type) ? (
-                                    <CircularProgress size={20} color="inherit" />
-                                  ) : (
-                                    <AddTaskOutlined />
-                                  )}
-                                </IconButton>
-                              </Tooltip>
+                                    ? 'success'
+                                    : 'primary'
+                                }
+                                disabled={
+                                  applying.includes(suggestion.type)
+                                  || !selectedEntity[suggestion.type]
+                                }
+                              >
+                                {applying.includes(suggestion.type) ? (
+                                  <CircularProgress size={20} color="inherit" />
+                                ) : (
+                                  <AddTaskOutlined />
+                                )}
+                              </IconButton>
+                            </Tooltip>
+                          )}
+                        >
+                          <ListItemText
+                            primary={(
+                              <MarkdownDisplay
+                                content={t_i18n(`suggestion_${suggestion.type}`)}
+                                remarkGfmPlugin={true}
+                                commonmark={true}
+                                markdownComponents={true}
+                              />
                             )}
+                          />
+                          <Select
+                            style={{ width: 200, minWidth: 200, margin: '0 0 0 15px' }}
+                            variant="standard"
+                            onChange={(event) => handleSelectEntity(suggestion.type, event)
+                            }
+                            value={selectedEntity[suggestion.type]}
                           >
-                            <ListItemText
-                              primary={(
-                                <MarkdownDisplay
-                                  content={t_i18n(`suggestion_${suggestion.type}`)}
-                                  remarkGfmPlugin={true}
-                                  commonmark={true}
-                                  markdownComponents={true}
-                                />
-                              )}
-                            />
-                            <Select
-                              style={{ width: 200, minWidth: 200, margin: '0 0 0 15px' }}
-                              variant="standard"
-                              onChange={(event) => handleSelectEntity(suggestion.type, event)
-                              }
-                              value={selectedEntity[suggestion.type]}
-                            >
-                              {suggestion.data.map((object) => (
-                                <MenuItem
-                                  key={object.id}
-                                  value={object.id}
-                                >
-                                  {getMainRepresentative(object)}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </ListItem>
-                        ))}
-                      </List>
-                    </DialogContent>
+                            {suggestion.data.map((object) => (
+                              <MenuItem
+                                key={object.id}
+                                value={object.id}
+                              >
+                                {getMainRepresentative(object)}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </ListItem>
+                      ))}
+                    </List>
                     <DialogActions>
                       <Button
                         onClick={() => setDisplaySuggestions(false)}

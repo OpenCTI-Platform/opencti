@@ -1,6 +1,7 @@
-import React from 'react';
-import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import Button from '@common/button/Button';
+import Dialog from '@common/dialog/Dialog';
+import { DialogActions, DialogContentText } from '@mui/material';
+import React from 'react';
 import { useFormatter } from '../../../../../components/i18n';
 
 interface Props {
@@ -17,16 +18,16 @@ const XtmHubDialogConnectivityLostUnauthorizedRegister: React.FC<Props> = ({ ope
       slotProps={{ paper: { elevation: 1 } }}
       aria-labelledby="unauthorized-register-dialog-title"
       aria-describedby="unauthorized-register-dialog-description"
+      title={
+        <span id="unauthorized-register-dialog-title">{t_i18n('Connectivity lost')}</span>
+      }
     >
-      <DialogTitle id="unauthorized-register-dialog-title">{t_i18n('Connectivity lost')}</DialogTitle>
-      <DialogContent>
-        <DialogContentText id="unauthorized-register-dialog-description">
-          <p>{t_i18n('XTM Hub Connection Unavailable')}</p>
-          <p>{t_i18n('Please contact OpenCTI platform admin')}</p>
-        </DialogContentText>
-      </DialogContent>
+      <DialogContentText id="unauthorized-register-dialog-description">
+        <p>{t_i18n('XTM Hub Connection Unavailable')}</p>
+        <p>{t_i18n('Please contact OpenCTI platform admin')}</p>
+      </DialogContentText>
       <DialogActions>
-        <Button onClick={onCancel} color="primary">
+        <Button onClick={onCancel}>
           {t_i18n('Cancel')}
         </Button>
       </DialogActions>

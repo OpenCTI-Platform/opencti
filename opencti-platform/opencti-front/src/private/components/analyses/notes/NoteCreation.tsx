@@ -1,40 +1,38 @@
-import React, { FunctionComponent, useState } from 'react';
-import { Field, Form, Formik } from 'formik';
-import * as Yup from 'yup';
-import { graphql } from 'react-relay';
-import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@common/button/Button';
-import Fab from '@mui/material/Fab';
-import { Add } from '@mui/icons-material';
-import makeStyles from '@mui/styles/makeStyles';
-import { FormikConfig } from 'formik/dist/types';
-import { RecordSourceSelectorProxy } from 'relay-runtime';
+import Dialog from '@common/dialog/Dialog';
 import { NotesLinesPaginationQuery$variables } from '@components/analyses/__generated__/NotesLinesPaginationQuery.graphql';
-import { useFormatter } from '../../../../components/i18n';
-import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import CreatedByField from '../../common/form/CreatedByField';
-import ObjectLabelField from '../../common/form/ObjectLabelField';
-import MarkdownField from '../../../../components/fields/MarkdownField';
-import ConfidenceField from '../../common/form/ConfidenceField';
-import TextField from '../../../../components/TextField';
-import DateTimePickerField from '../../../../components/DateTimePickerField';
-import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
-import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import OpenVocabField from '../../common/form/OpenVocabField';
-import type { Theme } from '../../../../components/Theme';
-import { insertNode } from '../../../../utils/store';
-import SliderField from '../../../../components/fields/SliderField';
-import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import { NoteCreationMutation$variables } from './__generated__/NoteCreationMutation.graphql';
-import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import CustomFileUploader from '../../common/files/CustomFileUploader';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
+import { Add } from '@mui/icons-material';
+import Fab from '@mui/material/Fab';
+import makeStyles from '@mui/styles/makeStyles';
+import { Field, Form, Formik } from 'formik';
+import { FormikConfig } from 'formik/dist/types';
+import { FunctionComponent, useState } from 'react';
+import { graphql } from 'react-relay';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
+import * as Yup from 'yup';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
+import MarkdownField from '../../../../components/fields/MarkdownField';
+import SliderField from '../../../../components/fields/SliderField';
+import { useFormatter } from '../../../../components/i18n';
+import TextField from '../../../../components/TextField';
+import type { Theme } from '../../../../components/Theme';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { insertNode } from '../../../../utils/store';
+import CustomFileUploader from '../../common/files/CustomFileUploader';
+import ConfidenceField from '../../common/form/ConfidenceField';
+import CreatedByField from '../../common/form/CreatedByField';
+import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
+import ObjectLabelField from '../../common/form/ObjectLabelField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
+import OpenVocabField from '../../common/form/OpenVocabField';
+import { NoteCreationMutation$variables } from './__generated__/NoteCreationMutation.graphql';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -356,16 +354,13 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
         <Dialog
           open={open}
           onClose={() => setOpen(false)}
-          slotProps={{ paper: { elevation: 1 } }}
+          title={t_i18n('Create a note')}
         >
-          <DialogTitle>{t_i18n('Create a note')}</DialogTitle>
-          <DialogContent>
-            <NoteCreationForm
-              inputValue={inputValue}
-              updater={updater}
-              onClose={() => setOpen(false)}
-            />
-          </DialogContent>
+          <NoteCreationForm
+            inputValue={inputValue}
+            updater={updater}
+            onClose={() => setOpen(false)}
+          />
         </Dialog>
       </div>
     );

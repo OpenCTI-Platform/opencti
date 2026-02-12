@@ -1,6 +1,7 @@
-import React from 'react';
-import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import Button from '@common/button/Button';
+import Dialog from '@common/dialog/Dialog';
+import { DialogActions, DialogContentText } from '@mui/material';
+import React from 'react';
 import { useFormatter } from '../../../../../components/i18n';
 
 interface Props {
@@ -18,14 +19,14 @@ const XtmHubDialogConnectivityLostAuthorizedRegister: React.FC<Props> = ({ open,
       slotProps={{ paper: { elevation: 1 } }}
       aria-labelledby="authorized-register-dialog-title"
       aria-describedby="authorized-register-dialog-description"
+      title={
+        <span id="authorized-register-dialog-title">{t_i18n('Connectivity lost')}</span>
+      }
     >
-      <DialogTitle id="authorized-register-dialog-title">{t_i18n('Connectivity lost')}</DialogTitle>
-      <DialogContent>
-        <DialogContentText id="authorized-register-dialog-description">
-          <p>{t_i18n('XTM Hub Connection Unavailable')}</p>
-          <p>{t_i18n('Please re-register platform')}</p>
-        </DialogContentText>
-      </DialogContent>
+      <DialogContentText id="authorized-register-dialog-description">
+        <p>{t_i18n('XTM Hub Connection Unavailable')}</p>
+        <p>{t_i18n('Please re-register platform')}</p>
+      </DialogContentText>
       <DialogActions>
         <Button variant="secondary" onClick={onCancel} color="primary">
           {t_i18n('Cancel')}

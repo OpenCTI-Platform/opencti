@@ -1,21 +1,18 @@
-import React, { FunctionComponent } from 'react';
-import { graphql, PreloadedQuery } from 'react-relay';
-import { Field, Form, Formik } from 'formik';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
+import { FunctionComponent } from 'react';
+import { graphql, PreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
-import StatusTemplateField from '../../common/form/StatusTemplateField';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
+import StatusTemplateField from '../../common/form/StatusTemplateField';
 import { SubTypeWorkflowStatusEdit_subType$key } from './__generated__/SubTypeWorkflowStatusEdit_subType.graphql';
 import { SubTypeWorkflowStatusEditQuery } from './__generated__/SubTypeWorkflowStatusEditQuery.graphql';
 import { StatusForm, statusValidation } from './statusFormUtils';
-import Transition from '../../../../components/Transition';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const statusEditFieldPatchMutation = graphql`
   mutation SubTypeWorkflowStatusEditFieldPatchMutation(
@@ -121,33 +118,28 @@ const SubTypeWorkflowStatusEdit: FunctionComponent<StatusEditionProps> = ({
         <Form>
           <Dialog
             open={open}
-            slotProps={{ paper: { elevation: 1 } }}
             onClose={submitForm}
-            fullWidth={true}
-            slots={{ transition: Transition }}
+            title={t_i18n('Update a status')}
           >
-            <DialogTitle>{t_i18n('Update a status')}</DialogTitle>
-            <DialogContent>
-              <StatusTemplateField
-                name="template"
-                setFieldValue={setFieldValue}
-                helpertext=""
-              />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="order"
-                label={t_i18n('Order')}
-                fullWidth={true}
-                type="number"
-                style={{ marginTop: 20 }}
-              />
-              <DialogActions>
-                <Button onClick={submitForm} disabled={isSubmitting}>
-                  {t_i18n('Close')}
-                </Button>
-              </DialogActions>
-            </DialogContent>
+            <StatusTemplateField
+              name="template"
+              setFieldValue={setFieldValue}
+              helpertext=""
+            />
+            <Field
+              component={TextField}
+              variant="standard"
+              name="order"
+              label={t_i18n('Order')}
+              fullWidth={true}
+              type="number"
+              style={{ marginTop: 20 }}
+            />
+            <DialogActions>
+              <Button onClick={submitForm} disabled={isSubmitting}>
+                {t_i18n('Close')}
+              </Button>
+            </DialogActions>
           </Dialog>
         </Form>
       )}

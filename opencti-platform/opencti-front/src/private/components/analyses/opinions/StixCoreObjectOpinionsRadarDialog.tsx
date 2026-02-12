@@ -1,35 +1,33 @@
-import React, { FunctionComponent, useCallback, useEffect, useState } from 'react';
-import IconButton from '@common/button/IconButton';
-import * as Yup from 'yup';
-import Slider from '@mui/material/Slider';
-import { ThumbsUpDownOutlined } from '@mui/icons-material';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
-import Dialog from '@mui/material/Dialog';
+import IconButton from '@common/button/IconButton';
+import Dialog from '@common/dialog/Dialog';
+import { ThumbsUpDownOutlined } from '@mui/icons-material';
+import DialogActions from '@mui/material/DialogActions';
+import Slider from '@mui/material/Slider';
 import { Field, Form, Formik } from 'formik';
+import { FormikHelpers } from 'formik/dist/types';
+import React, { FunctionComponent, useCallback, useEffect, useState } from 'react';
 import { graphql, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
-import { FormikHelpers } from 'formik/dist/types';
-import { useFormatter } from '../../../../components/i18n';
-import Security from '../../../../utils/Security';
-import useGranted, { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import { opinionCreationMutation, opinionCreationUserMutation } from './OpinionCreation';
-import MarkdownField from '../../../../components/fields/MarkdownField';
-import { adaptFieldValue } from '../../../../utils/String';
-import { opinionMutationFieldPatch } from './OpinionEditionOverview';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import ConfidenceField from '../../common/form/ConfidenceField';
+import * as Yup from 'yup';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import MarkdownField from '../../../../components/fields/MarkdownField';
+import { useFormatter } from '../../../../components/i18n';
+import { MESSAGING$ } from '../../../../relay/environment';
+import Security from '../../../../utils/Security';
+import { adaptFieldValue } from '../../../../utils/String';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import useGranted, { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import ConfidenceField from '../../common/form/ConfidenceField';
+import { opinionCreationMutation, opinionCreationUserMutation } from './OpinionCreation';
+import { opinionMutationFieldPatch } from './OpinionEditionOverview';
 import {
   StixCoreObjectOpinionsRadarDialogMyOpinionQuery,
   StixCoreObjectOpinionsRadarDialogMyOpinionQuery$variables,
 } from './__generated__/StixCoreObjectOpinionsRadarDialogMyOpinionQuery.graphql';
-import { MESSAGING$ } from '../../../../relay/environment';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { yupShapeConditionalRequired, useDynamicSchemaCreationValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
-import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
 export const stixCoreObjectOpinionsRadarDialogMyOpinionQuery = graphql`
   query StixCoreObjectOpinionsRadarDialogMyOpinionQuery($id: String!) {
@@ -179,10 +177,9 @@ const StixCoreObjectOpinionsDialogComponent: FunctionComponent<
         </IconButton>
         {opinionOptions.length > 0 && (
           <Dialog
-            slotProps={{ paper: { elevation: 1 } }}
             open={open}
             onClose={handleClose}
-            fullWidth={true}
+            title={myOpinion ? t_i18n('Update opinion') : t_i18n('Create an opinion')}
           >
             <Formik<OpinionAddInput>
               enableReinitialize={true}
@@ -195,63 +192,60 @@ const StixCoreObjectOpinionsDialogComponent: FunctionComponent<
             >
               {({ submitForm, handleReset, isSubmitting, values, setFieldValue }) => (
                 <Form>
-                  <DialogTitle>
-                    {myOpinion ? t_i18n('Update opinion') : t_i18n('Create an opinion')}
-                  </DialogTitle>
-                  <DialogContent>
-                    <div style={{ marginLeft: 10, marginRight: 10 }}>
-                      <Slider
-                        sx={{
-                          '& .MuiSlider-markLabel': {
-                            textOverflow: 'ellipsis',
-                            maxWidth: 60,
-                            overflow: 'hidden',
-                          },
-                          '& .MuiSlider-thumb[style*="left: 0%"] .MuiSlider-valueLabelOpen':
+                  <div style={{ padding: '0 40px' }}>
+                    <Slider
+                      sx={{
+                        '& .MuiSlider-markLabel': {
+                          textOverflow: 'ellipsis',
+                          maxWidth: 60,
+                          overflow: 'hidden',
+                        },
+                        '& .MuiSlider-thumb[style*="left: 0%"] .MuiSlider-valueLabelOpen':
                             {
                               left: -5,
                               '&:before': {
                                 left: '22%',
                               },
                             },
-                          '& .MuiSlider-thumb[style*="left: 100%"] .MuiSlider-valueLabelOpen':
+                        '& .MuiSlider-thumb[style*="left: 100%"] .MuiSlider-valueLabelOpen':
                             {
                               right: -5,
                               '&:before': {
                                 left: '88%',
                               },
                             },
-                        }}
-                        style={{ marginTop: 30 }}
-                        value={opinionOptions.find((o) => o.label === values.opinion)?.value}
-                        onChange={(_, v) => {
-                          setFieldValue('opinion', opinionOptions.find(
-                            (m) => m.value === v,
-                          )?.label);
-                        }}
-                        valueLabelDisplay="on"
-                        valueLabelFormat={(v) => opinionOptions[v - 1].label}
-                        marks={opinionOptions}
-                        step={1}
-                        min={1}
-                        max={opinionOptions.length}
-                      />
-                    </div>
-                    <Field
-                      component={MarkdownField}
-                      name="explanation"
-                      label={t_i18n('Explanation')}
-                      required={(mandatoryAttributes.includes('explanation'))}
-                      fullWidth={true}
-                      multiline={true}
-                      rows="4"
-                      style={fieldSpacingContainerStyle}
+                      }}
+                      style={{ marginTop: 30 }}
+                      value={opinionOptions.find((o) => o.label === values.opinion)?.value}
+                      onChange={(_, v) => {
+                        setFieldValue('opinion', opinionOptions.find(
+                          (m) => m.value === v,
+                        )?.label);
+                      }}
+                      valueLabelDisplay="on"
+                      valueLabelFormat={(v) => opinionOptions[v - 1].label}
+                      marks={opinionOptions}
+                      step={1}
+                      min={1}
+                      max={opinionOptions.length}
                     />
-                    <ConfidenceField
-                      entityType="Opinion"
-                      containerStyle={fieldSpacingContainerStyle}
-                    />
-                  </DialogContent>
+                  </div>
+
+                  <Field
+                    component={MarkdownField}
+                    name="explanation"
+                    label={t_i18n('Explanation')}
+                    required={(mandatoryAttributes.includes('explanation'))}
+                    fullWidth={true}
+                    multiline={true}
+                    rows="4"
+                    style={fieldSpacingContainerStyle}
+                  />
+                  <ConfidenceField
+                    entityType="Opinion"
+                    containerStyle={fieldSpacingContainerStyle}
+                  />
+
                   <DialogActions>
                     <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                       {t_i18n('Cancel')}

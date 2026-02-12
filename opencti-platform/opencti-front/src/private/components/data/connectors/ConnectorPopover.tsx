@@ -1,32 +1,29 @@
+import Button from '@common/button/Button';
+import Dialog from '@common/dialog/Dialog';
+import DangerZoneBlock from '@components/common/danger_zone/DangerZoneBlock';
+import DangerZoneChip from '@components/common/danger_zone/DangerZoneChip';
+import { connectorDeletionMutation, connectorResetStateMutation, connectorWorkDeleteMutation } from '@components/data/connectors/Connector';
+import ManagedConnectorEdition from '@components/data/connectors/ManagedConnectorEdition';
+import { Connector_connector$data } from '@components/data/connectors/__generated__/Connector_connector.graphql';
 import MoreVert from '@mui/icons-material/MoreVert';
-import React, { useState } from 'react';
-import ToggleButton from '@mui/material/ToggleButton';
+import Alert from '@mui/material/Alert';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContentText from '@mui/material/DialogContentText';
+import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { PopoverProps } from '@mui/material/Popover';
-import Menu from '@mui/material/Menu';
-import { connectorDeletionMutation, connectorResetStateMutation, connectorWorkDeleteMutation } from '@components/data/connectors/Connector';
-import { Connector_connector$data } from '@components/data/connectors/__generated__/Connector_connector.graphql';
-import { useNavigate } from 'react-router-dom';
-import ManagedConnectorEdition from '@components/data/connectors/ManagedConnectorEdition';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@common/button/Button';
-import Dialog from '@mui/material/Dialog';
-import Alert from '@mui/material/Alert';
+import ToggleButton from '@mui/material/ToggleButton';
 import { useTheme } from '@mui/styles';
-import DangerZoneChip from '@components/common/danger_zone/DangerZoneChip';
-import DangerZoneBlock from '@components/common/danger_zone/DangerZoneBlock';
-import type { Theme } from '../../../../components/Theme';
-import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
-import { MESSAGING$ } from '../../../../relay/environment';
-import Transition from '../../../../components/Transition';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import DeleteDialog from '../../../../components/DeleteDialog';
+import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
-import useDeletion from '../../../../utils/hooks/useDeletion';
+import { MESSAGING$ } from '../../../../relay/environment';
 import stopEvent from '../../../../utils/domEvent';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useDeletion from '../../../../utils/hooks/useDeletion';
+import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
 import canDeleteConnector from './utils/canDeleteConnector';
 
 interface ConnectorPopoverProps {
@@ -201,20 +198,14 @@ const ConnectorPopover = ({ connector, onRefreshData }: ConnectorPopoverProps) =
       }
 
       <Dialog
-        slotProps={{ paper: { elevation: 1 } }}
         open={displayClearWorks}
-        keepMounted={true}
-        slots={{ transition: Transition }}
         onClose={handleCloseClearWorks}
+        size="small"
+        title={t_i18n('Are you sure?')}
       >
-        <DialogTitle>
-          {t_i18n('Are you sure?')}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to clear the works of this connector?')}
-          </DialogContentText>
-        </DialogContent>
+        <DialogContentText>
+          {t_i18n('Do you want to clear the works of this connector?')}
+        </DialogContentText>
         <DialogActions>
           <Button
             variant="secondary"
@@ -233,35 +224,29 @@ const ConnectorPopover = ({ connector, onRefreshData }: ConnectorPopoverProps) =
       </Dialog>
 
       <Dialog
-        slotProps={{ paper: { elevation: 1 } }}
         open={displayResetState}
         keepMounted={true}
-        slots={{ transition: Transition }}
         onClose={handleCloseResetState}
+        title={t_i18n('Are you sure?')}
       >
-        <DialogTitle>
-          {t_i18n('Are you sure?')}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText component="div">
-            <Alert
-              severity={isSensitive ? 'warning' : 'info'}
-              variant="outlined"
-              color={isSensitive ? 'dangerZone' : undefined}
-              style={isSensitive ? {
-                borderColor: theme.palette.dangerZone.main,
-              } : {}}
-            >
-              <div>
-                {t_i18n('Do you want to reset the state and purge messages queue of this connector?')}
-                <br />
-                {refreshingQueueDetails
-                  ? t_i18n('Loading current message count...')
-                  : t_i18n('Number of messages: ') + connector.connector_queue_details.messages_number}
-              </div>
-            </Alert>
-          </DialogContentText>
-        </DialogContent>
+        <DialogContentText component="div">
+          <Alert
+            severity={isSensitive ? 'warning' : 'info'}
+            variant="outlined"
+            color={isSensitive ? 'dangerZone' : undefined}
+            style={isSensitive ? {
+              borderColor: theme.palette.dangerZone.main,
+            } : {}}
+          >
+            <div>
+              {t_i18n('Do you want to reset the state and purge messages queue of this connector?')}
+              <br />
+              {refreshingQueueDetails
+                ? t_i18n('Loading current message count...')
+                : t_i18n('Number of messages: ') + connector.connector_queue_details.messages_number}
+            </div>
+          </Alert>
+        </DialogContentText>
         <DialogActions>
           <Button
             variant="secondary"

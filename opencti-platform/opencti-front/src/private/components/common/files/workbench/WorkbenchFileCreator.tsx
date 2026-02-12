@@ -1,27 +1,25 @@
+import Button from '@common/button/Button';
+import Dialog from '@common/dialog/Dialog';
+import { WorkbenchFileCreatorStixCoreObjectQuery$data } from '@components/common/files/workbench/__generated__/WorkbenchFileCreatorStixCoreObjectQuery.graphql';
+import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
+import DialogActions from '@mui/material/DialogActions';
+import makeStyles from '@mui/styles/makeStyles';
+import { Field, Form, Formik } from 'formik';
+import { FormikConfig } from 'formik/dist/types';
 import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import { v4 as uuid } from 'uuid';
-import { Field, Form, Formik } from 'formik';
-import { FormikConfig } from 'formik/dist/types';
 import * as Yup from 'yup';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@common/button/Button';
-import makeStyles from '@mui/styles/makeStyles';
-import { WorkbenchFileCreatorStixCoreObjectQuery$data } from '@components/common/files/workbench/__generated__/WorkbenchFileCreatorStixCoreObjectQuery.graphql';
-import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
-import TextField from '../../../../../components/TextField';
 import AutocompleteFreeSoloField from '../../../../../components/AutocompleteFreeSoloField';
-import ItemIcon from '../../../../../components/ItemIcon';
 import { useFormatter } from '../../../../../components/i18n';
+import ItemIcon from '../../../../../components/ItemIcon';
+import TextField from '../../../../../components/TextField';
 import type { Theme } from '../../../../../components/Theme';
-import { WorkbenchFileViewer_entity$data } from './__generated__/WorkbenchFileViewer_entity.graphql';
-import { WorkbenchFileCreatorMutation } from './__generated__/WorkbenchFileCreatorMutation.graphql';
 import { fetchQuery } from '../../../../../relay/environment';
-import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../../utils/field';
+import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import { WorkbenchFileCreatorMutation } from './__generated__/WorkbenchFileCreatorMutation.graphql';
+import { WorkbenchFileViewer_entity$data } from './__generated__/WorkbenchFileViewer_entity.graphql';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -185,53 +183,49 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({
       {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
         <Form>
           <Dialog
-            slotProps={{ paper: { elevation: 1 } }}
             open={openCreate}
             onClose={handleCloseCreate}
-            fullWidth
+            title={t_i18n('Create a workbench')}
           >
-            <DialogTitle>{t_i18n('Create a workbench')}</DialogTitle>
-            <DialogContent>
-              <Field
-                component={TextField}
-                variant="standard"
-                name="name"
-                label={t_i18n('Name')}
-                fullWidth
-              />
-              <Field
-                component={AutocompleteFreeSoloField}
-                style={{ marginTop: 20 }}
-                name="labels"
-                multiple
-                textfieldprops={{
-                  variant: 'standard',
-                  label: t_i18n('Labels'),
-                }}
-                options={[]}
-                renderOption={(
-                  props: React.HTMLAttributes<HTMLLIElement>,
-                  option: FieldOption,
-                ) => (
-                  <li {...props}>
-                    <div className={classes.icon}>
-                      <ItemIcon type="Label" />
-                    </div>
-                    <div className={classes.text}>{option.label}</div>
-                  </li>
-                )}
-                classes={{
-                  clearIndicator: classes.autoCompleteIndicator,
-                }}
-              />
-              <ObjectMarkingField
-                name="fileMarkings"
-                label={t_i18n('File marking definition levels')}
-                style={fieldSpacingContainerStyle}
-                setFieldValue={setFieldValue}
-                required={false}
-              />
-            </DialogContent>
+            <Field
+              component={TextField}
+              variant="standard"
+              name="name"
+              label={t_i18n('Name')}
+              fullWidth
+            />
+            <Field
+              component={AutocompleteFreeSoloField}
+              style={{ marginTop: 20 }}
+              name="labels"
+              multiple
+              textfieldprops={{
+                variant: 'standard',
+                label: t_i18n('Labels'),
+              }}
+              options={[]}
+              renderOption={(
+                props: React.HTMLAttributes<HTMLLIElement>,
+                option: FieldOption,
+              ) => (
+                <li {...props}>
+                  <div className={classes.icon}>
+                    <ItemIcon type="Label" />
+                  </div>
+                  <div className={classes.text}>{option.label}</div>
+                </li>
+              )}
+              classes={{
+                clearIndicator: classes.autoCompleteIndicator,
+              }}
+            />
+            <ObjectMarkingField
+              name="fileMarkings"
+              label={t_i18n('File marking definition levels')}
+              style={fieldSpacingContainerStyle}
+              setFieldValue={setFieldValue}
+              required={false}
+            />
             <DialogActions>
               <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Cancel')}

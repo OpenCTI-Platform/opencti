@@ -1,16 +1,14 @@
-import { graphql } from 'react-relay';
-import React, { FunctionComponent, useState } from 'react';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
 import Button from '@common/button/Button';
-import Box from '@mui/material/Box';
+import Dialog from '@common/dialog/Dialog';
 import CodeBlock from '@components/common/CodeBlock';
-import Alert from '@mui/material/Alert';
 import { IngestionJsonMapperTestDialogMutation$data } from '@components/data/ingestionJson/__generated__/IngestionJsonMapperTestDialogMutation.graphql';
 import { IngestionJsonAddInput } from '@components/data/ingestionJson/IngestionJsonCreation';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
+import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
+import React, { FunctionComponent, useState } from 'react';
+import { graphql } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { handleError } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { getAuthenticationValue } from '../../../../utils/ingestionAuthentificationUtils';
@@ -91,69 +89,70 @@ const IngestionJsonMapperTestDialog: FunctionComponent<IngestionJsonMapperTestDi
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} slotProps={{ paper: { elevation: 1 } }}>
-      <DialogTitle>{t_i18n('Testing JSON feed')}</DialogTitle>
-      <DialogContent>
-        <Box>
-          <div style={{ width: '100%', marginTop: 10 }}>
-            <Alert
-              severity="info"
-              variant="outlined"
-              style={{ padding: '0px 10px 0px 10px' }}
-            >
-              {t_i18n('Please, note that the test will be run on the 50 first lines')}
-            </Alert>
-          </div>
-        </Box>
-        <Box
-          sx={{ display: 'inline-flex', textAlign: 'center', marginTop: '8px', alignItems: 'baseline' }}
-        >
-          <Button
-            color={result?.ingestionJsonTester?.nbEntities ? 'primary' : 'secondary'}
-            onClick={() => onTest()}
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      title={t_i18n('Testing JSON feed')}
+    >
+      <Box>
+        <div style={{ width: '100%', marginTop: 10 }}>
+          <Alert
+            severity="info"
+            variant="outlined"
+            style={{ padding: '0px 10px 0px 10px' }}
           >
-            {t_i18n('Test')}
-          </Button>
-          {loading && (
-            <Box sx={{ marginLeft: '8px' }}>
-              <Loader variant={LoaderVariant.inElement} />
+            {t_i18n('Please, note that the test will be run on the 50 first lines')}
+          </Alert>
+        </div>
+      </Box>
+      <Box
+        sx={{ display: 'inline-flex', textAlign: 'center', marginTop: '8px', alignItems: 'baseline' }}
+      >
+        <Button
+          color={result?.ingestionJsonTester?.nbEntities ? 'primary' : 'secondary'}
+          onClick={() => onTest()}
+        >
+          {t_i18n('Test')}
+        </Button>
+        {loading && (
+          <Box sx={{ marginLeft: '8px' }}>
+            <Loader variant={LoaderVariant.inElement} />
+          </Box>
+        )}
+        {result
+          && (
+            <Box
+              sx={{
+                paddingTop: '8px',
+                marginLeft: '12px',
+                fontSize: '1rem',
+                gap: '8px',
+                justifyContent: 'center',
+                display: 'flex',
+              }}
+            >
+              <span>{t_i18n('Objects found')} : </span>
+              <span><strong>{result?.ingestionJsonTester?.nbEntities} </strong> {t_i18n('Entities')}</span>
+              <span><strong>{result?.ingestionJsonTester?.nbRelationships}</strong> {t_i18n('Relationships')}</span>
             </Box>
-          )}
-          {result
-            && (
-              <Box
-                sx={{
-                  paddingTop: '8px',
-                  marginLeft: '12px',
-                  fontSize: '1rem',
-                  gap: '8px',
-                  justifyContent: 'center',
-                  display: 'flex',
-                }}
-              >
-                <span>{t_i18n('Objects found')} : </span>
-                <span><strong>{result?.ingestionJsonTester?.nbEntities} </strong> {t_i18n('Entities')}</span>
-                <span><strong>{result?.ingestionJsonTester?.nbRelationships}</strong> {t_i18n('Relationships')}</span>
-              </Box>
-            )
-          }
-        </Box>
-        <Box sx={{ marginTop: '8px' }}>
-          <h3>State</h3>
-          <CodeBlock
-            customHeight="50px"
-            code={result?.ingestionJsonTester?.state || t_i18n('You will find here the computed state.')}
-            language="json"
-          />
-        </Box>
-        <Box sx={{ marginTop: '8px' }}>
-          <h3>Objects</h3>
-          <CodeBlock
-            code={result?.ingestionJsonTester?.objects || t_i18n('You will find here the result in JSON format.')}
-            language="json"
-          />
-        </Box>
-      </DialogContent>
+          )
+        }
+      </Box>
+      <Box sx={{ marginTop: '8px' }}>
+        <h3>State</h3>
+        <CodeBlock
+          customHeight="50px"
+          code={result?.ingestionJsonTester?.state || t_i18n('You will find here the computed state.')}
+          language="json"
+        />
+      </Box>
+      <Box sx={{ marginTop: '8px' }}>
+        <h3>Objects</h3>
+        <CodeBlock
+          code={result?.ingestionJsonTester?.objects || t_i18n('You will find here the result in JSON format.')}
+          language="json"
+        />
+      </Box>
     </Dialog>
   );
 };

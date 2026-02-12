@@ -1,6 +1,7 @@
-import React, { FunctionComponent } from 'react';
-import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import Button from '@common/button/Button';
+import Dialog from '@common/dialog/Dialog';
+import { DialogActions, DialogContentText } from '@mui/material';
+import { FunctionComponent } from 'react';
 
 interface ConfirmationDialogProps {
   open: boolean;
@@ -25,16 +26,15 @@ const ConfirmationDialog: FunctionComponent<ConfirmationDialogProps> = ({
     <Dialog
       open={open}
       onClose={onCancel}
-      slotProps={{ paper: { elevation: 1 } }}
       aria-labelledby="confirmation-dialog-title"
       aria-describedby="confirmation-dialog-description"
+      title={
+        <span id="confirmation-dialog-title">{title}</span>
+      }
     >
-      <DialogTitle id="confirmation-dialog-title">{title}</DialogTitle>
-      <DialogContent>
-        <DialogContentText id="confirmation-dialog-description">
-          {message}
-        </DialogContentText>
-      </DialogContent>
+      <DialogContentText id="confirmation-dialog-description">
+        {message}
+      </DialogContentText>
       <DialogActions>
         <Button variant="secondary" onClick={onCancel} color="primary">
           {cancelButtonText}

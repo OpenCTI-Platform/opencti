@@ -1,39 +1,38 @@
-import React, { useState } from 'react';
-import * as R from 'ramda';
-import { graphql, useFragment } from 'react-relay';
+import Button from '@common/button/Button';
+import Card from '@common/card/Card';
+import Dialog from '@common/dialog/Dialog';
+import Tag from '@common/tag/Tag';
+import { Stack } from '@mui/material';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContentText from '@mui/material/DialogContentText';
 import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
-import Tooltip from '@mui/material/Tooltip';
 import LinearProgress from '@mui/material/LinearProgress';
 import Paper from '@mui/material/Paper';
-import Button from '@common/button/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
+import Slide from '@mui/material/Slide';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import Slide from '@mui/material/Slide';
-import { Delete } from 'mdi-material-ui';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
-import TasksFilterValueContainer from '../../../../components/TasksFilterValueContainer';
+import { Delete } from 'mdi-material-ui';
+import * as R from 'ramda';
+import React, { useState } from 'react';
+import { graphql, useFragment } from 'react-relay';
+import TaskScope from '../../../../components/TaskScope';
 import TaskStatus from '../../../../components/TaskStatus';
+import TasksFilterValueContainer from '../../../../components/TasksFilterValueContainer';
 import { useFormatter } from '../../../../components/i18n';
-import { truncate } from '../../../../utils/String';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
-import TaskScope from '../../../../components/TaskScope';
-import { deserializeFilterGroupForFrontend, isFilterFormatCorrect, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
+import { truncate } from '../../../../utils/String';
 import { convertFiltersFromOldFormat } from '../../../../utils/filters/filtersFromOldFormat';
+import { deserializeFilterGroupForFrontend, isFilterFormatCorrect, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
+import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import { deleteNode } from '../../../../utils/store';
-import Card from '@common/card/Card';
-import { Stack } from '@mui/material';
-import Tag from '@common/tag/Tag';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -478,35 +477,30 @@ const TasksList = ({ data, options }) => {
         })}
       </Stack>
       <Dialog
-        slotProps={{ paper: { elevation: 1 } }}
         open={displayMessages}
         keepMounted={true}
-        slots={{ transition: Transition }}
         onClose={handleCloseMessages}
-        fullScreen={true}
       >
-        <DialogContent>
-          <DialogContentText>
-            <TableContainer component={Paper}>
-              <Table className={classes.table} aria-label="simple table">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>{t_i18n('Timestamp')}</TableCell>
-                    <TableCell>{t_i18n('Message')}</TableCell>
+        <DialogContentText>
+          <TableContainer component={Paper}>
+            <Table className={classes.table} aria-label="simple table">
+              <TableHead>
+                <TableRow>
+                  <TableCell>{t_i18n('Timestamp')}</TableCell>
+                  <TableCell>{t_i18n('Message')}</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {messages.map((message) => (
+                  <TableRow key={message.timestamp}>
+                    <TableCell>{nsdt(message.timestamp)}</TableCell>
+                    <TableCell>{message.message}</TableCell>
                   </TableRow>
-                </TableHead>
-                <TableBody>
-                  {messages.map((message) => (
-                    <TableRow key={message.timestamp}>
-                      <TableCell>{nsdt(message.timestamp)}</TableCell>
-                      <TableCell>{message.message}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </DialogContentText>
-        </DialogContent>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </DialogContentText>
         <DialogActions>
           <Button
             onClick={handleCloseMessages}
@@ -515,36 +509,32 @@ const TasksList = ({ data, options }) => {
           </Button>
         </DialogActions>
       </Dialog>
+
       <Dialog
-        slotProps={{ paper: { elevation: 1 } }}
         open={displayErrors}
         keepMounted={true}
-        slots={{ transition: Transition }}
         onClose={handleCloseErrors}
-        fullScreen={true}
       >
-        <DialogContent>
-          <DialogContentText>
-            <TableContainer component={Paper}>
-              <Table className={classes.table} aria-label="simple table">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>{t_i18n('Timestamp')}</TableCell>
-                    <TableCell>{t_i18n('Message')}</TableCell>
+        <DialogContentText>
+          <TableContainer component={Paper}>
+            <Table className={classes.table} aria-label="simple table">
+              <TableHead>
+                <TableRow>
+                  <TableCell>{t_i18n('Timestamp')}</TableCell>
+                  <TableCell>{t_i18n('Message')}</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {errors.map((error) => (
+                  <TableRow key={error.timestamp}>
+                    <TableCell>{nsdt(error.timestamp)}</TableCell>
+                    <TableCell>{error.message}</TableCell>
                   </TableRow>
-                </TableHead>
-                <TableBody>
-                  {errors.map((error) => (
-                    <TableRow key={error.timestamp}>
-                      <TableCell>{nsdt(error.timestamp)}</TableCell>
-                      <TableCell>{error.message}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </DialogContentText>
-        </DialogContent>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </DialogContentText>
         <DialogActions>
           <Button onClick={handleCloseErrors}>
             {t_i18n('Close')}

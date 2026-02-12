@@ -1,28 +1,26 @@
-import React, { FunctionComponent, useState } from 'react';
-import { graphql } from 'react-relay';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
+import MoreVert from '@mui/icons-material/MoreVert';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
-import MoreVert from '@mui/icons-material/MoreVert';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import React, { FunctionComponent, useState } from 'react';
+import { graphql } from 'react-relay';
 
-import { PopoverProps } from '@mui/material/Popover';
-import { IngestionTaxiiCollectionPopoverEditionQuery$data } from '@components/data/ingestionTaxiiCollection/__generated__/IngestionTaxiiCollectionPopoverEditionQuery.graphql';
 import {
   IngestionTaxiiCollectionLinesPaginationQuery$variables,
 } from '@components/data/ingestionTaxiiCollection/__generated__/IngestionTaxiiCollectionLinesPaginationQuery.graphql';
+import { IngestionTaxiiCollectionPopoverEditionQuery$data } from '@components/data/ingestionTaxiiCollection/__generated__/IngestionTaxiiCollectionPopoverEditionQuery.graphql';
+import { PopoverProps } from '@mui/material/Popover';
+import DeleteDialog from '../../../../components/DeleteDialog';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
-import { deleteNode } from '../../../../utils/store';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import Transition from '../../../../components/Transition';
-import IngestionTaxiiCollectionEdition, { ingestionTaxiiCollectionMutationFieldPatch } from './IngestionTaxiiCollectionEdition';
-import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
+import { deleteNode } from '../../../../utils/store';
+import IngestionTaxiiCollectionEdition, { ingestionTaxiiCollectionMutationFieldPatch } from './IngestionTaxiiCollectionEdition';
 
 const ingestionTaxiiPopoverDeletionMutation = graphql`
   mutation IngestionTaxiiCollectionPopoverDeletionMutation($id: ID!) {
@@ -204,17 +202,13 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
         message={t_i18n('Do you want to delete this TAXII ingester?')}
       />
       <Dialog
-        slotProps={{ paper: { elevation: 1 } }}
         open={displayStart}
-        keepMounted={true}
-        slots={{ transition: Transition }}
         onClose={handleCloseStart}
+        title={t_i18n('Are you sure?')}
       >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to start this TAXII ingester?')}
-          </DialogContentText>
-        </DialogContent>
+        <DialogContentText>
+          {t_i18n('Do you want to start this TAXII ingester?')}
+        </DialogContentText>
         <DialogActions>
           <Button
             variant="secondary"
@@ -232,17 +226,13 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
         </DialogActions>
       </Dialog>
       <Dialog
-        slotProps={{ paper: { elevation: 1 } }}
         open={displayStop}
-        keepMounted={true}
-        slots={{ transition: Transition }}
         onClose={handleCloseStop}
+        title={t_i18n('Are you sure?')}
       >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to stop this TAXII ingester?')}
-          </DialogContentText>
-        </DialogContent>
+        <DialogContentText>
+          {t_i18n('Do you want to stop this TAXII ingester?')}
+        </DialogContentText>
         <DialogActions>
           <Button
             variant="secondary"

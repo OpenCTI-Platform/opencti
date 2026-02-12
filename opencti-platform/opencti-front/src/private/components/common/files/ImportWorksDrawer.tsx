@@ -1,32 +1,30 @@
-import React, { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
-import Alert from '@mui/material/Alert';
-import Drawer from '@components/common/drawer/Drawer';
-import { useTheme } from '@mui/styles';
-import Chip from '@mui/material/Chip';
-import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
-import { DrawerProps, Tooltip } from '@mui/material';
-import IconButton from '@common/button/IconButton';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
-import Dialog from '@mui/material/Dialog';
-import { ArchitectureOutlined, DeleteOutlined } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import IconButton from '@common/button/IconButton';
+import Dialog from '@common/dialog/Dialog';
+import Drawer from '@components/common/drawer/Drawer';
 import LaunchImportDialog from '@components/common/files/LaunchImportDialog';
-import { ImportWorkbenchesContentFileLine_file$data } from '@components/data/import/__generated__/ImportWorkbenchesContentFileLine_file.graphql';
 import { ImportFilesContentFileLine_file$data } from '@components/data/import/__generated__/ImportFilesContentFileLine_file.graphql';
+import { ImportWorkbenchesContentFileLine_file$data } from '@components/data/import/__generated__/ImportWorkbenchesContentFileLine_file.graphql';
+import { ArchitectureOutlined, DeleteOutlined } from '@mui/icons-material';
+import { DrawerProps, Tooltip } from '@mui/material';
+import Alert from '@mui/material/Alert';
+import Chip from '@mui/material/Chip';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContentText from '@mui/material/DialogContentText';
+import { useTheme } from '@mui/styles';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
+import { useNavigate } from 'react-router-dom';
+import { DataTableProps, DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
+import { defaultRender } from '../../../../components/dataGrid/dataTableUtils';
+import DataTableWithoutFragment from '../../../../components/dataGrid/DataTableWithoutFragment';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import type { Theme } from '../../../../components/Theme';
-import { DataTableProps, DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
-import { defaultRender } from '../../../../components/dataGrid/dataTableUtils';
-import { hexToRGB } from '../../../../utils/Colors';
-import DataTableWithoutFragment from '../../../../components/dataGrid/DataTableWithoutFragment';
-import { ImportWorksDrawerQuery, ImportWorksDrawerQuery$variables } from './__generated__/ImportWorksDrawerQuery.graphql';
 import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
-import Transition from '../../../../components/Transition';
+import { hexToRGB } from '../../../../utils/Colors';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
+import { ImportWorksDrawerQuery, ImportWorksDrawerQuery$variables } from './__generated__/ImportWorksDrawerQuery.graphql';
 
 export const importConnectorsFragment = graphql`
   fragment ImportWorksDrawer_connectorsImport on Connector
@@ -330,15 +328,11 @@ const FileWorksComponent = ({
       {!!displayDelete && (
         <Dialog
           open={!!displayDelete}
-          slotProps={{ paper: { elevation: 1 } }}
-          slots={{ transition: Transition }}
           onClose={() => setDisplayDelete(undefined)}
         >
-          <DialogContent>
-            <DialogContentText>
-              {t_i18n('Do you want to remove this job?')}
-            </DialogContentText>
-          </DialogContent>
+          <DialogContentText>
+            {t_i18n('Do you want to remove this job?')}
+          </DialogContentText>
           <DialogActions>
             <Button variant="secondary" onClick={() => setDisplayDelete(undefined)}>
               {t_i18n('Cancel')}

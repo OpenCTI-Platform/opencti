@@ -3,7 +3,7 @@ import MenuItem from '@mui/material/MenuItem';
 import { v4 as uuid } from 'uuid';
 import { graphql } from 'react-relay';
 import { DialogTitle } from '@mui/material';
-import Dialog from '@mui/material/Dialog';
+import Dialog from '@common/dialog/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import Button from '@common/button/Button';
 import DialogActions from '@mui/material/DialogActions';
@@ -219,83 +219,78 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
   return (
     <>
       <Dialog
-        slotProps={{ paper: { elevation: 1 } }}
         open={optionsOpen}
         onClose={handleCloseOptions}
-        fullWidth={true}
-        maxWidth="xs"
+        title={t_i18n('Select options')}
       >
-        <DialogTitle>{t_i18n('Select options')}</DialogTitle>
-        <DialogContent>
-          <Alert severity="info">
-            {action && t_i18n(actionsExplanation[action])}
-          </Alert>
+        <Alert severity="info">
+          {action && t_i18n(actionsExplanation[action])}
+        </Alert>
+        <FormControl style={fieldSpacingContainerStyle}>
+          <InputLabel id="format">{t_i18n('Format')}</InputLabel>
+          <Select
+            labelId="format"
+            value={format}
+            onChange={(event) => setFormat(event.target.value as unknown as 'html' | 'markdown' | 'text' | 'json')}
+            fullWidth={true}
+          >
+            {action && actionsFormat[action].includes('html') && <MenuItem value="html">{t_i18n('HTML')}</MenuItem>}
+            {action && actionsFormat[action].includes('markdown') && <MenuItem value="markdown">{t_i18n('Markdown')}</MenuItem>}
+            {action && actionsFormat[action].includes('text') && <MenuItem value="text">{t_i18n('Plain text')}</MenuItem>}
+            {action && actionsFormat[action].includes('json') && <MenuItem value="json">{t_i18n('JSON')}</MenuItem>}
+          </Select>
+        </FormControl>
+        {action && actionsOptions[action].includes('tone') && (
           <FormControl style={fieldSpacingContainerStyle}>
-            <InputLabel id="format">{t_i18n('Format')}</InputLabel>
+            <InputLabel id="tone">{t_i18n('Tone')}</InputLabel>
             <Select
-              labelId="format"
-              value={format}
-              onChange={(event) => setFormat(event.target.value as unknown as 'html' | 'markdown' | 'text' | 'json')}
+              labelId="tone"
+              value={tone}
+              onChange={(event) => setTone(event.target.value as unknown as 'tactical' | 'operational' | 'strategic')}
               fullWidth={true}
             >
-              {action && actionsFormat[action].includes('html') && <MenuItem value="html">{t_i18n('HTML')}</MenuItem>}
-              {action && actionsFormat[action].includes('markdown') && <MenuItem value="markdown">{t_i18n('Markdown')}</MenuItem>}
-              {action && actionsFormat[action].includes('text') && <MenuItem value="text">{t_i18n('Plain text')}</MenuItem>}
-              {action && actionsFormat[action].includes('json') && <MenuItem value="json">{t_i18n('JSON')}</MenuItem>}
+              <MenuItem value="tactical">{t_i18n('Tactical')}</MenuItem>
+              <MenuItem value="operational">{t_i18n('Operational')}</MenuItem>
+              <MenuItem value="strategic">{t_i18n('Strategic')}</MenuItem>
             </Select>
           </FormControl>
-          {action && actionsOptions[action].includes('tone') && (
-            <FormControl style={fieldSpacingContainerStyle}>
-              <InputLabel id="tone">{t_i18n('Tone')}</InputLabel>
-              <Select
-                labelId="tone"
-                value={tone}
-                onChange={(event) => setTone(event.target.value as unknown as 'tactical' | 'operational' | 'strategic')}
-                fullWidth={true}
-              >
-                <MenuItem value="tactical">{t_i18n('Tactical')}</MenuItem>
-                <MenuItem value="operational">{t_i18n('Operational')}</MenuItem>
-                <MenuItem value="strategic">{t_i18n('Strategic')}</MenuItem>
-              </Select>
-            </FormControl>
-          )}
-          {action && actionsOptions[action].includes('paragraphs') && (
-            <TextField
-              label={t_i18n('Number of paragraphs')}
+        )}
+        {action && actionsOptions[action].includes('paragraphs') && (
+          <TextField
+            label={t_i18n('Number of paragraphs')}
+            fullWidth={true}
+            type="number"
+            value={paragraphs}
+            onChange={(event) => setParagraphs(parseInt(event.target.value, 10))}
+            style={fieldSpacingContainerStyle}
+          />
+        )}
+        {action && actionsOptions[action].includes('files') && (
+          <FilesNativeField
+            stixCoreObjectId={instanceId}
+            name="fileIds"
+            label={t_i18n('Files')}
+            currentValue={files}
+            onChange={(value) => value && setFiles(value)}
+            containerStyle={fieldSpacingContainerStyle}
+            helperText={t_i18n('By default, all files will be used to generate the response.')}
+          />
+        )}
+        {action && actionsOptions[action].includes('language') && (
+          <FormControl style={fieldSpacingContainerStyle}>
+            <InputLabel id="language">{t_i18n('Language')}</InputLabel>
+            <Select
+              labelId="language"
+              value={language}
+              onChange={(event) => setLanguage(event.target.value)}
               fullWidth={true}
-              type="number"
-              value={paragraphs}
-              onChange={(event) => setParagraphs(parseInt(event.target.value, 10))}
-              style={fieldSpacingContainerStyle}
-            />
-          )}
-          {action && actionsOptions[action].includes('files') && (
-            <FilesNativeField
-              stixCoreObjectId={instanceId}
-              name="fileIds"
-              label={t_i18n('Files')}
-              currentValue={files}
-              onChange={(value) => value && setFiles(value)}
-              containerStyle={fieldSpacingContainerStyle}
-              helperText={t_i18n('By default, all files will be used to generate the response.')}
-            />
-          )}
-          {action && actionsOptions[action].includes('language') && (
-            <FormControl style={fieldSpacingContainerStyle}>
-              <InputLabel id="language">{t_i18n('Language')}</InputLabel>
-              <Select
-                labelId="language"
-                value={language}
-                onChange={(event) => setLanguage(event.target.value)}
-                fullWidth={true}
-              >
-                {aiLanguage.map((lang) => (
-                  <MenuItem key={lang.value} value={lang.name}>{t_i18n(lang.name)}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          )}
-        </DialogContent>
+            >
+              {aiLanguage.map((lang) => (
+                <MenuItem key={lang.value} value={lang.name}>{t_i18n(lang.name)}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        )}
         <DialogActions>
           <Button
             variant="secondary"

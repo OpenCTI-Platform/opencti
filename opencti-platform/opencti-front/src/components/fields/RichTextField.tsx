@@ -1,20 +1,19 @@
-import { FieldProps, useField } from 'formik';
-import React, { CSSProperties, useRef, useState } from 'react';
-import { ClassicEditor } from 'ckeditor5';
-import { useTheme } from '@mui/styles';
-import InputLabel from '@mui/material/InputLabel';
-import { CloseOutlined, FullscreenOutlined } from '@mui/icons-material';
 import IconButton from '@common/button/IconButton';
+import Dialog from '@common/dialog/Dialog';
 import TextFieldAskAI from '@components/common/form/TextFieldAskAI';
-import Typography from '@mui/material/Typography';
-import Dialog from '@mui/material/Dialog';
+import { FullscreenOutlined } from '@mui/icons-material';
 import FormHelperText from '@mui/material/FormHelperText';
+import InputLabel from '@mui/material/InputLabel';
+import { useTheme } from '@mui/styles';
+import { ClassicEditor } from 'ckeditor5';
+import { FieldProps, useField } from 'formik';
 import { isNil } from 'ramda';
-import type { Theme } from '../Theme';
+import { CSSProperties, useRef, useState } from 'react';
+import useAI from '../../utils/hooks/useAI';
 import { getHtmlTextContent } from '../../utils/html';
 import CKEditor from '../CKEditor';
 import { useFormatter } from '../i18n';
-import useAI from '../../utils/hooks/useAI';
+import type { Theme } from '../Theme';
 
 interface RichTextFieldProps extends FieldProps<string> {
   disabled?: boolean;
@@ -127,40 +126,22 @@ const RichTextField = ({
         </div>
       )}
 
-      {fullScreen ? (
-        <Dialog
-          slotProps={{ paper: { elevation: 1 } }}
-          open={fullScreen}
-          onClose={() => setFullScreen(false)}
-          fullScreen
-        >
-          <div style={{
-            backgroundColor: theme.palette.background.nav,
-            padding: theme.spacing(1),
-            display: 'flex',
-            alignItems: 'center',
-            gap: theme.spacing(1),
-          }}
-          >
-            <IconButton
-              aria-label="Close"
-              onClick={() => setFullScreen(false)}
-              color="primary"
-            >
-              <CloseOutlined fontSize="small" color="primary" />
-            </IconButton>
-            <Typography variant="h6">{t_i18n('Content')}</Typography>
-          </div>
-          <div style={{
-            padding: theme.spacing(2),
-            paddingBottom: 0,
-            height: '100%',
-          }}
-          >
-            {CKEditorInstance}
-          </div>
-        </Dialog>
-      ) : CKEditorInstance}
+      {
+        fullScreen
+          ? (
+              <Dialog
+                open={fullScreen}
+                onClose={() => setFullScreen(false)}
+                fullScreen
+                showCloseButton
+                title={t_i18n('Content')}
+              >
+                {CKEditorInstance}
+              </Dialog>
+            )
+          : CKEditorInstance
+      }
+
       {fieldErrors && showError && (
         <FormHelperText style={{ marginTop: theme.spacing(1) }} error>
           {fieldErrors}

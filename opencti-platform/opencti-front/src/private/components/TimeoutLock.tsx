@@ -1,15 +1,13 @@
-import React, { useEffect, useReducer, useRef, useState } from 'react';
 import Button from '@common/button/Button';
-import Dialog from '@mui/material/Dialog';
+import Dialog from '@common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
 import DialogContentText from '@mui/material/DialogContentText';
+import React, { useEffect, useReducer, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../components/i18n';
+import { APP_BASE_PATH } from '../../relay/environment';
 import { formatSeconds, ONE_SECOND, secondsBetweenDates } from '../../utils/Time';
 import useAuth from '../../utils/hooks/useAuth';
-import { APP_BASE_PATH } from '../../relay/environment';
 
 /**
  * Gets timeout and banner settings from react relay and return those values.
@@ -220,40 +218,34 @@ const TimeoutLock: React.FunctionComponent = () => {
     }
   }, [state.idleCount]);
 
+  console.log('bannerHeightNumber', bannerHeightNumber);
+
   return (
     <Dialog
       open={dialogOpen}
-      onClose={() => {
-      }}
       disableEscapeKeyDown={true}
-      maxWidth="sm"
-      slotProps={{ paper: { elevation: 1 } }}
       sx={{
         backdropFilter: 'blur(15px)',
         marginTop: `${bannerHeightNumber}px`,
         height: `calc(100% - ${bannerHeightNumber * 2}px)`,
       }}
+      title={(
+        <>
+          {t_i18n('Session timeout in')}&nbsp;
+          <strong>{formatSeconds(state.idleCount ?? 0)}</strong>
+        </>
+      )}
     >
-      <DialogTitle sx={{ textAlign: 'center' }}>
-        {t_i18n('Session timeout in')}&nbsp;
-        <strong>{formatSeconds(state.idleCount ?? 0)}</strong>
-      </DialogTitle>
-      <DialogContent>
-        <DialogContentText sx={{ textAlign: 'center' }}>
-          {t_i18n('You will be automatically logged out at end of the timer.')}
-          <br />
-          {t_i18n('Select')} <code>{t_i18n('CONTINUE')}</code>{' '}
-          {t_i18n('to keep working or select')} <code>{t_i18n('LOGOUT')}</code>{' '}
-          {t_i18n('to terminate your session.')}
-        </DialogContentText>
-      </DialogContent>
-      <DialogActions
-        sx={{
-          width: '100%',
-          display: 'flex',
-          justifyContent: 'space-between',
-        }}
-      >
+
+      <DialogContentText>
+        {t_i18n('You will be automatically logged out at end of the timer.')}
+        <br />
+        {t_i18n('Select')} <code>{t_i18n('CONTINUE')}</code>{' '}
+        {t_i18n('to keep working or select')} <code>{t_i18n('LOGOUT')}</code>{' '}
+        {t_i18n('to terminate your session.')}
+      </DialogContentText>
+
+      <DialogActions>
         <Button variant="secondary" onClick={() => handleLogout()}>
           {t_i18n('Logout')}
         </Button>

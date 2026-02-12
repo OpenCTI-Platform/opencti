@@ -1,30 +1,27 @@
-import { graphql, useQueryLoader } from 'react-relay';
-import React, { Dispatch, FunctionComponent, UIEvent, useState } from 'react';
-import { PopoverProps } from '@mui/material/Popover';
-import MoreVert from '@mui/icons-material/MoreVert';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
-import DialogActions from '@mui/material/DialogActions';
-import IngestionCsvEditionContainer, { ingestionCsvEditionContainerQuery } from '@components/data/ingestionCsv/IngestionCsvEditionContainer';
-import { ingestionCsvEditionPatch } from '@components/data/ingestionCsv/IngestionCsvEdition';
-import { IngestionCsvLinesPaginationQuery$variables } from '@components/data/ingestionCsv/__generated__/IngestionCsvLinesPaginationQuery.graphql';
+import Dialog from '@common/dialog/Dialog';
 import { IngestionCsvEditionContainerQuery } from '@components/data/ingestionCsv/__generated__/IngestionCsvEditionContainerQuery.graphql';
+import { IngestionCsvLinesPaginationQuery$variables } from '@components/data/ingestionCsv/__generated__/IngestionCsvLinesPaginationQuery.graphql';
 import { IngestionCsvCreationContainer } from '@components/data/ingestionCsv/IngestionCsvCreation';
-import DialogTitle from '@mui/material/DialogTitle';
+import { ingestionCsvEditionPatch } from '@components/data/ingestionCsv/IngestionCsvEdition';
+import IngestionCsvEditionContainer, { ingestionCsvEditionContainerQuery } from '@components/data/ingestionCsv/IngestionCsvEditionContainer';
+import MoreVert from '@mui/icons-material/MoreVert';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContentText from '@mui/material/DialogContentText';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import { PopoverProps } from '@mui/material/Popover';
 import fileDownload from 'js-file-download';
-import { deleteNode } from '../../../../utils/store';
-import { useFormatter } from '../../../../components/i18n';
-import Transition from '../../../../components/Transition';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import React, { Dispatch, FunctionComponent, UIEvent, useState } from 'react';
+import { graphql, useQueryLoader } from 'react-relay';
 import DeleteDialog from '../../../../components/DeleteDialog';
-import useDeletion from '../../../../utils/hooks/useDeletion';
-import stopEvent from '../../../../utils/domEvent';
+import { useFormatter } from '../../../../components/i18n';
 import { fetchQuery } from '../../../../relay/environment';
+import stopEvent from '../../../../utils/domEvent';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useDeletion from '../../../../utils/hooks/useDeletion';
+import { deleteNode } from '../../../../utils/store';
 import { IngestionCsvPopoverExportQuery$data } from './__generated__/IngestionCsvPopoverExportQuery.graphql';
 
 const ingestionCsvPopoverDeletionMutation = graphql`
@@ -273,20 +270,14 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
           message={t_i18n('Do you want to delete this CSV Feed?')}
         />
         <Dialog
-          slotProps={{ paper: { elevation: 1 } }}
           open={displayResetState}
-          keepMounted
-          slots={{ transition: Transition }}
           onClose={handleCloseResetState}
+          title={t_i18n('Are you sure?')}
+          size="small"
         >
-          <DialogTitle>
-            {t_i18n('Are you sure?')}
-          </DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              {t_i18n('Do you want to reset the state of this CSV Feed?')}
-            </DialogContentText>
-          </DialogContent>
+          <DialogContentText>
+            {t_i18n('Do you want to reset the state of this CSV Feed?')}
+          </DialogContentText>
           <DialogActions>
             <Button
               variant="secondary"
@@ -304,20 +295,13 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
           </DialogActions>
         </Dialog>
         <Dialog
-          slotProps={{ paper: { elevation: 1 } }}
           open={displayStart}
-          keepMounted={true}
-          slots={{ transition: Transition }}
           onClose={handleCloseStart}
+          title={t_i18n('Are you sure?')}
         >
-          <DialogTitle>
-            {t_i18n('Are you sure?')}
-          </DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              {t_i18n('Do you want to start this CSV Feed?')}
-            </DialogContentText>
-          </DialogContent>
+          <DialogContentText>
+            {t_i18n('Do you want to start this CSV Feed?')}
+          </DialogContentText>
           <DialogActions>
             <Button
               onClick={handleCloseStart}
@@ -335,20 +319,13 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
           </DialogActions>
         </Dialog>
         <Dialog
-          slotProps={{ paper: { elevation: 1 } }}
           open={displayStop}
-          keepMounted={true}
-          slots={{ transition: Transition }}
           onClose={handleCloseStop}
+          title={t_i18n('Are you sure?')}
         >
-          <DialogTitle>
-            {t_i18n('Are you sure?')}
-          </DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              {t_i18n('Do you want to stop this CSV Feed?')}
-            </DialogContentText>
-          </DialogContent>
+          <DialogContentText>
+            {t_i18n('Do you want to stop this CSV Feed?')}
+          </DialogContentText>
           <DialogActions>
             <Button
               onClick={handleCloseStop}

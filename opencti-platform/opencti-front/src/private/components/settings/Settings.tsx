@@ -1,15 +1,13 @@
 import Button from '@common/button/Button';
+import Dialog from '@common/dialog/Dialog';
 import getEEWarningMessage from '@components/settings/EEActivation';
 import { SettingsFieldPatchMutation$data } from '@components/settings/__generated__/SettingsFieldPatchMutation.graphql';
 import ThemeManager, { refetchableThemesQuery } from '@components/settings/themes/ThemeManager';
 import { ThemeManager_themes$key } from '@components/settings/themes/__generated__/ThemeManager_themes.graphql';
 import { Switch } from '@mui/material';
 import Alert from '@mui/material/Alert';
-import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
 import Grid from '@mui/material/Grid2';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -28,7 +26,6 @@ import Loader, { LoaderVariant } from '../../../components/Loader';
 import { SubscriptionFocus } from '../../../components/Subscription';
 import TextField from '../../../components/TextField';
 import type { Theme } from '../../../components/Theme';
-import Transition from '../../../components/Transition';
 import Card from '../../../components/common/card/Card';
 import SelectField from '../../../components/fields/SelectField';
 import { useFormatter } from '../../../components/i18n';
@@ -237,7 +234,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
     aiPoweredTooltip = `${formattedAIType} - ${settings.platform_ai_model}`;
   } else {
     aiPoweredLabel = `${formattedAIType} - ${t_i18n('Missing token')}`;
-    aiPoweredTooltip = t_i18n('The token is missing in your platform configuration, please ask your Filigran representative to provide you with it or with on-premise deployment instructions. Your can open a support ticket to do so.');
+    aiPoweredTooltip = t_i18n('The token is missing in your platform configuration, please ask your Filigran representative to provide you with it or with on-premise deployment instructions. You can open a support ticket to do so.');
   };
 
   const settingsValidation = () => Yup.object().shape({
@@ -365,27 +362,22 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
               </List>
             </Card>
             <Dialog
-              slotProps={{ paper: { elevation: 1 } }}
               open={openEEChanges}
-              keepMounted
-              slots={{ transition: Transition }}
               onClose={() => setOpenEEChanges(false)}
+              title={t_i18n('Disable Enterprise Edition')}
             >
-              <DialogTitle>{t_i18n('Disable Enterprise Edition')}</DialogTitle>
-              <DialogContent>
-                <DialogContentText component="div">
-                  <Alert
-                    severity="warning"
-                    variant="outlined"
-                    color="dangerZone"
-                    style={{ borderColor: theme.palette.dangerZone.main }}
-                  >
-                    {t_i18n(getEEWarningMessage(isLtsPlatform))}
-                    <br /><br />
-                    <strong>{t_i18n('However, your existing data will remain intact and will not be lost.')}</strong>
-                  </Alert>
-                </DialogContentText>
-              </DialogContent>
+              <DialogContentText component="div">
+                <Alert
+                  severity="warning"
+                  variant="outlined"
+                  color="dangerZone"
+                  style={{ borderColor: theme.palette.dangerZone.main }}
+                >
+                  {t_i18n(getEEWarningMessage(isLtsPlatform))}
+                  <br /><br />
+                  <strong>{t_i18n('However, your existing data will remain intact and will not be lost.')}</strong>
+                </Alert>
+              </DialogContentText>
               <DialogActions>
                 <Button
                   variant="secondary"
