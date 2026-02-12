@@ -10,6 +10,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import type { Theme } from '../../../../components/Theme';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../../components/i18n';
+import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
 import useDraftContext, { DRAFT_TOOLBAR_HEIGHT } from '../../../../utils/hooks/useDraftContext';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -78,12 +79,13 @@ const StixCoreObjectContentBar: FunctionComponent<
           width: '100%',
           height: 54,
           paddingTop: 3,
+          paddingLeft: 24,
         }}
       >
         <div
           style={{
             float: 'left',
-            marginLeft: navOpen ? 195 : 70,
+            marginLeft: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
             height: '100%',
             display: 'flex',
           }}
