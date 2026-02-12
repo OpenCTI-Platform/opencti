@@ -241,7 +241,7 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
   };
 
   const renderRows = (rows: Row[], title: string) => (
-    <div style={{ marginTop: '20px' }}>
+    <div style={{ marginTop: '20px', marginBottom: '10px' }}>
       <Card title={title}>
         <Box>
           <Grid container sx={{ mb: 1, fontWeight: 600 }}>
