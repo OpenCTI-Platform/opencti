@@ -59,7 +59,7 @@ The below capabilities are applicable to the whole application.
 | &nbsp;&nbsp;`Manage customization`                      | Customize entity types                                                                        |
 | &nbsp;&nbsp;`Manage labels`                             | Manage labels (create/update/delete)                                                          |
 | &nbsp;&nbsp;`Manage vocabularies`                       | Manage vocabularies (create/update/delete)                                                    |
-| &nbsp;&nbsp;`Manage case templates`                     | Manage cases templates (create/update/delete)                                                 |
+| &nbsp;&nbsp;`Manage case templates`                     | Manage case templates (create/update/delete)                                                  |
 | &nbsp;&nbsp;`Manage status template`                    | Manage status templates (create/update/delete).                                               |
 | &nbsp;&nbsp;`Manage kill chain phases`                  | Manage kill chain phases (create/update/delete).                                              |
 | &nbsp;&nbsp;`Manage XTM hub`                            | Manage enrollment of the OpenCTI platform into XTMHub.                                        |
