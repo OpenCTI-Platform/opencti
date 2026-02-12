@@ -31,8 +31,8 @@ const OpenIDConfig = () => {
         component={TextField}
         variant="standard"
         name="issuer"
-        label={t_i18n('OpenID issuer')}
         required
+        label={t_i18n('OpenID issuer')}
         fullWidth
         style={{ marginTop: 20 }}
       />

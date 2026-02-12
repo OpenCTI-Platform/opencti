@@ -2,7 +2,7 @@ import { StrategyType } from '../../generated/graphql';
 import LocalStrategy from 'passport-local';
 import { login } from '../../domain/user';
 import { addUserLoginCount } from '../../manager/telemetryManager';
-import { decryptAuthValue, ENCRYPTED_TYPE, logAuthError, logAuthInfo } from './singleSignOn-domain';
+import { decryptAuthValue, logAuthError, logAuthInfo, SECRET_TYPE } from './singleSignOn-domain';
 import {
   AuthType,
   EnvStrategyType,
@@ -33,7 +33,7 @@ export const parseValueAsType = async (config: ConfigurationType): Promise<strin
       return JSON.parse(config.value);
     } else if (config.type.toLowerCase() === 'string') {
       return config.value;
-    } else if (config.type.toLowerCase() === ENCRYPTED_TYPE) {
+    } else if (config.type.toLowerCase() === SECRET_TYPE) {
       const decryptedBuffer = await decryptAuthValue(config.value);
       return decryptedBuffer.toString();
     } else {
@@ -154,6 +154,22 @@ export const unregisterStrategy = async (authenticationStrategy: BasicStoreEntit
 export const registerStrategy = async (authenticationStrategy: BasicStoreEntitySingleSignOn) => {
   try {
     if (authenticationStrategy.strategy && authenticationStrategy.identifier) {
+      const configuration = authenticationStrategy.configuration;
+      if (configuration) {
+        for (let i = 0; i < configuration.length; i++) {
+          const currentConfig = configuration[i];
+          if (currentConfig.type === SECRET_TYPE) {
+            try {
+              const decryptedBuffer = await decryptAuthValue(currentConfig.value);
+              currentConfig.value = decryptedBuffer.toString();
+              currentConfig.type = 'string';
+            } catch (e) {
+              logAuthError(`Configuration ${currentConfig?.key} cannot be read, is ignored. Please verify your configuration.`, EnvStrategyType.STRATEGY_SAML, { cause: e });
+            }
+          }
+        }
+      }
+
       if (authenticationStrategy.strategy === StrategyType.LocalStrategy) {
         logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_LOCAL);
         if (authenticationStrategy.enabled) {

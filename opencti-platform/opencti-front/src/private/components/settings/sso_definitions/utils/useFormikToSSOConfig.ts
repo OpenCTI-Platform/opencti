@@ -6,7 +6,7 @@ const useFormikToSSOConfig = (selectedStrategy: string) => {
       {
         key: 'privateKey',
         value: values.privateKey,
-        type: 'string',
+        type: 'secret',
       },
       {
         key: 'issuer',
@@ -86,7 +86,7 @@ const useFormikToSSOConfig = (selectedStrategy: string) => {
       {
         key: 'client_secret',
         value: values.client_secret,
-        type: 'string',
+        type: 'secret',
       },
       {
         key: 'issuer',
@@ -116,7 +116,7 @@ const useFormikToSSOConfig = (selectedStrategy: string) => {
       {
         key: 'bindCredentials',
         value: values.bindCredentials,
-        type: 'string',
+        type: 'secret',
       },
       {
         key: 'searchBase',

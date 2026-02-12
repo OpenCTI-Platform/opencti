@@ -10520,7 +10520,7 @@ type Mutation {
   contactUsXtmHub: Success!
   metricPatch(id: ID!, input: PatchMetricInput!): BasicObject
   singleSignOnAdd(input: SingleSignOnAddInput!): SingleSignOn
-  singleSignOnFieldPatch(id: ID!, input: [EditInput!]!): SingleSignOn
+  singleSignOnEdit(id: ID!, input: SingleSignOnEditInput!): SingleSignOn
   singleSignOnDelete(id: ID!): ID
   singleSignOnRunMigration(input: SingleSignMigrationInput!): [SingleSignOnMigrationResult]
 }
@@ -15597,6 +15597,17 @@ input SingleSignOnAddInput {
   description: String
   enabled: Boolean!
   strategy: StrategyType!
+  organizations_management: OrganizationsManagementInput
+  groups_management: GroupsManagementInput
+  configuration: [ConfigurationTypeInput!]
+  label: String
+}
+
+input SingleSignOnEditInput {
+  name: String
+  identifier: String
+  description: String
+  enabled: Boolean
   organizations_management: OrganizationsManagementInput
   groups_management: GroupsManagementInput
   configuration: [ConfigurationTypeInput!]

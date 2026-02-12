@@ -4,13 +4,13 @@ import { logApp } from '../../../../src/config/conf';
 import {
   addSingleSignOn,
   deleteSingleSignOn,
-  fieldPatchSingleSignOn,
+  editSingleSignOn,
   findAllSingleSignOn,
   findSingleSignOnById,
-  TO_ENCRYPT_TYPE,
+  SECRET_TYPE,
 } from '../../../../src/modules/singleSignOn/singleSignOn-domain';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
-import { StrategyType, type SingleSignOnAddInput, type EditInput } from '../../../../src/generated/graphql';
+import { StrategyType, type SingleSignOnAddInput } from '../../../../src/generated/graphql';
 import { PROVIDERS } from '../../../../src/modules/singleSignOn/providers-configuration';
 import type { BasicStoreEntitySingleSignOn, ConfigurationType, StixSingleSignOn, StoreEntitySingleSignOn } from '../../../../src/modules/singleSignOn/singleSignOn-types';
 import convertSingleSignOnToStix from '../../../../src/modules/singleSignOn/singleSignOn-converter';
@@ -42,7 +42,7 @@ describe('Single sign on Domain coverage tests', () => {
           { key: 'idpCert', value: '21341234', type: 'string' },
           { key: 'issuer', value: 'https://issuer.example.net', type: 'string' },
           { key: 'privateKey', value: 'myPrivateKey', type: 'string' },
-          { key: 'custom_value_that_is_secret', value: 'theCustomValue', type: TO_ENCRYPT_TYPE },
+          { key: 'custom_value_that_is_secret', value: 'theCustomValue', type: SECRET_TYPE },
         ],
       };
       const samlEntity = await addSingleSignOn(testContext, ADMIN_USER, input);
@@ -94,8 +94,7 @@ describe('Single sign on Domain coverage tests', () => {
     });
 
     it('should disabled minimal Saml works', async () => {
-      const input: EditInput[] = [{ key: 'label', value: ['Nice SAML button V2'] }];
-      await fieldPatchSingleSignOn(testContext, ADMIN_USER, minimalSsoEntity.id, input);
+      await editSingleSignOn(testContext, ADMIN_USER, minimalSsoEntity.id, { label: 'Nice SAML button V2' });
       const entity = await findSingleSignOnById(testContext, ADMIN_USER, minimalSsoEntity.id);
 
       // Here there is a pub/sub on redis, let's just call the same method than listener
@@ -424,7 +423,7 @@ describe('Single sign on Domain coverage tests', () => {
       expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'cert')).toBeTruthy();
     });
     it('should fieldPatch CERT SSO', async () => {
-      const patched = await fieldPatchSingleSignOn(testContext, ADMIN_USER, certEntityId, [{ key: 'enabled', value: [false] }]);
+      const patched = await editSingleSignOn(testContext, ADMIN_USER, certEntityId, { enabled: false });
       expect(patched.enabled).toBeFalsy();
     });
   });
@@ -462,11 +461,11 @@ describe('Single sign on Domain coverage tests', () => {
     it('should not admin be refused to fieldPatch SSO', async () => {
       // Any user should be refused
       await expect(async () => {
-        await fieldPatchSingleSignOn(testContext, mockDummyUser, ssoCreate.id, [{ key: 'label', value: ['hacked'] }]);
+        await editSingleSignOn(testContext, mockDummyUser, ssoCreate.id, { label: 'hacked' });
       }).rejects.toThrowError('Authentication edition is locked by environment variable');
 
       // But config admin can still do
-      const patched = await fieldPatchSingleSignOn(testContext, ADMIN_USER, ssoCreate.id, [{ key: 'label', value: ['notHacked'] }]);
+      const patched = await editSingleSignOn(testContext, ADMIN_USER, ssoCreate.id, { label: 'notHacked' });
       expect(patched.label).toBe('notHacked');
       // expect no error
     });

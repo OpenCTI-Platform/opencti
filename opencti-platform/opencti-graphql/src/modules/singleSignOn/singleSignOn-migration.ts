@@ -11,7 +11,7 @@ import {
 import { logApp } from '../../config/conf';
 import { now } from 'moment';
 import { nowTime } from '../../utils/format';
-import { getAllIdentifiers, internalAddSingleSignOn } from './singleSignOn-domain';
+import { AUTH_SECRET_LIST, getAllIdentifiers, internalAddSingleSignOn, SECRET_TYPE } from './singleSignOn-domain';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { v4 as uuid } from 'uuid';
 import { EnvStrategyType, isAuthenticationProviderMigrated, LOCAL_STRATEGY_IDENTIFIER, MIGRATED_STRATEGY } from './providers-configuration';
@@ -211,7 +211,7 @@ const computeConfiguration = (envConfiguration: any, strategy: StrategyType) => 
         } else {
           const currentConfig: ConfigurationTypeInput = {
             key: configKey,
-            type: 'string',
+            type: AUTH_SECRET_LIST.includes(configKey) ? SECRET_TYPE : 'string',
             value: `${mappedConfig[configKey]}`,
           };
           configuration.push(currentConfig);

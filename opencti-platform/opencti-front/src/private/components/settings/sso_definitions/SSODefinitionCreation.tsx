@@ -7,12 +7,8 @@ import { insertNode } from '../../../../utils/store';
 import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
 import { PaginationOptions } from '../../../../components/list_lines';
 import CreateSplitControlledDial from '../../../../components/CreateSplitControlledDial';
-import { getGroupOrOrganizationMapping } from './utils/GroupOrOrganizationMapping';
-import useFormikToSSOConfig from './utils/useFormikToSSOConfig';
-import SSODefinitionForm, { SSODefinitionFormValues } from '@components/settings/sso_definitions/SSODefinitionForm';
-import { getStrategyConfigEnum } from '@components/settings/sso_definitions/utils/useStrategicConfig';
-import { SingleSignOnAddInput } from '@components/settings/sso_definitions/__generated__/SSODefinitionCreationMutation.graphql';
-import { formatAdvancedConfigurationForCreation, formatStringToArray } from './utils/format';
+import SSODefinitionForm from '@components/settings/sso_definitions/SSODefinitionForm';
+import { SingleSignOnEditInput } from '@components/settings/sso_definitions/__generated__/SSODefinitionEditionMutation.graphql';
 
 const ssoDefinitionMutation = graphql`
   mutation SSODefinitionCreationMutation(
@@ -34,8 +30,6 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
   const { t_i18n } = useFormatter();
   const [selectedStrategy, setSelectedStrategy] = useState<string>('');
 
-  // const formikToSSOConfig = useFormikToSSOConfig(selectedStrategy ?? '');
-
   const CreateSSODefinitionControlledDial = (props: DrawerControlledDialProps) => (
     <CreateSplitControlledDial
       entityType="SSODefinition"
@@ -45,7 +39,6 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
         'Create LDAP',
         'Create ClientCert',
         'Create Header',
-        // 'Create LocalAuth',
       ]}
       onOptionClick={(option) => {
         switch (option) {
@@ -69,10 +62,6 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
             setSelectedStrategy('Header');
             break;
           }
-          // case 'Create LocalAuth': {
-          //   setSelectedStrategy('LocalAuth');
-          //   break;
-          // }
           default: setSelectedStrategy('');
         }
       }}
@@ -81,50 +70,9 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
   );
 
   const onSubmit = (
-    finalValues: SingleSignOnAddInput,
+    finalValues: SingleSignOnEditInput,
     { setSubmitting, resetForm }: { setSubmitting: (flag: boolean) => void; resetForm: () => void },
   ) => {
-    // if (!formikToSSOConfig) return;
-    // const mainConfigs = formikToSSOConfig(values);
-    //
-    // const advancedConfigs = formatAdvancedConfigurationForCreation(values.advancedConfigurations);
-    //
-    // const configuration = [...mainConfigs, ...advancedConfigs];
-    //
-    // const strategyEnum = getStrategyConfigEnum(selectedStrategy);
-    //
-    // const groups_management = {
-    //   group_attribute: values.group_attribute || null,
-    //   group_attributes: formatStringToArray(values.group_attributes) || null,
-    //   groups_attributes: formatStringToArray(values.groups_attributes) || null,
-    //   groups_path: values.groups_path ? [values.groups_path] : null,
-    //   groups_scope: values.groups_scope || null,
-    //   groups_mapping: getGroupOrOrganizationMapping(values.groups_mapping_source, values.groups_mapping_target),
-    //   token_reference: values.groups_token_reference,
-    //   read_userinfo: values.groups_read_userinfo,
-    // };
-    //
-    // const organizations_management = {
-    //   organizations_path: formatStringToArray(values.organizations_path) || null,
-    //   organizations_scope: values.organizations_scope || null,
-    //   organizations_mapping: getGroupOrOrganizationMapping(values.organizations_mapping_source, values.organizations_mapping_target),
-    //   read_userinfo: values.organizations_read_userinfo,
-    //   token_reference: values.organizations_token_reference,
-    // };
-    //
-    // if (!strategyEnum) return;
-    //
-    // let finalValues: SingleSignOnAddInput = {
-    //   name: values.name,
-    //   identifier: values.identifier,
-    //   label: values.label,
-    //   enabled: values.enabled,
-    //   strategy: strategyEnum,
-    //   configuration,
-    // };
-    //
-    // if (selectedStrategy !== 'ClientCert' && selectedStrategy !== 'Header') finalValues = { ...finalValues, groups_management, organizations_management };
-
     commitMutation({
       ...defaultCommitMutation,
       mutation: ssoDefinitionMutation,
@@ -158,7 +106,7 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
       {({ onClose }) => (
         <SSODefinitionForm
           onCancel={onClose}
-          onSubmitCreation={onSubmit}
+          onSubmit={onSubmit}
           selectedStrategy={selectedStrategy}
         />
       )}

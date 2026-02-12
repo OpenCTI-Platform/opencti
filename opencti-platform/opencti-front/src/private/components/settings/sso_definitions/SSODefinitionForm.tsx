@@ -10,7 +10,7 @@ import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../../components/Theme';
 import { SSODefinitionEditionFragment$data } from '@components/settings/sso_definitions/__generated__/SSODefinitionEditionFragment.graphql';
 import TextField from '../../../../components/TextField';
-import { getAdvancedConfigFromData } from '@components/settings/sso_definitions/utils/getConfigAndAdvancedConfigFromData';
+import { getBaseAndAdvancedConfigFromData } from '@components/settings/sso_definitions/utils/getConfigAndAdvancedConfigFromData';
 import SAMLConfig from '@components/settings/sso_definitions/SAMLConfig';
 import OpenIDConfig from '@components/settings/sso_definitions/OpenIDConfig';
 import LDAPConfig from '@components/settings/sso_definitions/LDAPConfig';
@@ -25,19 +25,16 @@ import SelectField from 'src/components/fields/SelectField';
 import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
-import { formatArrayValues, type ConfigurationType, formatAdvancedConfigurationForCreation, formatStringToArray } from './utils/format';
+import { type ConfigurationType, formatAdvancedConfigurationForCreation, formatStringToArray } from './utils/format';
 import useFormikToSSOConfig from '@components/settings/sso_definitions/utils/useFormikToSSOConfig';
 import { getStrategyConfigEnum } from '@components/settings/sso_definitions/utils/useStrategicConfig';
 import { getGroupOrOrganizationMapping } from '@components/settings/sso_definitions/utils/GroupOrOrganizationMapping';
+import { SingleSignOnEditInput } from '@components/settings/sso_definitions/__generated__/SSODefinitionEditionMutation.graphql';
 
 interface SSODefinitionFormProps {
   onCancel: () => void;
-  onSubmitCreation: (
-    values: SingleSignOnAddInput,
-    formikHelpers: { setSubmitting: (b: boolean) => void; resetForm: () => void },
-  ) => void;
-  onSubmitEdition: (
-    values: SingleSignOnAddInput,
+  onSubmit: (
+    values: SingleSignOnAddInput | SingleSignOnEditInput,
     formikHelpers: { setSubmitting: (b: boolean) => void; resetForm: () => void },
   ) => void;
   selectedStrategy: string;
@@ -46,19 +43,13 @@ interface SSODefinitionFormProps {
   isEditing?: boolean;
 }
 
-type AdvancedConfigurations = {
-  key: string;
-  value: string;
-  type: string;
-};
-
 export interface SSODefinitionFormValues {
   name: string;
   identifier: string;
   label: string;
   enabled: boolean;
   // SAML - OPENID - LDAP
-  advancedConfigurations: AdvancedConfigurations[];
+  advancedConfigurations: ConfigurationType[];
   // SAML
   privateKey: string;
   issuer: string;
@@ -107,6 +98,7 @@ export interface SSODefinitionFormValues {
   groupSearchFilter: string;
   allow_self_signed: boolean;
 }
+
 export type SSOEditionFormInputKeys = keyof SSODefinitionFormValues;
 
 type GetSourceAndTargetFromMappingType = {
@@ -151,15 +143,15 @@ const validationSchemaConfiguration = (selectedStrategy: string, t_i18n: (s: str
         allow_self_signed: Yup.boolean().required(t_i18n('This field is required')),
       });
     }
-    default: return undefined;
+    default:
+      return undefined;
   }
 };
 
 const SSODefinitionForm = ({
   data,
   onCancel,
-  onSubmitCreation,
-  onSubmitEdition,
+  onSubmit,
   selectedStrategy,
   isEditing,
 }: SSODefinitionFormProps) => {
@@ -243,48 +235,10 @@ const SSODefinitionForm = ({
     }, { source: [], target: [], mapping: groupMapping });
   };
 
-  const handleSubmitEdition = (
+  const handleSubmit = (
     values: SSODefinitionFormValues,
     { setSubmitting, resetForm }: { setSubmitting: (flag: boolean) => void; resetForm: () => void },
   ) => {
-    if (!onSubmitEdition) return;
-    console.log('initialValues : ', initialValues);
-    console.log('values : ', values);
-
-    const getEditedFieldFromAdvancedConfiguration = (advancedConfigurationValues: AdvancedConfigurations[]) => {
-      console.log('advancedConfigurationValues : ', advancedConfigurationValues);
-      return advancedConfigurationValues.filter((item, index) => {
-        const currentAdvancedConf = initialValues.advancedConfigurations[index];
-
-        if (!currentAdvancedConf) return true;
-
-        const { key, value, type } = currentAdvancedConf;
-        return item.key !== key || item.value !== value || item.type !== type;
-      });
-    };
-
-    const result = Object.keys(values).reduce((acc: Record<SSOEditionFormInputKeys, unknown>, cur: SSOEditionFormInputKeys) => {
-      const value = Array.isArray(values[cur]) ? JSON.stringify(values[cur]) : values[cur];
-      const otherValues = Array.isArray(initialValues[cur]) ? JSON.stringify(initialValues[cur]) : initialValues[cur];
-      if (cur === 'advancedConfigurations' && values[cur].length > 0) {
-        return {
-          ...acc,
-          ['advancedConfigurations']: getEditedFieldFromAdvancedConfiguration(values['advancedConfigurations']) };
-      }
-      if (value !== otherValues) return { ...acc, [cur]: values[cur] };
-      return acc;
-    }, {});
-
-    setSubmitting(false);
-    onSubmitEdition(result, { setSubmitting, resetForm });
-  };
-
-  const handleSubmitCreation = (
-    values: SSODefinitionFormValues,
-    { setSubmitting, resetForm }: { setSubmitting: (flag: boolean) => void; resetForm: () => void },
-  ) => {
-    if (!onSubmitCreation) return;
-
     const mainConfigs = formikToSSOConfig(values);
 
     const advancedConfigs = formatAdvancedConfigurationForCreation(values.advancedConfigurations);
@@ -292,12 +246,13 @@ const SSODefinitionForm = ({
     const configuration = [...mainConfigs, ...advancedConfigs];
 
     const strategyEnum = getStrategyConfigEnum(selectedStrategy);
+    if (!strategyEnum) return;
 
     const groups_management = {
       group_attribute: values.group_attribute || null,
       group_attributes: formatStringToArray(values.group_attributes) || null,
       groups_attributes: formatStringToArray(values.groups_attributes) || null,
-      groups_path: values.groups_path ? [values.groups_path] : null,
+      groups_path: formatStringToArray(values.groups_path) || null,
       groups_scope: values.groups_scope || null,
       groups_mapping: getGroupOrOrganizationMapping(values.groups_mapping_source, values.groups_mapping_target),
       token_reference: values.groups_token_reference,
@@ -312,20 +267,20 @@ const SSODefinitionForm = ({
       token_reference: values.organizations_token_reference,
     };
 
-    if (!strategyEnum) return;
-
-    let finalValues: SingleSignOnAddInput = {
+    let finalValues: SingleSignOnAddInput | SingleSignOnEditInput = {
       name: values.name,
       identifier: values.identifier,
       label: values.label,
       enabled: values.enabled,
-      strategy: strategyEnum,
+      strategy: isEditing ? undefined : strategyEnum,
       configuration,
     };
 
-    if (selectedStrategy !== 'ClientCert') finalValues = { ...finalValues, groups_management, organizations_management };
+    if (selectedStrategy !== 'ClientCert') {
+      finalValues = { ...finalValues, groups_management, organizations_management };
+    }
 
-    onSubmitCreation(finalValues, { setSubmitting, resetForm });
+    onSubmit(finalValues, { setSubmitting, resetForm });
   };
 
   const privateField = data?.configuration?.find((e) => e.key === 'privateKey');
@@ -342,7 +297,7 @@ const SSODefinitionForm = ({
   const forceReauthenticationField = data?.configuration?.find((e) => e.key === 'forceReauthentication');
   // const enableDebugModeField = data?.configuration?.find((e) => e.key === 'enableDebugMode');
   const entryPointField = data?.configuration?.find((e) => e.key === 'entryPoint');
-  const advancedConfigurations = getAdvancedConfigFromData((data?.configuration ?? []) as ConfigurationTypeInput[], selectedStrategy ?? '');
+  const { advancedConfig: advancedConfigurations } = getBaseAndAdvancedConfigFromData((data?.configuration ?? []) as ConfigurationTypeInput[], selectedStrategy ?? '');
 
   const groupAttribute = data?.groups_management?.group_attribute;
   const groupAttributes = data?.groups_management?.group_attributes ?? [];
@@ -430,10 +385,9 @@ const SSODefinitionForm = ({
 
   return (
     <Formik
-      // enableReinitialize={!updateField}
       initialValues={initialValues}
       validationSchema={validationSchema}
-      onSubmit={isEditing ? handleSubmitEdition : handleSubmitCreation}
+      onSubmit={handleSubmit}
       onReset={onCancel}
     >
       {({ handleReset, submitForm, isSubmitting }) => (
@@ -465,7 +419,6 @@ const SSODefinitionForm = ({
                   component={TextField}
                   variant="standard"
                   name="identifier"
-                  // onSubmit={updateField}
                   label={t_i18n('Authentication Name')}
                   fullWidth
                   required
@@ -477,7 +430,6 @@ const SSODefinitionForm = ({
                 variant="standard"
                 name="enabled"
                 type="checkbox"
-                // onChange={updateField}
                 label={t_i18n(`Enable ${selectedStrategy} authentication`)}
                 containerstyle={{ marginLeft: 2, marginTop: 20 }}
               />
@@ -486,7 +438,6 @@ const SSODefinitionForm = ({
                   component={TextField}
                   variant="standard"
                   name="label"
-                  // onSubmit={updateField}
                   label={t_i18n('Login Button Name')}
                   fullWidth
                   style={{ marginTop: 10 }}
@@ -536,10 +487,6 @@ const SSODefinitionForm = ({
                               <Field
                                 component={TextField}
                                 variant="standard"
-                                // onSubmit={() => {
-                                //   const newValues = formatArrayValues(form.values.advancedConfigurations);
-                                //   updateField('advancedConfigurations', newValues);
-                                // }}
                                 name={`advancedConfigurations[${index}].key`}
                                 label={t_i18n('Key (in passport)')}
                                 containerstyle={{ width: '20%' }}
@@ -547,10 +494,6 @@ const SSODefinitionForm = ({
                               <Field
                                 component={TextField}
                                 variant="standard"
-                                // onSubmit={() => {
-                                //   const newValues = formatArrayValues(form.values.advancedConfigurations);
-                                //   updateField('advancedConfigurations', newValues);
-                                // }}
                                 name={`advancedConfigurations[${index}].value`}
                                 label={t_i18n('Value (in IDP)')}
                                 containerstyle={{ width: '20%' }}
@@ -558,10 +501,6 @@ const SSODefinitionForm = ({
                               <Field
                                 component={SelectField}
                                 variant="standard"
-                                // onSubmit={() => {
-                                //   const newValues = formatArrayValues(form.values.advancedConfigurations);
-                                //   updateField('advancedConfigurations', newValues);
-                                // }}
                                 name={`advancedConfigurations[${index}].type`}
                                 label={t_i18n('Field type')}
                                 containerstyle={{ width: '20%' }}
@@ -577,10 +516,7 @@ const SSODefinitionForm = ({
                                 aria-label={t_i18n('Delete')}
                                 style={{ marginTop: 10 }}
                                 onClick={() => {
-                                  // const advancedConfigurations = [...form.values.advancedConfigurations];
-                                  // advancedConfigurations.splice(index, 1);
                                   remove(index);
-                                  // updateField('advancedConfigurations', advancedConfigurations);
                                 }}
                               >
                                 <Delete fontSize="small" />

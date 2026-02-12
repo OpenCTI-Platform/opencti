@@ -114,6 +114,17 @@ input SingleSignOnAddInput {
   label: String
 }
 
+input SingleSignOnEditInput {
+  name: String
+  identifier: String
+  description: String
+  enabled: Boolean
+  organizations_management: OrganizationsManagementInput
+  groups_management: GroupsManagementInput
+  configuration: [ConfigurationTypeInput!]
+  label: String
+}
+
 type SingleSignOnMigrationResult {
   id: ID!
   name: String!
@@ -151,7 +162,7 @@ type Query {
 
 type Mutation {
   singleSignOnAdd(input: SingleSignOnAddInput!): SingleSignOn @auth(for: [SETTINGS_SETAUTH])
-  singleSignOnFieldPatch(id: ID!, input: [EditInput!]!): SingleSignOn @auth(for: [SETTINGS_SETAUTH])
+  singleSignOnEdit(id: ID!, input: SingleSignOnEditInput!): SingleSignOn @auth(for: [SETTINGS_SETAUTH])
   singleSignOnDelete(id: ID!): ID @auth(for: [SETTINGS_SETAUTH])
   singleSignOnRunMigration(input: SingleSignMigrationInput!): [SingleSignOnMigrationResult] @auth(for: [BYPASS])
 }

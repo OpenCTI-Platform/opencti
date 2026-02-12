@@ -7,11 +7,12 @@ import {
   FilterOperator,
   type SingleSignMigrationInput,
   type SingleSignOnAddInput,
+  type SingleSignOnEditInput,
   type SingleSignOnSettings,
   StrategyType,
 } from '../../generated/graphql';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import { type BasicStoreEntitySingleSignOn, ENTITY_TYPE_SINGLE_SIGN_ON } from './singleSignOn-types';
+import { type BasicStoreEntitySingleSignOn, type ConfigurationType, ENTITY_TYPE_SINGLE_SIGN_ON } from './singleSignOn-types';
 import { now } from '../../utils/format';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
@@ -25,7 +26,6 @@ import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import { unregisterStrategy } from './singleSignOn-providers';
 import { EnvStrategyType, getConfigurationAdminEmail, isAuthenticationEditionLocked, isAuthenticationForcedFromEnv } from './providers-configuration';
 import { getPlatformCrypto } from '../../utils/platformCrypto';
-import { isNotEmptyField } from '../../database/utils';
 import { memoize } from '../../utils/memoize';
 
 export const isConfigurationAdminUser = (user: AuthUser): boolean => {
@@ -39,14 +39,11 @@ export const AUTH_SECRET_LIST = [
   'client_secret', // OpenID
   'bindCredentials', // LDAP
   'privateKey', // SAML
-  'decryptionPvk', // SAML
+  'decryptionPvk', // SAML TODO ???
 ];
 
 // Type for data that are encrypted
-export const ENCRYPTED_TYPE = 'encrypted';
-
-// Type for data that are in clear from creation and need to be encrypted
-export const TO_ENCRYPT_TYPE = 'secret';
+export const SECRET_TYPE = 'secret';
 
 const getKeyPair = memoize(async () => {
   const factory = await getPlatformCrypto();
@@ -66,22 +63,17 @@ export const decryptAuthValue = async (value: string) => {
   return await keyPair.decrypt(decodedBuffer);
 };
 
-const encryptConfigurationSecrets = async (configurationWithClear: ConfigurationTypeInput[]) => {
-  const configurationWithSecrets: ConfigurationTypeInput[] = [];
-  if (configurationWithClear) {
-    for (let i = 0; i < configurationWithClear?.length; i++) {
-      const currentConfig = configurationWithClear[i] as ConfigurationTypeInput;
-      if (isNotEmptyField(currentConfig.value)) {
-        if ((AUTH_SECRET_LIST.some((key) => key === currentConfig.key) && currentConfig.type !== ENCRYPTED_TYPE) || currentConfig.type === TO_ENCRYPT_TYPE) {
-          const encryptedValue = await encryptAuthValue(currentConfig.value);
-          configurationWithSecrets.push({ key: currentConfig.key, value: encryptedValue, type: ENCRYPTED_TYPE });
-        } else {
-          configurationWithSecrets.push(currentConfig);
-        }
-      }
-    }
+const encryptConfigurationSecrets = async (inputConfiguration: ConfigurationTypeInput[]) => {
+  const encryptedConfiguration: ConfigurationTypeInput[] = [];
+  for await (const { key, type, value } of inputConfiguration) {
+    const needEncryption = value && (AUTH_SECRET_LIST.includes(key) || type === SECRET_TYPE);
+    encryptedConfiguration.push({
+      key,
+      value: needEncryption ? await encryptAuthValue(value) : value,
+      type: needEncryption ? SECRET_TYPE : type,
+    });
   }
-  return configurationWithSecrets;
+  return encryptedConfiguration;
 };
 
 // End Encryption region
@@ -109,8 +101,12 @@ export const logAuthError = (message: string, strategyType: EnvStrategyType | St
   logApp.error(`[Auth][${strategyType ? strategyType.toUpperCase() : 'Not provided'}]${message}`, { meta });
 };
 
-export const excludeEncryptedConfigurationKeys = (singleSignOn: BasicStoreEntitySingleSignOn) => {
-  return singleSignOn.configuration?.filter((config) => (config.type !== ENCRYPTED_TYPE));
+const magicSecretValue = '******';
+export const maskEncryptedConfigurationKeys = (singleSignOn: BasicStoreEntitySingleSignOn) => {
+  return singleSignOn.configuration?.map((config) => (config.type === SECRET_TYPE ? {
+    ...config,
+    value: config.value ? magicSecretValue : '',
+  } : config));
 };
 
 export const findSingleSignOnById = async (context: AuthContext, user: AuthUser, id: string) => {
@@ -125,8 +121,7 @@ export const findSingleSignOnPaginated = async (context: AuthContext, user: Auth
 
 // For migration purpose, we need to be able to create an SSO enabled, but not start it immediately
 export const internalAddSingleSignOn = async (context: AuthContext, user: AuthUser, input: SingleSignOnAddInput, skipRegister: boolean) => {
-  const defaultOps = { created_at: now(), updated_at: now() };
-
+  // ensure that only one local strategy is created, as it doesn't make sense to have multiple local strategy
   if (input.strategy === StrategyType.LocalStrategy) {
     const filters = {
       mode: FilterMode.And,
@@ -138,13 +133,17 @@ export const internalAddSingleSignOn = async (context: AuthContext, user: AuthUs
       throw FunctionalError('Local Strategy already exists in database');
     }
   }
-  let configurationWithSecrets: ConfigurationTypeInput[] = [];
-  if (input.configuration) {
-    configurationWithSecrets = await encryptConfigurationSecrets(input.configuration);
-  }
+
+  const configuration = (await encryptConfigurationSecrets(input.configuration ?? []));
 
   // Overriding configuration
-  const singleSignOnInput = { ...input, ...defaultOps, configuration: configurationWithSecrets };
+  const created_at = now();
+  const singleSignOnInput = {
+    ...input,
+    created_at,
+    updated_at: created_at,
+    configuration,
+  };
 
   const created: BasicStoreEntitySingleSignOn = await createEntity(
     context,
@@ -177,53 +176,64 @@ export const addSingleSignOn = async (context: AuthContext, user: AuthUser, inpu
   return await internalAddSingleSignOn(context, user, input, isAuthenticationForcedFromEnv());
 };
 
-export const fieldPatchSingleSignOn = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {
+export const editSingleSignOn = async (context: AuthContext, user: AuthUser, id: string, input: SingleSignOnEditInput) => {
   await checkSSOAllowed(context);
   checkAuthenticationEditionLocked(user);
   const singleSignOnEntityBeforeUpdate = await findSingleSignOnById(context, user, id);
-
   if (!singleSignOnEntityBeforeUpdate) {
     throw FunctionalError(`Single sign on ${id} cannot be found`);
   }
 
-  const finalInput: EditInput[] = [];
-  for (let i = 0; i < input.length; i++) {
-    const currentInput = input[i];
+  // TODO groups "JSON" bug
 
-    if (currentInput.key === 'configuration') {
-      if (!currentInput.operation || currentInput.operation === EditOperation.Add || currentInput.operation === EditOperation.Replace) {
-        const configurationEncrypted: ConfigurationTypeInput[] = await encryptConfigurationSecrets(currentInput.value);
-        const overrideEditInput: EditInput = {
-          key: currentInput.key,
-          operation: currentInput.operation,
-          object_path: currentInput.object_path,
-          value: configurationEncrypted,
-        };
-        finalInput.push(overrideEditInput);
-      } else {
-        finalInput.push(currentInput);
+  const processConfiguration = async (newConfig: ConfigurationType[] = [], previousConfig: ConfigurationType[] = []) => {
+    for await (const configuration of newConfig) {
+      if (configuration.type === SECRET_TYPE) {
+        if (configuration.value === magicSecretValue) {
+          const previousValue = previousConfig.find((c) => c.key === configuration.key)?.value;
+          if (previousValue) {
+            configuration.value = previousValue;
+          }
+        } else if (configuration.value) {
+          configuration.value = await encryptAuthValue(configuration.value);
+        }
       }
-    } else {
-      finalInput.push(currentInput);
+    }
+    return newConfig;
+  };
+
+  const edits: EditInput[] = [];
+  for await (const [key, value] of Object.entries(input)) {
+    const editValue = (key === 'configuration') ? await processConfiguration(value as ConfigurationType[], singleSignOnEntityBeforeUpdate.configuration) : value;
+    const previous = JSON.stringify(singleSignOnEntityBeforeUpdate[key as keyof typeof singleSignOnEntityBeforeUpdate]);
+    const current = JSON.stringify(editValue);
+    if (current !== previous) {
+      edits.push({
+        key,
+        object_path: key,
+        value: Array.isArray(editValue) ? editValue : [editValue],
+        operation: Object.hasOwn(singleSignOnEntityBeforeUpdate, key) ? EditOperation.Replace : EditOperation.Add,
+      });
     }
   }
 
-  console.log('finalInput : ', finalInput);
+  if (edits.length === 0) {
+    return singleSignOnEntityBeforeUpdate;
+  }
 
-  const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_SINGLE_SIGN_ON, finalInput);
+  const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_SINGLE_SIGN_ON, edits);
 
-  const singleSignOnEntityAfterUpdate: BasicStoreEntitySingleSignOn = element;
   await publishUserAction({
     user,
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `updates \`${input.map((i) => i.key).join(', ')}\` for Authentication \`${element.strategy}\` - \`${element.identifier}\``,
+    message: `updates \`${edits.map((i) => i.key).join(', ')}\` for Authentication \`${element.strategy}\` - \`${element.identifier}\``,
     context_data: { id, entity_type: ENTITY_TYPE_SINGLE_SIGN_ON, input },
   });
 
   if (!isAuthenticationForcedFromEnv()) {
-    await notify(BUS_TOPICS[ENTITY_TYPE_SINGLE_SIGN_ON].EDIT_TOPIC, singleSignOnEntityAfterUpdate, user);
+    await notify(BUS_TOPICS[ENTITY_TYPE_SINGLE_SIGN_ON].EDIT_TOPIC, element, user);
   }
 
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);

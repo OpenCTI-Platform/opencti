@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ConfigTypeArray, getAdvancedConfigFromData, getConfigFromData } from '@components/settings/sso_definitions/utils/getConfigAndAdvancedConfigFromData';
+import { ConfigTypeArray, getBaseAndAdvancedConfigFromData } from '@components/settings/sso_definitions/utils/getConfigAndAdvancedConfigFromData';
 
 describe('Function: getAdvancedConfigFromData', () => {
   it('should SAML advanced config works', () => {
@@ -37,17 +37,16 @@ describe('Function: getAdvancedConfigFromData', () => {
       {
         key: 'privateKey',
         value: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-        type: 'encrypted',
+        type: 'secret',
       },
       {
         key: 'myCustomSecret',
         value: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
-        type: 'encrypted',
+        type: 'secret',
       },
     ];
 
-    const resultAdvanced = getAdvancedConfigFromData(inputConfig, 'SamlStrategy');
-    const resultPredefined = getConfigFromData(inputConfig, 'SamlStrategy');
+    const { baseConfig: resultPredefined, advancedConfig: resultAdvanced } = getBaseAndAdvancedConfigFromData(inputConfig, 'SamlStrategy');
 
     // Everything should be filter out except acceptedClockSkewMs & myCustomSecret
     expect(resultAdvanced).toStrictEqual([{
@@ -57,7 +56,7 @@ describe('Function: getAdvancedConfigFromData', () => {
     },
     {
       key: 'myCustomSecret',
-      value: '******',
+      value: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
       type: 'secret',
     }]);
 
@@ -89,7 +88,7 @@ describe('Function: getAdvancedConfigFromData', () => {
       },
       {
         key: 'privateKey',
-        type: 'encrypted',
+        type: 'secret',
         value: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
       },
     ]);
@@ -99,12 +98,12 @@ describe('Function: getAdvancedConfigFromData', () => {
   });
 
   it('should empty config be fine', () => {
-    const result = getAdvancedConfigFromData([], 'SamlStrategy');
-    expect(result).toStrictEqual([]);
+    const { advancedConfig } = getBaseAndAdvancedConfigFromData([], 'SamlStrategy');
+    expect(advancedConfig).toStrictEqual([]);
   });
 
   it('should wrong strategy be ok', () => {
-    const result = getAdvancedConfigFromData([], 'PirouetteStrategy');
-    expect(result).toStrictEqual([]);
+    const { advancedConfig } = getBaseAndAdvancedConfigFromData([], 'PirouetteStrategy');
+    expect(advancedConfig).toStrictEqual([]);
   });
 });

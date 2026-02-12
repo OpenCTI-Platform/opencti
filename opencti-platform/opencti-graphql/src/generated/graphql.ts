@@ -15695,7 +15695,7 @@ export type Mutation = {
   setupEnterpriseLicense?: Maybe<Settings>;
   singleSignOnAdd?: Maybe<SingleSignOn>;
   singleSignOnDelete?: Maybe<Scalars['ID']['output']>;
-  singleSignOnFieldPatch?: Maybe<SingleSignOn>;
+  singleSignOnEdit?: Maybe<SingleSignOn>;
   singleSignOnRunMigration?: Maybe<Array<Maybe<SingleSignOnMigrationResult>>>;
   statusTemplateAdd: StatusTemplate;
   statusTemplateContextClean: StatusTemplate;
@@ -17672,9 +17672,9 @@ export type MutationSingleSignOnDeleteArgs = {
 };
 
 
-export type MutationSingleSignOnFieldPatchArgs = {
+export type MutationSingleSignOnEditArgs = {
   id: Scalars['ID']['input'];
-  input: Array<EditInput>;
+  input: SingleSignOnEditInput;
 };
 
 
@@ -28138,6 +28138,17 @@ export type SingleSignOnEdge = {
   node: SingleSignOn;
 };
 
+export type SingleSignOnEditInput = {
+  configuration?: InputMaybe<Array<ConfigurationTypeInput>>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  enabled?: InputMaybe<Scalars['Boolean']['input']>;
+  groups_management?: InputMaybe<GroupsManagementInput>;
+  identifier?: InputMaybe<Scalars['String']['input']>;
+  label?: InputMaybe<Scalars['String']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+  organizations_management?: InputMaybe<OrganizationsManagementInput>;
+};
+
 export type SingleSignOnMigrationResult = {
   __typename?: 'SingleSignOnMigrationResult';
   configuration?: Maybe<Array<ConfigurationType>>;
@@ -37598,6 +37609,7 @@ export type ResolversTypes = ResolversObject<{
   SingleSignOnAddInput: SingleSignOnAddInput;
   SingleSignOnConnection: ResolverTypeWrapper<Omit<SingleSignOnConnection, 'edges'> & { edges: Array<ResolversTypes['SingleSignOnEdge']> }>;
   SingleSignOnEdge: ResolverTypeWrapper<Omit<SingleSignOnEdge, 'node'> & { node: ResolversTypes['SingleSignOn'] }>;
+  SingleSignOnEditInput: SingleSignOnEditInput;
   SingleSignOnMigrationResult: ResolverTypeWrapper<SingleSignOnMigrationResult>;
   SingleSignOnOrdering: SingleSignOnOrdering;
   SingleSignOnSettings: ResolverTypeWrapper<SingleSignOnSettings>;
@@ -38552,6 +38564,7 @@ export type ResolversParentTypes = ResolversObject<{
   SingleSignOnAddInput: SingleSignOnAddInput;
   SingleSignOnConnection: Omit<SingleSignOnConnection, 'edges'> & { edges: Array<ResolversParentTypes['SingleSignOnEdge']> };
   SingleSignOnEdge: Omit<SingleSignOnEdge, 'node'> & { node: ResolversParentTypes['SingleSignOn'] };
+  SingleSignOnEditInput: SingleSignOnEditInput;
   SingleSignOnMigrationResult: SingleSignOnMigrationResult;
   SingleSignOnSettings: SingleSignOnSettings;
   Software: Omit<Software, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'vulnerabilities' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, vulnerabilities?: Maybe<ResolversParentTypes['VulnerabilityConnection']>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
@@ -44364,7 +44377,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   setupEnterpriseLicense?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType, RequireFields<MutationSetupEnterpriseLicenseArgs, 'input'>>;
   singleSignOnAdd?: Resolver<Maybe<ResolversTypes['SingleSignOn']>, ParentType, ContextType, RequireFields<MutationSingleSignOnAddArgs, 'input'>>;
   singleSignOnDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationSingleSignOnDeleteArgs, 'id'>>;
-  singleSignOnFieldPatch?: Resolver<Maybe<ResolversTypes['SingleSignOn']>, ParentType, ContextType, RequireFields<MutationSingleSignOnFieldPatchArgs, 'id' | 'input'>>;
+  singleSignOnEdit?: Resolver<Maybe<ResolversTypes['SingleSignOn']>, ParentType, ContextType, RequireFields<MutationSingleSignOnEditArgs, 'id' | 'input'>>;
   singleSignOnRunMigration?: Resolver<Maybe<Array<Maybe<ResolversTypes['SingleSignOnMigrationResult']>>>, ParentType, ContextType, RequireFields<MutationSingleSignOnRunMigrationArgs, 'input'>>;
   statusTemplateAdd?: Resolver<ResolversTypes['StatusTemplate'], ParentType, ContextType, RequireFields<MutationStatusTemplateAddArgs, 'input'>>;
   statusTemplateContextClean?: Resolver<ResolversTypes['StatusTemplate'], ParentType, ContextType, RequireFields<MutationStatusTemplateContextCleanArgs, 'id'>>;
