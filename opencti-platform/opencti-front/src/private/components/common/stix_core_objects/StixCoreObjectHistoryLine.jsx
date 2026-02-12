@@ -234,9 +234,8 @@ const StixCoreObjectHistoryLine = ({ node, isRelation }) => {
         </Paper>
       </div>
       <div style={{ display: 'block', position: 'absolute', top: 50, left: 20, width: 1, height: 18 }} />
-      <Dialog  open={open} onClose={handleClose} title={t_i18n('Commit message')}
-      >
-          <MarkdownDisplay content={data.context_data.commit} remarkGfmPlugin={true} commonmark={true} />
+      <Dialog open={open} onClose={handleClose} title={t_i18n('Commit message')}>
+        <MarkdownDisplay content={data.context_data.commit} remarkGfmPlugin={true} commonmark={true} />
 
         <DialogActions>
           <Button color="primary" onClick={handleClose}>
@@ -244,8 +243,7 @@ const StixCoreObjectHistoryLine = ({ node, isRelation }) => {
           </Button>
         </DialogActions>
       </Dialog>
-      <Dialog  open={displayExternalLink}  onClose={handleCloseExternalLink}title={t_i18n('Do you want to browse this external link?')}
-      >
+      <Dialog open={displayExternalLink} onClose={handleCloseExternalLink}title={t_i18n('Do you want to browse this external link?')}>
         <DialogContentText>
           {t_i18n('Do you want to browse this external link?')}
         </DialogContentText>
