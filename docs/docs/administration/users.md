@@ -94,7 +94,7 @@ The below capabilities are applicable to the draft mode only:
 | &nbsp;&nbsp;`Ask for knowledge enrichment`              | Trigger an enrichment for a given entity in a draft.                                                                                                                                           |
 | &nbsp;&nbsp;`Manage labels`                             | Ability for users to create labels. Created labels will exist in the main database.                                                                                                                |
 
-![ONew tab to manage draft capabilities](assets/draft_override.png)
+![New tab to manage draft capabilities](assets/draft_override.png)
 
 #### Examples 
 
