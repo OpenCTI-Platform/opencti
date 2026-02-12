@@ -7,14 +7,14 @@ import useDraftContext from '../../../utils/hooks/useDraftContext';
 import { Theme } from '../../../components/Theme';
 import DraftProcessingStatus from './DraftProcessingStatus';
 import { useQueryLoadingWithLoadQuery } from '../../../utils/hooks/useQueryLoading';
-import { DraftToolbarQuery } from './__generated__/DraftToolbarQuery.graphql';
 import ErrorNotFound from '../../../components/ErrorNotFound';
-import { DraftToolbarFragment$key } from './__generated__/DraftToolbarFragment.graphql';
 import DraftApprove from './DraftApprove';
 import DraftExit from './DraftExit';
 import { THIRTY_SECONDS } from '../../../utils/Time';
 import useInterval from '../../../utils/hooks/useInterval';
 import DraftAuthorizedMembers from './DraftAuthorizedMembers';
+import { DraftToolbarQuery } from '@components/drafts/__generated__/DraftToolbarQuery.graphql';
+import { DraftToolbarFragment$key } from '@components/drafts/__generated__/DraftToolbarFragment.graphql';
 
 const draftFragment = graphql`
   fragment DraftToolbarFragment on DraftWorkspace {

@@ -6,13 +6,13 @@ import { useFormatter } from '../../../components/i18n';
 import Button from '../../../components/common/button/Button';
 import useUserCanApproveDraft from '../../../utils/hooks/useUserCanApproveDraft';
 import { useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
-import { DraftApproveFragment$key } from './__generated__/DraftApproveFragment.graphql';
 import Transition from '../../../components/Transition';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import { MESSAGING$ } from '../../../relay/environment';
 import { useNavigate } from 'react-router-dom';
 import useSwitchDraft from './useSwitchDraft';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
+import { DraftApproveFragment$key } from '@components/drafts/__generated__/DraftApproveFragment.graphql';
 
 const draftFragment = graphql`
   fragment DraftApproveFragment on DraftWorkspace {
