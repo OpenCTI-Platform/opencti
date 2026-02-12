@@ -208,6 +208,8 @@ export const fieldPatchSingleSignOn = async (context: AuthContext, user: AuthUse
     }
   }
 
+  console.log('finalInput : ', finalInput);
+
   const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_SINGLE_SIGN_ON, finalInput);
 
   const singleSignOnEntityAfterUpdate: BasicStoreEntitySingleSignOn = element;

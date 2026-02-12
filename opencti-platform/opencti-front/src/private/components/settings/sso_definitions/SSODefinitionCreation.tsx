@@ -34,7 +34,7 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
   const { t_i18n } = useFormatter();
   const [selectedStrategy, setSelectedStrategy] = useState<string>('');
 
-  const formikToSSOConfig = useFormikToSSOConfig(selectedStrategy ?? '');
+  // const formikToSSOConfig = useFormikToSSOConfig(selectedStrategy ?? '');
 
   const CreateSSODefinitionControlledDial = (props: DrawerControlledDialProps) => (
     <CreateSplitControlledDial
@@ -81,49 +81,49 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
   );
 
   const onSubmit = (
-    values: SSODefinitionFormValues,
+    finalValues: SingleSignOnAddInput,
     { setSubmitting, resetForm }: { setSubmitting: (flag: boolean) => void; resetForm: () => void },
   ) => {
-    if (!formikToSSOConfig) return;
-    const mainConfigs = formikToSSOConfig(values);
-
-    const advancedConfigs = formatAdvancedConfigurationForCreation(values.advancedConfigurations);
-
-    const configuration = [...mainConfigs, ...advancedConfigs];
-
-    const strategyEnum = getStrategyConfigEnum(selectedStrategy);
-
-    const groups_management = {
-      group_attribute: values.group_attribute || null,
-      group_attributes: formatStringToArray(values.group_attributes) || null,
-      groups_attributes: formatStringToArray(values.groups_attributes) || null,
-      groups_path: values.groups_path ? [values.groups_path] : null,
-      groups_scope: values.groups_scope || null,
-      groups_mapping: getGroupOrOrganizationMapping(values.groups_mapping_source, values.groups_mapping_target),
-      token_reference: values.groups_token_reference,
-      read_userinfo: values.groups_read_userinfo,
-    };
-
-    const organizations_management = {
-      organizations_path: formatStringToArray(values.organizations_path) || null,
-      organizations_scope: values.organizations_scope || null,
-      organizations_mapping: getGroupOrOrganizationMapping(values.organizations_mapping_source, values.organizations_mapping_target),
-      read_userinfo: values.organizations_read_userinfo,
-      token_reference: values.organizations_token_reference,
-    };
-
-    if (!strategyEnum) return;
-
-    let finalValues: SingleSignOnAddInput = {
-      name: values.name,
-      identifier: values.identifier,
-      label: values.label,
-      enabled: values.enabled,
-      strategy: strategyEnum,
-      configuration,
-    };
-
-    if (selectedStrategy !== 'ClientCert' && selectedStrategy !== 'Header') finalValues = { ...finalValues, groups_management, organizations_management };
+    // if (!formikToSSOConfig) return;
+    // const mainConfigs = formikToSSOConfig(values);
+    //
+    // const advancedConfigs = formatAdvancedConfigurationForCreation(values.advancedConfigurations);
+    //
+    // const configuration = [...mainConfigs, ...advancedConfigs];
+    //
+    // const strategyEnum = getStrategyConfigEnum(selectedStrategy);
+    //
+    // const groups_management = {
+    //   group_attribute: values.group_attribute || null,
+    //   group_attributes: formatStringToArray(values.group_attributes) || null,
+    //   groups_attributes: formatStringToArray(values.groups_attributes) || null,
+    //   groups_path: values.groups_path ? [values.groups_path] : null,
+    //   groups_scope: values.groups_scope || null,
+    //   groups_mapping: getGroupOrOrganizationMapping(values.groups_mapping_source, values.groups_mapping_target),
+    //   token_reference: values.groups_token_reference,
+    //   read_userinfo: values.groups_read_userinfo,
+    // };
+    //
+    // const organizations_management = {
+    //   organizations_path: formatStringToArray(values.organizations_path) || null,
+    //   organizations_scope: values.organizations_scope || null,
+    //   organizations_mapping: getGroupOrOrganizationMapping(values.organizations_mapping_source, values.organizations_mapping_target),
+    //   read_userinfo: values.organizations_read_userinfo,
+    //   token_reference: values.organizations_token_reference,
+    // };
+    //
+    // if (!strategyEnum) return;
+    //
+    // let finalValues: SingleSignOnAddInput = {
+    //   name: values.name,
+    //   identifier: values.identifier,
+    //   label: values.label,
+    //   enabled: values.enabled,
+    //   strategy: strategyEnum,
+    //   configuration,
+    // };
+    //
+    // if (selectedStrategy !== 'ClientCert' && selectedStrategy !== 'Header') finalValues = { ...finalValues, groups_management, organizations_management };
 
     commitMutation({
       ...defaultCommitMutation,
@@ -158,7 +158,7 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
       {({ onClose }) => (
         <SSODefinitionForm
           onCancel={onClose}
-          onSubmit={onSubmit}
+          onSubmitCreation={onSubmit}
           selectedStrategy={selectedStrategy}
         />
       )}

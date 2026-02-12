@@ -50,7 +50,7 @@ export const validateAndFormatSchemaAttribute = (
     }
     // This is reference change to trim the input and prevent unuseful stream events
     // TODO Find a better way to rework the data
-    // eslint-disable-next-line no-param-reassign
+
     editInput.value = values;
     // Special validation for json
     if (attributeDefinition.format === 'json' && attributeDefinition.schemaDef) {
@@ -201,13 +201,19 @@ export const validateInputCreation = async (
 export const validateUpdatableAttribute = (instanceType: string, input: Record<string, unknown>) => {
   const invalidKeys: string[] = [];
   Object.entries(input).forEach(([key]) => {
+    console.log('instanceType : ', instanceType);
+    console.log('key : ', key);
     const attribute = schemaAttributesDefinition.getAttribute(instanceType, key);
     const reference = schemaRelationsRefDefinition.getRelationRef(instanceType, key);
     const schemaAttribute = attribute || reference;
+    console.log('attribute : ', attribute);
+    console.log('reference : ', reference);
+    console.log('schemaAttribute : ', schemaAttribute);
     if (!schemaAttribute || schemaAttribute.update === false) {
       invalidKeys.push(key);
     }
   });
+  console.log('invalidKeys : ', invalidKeys);
   return invalidKeys;
 };
 
@@ -228,6 +234,8 @@ export const validateInputUpdate = async (
     editInputs.forEach((obj) => {
       instanceFromInputs[obj.key] = obj.value;
     });
+    console.log('editInputs ; ', editInputs);
+    console.log('instanceFromInputs ; ', instanceFromInputs);
     // Generic validator
     await validateFormatSchemaAttributes(context, user, instanceType, editInputs);
     await validateMandatoryAttributesOnUpdate(context, user, instanceFromInputs, entitySetting);

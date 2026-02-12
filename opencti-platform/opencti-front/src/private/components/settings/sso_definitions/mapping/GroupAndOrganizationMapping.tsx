@@ -11,15 +11,15 @@ import { SSODefinitionFormValues, SSOEditionFormInputKeys } from '@components/se
 import { getGroupOrOrganizationMapping } from '@components/settings/sso_definitions/utils/GroupOrOrganizationMapping';
 
 type GroupAndOrganizationMappingProps = {
-  isEditionMode: boolean;
+  // isEditionMode: boolean;
   label: string;
   name: SSOEditionFormInputKeys;
-  updateField: (field: keyof SSODefinitionFormValues, value: unknown) => void;
+  // updateField: (field: keyof SSODefinitionFormValues, value: unknown) => void;
 };
 
-const GroupAndOrganizationMapping = ({ isEditionMode, label, name, updateField }: GroupAndOrganizationMappingProps) => {
+const GroupAndOrganizationMapping = ({ label, name }: GroupAndOrganizationMappingProps) => {
   const { t_i18n } = useFormatter();
-  const { setFieldValue } = useFormikContext();
+  // const { setFieldValue } = useFormikContext();
 
   const sourceName = `${name}_source`;
   const targetName = `${name}_target`;
@@ -55,14 +55,14 @@ const GroupAndOrganizationMapping = ({ isEditionMode, label, name, updateField }
                     <Field
                       component={TextField}
                       variant="standard"
-                      onSubmit={() => {
-                        if (isEditionMode) {
-                          const { groups_mapping_source, groups_mapping_target } = form.values;
-                          const newMapping = getGroupOrOrganizationMapping(groups_mapping_source, groups_mapping_target);
-                          if (!newMapping.length) return;
-                          updateField(name, newMapping);
-                        }
-                      }}
+                      // onSubmit={() => {
+                      //   if (isEditionMode) {
+                      //     const { groups_mapping_source, groups_mapping_target } = form.values;
+                      //     const newMapping = getGroupOrOrganizationMapping(groups_mapping_source, groups_mapping_target);
+                      //     if (!newMapping.length) return;
+                      //     updateField(name, newMapping);
+                      //   }
+                      // }}
                       name={`${sourceName}[${index}]`}
                       label={label}
                       fullWidth
@@ -70,26 +70,26 @@ const GroupAndOrganizationMapping = ({ isEditionMode, label, name, updateField }
                     <div
                       style={{ flexBasis: '70%', marginTop: '3px' }}
                     >
-                      {targetName === 'groups_mapping_target' && <GroupTarget index={index} updateField={updateField} isEditionMode={isEditionMode} />}
-                      {targetName === 'organizations_mapping_target' && <OrganizationTarget index={index} updateField={updateField} isEditionMode={isEditionMode} />}
+                      {targetName === 'groups_mapping_target' && <GroupTarget index={index} />}
+                      {targetName === 'organizations_mapping_target' && <OrganizationTarget index={index} />}
                     </div>
                     <IconButton
                       color="primary"
                       aria-label={t_i18n('Delete')}
                       style={{ marginTop: 30, marginLeft: 50 }}
                       onClick={() => {
-                        const mapping = [...form.values[name]];
-                        const sourceFormValues = [...form.values[sourceName]];
-                        const targetFormValues = [...form.values[targetName]];
-                        mapping.splice(index, 1);
-                        sourceFormValues.splice(index, 1);
-                        targetFormValues.splice(index, 1);
-                        setFieldValue(sourceName, sourceFormValues);
-                        setFieldValue(targetName, targetFormValues);
+                        // const mapping = [...form.values[name]];
+                        // const sourceFormValues = [...form.values[sourceName]];
+                        // const targetFormValues = [...form.values[targetName]];
+                        // mapping.splice(index, 1);
+                        // sourceFormValues.splice(index, 1);
+                        // targetFormValues.splice(index, 1);
+                        // setFieldValue(sourceName, sourceFormValues);
+                        // setFieldValue(targetName, targetFormValues);
                         remove(index);
 
-                        const newMapping = getGroupOrOrganizationMapping(sourceFormValues, targetFormValues);
-                        updateField(name, newMapping);
+                        // const newMapping = getGroupOrOrganizationMapping(sourceFormValues, targetFormValues);
+                        // updateField(name, newMapping);
                       }} // Delete
                     >
                       <Delete fontSize="small" />

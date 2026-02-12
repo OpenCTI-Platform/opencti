@@ -10,23 +10,23 @@ import { SSODefinitionFormValues } from '@components/settings/sso_definitions/SS
 
 type GroupTargetProps = {
   index: number;
-  isEditionMode: boolean;
-  updateField: (field: keyof SSODefinitionFormValues, value: unknown) => void;
+  // isEditionMode: boolean;
+  // updateField: (field: keyof SSODefinitionFormValues, value: unknown) => void;
 };
 
-type FormValues = {
-  groups_mapping_source: string[];
-  groups_mapping_target: string[];
-};
+// type FormValues = {
+//   groups_mapping_source: string[];
+//   groups_mapping_target: string[];
+// };
 
-const GroupTarget = ({ index, isEditionMode, updateField }: GroupTargetProps) => {
+const GroupTarget = ({ index }: GroupTargetProps) => {
   const { t_i18n } = useFormatter();
   const [options, setOptions] = useState<string[]>([]);
 
-  const { setFieldValue, values } = useFormikContext<FormValues>();
+  // const { setFieldValue, values } = useFormikContext<FormValues>();
 
   const fieldName = `groups_mapping_target[${index}]`;
-  const value = values.groups_mapping_target?.[index] ?? '';
+  // const value = values.groups_mapping_target?.[index] ?? '';
 
   useEffect(() => {
     fetchQuery(groupsQuery, { orderBy: 'name', orderMode: 'asc' })
@@ -37,27 +37,27 @@ const GroupTarget = ({ index, isEditionMode, updateField }: GroupTargetProps) =>
         setOptions(newOptions);
       });
   }, []);
-
-  useEffect(() => {
-    if (isEditionMode) {
-      const newMapping = getGroupOrOrganizationMapping(values.groups_mapping_source, values.groups_mapping_target);
-      if (!newMapping.length) return;
-      updateField('groups_mapping', newMapping);
-    }
-  }, [values.groups_mapping_target, isEditionMode]);
-
-  const handleChange = (_: React.SyntheticEvent, newValue: string) => {
-    setFieldValue(fieldName, newValue);
-  };
+  //
+  // useEffect(() => {
+  //   if (isEditionMode) {
+  //     const newMapping = getGroupOrOrganizationMapping(values.groups_mapping_source, values.groups_mapping_target);
+  //     if (!newMapping.length) return;
+  //     updateField('groups_mapping', newMapping);
+  //   }
+  // }, [values.groups_mapping_target, isEditionMode]);
+  //
+  // const handleChange = (_: React.SyntheticEvent, newValue: string) => {
+  //   setFieldValue(fieldName, newValue);
+  // };
 
   return (
     <TargetAutocomplete
       label={t_i18n('Groups')}
       itemIcon="Group"
-      options={options.filter((item) => item.startsWith(value ?? ''))}
-      value={value}
+      options={options}
+      // value={value}
       fieldName={fieldName}
-      handleChange={handleChange}
+      // handleChange={handleChange}
     />
   );
 };
