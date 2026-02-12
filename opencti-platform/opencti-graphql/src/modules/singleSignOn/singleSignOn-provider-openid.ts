@@ -124,7 +124,6 @@ export const registerOpenIdStrategy = async (ssoEntity: BasicStoreEntitySingleSi
       scope: openIdScope,
       callbackURL,
       passReqToCallback: false,
-      // TODO ssoConfig.audience
     };
 
     const verify: VerifyFunction = async (tokens, verified: AuthenticateCallback) => {
@@ -163,8 +162,15 @@ export const registerOpenIdStrategy = async (ssoEntity: BasicStoreEntitySingleSi
       }
     };
 
-    // const debugCallback = (message, meta) => logApp.info(message, meta);
     const openIDStrategy = new OpenIDStrategy(options, verify);
+    if (ssoConfig.audience) {
+      const original = openIDStrategy.authorizationRequestParams.bind(openIDStrategy);
+      openIDStrategy.authorizationRequestParams = (req, options) => {
+        const params = original(req, options) as URLSearchParams;
+        params.set('audience', ssoConfig.audience);
+        return params;
+      };
+    }
 
     logAuthInfo('logout remote options', EnvStrategyType.STRATEGY_OPENID, options);
     const logout = (_: Request, callback: (err: Error | null, uri: string) => void) => {
