@@ -2,7 +2,6 @@ import React, { FunctionComponent } from 'react';
 import UserConfidenceLevelField from '@components/settings/users/edition/UserConfidenceLevelField';
 import { UserEdition_user$data } from '@components/settings/users/__generated__/UserEdition_user.graphql';
 import { Field, FieldArray, Form, Formik } from 'formik';
-import Typography from '@mui/material/Typography';
 import IconButton from '@common/button/IconButton';
 import { Add } from '@mui/icons-material';
 import * as Yup from 'yup';
@@ -12,6 +11,9 @@ import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import { useFormatter } from '../../../../../components/i18n';
 import { isEmptyField, isNotEmptyField } from '../../../../../utils/utils';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import Label from '@common/label/Label';
+import { useTheme } from '@mui/styles';
+import { Theme } from '../../../../../components/Theme';
 
 export interface OverrideFormData {
   max_confidence: string;
@@ -58,6 +60,7 @@ const userConfidenceValidation = (t: (value: string) => string) => {
 
 const UserEditionConfidence: FunctionComponent<UserEditionConfidenceProps> = ({ user, context }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
 
   const initialValues: ConfidenceFormData = {
     user_confidence_level_enabled: !!user.user_confidence_level,
@@ -182,18 +185,23 @@ const UserEditionConfidence: FunctionComponent<UserEditionConfidenceProps> = ({ 
               name="overrides"
               render={(arrayHelpers) => (
                 <div>
-                  <Typography variant="h4" gutterBottom={true} style={{ float: 'left', marginTop: '20px' }}>
-                    {t_i18n('Add a specific max confidence level for an entity type')}
-                  </Typography>
-                  <IconButton
-                    color="primary"
-                    aria-label="Add"
-                    onClick={() => arrayHelpers.push({ entity_type: '', max_confidence: defaultOverrideConfidence })}
-                    style={{ marginTop: '5px' }}
-                    disabled={values.overrides.some((o) => o.entity_type === '')}
+                  <Label
+                    sx={{ marginTop: 2, marginBottom: 2 }}
+                    sxTitle={{ textTransform: 'uppercase', color: theme.palette.text.primary }}
+                    action={(
+                      <IconButton
+                        color="primary"
+                        aria-label="Add"
+                        onClick={() => arrayHelpers.push({ entity_type: '', max_confidence: defaultOverrideConfidence })}
+                        disabled={values.overrides.some((o) => o.entity_type === '')}
+                      >
+                        <Add fontSize="small" />
+                      </IconButton>
+                    )}
                   >
-                    <Add fontSize="small" />
-                  </IconButton>
+                    {t_i18n('Add a specific max confidence level for an entity type')}
+                  </Label>
+
                   {values.overrides.map((_, idx) => (
                     <Field
                       // Field props

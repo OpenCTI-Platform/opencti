@@ -6,12 +6,14 @@ import { PropsWithSx } from '../../../utils/props';
 
 interface LabelProps extends PropsWithChildren, PropsWithSx {
   action?: ReactNode;
+  sxTitle?: SxProps;
 }
 
 const Label = ({
   children,
   action,
   sx,
+  sxTitle,
 }: LabelProps) => {
   const theme = useTheme<Theme>();
 
@@ -29,6 +31,7 @@ const Label = ({
     fontSize: '12px',
     fontWeight: 400,
     fontFamily: '"IBM Plex Sans", sans-serif',
+    ...sxTitle,
   };
 
   return (
