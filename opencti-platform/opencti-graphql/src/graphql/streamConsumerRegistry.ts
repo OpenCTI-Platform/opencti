@@ -29,6 +29,7 @@ interface LocalConsumerTracking {
   connectionId: string;
   collectionId: string;
   lastEventId: string;
+  connectedAt: string;
   eventsSentCount: number;
   eventsProcessedCount: number;
   resolutionsSentCount: number;
@@ -136,6 +137,7 @@ export const registerConsumer = async (connectionId: string, collectionId: strin
   localConsumers.set(connectionId, {
     connectionId,
     collectionId,
+    connectedAt,
     lastEventId: '',
     eventsSentCount: 0,
     eventsProcessedCount: 0,
