@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { buildPeriodFromDates, computeRangeIntersection } from '../utils/format';
 import { createInferredRelation, deleteInferredRuleElement } from '../database/middleware';
 import { createRuleContent } from './rules-utils';
@@ -13,7 +12,7 @@ import { executionContext, RULE_MANAGER_USER } from '../utils/access';
 
 const buildRelationToRelationRule = (ruleDefinition: RuleDefinition, relationTypes: RelationTypes): RuleRuntime => {
   const { id } = ruleDefinition;
-  const { leftType, rightType, creationType } = relationTypes;
+  const { leftType, rightType, leftTypesFrom, rightTypesTo, creationType } = relationTypes;
   // Execution
   const applyUpsert = async (data: StixRelation): Promise<void> => {
     const context = executionContext(ruleDefinition.name, RULE_MANAGER_USER);
@@ -24,9 +23,9 @@ const buildRelationToRelationRule = (ruleDefinition: RuleDefinition, relationTyp
     const { object_marking_refs: markings, relationship_type } = data;
     const { confidence: createdConfidence = 0, start_time: startTime, stop_time: stopTime } = data;
     const creationRange = buildPeriodFromDates(startTime, stopTime);
-    // Need to discover on the from and the to if attributed-to also exists
+    // Need to discover on the from and the to if relation also exists
     // IN CREATION: (A) -> RightType -> (B)
-    // (P) -> FIND_RELS (leftType) -> (A) -> RightType -> (B)
+    // (P whose type is in leftTypesFrom if specified) -> FIND_RELS(leftType) -> (A) -> RightType -> (B)
     // (P) -> creationType -> (B)
     if (relationship_type === rightType) {
       const listFromCallback = async (relationships: Array<BasicStoreRelation>): Promise<void> => {
@@ -52,12 +51,16 @@ const buildRelationToRelationRule = (ruleDefinition: RuleDefinition, relationTyp
           await createInferredRelation(context, input, ruleContent);
         }
       };
-      const listFromArgs = { toId: sourceRef, callback: listFromCallback };
+      const listFromArgs = {
+        toId: sourceRef,
+        fromTypes: leftTypesFrom,
+        callback: listFromCallback,
+      };
       await fullRelationsList(context, RULE_MANAGER_USER, leftType, listFromArgs);
     }
-    // Need to discover on the from and the to if attributed-to also exists
+    // Need to discover on the from and the to if relation also exists
     // (A) -> leftType -> (B)
-    // (A) -> leftType -> (B) -> FIND_RELS (RightType) -> (P)
+    // (A) -> leftType -> (B) -> FIND_RELS(RightType) -> (P whose type is contained in rightTypesTo if specified)
     // (A) -> creationType -> (P)
     if (relationship_type === leftType) {
       const listToCallback = async (relationships: Array<BasicStoreRelation>): Promise<void> => {
@@ -82,7 +85,11 @@ const buildRelationToRelationRule = (ruleDefinition: RuleDefinition, relationTyp
           await createInferredRelation(context, input, ruleContent);
         }
       };
-      const listToArgs = { fromId: targetRef, callback: listToCallback };
+      const listToArgs = {
+        fromId: targetRef,
+        toTypes: rightTypesTo,
+        callback: listToCallback,
+      };
       await fullRelationsList(context, RULE_MANAGER_USER, rightType, listToArgs);
     }
   };
