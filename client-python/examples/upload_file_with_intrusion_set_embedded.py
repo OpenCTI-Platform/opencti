@@ -3,7 +3,6 @@ import datetime
 import os
 
 from pycti import OpenCTIApiClient
-from six import print_
 
 # Variables
 api_url = os.getenv("OPENCTI_API_URL", "http://opencti:4000")
