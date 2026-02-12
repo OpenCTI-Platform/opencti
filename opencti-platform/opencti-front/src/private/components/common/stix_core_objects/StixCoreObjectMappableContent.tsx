@@ -1,5 +1,4 @@
-import React, { FunctionComponent, useEffect, useState } from 'react';
-import Paper from '@mui/material/Paper';
+import { FunctionComponent, useEffect, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import CommitMessage from '@components/common/form/CommitMessage';
 import * as Yup from 'yup';
@@ -24,6 +23,7 @@ import { isNotEmptyField } from '../../../../utils/utils';
 import HtmlDisplay from '../../../../components/HtmlDisplay';
 import type { Theme } from '../../../../components/Theme';
 import { MESSAGING$ } from '../../../../relay/environment';
+import Card from '../../../../components/common/card/Card';
 
 const useStyles = makeStyles<Theme>(() => createStyles({
   documentContainer: {
@@ -249,14 +249,7 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
     );
   }
   return (
-    <Paper
-      sx={{
-        height: '100%',
-        minHeight: '100%',
-        padding: '15px',
-      }}
-      variant="outlined"
-    >
+    <Card>
       <Formik<StixCoreObjectMappableContentValues>
         enableReinitialize
         initialValues={initialValues}
@@ -327,7 +320,7 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
           </Form>
         )}
       </Formik>
-    </Paper>
+    </Card>
   );
 };
 

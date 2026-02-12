@@ -1,8 +1,7 @@
-import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
+import { FunctionComponent, useEffect, useRef, useState } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery, useQueryLoader, UseQueryLoaderLoadQueryOptions } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import StixCoreObjectMappableContent from '@components/common/stix_core_objects/StixCoreObjectMappableContent';
-import Paper from '@mui/material/Paper';
 import { Link } from 'react-router-dom';
 import ContainerStixCoreObjectsSuggestedMapping, { containerStixCoreObjectsSuggestedMappingQuery } from '@components/common/containers/ContainerStixCoreObjectsSuggestedMapping';
 import {
@@ -37,6 +36,7 @@ import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import { deserializeObjectB64, serializeObjectB64 } from '../../../../utils/object';
+import Card from '../../../../components/common/card/Card';
 
 const OPEN$ = new Subject().pipe(debounce(() => timer(500)));
 
@@ -440,6 +440,7 @@ const ContainerMappingContentComponent: FunctionComponent<
         container
         alignItems="stretch"
         columnSpacing={2}
+        mb={2}
       >
         <Grid item xs={6} sx={{ display: 'flex', flexDirection: 'column' }}>
           <StixCoreObjectMappableContent
@@ -454,16 +455,7 @@ const ContainerMappingContentComponent: FunctionComponent<
         </Grid>
 
         <Grid item xs={6} sx={{ display: 'flex', flexDirection: 'column' }}>
-          <Paper
-            variant="outlined"
-            style={{
-              padding: '15px',
-              borderRadius: 4,
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-            }}
-          >
+          <Card>
             <ContainerStixCoreObjectsMappingHeader
               suggestedMappingData={suggestedMappingData}
               validateDisabled={askingSuggestion || filteredSuggestedMappedEntities.length === 0}
@@ -501,7 +493,7 @@ const ContainerMappingContentComponent: FunctionComponent<
                 />
               )}
             </div>
-          </Paper>
+          </Card>
         </Grid>
       </Grid>
       <ContainerAddStixCoreObjects
