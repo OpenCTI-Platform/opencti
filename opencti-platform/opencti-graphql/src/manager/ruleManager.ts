@@ -373,24 +373,25 @@ export const ruleApply = async (context: AuthContext, user: AuthUser, elementId:
   return executeRuleApply(context, user, rule, elementId);
 };
 
-export const ruleApplyAsync = async (context: AuthContext, user: AuthUser, elementId: string, ruleId: string, executionId: string) => {
+export const ruleApplyAsync = async (context: AuthContext, user: AuthUser, elementId: string, ruleId: string, executionId: string): Promise<boolean> => {
   const rule = await getRule(context, user, ruleId) as RuleRuntime;
   if (!rule) {
     throw FunctionalError('Cant find rule to scan', { id: ruleId });
   }
   const dataCanonicalize = jsonCanonicalize({ elementId, ruleId, executionId }) as string;
   const ruleApplyId = uuidv5(dataCanonicalize, OPENCTI_NAMESPACE);
-  let lock;
-  let result = false;
+  let lock: { unlock: () => any } | undefined;
   try {
     // Try to get the lock in redis
     lock = await lockResources(ruleApplyId, { draftId: getDraftContext(context, user) });
     const currentAsyncCall = await redisGetAsyncCall(ruleApplyId);
-    // If a call is already processing, return the call status
-    if (currentAsyncCall) {
-      result = currentAsyncCall !== '0';
+    // If a call was already processed and is finished, return true
+    if (currentAsyncCall && currentAsyncCall !== '0') {
+      await lock?.unlock();
+      return true;
     } else {
-      // Otherwise, it means no processing is started yet, and we need to start it
+      // Otherwise, it means that either the rule apply wasn't started yet, or the node processing it went down and that the call couldn't finish.
+      // In any case, we have to start it over
       await redisInitializeAsyncCall(ruleApplyId);
       const timeoutPromise = new Promise((resolve, _) =>
         setTimeout(() => resolve({ timeout: true }), 10000),
@@ -404,27 +405,23 @@ export const ruleApplyAsync = async (context: AuthContext, user: AuthUser, eleme
           logApp.error('[OPENCTI] Error during rule apply', { cause: err });
         }).finally(async () => {
           await redisFinishAsyncCall(ruleApplyId);
+          await lock?.unlock();
         });
-        result = false;
+        return false;
       } else {
         // If rule apply promise is the first to finish, we move the work to complete here
         await redisFinishAsyncCall(ruleApplyId);
-        result = true;
+        await lock?.unlock();
+        return true;
       }
     }
   } catch (err: any) {
     if (err.name === TYPE_LOCK_ERROR) {
-      const currentAsyncCall = await redisGetAsyncCall(ruleApplyId);
-      if (currentAsyncCall) {
-        result = currentAsyncCall !== '0';
-      }
+      return false;
     }
+    await lock?.unlock();
     throw err;
-  } finally {
-    if (lock) await lock.unlock();
   }
-
-  return result;
 };
 
 export const ruleClear = async (context: AuthContext, user: AuthUser, elementId: string, ruleId: string) => {

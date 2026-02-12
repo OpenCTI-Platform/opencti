@@ -1919,8 +1919,6 @@ class StixCoreObject:
                 self.opencti.app_logger.info(
                     "Apply rule async stix_core_object complete", {"id": element_id}
                 )
-                if not rule_apply_complete:
-                    time.sleep(10)
         else:
             self.opencti.app_logger.error(
                 "[stix_core_object] Cannot apply rule, missing parameters: id"

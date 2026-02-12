@@ -243,10 +243,7 @@ class OpenCTIApiWork:
         :return: empty string if error, None otherwise
         :rtype: str or None
         """
-        state = self.get_work(work_id=work_id)
         status = ""
-        if len(state) > 0:
-            status = state["status"]
         while status != "complete":
             state = self.get_work(work_id=work_id)
             if len(state) > 0:
@@ -257,7 +254,8 @@ class OpenCTIApiWork:
                         "Unexpected connector error", {"state_errors": state["errors"]}
                     )
                     return ""
-
+            if status == "complete":
+                return
             time.sleep(1)
 
     def get_work(self, work_id: str) -> Dict:
