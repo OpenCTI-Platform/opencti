@@ -24,7 +24,7 @@ intrusion_set = opencti_api_client.intrusion_set.create(
     first_seen=datetime.date.today().strftime("%Y-%m-%dT%H:%M:%S+00:00"),
     last_seen=datetime.date.today().strftime("%Y-%m-%dT%H:%M:%S+00:00"),
     update=True,
-    files=(opencti_api_client.file("upload_image_example.png", file_data, 'image/png')),
+    files=(opencti_api_client.file("upload_image_example.png", file_data, "image/png")),
     embedded=True,
 )
 
