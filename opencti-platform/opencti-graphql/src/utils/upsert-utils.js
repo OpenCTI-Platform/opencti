@@ -198,8 +198,9 @@ const generateFileInputsForUpsert = async (context, user, resolvedElement, updat
       const fileInput = updatePatch.files[i];
       // Use snake_case to match storage API parameter naming
       const file_markings = filesMarkings[i] || updatePatch.objectMarking?.map(({ id }) => id);
-      const fileNoTriggerImport = noTriggerImportArr[i] ?? false;
-      const fileEmbedded = embeddedArr[i] ?? false;
+      // If the array is shorter than files, reuse the last provided value (backward compat: single value applies to all)
+      const fileNoTriggerImport = noTriggerImportArr[Math.min(i, noTriggerImportArr.length - 1)] ?? false;
+      const fileEmbedded = embeddedArr[Math.min(i, embeddedArr.length - 1)] ?? false;
       filesToUpload.push({ file: fileInput, markings: file_markings, noTriggerImport: fileNoTriggerImport, embedded: fileEmbedded });
     }
   }

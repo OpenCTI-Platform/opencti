@@ -3875,8 +3875,9 @@ const internalCreateEntityRaw = async (
       for (let i = 0; i < resolvedInput.files.length; i += 1) {
         const fileInput = resolvedInput.files[i];
         const fileMarking = filesMarkings[i] || resolvedInput.objectMarking?.map(({ id }: { id: string }) => id);
-        const fileNoTriggerImport = noTriggerImportArr[i] ?? false;
-        const fileEmbedded = embeddedArr[i] ?? false;
+        // If the array is shorter than files, reuse the last provided value (backward compat: single value applies to all)
+        const fileNoTriggerImport = noTriggerImportArr[Math.min(i, noTriggerImportArr.length - 1)] ?? false;
+        const fileEmbedded = embeddedArr[Math.min(i, embeddedArr.length - 1)] ?? false;
         filesToUpload.push({ file: fileInput, markings: fileMarking, noTriggerImport: fileNoTriggerImport, embedded: fileEmbedded });
       }
     }
