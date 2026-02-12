@@ -329,9 +329,8 @@ describe('platformCrypto: Ed25519 signing and verification', () => {
     expect(keyPair.jwks).toBeDefined();
     expect(Object.keys(keyPair.jwks)).toHaveLength(1);
 
-    const kid = Object.keys(keyPair.jwks)[0];
+    const kid = keyPair.jwks.keys[0].kid;
     expect(kid).toMatch(/^[0-9a-f]{16}$/); // 8 bytes = 16 hex chars
-    expect(Object.keys(keyPair.jwks)[0]).toEqual(kid);
   });
 
   it('should produce different signatures for different key versions', async () => {

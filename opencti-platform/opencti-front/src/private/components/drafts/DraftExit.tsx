@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import Button from '../../../components/common/button/Button';
 import useSwitchDraft from './useSwitchDraft';
 import { useFormatter } from '../../../components/i18n';
-import { DraftExitFragment$key } from './__generated__/DraftExitFragment.graphql';
 import { useFragment } from 'react-relay';
+import { DraftExitFragment$key } from '@components/drafts/__generated__/DraftExitFragment.graphql';
 
 const draftFragment = graphql`
   fragment DraftExitFragment on DraftWorkspace {

@@ -8,7 +8,6 @@ import type { BasicStoreEntityIndicator } from '../../../src/modules/indicator/i
 import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
 import type { DecayHistory } from '../../../src/modules/decayRule/decayRule-domain';
 import { BUILT_IN_DECAY_RULE_DOMAIN_NAME } from '../../../src/modules/decayRule/decayRule-domain';
-import { IndicatorsOrdering } from '../../../src/generated/graphql';
 
 const LIST_QUERY = gql`
     query indicators(

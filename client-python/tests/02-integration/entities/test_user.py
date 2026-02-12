@@ -55,16 +55,29 @@ def test_user_organization(api_client):
         org_test.base_class().delete(id=test_org["id"])
 
 
-def test_user_token_renew(api_client):
+def test_user_admin_token_create_remove(api_client):
     user_test = UserTest(api_client)
-    test_user = user_test.own_class().create(**user_test.data(), include_token=True)
+    test_user = user_test.own_class().create(**user_test.data(), include_tokens=True)
     try:
         assert test_user is not None, "User create response returned NoneType"
-
-        old_token = test_user["api_token"]
-        result = user_test.own_class().token_renew(
-            id=test_user["id"], include_token=True
+        assert len(test_user["api_tokens"]) == 0
+        # Create the token
+        result = user_test.own_class().create_token(
+            user_id=test_user["id"], token_name="new token"
         )
-        assert old_token != result["api_token"]
+        token_id = result["token_id"]
+        assert result["plaintext_token"] is not None
+        # Fetch the user
+        read_user = user_test.own_class().read(id=test_user["id"], include_tokens=True)
+        assert len(read_user["api_tokens"]) == 1
+
+        # Remove the token
+        result = user_test.own_class().remove_token(
+            user_id=test_user["id"], token_id=token_id
+        )
+        assert result is not None
+        read_user = user_test.own_class().read(id=test_user["id"], include_tokens=True)
+        assert len(read_user["api_tokens"]) == 0
+
     finally:
         user_test.own_class().delete(id=test_user["id"])

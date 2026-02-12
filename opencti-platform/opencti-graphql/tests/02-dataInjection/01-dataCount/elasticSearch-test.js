@@ -220,7 +220,7 @@ describe('Elasticsearch computation', () => {
     expect(aggregationMap.get('Malware')).toEqual(1); // Because of date filtering
   });
   it('should invalid time histogram fail', async () => {
-    const histogramCount = async () => elHistogramCount(testContext, ADMIN_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, { types: ['Stix-Domain-Object'], field: 'created_at', interval: 'minute' });
+    const histogramCount = elHistogramCount(testContext, ADMIN_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, { types: ['Stix-Domain-Object'], field: 'created_at', interval: 'minute' });
     await expect(histogramCount).rejects.toThrow();
   });
   it('should day histogram accurate', async () => {
@@ -529,7 +529,7 @@ describe('Elasticsearch pagination', () => {
     let data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { search: 'malicious' });
     expect(data.edges.length).toEqual(28);
     data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { search: 'with malicious' });
-    expect(data.edges.length).toEqual(60);
+    expect(data.edges.length).toEqual(61);
     data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { search: '"with malicious"' });
     expect(data.edges.length).toEqual(2);
   });
@@ -559,52 +559,59 @@ describe('Elasticsearch pagination', () => {
     };
     const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { filters, first: ES_MAX_PAGINATION });
     const entityTypeMap = mapEdgesCountPerEntityType(data);
-    expect(entityTypeMap.get('Attack-Pattern')).toBe(entitiesCounter.AttackPattern);
-    expect(entityTypeMap.get('Campaign')).toBe(entitiesCounter.Campaign);
-    expect(entityTypeMap.get('Capability')).toBe(entitiesCounter.Capability);
-    expect(entityTypeMap.get('Course-Of-Action')).toBe(entitiesCounter.CourseOfAction);
-    expect(entityTypeMap.get('Credential')).toBe(entitiesCounter.Credential);
-    expect(entityTypeMap.get('DecayRule')).toBe(entitiesCounter.DecayRule);
-    expect(entityTypeMap.get('EntitySetting')).toBe(entitiesCounter.EntitySetting);
-    expect(entityTypeMap.get('External-Reference')).toBe(entitiesCounter.ExternalReference);
-    expect(entityTypeMap.get('StixFile')).toBe(entitiesCounter.StixFile);
-    expect(entityTypeMap.get('Group')).toBe(entitiesCounter.Group);
-    expect(entityTypeMap.get('Individual')).toBe(entitiesCounter.Individual);
-    expect(entityTypeMap.get('Sector')).toBe(entitiesCounter.Sector);
-    expect(entityTypeMap.get('Organization')).toBe(entitiesCounter.Organization);
-    expect(entityTypeMap.get('Incident')).toBe(entitiesCounter.Incident);
-    expect(entityTypeMap.get('Indicator')).toBe(entitiesCounter.Indicator);
-    expect(entityTypeMap.get('Intrusion-Set')).toBe(entitiesCounter.IntrusionSet);
-    expect(entityTypeMap.get('Kill-Chain-Phase')).toBe(entitiesCounter.KillChainPhase);
-    expect(entityTypeMap.get('Label')).toBe(entitiesCounter.Label);
-    expect(entityTypeMap.get('Region')).toBe(entitiesCounter.Region);
-    expect(entityTypeMap.get('Country')).toBe(entitiesCounter.Country);
-    expect(entityTypeMap.get('City')).toBe(entitiesCounter.City);
-    expect(entityTypeMap.get('Administrative-Area')).toBe(entitiesCounter.AdministrativeArea);
-    expect(entityTypeMap.get('Malware')).toBe(entitiesCounter.Malware);
-    expect(entityTypeMap.get('Malware-Analysis')).toBe(entitiesCounter.MalwareAnalysis);
-    expect(entityTypeMap.get('ManagerConfiguration')).toBe(entitiesCounter.ManagerConfiguration);
-    expect(entityTypeMap.get('Note')).toBe(entitiesCounter.Note);
-    expect(entityTypeMap.get('Notifier')).toBe(entitiesCounter.Notifier);
-    expect(entityTypeMap.get('Observed-Data')).toBe(entitiesCounter.ObservedData);
-    expect(entityTypeMap.get('Opinion')).toBe(entitiesCounter.Opinion);
-    expect(entityTypeMap.get('Report')).toBe(entitiesCounter.Report);
-    expect(entityTypeMap.get('Role')).toBe(entitiesCounter.Role);
-    expect(entityTypeMap.get('RuleManager')).toBe(entitiesCounter.RuleManager);
-    expect(entityTypeMap.get('Settings')).toBe(entitiesCounter.Settings);
-    expect(entityTypeMap.get('Software')).toBe(entitiesCounter.Software);
-    expect(entityTypeMap.get('Status')).toBe(entitiesCounter.Status);
-    expect(entityTypeMap.get('StatusTemplate')).toBe(entitiesCounter.StatusTemplate);
-    expect(entityTypeMap.get('Theme')).toBe(entitiesCounter.Theme);
-    expect(entityTypeMap.get('Threat-Actor-Individual')).toBe(entitiesCounter.ThreatActorIndividual);
-    expect(entityTypeMap.get('Threat-Actor-Group')).toBe(entitiesCounter.ThreatActorGroup);
-    expect(entityTypeMap.get('Tracking-Number')).toBe(entitiesCounter.TrackingNumber);
-    expect(entityTypeMap.get('User')).toBe(entitiesCounter.User);
-    expect(entityTypeMap.get('Vocabulary')).toBe(entitiesCounter.Vocabulary);
-    expect(entityTypeMap.get('EmailTemplate')).toBe(entitiesCounter.EmailTemplate);
-    expect(entityTypeMap.get('RetentionRule')).toBe(entitiesCounter.RetentionRule);
-    expect(entityTypeMap.get(ENTITY_TYPE_SINGLE_SIGN_ON)).toBe(entitiesCounter.SingleSignOn);
-    expect(data.edges.length).toEqual(215 + entitiesCounter.Vocabulary);
+    const testingSet = [
+      { type: 'Attack-Pattern', size: entitiesCounter.AttackPattern },
+      { type: 'Campaign', size: entitiesCounter.Campaign },
+      { type: 'Capability', size: entitiesCounter.Capability },
+      { type: 'Course-Of-Action', size: entitiesCounter.CourseOfAction },
+      { type: 'Credential', size: entitiesCounter.Credential },
+      { type: 'DecayRule', size: entitiesCounter.DecayRule },
+      { type: 'EmailTemplate', size: entitiesCounter.EmailTemplate },
+      { type: 'EntitySetting', size: entitiesCounter.EntitySetting },
+      { type: 'External-Reference', size: entitiesCounter.ExternalReference },
+      { type: 'StixFile', size: entitiesCounter.StixFile },
+      { type: 'Group', size: entitiesCounter.Group },
+      { type: 'Individual', size: entitiesCounter.Individual },
+      { type: 'Sector', size: entitiesCounter.Sector },
+      { type: 'Organization', size: entitiesCounter.Organization },
+      { type: 'Incident', size: entitiesCounter.Incident },
+      { type: 'Indicator', size: entitiesCounter.Indicator },
+      { type: 'Intrusion-Set', size: entitiesCounter.IntrusionSet },
+      { type: 'Kill-Chain-Phase', size: entitiesCounter.KillChainPhase },
+      { type: 'Label', size: entitiesCounter.Label },
+      { type: 'Region', size: entitiesCounter.Region },
+      { type: 'Country', size: entitiesCounter.Country },
+      { type: 'City', size: entitiesCounter.City },
+      { type: 'Administrative-Area', size: entitiesCounter.AdministrativeArea },
+      { type: 'Malware', size: entitiesCounter.Malware },
+      { type: 'Malware-Analysis', size: entitiesCounter.MalwareAnalysis },
+      { type: 'ManagerConfiguration', size: entitiesCounter.ManagerConfiguration },
+      { type: 'Note', size: entitiesCounter.Note },
+      { type: 'Notifier', size: entitiesCounter.Notifier },
+      { type: 'Observed-Data', size: entitiesCounter.ObservedData },
+      { type: 'Opinion', size: entitiesCounter.Opinion },
+      { type: 'Report', size: entitiesCounter.Report },
+      { type: 'RetentionRule', size: entitiesCounter.RetentionRule },
+      { type: 'Role', size: entitiesCounter.Role },
+      { type: 'RuleManager', size: entitiesCounter.RuleManager },
+      { type: 'Settings', size: entitiesCounter.Settings },
+      { type: 'Software', size: entitiesCounter.Software },
+      { type: 'Status', size: entitiesCounter.Status },
+      { type: 'StatusTemplate', size: entitiesCounter.StatusTemplate },
+      { type: 'Theme', size: entitiesCounter.Theme },
+      { type: 'Threat-Actor-Individual', size: entitiesCounter.ThreatActorIndividual },
+      { type: 'Threat-Actor-Group', size: entitiesCounter.ThreatActorGroup },
+      { type: 'Tracking-Number', size: entitiesCounter.TrackingNumber },
+      { type: 'User', size: entitiesCounter.User },
+      { type: 'Vocabulary', size: entitiesCounter.Vocabulary },
+      { type: ENTITY_TYPE_SINGLE_SIGN_ON, size: entitiesCounter.SingleSignOn },
+    ];
+    const mapKeys = Array.from(entityTypeMap.keys());
+    expect(mapKeys.length).toBe(testingSet.length);
+    for (let index = 0; index < testingSet.length; index++) {
+      const { type, size } = testingSet[index];
+      expect(entityTypeMap.get(type)).toBe(size);
+    }
   });
   it('should entity paginate with field exist filter', async () => {
     const filters = {
@@ -699,53 +706,60 @@ describe('Elasticsearch pagination', () => {
       first: ES_MAX_PAGINATION,
     });
     const entityTypeMap = mapEdgesCountPerEntityType(data);
-    expect(entityTypeMap.get('Capability')).toBe(entitiesCounter.Capability);
-    expect(entityTypeMap.get('Credential')).toBe(entitiesCounter.Credential);
-    expect(entityTypeMap.get('DecayRule')).toBe(entitiesCounter.DecayRule);
-    expect(entityTypeMap.get('EntitySetting')).toBe(entitiesCounter.EntitySetting);
-    expect(entityTypeMap.get('StixFile')).toBe(entitiesCounter.StixFile);
-    expect(entityTypeMap.get('Group')).toBe(entitiesCounter.Group);
-    expect(entityTypeMap.get('ManagerConfiguration')).toBe(entitiesCounter.ManagerConfiguration);
-    expect(entityTypeMap.get('Role')).toBe(entitiesCounter.Role);
-    expect(entityTypeMap.get('RuleManager')).toBe(entitiesCounter.RuleManager);
-    expect(entityTypeMap.get('Settings')).toBe(entitiesCounter.Settings);
-    expect(entityTypeMap.get('Software')).toBe(entitiesCounter.Software);
-    expect(entityTypeMap.get('Status')).toBe(entitiesCounter.Status);
-    expect(entityTypeMap.get('StatusTemplate')).toBe(entitiesCounter.StatusTemplate);
-    expect(entityTypeMap.get('Tracking-Number')).toBe(entitiesCounter.TrackingNumber);
-    expect(entityTypeMap.get('User')).toBe(entitiesCounter.User);
-    expect(entityTypeMap.get('Organization')).toBe(entitiesCounter.Organization);
-    expect(entityTypeMap.get('Marking-Definition')).toBe(entitiesCounter.MarkingDefinition);
-    expect(entityTypeMap.get('Attack-Pattern')).toBe(entitiesCounter.AttackPattern);
-    expect(entityTypeMap.get('Theme')).toBe(entitiesCounter.Theme);
-    expect(entityTypeMap.get('Threat-Actor-Individual')).toBe(entitiesCounter.ThreatActorIndividual);
-    expect(entityTypeMap.get('Threat-Actor-Group')).toBe(entitiesCounter.ThreatActorGroup);
-    expect(entityTypeMap.get('Course-Of-Action')).toBe(entitiesCounter.CourseOfAction);
-    expect(entityTypeMap.get('Intrusion-Set')).toBe(entitiesCounter.IntrusionSet);
-    expect(entityTypeMap.get('Malware')).toBe(entitiesCounter.Malware);
-    expect(entityTypeMap.get('Region')).toBe(entitiesCounter.Region);
-    expect(entityTypeMap.get('Country')).toBe(entitiesCounter.Country);
-    expect(entityTypeMap.get('Administrative-Area')).toBe(entitiesCounter.AdministrativeArea);
-    expect(entityTypeMap.get('Sector')).toBe(entitiesCounter.Sector);
-    expect(entityTypeMap.get('Observed-Data')).toBe(entitiesCounter.ObservedData);
-    expect(entityTypeMap.get('Indicator')).toBe(entitiesCounter.Indicator);
-    expect(entityTypeMap.get('Campaign')).toBe(entitiesCounter.Campaign);
-    expect(entityTypeMap.get('City')).toBe(entitiesCounter.City);
-    expect(entityTypeMap.get('Report')).toBe(entitiesCounter.Report);
-    expect(entityTypeMap.get('Note')).toBe(entitiesCounter.Note);
-    expect(entityTypeMap.get('Opinion')).toBe(entitiesCounter.Opinion);
-    expect(entityTypeMap.get('Incident')).toBe(entitiesCounter.Incident);
-    expect(entityTypeMap.get('Individual')).toBe(entitiesCounter.Individual);
-    expect(entityTypeMap.get('Malware-Analysis')).toBe(entitiesCounter.MalwareAnalysis);
-    expect(entityTypeMap.get('Vocabulary')).toBe(entitiesCounter.Vocabulary);
-    expect(entityTypeMap.get('Notifier')).toBe(entitiesCounter.Notifier);
-    expect(entityTypeMap.get('Label')).toBe(entitiesCounter.Label);
-    expect(entityTypeMap.get('Kill-Chain-Phase')).toBe(entitiesCounter.KillChainPhase);
-    expect(entityTypeMap.get('External-Reference')).toBe(entitiesCounter.ExternalReference);
-    expect(entityTypeMap.get('EmailTemplate')).toBe(entitiesCounter.EmailTemplate);
-    expect(entityTypeMap.get('RetentionRule')).toBe(entitiesCounter.RetentionRule);
-    expect(entityTypeMap.get(ENTITY_TYPE_SINGLE_SIGN_ON)).toBe(entitiesCounter.SingleSignOn);
-    expect(data.edges.length).toEqual(entitiesCounterTotal);
+    const testingSet = [
+      { type: 'Capability', size: entitiesCounter.Capability },
+      { type: 'Credential', size: entitiesCounter.Credential },
+      { type: 'DecayRule', size: entitiesCounter.DecayRule },
+      { type: 'EntitySetting', size: entitiesCounter.EntitySetting },
+      { type: 'StixFile', size: entitiesCounter.StixFile },
+      { type: 'Group', size: entitiesCounter.Group },
+      { type: 'ManagerConfiguration', size: entitiesCounter.ManagerConfiguration },
+      { type: 'Role', size: entitiesCounter.Role },
+      { type: 'RuleManager', size: entitiesCounter.RuleManager },
+      { type: 'Settings', size: entitiesCounter.Settings },
+      { type: 'Software', size: entitiesCounter.Software },
+      { type: 'Status', size: entitiesCounter.Status },
+      { type: 'StatusTemplate', size: entitiesCounter.StatusTemplate },
+      { type: 'Tracking-Number', size: entitiesCounter.TrackingNumber },
+      { type: 'User', size: entitiesCounter.User },
+      { type: 'Organization', size: entitiesCounter.Organization },
+      { type: 'Marking-Definition', size: entitiesCounter.MarkingDefinition },
+      { type: 'Attack-Pattern', size: entitiesCounter.AttackPattern },
+      { type: 'Theme', size: entitiesCounter.Theme },
+      { type: 'Threat-Actor-Individual', size: entitiesCounter.ThreatActorIndividual },
+      { type: 'Threat-Actor-Group', size: entitiesCounter.ThreatActorGroup },
+      { type: 'Course-Of-Action', size: entitiesCounter.CourseOfAction },
+      { type: 'Intrusion-Set', size: entitiesCounter.IntrusionSet },
+      { type: 'Malware', size: entitiesCounter.Malware },
+      { type: 'Region', size: entitiesCounter.Region },
+      { type: 'Country', size: entitiesCounter.Country },
+      { type: 'Administrative-Area', size: entitiesCounter.AdministrativeArea },
+      { type: 'Sector', size: entitiesCounter.Sector },
+      { type: 'Observed-Data', size: entitiesCounter.ObservedData },
+      { type: 'Indicator', size: entitiesCounter.Indicator },
+      { type: 'Campaign', size: entitiesCounter.Campaign },
+      { type: 'City', size: entitiesCounter.City },
+      { type: 'Report', size: entitiesCounter.Report },
+      { type: 'Note', size: entitiesCounter.Note },
+      { type: 'Opinion', size: entitiesCounter.Opinion },
+      { type: 'Incident', size: entitiesCounter.Incident },
+      { type: 'Individual', size: entitiesCounter.Individual },
+      { type: 'Malware-Analysis', size: entitiesCounter.MalwareAnalysis },
+      { type: 'Vocabulary', size: entitiesCounter.Vocabulary },
+      { type: 'Notifier', size: entitiesCounter.Notifier },
+      { type: 'Label', size: entitiesCounter.Label },
+      { type: 'Kill-Chain-Phase', size: entitiesCounter.KillChainPhase },
+      { type: 'External-Reference', size: entitiesCounter.ExternalReference },
+      { type: 'EmailTemplate', size: entitiesCounter.EmailTemplate },
+      { type: 'RetentionRule', size: entitiesCounter.RetentionRule },
+      { type: ENTITY_TYPE_SINGLE_SIGN_ON, size: entitiesCounter.SingleSignOn },
+    ];
+    const mapKeys = Array.from(entityTypeMap.keys());
+    expect(mapKeys.length).toBe(testingSet.length);
+    for (let index = 0; index < testingSet.length; index++) {
+      const { type, size } = testingSet[index];
+      expect(entityTypeMap.get(type)).toBe(size);
+    }
     const createdDates = R.map((e) => e.node.created, data.edges);
     let previousCreatedDate = null;
     for (let index = 0; index < createdDates.length; index += 1) {
@@ -995,7 +1009,7 @@ describe('Elasticsearch reindex', () => {
     expect(data.toId === attackPatternId).toBeTruthy(); // attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17
   });
   it('should relation reindex check consistency', async () => {
-    const indexPromise = async () => elIndexElements(testContext, ADMIN_USER, 'uses', [{ relationship_type: 'uses' }]);
+    const indexPromise = elIndexElements(testContext, ADMIN_USER, 'uses', [{ relationship_type: 'uses' }]);
     await expect(indexPromise).rejects.toThrow();
   });
   it('should reindex sighting with unmapped fields', async () => {

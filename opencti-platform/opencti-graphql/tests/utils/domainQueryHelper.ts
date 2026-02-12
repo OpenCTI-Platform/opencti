@@ -39,7 +39,7 @@ export const getGroupEntity = async (testGroup: GroupTestData) => {
 export const getFakeAuthUser = (userName: string) => {
   const userId = uuid();
   const user: AuthUser = {
-    api_token: uuid(),
+    api_tokens: [],
     individual_id: undefined,
     administrated_organizations: [],
     entity_type: 'User',
@@ -66,7 +66,7 @@ export const getFakeAuthUser = (userName: string) => {
     },
     max_shareable_marking: [],
     restrict_delete: false,
-    no_creators: false
+    no_creators: false,
   };
   return user;
 };

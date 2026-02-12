@@ -1193,6 +1193,16 @@ class OpenCTIApiClient:
         result = self.query(query, {"id": id})
         return json.loads(result["data"]["stix"])
 
+    def connector_jwt(self):
+        self.app_logger.info("Generating connector JWT token")
+        query = """
+                mutation ConnectorJWT {
+                    connectorJWT
+                }
+             """
+        query_result = self.query(query)
+        return query_result["data"]["connectorJWT"]
+
     @staticmethod
     def get_attribute_in_extension(key, stix_object) -> Any:
         """Get an attribute value from OpenCTI STIX extensions.

@@ -1,12 +1,12 @@
 import bcrypt from 'bcryptjs';
-import crypto from 'crypto';
 import * as R from 'ramda';
 import { uniq } from 'ramda';
 import { v4 as uuid } from 'uuid';
 import { DateTime } from 'luxon';
-import {
+import conf, {
   ACCOUNT_STATUS_ACTIVE,
   ACCOUNT_STATUS_EXPIRED,
+  ACCOUNT_STATUS_LOCKED,
   ACCOUNT_STATUSES,
   BUS_TOPICS,
   DEFAULT_ACCOUNT_STATUS,
@@ -31,13 +31,22 @@ import {
 } from '../database/middleware-loader';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { findUserSessions, killSessions, killUserSessions } from '../database/session';
-import { buildPagination, isEmptyField, isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_RELATIONSHIPS_INDICES } from '../database/utils';
+import {
+  buildPagination,
+  isEmptyField,
+  isNotEmptyField,
+  READ_INDEX_INTERNAL_OBJECTS,
+  READ_INDEX_STIX_DOMAIN_OBJECTS,
+  READ_RELATIONSHIPS_INDICES,
+  UPDATE_OPERATION_REPLACE,
+} from '../database/utils';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { publishUserAction } from '../listener/UserActionListener';
 import { authorizedMembers } from '../schema/attribute-definition';
 import { ABSTRACT_INTERNAL_RELATIONSHIP, ABSTRACT_STIX_DOMAIN_OBJECT, OPENCTI_ADMIN_UUID } from '../schema/general';
 import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
+import { getTokensUsage, updateTokenUsage } from '../database/redis/token_usage';
 import {
   isInternalRelationship,
   RELATION_ACCESSES_TO,
@@ -92,12 +101,17 @@ import { sanitizeUser } from '../utils/templateContextSanitizer';
 import { safeRender } from '../utils/safeEjs.client';
 import { totp } from '../utils/totp';
 import { pushAll } from '../utils/arrayUtil';
+import { apiTokens } from '../modules/attributes/internalObject-registrationAttributes';
+import { SignJWT } from 'jose';
+import { getPlatformCrypto } from '../utils/platformCrypto';
+import { addUserTokenByAdmin, generateTokenHmac } from '../modules/user/user-domain';
+import { memoize } from '../utils/memoize';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
 export const TAXIIAPI = 'TAXIIAPI';
 const PLATFORM_ORGANIZATION = 'settings_platform_organization';
-const PROTECTED_USER_ATTRIBUTES = ['api_token', 'external'];
+const PROTECTED_USER_ATTRIBUTES = [apiTokens.name, 'external'];
 const PROTECTED_EXTERNAL_ATTRIBUTES = ['user_email', 'user_name'];
 const ME_USER_MODIFIABLE_ATTRIBUTES = [
   'user_email',
@@ -176,11 +190,10 @@ const extractInfoFromBasicAuth = (authorization) => {
   return {};
 };
 
-const extractTokenFromBasicAuth = async (authorization) => {
+const extractUserFromBasicAuth = async (authorization) => {
   const { username, password } = extractInfoFromBasicAuth(authorization);
   if (username && password) {
-    const { api_token: tokenUUID } = await login(username, password);
-    return tokenUUID;
+    return { username, password };
   }
   return null;
 };
@@ -317,6 +330,12 @@ export const userGroupsPaginated = async (context, user, userId, opts) => {
 
 export const groupRolesPaginated = async (context, user, groupId, opts) => {
   return pageRegardingEntitiesConnection(context, user, groupId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, false, opts);
+};
+
+export const batchUserTokens = async (__, _, batchUsers) => {
+  const tokenIds = batchUsers.flatMap((u) => u.api_tokens ?? []).map((token) => token.id);
+  const tokensMap = await getTokensUsage(tokenIds);
+  return batchUsers.map((u) => (u.api_tokens ?? []).map((token) => ({ ...token, last_used_at: tokensMap[token.id] })));
 };
 
 export const batchRolesForUsers = async (context, user, userIds, opts = {}) => {
@@ -637,6 +656,20 @@ export const sendEmailToUser = async (context, user, input) => {
     throw UnsupportedError('Invalid email template', { id: input.email_template_id });
   }
 
+  const templateUser = {
+    ...sanitizeUser(targetUser),
+    api_token: '', // empty token by default
+    account_lock_after_date: targetUser.account_lock_after_date
+      ? DateTime.fromISO(targetUser.account_lock_after_date).toFormat('yyyy-MM-dd') : '',
+  };
+
+  // If the template asks for a user token, we need to generate a new one.
+  if (emailTemplate.template_body.includes('$user.api_token')) {
+    const inputToken = { name: 'Template generated token' };
+    const token = await addUserTokenByAdmin(context, user, input.target_user_id, inputToken);
+    templateUser.api_token = token.plaintext_token;
+  }
+
   const preprocessedTemplate = emailTemplate.template_body
     .replace(/\$user\.firstname/g, '<%= user.firstname %>')
     .replace(/\$user\.lastname/g, '<%= user.lastname %>')
@@ -650,12 +683,7 @@ export const sendEmailToUser = async (context, user, input) => {
 
   const renderedHtml = await safeRender(preprocessedTemplate, {
     platformUrl: settings.platform_url,
-    user: {
-      ...sanitizeUser(targetUser),
-      account_lock_after_date: targetUser.account_lock_after_date
-        ? DateTime.fromISO(targetUser.account_lock_after_date).toFormat('yyyy-MM-dd')
-        : '',
-    },
+    user: templateUser,
     organizationNames,
   });
 
@@ -726,7 +754,6 @@ export const addUser = async (context, user, newUser) => {
   }
   let userToCreate = R.pipe(
     R.assoc('user_email', userEmail),
-    R.assoc('api_token', newUser.api_token ? newUser.api_token : uuid()),
     R.assoc('password', bcrypt.hashSync(userPassword)),
     R.assoc('theme', newUser.theme ? newUser.theme : 'default'),
     R.assoc('language', newUser.language ? newUser.language : 'auto'),
@@ -1638,13 +1665,63 @@ export const resolveUserById = async (context, id) => {
   return buildCompleteUser(context, client);
 };
 
+export const authenticateUserByBasicAuth = async (context, req, basicAuth) => {
+  const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const loggedUser = await login(basicAuth.username, basicAuth.password);
+  const user = platformUsers.get(loggedUser.id);
+  if (user) {
+    if (!isUserHasCapability(user, 'APIACCESS_USEBASICAUTH')) {
+      throw ForbiddenAccess('You are not allowed to use API basic auth');
+    }
+    return internalAuthenticateUser(context, req, user);
+  }
+  throw FunctionalError('Cannot identify user with basic auth');
+};
+
+const getJWTKeyPair = memoize(async () => {
+  const factory = await getPlatformCrypto();
+  return factory.deriveEd25519KeyPair(['authentication', 'xtm1'], 1);
+});
+
+export const issueAuthenticationJWT = async (user, duration = '1h') => {
+  const xmt1DerivationKeyPair = await getJWTKeyPair();
+  const jwt = new SignJWT({ sub: user.id, name: user.name }).setIssuedAt().setExpirationTime(duration);
+  return await xmt1DerivationKeyPair.signJwt(jwt);
+};
+
+export const authenticateUserByJWT = async (context, req, token) => {
+  const xmt1DerivationKeyPair = await getJWTKeyPair();
+  const verified = await xmt1DerivationKeyPair.verifyJwt(token);
+  const userId = verified.payload.sub;
+  return await authenticateUserByUserId(context, req, userId);
+};
+
 export const authenticateUserByToken = async (context, req, token) => {
   const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  if (platformUsers.has(token)) {
-    const user = platformUsers.get(token);
-    if (crypto.timingSafeEqual(Buffer.from(user.api_token), Buffer.from(token))) {
-      return internalAuthenticateUser(context, req, user);
+  const hashedToken = await generateTokenHmac(token);
+  const user = platformUsers.get(hashedToken);
+  if (user) {
+    if (!isUserHasCapability(user, 'APIACCESS_USETOKEN')) {
+      throw ForbiddenAccess('You are not allowed to use API Access Tokens');
     }
+    // User found by hash, finding the specific token to check expiration
+    // Although we found the user, we need to ensure the token hasn't expired
+    const userTokens = user.api_tokens || [];
+    const matchingToken = userTokens.find((t) => t.hash === hashedToken);
+    if (!matchingToken) {
+      throw FunctionalError('Cannot identify user with not comparable token');
+    }
+    // Checking expiration
+    if (matchingToken.expires_at) {
+      const now = new Date();
+      const expiresAt = new Date(matchingToken.expires_at);
+      if (now >= expiresAt) {
+        throw FunctionalError('Token expired');
+      }
+    }
+    // Update token usage
+    await updateTokenUsage(matchingToken);
+    return internalAuthenticateUser(context, req, user);
   }
   throw FunctionalError('Cannot identify user with token');
 };
@@ -1671,30 +1748,6 @@ const internalAuthenticateUser = async (context, req, user) => {
   }
   validateUser(authenticatedUser, settings);
   return userWithOrigin(req, authenticatedUser);
-};
-
-export const userRenewToken = async (context, user, userId) => {
-  if (userId === OPENCTI_ADMIN_UUID) {
-    throw FunctionalError('Cannot renew token of admin user defined in configuration, please change configuration instead.');
-  }
-
-  // check the user is accessible
-  const userData = await loadUserToUpdateWithAccessCheck(context, user, userId);
-
-  const patch = { api_token: uuid() };
-  const { element } = await patchAttribute(context, user, userId, ENTITY_TYPE_USER, patch);
-
-  const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : userData.user_email;
-  await publishUserAction({
-    user,
-    event_type: 'mutation',
-    event_scope: 'update',
-    event_access: 'administration',
-    message: `renew token of user \`${actionEmail}\``,
-    context_data: { id: userId, entity_type: ENTITY_TYPE_USER },
-  });
-
-  return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
 };
 
 /**
@@ -1773,9 +1826,32 @@ export const sessionAuthenticateUser = async (context, req, user, provider) => {
 };
 
 export const HEADERS_AUTHENTICATORS = [];
+
+export const JWT_TOKEN_PREFIX = 'ey';
 // This method can only be used in createAuthenticatedContext
 // If you need to check auth and create context, use directly createAuthenticatedContext method
 export const authenticateUserFromRequest = async (context, req) => {
+  // If user not identified, try to extract token from bearer
+  const bearerToken = extractTokenFromBearer(req.headers.authorization);
+  if (bearerToken) {
+    // If bearer is a JWT
+    if (bearerToken.startsWith(JWT_TOKEN_PREFIX)) {
+      try {
+        return authenticateUserByJWT(context, req, bearerToken);
+      } catch (err) {
+        logApp.warn('Error resolving user by JWT', { cause: err });
+        return undefined;
+      }
+    }
+    // If bearer is a token
+    try {
+      return await authenticateUserByToken(context, req, bearerToken);
+    } catch (err) {
+      logApp.warn('Error resolving user by token', { cause: err });
+      return undefined;
+    }
+  }
+
   const sessionUser = req.session?.user;
   // region If user already have a session
   if (sessionUser) {
@@ -1796,18 +1872,14 @@ export const authenticateUserFromRequest = async (context, req) => {
       }
     }
   }
-  // If user not identified, try to extract token from bearer
-  let tokenUUID = extractTokenFromBearer(req.headers.authorization);
   // If no bearer specified, try with basic auth
-  if (!tokenUUID) {
-    tokenUUID = await extractTokenFromBasicAuth(req.headers.authorization);
-  }
-  // Get user from the token if found
-  if (tokenUUID) {
+  const basicAuth = await extractUserFromBasicAuth(req.headers.authorization);
+  if (basicAuth) {
     try {
-      return await authenticateUserByToken(context, req, tokenUUID);
+      return await authenticateUserByBasicAuth(context, req, basicAuth);
     } catch (err) {
-      logApp.warn('Error resolving user by token', { cause: err });
+      logApp.warn('Error resolving user by basic auth', { cause: err });
+      return undefined;
     }
   }
   // endregion
@@ -1816,36 +1888,50 @@ export const authenticateUserFromRequest = async (context, req) => {
 };
 
 export const initAdmin = async (context, email, password, tokenValue) => {
-  const existingAdmin = await findById(context, SYSTEM_USER, OPENCTI_ADMIN_UUID);
+  const isExternallyManaged = conf.get('app:admin:externally_managed') === true;
+  let existingAdmin = await findById(context, SYSTEM_USER, OPENCTI_ADMIN_UUID);
   if (existingAdmin) {
     // If admin user exists, just patch the fields
     const patch = {
-      account_status: ACCOUNT_STATUS_ACTIVE,
       user_email: email,
       password: bcrypt.hashSync(password.toString()),
-      api_token: tokenValue,
+      account_status: isExternallyManaged ? ACCOUNT_STATUS_LOCKED : ACCOUNT_STATUS_ACTIVE,
       external: true,
     };
     await patchAttribute(context, SYSTEM_USER, existingAdmin.id, ENTITY_TYPE_USER, patch);
   } else {
+    // Create user
     const userToCreate = {
       internal_id: OPENCTI_ADMIN_UUID,
       external: true,
       user_email: email.toLowerCase(),
-      account_status: ACCOUNT_STATUS_ACTIVE,
+      account_status: isExternallyManaged ? ACCOUNT_STATUS_LOCKED : ACCOUNT_STATUS_ACTIVE,
       name: 'admin',
       firstname: 'Admin',
       lastname: 'OpenCTI',
       description: 'Principal admin account',
-      api_token: tokenValue,
       password: password.toString(),
       user_confidence_level: {
         max_confidence: 100,
         overrides: [],
       },
     };
-    await addUser(context, SYSTEM_USER, userToCreate);
+    existingAdmin = await addUser(context, SYSTEM_USER, userToCreate);
   }
+  // Create base token if needed
+  const tokenId = 'base_token_' + OPENCTI_ADMIN_UUID;
+  const tokensWithoutBaseOne = (existingAdmin.api_tokens ?? []).filter((t) => t.id !== tokenId);
+  const now = DateTime.now().toUTC().toString();
+  const newToken = {
+    id: tokenId,
+    name: 'Base token',
+    hash: await generateTokenHmac(tokenValue),
+    created_at: now,
+    masked_token: `****${tokenValue.slice(-4)}`,
+  };
+  tokensWithoutBaseOne.push(newToken);
+  const updates = [{ key: apiTokens.name, value: tokensWithoutBaseOne, operation: UPDATE_OPERATION_REPLACE }];
+  await updateAttribute(context, SYSTEM_USER, OPENCTI_ADMIN_UUID, ENTITY_TYPE_USER, updates);
 };
 
 export const findDefaultDashboards = async (context, user, currentUser) => {

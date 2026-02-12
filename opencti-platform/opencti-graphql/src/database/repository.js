@@ -16,8 +16,28 @@ import { SYSTEM_USER } from '../utils/access';
 import { logApp } from '../config/conf';
 import { ConnectorPriorityGroup } from '../generated/graphql';
 import { injectProxyConfiguration } from '../config/proxy-config';
+import { getPlatformCrypto } from '../utils/platformCrypto';
+import { SignJWT } from 'jose';
+import { memoize } from '../utils/memoize';
 
 export const CONNECTOR_PRIORITY_GROUP_VALUES = Object.values(ConnectorPriorityGroup);
+
+const getJWTKeyPair = memoize(async () => {
+  const factory = await getPlatformCrypto();
+  return factory.deriveEd25519KeyPair(['connector', 'http'], 1);
+});
+
+export const getConnectorJwks = async () => {
+  const keyPair = await getJWTKeyPair();
+  return JSON.stringify(keyPair.jwks);
+};
+
+export const issueConnectorJWT = async () => {
+  const keyPair = await getJWTKeyPair();
+  const jwt = new SignJWT({ iss: 'opencti', sub: 'connector' })
+    .setIssuedAt().setExpirationTime('1h');
+  return await keyPair.signJwt(jwt);
+};
 
 export const completeConnector = (connector) => {
   if (connector) {

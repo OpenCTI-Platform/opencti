@@ -9,6 +9,7 @@ import { getEnterpriseEditionActivePem, getEnterpriseEditionInfo } from '../modu
 import { getChatbotUrl, logApp, PLATFORM_VERSION } from '../config/conf';
 import type { BasicStoreSettings } from '../types/settings';
 import { setCookieError } from './httpUtils';
+import { issueAuthenticationJWT } from '../domain/user';
 
 export const XTM_ONE_URL = nconf.get('xtm:xtm_one_url');
 export const XTM_ONE_CHATBOT_URL = `${XTM_ONE_URL}/chatbot`;
@@ -33,9 +34,12 @@ export const getChatbotProxy = async (req: Express.Request, res: Express.Respons
       return;
     }
 
+    // In that case it's acceptable to issue a JWT for each call
+    // Do not use this pattern in other place as is CPU intensive.
+    const jwt = await issueAuthenticationJWT(context.user);
     const vars = {
       OPENCTI_URL: getChatbotUrl(req),
-      OPENCTI_TOKEN: context.user?.api_token,
+      OPENCTI_TOKEN: jwt,
       'X-API-KEY': Buffer.from(pem, 'utf-8').toString('base64'),
       X_XTM_PRODUCT: 'OpenCTI',
       X_OPENCTI_VERSION: PLATFORM_VERSION,

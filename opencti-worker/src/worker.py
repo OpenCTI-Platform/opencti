@@ -311,12 +311,12 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                         listen_consumer = self.consumers.get(listen_queue)
                         if listen_consumer is None or not listen_consumer.is_alive():
                             listen_handler = ListenHandler(
-                                self.worker_logger,
-                                connector["connector_user"]["api_token"],
-                                listen_callback_uri,
-                                self.listen_api_ssl_verify,
-                                self.listen_api_http_proxy,
-                                self.listen_api_https_proxy,
+                                logger=self.worker_logger,
+                                api=self.api,
+                                callback_uri=listen_callback_uri,
+                                listen_api_ssl_verify=self.listen_api_ssl_verify,
+                                listen_api_http_proxy=self.listen_api_http_proxy,
+                                listen_api_https_proxy=self.listen_api_https_proxy,
                             )
                             self.consumers[listen_queue] = MessageQueueConsumer(
                                 self.worker_logger,

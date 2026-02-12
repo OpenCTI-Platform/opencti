@@ -23,6 +23,15 @@ interface UserOrigin {
   user_metadata?: object;
 }
 
+interface UserApiToken {
+  id: string;
+  name: string;
+  hash: string;
+  created_at: string;
+  expires_at: string | null;
+  masked_token: string;
+}
+
 interface AuthUser extends BasicStoreIdentifier {
   entity_type: string;
   id: string;
@@ -42,7 +51,7 @@ interface AuthUser extends BasicStoreIdentifier {
   allowed_marking: Array<StoreMarkingDefinition>;
   default_marking?: Array<{ entity_type: string; values: Array<StoreMarkingDefinition> }>;
   max_shareable_marking: Array<StoreMarkingDefinition>;
-  api_token: string;
+  api_tokens: Array<UserApiToken>;
   account_status: string;
   effective_confidence_level: ConfidenceLevel | null;
   restrict_delete: boolean | null;

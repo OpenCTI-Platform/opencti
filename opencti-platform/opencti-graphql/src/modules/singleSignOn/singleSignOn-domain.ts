@@ -26,6 +26,7 @@ import { unregisterStrategy } from './singleSignOn-providers';
 import { EnvStrategyType, getConfigurationAdminEmail, isAuthenticationEditionLocked, isAuthenticationForcedFromEnv } from './providers-configuration';
 import { getPlatformCrypto } from '../../utils/platformCrypto';
 import { isNotEmptyField } from '../../database/utils';
+import { memoize } from '../../utils/memoize';
 
 export const isConfigurationAdminUser = (user: AuthUser): boolean => {
   return user.user_email === getConfigurationAdminEmail();
@@ -47,16 +48,10 @@ export const ENCRYPTED_TYPE = 'encrypted';
 // Type for data that are in clear from creation and need to be encrypted
 export const TO_ENCRYPT_TYPE = 'secret';
 
-const AUTH_DERIVATION_PATH = ['authentication', 'elastic'];
-let authenticationKeyPairPromise: any;
-
-const getKeyPair = async () => {
+const getKeyPair = memoize(async () => {
   const factory = await getPlatformCrypto();
-  if (!authenticationKeyPairPromise) {
-    authenticationKeyPairPromise = factory.deriveAesKey(AUTH_DERIVATION_PATH, 1);
-  }
-  return await authenticationKeyPairPromise;
-};
+  return factory.deriveAesKey(['authentication', 'elastic'], 1);
+});
 
 export const encryptAuthValue = async (value: string) => {
   const keyPair = await getKeyPair();

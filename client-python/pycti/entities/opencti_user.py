@@ -12,7 +12,7 @@ class User:
     They have configured confidence, and an effective confidence (which might
     be set by the group).
 
-    You can view the properties, token_properties, session_properties, and
+    You can view the properties, session_properties, and
     me_properties attributes of a User object to view what attributes will be
     present in a User or MeUser object.
 
@@ -107,8 +107,11 @@ class User:
             }
         """
 
-        self.token_properties = """
-            api_token
+        self.tokens_properties = """
+            api_tokens {
+                id
+                name
+            }
         """
 
         self.session_properties = """
@@ -228,6 +231,7 @@ class User:
         order_mode = kwargs.get("orderMode", "asc")
         filters = kwargs.get("filters", None)
         search = kwargs.get("search", None)
+        include_tokens = kwargs.get("include_tokens", False)
         include_sessions = kwargs.get("include_sessions", False)
         custom_attributes = kwargs.get("customAttributes", None)
         get_all = kwargs.get("getAll", False)
@@ -247,6 +251,7 @@ class User:
                         node {
                     """
             + (self.properties if custom_attributes is None else custom_attributes)
+            + (self.tokens_properties if include_tokens else "")
             + (self.session_properties if include_sessions else "")
             + """
                         }
@@ -305,9 +310,9 @@ class User:
         :param include_sessions:  Whether or not to
             include a list of sessions for the given user, defaults to False.
         :type include_sessions: bool, optional
-        :param include_token:  Whether or not to include
+        :param include_tokens:  Whether or not to include
             the user's API token, defaults to False.
-        :type include_token: bool, optional
+        :type include_tokens: bool, optional
         :param customAttributes: Custom attributes to include instead of the
             defaults
         :type customAttribues: str, optional
@@ -320,7 +325,7 @@ class User:
         """
         id = kwargs.get("id", None)
         include_sessions = kwargs.get("include_sessions", False)
-        include_token = kwargs.get("include_token", False)
+        include_tokens = kwargs.get("include_tokens", False)
         custom_attributes = kwargs.get("customAttributes", None)
         filters = kwargs.get("filters", None)
         search = kwargs.get("search", None)
@@ -332,7 +337,7 @@ class User:
                     user(id: $id) {
                         """
                 + (self.properties if custom_attributes is None else custom_attributes)
-                + (self.token_properties if include_token else "")
+                + (self.tokens_properties if include_tokens else "")
                 + (self.session_properties if include_sessions else "")
                 + """
                     }
@@ -346,18 +351,10 @@ class User:
                 filters=filters,
                 search=search,
                 include_sessions=include_sessions,
+                include_tokens=include_tokens,
                 customAttributes=custom_attributes,
             )
-            user = results[0] if results else None
-            if not include_token or user is None:
-                return user
-            else:
-                return self.read(
-                    id=user["id"],
-                    include_sessions=include_sessions,
-                    include_token=include_token,
-                    customAttributes=custom_attributes,
-                )
+            return results[0] if results else None
         else:
             self.opencti.admin_logger.error(
                 "[opencti_user] Missing parameters: id, search, or filters"
@@ -417,11 +414,11 @@ class User:
             user. This may not impact effective confidence depending on group
             membership.
         :type user_confidence_level: Dict
-        :param customAttributes: Custom attributes to return for the user
-        :type customAttributes: str, optional
         :param include_token: Defaults to False. Whether to include the API
             token for the new user in the response.
         :type include_token: bool, optional
+        :param customAttributes: Custom attributes to return for the user
+        :type customAttributes: str, optional
         :return: Representation of the user without sessions or API token.
         :rtype: Optional[Dict]
         """
@@ -444,7 +441,7 @@ class User:
         user_confidence_level = kwargs.get("user_confidence_level", None)
         custom_attributes = kwargs.get("customAttributes", None)
         user_service_account = kwargs.get("user_service_account", False)
-        include_token = kwargs.get("include_token", False)
+        include_tokens = kwargs.get("include_tokens", False)
 
         if name is None or user_email is None:
             self.opencti.admin_logger.error(
@@ -467,7 +464,7 @@ class User:
                 userAdd(input: $input) {
                     """
             + (self.properties if custom_attributes is None else custom_attributes)
-            + (self.token_properties if include_token else "")
+            + (self.tokens_properties if include_tokens else "")
             + """
                 }
             }
@@ -524,15 +521,11 @@ class User:
     def me(self, **kwargs) -> Dict:
         """Reads the currently authenticated user.
 
-        :param include_token:  Whether to inclued the API
-            token of the currently authenticated user, defaults to False.
-        :type include_token: bool, optional
         :param customAttributes: Custom attributes to return on the User
         :type customAttributes: str, optional
         :return: Representation of the user.
         :rtype: dict
         """
-        include_token = kwargs.get("include_token", False)
         custom_attributes = kwargs.get("customAttributes", None)
 
         self.opencti.admin_logger.info("Reading MeUser")
@@ -542,7 +535,6 @@ class User:
                 me {
                     """
             + (self.me_properties if custom_attributes is None else custom_attributes)
-            + (self.token_properties if include_token else "")
             + """
                 }
             }
@@ -766,42 +758,66 @@ class User:
             result["data"]["userEdit"]["organizationDelete"]
         )
 
-    def token_renew(self, **kwargs) -> Optional[Dict]:
-        """Rotates the API token for the given user
+    def remove_token(self, **kwargs) -> Optional[Dict]:
+        """Remove an API token for the given user
 
-        :param user: User ID to rotate API token for.
-        :type user: str
-        :param include_token:  Whether to include new API
-            token in response from server, defaults to False.
-        :type include_token: bool, optional
-        :return: Representation of user
-        :rtype: Optional[Dict]
+        :param user_id: User ID to rotate API token for.
+        :type user_d: str
+        :param token_id: Token id to remove
+        :type token_id: str
         """
-        id = kwargs.get("id", None)
-        include_token = kwargs.get("include_token", False)
-        if id is None:
-            self.opencti.admin_logger.error("[opencti_user] Missing parameter: id")
+        user_id = kwargs.get("user_id", None)
+        token_id = kwargs.get("token_id", None)
+        if user_id is None:
+            self.opencti.admin_logger.error("[opencti_user] Missing parameter: user_id")
             return None
 
-        self.opencti.admin_logger.info("Rotating API key for user", {"id": id})
-        query = (
-            """
-            mutation UserEditRotateToken($id: ID!) {
-                userEdit(id: $id) {
-                    tokenRenew {
-                        """
-            + self.properties
-            + (self.token_properties if include_token else "")
-            + """
-                    }
-                }
+        self.opencti.admin_logger.info("Removing token for user", {"id": id})
+        query = """
+            mutation userAdminTokenRevoke($userId: ID!, $id: ID!) {
+                userAdminTokenRevoke(userId: $userId, id: $id)
             }
             """
+        result = self.opencti.query(query, {"userId": user_id, "id": token_id})
+        return result["data"]["userAdminTokenRevoke"]
+
+    def create_token(self, **kwargs) -> Optional[Dict]:
+        """Create an API token for the given user
+
+        :param user_id: User ID to rotate API token for.
+        :type user_d: str
+        :param token_name: Token name to give the token
+        :type token_name: str
+        :param token_duration: Token duration to give the token. Defaults to UNLIMITED.
+        :type token_duration: str
+        :return: Representation of token
+        :rtype: Optional[Dict]
+        """
+        user_id = kwargs.get("user_id", None)
+        token_name = kwargs.get("token_name", None)
+        token_duration = kwargs.get("token_duration", "UNLIMITED")
+        if user_id is None:
+            self.opencti.admin_logger.error("[opencti_user] Missing parameter: user_id")
+            return None
+
+        self.opencti.admin_logger.info("Create token for user", {"user_id": user_id})
+        query = """
+            mutation userAdminTokenAdd($userId: ID!, $input: UserTokenAddInput!) {
+              userAdminTokenAdd(userId: $userId, input: $input) {
+                token_id
+                plaintext_token
+                expires_at
+              }
+            }
+            """
+        result = self.opencti.query(
+            query,
+            {
+                "userId": user_id,
+                "input": {"name": token_name, "duration": token_duration},
+            },
         )
-        result = self.opencti.query(query, {"id": id})
-        return self.opencti.process_multiple_fields(
-            result["data"]["userEdit"]["tokenRenew"]
-        )
+        return self.opencti.process_multiple_fields(result["data"]["userAdminTokenAdd"])
 
     def send_mail(self, **kwargs):
         """Send an email to a user using a template.

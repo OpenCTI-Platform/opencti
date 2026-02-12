@@ -10,6 +10,7 @@ import {
   errors,
   id,
   lastEventId,
+  type NestedObjectAttribute,
   refreshedAt,
   updatedAt,
 } from '../../schema/attribute-definition';
@@ -183,6 +184,25 @@ export const settingsMessages = {
   },
 };
 
+export const apiTokens: NestedObjectAttribute = {
+  name: 'api_tokens',
+  label: 'API Tokens',
+  type: 'object',
+  format: 'nested',
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: true,
+  upsert: true,
+  isFilterable: false,
+  mappings: [
+    { name: 'id', label: 'ID', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
+    { name: 'name', label: 'Name', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
+    { name: 'hash', label: 'Hash', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
+    { name: 'masked_token', label: 'Masked Token', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
+    { name: 'created_at', label: 'Created at', type: 'date', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
+    { name: 'expires_at', label: 'Expires at', type: 'date', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
+  ],
+};
 const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>> } = {
   [ENTITY_TYPE_SETTINGS]: [
     { name: 'platform_title', label: 'Platform title', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
@@ -347,7 +367,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>> 
         { name: 'type', label: 'Type', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
       ],
     },
-    { name: 'api_token', label: 'API Token', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    apiTokens,
     { name: 'otp_secret', label: 'OTP secret', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'otp_qr', label: 'OTP QR', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'otp_activated', label: '2FA state', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },

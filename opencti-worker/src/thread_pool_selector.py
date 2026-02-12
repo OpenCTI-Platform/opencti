@@ -1,6 +1,6 @@
-from dataclasses import dataclass
-from concurrent.futures import ThreadPoolExecutor
 import threading
+from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass
 from typing import Callable
 
 

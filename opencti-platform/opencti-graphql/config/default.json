@@ -25,7 +25,7 @@
         "password",
         "secret",
         "token",
-        "api_token",
+        "api_tokens",
         "authentication_value",
         "enterprise_license"
       ],

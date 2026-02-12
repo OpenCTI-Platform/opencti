@@ -39,12 +39,14 @@ from queue import Queue
 from typing import Callable, Dict, List, Optional, Union
 
 import boto3
+import jwt
 import pika
 import uvicorn
 from botocore.config import Config as BotoConfig
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from filigran_sseclient import SSEClient
+from jwt import PyJWKSet
 from pika.exceptions import NackError, UnroutableError
 from pydantic import TypeAdapter
 
@@ -526,6 +528,7 @@ class ListenQueue(threading.Thread):
         self.port = connector_config["connection"]["port"]
         self.user = connector_config["connection"]["user"]
         self.password = connector_config["connection"]["pass"]
+        self.connector_jwks = PyJWKSet.from_json(connector_config["connector_jwks"])
         self.queue_name = connector_config["listen"]
         self.exit_event = threading.Event()
         self.thread = None
@@ -741,6 +744,33 @@ class ListenQueue(threading.Thread):
                         "Failing reporting the processing"
                     )
 
+    def is_token_valid(self, token):
+        """
+        Returns True if the signature is valid and token is not expired.
+        Returns False otherwise.
+        """
+        try:
+            unverified_header = jwt.get_unverified_header(token)
+            used_kid = unverified_header["kid"]
+            key = self.connector_jwks[used_kid]
+            if key is None:
+                self.helper.connector_logger.error(
+                    "Error: Public key not found in JWKS."
+                )
+                return False
+
+            jwt.decode(
+                token,
+                key=key,
+                algorithms=[key.algorithm_name],
+                issuer="opencti",
+                subject="connector",
+            )
+            return True
+        except Exception as e:
+            self.helper.connector_logger.error("Failed to get external data for %s", e)
+            return False
+
     async def _http_process_callback(self, request: Request) -> JSONResponse:
         """Handle incoming HTTP POST requests for API listen protocol.
 
@@ -765,7 +795,7 @@ class ListenQueue(threading.Thread):
         if (
             len(items) != 2
             or items[0].lower() != "bearer"
-            or items[1] != self.opencti_token
+            or self.is_token_valid(items[1]) is False
         ):
             return JSONResponse(
                 status_code=401, content={"error": "Invalid credentials"}
@@ -2220,9 +2250,11 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                         "filters": [{"key": "user_email", "values": [user_email]}],
                         "filterGroups": [],
                     },
-                    include_token=True,
+                    include_tokens=True,
                 )
+                token_name = "Connector auto generated token"
                 if user is None:
+                    # Create user
                     user = temp_api.user.create(
                         name="[C] " + self.connect_name,
                         user_email=user_email,
@@ -2231,11 +2263,33 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                             "overrides": [],
                         },
                         groups=[groups[0]["id"]],
-                        include_token=True,
                         user_service_account=True,
                     )
+                    token = temp_api.user.create_token(
+                        user_id=user["id"], token_name=token_name
+                    )
+                    # Create a token
+                    user["api_tokens"] = [token]
                 if user is not None:
-                    self.opencti_token = user["api_token"]
+                    # Renew the token (deleting by name + recreating)
+                    # Find the existing one and delete if exists
+                    existing_token = next(
+                        (
+                            item
+                            for item in user["api_tokens"]
+                            if item["name"] == token_name
+                        ),
+                        None,
+                    )
+                    if existing_token is not None:
+                        temp_api.user.remove_token(
+                            user_id=user["id"], token_id=existing_token["id"]
+                        )
+                    # Create new one
+                    token = temp_api.user.create_token(
+                        user_id=user["id"], token_name=token_name
+                    )
+                    self.opencti_token = token["plaintext_token"]
 
         # - Classic API that will be directly attached to the connector rights
         self.api = OpenCTIApiClient(
@@ -2304,6 +2358,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         self.applicant_id = connector_configuration["connector_user_id"]
         self.connector_state = connector_configuration["connector_state"]
         self.connector_config = connector_configuration["config"]
+        self.connector_config["connector_jwks"] = connector_configuration["jwks"]
 
         # Configure the push information protocol
         self.queue_protocol = get_config_variable(

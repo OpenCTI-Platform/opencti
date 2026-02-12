@@ -2,11 +2,12 @@ import crypto from 'crypto';
 import nconf from 'nconf';
 import { promisify } from 'util';
 import * as ed25519 from '@noble/ed25519'; // required for ed25519 key derivation from seed, not available in crypto module
-import type { JWTVerifyOptions } from 'jose';
+import type { JWTVerifyOptions, JWTVerifyGetKey } from 'jose';
 import { importJWK, type JWK, jwtVerify, SignJWT } from 'jose';
 import { enrichWithRemoteCredentials } from '../config/credentials';
 import { confNameToEnvName } from '../config/conf';
 import { ConfigurationError, UnsupportedError } from '../config/errors';
+import { memoize } from './memoize';
 
 const hkdfAsync = promisify(crypto.hkdf);
 const toHex = (buffer: Buffer) => buffer.toString('hex');
@@ -93,13 +94,19 @@ export const createCryptoKeyFactory = (seed: Buffer) => {
       let i = 0;
       const receivedVersion = data[i++];
       if (receivedVersion !== encodingVersion) {
-        throw UnsupportedError('Unsupported encrypted data encoding version', { expectedVersion: encodingVersion, receivedVersion });
+        throw UnsupportedError('Unsupported encrypted data encoding version', {
+          expectedVersion: encodingVersion,
+          receivedVersion,
+        });
       }
 
       const receivedKid = data.subarray(i, i + kid.length);
       i += kid.length;
       if (!receivedKid.equals(kid)) {
-        throw UnsupportedError('Invalid kid for decryption', { expectedKid: toHex(kid), receivedKid: toHex(receivedKid) });
+        throw UnsupportedError('Invalid kid for decryption', {
+          expectedKid: toHex(kid),
+          receivedKid: toHex(receivedKid),
+        });
       }
 
       const iv = data.subarray(i, i + ivLength);
@@ -149,13 +156,19 @@ export const createCryptoKeyFactory = (seed: Buffer) => {
       let i = 0;
       const receivedVersion = signature[i++];
       if (receivedVersion !== encodingVersion) {
-        throw UnsupportedError('Unsupported signature encoding version', { expectedVersion: encodingVersion, receivedVersion });
+        throw UnsupportedError('Unsupported signature encoding version', {
+          expectedVersion: encodingVersion,
+          receivedVersion,
+        });
       }
 
       const receivedKid = signature.subarray(i, i + kid.length);
       i += kid.length;
       if (!receivedKid.equals(kid)) {
-        throw UnsupportedError('Invalid kid for signature verification', { expectedKid: toHex(kid), receivedKid: toHex(receivedKid) });
+        throw UnsupportedError('Invalid kid for signature verification', {
+          expectedKid: toHex(kid),
+          receivedKid: toHex(receivedKid),
+        });
       }
 
       return await ed25519.verifyAsync(signature.subarray(i), data, publicKey);
@@ -176,12 +189,19 @@ export const createCryptoKeyFactory = (seed: Buffer) => {
       d: Buffer.from(seed32).toString('base64url'),
     });
 
-    const signJwt = async (jwt: SignJWT) => {
-      return await jwt.setProtectedHeader({ kid: jwk.kid, alg: jwk.alg }).sign(privateJWK);
+    const getVerifyKey: JWTVerifyGetKey = async (header) => {
+      if (header.kid !== jwk.kid) {
+        throw UnsupportedError('JWT kid is unknown', { expectedKid: jwk.kid, receivedKid: header.kid });
+      }
+      return publicJWK;
     };
 
-    const verifyJwt = async (token: string | Uint8Array, options?: JWTVerifyOptions) => {
-      return jwtVerify(token, publicJWK, options);
+    const signJwt = async (jwt: SignJWT) => {
+      return await jwt.setProtectedHeader({ kid: jwk.kid, alg: jwk.alg, typ: 'JWT' }).sign(privateJWK);
+    };
+
+    const verifyJwt = async (token: string | Uint8Array, options: JWTVerifyOptions = {}) => {
+      return jwtVerify(token, getVerifyKey, { ...options, algorithms: [jwk.alg] });
     };
 
     return {
@@ -189,7 +209,9 @@ export const createCryptoKeyFactory = (seed: Buffer) => {
         [toHex(kid)]: publicKey,
       },
       jwks: {
-        [toHex(kid)]: jwk,
+        keys: [
+          jwk,
+        ],
       },
       sign,
       verify,
@@ -198,8 +220,26 @@ export const createCryptoKeyFactory = (seed: Buffer) => {
     };
   };
 
+  const deriveHmac = async (
+    derivationPath: string[],
+    version: number,
+  ) => {
+    const bits = 256;
+    const hashAlgo = `sha${bits}` as const;
+    const key = await deriveBytes([...derivationPath, `hmac-${hashAlgo}`], version, 32);
+
+    const hmac = (data: Buffer): string => {
+      return crypto.createHmac(hashAlgo, key).update(data).digest('base64');
+    };
+
+    return {
+      hmac,
+    };
+  };
+
   return {
     deriveAesKey,
+    deriveHmac,
     deriveEd25519KeyPair,
   };
 };
@@ -224,11 +264,4 @@ const createPlatformCrypto = async () => {
   return promise;
 };
 
-let platformCryptoPromise: Promise<ReturnType<typeof createCryptoKeyFactory>> | undefined = undefined;
-
-export const getPlatformCrypto = async () => {
-  if (!platformCryptoPromise) {
-    platformCryptoPromise = createPlatformCrypto();
-  }
-  return platformCryptoPromise;
-};
+export const getPlatformCrypto = memoize(createPlatformCrypto);

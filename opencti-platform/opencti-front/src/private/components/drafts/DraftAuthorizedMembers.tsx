@@ -8,8 +8,8 @@ import Security from '../../../utils/Security';
 import IconButton from '../../../components/common/button/IconButton';
 import { useFormatter } from '../../../components/i18n';
 import FormAuthorizedMembersDialog from '../common/form/FormAuthorizedMembersDialog';
-import { DraftAuthorizedMembersFragment$key } from './__generated__/DraftAuthorizedMembersFragment.graphql';
 import { authorizedMembersToOptions, useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
+import { DraftAuthorizedMembersFragment$key } from '@components/drafts/__generated__/DraftAuthorizedMembersFragment.graphql';
 
 const draftFragment = graphql`
   fragment DraftAuthorizedMembersFragment on DraftWorkspace {
