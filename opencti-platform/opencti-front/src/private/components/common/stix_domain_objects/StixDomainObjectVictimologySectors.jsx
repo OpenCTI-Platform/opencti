@@ -314,7 +314,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
             <div style={{ float: 'right', marginTop: -10 }}>
               <ToggleButtonGroup
                 size="small"
-                color="secondary"
+                color="primary"
                 value="nested"
                 exclusive={true}
                 onChange={(_, value) => {
