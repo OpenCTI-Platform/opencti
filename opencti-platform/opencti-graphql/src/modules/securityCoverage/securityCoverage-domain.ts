@@ -46,7 +46,9 @@ export const findSecurityCoverageByCoveredId = async (context: AuthContext, user
 };
 
 export const addSecurityCoverage = async (context: AuthContext, user: AuthUser, securityCoverageInput: SecurityCoverageAddInput) => {
+	console.log("addSecurityCoverage securityCoverageInput", securityCoverageInput)
   const created = await createEntity(context, user, securityCoverageInput, ENTITY_TYPE_SECURITY_COVERAGE);
+	console.log("addSecurityCoverage created ", created)
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
@@ -61,8 +63,8 @@ export const securityCoverageStixBundle = async (context: AuthContext, user: Aut
   objects.push(stixAssessment);
   const stixAssessmentRefs = stixRefsExtractor(stixAssessment);
   const refElements = await storeLoadByIdsWithRefs(context, user, stixAssessmentRefs);
-  for (let index = 0; index < refElements.length; index += 1) {
-    const refElement = refElements[index];
+  for (const element of refElements) {
+		const refElement = element;
     const stixRefElement = convertStoreToStix_2_1(refElement);
     objects.push(stixRefElement);
   }

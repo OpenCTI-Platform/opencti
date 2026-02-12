@@ -76,7 +76,7 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
   const theme = useTheme<Theme>();
   const { t_i18n, fndt } = useFormatter();
   const data = useFragment(securityCoverageDetailsFragment, securityCoverage);
-
+	console.log('security coverage dans le details ', securityCoverage)
   const [displayExternalLink, setDisplayExternalLink] = useState(false);
 
   return (

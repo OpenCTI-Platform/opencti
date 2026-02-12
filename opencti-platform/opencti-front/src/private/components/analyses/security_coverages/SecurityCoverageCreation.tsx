@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
-import { graphql } from 'react-relay';
+import {graphql, useFragment} from 'react-relay';
 import * as Yup from 'yup';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import makeStyles from '@mui/styles/makeStyles';
@@ -38,6 +38,7 @@ import SelectField from '../../../../components/fields/SelectField';
 import MenuItem from '@mui/material/MenuItem';
 import { useNavigate } from 'react-router-dom';
 import { SecurityCoverageCreationMutation } from '@components/analyses/security_coverages/__generated__/SecurityCoverageCreationMutation.graphql';
+import useAuth from "../../../../utils/hooks/useAuth";
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -304,6 +305,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
+	const { settings } = useAuth();
 
   // Stepper state - if we have a preselected entity, start at step 0 (choose type)
   const [activeStep, setActiveStep] = useState(0);
@@ -457,10 +459,13 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
         setSubmitting(false);
       },
       onCompleted: (response) => {
+
+
         setSubmitting(false);
         resetForm();
         handleClose();
         if (response.securityCoverageAdd && shouldRedirect) {
+									console.log("response :", response)
           navigate(`/dashboard/analyses/security_coverages/${response.securityCoverageAdd.id}`);
         }
       },

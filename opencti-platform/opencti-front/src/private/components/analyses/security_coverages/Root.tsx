@@ -1,5 +1,5 @@
-import React, { Suspense, useMemo } from 'react';
-import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
+import React, {Suspense, useMemo, useState} from 'react';
+import {graphql, PreloadedQuery, useFragment, usePreloadedQuery, useSubscription} from 'react-relay';
 import { Link, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
@@ -21,10 +21,17 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
-import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import {getCurrentTab, getPaddingRight, isNotEmptyField} from '../../../../utils/utils';
 import SecurityCoverageEdition from './SecurityCoverageEdition';
 import SecurityCoverageDeletion from './SecurityCoverageDeletion';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import Button from "@mui/material/Button";
+import {fileUri} from "../../../../relay/environment";
+import obasDark from "../../../../static/images/xtm/obas_dark.png";
+import obasLight from "../../../../static/images/xtm/obas_light.png";
+import {useTheme} from "@mui/styles";
+import {Theme} from "@mui/material/styles/createTheme";
+import ExternalLinkPopover from "../../../../components/ExternalLinkPopover";
 
 const subscription = graphql`
   subscription RootSecurityCoverageSubscription($id: ID!) {
@@ -48,6 +55,7 @@ const securityCoverageQuery = graphql`
       entity_type
       name
       description
+      external_uri
       objectMarking {
         id
       }
@@ -80,6 +88,7 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
     variables: { id: securityCoverageId },
   }), [securityCoverageId]);
   const location = useLocation();
+	const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   useSubscription<RootSecurityCoverageSubscription>(subConfig);
   const {
@@ -87,7 +96,9 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
     connectorsForExport,
     connectorsForImport,
   } = usePreloadedQuery<RootSecurityCoverageQuery>(securityCoverageQuery, queryRef);
-  const isOverview = location.pathname === `/dashboard/analyses/security_coverages/${securityCoverageId}`;
+	console.log('securityCoverage dans le root', securityCoverage)
+	const [displayExternalLink, setDisplayExternalLink] = useState(false);
+
   const paddingRight = getPaddingRight(location.pathname, securityCoverageId, '/dashboard/analyses/security_coverages');
   return (
     <>
@@ -153,11 +164,31 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
                 label={t_i18n('History')}
               />
             </Tabs>
-            {isOverview && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                <AIInsights id={securityCoverage.id} />
-              </div>
-            )}
+						{isNotEmptyField(securityCoverage.external_uri) && (
+							<Button
+								style={{ marginBottom : 8}}
+								color="primary"
+													startIcon={(
+									<img
+										style={{ width: 20 }}
+										src={fileUri(theme.palette.mode === 'dark' ? obasDark : obasLight)}
+										alt="OAEV"
+									/>
+								)}
+								variant="outlined"
+								onClick={() => setDisplayExternalLink(true)}
+								title={securityCoverage?.external_uri} // tooltip on hover
+							>
+								{t_i18n('Go to OAEV')}
+							</Button>
+						)}
+						{isNotEmptyField(securityCoverage.external_uri) && (
+							<ExternalLinkPopover
+								externalLink={securityCoverage.external_uri}
+								displayExternalLink={displayExternalLink}
+								setDisplayExternalLink={setDisplayExternalLink}
+							/>
+						)}
           </Box>
           <Routes>
             <Route
@@ -226,13 +257,11 @@ const Root = () => {
     id: securityCoverageId,
   });
   return (
-    <>
-      <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-        {queryRef && (
-          <RootSecurityCoverage queryRef={queryRef} securityCoverageId={securityCoverageId} />
-        )}
-      </Suspense>
-    </>
+		<Suspense fallback={<Loader variant={LoaderVariant.container}/>}>
+			{queryRef && (
+				<RootSecurityCoverage queryRef={queryRef} securityCoverageId={securityCoverageId}/>
+			)}
+		</Suspense>
   );
 };
 
