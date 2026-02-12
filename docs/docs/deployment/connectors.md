@@ -222,13 +222,14 @@ Just go to the user you have just created and add it to the `Connectors` group.
 
 ![User groups](assets/user-groups.png)
 
-Then just get the token of the user displayed in the interface.
+Then create a user token in the interface.
 
 ![User token](assets/user-token.png)
+![User token](assets/user-token-generated.png)
 
 !!! info "Stateless connections"
 
-    The user associated with the connector will be used to authenticate to the platform GraphQL API using the user's token.
+    The user associated with the connector will be used to authenticate to the platform GraphQL API using a dedicated short time period JWT token.
     Please note that, since OpenCTI 6.6.0, token-based connections will never create persistent user sessions in the platform.
     This is no longer an option "stateless mode" that can be set manually from the user's configuration page.
 
