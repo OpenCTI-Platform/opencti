@@ -29,7 +29,8 @@ export const computeOpenIdUserInfo = (ssoConfig: any, user_attribute_obj: any) =
   return { email, name, firstname, lastname };
 };
 
-export const computeOpenIdOrganizationsMapping = (orgsManagement: OrganizationsManagement | undefined, decodedUser: any, userinfo: ProviderUserInfo, orgaDefault: string[]) => {
+export const computeOpenIdOrganizationsMapping = (
+  orgsManagement: OrganizationsManagement | undefined, decodedUser: unknown, userinfo: unknown, orgaDefault: string[]) => {
   const readUserinfo = orgsManagement?.read_userinfo || false;
   const orgasMapping = orgsManagement?.organizations_mapping || [];
   const orgaPath = orgsManagement?.organizations_path || ['organizations'];
@@ -42,7 +43,7 @@ export const computeOpenIdOrganizationsMapping = (orgsManagement: OrganizationsM
   return [...orgaDefault, ...availableOrgas.map((a) => orgasMapper[a]).filter((r) => isNotEmptyField(r))];
 };
 
-export const computeOpenIdGroupsMapping = (groupManagement: GroupsManagement | undefined, decodedUser: any, userinfo: any) => {
+export const computeOpenIdGroupsMapping = (groupManagement: GroupsManagement | undefined, decodedUser: unknown, userinfo: unknown) => {
   const readUserinfo = groupManagement?.read_userinfo || false;
   const groupsPath = groupManagement?.groups_path || ['groups'];
   const groupsMapping = groupManagement?.groups_mapping || [];
@@ -58,6 +59,11 @@ export const computeOpenIdGroupsMapping = (groupManagement: GroupsManagement | u
   }));
   const groupsMapper = genConfigMapper(groupsMapping);
   return availableGroups.map((a) => groupsMapper[a]).filter((r) => isNotEmptyField(r));
+};
+
+const buildProxiedFetch = (issuerUrl: URL): typeof fetch => {
+  const dispatcher = getPlatformHttpProxyAgent(issuerUrl.toString(), true);
+  return (url, options) => fetch(url, { ...options, dispatcher });
 };
 
 export const registerOpenIdStrategy = async (ssoEntity: BasicStoreEntitySingleSignOn) => {
@@ -90,8 +96,7 @@ export const registerOpenIdStrategy = async (ssoEntity: BasicStoreEntitySingleSi
   // Here we use directly the config and not the mapped one.
   // All config of openid lib use snake case.
   try {
-    const fetchDispatcher = ssoConfig.use_proxy && getPlatformHttpProxyAgent(issuerUrl.toString(), true);
-    const customFetchImpl = fetchDispatcher && ((url: string, options: any) => fetch(url, { ...options, agent: fetchDispatcher }));
+    const customFetchImpl = ssoConfig.use_proxy ? buildProxiedFetch(issuerUrl) : undefined;
 
     const config = await oidcDiscovery(
       issuerUrl,
