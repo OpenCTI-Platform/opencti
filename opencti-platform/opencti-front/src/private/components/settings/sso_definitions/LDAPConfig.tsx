@@ -17,7 +17,6 @@ const LDAPConfig = () => {
         label="URL"
         required
         fullWidth
-        style={{ marginTop: 20 }}
       />
       <Field
         component={TextField}
@@ -26,7 +25,7 @@ const LDAPConfig = () => {
         label="Bind DN"
         required
         fullWidth
-        style={{ marginTop: 20 }}
+        style={{ marginTop: 16 }}
       />
       <Field
         component={TextField}
@@ -34,7 +33,7 @@ const LDAPConfig = () => {
         name="bindCredentials"
         label="Bind credentials"
         fullWidth
-        style={{ marginTop: 20 }}
+        style={{ marginTop: 16 }}
         type="password"
       />
       <Field
@@ -44,7 +43,7 @@ const LDAPConfig = () => {
         label="Search base"
         required
         fullWidth
-        style={{ marginTop: 20 }}
+        style={{ marginTop: 16 }}
       />
       <Field
         component={TextField}
@@ -53,7 +52,7 @@ const LDAPConfig = () => {
         label="Search filter"
         required
         fullWidth
-        style={{ marginTop: 20 }}
+        style={{ marginTop: 16 }}
       />
       <Field
         component={TextField}
@@ -62,7 +61,7 @@ const LDAPConfig = () => {
         label="Group search base"
         required
         fullWidth
-        style={{ marginTop: 20 }}
+        style={{ marginTop: 16 }}
       />
       <Field
         component={TextField}
@@ -71,7 +70,7 @@ const LDAPConfig = () => {
         label="Group search filter"
         required
         fullWidth
-        style={{ marginTop: 20 }}
+        style={{ marginTop: 16 }}
       />
       <Field
         component={SwitchField}
@@ -80,7 +79,7 @@ const LDAPConfig = () => {
         name="allow_self_signed"
         required
         label={t_i18n('Allow self signed')}
-        containerstyle={{ marginLeft: 2, marginTop: 10 }}
+        containerstyle={{ marginLeft: 2, marginTop: 16 }}
       />
     </>
   );

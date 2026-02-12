@@ -412,26 +412,26 @@ const SSODefinitionForm = ({
                 label={t_i18n('Configuration Name')}
                 fullWidth
                 required
-                style={{ marginTop: 20 }}
+                style={{ marginTop: 16, marginBottom: 16 }}
               />
-              <div style={{ marginTop: 20 }}>
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="identifier"
-                  label={t_i18n('Authentication Name')}
-                  fullWidth
-                  required
-                  disabled={selectedCert}
-                />
-              </div>
+              <Field
+                component={TextField}
+                variant="standard"
+                name="identifier"
+
+                label={t_i18n('Authentication Name')}
+                fullWidth
+                required
+                disabled={selectedCert}
+                style={{ marginBottom: 16 }}
+              />
               <Field
                 component={SwitchField}
                 variant="standard"
                 name="enabled"
                 type="checkbox"
                 label={t_i18n(`Enable ${selectedStrategy} authentication`)}
-                containerstyle={{ marginLeft: 2, marginTop: 20 }}
+                containerstyle={{ marginLeft: 2 }}
               />
               {selectedStrategy !== 'LocalAuth' && !selectedCert && (
                 <Field
@@ -440,7 +440,7 @@ const SSODefinitionForm = ({
                   name="label"
                   label={t_i18n('Login Button Name')}
                   fullWidth
-                  style={{ marginTop: 10 }}
+                  style={{ marginBottom: 16 }}
                 />
               )}
               {selectedStrategy === 'SAML' && <SAMLConfig />}

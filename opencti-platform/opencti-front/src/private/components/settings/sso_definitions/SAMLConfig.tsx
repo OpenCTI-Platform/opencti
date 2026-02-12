@@ -19,7 +19,7 @@ const SAMLConfig = () => {
         label={t_i18n('SAML Entity ID/Issuer')}
         required
         fullWidth
-        style={{ marginTop: 10 }}
+        style={{ marginBottom: 16 }}
       />
       <Field
         component={TextField}
@@ -28,7 +28,7 @@ const SAMLConfig = () => {
         label={t_i18n('SAML Callback URL')}
         fullWidth
         required
-        style={{ marginTop: 10 }}
+        style={{ marginBottom: 16 }}
       />
       <Field
         id="filled-multiline-flexible"
@@ -40,7 +40,7 @@ const SAMLConfig = () => {
         fullWidth
         multiline
         rows={4}
-        style={{ marginTop: 10 }}
+        style={{ marginBottom: 8 }}
       />
       <Field
         id="filled-multiline-flexible"
@@ -52,7 +52,7 @@ const SAMLConfig = () => {
         fullWidth
         multiline
         rows={4}
-        style={{ marginTop: 10 }}
+        style={{ marginBottom: 16 }}
       />
       <Field
         component={TextField}
@@ -60,8 +60,8 @@ const SAMLConfig = () => {
         name="privateKey"
         label={t_i18n('Private key')}
         fullWidth
-        style={{ marginTop: 10 }}
         type="password"
+        style={{ marginBottom: 16 }}
       />
       <Field
         component={SwitchField}
@@ -69,7 +69,7 @@ const SAMLConfig = () => {
         type="checkbox"
         name="wantAssertionsSigned"
         label={t_i18n('Want assertion signed')}
-        containerstyle={{ marginLeft: 2, marginTop: 10 }}
+        containerstyle={{ marginLeft: 2, marginTop: 8 }}
       />
       <Field
         component={SwitchField}
@@ -104,7 +104,7 @@ const SAMLConfig = () => {
         name="providerMethod"
         label={t_i18n('Method of Provider metadata')}
         fullWidth
-        containerstyle={{ width: '100%' }}
+        containerstyle={{ width: '100%', marginBottom: 8 }}
       >
         <MenuItem value="Manual">Manual</MenuItem>
         <MenuItem value="Upload">Upload</MenuItem>
@@ -118,7 +118,6 @@ const SAMLConfig = () => {
         fullWidth
         multiline
         rows={4}
-        style={{ marginTop: 10 }}
       />
       <Field
         component={SelectField}
@@ -126,7 +125,7 @@ const SAMLConfig = () => {
         name="ssoBindingType"
         label={t_i18n('SSO Binding type')}
         fullWidth
-        containerstyle={{ width: '100%', marginBottom: 20, marginTop: 10 }}
+        containerstyle={{ width: '100%', marginBottom: 16, marginTop: 16 }}
       >
         <MenuItem value="Redirect">Redirect</MenuItem>
         <MenuItem value="Post">Post</MenuItem>

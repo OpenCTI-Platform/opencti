@@ -15,7 +15,7 @@ const OpenIDConfig = () => {
         required
         label={t_i18n('Client ID')}
         fullWidth
-        style={{ marginTop: 20 }}
+        style={{ marginBottom: 16 }}
       />
       <Field
         component={TextField}
@@ -24,7 +24,7 @@ const OpenIDConfig = () => {
         required
         label={t_i18n('Client Secret')}
         fullWidth
-        style={{ marginTop: 20 }}
+        style={{ marginBottom: 16 }}
         type="password"
       />
       <Field
@@ -34,7 +34,7 @@ const OpenIDConfig = () => {
         required
         label={t_i18n('OpenID issuer')}
         fullWidth
-        style={{ marginTop: 20 }}
+        style={{ marginbottom: 16 }}
       />
       <Field
         component={TextField}
