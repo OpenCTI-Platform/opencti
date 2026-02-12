@@ -1,21 +1,12 @@
-import { FunctionComponent, Suspense } from 'react';
 import Drawer from '@components/common/drawer/Drawer';
+import { Stack } from '@mui/material';
+import { FunctionComponent, Suspense } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
-import Paper from '@mui/material/Paper';
-import TableContainer from '@mui/material/TableContainer';
-import Table from '@mui/material/Table';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import TableCell from '@mui/material/TableCell';
-import TableBody from '@mui/material/TableBody';
-import { useFormatter } from '../../../../components/i18n';
+import Alert from '../../../../components/Alert';
+import ChangesTable, { Change } from '../../../../components/common/table/ChangesTable';
 import Loader from '../../../../components/Loader';
-import { HistoryDrawerQuery } from './__generated__/HistoryDrawerQuery.graphql';
 import useAuth from '../../../../utils/hooks/useAuth';
-import TruncatedRawValue from '@components/common/drawer/TruncatedRawValue';
-import { Typography } from '@mui/material';
-import { useTheme } from '@mui/styles';
-import type { Theme } from '../../../../components/Theme';
+import { HistoryDrawerQuery } from './__generated__/HistoryDrawerQuery.graphql';
 
 interface HistoryDrawerProps {
   open: boolean;
@@ -52,86 +43,44 @@ const HistoryDrawerContent: FunctionComponent<HistoryDrawerContentProps> = ({ lo
   const { locale, tz, unitSystem } = useAuth();
   const variables = { id: logId, tz, locale: locale, unit_system: unitSystem };
   const data = useLazyLoadQuery<HistoryDrawerQuery>(historyDrawerQuery, variables);
-  const { t_i18n } = useFormatter();
-  const theme = useTheme<Theme>();
+
   const changes = data?.log?.context_data?.changes;
+  const mappedChanges: Change[] = (changes ?? [])
+    .filter((c): c is NonNullable<typeof c> => !!c)
+    .map((c) => ({
+      field: c.field,
+      removed: c.changes_removed ?? [],
+      added: c.changes_added ?? [],
+    }));
 
   return (
-    <div>
-      <Paper variant="outlined" style={{ padding: 15, backgroundColor: theme.palette.background.paper, borderColor: theme.palette.primary.main }}>
-        <Typography variant="h4" gutterBottom={true} color="primary">
-          {t_i18n('Message')}
-        </Typography>
-        <b>{data?.log?.user?.name}</b> {data?.log?.context_data?.message ?? ''}
-      </Paper>
-      <div style={{ marginTop: 20 }}>
-        <Paper style={{ marginTop: theme.spacing(1), position: 'relative' }}>
-          <TableContainer>
-            <Table sx={{ minWidth: 650 }} size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell style={{ fontSize: 12, fontWeight: 'bold' }}>{t_i18n('Field').toUpperCase()}</TableCell>
-                  <TableCell width="40%" style={{ fontSize: 12, fontWeight: 'bold' }}>{t_i18n('Removed').toUpperCase()}</TableCell>
-                  <TableCell width="40%" style={{ fontSize: 12, fontWeight: 'bold' }}>{t_i18n('Added').toUpperCase()}</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {changes && changes.length > 0 ? (changes.map((row) => {
-                  return (
-                    <TableRow key={row?.field} hover={false}>
-                      <TableCell component="th" scope="row" style={{ fontWeight: 'bold', padding: 14, verticalAlign: 'top' }}>
-                        {row?.field}
-                      </TableCell>
-                      <TableCell align="left" style={{ verticalAlign: 'top' }}>
-                        {row?.changes_removed && row.changes_removed.length > 0
-                          ? row.changes_removed.map((s, i: number) => {
-                              return (
-                                <div key={i}>
-                                  <TruncatedRawValue value={s} />
-                                </div>
-                              );
-                            })
-                          : <TruncatedRawValue value="-" />}
-                      </TableCell>
-                      <TableCell align="left" style={{ verticalAlign: 'top' }}>
-                        {row?.changes_added && row.changes_added.length > 0
-                          ? row.changes_added.map((s, i: number) => {
-                              return (
-                                <div key={i}>
-                                  <TruncatedRawValue value={s} />
-                                </div>
-                              );
-                            })
-                          : <TruncatedRawValue value="-" />}
-                      </TableCell>
-                    </TableRow>
-                  );
-                }))
-                  : (
-                      <TableRow>
-                        <TableCell align="center" colSpan={3}>
-                          {t_i18n('No detail available for this event')}
-                        </TableCell>
-                      </TableRow>
-                    )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Paper>
-      </div>
-    </div>
+    <Stack gap={2}>
+      <Alert
+        content={(
+          <>
+            <strong>{data?.log?.user?.name}</strong> {data?.log?.context_data?.message ?? ''}
+          </>
+        )}
+      />
+
+      <ChangesTable
+        changes={mappedChanges}
+        variant="text"
+      />
+    </Stack>
   );
 };
 
 const HistoryDrawer: FunctionComponent<HistoryDrawerProps> = ({ open, onClose, title, logId }) => {
-  return logId
-    ? (
-        <Drawer open={open} onClose={onClose} title={title}>
-          <Suspense fallback={<Loader />}>
-            <HistoryDrawerContent logId={logId} />
-          </Suspense>
-        </Drawer>
-      ) : <></>;
+  if (!logId) return null;
+
+  return (
+    <Drawer size="medium" open={open} onClose={onClose} title={title}>
+      <Suspense fallback={<Loader />}>
+        <HistoryDrawerContent logId={logId} />
+      </Suspense>
+    </Drawer>
+  );
 };
 
 export default HistoryDrawer;
