@@ -197,7 +197,8 @@ input NarrativeAddInput {
     fileMarkings: [String]
     files: [Upload]
     filesMarkings: [[String]]
-    noTriggerImport: Boolean
+    noTriggerImport: [Boolean]
+    embedded: [Boolean]
     x_opencti_modified_at: DateTime
     x_opencti_workflow_id: String
     upsertOperations: [EditInput!]

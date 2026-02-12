@@ -3870,32 +3870,41 @@ const internalCreateEntityRaw = async (
     const filesToUpload = [];
     if (!isEmptyField(resolvedInput.files) && Array.isArray(resolvedInput.files)) {
       const filesMarkings = resolvedInput.filesMarkings || [];
+      const noTriggerImportArr = resolvedInput.noTriggerImport || [];
+      const embeddedArr = resolvedInput.embedded || [];
       for (let i = 0; i < resolvedInput.files.length; i += 1) {
         const fileInput = resolvedInput.files[i];
         const fileMarking = filesMarkings[i] || resolvedInput.objectMarking?.map(({ id }: { id: string }) => id);
-        filesToUpload.push({ file: fileInput, markings: fileMarking });
+        // If the array is shorter than files, reuse the last provided value (backward compat: single value applies to all)
+        const fileNoTriggerImport = noTriggerImportArr[Math.min(i, noTriggerImportArr.length - 1)] ?? false;
+        const fileEmbedded = embeddedArr[Math.min(i, embeddedArr.length - 1)] ?? false;
+        filesToUpload.push({ file: fileInput, markings: fileMarking, noTriggerImport: fileNoTriggerImport, embedded: fileEmbedded });
       }
     }
     // Handle single file upload (backward compatibility)
+    // Propagate noTriggerImport/embedded from input, handling both scalar and array forms
     if (!isEmptyField(resolvedInput.file)) {
       const file_markings = isNotEmptyField(resolvedInput.fileMarkings) ? resolvedInput.fileMarkings : resolvedInput.objectMarking?.map(({ id }: { id: string }) => id);
-      filesToUpload.push({ file: resolvedInput.file, markings: file_markings });
+      const singleNoTrigger = Array.isArray(resolvedInput.noTriggerImport) ? (resolvedInput.noTriggerImport[0] ?? false) : (resolvedInput.noTriggerImport ?? false);
+      const singleEmbedded = Array.isArray(resolvedInput.embedded) ? (resolvedInput.embedded[0] ?? false) : (resolvedInput.embedded ?? false);
+      filesToUpload.push({ file: resolvedInput.file, markings: file_markings, noTriggerImport: singleNoTrigger, embedded: singleEmbedded });
     }
     // Process all files to upload
     if (filesToUpload.length > 0) {
       const isAutoExternal = entitySetting?.platform_entity_files_ref;
-      const noTriggerImport = resolvedInput.noTriggerImport ?? false;
-      const path = `import/${type}/${dataEntity.element[ID_INTERNAL]}`;
       const uploadedFiles = [];
       for (let i = 0; i < filesToUpload.length; i += 1) {
-        const { file: fileInput, markings: file_markings } = filesToUpload[i];
+        const { file: fileInput, markings: file_markings, noTriggerImport, embedded } = filesToUpload[i];
         const { filename } = await fileInput;
-        const key = `${path}/${filename}`;
+        // Use embedded prefix for embedded files (same as stixCoreObjectImportPush)
+        const prefix = embedded ? 'embedded' : 'import';
+        const filePath = `${prefix}/${type}/${dataEntity.element[ID_INTERNAL]}`;
+        const key = `${filePath}/${filename}`;
         const meta = isAutoExternal ? { external_reference_id: generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, { url: `/storage/get/${key}` }) } : {};
         const { upload: uploadedFile } = await uploadToStorage(
           context,
           user,
-          path,
+          filePath,
           fileInput,
           { entity: dataEntity.element as BasicStoreBase, file_markings, meta, noTriggerImport },
         );

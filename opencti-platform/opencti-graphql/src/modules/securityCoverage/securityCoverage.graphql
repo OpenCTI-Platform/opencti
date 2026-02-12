@@ -219,7 +219,8 @@ input SecurityCoverageAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
-  noTriggerImport: Boolean
+  noTriggerImport: [Boolean]
+  embedded: [Boolean]
   update: Boolean
   # coverage specific
   auto_enrichment_disable: Boolean!
