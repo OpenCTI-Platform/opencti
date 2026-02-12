@@ -132,6 +132,7 @@ const IngestionCsv = () => {
             </>
           </Security>
         )}
+        iconExtension
       >
         {queryRef && (
           <React.Suspense

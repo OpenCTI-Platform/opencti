@@ -89,6 +89,7 @@ const Systems = () => {
             <SystemCreation paginationOptions={paginationOptions} />
           </Security>
         )}
+        iconExtension
       >
         {queryRef && (
           <React.Suspense

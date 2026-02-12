@@ -138,6 +138,7 @@ const IngestionTaxii = () => {
             </>
           </Security>
         )}
+        iconExtension
       >
         <QueryRenderer
           query={IngestionTaxiiLinesQuery}

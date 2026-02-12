@@ -625,6 +625,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
               noPadding={true}
               disableCards={true}
               noHeaders={false}
+              iconExtension
             >
               <QueryRenderer
                 query={securityCoverageEntitiesQuery}

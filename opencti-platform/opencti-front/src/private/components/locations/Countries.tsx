@@ -87,6 +87,7 @@ const Countries: FunctionComponent = () => {
             <CountryCreation paginationOptions={paginationOptions} />
           </Security>
         )}
+        iconExtension
       >
         {queryRef && (
           <React.Suspense

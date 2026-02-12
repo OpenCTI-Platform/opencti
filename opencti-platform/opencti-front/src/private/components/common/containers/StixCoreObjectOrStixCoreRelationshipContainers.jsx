@@ -44,6 +44,7 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
   authorId,
   onChangeOpenExports,
   reportType,
+  iconExtension,
 }) => {
   useInitCreateRelationshipContext();
   const { t_i18n } = useFormatter();
@@ -167,6 +168,7 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
         setNumberOfElements={helpers.handleSetNumberOfElements}
         disableCards={true}
         enableGraph={true}
+        iconExtension={iconExtension}
       >
         <QueryRenderer
           query={stixCoreObjectOrStixCoreRelationshipContainersLinesQuery}

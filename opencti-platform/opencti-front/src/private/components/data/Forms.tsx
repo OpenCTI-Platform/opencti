@@ -106,6 +106,7 @@ const Forms = () => {
             />
           </Security>
         )}
+        iconExtension
       >
         {queryRef && (
           <React.Suspense

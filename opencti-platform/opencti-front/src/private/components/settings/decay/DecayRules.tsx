@@ -125,6 +125,7 @@ const DecayRules = () => {
           'Decay rules are applied on indicators by priority order (from greatest to lowest, lowest being 0). '
           + 'There are built-in rules applied by default that are not editable, you can add a custom decay rule and define its priority order.',
         )}
+        iconExtension
       >
         {queryRef && (
           <React.Suspense

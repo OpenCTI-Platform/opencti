@@ -105,6 +105,7 @@ const SupportPackages = () => {
         orderAsc={orderAsc}
         keyword={searchTerm}
         handleSort={helpers.handleSort}
+        iconExtension
       >
         {queryRef && (
           <React.Suspense>

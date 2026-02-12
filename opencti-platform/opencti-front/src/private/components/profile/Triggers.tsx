@@ -88,6 +88,7 @@ const Triggers: FunctionComponent = () => {
         createButton={(
           <TriggerCreation paginationOptions={paginationOptions} />
         )}
+        iconExtension
       >
         {queryRef && (
           <React.Suspense

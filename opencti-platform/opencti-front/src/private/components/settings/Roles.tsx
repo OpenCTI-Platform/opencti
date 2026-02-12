@@ -96,7 +96,11 @@ const Role = () => {
         displayImport={false}
         secondaryAction={false}
         keyword={rolesState.searchTerm}
-        createButton={<RoleCreation paginationOptions={paginationOptions} />}
+        createButton={(
+          <RoleCreation
+            paginationOptions={paginationOptions}
+          />
+        )}
       >
         <QueryRenderer
           query={rolesLinesQuery}

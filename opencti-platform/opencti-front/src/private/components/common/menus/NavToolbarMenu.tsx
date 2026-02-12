@@ -13,6 +13,8 @@ import Box from '@mui/material/Box';
 import { useFormatter } from '../../../../components/i18n';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../../settings/settings_messages/SettingsMessagesBanner';
+import { Theme } from '../../../../components/Theme';
+import { useTheme } from '@mui/styles';
 
 const StyledDrawer = styled(Drawer)(() => ({
   '& .MuiDrawer-paper': {
@@ -90,23 +92,37 @@ const NavToolbarMenu: FunctionComponent<{ entries: MenuEntry[] }> = ({ entries }
     return <TruncatedText>{translatedLabel}</TruncatedText>;
   };
 
+  const theme = useTheme<Theme>();
   return (
     <StyledDrawer variant="permanent" anchor="right">
       <ToolbarSpacer />
-
       <MenuList component="nav" style={{ marginTop: bannerHeight + settingsMessagesBannerHeight, marginBottom: bannerHeight }}>
         {entries.map((entry, idx) => {
+          const isSelected = location.pathname.startsWith(entry.path);
+          const iconColor = isSelected ? theme.palette.text.light : theme.palette.text.tertiary;
+          const iconOpacity = isSelected ? 1 : 0.5;
           return (
             <MenuItem
               key={idx}
               component={Link}
               to={entry.path}
-              selected={location.pathname.startsWith(entry.path)}
+              selected={isSelected}
               dense={false}
               sx={{ paddingRight: 0 }}
             >
               {entry.icon && (
-                <ListItemIcon>{entry.icon}</ListItemIcon>
+                <ListItemIcon
+                  sx={{
+                    minWidth: '0px!important',
+                    mr: 1,
+                    opacity: iconOpacity,
+                    color: iconColor,
+                    '& svg': {
+                      fontSize: '16px!important',
+                    },
+                  }}
+                >{entry.icon}
+                </ListItemIcon>
               )}
               <ListItemText primary={renderLabel(entry)} />
             </MenuItem>

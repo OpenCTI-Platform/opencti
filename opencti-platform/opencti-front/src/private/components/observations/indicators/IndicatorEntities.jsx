@@ -108,6 +108,7 @@ const IndicatorEntities = ({ indicatorId, relationshipType, defaultStartTime, de
         paginationOptions={paginationOptions}
         entityTypes={['stix-core-relationship']}
         numberOfElements={numberOfElements}
+        iconExtension
       >
         <QueryRenderer
           query={indicatorEntitiesLinesQuery}

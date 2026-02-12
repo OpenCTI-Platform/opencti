@@ -106,7 +106,7 @@ const ContainerStixCoreObjectsMapping = ({
         handleRemoveFilter={handleRemoveFilter}
         handleSwitchGlobalMode={handleSwitchGlobalMode}
         handleSwitchLocalMode={handleSwitchLocalMode}
-        iconExtension={false}
+        iconExtension
         filters={filters}
         availableEntityTypes={['Stix-Core-Object']}
         keyword={searchTerm}

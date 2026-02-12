@@ -9,7 +9,6 @@ import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useFragment } from 'react-relay';
 import { ListItemButton } from '@mui/material';
 import Box from '@mui/material/Box';
-import ItemIcon from '../../../../components/ItemIcon';
 import { DataColumns } from '../../../../components/list_lines';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
@@ -74,9 +73,6 @@ export const SettingsOrganizationLine: FunctionComponent<SettingsOrganizationLin
       component={Link}
       to={`/dashboard/settings/accesses/organizations/${organization.id}`}
     >
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <ItemIcon type="Organization" />
-      </ListItemIcon>
       <ListItemText
         primary={(
           <div>

@@ -97,6 +97,7 @@ const IngestionRss = () => {
             <IngestionRssCreation paginationOptions={paginationOptions} />
           </Security>
         )}
+        iconExtension
       >
         <QueryRenderer
           query={IngestionRssLinesQuery}

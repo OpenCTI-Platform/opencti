@@ -211,6 +211,7 @@ const CaseTemplateTasks = () => {
         numberOfElements={viewStorage.numberOfElements}
         handleSort={helpers.handleSort}
         secondaryAction
+        iconExtension
       >
         {CaseTemplateTasksLinesQueryRef && (
           <>

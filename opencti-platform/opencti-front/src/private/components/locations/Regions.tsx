@@ -87,6 +87,7 @@ const Regions: FunctionComponent = () => {
             <RegionCreation paginationOptions={paginationOptions} />
           </Security>
         )}
+        iconExtension
       >
         {queryRef && (
           <React.Suspense

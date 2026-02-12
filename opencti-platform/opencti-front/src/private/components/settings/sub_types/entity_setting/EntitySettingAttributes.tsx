@@ -121,7 +121,7 @@ const EntitySettingAttributes = ({
     (attr: AttributeNode) => ({ node: attr }),
   );
   return (
-    <ListLines dataColumns={dataColumns} noFilters={true}>
+    <ListLines dataColumns={dataColumns} noFilters={true} iconExtension>
       <EntitySettingAttributeLines
         datas={datas}
         dataColumns={dataColumns}

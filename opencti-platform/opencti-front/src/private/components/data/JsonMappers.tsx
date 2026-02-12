@@ -149,6 +149,7 @@ const JsonMappers = () => {
                   </Button>
                 </>
               )}
+              iconExtension
             >
               <React.Suspense
                 fallback={<Loader variant={LoaderVariant.inElement} />}
