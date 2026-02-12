@@ -385,7 +385,7 @@ const StixCoreObjectQuickSubscription: FunctionComponent<
                       <div style={{ ...fieldSpacingContainerStyle }}>
                         <FilterIconButton
                           filters={instanceTriggerFilters}
-                          filterIconButtonVariant="inLine"
+                          variant="small"
                           redirection
                           entityTypes={['Instance']}
                         />

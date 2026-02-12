@@ -119,7 +119,7 @@ class FeedLineLineComponent extends Component {
                     ? (
                         <FilterIconButton
                           filters={filters}
-                          filterIconButtonVariant="inLine"
+                          variant="small"
                           dataColumns={dataColumns}
                         />
                       )

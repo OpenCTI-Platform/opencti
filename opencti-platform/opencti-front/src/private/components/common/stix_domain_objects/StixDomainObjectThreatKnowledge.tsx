@@ -480,7 +480,7 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
       <div className="clearfix" />
       {viewType !== 'diamond' && (
         <FilterIconButton
-          filterIconButtonVariant="inForm"
+          variant="inForm"
           helpers={helpers}
           filters={filters}
           handleRemoveFilter={helpers.handleRemoveFilter}

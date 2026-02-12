@@ -160,7 +160,7 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
               <FilterIconButton
                 filters={filters}
                 dataColumns={dataColumns}
-                filterIconButtonVariant="inLine"
+                variant="small"
                 redirection
               />
             )}

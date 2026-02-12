@@ -21,17 +21,17 @@ import { PageContainerContext } from './PageContainer';
 import { useTheme } from '@mui/material/styles';
 
 export type FilterIconButtonVariant
-  = undefined // default style (variant is undefined) is the one for filters applied in datatables
-    | 'inLine' // for filters in a datatable line
-    | 'inForm' // for filters in a form
-    | 'TagLike'; // for filters with the Tag style
+  = undefined // default variant (variant is undefined), for filters applied in datatables or widgets for instance
+    | 'small' // small variant, for filters in a datatable line for instance
+    | 'inForm' // default variant with margin, for filters in a form for instance
+    | 'tag'; // for filters with a style similar as the Tag component, in an entity Overview for instance
 
 interface FilterIconButtonContainerProps {
   filters: FilterGroup;
   handleRemoveFilter?: (key: string, op?: string) => void;
   handleSwitchGlobalMode?: () => void;
   handleSwitchLocalMode?: (filter: Filter) => void;
-  filterIconButtonVariant?: FilterIconButtonVariant;
+  variant?: FilterIconButtonVariant;
   dataColumns?: DataColumns;
   disabledPossible?: boolean;
   redirection?: boolean;
@@ -58,7 +58,7 @@ const FilterIconButtonContainer: FunctionComponent<
   filters,
   handleSwitchGlobalMode,
   handleSwitchLocalMode,
-  filterIconButtonVariant,
+  variant,
   disabledPossible,
   redirection,
   filtersRepresentativesQueryRef,
@@ -169,7 +169,7 @@ const FilterIconButtonContainer: FunctionComponent<
   };
   let margin = inPageContainer ? '0 0 0 0' : '0 0 8px 0';
 
-  if (filterIconButtonVariant === 'inLine') {
+  if (variant === 'small') {
     filterStyle = {
       fontSize: 12,
       height: 20,
@@ -186,9 +186,9 @@ const FilterIconButtonContainer: FunctionComponent<
       marginLeft: 5,
     };
     if (isReadWriteFilter) margin = '0 0 0 0';
-  } else if (filterIconButtonVariant === 'inForm') {
+  } else if (variant === 'inForm') {
     margin = '10px 0 10px 0';
-  } else if (filterIconButtonVariant === 'TagLike') {
+  } else if (variant === 'tag') {
     filterStyle = { height: 25 };
   }
 
@@ -202,18 +202,16 @@ const FilterIconButtonContainer: FunctionComponent<
     borderRadius: hasSavedFilters ? '4px' : '0px',
   };
 
-  if (!isReadWriteFilter) {
-    if (filterIconButtonVariant !== 'inForm') {
-      boxStyle = {
-        margin: '0 0 0 0',
-        display: 'flex',
-        flexWrap: 'no-wrap',
-        gap: 0,
-        overflow: 'hidden',
-        backgroundColor: 'none',
-        borderRadius: '0px',
-      };
-    }
+  if (!isReadWriteFilter && variant !== 'inForm') {
+    boxStyle = {
+      margin: '0 0 0 0',
+      display: 'flex',
+      flexWrap: 'no-wrap',
+      gap: 0,
+      overflow: 'hidden',
+      backgroundColor: 'none',
+      borderRadius: '0px',
+    };
   }
 
   return (
@@ -340,7 +338,7 @@ const FilterIconButtonContainer: FunctionComponent<
             {isNotLastFilter && (
               <Box
                 sx={{
-                  padding: filterIconButtonVariant === 'inLine' ? '0 4px' : '0',
+                  padding: variant === 'small' ? '0 4px' : '0',
                   display: 'flex',
                 }}
               >

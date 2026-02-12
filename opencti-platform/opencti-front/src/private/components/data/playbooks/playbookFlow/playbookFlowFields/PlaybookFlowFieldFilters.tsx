@@ -68,7 +68,7 @@ const PlaybookFlowFieldFilters = ({
         helpers={helpers}
         entityTypes={entityTypes}
         searchContext={searchContext}
-        filterIconButtonVariant="inForm"
+        variant="inForm"
         redirection
       />
     </div>

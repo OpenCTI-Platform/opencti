@@ -141,7 +141,7 @@ const DecayExclusionRuleCreationForm = ({ updater, onReset, onCompleted }: Decay
             <FilterIconButton
               filters={filters}
               helpers={filterHelpers}
-              filterIconButtonVariant="inForm"
+              variant="inForm"
               searchContext={{ entityTypes: ['Indicator'] }}
             />
             <Field

@@ -256,7 +256,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                   <FilterIconButton
                     filters={filters}
                     helpers={helpers}
-                    filterIconButtonVariant="inForm"
+                    variant="inForm"
                     redirection
                     searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
                   />

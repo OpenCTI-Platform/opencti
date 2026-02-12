@@ -144,7 +144,7 @@ const DecayExclusionRuleEdition = ({ data, isOpen, onClose }: DecayExclusionRule
               <FilterIconButton
                 filters={filters}
                 helpers={filterHelpers}
-                filterIconButtonVariant="inForm"
+                variant="inForm"
                 searchContext={{ entityTypes: ['Indicator'] }}
               />
               <div style={{ marginTop: 20, textAlign: 'right' }}>

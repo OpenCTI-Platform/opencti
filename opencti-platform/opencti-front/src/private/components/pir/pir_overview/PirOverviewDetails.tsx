@@ -101,7 +101,7 @@ const PirOverviewDetails = ({ data, dataStream }: PirOverviewDetailsProps) => {
                 key={pir.pir_filters}
                 filters={JSON.parse(pir.pir_filters)}
                 entityTypes={['Stix-Core-Object']}
-                filterIconButtonVariant="TagLike"
+                variant="tag"
               />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column' }}>

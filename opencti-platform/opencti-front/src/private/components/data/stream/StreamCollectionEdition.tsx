@@ -193,7 +193,7 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
           </Box>
           <FilterIconButton
             filters={filters}
-            filterIconButtonVariant="inForm"
+            variant="inForm"
             helpers={helpers}
             redirection={true}
             searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}

@@ -139,7 +139,7 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
               <FilterIconButton
                 filters={filters}
                 dataColumns={dataColumns}
-                filterIconButtonVariant="inLine"
+                variant="small"
                 redirection
               />
             ) : (

@@ -16,7 +16,7 @@ export interface FilterIconButtonProps {
   handleRemoveFilter?: (key: string, op?: string) => void;
   handleSwitchGlobalMode?: () => void;
   handleSwitchLocalMode?: (filter: Filter) => void;
-  filterIconButtonVariant?: FilterIconButtonVariant;
+  variant?: FilterIconButtonVariant;
   chipColor?: ChipOwnProps['color'];
   dataColumns?: DataColumns;
   disabledPossible?: boolean;
@@ -44,7 +44,7 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
   handleRemoveFilter,
   handleSwitchGlobalMode,
   handleSwitchLocalMode,
-  filterIconButtonVariant,
+  variant,
   disabledPossible,
   redirection,
   chipColor,
@@ -77,7 +77,7 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
             handleRemoveFilter={handleRemoveFilter}
             handleSwitchGlobalMode={handleSwitchGlobalMode}
             handleSwitchLocalMode={handleSwitchLocalMode}
-            filterIconButtonVariant={filterIconButtonVariant}
+            variant={variant}
             chipColor={chipColor}
             disabledPossible={disabledPossible}
             redirection={redirection}
@@ -120,7 +120,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
   handleRemoveFilter,
   handleSwitchGlobalMode,
   handleSwitchLocalMode,
-  filterIconButtonVariant,
+  variant,
   disabledPossible,
   redirection,
   chipColor,
@@ -159,7 +159,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
         handleRemoveFilter={handleRemoveFilter}
         handleSwitchGlobalMode={handleSwitchGlobalMode}
         handleSwitchLocalMode={handleSwitchLocalMode}
-        filterIconButtonVariant={filterIconButtonVariant}
+        variant={variant}
         disabledPossible={disabledPossible}
         redirection={redirection}
         chipColor={chipColor}

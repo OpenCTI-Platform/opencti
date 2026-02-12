@@ -350,7 +350,7 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
                                   <Grid key={filters} item xs={12}>
                                     <FilterIconButton
                                       filters={streamsFilters}
-                                      filterIconButtonVariant="inLine"
+                                      variant="small"
                                     />
                                   </Grid>
                                 </Grid>
