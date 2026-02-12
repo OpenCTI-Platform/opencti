@@ -16,7 +16,7 @@ export default class TaskPopup {
     await this.page.getByRole('option', { name: 'Labels' }).click();
     await this.page.getByLabel('Values').click();
 
-    await this.page.getByText(labelName).click({ timeout: 5000 });
+    await this.page.getByRole('option', { name: labelName }).click({ timeout: 5000 });
     await this.page.getByRole('button', { name: 'Update' }).click();
     await this.page.getByRole('button', { name: 'Launch' }).click();
   }
