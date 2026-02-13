@@ -3,13 +3,14 @@ import { Field } from 'formik';
 import { useFormatter } from '../../../../components/i18n';
 import SwitchField from '../../../../components/fields/SwitchField';
 import TextField from '../../../../components/TextField';
+import { Stack } from '@mui/material';
 
 const LDAPConfig = () => {
   const { t_i18n } = useFormatter();
 
   // Labels are not translated because they are technical terms localised in SSO.
   return (
-    <>
+    <Stack gap={2}>
       <Field
         component={TextField}
         variant="standard"
@@ -25,7 +26,6 @@ const LDAPConfig = () => {
         label="Bind DN"
         required
         fullWidth
-        style={{ marginTop: 16 }}
       />
       <Field
         component={TextField}
@@ -33,7 +33,6 @@ const LDAPConfig = () => {
         name="bindCredentials"
         label="Bind credentials"
         fullWidth
-        style={{ marginTop: 16 }}
         type="password"
       />
       <Field
@@ -43,7 +42,6 @@ const LDAPConfig = () => {
         label="Search base"
         required
         fullWidth
-        style={{ marginTop: 16 }}
       />
       <Field
         component={TextField}
@@ -52,7 +50,6 @@ const LDAPConfig = () => {
         label="Search filter"
         required
         fullWidth
-        style={{ marginTop: 16 }}
       />
       <Field
         component={TextField}
@@ -61,7 +58,6 @@ const LDAPConfig = () => {
         label="Group search base"
         required
         fullWidth
-        style={{ marginTop: 16 }}
       />
       <Field
         component={TextField}
@@ -70,7 +66,6 @@ const LDAPConfig = () => {
         label="Group search filter"
         required
         fullWidth
-        style={{ marginTop: 16 }}
       />
       <Field
         component={SwitchField}
@@ -79,9 +74,9 @@ const LDAPConfig = () => {
         name="allow_self_signed"
         required
         label={t_i18n('Allow self signed')}
-        containerstyle={{ marginLeft: 2, marginTop: 16 }}
+        containerstyle={{ marginLeft: 2 }}
       />
-    </>
+    </Stack>
   );
 };
 

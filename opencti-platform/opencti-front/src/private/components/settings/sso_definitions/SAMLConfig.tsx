@@ -6,12 +6,13 @@ import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
 import SwitchField from '../../../../components/fields/SwitchField';
 import TextField from '../../../../components/TextField';
+import { Stack } from '@mui/material';
 
 const SAMLConfig = () => {
   const { t_i18n } = useFormatter();
 
   return (
-    <>
+    <Stack gap={2}>
       <Field
         component={TextField}
         variant="standard"
@@ -19,7 +20,6 @@ const SAMLConfig = () => {
         label={t_i18n('SAML Entity ID/Issuer')}
         required
         fullWidth
-        style={{ marginBottom: 16 }}
       />
       <Field
         component={TextField}
@@ -28,7 +28,6 @@ const SAMLConfig = () => {
         label={t_i18n('SAML Callback URL')}
         fullWidth
         required
-        style={{ marginBottom: 16 }}
       />
       <Field
         id="filled-multiline-flexible"
@@ -40,7 +39,6 @@ const SAMLConfig = () => {
         fullWidth
         multiline
         rows={4}
-        style={{ marginBottom: 8 }}
       />
       <Field
         id="filled-multiline-flexible"
@@ -52,7 +50,6 @@ const SAMLConfig = () => {
         fullWidth
         multiline
         rows={4}
-        style={{ marginBottom: 16 }}
       />
       <Field
         component={TextField}
@@ -61,24 +58,27 @@ const SAMLConfig = () => {
         label={t_i18n('Private key')}
         fullWidth
         type="password"
-        style={{ marginBottom: 16 }}
       />
-      <Field
-        component={SwitchField}
-        variant="standard"
-        type="checkbox"
-        name="wantAssertionsSigned"
-        label={t_i18n('Want assertion signed')}
-        containerstyle={{ marginLeft: 2, marginTop: 8 }}
-      />
-      <Field
-        component={SwitchField}
-        variant="standard"
-        type="checkbox"
-        name="wantAuthnResponseSigned"
-        label={t_i18n('Requires SAML responses to be signed')}
-        containerstyle={{ marginLeft: 2 }}
-      />
+      <div>
+        <Field
+          component={SwitchField}
+          variant="standard"
+          type="checkbox"
+          name="wantAssertionsSigned"
+          label={t_i18n('Want assertion signed')}
+
+          containerstyle={{ marginLeft: 2 }}
+        />
+        <Field
+          component={SwitchField}
+          variant="standard"
+          type="checkbox"
+          name="wantAuthnResponseSigned"
+          label={t_i18n('Requires SAML responses to be signed')}
+
+          containerstyle={{ marginLeft: 2, marginTop: 0 }}
+        />
+      </div>
       <div style={{ marginTop: 40, marginBottom: 10 }}>
         <Typography variant="h2">Identity Provider Information</Typography>
         <Field
@@ -104,7 +104,7 @@ const SAMLConfig = () => {
         name="providerMethod"
         label={t_i18n('Method of Provider metadata')}
         fullWidth
-        containerstyle={{ width: '100%', marginBottom: 8 }}
+        containerstyle={{ width: '100%' }}
       >
         <MenuItem value="Manual">Manual</MenuItem>
         <MenuItem value="Upload">Upload</MenuItem>
@@ -125,7 +125,7 @@ const SAMLConfig = () => {
         name="ssoBindingType"
         label={t_i18n('SSO Binding type')}
         fullWidth
-        containerstyle={{ width: '100%', marginBottom: 16, marginTop: 16 }}
+        containerstyle={{ width: '100%' }}
       >
         <MenuItem value="Redirect">Redirect</MenuItem>
         <MenuItem value="Post">Post</MenuItem>
@@ -138,7 +138,7 @@ const SAMLConfig = () => {
         label={t_i18n('Force re-authentication even if user has valid SSO session')}
         containerstyle={{ marginLeft: 2 }}
       />
-    </>
+    </Stack>
   );
 };
 
