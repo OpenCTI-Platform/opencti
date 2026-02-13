@@ -41,7 +41,7 @@ const StixSightingRelationshipEditionWithContext = ({
   }
 
   return (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
+    <React.Suspense>
       <StixSightingRelationshipEditionWithContextContent
         editContextQueryRef={editContextQueryRef}
         stixSightingRelationshipId={stixSightingRelationshipId}
