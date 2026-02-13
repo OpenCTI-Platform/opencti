@@ -25,7 +25,7 @@ const Label = ({
 
   const titleStyle = variant === 'default'
     ? { color: theme.palette.text.light, textTransform: 'capitalize' }
-    : { color: theme.palette.text.primary, textTransform: 'uppercase' };
+    : { color: theme.palette.text.primary, textTransform: 'none' };
 
   const titleSx: SxProps = {
     marginBottom: 0,
