@@ -6,6 +6,7 @@ import Slide from '@mui/material/Slide';
 import DataTableToolBar from './DataTableToolBar';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import useDraftContext, { DRAFT_TOOLBAR_HEIGHT } from '../../../utils/hooks/useDraftContext';
+import { useTheme } from '@mui/styles';
 
 const useStyles = makeStyles(() => ({
   bottomNav: {
@@ -62,6 +63,7 @@ const ToolBar = (props) => {
     taskScope,
   } = props;
   const classes = useStyles();
+  const theme = useTheme();
   const draftContext = useDraftContext();
   const navOpen = localStorage.getItem('navOpen') === 'true';
   const isOpen = numberOfSelectedElements > 0;
@@ -93,6 +95,7 @@ const ToolBar = (props) => {
             style: {
               marginLeft: navOpen ? 180 : 55,
               bottom: (bannerSettings?.bannerHeightNumber ?? 0) + posBottom,
+              zIndex: theme.zIndex.appBar - 2,
             },
           }}
         >

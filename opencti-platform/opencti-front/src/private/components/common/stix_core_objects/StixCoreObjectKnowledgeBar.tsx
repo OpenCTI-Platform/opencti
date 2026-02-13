@@ -400,7 +400,7 @@ const StixCoreObjectKnowledgeBar = ({
           position: 'fixed',
           overflow: 'auto',
           padding: 0,
-          zIndex: 2,
+          zIndex: theme.zIndex.appBar - 1,
           paddingBottom: draftContext ? '69px' : 0, // Add 69px in case DraftToolbar is opened
           background: theme.palette.background.nav,
         },
