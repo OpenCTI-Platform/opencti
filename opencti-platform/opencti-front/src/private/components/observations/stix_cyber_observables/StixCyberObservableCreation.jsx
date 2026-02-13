@@ -397,10 +397,6 @@ const StixCyberObservableCreation = ({
           });
         }
       }
-      // remove any non-numbers from IMEI on submit
-      if (bulkConf.type === 'IMEI') {
-        adaptedValue.value = adaptedValue.value.replace(/[^0-9]/g, '');
-      }
       adaptedValue = pipe(
         dissoc('x_opencti_description'),
         dissoc('x_opencti_score'),
@@ -632,9 +628,11 @@ const StixCyberObservableCreation = ({
                   ['hashes_SHA-512', 'name'],
                 ];
               } else if (status.type === 'IMEI') {
-                const imeiRegex = /(\d{2})([^a-z\d]{1})?(\d{4})([^a-z\d]{1})?(\d{2})([^a-z\d]{1})?(\d{6})([^a-z\d]{1})?(\d{1,2})$/i;
+                const imeiRegex = /(^[0-9]{15,16})$/i;
                 extraFieldsToValidate = {
-                  [attribute.value]: Yup.string().required(t_i18n('This field is required')).matches(imeiRegex, t_i18n('IMEI values must be 15 to 16 digits. Special characters are accepted as delimiters.')),
+                  [attribute.value]: Yup.string()
+                    .required(t_i18n('This field is required'))
+                    .matches(imeiRegex, t_i18n('IMEI values can only include digits, must be 15 to 16 characters')),
                 };
                 requiredOneOfFields = [
                   [attribute.value],
@@ -642,7 +640,9 @@ const StixCyberObservableCreation = ({
               } else if (status.type === 'ICCID') {
                 const iccidRegex = /(^[0-9]{18,22})$/i;
                 extraFieldsToValidate = {
-                  [attribute.value]: Yup.string().required(t_i18n('This field is required')).matches(iccidRegex, t_i18n('ICCID values can only include 0-9, 18 to 22 characters')),
+                  [attribute.value]: Yup.string()
+                    .required(t_i18n('This field is required'))
+                    .matches(iccidRegex, t_i18n('ICCID values can only include digits, must be 18 to 22 characters')),
                 };
                 requiredOneOfFields = [
                   [attribute.value],
@@ -650,7 +650,9 @@ const StixCyberObservableCreation = ({
               } else if (status.type === 'IMSI') {
                 const imsiRegex = /(^[0-9]{14,15})$/i;
                 extraFieldsToValidate = {
-                  [attribute.value]: Yup.string().required(t_i18n('This field is required')).matches(imsiRegex, t_i18n('IMSI values can only include 0-9, 14 to 15 characters')),
+                  [attribute.value]: Yup.string()
+                    .required(t_i18n('This field is required'))
+                    .matches(imsiRegex, t_i18n('IMSI values can only include digits, must be 14 to 15 characters')),
                 };
                 requiredOneOfFields = [
                   [attribute.value],
