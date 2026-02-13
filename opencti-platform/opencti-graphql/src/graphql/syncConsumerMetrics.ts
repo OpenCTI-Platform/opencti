@@ -17,11 +17,8 @@ export interface SyncConsumerMetricsData {
   deliveryRate: number;
   processingRate: number;
   resolutionRate: number;
-  eventsSentCount: number;
-  eventsProcessedCount: number;
-  resolutionsSentCount: number;
   timeLag: number;
-  estimatedOutOfDepth: number | null;
+  estimatedOutOfDepth: number;
   lastUpdate: number; // epoch ms
 }
 
@@ -42,11 +39,8 @@ export const storeSyncConsumerMetrics = async (syncId: string, connectionId: str
       deliveryRate: String(metrics.deliveryRate ?? 0),
       processingRate: String(metrics.processingRate ?? 0),
       resolutionRate: String(metrics.resolutionRate ?? 0),
-      eventsSentCount: String(metrics.eventsSentCount ?? 0),
-      eventsProcessedCount: String(metrics.eventsProcessedCount ?? 0),
-      resolutionsSentCount: String(metrics.resolutionsSentCount ?? 0),
       timeLag: String(metrics.timeLag ?? 0),
-      estimatedOutOfDepth: metrics.estimatedOutOfDepth !== null && metrics.estimatedOutOfDepth !== undefined ? String(metrics.estimatedOutOfDepth) : '',
+      estimatedOutOfDepth: String(metrics.estimatedOutOfDepth ?? ''),
       lastUpdate: String(now_ms),
     });
     await client.expire(key, SYNC_METRICS_TTL_SECONDS);
@@ -75,9 +69,6 @@ export const readSyncConsumerMetrics = async (syncId: string): Promise<SyncConsu
       deliveryRate: parseFloat(data.deliveryRate),
       processingRate: parseFloat(data.processingRate),
       resolutionRate: parseFloat(data.resolutionRate),
-      eventsSentCount: parseInt(data.eventsSentCount, 10),
-      eventsProcessedCount: parseInt(data.eventsProcessedCount, 10),
-      resolutionsSentCount: parseInt(data.resolutionsSentCount, 10),
       timeLag: parseFloat(data.timeLag),
       estimatedOutOfDepth: parseFloat(data.estimatedOutOfDepth),
       lastUpdate: parseInt(data.lastUpdate, 10),

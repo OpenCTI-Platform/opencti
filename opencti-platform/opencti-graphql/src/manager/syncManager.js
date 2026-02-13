@@ -15,23 +15,11 @@ import { getHttpClient } from '../utils/http-client';
 import { createSyncHttpUri, httpBase } from '../domain/connector-utils';
 import { EVENT_CURRENT_VERSION } from '../database/stream/stream-utils';
 import { storeSyncConsumerMetrics, clearSyncConsumerMetrics } from '../graphql/syncConsumerMetrics';
+import { createParser } from 'eventsource-parser';
 
 const SYNC_MANAGER_KEY = conf.get('sync_manager:lock_key') || 'sync_manager_lock';
 const SCHEDULE_TIME = conf.get('sync_manager:interval') || 10000;
 const WAIT_TIME_ACTION = 2000;
-
-// Parse a raw SSE text block into a structured event
-const parseSSEEvent = (raw) => {
-  let eventType = 'message';
-  let data = '';
-  let id = '';
-  for (const line of raw.split('\n')) {
-    if (line.startsWith('event:')) eventType = line.slice(6).trim();
-    else if (line.startsWith('data:')) data += line.slice(5).trim();
-    else if (line.startsWith('id:')) id = line.slice(3).trim();
-  }
-  return { type: eventType, data, lastEventId: id };
-};
 
 const syncManagerInstance = (syncId) => {
   // Variables
@@ -52,16 +40,16 @@ const syncManagerInstance = (syncId) => {
     abortController = new AbortController();
     const streamClient = getHttpClient({ headers, rejectUnauthorized: ssl, responseType: 'stream' });
     const response = await streamClient.get(sseUri, { signal: abortController.signal });
-    const stream = response.data; // Node.js Readable stream
-    let buffer = '';
-    for await (const chunk of stream) {
-      buffer += chunk.toString();
-      // SSE events are separated by double newlines
-      const parts = buffer.split('\n\n');
-      buffer = parts.pop(); // Keep the last (potentially incomplete) part
-      for (const rawEvent of parts) {
-        if (rawEvent.trim() === '') continue;
-        yield parseSSEEvent(rawEvent);
+    const queue = [];
+    const parser = createParser({
+      onEvent(event) {
+        queue.push({ type: event.event ?? 'message', data: event.data, lastEventId: event.id ?? '' });
+      },
+    });
+    for await (const chunk of response.data) {
+      parser.feed(chunk.toString());
+      while (queue.length > 0) {
+        yield queue.shift();
       }
     }
   };

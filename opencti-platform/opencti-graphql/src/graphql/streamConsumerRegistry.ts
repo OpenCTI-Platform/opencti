@@ -30,9 +30,6 @@ interface LocalConsumerTracking {
   collectionId: string;
   lastEventId: string;
   connectedAt: string;
-  eventsSentCount: number;
-  eventsProcessedCount: number;
-  resolutionsSentCount: number;
   recentDeliveries: RateBucket[];
   recentProcessed: RateBucket[];
   recentResolutions: RateBucket[];
@@ -46,9 +43,6 @@ export interface RedisConsumerData {
   userEmail: string;
   connectedAt: string; // ISO string
   lastEventId: string;
-  eventsSentCount: number;
-  eventsProcessedCount: number;
-  resolutionsSentCount: number;
   deliveryRate: number;
   processingRate: number;
   resolutionRate: number; // dependency/missing resolution events per second
@@ -120,9 +114,6 @@ export const registerConsumer = async (connectionId: string, collectionId: strin
     userEmail,
     connectedAt,
     lastEventId: '',
-    eventsSentCount: '0',
-    eventsProcessedCount: '0',
-    resolutionsSentCount: '0',
     deliveryRate: '0',
     processingRate: '0',
     resolutionRate: '0',
@@ -139,9 +130,6 @@ export const registerConsumer = async (connectionId: string, collectionId: strin
     collectionId,
     connectedAt,
     lastEventId: '',
-    eventsSentCount: 0,
-    eventsProcessedCount: 0,
-    resolutionsSentCount: 0,
     recentDeliveries: [],
     recentProcessed: [],
     recentResolutions: [],
@@ -181,7 +169,6 @@ export const trackEventDelivered = async (connectionId: string, count: number, l
   const consumer = localConsumers.get(connectionId);
   if (consumer) {
     const now_ms = Date.now();
-    consumer.eventsSentCount += count;
     consumer.lastEventId = lastEventId;
     consumer.recentDeliveries = addToBuckets(consumer.recentDeliveries, count, now_ms);
     await flushMetricsToRedis();
@@ -196,7 +183,6 @@ export const trackEventsProcessed = async (connectionId: string, count: number, 
   const consumer = localConsumers.get(connectionId);
   if (consumer) {
     const now_ms = Date.now();
-    consumer.eventsProcessedCount += count;
     consumer.lastEventId = lastEventId;
     consumer.recentProcessed = addToBuckets(consumer.recentProcessed, count, now_ms);
     await flushMetricsToRedis();
@@ -211,7 +197,6 @@ export const trackMissingResolution = async (connectionId: string, count: number
   const consumer = localConsumers.get(connectionId);
   if (consumer) {
     const now_ms = Date.now();
-    consumer.resolutionsSentCount += count;
     consumer.lastEventId = lastEventId;
     consumer.recentResolutions = addToBuckets(consumer.recentResolutions, count, now_ms);
     await flushMetricsToRedis();
@@ -239,9 +224,6 @@ const flushMetricsToRedis = async (): Promise<void> => {
       const key = consumerRedisKey(consumer.connectionId);
       pipeline.hset(key, {
         lastEventId: consumer.lastEventId,
-        eventsSentCount: String(consumer.eventsSentCount),
-        eventsProcessedCount: String(consumer.eventsProcessedCount),
-        resolutionsSentCount: String(consumer.resolutionsSentCount),
         deliveryRate: String(Math.round(deliveryRate * 100) / 100),
         processingRate: String(Math.round(processingRate * 100) / 100),
         resolutionRate: String(Math.round(resolutionRate * 100) / 100),
@@ -260,9 +242,6 @@ const flushMetricsToRedis = async (): Promise<void> => {
 
 // Data shape returned by getLocalConsumerMetrics (synchronous, in-memory only)
 export interface ConsumerMetricsSnapshot {
-  eventsSentCount: number;
-  eventsProcessedCount: number;
-  resolutionsSentCount: number;
   deliveryRate: number; // events/sec delivered to the client (after filtering)
   processingRate: number; // events/sec processed from the stream (before filtering)
   resolutionRate: number; // dependency resolution events/sec
@@ -276,9 +255,6 @@ export interface ConsumerMetricsSnapshot {
 export const getLocalConsumerMetrics = (connectionId: string): ConsumerMetricsSnapshot | undefined => {
   const consumer = localConsumers.get(connectionId);
   return {
-    eventsSentCount: consumer?.eventsSentCount ?? 0,
-    eventsProcessedCount: consumer?.eventsProcessedCount ?? 0,
-    resolutionsSentCount: consumer?.resolutionsSentCount ?? 0,
     deliveryRate: consumer ? Math.round(computeRate(consumer.recentDeliveries) * 100) / 100 : 0,
     processingRate: consumer ? Math.round(computeRate(consumer.recentProcessed) * 100) / 100 : 0,
     resolutionRate: consumer ? Math.round(computeRate(consumer.recentResolutions) * 100) / 100 : 0,
@@ -323,9 +299,6 @@ export const getConsumersForCollection = async (collectionId: string): Promise<R
           userEmail: hash.userEmail || '',
           connectedAt: hash.connectedAt || '',
           lastEventId: hash.lastEventId || '',
-          eventsSentCount: parseInt(hash.eventsSentCount || '0', 10),
-          eventsProcessedCount: parseInt(hash.eventsProcessedCount || '0', 10),
-          resolutionsSentCount: parseInt(hash.resolutionsSentCount || '0', 10),
           deliveryRate: parseFloat(hash.deliveryRate || '0'),
           processingRate: parseFloat(hash.processingRate || '0'),
           resolutionRate: parseFloat(hash.resolutionRate || '0'),
