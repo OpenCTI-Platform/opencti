@@ -13,7 +13,7 @@ import { encryptValue, getSupportedContractsByImage } from '../modules/catalog/c
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { getEntitiesMapFromCache } from './cache';
 import { SYSTEM_USER } from '../utils/access';
-import { logApp } from '../config/conf';
+import conf, { logApp } from '../config/conf';
 import { ConnectorPriorityGroup } from '../generated/graphql';
 import { injectProxyConfiguration } from '../config/proxy-config';
 import { getPlatformCrypto } from '../utils/platformCrypto';
@@ -102,6 +102,8 @@ export const computeManagerConnectorExcerpt = async (_context, _user, cn) => {
   };
 };
 
+// Token is generated unlimited - key in redis maintains 7 days (extendable) by default
+const COMPOSER_TOKEN_REDIS_EXPIRATION = conf.get('app:composer_token_expiration') ?? 604800;
 const computeConnectorTokenConfiguration = async (context, cn) => {
   let lock;
   // We need to lock the resource as we change the user that influences the cache
@@ -134,10 +136,10 @@ const computeConnectorTokenConfiguration = async (context, cn) => {
       // Encrypt the token with the public key of the connector manager
       encryptedToken = encryptValue(public_key, plaintext_token);
       // Get the token and push an encrypted value in redis
-      await redisClient.setex(composerKey, 600, encryptedToken); // 7 days configurable
+      await redisClient.setex(composerKey, COMPOSER_TOKEN_REDIS_EXPIRATION, encryptedToken);
     } else {
       // Extends token TTL
-      await redisClient.expire(composerKey, 600); // 10 minutes TTL extension
+      await redisClient.expire(composerKey, COMPOSER_TOKEN_REDIS_EXPIRATION);
     }
     // Return the value for the composer
     return encryptedToken;
