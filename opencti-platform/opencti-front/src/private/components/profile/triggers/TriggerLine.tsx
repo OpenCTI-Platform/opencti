@@ -7,7 +7,6 @@ import Skeleton from '@mui/material/Skeleton';
 import { graphql, useFragment } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
-import Chip from '@mui/material/Chip';
 import Box from '@mui/material/Box';
 import { DataColumns } from '../../../../components/list_lines';
 import { TriggerLine_node$key } from './__generated__/TriggerLine_node.graphql';
@@ -17,8 +16,9 @@ import TriggerPopover from './TriggerPopover';
 import { dayStartDate, formatTimeForToday } from '../../../../utils/Time';
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
 import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
-import { chipInListBasicStyle } from '../../../../utils/chipStyle';
 import { EMPTY_VALUE } from '../../../../utils/String';
+import Tag from '@common/tag/Tag';
+import { useTheme } from '@mui/styles';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -33,6 +33,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   bodyItem: {
     height: 40,
     display: 'flex',
+    gap: '8px',
     alignItems: 'center',
     fontSize: 13,
     float: 'left',
@@ -50,20 +51,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   itemIconDisabled: {
     color: theme.palette.grey?.[700],
-  },
-  chipInList: {
-    ...chipInListBasicStyle,
-    width: 100,
-    marginRight: 10,
-  },
-  chipInList2: {
-    ...chipInListBasicStyle,
-    textTransform: 'uppercase',
-  },
-  chipInList3: {
-    ...chipInListBasicStyle,
-    width: undefined,
-    marginRight: 10,
   },
 }));
 
@@ -107,6 +94,7 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
   paginationOptions,
 }) => {
   const classes = useStyles();
+  const theme = useTheme<Theme>();
   const { t_i18n, nt } = useFormatter();
   const data = useFragment(triggerLineFragment, node);
   const filters = deserializeFilterGroupForFrontend(data.filters);
@@ -143,15 +131,13 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.trigger_type.width }}
             >
-              <Chip
-                color={data.trigger_type === 'live' ? 'warning' : 'secondary'}
-                classes={{ root: classes.chipInList2 }}
+              <Tag
+                color={data.trigger_type === 'live' ? theme.palette.severity?.high : theme.palette.severity?.low}
                 label={
                   data.trigger_type === 'live'
                     ? t_i18n('Live trigger')
                     : t_i18n('Regular digest')
                 }
-                variant="outlined"
               />
             </div>
             <div
@@ -177,21 +163,16 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
             >
               {data.event_types
                 && data.event_types.map((n: string) => (
-                  <Chip
+                  <Tag
                     key={n}
-                    classes={{ root: classes.chipInList }}
-                    color="primary"
-                    variant="outlined"
                     label={t_i18n(n)}
                   />
                 ))}
               {data.triggers
                 && data.triggers.map((n) => (
-                  <Chip
+                  <Tag
                     key={n?.id}
-                    classes={{ root: classes.chipInList }}
-                    color="warning"
-                    variant="outlined"
+                    color={theme.palette.severity?.high}
                     label={n?.name}
                   />
                 ))}
@@ -217,8 +198,7 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
                 className={classes.bodyItem}
                 style={{ width: dataColumns.filters.width }}
               >
-                <Chip
-                  classes={{ root: classes.chipInList3 }}
+                <Tag
                   label={(
                     <span>
                       <strong>{t_i18n('Period: ')}</strong>
@@ -227,8 +207,7 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
                   )}
                 />
                 {currentTime.length > 1 && (
-                  <Chip
-                    classes={{ root: classes.chipInList3 }}
+                  <Tag
                     label={(
                       <span>
                         <strong>{t_i18n('Day: ')}</strong>
@@ -238,8 +217,7 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
                   />
                 )}
                 {data.trigger_time && data.trigger_time.length > 0 && (
-                  <Chip
-                    classes={{ root: classes.chipInList3 }}
+                  <Tag
                     label={(
                       <span>
                         <strong>{t_i18n('Time: ')}</strong>

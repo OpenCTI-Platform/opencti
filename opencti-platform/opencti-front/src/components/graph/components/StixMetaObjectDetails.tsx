@@ -1,7 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
 import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../i18n';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -14,14 +12,8 @@ import { StixMetaObjectDetailsQuery } from './__generated__/StixMetaObjectDetail
 import ItemMarkings from '../../ItemMarkings';
 import ItemEntityType from '../../ItemEntityType';
 import { GraphNode } from '../graph.types';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  label: {
-    marginTop: '20px',
-  },
-}));
+import { Stack } from '@mui/material';
+import Label from '@common/label/Label';
 
 const stixMetaObjectDetailsQuery = graphql`
   query StixMetaObjectDetailsQuery($id: String!) {
@@ -75,7 +67,6 @@ interface StixMetaObjectDetailsComponentProps {
 const StixMetaObjectDetailsComponent: FunctionComponent<
   StixMetaObjectDetailsComponentProps
 > = ({ queryRef }) => {
-  const classes = useStyles();
   const { t_i18n, fldt } = useFormatter();
   const entity = usePreloadedQuery<StixMetaObjectDetailsQuery>(
     stixMetaObjectDetailsQuery,
@@ -86,35 +77,43 @@ const StixMetaObjectDetailsComponent: FunctionComponent<
     return <ErrorNotFound />;
   }
   return (
-    <div>
-      <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t_i18n('Value')}
-      </Typography>
-      {stixMetaObject.entity_type === 'Marking-Definition' ? (
-        <Tooltip title={getMainRepresentative(stixMetaObject)}>
-          <ItemMarkings
-            markingDefinitions={[stixMetaObject]}
-            limit={2}
-          />
-        </Tooltip>
-      ) : (
-        <Tooltip title={getMainRepresentative(stixMetaObject)}>
-          <span>{truncate(getMainRepresentative(stixMetaObject), 40)}</span>
-        </Tooltip>
-      )}
-      <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t_i18n('Type')}
-      </Typography>
-      <ItemEntityType entityType={stixMetaObject.entity_type} />
-      <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t_i18n('Platform creation date')}
-      </Typography>
-      {fldt(stixMetaObject.created_at)}
-      <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t_i18n('Creators')}
-      </Typography>
-      <ItemCreators creators={stixMetaObject.creators ?? []} />
-    </div>
+    <Stack gap={2}>
+      <div>
+        <Label>
+          {t_i18n('Value')}
+        </Label>
+        {stixMetaObject.entity_type === 'Marking-Definition' ? (
+          <Tooltip title={getMainRepresentative(stixMetaObject)}>
+            <ItemMarkings
+              markingDefinitions={[stixMetaObject]}
+              limit={2}
+            />
+          </Tooltip>
+        ) : (
+          <Tooltip title={getMainRepresentative(stixMetaObject)}>
+            <span>{truncate(getMainRepresentative(stixMetaObject), 40)}</span>
+          </Tooltip>
+        )}
+      </div>
+      <div>
+        <Label>
+          {t_i18n('Type')}
+        </Label>
+        <ItemEntityType entityType={stixMetaObject.entity_type} />
+      </div>
+      <div>
+        <Label>
+          {t_i18n('Platform creation date')}
+        </Label>
+        {fldt(stixMetaObject.created_at)}
+      </div>
+      <div>
+        <Label>
+          {t_i18n('Creators')}
+        </Label>
+        <ItemCreators creators={stixMetaObject.creators ?? []} />
+      </div>
+    </Stack>
   );
 };
 

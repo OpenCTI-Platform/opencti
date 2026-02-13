@@ -1,6 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import { Link } from 'react-router-dom';
 import { ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
@@ -9,7 +8,7 @@ import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import IconButton from '@common/button/IconButton';
-import { ListItemButton } from '@mui/material';
+import { ListItemButton, Stack } from '@mui/material';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../Loader';
 import { useFormatter } from '../../i18n';
@@ -26,13 +25,11 @@ import { RelationshipDetailsQuery } from './__generated__/RelationshipDetailsQue
 import ItemEntityType from '../../ItemEntityType';
 import { GraphLink } from '../graph.types';
 import { EMPTY_VALUE } from '../../../utils/String';
+import Label from '@common/label/Label';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
-  label: {
-    marginTop: '20px',
-  },
   buttonExpand: {
     position: 'relative',
     left: 0,
@@ -342,184 +339,201 @@ const RelationshipDetailsComponent: FunctionComponent<
   const computeNotGenericDetails = () => {
     if (stixRelationship.parent_types.includes('stix-ref-relationship')) {
       return (
-        <>
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            className={classes.label}
-          >
+        <div>
+          <Label>
             {t_i18n('Creators')}
-          </Typography>
+          </Label>
           <ItemCreators creators={stixRelationship.creators ?? []} />
-        </>
+        </div>
       );
     }
     return (
       <>
-        <Typography variant="h3" gutterBottom={true} className={classes.label}>
+        <div>
+          <Label>
+            {stixRelationship.entity_type !== 'stix-sighting-relationship'
+              ? t_i18n('Start time')
+              : t_i18n('First seen')}
+          </Label>
           {stixRelationship.entity_type !== 'stix-sighting-relationship'
-            ? t_i18n('Start time')
-            : t_i18n('First seen')}
-        </Typography>
-        {stixRelationship.entity_type !== 'stix-sighting-relationship'
-          ? fldt(stixRelationship.start_time)
-          : fldt(stixRelationship.first_seen)}
-        <Typography variant="h3" gutterBottom={true} className={classes.label}>
+            ? fldt(stixRelationship.start_time)
+            : fldt(stixRelationship.first_seen)}
+        </div>
+        <div>
+          <Label>
+            {stixRelationship.entity_type !== 'stix-sighting-relationship'
+              ? t_i18n('Stop time')
+              : t_i18n('Last seen')}
+          </Label>
           {stixRelationship.entity_type !== 'stix-sighting-relationship'
-            ? t_i18n('Stop time')
-            : t_i18n('Last seen')}
-        </Typography>
-        {stixRelationship.entity_type !== 'stix-sighting-relationship'
-          ? fldt(stixRelationship.stop_time)
-          : fldt(stixRelationship.last_seen)}
-        <Typography variant="h3" gutterBottom={true} className={classes.label}>
-          {t_i18n('Description')}
-        </Typography>
-        {stixRelationship.description
-          && stixRelationship.description.length > 0 ? (
-              <ExpandableMarkdown
-                source={stixRelationship.description}
-                limit={400}
-              />
-            ) : (
-              EMPTY_VALUE
-            )}
-        <Typography variant="h3" gutterBottom={true} className={classes.label}>
-          {t_i18n('Confidence level')}
-        </Typography>
-        <ItemConfidence
-          confidence={stixRelationship.confidence}
-          entityType="stix-core-relationship"
-        />
-        <Typography variant="h3" gutterBottom={true} className={classes.label}>
-          {t_i18n('Marking')}
-        </Typography>
-        <ItemMarkings
-          markingDefinitions={stixRelationship.objectMarking}
-          limit={2}
-        />
-        <Typography variant="h3" gutterBottom={true} className={classes.label}>
-          {t_i18n('Author')}
-        </Typography>
-        <ItemAuthor createdBy={stixRelationship.createdBy} />
-        <Typography variant="h3" gutterBottom={true} className={classes.label}>
-          {t_i18n('Creators')}
-        </Typography>
-        <ItemCreators creators={stixRelationship.creators ?? []} />
-        <Typography variant="h3" gutterBottom={true} className={classes.label}>
-          {`${t_i18n('Last')} ${
-            (stixRelationship.reports?.pageInfo.globalCount ?? 0) >= 10
-              ? 10
-              : stixRelationship.reports?.pageInfo.globalCount
-          } ${t_i18n('reports')} ${t_i18n('of')} ${stixRelationship.reports?.pageInfo
-            .globalCount}`}
-        </Typography>
-        {reportsEdges && reportsEdges.length > 0 ? (
-          <List style={{ marginBottom: 0 }}>
-            {reportsEdges.map((reportEdge) => {
-              const report = reportEdge?.node;
-              if (report) {
-                return (
-                  <ListItemButton
-                    key={report.id}
-                    dense={true}
-                    classes={{ root: classes.item }}
-                    divider={true}
-                    component={Link}
-                    to={`/dashboard/analyses/reports/${report.id}`}
-                  >
-                    <ListItemIcon>
-                      <ItemIcon type={report.entity_type} />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={(
-                        <Tooltip title={report.name}>
-                          <div className={classes.bodyItem}>{report.name}</div>
-                        </Tooltip>
-                      )}
-                      secondary={(
-                        <div className={classes.bodyItem}>
-                          {report.createdBy?.name ?? EMPTY_VALUE}
-                        </div>
-                      )}
-                    />
-                  </ListItemButton>
-                );
-              }
-              return '';
-            })}
-          </List>
-        ) : (
-          EMPTY_VALUE
-        )}
-        <Typography variant="h3" gutterBottom={true} className={classes.label}>
-          {t_i18n('External References')}
-        </Typography>
-        {externalReferencesEdges && externalReferencesEdges.length > 0 ? (
-          <List style={{ marginBottom: 0 }}>
-            {externalReferencesEdges
-              .slice(0, expanded ? 200 : 3)
-              .map((externalReference) => {
-                const externalReferenceId = externalReference.node.external_id
-                  ? `(${externalReference.node.external_id})`
-                  : EMPTY_VALUE;
-                let externalReferenceSecondary;
-                if (
-                  externalReference.node.url
-                  && externalReference.node.url.length > 0
-                ) {
-                  externalReferenceSecondary = externalReference.node.url;
-                } else if (
-                  externalReference.node.description
-                  && externalReference.node.description.length > 0
-                ) {
-                  externalReferenceSecondary = externalReference.node.description;
-                } else {
-                  externalReferenceSecondary = EMPTY_VALUE;
-                }
-                return (
-                  <React.Fragment key={externalReference.node.id}>
+            ? fldt(stixRelationship.stop_time)
+            : fldt(stixRelationship.last_seen)}
+        </div>
+        <div>
+          <Label>
+            {t_i18n('Description')}
+          </Label>
+          {stixRelationship.description
+            && stixRelationship.description.length > 0 ? (
+                <ExpandableMarkdown
+                  source={stixRelationship.description}
+                  limit={400}
+                />
+              ) : (
+                EMPTY_VALUE
+              )}
+        </div>
+        <div>
+          <Label>
+            {t_i18n('Confidence level')}
+          </Label>
+          <ItemConfidence
+            confidence={stixRelationship.confidence}
+            entityType="stix-core-relationship"
+          />
+        </div>
+        <div>
+          <Label>
+            {t_i18n('Marking')}
+          </Label>
+          <ItemMarkings
+            markingDefinitions={stixRelationship.objectMarking}
+            limit={2}
+          />
+        </div>
+        <div>
+          <Label>
+            {t_i18n('Author')}
+          </Label>
+          <ItemAuthor createdBy={stixRelationship.createdBy} />
+        </div>
+        <div>
+          <Label>
+            {t_i18n('Creators')}
+          </Label>
+          <ItemCreators creators={stixRelationship.creators ?? []} />
+        </div>
+        <div>
+          <Label>
+            {`${t_i18n('Last')} ${
+              (stixRelationship.reports?.pageInfo.globalCount ?? 0) >= 10
+                ? 10
+                : stixRelationship.reports?.pageInfo.globalCount
+            } ${t_i18n('reports')} ${t_i18n('of')} ${stixRelationship.reports?.pageInfo
+              .globalCount}`}
+          </Label>
+          {reportsEdges && reportsEdges.length > 0 ? (
+            <List style={{ marginBottom: 0 }}>
+              {reportsEdges.map((reportEdge) => {
+                const report = reportEdge?.node;
+                if (report) {
+                  return (
                     <ListItemButton
-                      component={Link}
-                      to={`/dashboard/analyses/external_references/${externalReference.node.id}`}
+                      key={report.id}
                       dense={true}
+                      classes={{ root: classes.item }}
                       divider={true}
+                      component={Link}
+                      to={`/dashboard/analyses/reports/${report.id}`}
                     >
                       <ListItemIcon>
-                        <ItemIcon type="External-Reference" />
+                        <ItemIcon type={report.entity_type} />
                       </ListItemIcon>
                       <ListItemText
                         primary={(
-                          <div className={classes.bodyItem}>
-                            {`${externalReference.node.source_name} ${externalReferenceId}`}
-                          </div>
+                          <Tooltip title={report.name}>
+                            <div className={classes.bodyItem}>{report.name}</div>
+                          </Tooltip>
                         )}
                         secondary={(
                           <div className={classes.bodyItem}>
-                            {externalReferenceSecondary}
+                            {report.createdBy?.name ?? EMPTY_VALUE}
                           </div>
                         )}
                       />
                     </ListItemButton>
-                  </React.Fragment>
-                );
+                  );
+                }
+                return '';
               })}
-          </List>
-        ) : (
-          EMPTY_VALUE
-        )}
+            </List>
+          ) : (
+            EMPTY_VALUE
+          )}
+        </div>
+        <div>
+          <Label>
+            {t_i18n('External References')}
+          </Label>
+          {externalReferencesEdges && externalReferencesEdges.length > 0 ? (
+            <List style={{ marginBottom: 0 }}>
+              {externalReferencesEdges
+                .slice(0, expanded ? 200 : 3)
+                .map((externalReference) => {
+                  const externalReferenceId = externalReference.node.external_id
+                    ? `(${externalReference.node.external_id})`
+                    : EMPTY_VALUE;
+                  let externalReferenceSecondary;
+                  if (
+                    externalReference.node.url
+                    && externalReference.node.url.length > 0
+                  ) {
+                    externalReferenceSecondary = externalReference.node.url;
+                  } else if (
+                    externalReference.node.description
+                    && externalReference.node.description.length > 0
+                  ) {
+                    externalReferenceSecondary = externalReference.node.description;
+                  } else {
+                    externalReferenceSecondary = EMPTY_VALUE;
+                  }
+                  return (
+                    <React.Fragment key={externalReference.node.id}>
+                      <ListItemButton
+                        component={Link}
+                        to={`/dashboard/analyses/external_references/${externalReference.node.id}`}
+                        dense={true}
+                        divider={true}
+                      >
+                        <ListItemIcon>
+                          <ItemIcon type="External-Reference" />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={(
+                            <div className={classes.bodyItem}>
+                              {`${externalReference.node.source_name} ${externalReferenceId}`}
+                            </div>
+                          )}
+                          secondary={(
+                            <div className={classes.bodyItem}>
+                              {externalReferenceSecondary}
+                            </div>
+                          )}
+                        />
+                      </ListItemButton>
+                    </React.Fragment>
+                  );
+                })}
+            </List>
+          ) : (
+            EMPTY_VALUE
+          )}
+        </div>
       </>
     );
   };
 
   return (
-    <div>
-      <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t_i18n('Relation type')}
-      </Typography>
-      <ItemEntityType
-        entityType={stixRelationship.relationship_type ?? 'unknown'}
-      />
+    <Stack gap={2}>
+      <div>
+        <Label>
+          {t_i18n('Relation type')}
+        </Label>
+        <ItemEntityType
+          entityType={stixRelationship.relationship_type ?? 'unknown'}
+          maxWidth="100px"
+        />
+      </div>
       {!stixRelationship.from?.relationship_type
         && stixRelationship.from?.id && (
         <RelationShipFromAndTo
@@ -530,13 +544,9 @@ const RelationshipDetailsComponent: FunctionComponent<
       {stixRelationship.from?.relationship_type
         && stixRelationship.from?.id && (
         <div>
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            className={classes.label}
-          >
+          <Label>
             {t_i18n('Source')}
-          </Typography>
+          </Label>
           {stixRelationship.from?.relationship_type}
         </div>
       )}
@@ -545,20 +555,18 @@ const RelationshipDetailsComponent: FunctionComponent<
       )}
       {stixRelationship.to?.relationship_type && stixRelationship.to?.id && (
         <div>
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            className={classes.label}
-          >
+          <Label>
             {t_i18n('Target')}
-          </Typography>
+          </Label>
           {stixRelationship.to?.relationship_type}
         </div>
       )}
-      <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t_i18n('Platform creation date')}
-      </Typography>
-      {fldt(stixRelationship.created_at)}
+      <div>
+        <Label>
+          {t_i18n('Platform creation date')}
+        </Label>
+        {fldt(stixRelationship.created_at)}
+      </div>
       {computeNotGenericDetails()}
       {expandable && (
         <IconButton
@@ -573,7 +581,7 @@ const RelationshipDetailsComponent: FunctionComponent<
           )}
         </IconButton>
       )}
-    </div>
+    </Stack>
   );
 };
 
