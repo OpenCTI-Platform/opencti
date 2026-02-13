@@ -145,11 +145,32 @@ const useFormikToSSOConfig = (selectedStrategy: string) => {
       },
     ];
   };
+
+  const formikToHeaderConfig = (values: SSODefinitionFormValues) => {
+    return [
+      {
+        key: 'email',
+        value: values.email,
+        type: 'string',
+      },
+      {
+        key: 'firstname',
+        value: values.firstname,
+        type: 'string',
+      },
+      {
+        key: 'lastname',
+        value: values.lastname,
+        type: 'string',
+      },
+    ];
+  };
   const getConfigFromStrategy = () => {
     switch (selectedStrategy) {
       case 'SAML': return formikToSamlConfig;
       case 'OpenID': return formikToOpenIDConfig;
       case 'LDAP': return formikToLdapConfig;
+      case 'Header': return formikToHeaderConfig;
       default: return () => [];
     }
   };

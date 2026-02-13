@@ -314,9 +314,6 @@ const SSODefinitionForm = ({
   const forceReauthenticationField = data?.configuration?.find((e) => e.key === 'forceReauthentication');
   // const enableDebugModeField = data?.configuration?.find((e) => e.key === 'enableDebugMode');
   const entryPointField = data?.configuration?.find((e) => e.key === 'entryPoint');
-  const emailField = data?.configuration?.find((e) => e.key === 'email');
-  const firstnameField = data?.configuration?.find((e) => e.key === 'firstname');
-  const lastnameField = data?.configuration?.find((e) => e.key === 'lastname');
   const { advancedConfig: advancedConfigurations } = getBaseAndAdvancedConfigFromData((data?.configuration ?? []) as ConfigurationTypeInput[], selectedStrategy ?? '');
 
   const groupAttribute = data?.groups_management?.group_attribute;
@@ -346,6 +343,10 @@ const SSODefinitionForm = ({
   const groupSearchBase = data?.configuration?.find((e) => e.key === 'groupSearchBase');
   const groupSearchFilter = data?.configuration?.find((e) => e.key === 'groupSearchFilter');
   const allow_self_signed = data?.configuration?.find((e) => e.key === 'allow_self_signed');
+
+  const emailField = data?.configuration?.find((e) => e.key === 'email');
+  const firstnameField = data?.configuration?.find((e) => e.key === 'firstname');
+  const lastnameField = data?.configuration?.find((e) => e.key === 'lastname');
 
   if (data) {
     initialValues.name = data.name;
@@ -400,9 +401,9 @@ const SSODefinitionForm = ({
     initialValues.groupSearchFilter = groupSearchFilter?.value ?? '';
     initialValues.allow_self_signed = allow_self_signed ? allow_self_signed?.value === 'true' : false;
 
-    initialValues.email = emailField;
-    initialValues.firstname = firstnameField ?? '';
-    initialValues.lastname = lastnameField ?? '';
+    initialValues.email = emailField?.value ?? '';
+    initialValues.firstname = firstnameField?.value ?? '';
+    initialValues.lastname = lastnameField?.value ?? '';
   }
 
   const showGroupAndMapping = selectedStrategy !== 'LocalAuth' && !selectedCert;

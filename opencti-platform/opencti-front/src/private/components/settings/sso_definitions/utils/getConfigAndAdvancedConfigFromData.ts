@@ -35,12 +35,6 @@ const ldapConfigKeys = [
   'allow_self_signed',
 ];
 
-const headerConfigKeys = [
-  'email',
-  'firstname',
-  'lastname',
-];
-
 export type Config = {
   key: string;
   value: string;
@@ -57,7 +51,6 @@ export const getSSOConfigList = (strategy: string) => {
     case 'OpenIDConnectStrategy': return openIDConfigKeys;
     case 'LDAP':
     case 'LdapStrategy': return ldapConfigKeys;
-    case 'HeaderStrategy': return headerConfigKeys;
     default: return [];
   }
 };
