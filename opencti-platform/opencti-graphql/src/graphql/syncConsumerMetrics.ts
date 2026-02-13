@@ -6,7 +6,7 @@
 import { logApp } from '../config/conf';
 import { getClientBase } from '../database/redis';
 
-const SYNC_METRICS_KEY_PREFIX = 'stream_producer:';
+const SYNC_METRICS_KEY_PREFIX = '{stream_producer}:';
 const SYNC_METRICS_TTL_SECONDS = 120; // 2 minutes, refreshed on each update
 
 export interface SyncConsumerMetricsData {

@@ -14,8 +14,8 @@ const CONSUMER_TTL_SECONDS = 60; // Redis key TTL; refreshed on each flush
 const STALE_CUTOFF_MS = CONSUMER_TTL_SECONDS * 1000;
 
 // Redis key prefixes
-const CONSUMER_KEY_PREFIX = 'stream_consumer:';
-const COLLECTION_SET_PREFIX = 'stream_consumers:';
+const CONSUMER_KEY_PREFIX = '{stream_consumer}:';
+const COLLECTION_SET_PREFIX = '{stream_consumers}:';
 
 // -- Types --
 
