@@ -5,7 +5,7 @@ import { Tooltip } from '@mui/material';
 
 interface HeaderMainEntityLayoutProps {
   title: string;
-  hideTitle?: boolean;
+  isNestedHeader?: boolean;
   titleRight?: ReactNode;
   rightActions?: ReactNode;
   leftTags?: ReactNode;
@@ -18,7 +18,7 @@ const TAGS_HEIGHT = 25;
 
 const HeaderMainEntityLayout = ({
   title,
-  hideTitle = false,
+  isNestedHeader = false,
   titleRight,
   rightActions,
   leftTags,
@@ -46,7 +46,7 @@ const HeaderMainEntityLayout = ({
           gap={1}
         >
           {/* Title */}
-          {!hideTitle && (
+          {!isNestedHeader && (
             <Stack
               sx={{
                 minWidth: 0,
@@ -85,38 +85,41 @@ const HeaderMainEntityLayout = ({
       </Stack>
 
       {/* Second row */}
-      <Stack
-        direction="row"
-        alignContent="center"
-        justifyContent="space-between"
-        gap={3}
-        sx={{ height: hasPlaceholderTags ? TAGS_HEIGHT : 0 }}
-      >
-        <Stack
-          direction="row"
-          gap={1}
-          sx={{
-            flex: 1,
-            minWidth: 0,
-            maxWidth: hasBothTags ? '50%' : '100%',
-            overflow: 'hidden',
-          }}
-        >
-          {leftTags}
-        </Stack>
+      {!isNestedHeader
+        && (
+          <Stack
+            direction="row"
+            alignContent="center"
+            justifyContent="space-between"
+            gap={3}
+            sx={{ height: hasPlaceholderTags ? TAGS_HEIGHT : 0 }}
+          >
+            <Stack
+              direction="row"
+              gap={1}
+              sx={{
+                flex: 1,
+                minWidth: 0,
+                maxWidth: hasBothTags ? '50%' : '100%',
+                overflow: 'hidden',
+              }}
+            >
+              {leftTags}
+            </Stack>
 
-        <Stack
-          direction="row"
-          alignItems="center"
-          sx={{
-            flex: 1,
-            minWidth: 0,
-            maxWidth: hasBothTags ? '50%' : '100%',
-          }}
-        >
-          {rightTags}
-        </Stack>
-      </Stack>
+            <Stack
+              direction="row"
+              alignItems="center"
+              sx={{
+                flex: 1,
+                minWidth: 0,
+                maxWidth: hasBothTags ? '50%' : '100%',
+              }}
+            >
+              {rightTags}
+            </Stack>
+          </Stack>
+        )}
     </Stack>
   );
 };
