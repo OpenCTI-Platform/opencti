@@ -115,25 +115,11 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
     const newFilters: AppliedFilter[] = [];
     
     // Always show all filters (based on the design in the image)
-    if (riskReductionStatus) {
+    if (timeRange) {
       newFilters.push({
-        key: 'risk_reduction_status',
-        label: 'Risk Reduction Status',
-        value: riskReductionStatus.label,
-      });
-    }
-    if (confidenceLevel) {
-      newFilters.push({
-        key: 'confidence_level',
-        label: 'Confidence Level',
-        value: confidenceLevel.label,
-      });
-    }
-    if (geographicalArea) {
-      newFilters.push({
-        key: 'geographical_area',
-        label: 'Geographical Area',
-        value: geographicalArea.label,
+        key: 'time_range',
+        label: 'Time Range',
+        value: timeRange.label,
       });
     }
     if (section) {
@@ -143,11 +129,25 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
         value: section.label,
       });
     }
-    if (timeRange) {
+    if (geographicalArea) {
       newFilters.push({
-        key: 'time_range',
-        label: 'Time Range',
-        value: timeRange.label,
+        key: 'geographical_area',
+        label: 'Geographical Area',
+        value: geographicalArea.label,
+      });
+    }
+    if (confidenceLevel) {
+      newFilters.push({
+        key: 'confidence_level',
+        label: 'Confidence Level',
+        value: confidenceLevel.label,
+      });
+    }
+    if (riskReductionStatus) {
+      newFilters.push({
+        key: 'risk_reduction_status',
+        label: 'Risk Reduction Status',
+        value: riskReductionStatus.label,
       });
     }
 
@@ -166,17 +166,17 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
         borderColor: 'divider',
       }}
     >
-      {/* Top Filter Bar */}
+      {/* Top Filter Bar - LTR layout for English */}
       <Box
         sx={{
           display: 'flex',
           alignItems: 'center',
           gap: 1.5,
           flexWrap: 'wrap',
-          flexDirection: 'row-reverse',
+          flexDirection: 'row',
         }}
       >
-        {/* Home Link */}
+        {/* Home Link - left aligned */}
         <Box
           sx={{
             marginRight: 'auto',
@@ -235,8 +235,8 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
             onKeyDown={handleKeyDown}
             size="small"
             InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
+              startAdornment: (
+                <InputAdornment position="start">
                   <SearchIcon fontSize="small" style={{ color: 'inherit' }} />
                 </InputAdornment>
               ),
@@ -252,13 +252,13 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
         {/* Filters Button */}
         <Button
           variant="outlined"
-          endIcon={<FilterIcon />}
+          startIcon={<FilterIcon />}
           onClick={onFiltersClick}
           sx={{
             textTransform: 'none',
             minWidth: 'auto',
             whiteSpace: 'nowrap',
-            '& .MuiButton-endIcon': {
+            '& .MuiButton-startIcon': {
               marginRight: 0.5,
             },
           }}
@@ -270,13 +270,13 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
         <Button
           variant="contained"
           color="secondary"
-          endIcon={<SettingsIcon />}
+          startIcon={<SettingsIcon />}
           onClick={onPersonalizationClick}
           sx={{
             textTransform: 'none',
             minWidth: 'auto',
             whiteSpace: 'nowrap',
-            '& .MuiButton-endIcon': {
+            '& .MuiButton-startIcon': {
               marginRight: 0.5,
             },
           }}

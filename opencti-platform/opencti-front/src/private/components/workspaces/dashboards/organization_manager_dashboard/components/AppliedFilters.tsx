@@ -33,7 +33,7 @@ const AppliedFilters: React.FC<AppliedFiltersProps> = ({
         alignItems: 'center',
         gap: 1,
         flexWrap: 'wrap',
-        flexDirection: 'row-reverse',
+        flexDirection: 'row',
         backgroundColor: 'background.paper',
       }}
     >
@@ -61,7 +61,7 @@ const AppliedFilters: React.FC<AppliedFiltersProps> = ({
         />
       ))}
 
-      {/* Clear All Filters Link */}
+      {/* Clear All Filters Link - right aligned in LTR */}
       <Box
         onClick={onClearAll}
         sx={{
@@ -71,15 +71,16 @@ const AppliedFilters: React.FC<AppliedFiltersProps> = ({
           marginLeft: 'auto',
           color: 'error.main',
           cursor: 'pointer',
+          flexDirection: 'row',
           '&:hover': {
             textDecoration: 'underline',
           },
         }}
       >
+        <CloseIcon fontSize="small" />
         <Typography variant="body2" sx={{ fontWeight: 500 }}>
           {t_i18n('Remove filters')}
         </Typography>
-        <CloseIcon fontSize="small" />
       </Box>
     </Box>
   );

@@ -1,85 +1,28 @@
 import React from 'react';
-import { Grid, Box } from '@mui/material';
-import GaugeCard from './GaugeCard';
-import ActiveCampaignAlertsChart from './ActiveCampaignAlertsChart';
-import VulnerabilityExploitationCard from './VulnerabilityExploitationCard';
-import ThreatHuntingQueue from './ThreatHuntingQueue';
-import TTPNetworkSection from './TTPNetworkSection';
-import AttackerProfilesAndVulnerabilitySection from './AttackerProfilesAndVulnerabilitySection';
-import TTPExplorerSection from './TTPExplorerSection';
+import { Box } from '@mui/material';
+import NationalMetricsSection from './NationalMetricsSection';
+import CyberRatesSection from './CyberRatesSection';
+import ThreatAnalysisSection from './ThreatAnalysisSection';
+import StrategicThreatSection from './StrategicThreatSection';
+import GeoThreatSection from './GeoThreatSection';
 
 const DashboardMetrics: React.FC = () => {
   return (
     <Box sx={{ paddingTop: 3, paddingBottom: 3, paddingLeft: 0, paddingRight: 0 }}>
-      {/* Gauge Metrics Section */}
-      <Grid container spacing={3} sx={{ direction: 'ltr' }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <GaugeCard
-            title="Index Compliance Rate"
-            description="Percentage of compliance of input data from reports with existing IOCs"
-            value={87}
-            maxValue={100}
-            unit="%"
-            colors={['#f44336', '#ff5722', '#ff9800', '#ffeb3b', '#4caf50']}
-            labels={['Critical', 'Concerning', 'Stable']}
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <GaugeCard
-            title="Reduction Success Rate"
-            description="Ratio of discovered threats that have been successfully neutralized"
-            value={66}
-            maxValue={100}
-            unit="%"
-            colors={['#f44336', '#ff5722', '#ff9800', '#ffeb3b', '#4caf50']}
-            labels={['Critical', 'Concerning', 'Stable']}
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <GaugeCard
-            title="True Positive IOCs Rate"
-            description="Ratio of confirmed incidents to all CTI team alerts based on IOCs present in the system"
-            value={35}
-            maxValue={100}
-            unit="%"
-            colors={['#f44336', '#ff5722', '#ff9800', '#ffeb3b', '#4caf50']}
-            labels={['Critical', 'Concerning', 'Stable']}
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <GaugeCard
-            title="TTP Detection Coverage"
-            description="Percentage coverage of MITRE ATT&CK matrix"
-            value={56}
-            maxValue={100}
-            unit="%"
-            colors={['#f44336', '#ff5722', '#ff9800', '#ffeb3b', '#4caf50']}
-            labels={['Critical', 'Concerning', 'Stable']}
-          />
-        </Grid>
-      </Grid>
+      {/* National Metrics Section (Risk Score, MTTD, MTCR) */}
+      <NationalMetricsSection />
 
-      {/* Active Campaign Alerts & Vulnerability Exploitation Section */}
-      <Grid container spacing={3} sx={{ direction: 'ltr', marginTop: 2 }}>
-        <Grid item xs={12} md={6}>
-          <VulnerabilityExploitationCard />
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <ActiveCampaignAlertsChart />
-        </Grid>
-      </Grid>
+      {/* Cyber Compliance & Gap Rates Section */}
+      <CyberRatesSection />
 
-      {/* Threat Hunting Queue Section */}
-      <ThreatHuntingQueue />
+      {/* Threat Analysis Section (Cross-Sector Impact & Threat Trend Velocity) */}
+      <ThreatAnalysisSection />
 
-      {/* TTP Network Graph & Details Section */}
-      <TTPNetworkSection />
+      {/* Strategic Threat Section (Top Attackers, High Confidence Campaigns, Resource Allocation) */}
+      <StrategicThreatSection />
 
-      {/* Attacker Profiles & Vulnerability Prioritization Section */}
-      <AttackerProfilesAndVulnerabilitySection />
-
-      {/* TTP Explorer Section */}
-      <TTPExplorerSection />
+      {/* Geo Threat Section (National Threat Heatmap & Targeted Industries) */}
+      <GeoThreatSection />
     </Box>
   );
 };

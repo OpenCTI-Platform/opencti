@@ -45,14 +45,14 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
         ref={buttonRef}
         variant="outlined"
         onClick={handleClick}
-        startIcon={<ChevronDownIcon fontSize="small" />}
+        endIcon={<ChevronDownIcon fontSize="small" />}
         sx={{
           textTransform: 'none',
           minWidth: 'auto',
           whiteSpace: 'nowrap',
           color: 'text.primary',
           borderColor: 'divider',
-          '& .MuiButton-startIcon': {
+          '& .MuiButton-endIcon': {
             marginLeft: 0.5,
           },
           '&:hover': {
@@ -69,11 +69,11 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
         onClose={handleClose}
         anchorOrigin={{
           vertical: 'bottom',
-          horizontal: 'right',
+          horizontal: 'left',
         }}
         transformOrigin={{
           vertical: 'top',
-          horizontal: 'right',
+          horizontal: 'left',
         }}
         PaperProps={{
           sx: {
