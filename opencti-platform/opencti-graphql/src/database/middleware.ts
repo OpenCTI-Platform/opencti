@@ -212,7 +212,7 @@ import { telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
 import { buildUpdatePatchForUpsert, generateInputsForUpsert } from '../utils/upsert-utils';
 import { buildChanges, generateCreateMessage, generateRestoreMessage } from './data-changes';
-import { authorizedMembers, authorizedMembersActivationDate, confidence, iAliasedIds, iAttributes, modified,type RefAttribute, updatedAt } from '../schema/attribute-definition';
+import { authorizedMembers, authorizedMembersActivationDate, confidence, iAliasedIds, iAttributes, modified, type RefAttribute, updatedAt } from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { type EditInput, EditOperation, FilterMode, FilterOperator, Version, type Vulnerability } from '../generated/graphql';
 import { getMandatoryAttributesForSetting } from '../modules/entitySetting/entitySetting-attributeUtils';
@@ -260,7 +260,6 @@ import type {
   StoreCommon,
   StoreEntity,
   StoreFile,
-  StoreMarkingDefinition,
   StoreObject,
   StoreProxyRelation,
   StoreRelation,
@@ -269,7 +268,7 @@ import type { BasicStoreSettings } from '../types/settings';
 import type * as S from '../types/stix-2-1-common';
 import type { StixId } from '../types/stix-2-1-common';
 import type * as S2 from '../types/stix-2-0-common';
-import type { Change, CreateEventOpts, EventOpts, UpdateEvent, UpdateEventOpts } from '../types/event';
+import type { CreateEventOpts, EventOpts, UpdateEvent, UpdateEventOpts } from '../types/event';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -801,7 +800,7 @@ export const timeSeriesRelations = async (
 export const distributionHistory = async (
   context: AuthContext,
   user: AuthUser,
-  args: { limit?: number; order?: string; field: string },
+  args: { limit?: number; order?: string; field: string; types?: string[] },
 ): Promise<{ label: string; value: number; entity: BasicStoreEntity }[]> => {
   const { limit = 10, order = 'desc', field } = args;
   if (field.includes('.') && (!field.endsWith('internal_id') && !field.includes('context_data') && !field.includes('opinions_metrics'))) {
@@ -1303,9 +1302,9 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Rec
           const toRemove = Array.isArray(value) ? value : [value];
           // Filter out items in current that match items in toRemove
           const newValues = current.filter((c) => !toRemove.some((r) => r.id === c.id || R.equals(r, c)));
-          patch = [{ op: UPDATE_OPERATION_REPLACE, path: preparedPath, value: newValues }];
+          patch = [{ op: 'replace' as const, path: preparedPath, value: newValues }];
         } else {
-          patch = [{ op: 'remove' as const, path: preparedPath, value: null }];
+          patch = [{ op: 'remove' as const, path: preparedPath }];
         }
         const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
         finalVal = patchedInstance[key];
