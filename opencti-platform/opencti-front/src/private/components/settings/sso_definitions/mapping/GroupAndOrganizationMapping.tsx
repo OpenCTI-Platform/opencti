@@ -7,19 +7,16 @@ import TextField from 'src/components/TextField';
 import GroupTarget from './GroupTarget';
 import OrganizationTarget from './OrganizationTarget';
 import { useFormatter } from 'src/components/i18n';
-import { SSODefinitionFormValues, SSOEditionFormInputKeys } from '@components/settings/sso_definitions/SSODefinitionForm';
-import { getGroupOrOrganizationMapping } from '@components/settings/sso_definitions/utils/GroupOrOrganizationMapping';
+import { SSOEditionFormInputKeys } from '@components/settings/sso_definitions/SSODefinitionForm';
 
 type GroupAndOrganizationMappingProps = {
-  // isEditionMode: boolean;
   label: string;
   name: SSOEditionFormInputKeys;
-  // updateField: (field: keyof SSODefinitionFormValues, value: unknown) => void;
 };
 
 const GroupAndOrganizationMapping = ({ label, name }: GroupAndOrganizationMappingProps) => {
   const { t_i18n } = useFormatter();
-  // const { setFieldValue } = useFormikContext();
+  const { setFieldValue } = useFormikContext();
 
   const sourceName = `${name}_source`;
   const targetName = `${name}_target`;
@@ -55,14 +52,6 @@ const GroupAndOrganizationMapping = ({ label, name }: GroupAndOrganizationMappin
                     <Field
                       component={TextField}
                       variant="standard"
-                      // onSubmit={() => {
-                      //   if (isEditionMode) {
-                      //     const { groups_mapping_source, groups_mapping_target } = form.values;
-                      //     const newMapping = getGroupOrOrganizationMapping(groups_mapping_source, groups_mapping_target);
-                      //     if (!newMapping.length) return;
-                      //     updateField(name, newMapping);
-                      //   }
-                      // }}
                       name={`${sourceName}[${index}]`}
                       label={label}
                       fullWidth
@@ -78,18 +67,15 @@ const GroupAndOrganizationMapping = ({ label, name }: GroupAndOrganizationMappin
                       aria-label={t_i18n('Delete')}
                       style={{ marginTop: 30, marginLeft: 50 }}
                       onClick={() => {
-                        // const mapping = [...form.values[name]];
-                        // const sourceFormValues = [...form.values[sourceName]];
-                        // const targetFormValues = [...form.values[targetName]];
-                        // mapping.splice(index, 1);
-                        // sourceFormValues.splice(index, 1);
-                        // targetFormValues.splice(index, 1);
-                        // setFieldValue(sourceName, sourceFormValues);
-                        // setFieldValue(targetName, targetFormValues);
+                        const mapping = [...form.values[name]];
+                        const sourceFormValues = [...form.values[sourceName]];
+                        const targetFormValues = [...form.values[targetName]];
+                        mapping.splice(index, 1);
+                        sourceFormValues.splice(index, 1);
+                        targetFormValues.splice(index, 1);
+                        setFieldValue(sourceName, sourceFormValues);
+                        setFieldValue(targetName, targetFormValues);
                         remove(index);
-
-                        // const newMapping = getGroupOrOrganizationMapping(sourceFormValues, targetFormValues);
-                        // updateField(name, newMapping);
                       }} // Delete
                     >
                       <Delete fontSize="small" />
