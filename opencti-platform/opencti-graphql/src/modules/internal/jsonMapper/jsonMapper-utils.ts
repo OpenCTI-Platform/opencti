@@ -77,7 +77,7 @@ export const parseJsonMapperWithDefaultValues = async (context: AuthContext, use
     });
   });
 
-  const entities = await internalFindByIds<BasicStoreEntity>(context, user, refDefaultValues);
+  const entities = await internalFindByIds<BasicStoreEntity>(context, user, refDefaultValues) as BasicStoreEntity[];
   return {
     ...mapper,
     representations: parsedRepresentations.map((representation, i) => ({

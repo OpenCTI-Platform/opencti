@@ -37,10 +37,11 @@ interface StixMitreExtension {
 interface StixFileExtension {
   name: string;
   uri: string;
-  version: string;
-  mime_type: string;
+  version?: string;
+  mime_type?: string;
   object_marking_refs: string[];
   data?: string | undefined;
+  no_trigger_import?: boolean;
 }
 
 interface StixMetric {

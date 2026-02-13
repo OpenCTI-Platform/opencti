@@ -10,14 +10,14 @@ import type { StixReport } from '../types/stix-2-1-sdo';
 import type { StixRelation } from '../types/stix-2-1-sro';
 import type { BasicStoreObject, BasicStoreRelation, StoreObject } from '../types/store';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
-import { internalFindByIds, internalLoadById, fullRelationsList } from '../database/middleware-loader';
+import { fullRelationsList, internalFindByIds, internalLoadById } from '../database/middleware-loader';
 import type { RelationCreation, UpdateEvent } from '../types/event';
-import { READ_DATA_INDICES, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
+import { READ_DATA_INDICES } from '../database/utils';
 import type { AuthContext } from '../types/user';
 import { executionContext, RULE_MANAGER_USER } from '../utils/access';
 import { publishStixToStream } from '../database/stream/stream-handler';
 import { INPUT_DOMAIN_TO, RULE_PREFIX } from '../schema/general';
-import { FilterMode, FilterOperator } from '../generated/graphql';
+import { type EditInput, EditOperation, FilterMode, FilterOperator } from '../generated/graphql';
 import { asyncFilter } from '../utils/data-processing';
 import { buildStixUpdateEvent } from '../database/stream/stream-utils';
 import { buildChanges } from '../database/data-changes';
@@ -102,12 +102,12 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
       } else {
         delete updatedReport.extensions[STIX_EXT_OCTI].object_refs_inferred;
       }
-      const inputs = [];
+      const inputs: EditInput[] = [];
       if (createdTargets.length > 0) {
-        inputs.push({ key: objects.name, value: createdTargets, operation: UPDATE_OPERATION_ADD });
+        inputs.push({ key: objects.name, value: createdTargets, operation: EditOperation.Add });
       }
       if (deletedTargetRefs.length > 0) {
-        inputs.push({ key: objects.name, value: deletedTargetRefs, operation: UPDATE_OPERATION_REMOVE });
+        inputs.push({ key: objects.name, value: deletedTargetRefs, operation: EditOperation.Remove });
       }
       const changes = await buildChanges(context, RULE_MANAGER_USER, report.extensions[STIX_EXT_OCTI].type, inputs);
       const updateEvent = buildStixUpdateEvent(RULE_MANAGER_USER, report, updatedReport, changes);

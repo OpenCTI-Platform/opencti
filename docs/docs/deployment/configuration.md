@@ -125,6 +125,7 @@ For a detailed list of exposed metrics, please refer to the [Telemetry](../deplo
 | relations_deduplication:types_overrides:*relationship_type*:created_by_based | RELATIONS_DEDUPLICATION__*RELATIONSHIP_TYPE*__CREATED_BY_BASED |                | Override the author duplication for a specific type of relationship (ex. *targets*)                    |
 | app:trash:enabled                                                            | APP__TRASH__ENABLED                                            | `true`         | Enable or disable the trash system. If disabled, the trash manager will also be disabled               |
 | app:validation_mode                                                          | APP__VALIDATION_MODE                                           | `workbench`    | Can either be `workbench` or `draft` depending on the validation mode to be used for automatic imports |
+| app:authentication_edition_locked                                            | APP__AUTHENTICATION__EDITION_LOCKED                            | `false`        | Use this variable to disable the management panel the authentication configuration in UI (set to `true`| 
 
 #### Technical customization
 

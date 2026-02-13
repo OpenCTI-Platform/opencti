@@ -7,6 +7,7 @@ import { DefaultFormating, type Formating } from '../utils/humanize';
 import type { StixId, StixObject } from '../types/stix-2-1-common';
 import { TEST_MODE } from '../config/conf';
 import type { OpenCTIFile } from '../modules/internal/document/document-types';
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 
 export const shortMapping = {
   type: 'text',
@@ -112,7 +113,7 @@ export const draftIds: IdAttribute = {
   editDefault: false,
   upsert: false,
   isFilterable: false,
-  entityTypes: [ABSTRACT_BASIC_OBJECT, ABSTRACT_BASIC_RELATIONSHIP],
+  entityTypes: [ENTITY_TYPE_DRAFT_WORKSPACE],
 };
 
 export const draftContext: TextAttribute = {

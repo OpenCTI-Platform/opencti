@@ -438,26 +438,24 @@ const amqpExecute = async (execute) => {
  * is possible (at-least-once semantics). Consumers should be idempotent.
  */
 export const send = async (exchangeName, routingKey, message) => {
-  const MAX_SEND_RETRIES = 3;
-  let lastError = null;
+  let attemptNumber = 0;
 
-  for (let attempt = 1; attempt <= MAX_SEND_RETRIES; attempt += 1) {
+  while (true) {
     try {
       return await sendPersistent(exchangeName, routingKey, message);
     } catch (err) {
-      lastError = err;
-      logApp.warn(`[RABBITMQ] Send failed (attempt ${attempt}/${MAX_SEND_RETRIES})`, { cause: err });
+      logApp.warn(`[RABBITMQ] Send failed (attempt ${++attemptNumber})`, { cause: err });
 
       // If channel was lost, wait for reconnection before retry
       if (!persistentChannel) {
         logApp.info('[RABBITMQ] Waiting for connection recovery before retry...');
         await getPersistentChannel();
       }
+
+      // Wait before retrying
+      await wait(1000);
     }
   }
-
-  // All retries exhausted
-  throw lastError;
 };
 
 export const metrics = async (context, user) => {

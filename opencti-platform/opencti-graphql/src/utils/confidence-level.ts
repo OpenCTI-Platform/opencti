@@ -9,7 +9,7 @@ import type { Group } from '../types/group';
 import { RELATION_EXTERNAL_REFERENCE, RELATION_OBJECT_LABEL } from '../schema/stixRefRelationship';
 import { INPUT_EXTERNAL_REFS, INPUT_LABELS } from '../schema/general';
 
-type ObjectWithConfidence = {
+export type ObjectWithConfidence = {
   id: string;
   entity_type: string;
   confidence?: number | null;
@@ -179,7 +179,7 @@ export const controlUserConfidenceAgainstElement = <T extends ObjectWithConfiden
   return true; // ok
 };
 
-type UpdateInput = {
+export type UpdateInput = {
   key: string | string[];
   value: string[];
 };

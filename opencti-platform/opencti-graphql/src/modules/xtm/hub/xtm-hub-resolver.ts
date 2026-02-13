@@ -5,7 +5,7 @@ const xtmHubResolvers: Resolvers = {
   Mutation: {
     checkXTMHubConnectivity: (_, __, context) => checkXTMHubConnectivity(context, context.user),
     autoRegisterOpenCTI: (_, { input }, context) => autoRegisterOpenCTI(context, context.user, input),
-    contactUsXtmHub: (_, __, context) => contactUsXtmHub(context, context.user),
+    contactUsXtmHub: (_, { message }, context) => contactUsXtmHub(context, context.user, message),
   },
 };
 
