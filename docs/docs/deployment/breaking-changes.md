@@ -37,7 +37,7 @@ For more information read the [migration process](./breaking-changes/7.0-SSO-aut
 
 #### Mandatory Cryptography configuration
 
-Upgrading to OpenCTI 7.x requires to configure the cryptography key in the application configuration.
+Upgrading to OpenCTI 7.x requires configuring the cryptography key in the application configuration.
 
 !!! warning "Cryptography configuration"
 
