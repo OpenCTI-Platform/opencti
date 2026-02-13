@@ -1,7 +1,7 @@
 import { logApp } from '../config/conf';
 import { fullEntitiesOrRelationsList } from '../database/middleware';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
-import { SYSTEM_USER } from '../utils/access';
+import { executionContext, SYSTEM_USER } from '../utils/access';
 import { generateTokenHmac } from '../modules/user/user-domain';
 import { elUpdate } from '../database/engine';
 
@@ -9,8 +9,8 @@ const message = '[MIGRATION] Legacy Token Migration';
 
 export const up = async (next) => {
   logApp.info(`${message} > started`);
-  const context = { user: SYSTEM_USER };
   // Fetch all users
+  const context = executionContext('migration');
   const users = await fullEntitiesOrRelationsList(context, SYSTEM_USER, [ENTITY_TYPE_USER]);
   logApp.info(`${message} > found ${users.length} users`);
   for (let i = 0; i < users.length; i += 1) {
