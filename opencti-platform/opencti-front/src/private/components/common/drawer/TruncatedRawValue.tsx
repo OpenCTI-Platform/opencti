@@ -1,13 +1,12 @@
-import React, { CSSProperties, FunctionComponent, useEffect, useRef, useState } from 'react';
+import Dialog from '@common/dialog/Dialog';
+import { Box } from '@mui/material';
+import Button from '@common/button/Button';
+import DialogActions from '@mui/material/DialogActions';
+import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/styles';
+import { CSSProperties, FunctionComponent, useEffect, useRef, useState } from 'react';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
-import Tooltip from '@mui/material/Tooltip';
-import Dialog from '@mui/material/Dialog';
-import { Box, DialogTitle } from '@mui/material';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
 
 const MAX_LENGTH = 30;
 
@@ -38,18 +37,15 @@ const TruncatedRawValue: FunctionComponent<TruncatedRawValueProps> = ({ value, v
     <Dialog
       open={open}
       onClose={() => setOpen(false)}
-      maxWidth="md"
       fullWidth
+      title={t_i18n('Raw value')}
     >
-      <DialogTitle>{t_i18n('Raw value')}</DialogTitle>
-      <DialogContent>
-        {variant === 'code'
-          ? <pre>{value}</pre>
-          : <span style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{value}</span>
-        }
-      </DialogContent>
+      {variant === 'code'
+        ? <pre>{value}</pre>
+        : <span style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{value}</span>
+      }
       <DialogActions>
-        <Button onClick={() => setOpen(false)} color="primary">
+        <Button onClick={() => setOpen(false)}>
           {t_i18n('Close')}
         </Button>
       </DialogActions>

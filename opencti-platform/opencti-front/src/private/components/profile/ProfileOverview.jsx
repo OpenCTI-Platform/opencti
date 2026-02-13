@@ -3,7 +3,7 @@ import Card from '@common/card/Card';
 import { LockOutlined, NoEncryptionOutlined } from '@mui/icons-material';
 import { ListItem, ListItemText, Stack, Switch } from '@mui/material';
 import Alert from '@mui/material/Alert';
-import Dialog from '@mui/material/Dialog';
+import Dialog from '@common/dialog/Dialog';
 import MenuItem from '@mui/material/MenuItem';
 import { useTheme } from '@mui/styles';
 import withStyles from '@mui/styles/withStyles';
@@ -286,10 +286,9 @@ const ProfileOverviewComponent = (props) => {
       />
       <Dialog
         open={display2FA}
-        slotProps={{ paper: { elevation: 1 } }}
-        keepMounted={false}
         onClose={() => setDisplay2FA(false)}
         title={t('Enable two-factor authentication')}
+        size="small"
       >
         <OtpComponent closeFunction={() => setDisplay2FA(false)} />
       </Dialog>

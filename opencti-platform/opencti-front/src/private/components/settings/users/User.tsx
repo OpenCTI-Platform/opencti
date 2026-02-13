@@ -357,7 +357,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                     <Label>
                       {t_i18n('Account type')}
                     </Label>
-                    {!user.user_service_account
+                    {user.user_service_account
                       ? <Tag label={t_i18n('Service account')} />
                       : EMPTY_VALUE
                     }

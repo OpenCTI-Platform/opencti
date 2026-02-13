@@ -1,6 +1,7 @@
-import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
-import { useFormatter } from '../../../../components/i18n';
 import Button from '@common/button/Button';
+import Dialog from '@common/dialog/Dialog';
+import { DialogActions, DialogContentText } from '@mui/material';
+import { useFormatter } from '../../../../components/i18n';
 
 interface TokenDeleteDialogProps {
   open: boolean;
@@ -18,13 +19,12 @@ const TokenDeleteDialog = ({ open, token, onDelete, onClose }: TokenDeleteDialog
       onClose={onClose}
       aria-labelledby="alert-dialog-title"
       aria-describedby="alert-dialog-description"
+      title={t_i18n('Revoke API Token')}
+      size="small"
     >
-      <DialogTitle id="alert-dialog-title">{t_i18n('Revoke API Token')}</DialogTitle>
-      <DialogContent>
-        <DialogContentText id="alert-dialog-description">
-          {t_i18n('Do you want to revoke the token')} <strong>{token?.name}</strong>?
-        </DialogContentText>
-      </DialogContent>
+      <DialogContentText id="alert-dialog-description">
+        {t_i18n('Do you want to revoke the token')} <strong>{token?.name}</strong>?
+      </DialogContentText>
       <DialogActions>
         <Button
           variant="secondary"
