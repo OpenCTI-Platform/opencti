@@ -180,6 +180,10 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                                 except Exception as ex:
                                     error_msg = traceback.format_exc()
                                     if "WORK_NOT_ALIVE" in error_msg:
+                                        self.logger.info(
+                                            "Work no longer exists, acking message without processing",
+                                            {"work_id": work_id},
+                                        )
                                         return "ack"
                                     raise ex
                             # For each split bundle, send it to the same queue
