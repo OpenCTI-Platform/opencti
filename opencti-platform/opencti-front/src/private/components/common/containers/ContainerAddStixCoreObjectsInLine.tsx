@@ -15,7 +15,6 @@ import StixCyberObservableCreation from '../../observations/stix_cyber_observabl
 import Drawer from '../drawer/Drawer';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
 import { ContainerAddStixCoreObjectsLinesQuery, ContainerAddStixCoreObjectsLinesQuery$variables } from './__generated__/ContainerAddStixCoreObjectsLinesQuery.graphql';
-import { ContainerStixCyberObservablesLinesQuery$variables } from './__generated__/ContainerStixCyberObservablesLinesQuery.graphql';
 import { ContainerStixDomainObjectsLinesQuery$variables } from './__generated__/ContainerStixDomainObjectsLinesQuery.graphql';
 import ContainerAddStixCoreObjectsLines, { containerAddStixCoreObjectsLinesQuery } from './ContainerAddStixCoreObjectsLines';
 import { ContainerStixCyberObservablesLinesPaginationQuery$variables } from '@components/common/containers/__generated__/ContainerStixCyberObservablesLinesPaginationQuery.graphql';

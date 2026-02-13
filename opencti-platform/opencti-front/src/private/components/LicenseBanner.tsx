@@ -15,6 +15,7 @@ import { Field, Form, Formik } from 'formik';
 import TextField from '../../components/TextField';
 import { FormikConfig } from 'formik/dist/types';
 import { SxProps } from '@mui/material';
+import DialogContent from '@mui/material/DialogContent';
 export const LICENSE_OPTION_TRIAL = 'trial';
 
 const contactUsXtmHubMutation = graphql`
@@ -162,21 +163,21 @@ const LicenseBanner = () => {
                   fullWidth={true}
                   minRows={5}
                 />
-                </DialogContent>
-                <DialogActions>
-                  <Button
-                    disabled={isSubmitting}
-                    onClick={() => {
-                      resetForm();
-                      setShowFormDialog(false);
-                    }}
-                  >
-                    {t_i18n('Cancel')}
-                  </Button>
-                  <Button onClick={submitForm} disabled={isSubmitting} color="secondary">
-                    {t_i18n('Validate')}
-                  </Button>
-                </DialogActions>
+              </DialogContent>
+              <DialogActions>
+                <Button
+                  disabled={isSubmitting}
+                  onClick={() => {
+                    resetForm();
+                    setShowFormDialog(false);
+                  }}
+                >
+                  {t_i18n('Cancel')}
+                </Button>
+                <Button onClick={submitForm} disabled={isSubmitting} color="secondary">
+                  {t_i18n('Validate')}
+                </Button>
+              </DialogActions>
             </Form>
           )}
         </Formik>
