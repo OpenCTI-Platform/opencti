@@ -15,7 +15,7 @@ import { useGraphContext } from './GraphContext';
 import GraphToolbarCorrelationTools from './components/GraphToolbarCorrelationTools';
 import GraphToolbarExpandTools, { GraphToolbarExpandToolsProps } from './components/GraphToolbarExpandTools';
 import useAuth from '../../utils/hooks/useAuth';
-import useDraftContext from '../../utils/hooks/useDraftContext';
+import useDraftContext, { DRAFT_TOOLBAR_HEIGHT } from '../../utils/hooks/useDraftContext';
 
 export type GraphToolbarProps = GraphToolbarContentToolsProps & GraphToolbarExpandToolsProps & GraphToolbarDisplayToolsProps;
 
@@ -31,7 +31,7 @@ const GraphToolbar = ({
   const navOpen = localStorage.getItem('navOpen') === 'true';
   const { selectBySearch } = useGraphInteractions();
 
-  const posBottom = draftContext ? 69 : 0; // 69 is the height of the Draft toolbar.
+  const posBottom = draftContext ? DRAFT_TOOLBAR_HEIGHT : 0;
 
   const {
     graphState: {
