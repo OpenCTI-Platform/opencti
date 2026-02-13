@@ -172,7 +172,7 @@ const UserEditionConfidence: FunctionComponent<UserEditionConfidenceProps> = ({ 
         onSubmit={() => {}}
       >
         {({ values }) => (
-          <Form>
+          <Form style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(2) }}>
             <UserConfidenceLevelField
               name="user_confidence_level"
               label={t_i18n('Max Confidence Level')}
@@ -186,8 +186,7 @@ const UserEditionConfidence: FunctionComponent<UserEditionConfidenceProps> = ({ 
               render={(arrayHelpers) => (
                 <div>
                   <Label
-                    sx={{ marginTop: 2, marginBottom: 2 }}
-                    sxTitle={{ textTransform: 'uppercase', color: theme.palette.text.primary }}
+                    variant="primary"
                     action={(
                       <IconButton
                         color="primary"

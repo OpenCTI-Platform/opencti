@@ -6,14 +6,14 @@ import { PropsWithSx } from '../../../utils/props';
 
 interface LabelProps extends PropsWithChildren, PropsWithSx {
   action?: ReactNode;
-  sxTitle?: SxProps;
+  variant?: 'default' | 'primary';
 }
 
 const Label = ({
   children,
   action,
   sx,
-  sxTitle,
+  variant = 'default',
 }: LabelProps) => {
   const theme = useTheme<Theme>();
 
@@ -23,15 +23,17 @@ const Label = ({
     ...sx,
   };
 
+  const titleStyle = variant === 'default'
+    ? { color: theme.palette.text.light, textTransform: 'capitalize' }
+    : { color: theme.palette.text.primary, textTransform: 'uppercase' };
+
   const titleSx: SxProps = {
     marginBottom: 0,
-    textTransform: 'capitalize',
-    color: theme.palette.text.light,
     lineHeight: '21px',
     fontSize: '12px',
     fontWeight: 400,
     fontFamily: '"IBM Plex Sans", sans-serif',
-    ...sxTitle,
+    ...titleStyle,
   };
 
   return (
