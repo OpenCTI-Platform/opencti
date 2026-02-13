@@ -269,7 +269,7 @@ const DashboardComponent = ({ data, noToolbar = false }) => {
       id="container"
       sx={{
         margin: '0 -20px 0 -20px',
-        marginTop: noToolbar ? -20 : 10,
+        marginTop: noToolbar ? '-20px' : '10px',
         '& .react-grid-item.react-grid-placeholder': {
           border: `2px solid ${theme.palette.primary.main}`,
           borderRadius: 1,
