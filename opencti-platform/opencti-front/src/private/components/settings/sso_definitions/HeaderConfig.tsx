@@ -30,7 +30,6 @@ const HeaderConfig = ({ updateField }: HeaderConfigProps) => {
         required
         fullWidth
         style={{ marginTop: 20 }}
-        type="password"
       />
       <Field
         component={TextField}
