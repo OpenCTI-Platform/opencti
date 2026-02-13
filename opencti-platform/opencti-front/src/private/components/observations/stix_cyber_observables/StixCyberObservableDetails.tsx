@@ -294,7 +294,7 @@ const stixCyberObservableDetailsFragment = graphql`
       value
     }
     ... on IMSI {
-    value
+      value
     }
     ...StixCyberObservableIndicators_stixCyberObservable
   }
