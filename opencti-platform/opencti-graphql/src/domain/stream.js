@@ -115,7 +115,7 @@ export const getStreamCollectionConsumers = async (collectionId) => {
   const streamInfo = await fetchStreamInfo();
   const streamProductionRate = await getStreamProductionRate();
   return consumers.map((consumer) => {
-    const processingLagMetrics = computeProcessingLagMetrics(consumer.lastEventId, streamInfo, consumer.processingRate, streamProductionRate);
+    const processingLagMetrics = computeProcessingLagMetrics(consumer.lastEventId, streamInfo, consumer.deliveryRate, streamProductionRate);
     return {
       connectionId: consumer.connectionId,
       userId: consumer.userId,
@@ -136,6 +136,6 @@ export const getStreamConsumerInformation = async (channelId, lastEventId) => {
   const streamInfo = await fetchStreamInfo();
   const consumerMetrics = getLocalConsumerMetrics(channelId);
   const productionRate = await getStreamProductionRate();
-  const computedLagsMetrics = computeProcessingLagMetrics(lastEventId, streamInfo, consumerMetrics.processingRate, productionRate);
+  const computedLagsMetrics = computeProcessingLagMetrics(lastEventId, streamInfo, consumerMetrics.deliveryRate, productionRate);
   return { ...consumerMetrics, productionRate, ...computedLagsMetrics };
 };
