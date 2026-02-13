@@ -34,7 +34,7 @@ export const toStixReportBundle = async (context: AuthContext, user: AuthUser, w
     throw FunctionalError('You can only export investigation objects as a stix report bundle.');
   }
   const investigatedEntitiesIds = workspace.investigated_entities_ids ?? [];
-  const storeInvestigatedEntities = await storeLoadByIdsWithRefs(context, user, investigatedEntitiesIds, { indices: READ_STIX_INDICES });
+  const storeInvestigatedEntities = await storeLoadByIdsWithRefs<StoreEntity>(context, user, investigatedEntitiesIds, { indices: READ_STIX_INDICES });
   const stixReportForExport = buildStixReportForExport(workspace, storeInvestigatedEntities);
   const bundle = buildStixBundle([stixReportForExport, ...storeInvestigatedEntities.map((s) => convertStoreToStix_2_1(s))]);
   return JSON.stringify(bundle);

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { buildChanges } from '../../../src/database/data-changes';
+import { EditOperation } from '../../../src/generated/graphql';
 
 describe('buildChanges standard behavior', async () => {
   it('should build changes for value replaced by other value in "description"', async () => {
@@ -76,7 +77,7 @@ describe('buildChanges standard behavior', async () => {
   it('should build changes for "participant" added ', async () => {
     const inputs = [{
       key: 'objectParticipant',
-      operation: 'add',
+      operation: EditOperation.Add,
       value: [{
         entity_type: 'User',
         internal_id: '9b854803-7158-4e4e-a492-f8845ac33aad',
@@ -95,7 +96,7 @@ describe('buildChanges standard behavior', async () => {
   it('should build changes for second "participant" added ', async () => {
     const inputs = [{
       key: 'objectParticipant',
-      operation: 'add',
+      operation: EditOperation.Add,
       value: [{
         entity_type: 'User',
         internal_id: '7c854803-7158-4e4e-a492-f8845ac33agp',
@@ -119,7 +120,7 @@ describe('buildChanges standard behavior', async () => {
     const inputs = [
       {
         key: 'objectMarking',
-        operation: 'add',
+        operation: EditOperation.Add,
         value: [
           {
             _id: '6da54f1c-8c1b-4c61-953a-2ded39adcaba',
@@ -167,7 +168,7 @@ describe('buildChanges standard behavior', async () => {
     const inputs = [
       {
         key: 'objectMarking',
-        operation: 'add',
+        operation: EditOperation.Add,
         previous: [
           {
             _id: '23d0a2ce-8aee-4b06-885e-4c0b355cbffa',
@@ -269,7 +270,7 @@ describe('buildChanges standard behavior', async () => {
     const inputs = [
       {
         key: 'objectMarking',
-        operation: 'remove',
+        operation: EditOperation.Remove,
         previous: [
           {
             _id: '23d0a2ce-8aee-4b06-885e-4c0b355cbffa',
@@ -415,7 +416,7 @@ describe('buildChanges standard behavior', async () => {
   it('should build changes for labels removed', async () => {
     const inputs = [{
       key: 'objectLabel',
-      operation: 'remove',
+      operation: EditOperation.Remove,
       previous: [
         {
           _id: 'd9c27d81-c003-4a0d-bfdc-397b8d12f59c',

@@ -49,6 +49,7 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
     R.dissoc('files'),
     R.dissoc('filesMarkings'),
     R.dissoc('noTriggerImport'),
+    R.dissoc('embedded'),
     R.omit(schemaRelationsRefDefinition.getInputNames(input.entity_type)),
   )(input);
   if (inferred) {

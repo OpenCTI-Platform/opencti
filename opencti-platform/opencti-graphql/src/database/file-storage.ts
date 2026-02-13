@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import { Readable } from 'stream';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreEntityDocument } from '../modules/internal/document/document-types';
-import type { BasicStoreBase, BasicStoreEntity, BasicStoreObject } from '../types/store';
+import type { BasicStoreBase, BasicStoreEntity, BasicStoreObject, StoreFile } from '../types/store';
 import type { BasicStoreEntityConnector } from '../types/connector';
 import conf, { logApp } from '../config/conf';
 import { now, sinceNowInMinutes, truncate, utcDate } from '../utils/format';
@@ -29,7 +29,7 @@ import {
   SUPPORT_STORAGE_PATH,
 } from '../modules/internal/document/document-domain';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
-import { isUserHasCapability, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, SETTINGS_SUPPORT, validateMarking } from '../utils/access';
+import { isUserHasCapability, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, SETTINGS_SUPPORT, SYSTEM_USER, validateMarking } from '../utils/access';
 import { internalLoadById } from './middleware-loader';
 import { getDraftContext } from '../utils/draftContext';
 import { isModuleActivated } from './cluster-module';
@@ -38,6 +38,8 @@ import { deleteFileFromStorage, getFileSize, rawCopyFile, rawListObjects, rawUpl
 import { promiseMap } from '../utils/promiseUtils';
 import { ENTITY_TYPE_SUPPORT_PACKAGE } from '../modules/support/support-types';
 import { pushAll } from '../utils/arrayUtil';
+import { getEntitiesMapFromCache } from './cache';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
 // Minio configuration
 const excludedFiles = conf.get('minio:excluded_files') || ['.DS_Store'];
@@ -287,7 +289,7 @@ export const copyFile = async (
 /**
  * Convert File object coming from uploadToStorage/upload functions to x_opencti_file format.
  */
-export const storeFileConverter = (user: AuthUser, file: LoadedFile) => {
+export const storeFileConverter = (_user: AuthUser, file: LoadedFile): StoreFile => {
   return {
     id: file.id,
     name: file.name,
@@ -566,10 +568,16 @@ export const upload = async (
   opts: FileUploadOpts,
 ): Promise<{ upload: LoadedFile; untouched: boolean }> => {
   const { entity, meta = {}, noTriggerImport = false, errorOnExisting = false, file_markings = [], importContextEntities = [] } = opts;
+  const markings = await getEntitiesMapFromCache<BasicStoreObject>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  const normalized_file_markings = file_markings?.map((m) => {
+    const marking = markings.get(m);
+    return marking ? marking.internal_id : m;
+  }) ?? [];
+  const filtered_markings = normalized_file_markings.filter((id) => id) as string[];
   // Verify markings
-  for (let index = 0; index < (file_markings ?? []).length; index += 1) {
-    const markingId = file_markings[index];
-    await validateMarking(context, user, markingId);
+  for (let index = 0; index < (filtered_markings ?? []).length; index += 1) {
+    const markingId = filtered_markings[index];
+    await validateMarking(context, user, markingId, markings);
   }
   const metadata: FileMetadata = { ...meta };
   if (!metadata.version) {
@@ -622,7 +630,7 @@ export const upload = async (
     information: '',
     lastModified: new Date(),
     lastModifiedSinceMin: sinceNowInMinutes(new Date()),
-    metaData: { ...fullMetadata, messages: [], errors: [], file_markings },
+    metaData: { ...fullMetadata, messages: [], errors: [], file_markings: filtered_markings },
     uploadStatus: 'complete',
   };
   await indexFileToDocument(context, file);
@@ -655,7 +663,7 @@ export const streamConverter = (stream: Readable): Promise<string> => {
   });
 };
 export interface FileUploadOpts {
-  entity?: BasicStoreBase; // entity on which the file is uploaded
+  entity?: BasicStoreBase | null; // entity on which the file is uploaded
   meta?: Record<string, any>;
   noTriggerImport?: boolean;
   errorOnExisting?: boolean;
@@ -801,7 +809,7 @@ export const moveAllFilesFromEntityToAnother = async (context: AuthContext, user
   if (getDraftContext(context, user)) {
     throw UnsupportedError('Cannot merge all files in draft');
   }
-  const updatedXOpenctiFiles: Array<{ id: string; name: string; version?: string; mime_type?: string; file_markings: string[] }> = [];
+  const updatedXOpenctiFiles: Array<StoreFile> = [];
   for (let folderI = 0; folderI < ALL_MERGEABLE_FOLDERS.length; folderI += 1) {
     try {
       const sourcePath = `${ALL_MERGEABLE_FOLDERS[folderI]}/${sourceEntity.entity_type}/${sourceEntity.internal_id}`;

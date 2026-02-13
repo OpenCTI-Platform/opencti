@@ -221,7 +221,7 @@ const DraftRelationships: FunctionComponent<DraftRelationshipsProps> = ({ isRead
     filters,
   } = viewStorage;
 
-  const contextFilters = useBuildEntityTypeBasedFilterContext('stix-core-relationship', filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext('stix-core-relationship', filters, { draftId });
 
   const queryPaginationOptions = {
     ...paginationOptions,

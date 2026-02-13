@@ -26,7 +26,7 @@ import { isFilterGroupNotEmpty } from './filtering/filtering-utils';
 import type { BasicStoreSettings } from '../types/settings';
 import type { StixObject } from '../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
-import type { BasicConnection, BasicStoreCommon, BasicStoreEntity, BasicStoreRelation } from '../types/store';
+import type { BasicConnection, BasicStoreIdentifier, BasicStoreCommon, BasicStoreEntity, BasicStoreRelation } from '../types/store';
 import type { AuthContext, AuthUser, UserRole } from '../types/user';
 import { ID_SUBFILTER, INSTANCE_REGARDING_OF, RELATION_INFERRED_SUBFILTER, RELATION_TYPE_SUBFILTER } from './filtering/filtering-constants';
 import { pushAll } from './arrayUtil';
@@ -777,7 +777,7 @@ export const checkUserFilterStoreElements = (
     || (element.restricted_members && element.restricted_members.length > 0 && hasAuthorizedMemberAccess(user, element));
 };
 
-export const userFilterStoreElements = async (context: AuthContext, user: AuthUser, elements: Array<BasicStoreCommon>) => {
+export const userFilterStoreElements = async (context: AuthContext, user: AuthUser, elements: Array<BasicStoreCommon>): Promise<BasicStoreCommon[]> => {
   const userFilterStoreElementsFn = async () => {
     // If user have bypass, grant access to all
     if (isBypassUser(user)) {
@@ -948,12 +948,13 @@ export const controlUserRestrictDeleteAgainstElement = <T extends ObjectWithCrea
  * @param context
  * @param user
  * @param markingId
+ * @param markingsMap
  */
-export const validateMarking = async (context: AuthContext, user: AuthUser, markingId: string) => {
+export const validateMarking = async (context: AuthContext, user: AuthUser, markingId: string, markingsMap?: Map<string, BasicStoreIdentifier | StixObject>) => {
   if (isBypassUser(user)) {
     return;
   }
-  const markings = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  const markings = markingsMap ?? await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   const userMarking = (user.allowed_marking || []).map((m) => markings.get(m.internal_id)).filter((m) => isNotEmptyField(m)) as BasicStoreCommon[];
   const userMarkingIds = userMarking.map((marking) => extractIdsFromStoreObject(marking)).flat();
   if (!userMarkingIds.includes(markingId)) {

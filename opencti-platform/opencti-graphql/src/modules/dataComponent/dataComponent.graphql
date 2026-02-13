@@ -196,7 +196,8 @@ input DataComponentAddInput {
     fileMarkings: [String]
     files: [Upload]
     filesMarkings: [[String]]
-    noTriggerImport: Boolean
+    noTriggerImport: [Boolean]
+    embedded: [Boolean]
     x_opencti_workflow_id: String
     x_opencti_modified_at: DateTime
     upsertOperations: [EditInput!]

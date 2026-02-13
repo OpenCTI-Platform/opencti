@@ -646,7 +646,8 @@ class OpenCTIStix2:
                         # Prepare all files for upload during creation
                         files_to_upload = []
                         files_markings = []
-                        no_trigger_import = False
+                        no_trigger_import = []
+                        embedded_flags = []
                         for file_obj in ext_ref_files:
                             data = None
                             if "data" in file_obj:
@@ -671,9 +672,10 @@ class OpenCTIStix2:
                                 files_markings.append(
                                     file_obj.get("object_marking_refs", None)
                                 )
-                                # Check if any file requires no trigger import
-                                if file_obj.get("no_trigger_import", False):
-                                    no_trigger_import = True
+                                no_trigger_import.append(
+                                    file_obj.get("no_trigger_import", False)
+                                )
+                                embedded_flags.append(file_obj.get("embedded", False))
 
                         # Create external reference with all files attached
                         external_reference_id = self.opencti.external_reference.create(
@@ -687,7 +689,10 @@ class OpenCTIStix2:
                             ),
                             files=files_to_upload if files_to_upload else None,
                             filesMarkings=files_markings if files_markings else None,
-                            noTriggerImport=no_trigger_import,
+                            noTriggerImport=(
+                                no_trigger_import if no_trigger_import else None
+                            ),
+                            embedded=embedded_flags if embedded_flags else None,
                         )["id"]
 
                     external_references_ids.append(external_reference_id)
@@ -842,7 +847,8 @@ class OpenCTIStix2:
                     # Prepare all files for direct upload during creation
                     files_to_upload = []
                     files_markings = []
-                    no_trigger_import = False
+                    no_trigger_import = []
+                    embedded_flags = []
                     for file_obj in all_files:
                         data = None
                         if "data" in file_obj:
@@ -867,9 +873,10 @@ class OpenCTIStix2:
                             files_markings.append(
                                 file_obj.get("object_marking_refs", None)
                             )
-                            # Check if any file requires no trigger import
-                            if file_obj.get("no_trigger_import", False):
-                                no_trigger_import = True
+                            no_trigger_import.append(
+                                file_obj.get("no_trigger_import", False)
+                            )
+                            embedded_flags.append(file_obj.get("embedded", False))
 
                     external_reference_id = self.opencti.external_reference.create(
                         source_name=source_name,
@@ -882,7 +889,10 @@ class OpenCTIStix2:
                         ),
                         files=files_to_upload if files_to_upload else None,
                         filesMarkings=files_markings if files_markings else None,
-                        noTriggerImport=no_trigger_import,
+                        noTriggerImport=(
+                            no_trigger_import if no_trigger_import else None
+                        ),
+                        embedded=embedded_flags if embedded_flags else None,
                     )["id"]
 
                 external_references_ids.append(external_reference_id)
@@ -1135,7 +1145,8 @@ class OpenCTIStix2:
         # Prepare all files for direct upload during creation
         files_to_upload = []
         files_markings = []
-        no_trigger_import = False
+        no_trigger_import = []
+        embedded_flags = []
         for file_obj in x_opencti_files:
             data = None
             if "data" in file_obj:
@@ -1154,9 +1165,8 @@ class OpenCTIStix2:
                     )
                 )
                 files_markings.append(file_obj.get("object_marking_refs", None))
-                # Check if any file requires no trigger import
-                if file_obj.get("no_trigger_import", False):
-                    no_trigger_import = True
+                no_trigger_import.append(file_obj.get("no_trigger_import", False))
+                embedded_flags.append(file_obj.get("embedded", False))
 
         # Extra
         extras = {
@@ -1171,7 +1181,8 @@ class OpenCTIStix2:
             "sample_ids": sample_refs_ids,
             "files": files_to_upload if files_to_upload else None,
             "filesMarkings": files_markings if files_markings else None,
-            "noTriggerImport": no_trigger_import,
+            "noTriggerImport": no_trigger_import if no_trigger_import else None,
+            "embedded": embedded_flags if embedded_flags else None,
         }
 
         stix_helper = self.get_stix_helper().get(stix_object["type"])
@@ -1262,7 +1273,8 @@ class OpenCTIStix2:
         # Prepare all files for direct upload during creation
         files_to_upload = []
         files_markings = []
-        no_trigger_import = False
+        no_trigger_import = []
+        embedded_flags = []
         for file_obj in x_opencti_files:
             data = None
             if "data" in file_obj:
@@ -1281,9 +1293,8 @@ class OpenCTIStix2:
                     )
                 )
                 files_markings.append(file_obj.get("object_marking_refs", None))
-                # Check if any file requires no trigger import
-                if file_obj.get("no_trigger_import", False):
-                    no_trigger_import = True
+                no_trigger_import.append(file_obj.get("no_trigger_import", False))
+                embedded_flags.append(file_obj.get("embedded", False))
 
         # Extra
         extras = {
@@ -1299,7 +1310,8 @@ class OpenCTIStix2:
             "sample_ids": sample_refs_ids,
             "files": files_to_upload if files_to_upload else None,
             "filesMarkings": files_markings if files_markings else None,
-            "noTriggerImport": no_trigger_import,
+            "noTriggerImport": no_trigger_import if no_trigger_import else None,
+            "embedded": embedded_flags if embedded_flags else None,
         }
         upsert_operations = self.opencti.get_attribute_in_extension(
             "opencti_upsert_operations", stix_object
@@ -2238,14 +2250,39 @@ class OpenCTIStix2:
                     self.opencti.api_url.replace("graphql", "storage/get/") + file["id"]
                 )
                 data = self.opencti.fetch_opencti_file(url, binary=True, serialize=True)
-                entity["x_opencti_files"].append(
-                    {
-                        "name": file["name"],
-                        "data": data,
-                        "mime_type": file["metaData"]["mimetype"],
-                        "version": file["metaData"].get("version", None),
+                x_opencti_file = {
+                    "name": file["name"],
+                    "data": data,
+                    "mime_type": file["metaData"]["mimetype"],
+                    "version": file["metaData"].get("version", None),
+                    "object_marking_refs": [],
+                }
+                for file_marking_definition in file["objectMarking"]:
+                    if file_marking_definition["definition_type"] == "TLP":
+                        created = "2017-01-20T00:00:00.000Z"
+                    else:
+                        created = file_marking_definition["created"]
+                    marking_definition = {
+                        "type": "marking-definition",
+                        "spec_version": SPEC_VERSION,
+                        "id": file_marking_definition["standard_id"],
+                        "created": created,
+                        "definition_type": file_marking_definition[
+                            "definition_type"
+                        ].lower(),
+                        "name": file_marking_definition["definition"],
+                        "definition": {
+                            file_marking_definition["definition_type"]
+                            .lower(): file_marking_definition["definition"]
+                            .lower()
+                            .replace("tlp:", "")
+                        },
                     }
-                )
+                    result.append(marking_definition)
+                    x_opencti_file["object_marking_refs"].append(
+                        marking_definition["id"]
+                    )
+                entity["x_opencti_files"].append(x_opencti_file)
             del entity["importFiles"]
             del entity["importFilesIds"]
 

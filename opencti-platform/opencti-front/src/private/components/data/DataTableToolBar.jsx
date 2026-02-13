@@ -2400,12 +2400,12 @@ class DataTableToolBar extends Component {
                           </span>
                         </Tooltip>
                       )}
-                      {!enrichDisable && !removeAuthMembersEnabled && !isUserDatatable && (
+                      {!removeAuthMembersEnabled && !isUserDatatable && (
                         <Tooltip title={t('Enrichment')}>
                           <span>
                             <IconButton
                               aria-label="enrichment"
-                              disabled={this.state.processing}
+                              disabled={this.state.processing || enrichDisable}
                               onClick={this.handleOpenEnrichment.bind(this, stixCyberObservableSubTypes, stixDomainObjectSubTypes)}
                               size="small"
                             >

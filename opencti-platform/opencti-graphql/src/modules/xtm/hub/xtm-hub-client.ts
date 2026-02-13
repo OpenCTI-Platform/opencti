@@ -96,14 +96,18 @@ export const xtmHubClient = {
       return { success: false };
     }
   },
-  contactUs: async (platform: { platformId: string; platformToken: string }): Promise<Success> => {
+  contactUs: async (platform: { platformId: string; platformToken: string }, message: string): Promise<Success> => {
     const query = `
-      mutation ContactUs {
-        contactUs {
+      mutation ContactUs($message: String) {
+        contactUs(message: $message) {
           success
         }
       }
     `;
+
+    const variables = {
+      message,
+    };
 
     const httpClient = getHttpClient({
       baseURL: HUB_BACKEND_URL,
@@ -116,7 +120,7 @@ export const xtmHubClient = {
     });
 
     try {
-      const response = await httpClient.post('/graphql-api', { query });
+      const response = await httpClient.post('/graphql-api', { query, variables });
       const { data, errors } = response.data;
       if ((errors?.length ?? 0) > 0 || !data?.contactUs?.success) {
         logApp.warn('XTM Hub contactUs failed', { reason: errors?.[0] });

@@ -7,6 +7,7 @@ import { resolveMissingReferences } from '../../src/graphql/sseMiddleware';
 import { convertStoreToStix_2_1 } from '../../src/database/stix-2-1-converter';
 import { storeLoadByIdWithRefs } from '../../src/database/middleware';
 import { adminQueryWithSuccess } from '../utils/testQueryHelper';
+import type { StoreObject } from '../../src/types/store';
 
 const CREATE_REPORT_QUERY = gql`
   mutation ReportAdd($input: ReportAddInput!) {
@@ -108,7 +109,7 @@ describe('Should stream parent resolutions correctly working', () => {
       },
     });
     const reportWithRefs = await storeLoadByIdWithRefs(testContext, ADMIN_USER, report01ResolutionId);
-    const stixReport = convertStoreToStix_2_1(reportWithRefs);
+    const stixReport = convertStoreToStix_2_1(reportWithRefs as StoreObject);
     const refs = stixRefsExtractor(stixReport);
     const cache = new LRUCache({ max: 5000, ttl: 1000 * 60 * 60 });
     const missingInstances: any[] = await resolveMissingReferences(testContext, ADMIN_USER, refs, cache);

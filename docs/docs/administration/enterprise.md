@@ -45,6 +45,9 @@ Organizations segregation is a way to segregate your data considering the organi
 
 On top of organization management and segregation, use authorized members to restrict access to a specific instance (entity/observable). This is particularly useful if a specific incident occurs and you need to hide the case tracking the resolution to all the users of the platform, or to control who can edit, who can view, and who can manage the entity. Please read [Authorized Members page](https://docs.opencti.io/latest/administration/authorized-members/) to get all information.
 
+### Override of capabilities in draft 
+
+On top of Role Based Access Control (RBAC), we have added the ability to work on drafts and control publishing access. By allowing users to have specific capabilities limited to drafts, it is possible to restrict users from editing or creating data in the main database. This provides additional control over who can do what in the platform. Please go to the [Users and RBAC page](users.md) for more information.
 
 ### Full text indexing
 
@@ -77,6 +80,10 @@ Use an email template to create templates of emails to be sent to your users. Le
 ### Priority Intelligence Requirement
 
 Priority Intelligence Requirements (PIRs) gather and prioritize the most relevant and crucial information based on the user's focus, helping them analyze key insights needed for effective decision-making and risk assessment (please read [Priority Intelligence Requirement](../usage/pir.md)).
+
+### SSO definition & usage
+
+Defining and using SSO (OpenID, LDAP, SAML, Certificate, Headers) requires an entreprise license. This feature allow you to define, from UI, any of these authentications. For more information, please read [Authentication via GUI configuration](../deployment/authetication-in-gui.md)
 
 
 ## More to come

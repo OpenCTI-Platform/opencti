@@ -87,7 +87,8 @@ const STIX_DOMAIN_OBJECT_SHAREABLE_CONTAINERS: Array<string> = [
   ENTITY_TYPE_CONTAINER_REPORT,
   ...STIX_DOMAIN_OBJECT_CONTAINER_CASES,
 ];
-export const isStixDomainObjectShareableContainer = (type: string): boolean => {
+export const isStixDomainObjectShareableContainer = (type: string | null | undefined): boolean => {
+  if (!type) return false;
   return STIX_DOMAIN_OBJECT_SHAREABLE_CONTAINERS.includes(type);
 };
 
