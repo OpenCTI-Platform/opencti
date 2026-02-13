@@ -6,7 +6,7 @@ import type { UserApiToken } from '../../types/user';
 const tokenUsageLastUpdateTime = Symbol('lastChecked');
 type TokenWithLastChecked = UserApiToken & { [tokenUsageLastUpdateTime]?: number };
 
-const REDIS_TOKEN_USAGE_PREFIX = 'token_usage:';
+const REDIS_TOKEN_USAGE_PREFIX = '{token_usage}:';
 // Only update activity every 15 minutes by default
 const REDIS_THROTTLE_MILLIS = 1000 * (nconf.get('app:token_activity_period') ?? 60);
 
