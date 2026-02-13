@@ -1,8 +1,8 @@
-import React, { FunctionComponent, ReactElement } from 'react';
 import { filter, includes } from 'ramda';
+import { FunctionComponent, ReactElement } from 'react';
+import { RootMe_data$data } from '../private/__generated__/RootMe_data.graphql';
 import useAuth from './hooks/useAuth';
 import useGranted, { BYPASS, KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from './hooks/useGranted';
-import { RootMe_data$data } from '../private/__generated__/RootMe_data.graphql';
 
 export const CAPABILITY_INFORMATION = {
   [KNOWLEDGE_KNUPDATE_KNORGARESTRICT]:
@@ -55,7 +55,7 @@ const Security: FunctionComponent<SecurityProps> = ({
   capabilitiesInDraft,
   hasAccess = true,
   children,
-  placeholder = <span />,
+  placeholder = null,
 }) => {
   const isGranted = useGranted(needs, matchAll, { capabilitiesInDraft });
   return isGranted && hasAccess ? children : placeholder;
@@ -66,7 +66,7 @@ export const CollaborativeSecurity: FunctionComponent<DataSecurityProps> = ({
   needs,
   matchAll,
   children,
-  placeholder = <span />,
+  placeholder = null,
 }) => {
   const { me } = useAuth();
   const haveCapability = useGranted(needs, matchAll);
