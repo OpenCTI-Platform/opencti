@@ -2,7 +2,6 @@ import base64
 import datetime
 import json
 import time
-import traceback
 from dataclasses import dataclass
 from typing import Any, Dict, Literal, Union
 
@@ -173,19 +172,11 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                             )
                             # Add expectations to the work
                             if work_id is not None:
-                                try:
-                                    self.api.work.add_expectations(
-                                        work_id, expectations
-                                    )
-                                except Exception as ex:
-                                    error_msg = traceback.format_exc()
-                                    if "WORK_NOT_ALIVE" in error_msg:
-                                        self.logger.info(
-                                            "Work no longer exists, acking message without processing",
-                                            {"work_id": work_id},
-                                        )
-                                        return "ack"
-                                    raise ex
+                                work_alive = self.api.work.add_expectations(
+                                    work_id, expectations
+                                )
+                                if not work_alive:
+                                    return "ack"
                             # For each split bundle, send it to the same queue
                             for bundle in bundles:
                                 self.send_bundle_to_specific_queue(
