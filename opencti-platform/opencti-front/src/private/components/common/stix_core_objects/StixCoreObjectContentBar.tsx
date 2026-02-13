@@ -10,7 +10,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import type { Theme } from '../../../../components/Theme';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../../components/i18n';
-import useDraftContext from '../../../../utils/hooks/useDraftContext';
+import useDraftContext, { DRAFT_TOOLBAR_HEIGHT } from '../../../../utils/hooks/useDraftContext';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -55,7 +55,7 @@ const StixCoreObjectContentBar: FunctionComponent<
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const draftContext = useDraftContext();
-  const posBottom = draftContext ? 69 : 0; // 69 is the height of the Draft toolbar.
+  const posBottom = draftContext ? DRAFT_TOOLBAR_HEIGHT : 0;
 
   return (
     <Drawer

@@ -5,7 +5,7 @@ import Drawer from '@mui/material/Drawer';
 import Slide from '@mui/material/Slide';
 import DataTableToolBar from './DataTableToolBar';
 import { UserContext } from '../../../utils/hooks/useAuth';
-import useDraftContext from '../../../utils/hooks/useDraftContext';
+import useDraftContext, { DRAFT_TOOLBAR_HEIGHT } from '../../../utils/hooks/useDraftContext';
 
 const useStyles = makeStyles(() => ({
   bottomNav: {
@@ -65,7 +65,7 @@ const ToolBar = (props) => {
   const draftContext = useDraftContext();
   const navOpen = localStorage.getItem('navOpen') === 'true';
   const isOpen = numberOfSelectedElements > 0;
-  const posBottom = draftContext ? 69 : 0; // 69 is the height of the Draft toolbar.
+  const posBottom = draftContext ? DRAFT_TOOLBAR_HEIGHT : 0;
 
   let paperClass;
   switch (variant) {

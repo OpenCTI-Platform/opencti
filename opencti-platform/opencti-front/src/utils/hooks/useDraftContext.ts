@@ -1,5 +1,7 @@
 import useAuth from './useAuth';
 
+export const DRAFT_TOOLBAR_HEIGHT = 69;
+
 export interface DraftContext {
   id: string;
   name: string;

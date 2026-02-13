@@ -13,7 +13,7 @@ import FilterIconButton from '../../../../components/FilterIconButton';
 import useAuth, { FilterDefinition, UserContext } from '../../../../utils/hooks/useAuth';
 import { Filter, FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { Stack } from '@mui/material';
-import useDraftContext from '../../../../utils/hooks/useDraftContext';
+import useDraftContext, { DRAFT_TOOLBAR_HEIGHT } from '../../../../utils/hooks/useDraftContext';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -60,7 +60,7 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
   const [navOpen, setNavOpen] = useState(
     localStorage.getItem('navOpen') === 'true',
   );
-  const posBottom = draftContext ? 69 : 0; // 69 is the height of the Draft toolbar.
+  const posBottom = draftContext ? DRAFT_TOOLBAR_HEIGHT : 0;
 
   useEffect(() => {
     const sub = MESSAGING$.toggleNav.subscribe({
