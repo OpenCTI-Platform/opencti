@@ -1674,7 +1674,7 @@
   "Evidences": "エビデンス",
   "Evolution": "発展",
   "Example": "例",
-  "Exclusion Lists": "除外リスト",
+  "Exclusion lists": "除外リスト",
   "Exclusion lists | Customization | Settings": "除外リスト｜カスタマイズ｜設定",
   "Exclusion lists can be used to prevent the import of indicators considered benign and legitimate. Exclusion lists only apply to indicators with a STIX pattern.": "除外リストを使用すると、良性かつ合法と考えられる指標のインポートを防ぐことができます。除外リストはSTIXパターンを持つインディケータにのみ適用されます。",
   "Execute advanced predefined computing": "高度な事前定義コンピューティングの実行",

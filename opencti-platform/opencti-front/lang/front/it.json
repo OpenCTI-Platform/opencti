@@ -1674,7 +1674,7 @@
   "Evidences": "Evidenze",
   "Evolution": "Evoluzione",
   "Example": "Esempio",
-  "Exclusion Lists": "Liste di esclusione",
+  "Exclusion lists": "Liste di esclusione",
   "Exclusion lists | Customization | Settings": "Liste di esclusione | Personalizzazione | Impostazioni",
   "Exclusion lists can be used to prevent the import of indicators considered benign and legitimate. Exclusion lists only apply to indicators with a STIX pattern.": "Le liste di esclusione possono essere utilizzate per impedire l'importazione di indicatori considerati benigni e legittimi. Le liste di esclusione si applicano solo agli indicatori con un pattern STIX.",
   "Execute advanced predefined computing": "Esecuzione di calcoli avanzati predefiniti",
