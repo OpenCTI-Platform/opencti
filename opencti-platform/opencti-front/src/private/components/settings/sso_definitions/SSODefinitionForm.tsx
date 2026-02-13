@@ -102,6 +102,7 @@ export interface SSODefinitionFormValues {
   email: string;
   firstname: string;
   lastname: string;
+  logout_uri: string;
 }
 
 export type SSOEditionFormInputKeys = keyof SSODefinitionFormValues;
@@ -154,6 +155,7 @@ const validationSchemaConfiguration = (selectedStrategy: string, t_i18n: (s: str
         email: Yup.string().required(t_i18n('This field is required')),
         firstname: Yup.string().required(t_i18n('This field is required')),
         lastname: Yup.string().required(t_i18n('This field is required')),
+        logout_uri: Yup.string().required(t_i18n('This field is required')),
       });
     }
     default:
@@ -239,6 +241,7 @@ const SSODefinitionForm = ({
     email: '',
     firstname: '',
     lastname: '',
+    logout_uri: '',
   };
 
   const getSourceAndTargetFromMapping = (groupMapping: string[]) => {
@@ -347,6 +350,7 @@ const SSODefinitionForm = ({
   const emailField = data?.configuration?.find((e) => e.key === 'email');
   const firstnameField = data?.configuration?.find((e) => e.key === 'firstname');
   const lastnameField = data?.configuration?.find((e) => e.key === 'lastname');
+  const logout_uriField = data?.configuration?.find((e) => e.key === 'logout_uri');
 
   if (data) {
     initialValues.name = data.name;
@@ -404,6 +408,7 @@ const SSODefinitionForm = ({
     initialValues.email = emailField?.value ?? '';
     initialValues.firstname = firstnameField?.value ?? '';
     initialValues.lastname = lastnameField?.value ?? '';
+    initialValues.logout_uri = logout_uriField?.value ?? '';
   }
 
   const showGroupAndMapping = selectedStrategy !== 'LocalAuth' && !selectedCert;

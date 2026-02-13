@@ -39,6 +39,7 @@ const headerConfigKeys = [
   'email',
   'firstname',
   'lastname',
+  'logout_uri',
 ];
 
 export type Config = {
