@@ -119,7 +119,7 @@ const aesEncrypt = (text: string, key: Buffer, aesIv: Buffer) => {
   return Buffer.concat([ciphertext, tag]);
 };
 
-const encryptValue = (rsaPublicKey: string, value: string) => {
+export const encryptValue = (rsaPublicKey: string, value: string) => {
   const aesKey = crypto.randomBytes(32);
   const aesIv = crypto.randomBytes(12);
   const aesEncryptedValueBuffer = aesEncrypt(value, aesKey, aesIv);

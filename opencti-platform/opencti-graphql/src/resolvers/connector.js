@@ -100,7 +100,7 @@ const connectorResolvers = {
     },
     // endregion
   },
-  Connector: {
+  Connector: { // For UI display
     works: (cn, args, context) => worksForConnector(context, context.user, cn.id, args),
     connector_queue_details: (cn) => queueDetails(cn.id),
     connector_priority_group: (cn) => {
@@ -112,17 +112,20 @@ const connectorResolvers = {
     manager_connector_uptime: (cn, _, context) => connectorGetUptime(context, context.user, cn.id),
     manager_contract_hash: (cn, _, context) => computeManagerContractHash(context, context.user, cn),
     manager_contract_definition: (cn, _, context) => computeManagerConnectorContract(context, context.user, cn),
-    manager_contract_configuration: (cn, _, context) => computeManagerConnectorConfiguration(context, context.user, cn, true),
+    manager_contract_configuration: (cn, _, context) => computeManagerConnectorConfiguration(context, context.user, cn),
     manager_contract_image: (cn) => computeManagerConnectorImage(cn),
     manager_contract_excerpt: (cn, _, context) => computeManagerConnectorExcerpt(context, context.user, cn),
     jwks: () => getConnectorJwks(),
   },
-  ManagedConnector: {
+  ManagedConnector: { // For composer
     manager_connector_logs: (cn) => redisGetConnectorLogs(cn.id),
     manager_health_metrics: (cn, _, context) => connectorGetHealth(context, context.user, cn.id),
     manager_connector_uptime: (cn, _, context) => connectorGetUptime(context, context.user, cn.id),
     manager_contract_hash: (cn, _, context) => computeManagerContractHash(context, context.user, cn),
-    manager_contract_configuration: (cn, _, context) => computeManagerConnectorConfiguration(context, context.user, cn),
+    manager_contract_configuration: (cn, _, context) => {
+      // Configuration for composer must contain encrypted authentication information
+      return computeManagerConnectorConfiguration(context, context.user, cn, { withEncrypted: true });
+    },
     manager_contract_image: (cn) => computeManagerConnectorImage(cn),
     connector_user: (cn, _, context) => connectorUser(context, context.user, cn.connector_user_id),
   },

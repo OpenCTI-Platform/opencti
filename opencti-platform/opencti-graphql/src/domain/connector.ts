@@ -181,6 +181,12 @@ export const registerConnectorsManager = async (context: AuthContext, user: Auth
     const { element } = await patchAttribute(context, user, input.id, ENTITY_TYPE_CONNECTOR_MANAGER, patch);
     return element;
   }
+  // Multiple connectors managers for one instance are not yet correctly supported.
+  // Prevent new registration if already one manager is registered
+  const connectorManagers = await fullEntitiesList<BasicStoreEntityConnectorManager>(context, user, [ENTITY_TYPE_CONNECTOR_MANAGER]);
+  if (connectorManagers.length > 0) {
+    throw UnsupportedError('Only one connector manager is supported per instance', { id: input.id });
+  }
   const managerToCreate = { internal_id: input.id, ...patch };
   return createEntity(context, user, managerToCreate, ENTITY_TYPE_CONNECTOR_MANAGER);
 };

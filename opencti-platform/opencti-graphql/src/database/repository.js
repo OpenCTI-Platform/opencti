@@ -9,7 +9,7 @@ import { BUILTIN_NOTIFIERS_CONNECTORS } from '../modules/notifier/notifier-stati
 import { builtInConnector, builtInConnectorsRuntime } from '../connector/connector-domain';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { shortHash } from '../schema/schemaUtils';
-import { getSupportedContractsByImage } from '../modules/catalog/catalog-domain';
+import { encryptValue, getSupportedContractsByImage } from '../modules/catalog/catalog-domain';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { getEntitiesMapFromCache } from './cache';
 import { SYSTEM_USER } from '../utils/access';
@@ -19,6 +19,10 @@ import { injectProxyConfiguration } from '../config/proxy-config';
 import { getPlatformCrypto } from '../utils/platformCrypto';
 import { SignJWT } from 'jose';
 import { memoize } from '../utils/memoize';
+import { addUserTokenByAdmin, revokeUserTokenByAdmin } from '../modules/user/user-domain';
+import { getClientBase } from './redis';
+import { lockResources } from '../lock/master-lock';
+import { LockTimeoutError, TYPE_LOCK_ERROR } from '../config/errors';
 
 export const CONNECTOR_PRIORITY_GROUP_VALUES = Object.values(ConnectorPriorityGroup);
 
@@ -98,23 +102,70 @@ export const computeManagerConnectorExcerpt = async (_context, _user, cn) => {
   };
 };
 
-export const computeManagerConnectorConfiguration = async (context, _user, cn, hideEncryptedConfigs = false) => {
+const computeConnectorTokenConfiguration = async (context, cn) => {
+  let lock;
+  // We need to lock the resource as we change the user that influences the cache
+  // When cache is touched, we need to ensure that no concurrency occurs
+  const resourceId = 'manager-configuration-' + cn.internal_id;
+  try {
+    lock = await lockResources([resourceId]);
+    const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+    const targetUser = platformUsers.get(cn.connector_user_id);
+    // If token is empty, remove / generate a new one
+    const COMPOSER_TOKEN = 'Composer managed token';
+    const currentToken = (targetUser.api_tokens ?? []).find((token) => token.name === COMPOSER_TOKEN);
+    // Get encrypted token in redis
+    const redisClient = getClientBase();
+    // Composer key must be base on user to handle correct user change
+    const composerKey = 'composer:' + cn.catalog_id + ':token:' + cn.connector_user_id;
+    let encryptedToken = await redisClient.get(composerKey);
+    // If token is empty, remove / generate a new one
+    if (isEmptyField(currentToken) || isEmptyField(encryptedToken)) {
+      // If the current token exists, but a redis key is not yet setup. We need to refresh the token
+      if (currentToken) {
+        await revokeUserTokenByAdmin(context, SYSTEM_USER, cn.connector_user_id, currentToken.id);
+      }
+      const { plaintext_token } = await addUserTokenByAdmin(context, SYSTEM_USER, cn.connector_user_id, { name: COMPOSER_TOKEN });
+      // Get the public key of the connector manager
+      // TODO Currently connector manager is a list but not used correctly
+      // We need to adapt if we want to handle correctly multiple managers
+      const connectorManagers = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_CONNECTOR_MANAGER]);
+      const { public_key } = connectorManagers[0];
+      // Encrypt the token with the public key of the connector manager
+      encryptedToken = encryptValue(public_key, plaintext_token);
+      // Get the token and push an encrypted value in redis
+      await redisClient.setex(composerKey, 600, encryptedToken); // 7 days configurable
+    } else {
+      // Extends token TTL
+      await redisClient.expire(composerKey, 600); // 10 minutes TTL extension
+    }
+    // Return the value for the composer
+    return encryptedToken;
+  } catch (err) {
+    if (err.name === TYPE_LOCK_ERROR) {
+      throw LockTimeoutError({ participantIds: [resourceId] });
+    }
+    throw err;
+  } finally {
+    if (lock) await lock.unlock();
+  }
+};
+
+export const computeManagerConnectorConfiguration = async (context, _, cn, { withEncrypted = false } = {}) => {
   if (!cn.catalog_id) {
     return [];
   }
   const currentContractConfig = structuredClone(cn.manager_contract_configuration) ?? [];
-  const fullContractConfig = hideEncryptedConfigs ? currentContractConfig.filter((c) => !c.encrypted) : currentContractConfig;
-  const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  fullContractConfig.push({ key: 'CONNECTOR_ID', value: cn.internal_id });
-  fullContractConfig.push({ key: 'CONNECTOR_NAME', value: cn.name });
-  fullContractConfig.push({ key: 'CONNECTOR_TYPE', value: cn.connector_type });
-  if (!hideEncryptedConfigs) {
-    fullContractConfig.push({ key: 'OPENCTI_TOKEN', value: platformUsers.get(cn.connector_user_id)?.api_token });
+  const contract = withEncrypted ? currentContractConfig.filter((c) => !c.encrypted) : currentContractConfig;
+  contract.push({ key: 'CONNECTOR_ID', value: cn.internal_id });
+  contract.push({ key: 'CONNECTOR_NAME', value: cn.name });
+  contract.push({ key: 'CONNECTOR_TYPE', value: cn.connector_type });
+  if (withEncrypted) { // Inject OPENCTI_TOKEN variable when needed
+    const encryptedToken = await computeConnectorTokenConfiguration(context, cn);
+    contract.push({ key: 'OPENCTI_TOKEN', value: encryptedToken, encrypted: true });
   }
-
   // Inject proxy configuration dynamically
-  const configWithProxy = injectProxyConfiguration(fullContractConfig);
-
+  const configWithProxy = injectProxyConfiguration(contract);
   return configWithProxy.sort();
 };
 
@@ -127,7 +178,7 @@ export const computeManagerConnectorImage = async (cn) => {
 
 export const computeManagerContractHash = async (context, user, cn) => {
   const image = await computeManagerConnectorImage(cn);
-  const config = await computeManagerConnectorConfiguration(context, user, cn);
+  const config = await computeManagerConnectorConfiguration(context, user, cn, { withEncrypted: true });
   const subHash = config.map((c) => `${c.key}|${c.value}`);
   return shortHash({ image, subHash, state: cn.connector_state_timestamp });
 };
