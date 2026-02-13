@@ -1674,7 +1674,7 @@
   "Evidences": "Evidences",
   "Evolution": "Evolution",
   "Example": "Example",
-  "Exclusion Lists": "Exclusion Lists",
+  "Exclusion lists": "Exclusion lists",
   "Exclusion lists | Customization | Settings": "Exclusion lists | Customization | Settings",
   "Exclusion lists can be used to prevent the import of indicators considered benign and legitimate. Exclusion lists only apply to indicators with a STIX pattern.": "Exclusion lists can be used to prevent the import of indicators considered benign and legitimate. Exclusion lists only apply to indicators with a STIX pattern.",
   "Execute advanced predefined computing": "Execute advanced predefined computing",

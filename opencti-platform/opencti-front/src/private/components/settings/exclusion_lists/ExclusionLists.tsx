@@ -223,7 +223,7 @@ const ExclusionLists = () => {
       <PageContainer withGap withRightMenu>
         <Breadcrumbs
           noMargin
-          elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, { label: t_i18n('Exclusion Lists'), current: true }]}
+          elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, { label: t_i18n('Exclusion lists'), current: true }]}
         />
         <ExclusionListsStatus refetch={refetchStatus} queryRef={queryRefStatus} loadQuery={loadQueryStatus} />
         <Alert
