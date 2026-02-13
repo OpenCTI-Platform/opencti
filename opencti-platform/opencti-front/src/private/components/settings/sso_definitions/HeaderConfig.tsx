@@ -1,6 +1,5 @@
 import React from 'react';
 import { Field } from 'formik';
-import { useFormatter } from '../../../../components/i18n';
 import { SSODefinitionFormValues } from '@components/settings/sso_definitions/SSODefinitionForm';
 import TextField from '../../../../components/TextField';
 
@@ -9,8 +8,6 @@ interface HeaderConfigProps {
 }
 
 const HeaderConfig = ({ updateField }: HeaderConfigProps) => {
-  const { t_i18n } = useFormatter();
-
   // Labels are not translated because they are technical terms localised in SSO.
   return (
     <>
@@ -40,6 +37,7 @@ const HeaderConfig = ({ updateField }: HeaderConfigProps) => {
         name="firstname"
         label="First name"
         onSubmit={updateField}
+        required
         fullWidth
         style={{ marginTop: 20 }}
         type="password"
@@ -49,6 +47,16 @@ const HeaderConfig = ({ updateField }: HeaderConfigProps) => {
         variant="standard"
         name="lastname"
         label="Last name"
+        onSubmit={updateField}
+        required
+        fullWidth
+        style={{ marginTop: 20 }}
+      />
+      <Field
+        component={TextField}
+        variant="standard"
+        name="logout_uri"
+        label="Logout uri"
         onSubmit={updateField}
         required
         fullWidth
