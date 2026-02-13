@@ -39,12 +39,14 @@ const StixNestedRefRelationshipEdition: FunctionComponent<StixNestedRefRelations
   if (!contextQueryRef) return null;
 
   return (
-    <StixNestedRefRelationshipEditionContent
-      stixNestedRefRelationshipId={stixNestedRefRelationshipId}
-      open={open}
-      handleClose={handleClose}
-      contextQueryRef={contextQueryRef}
-    />
+    <React.Suspense>
+      <StixNestedRefRelationshipEditionContent
+        stixNestedRefRelationshipId={stixNestedRefRelationshipId}
+        open={open}
+        handleClose={handleClose}
+        contextQueryRef={contextQueryRef}
+      />
+    </React.Suspense>
   );
 };
 
