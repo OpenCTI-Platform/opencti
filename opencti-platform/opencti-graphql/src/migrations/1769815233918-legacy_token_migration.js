@@ -1,8 +1,9 @@
 import { logApp } from '../config/conf';
-import { fullEntitiesOrRelationsList, patchAttribute } from '../database/middleware';
+import { fullEntitiesOrRelationsList } from '../database/middleware';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { SYSTEM_USER } from '../utils/access';
 import { generateTokenHmac } from '../modules/user/user-domain';
+import { elUpdate } from '../database/engine';
 
 const message = '[MIGRATION] Legacy Token Migration';
 
@@ -17,7 +18,7 @@ export const up = async (next) => {
     // Check if user has legacy token
     if (user.api_token) {
       logApp.info(`${message} > Migrating user ${i}/${users.length}`);
-      const legacyTokenHash = generateTokenHmac(user.api_token);
+      const legacyTokenHash = await generateTokenHmac(user.api_token);
       const currentTokens = user.api_tokens || [];
       // Check idempotency: if hash already exists in api_tokens
       const alreadyExists = currentTokens.some((t) => t.hash === legacyTokenHash);
@@ -33,10 +34,14 @@ export const up = async (next) => {
           expires_at: null,
         };
         const newTokensList = [...currentTokens, newToken];
-        await patchAttribute(context, SYSTEM_USER, user.id, ENTITY_TYPE_USER, {
-          api_token: null,
-          api_tokens: newTokensList,
+        const source = "ctx._source.api_tokens = params.api_tokens; ctx._source.remove('api_token');";
+        await elUpdate(user._index, user.internal_id, {
+          script: { source, lang: 'painless', params: { api_tokens: newTokensList } },
         });
+      } else {
+        // Ensure old api_token attribute cleanup
+        const source = "ctx._source.remove('api_token');";
+        await elUpdate(user._index, user.internal_id, { script: { source, lang: 'painless' } });
       }
     }
   }
