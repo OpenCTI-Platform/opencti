@@ -158,7 +158,7 @@ export const computeManagerConnectorConfiguration = async (context, _, cn, { wit
     return [];
   }
   const currentContractConfig = structuredClone(cn.manager_contract_configuration) ?? [];
-  const contract = withEncrypted ? currentContractConfig.filter((c) => !c.encrypted) : currentContractConfig;
+  const contract = withEncrypted ? currentContractConfig : currentContractConfig.filter((c) => !c.encrypted);
   contract.push({ key: 'CONNECTOR_ID', value: cn.internal_id });
   contract.push({ key: 'CONNECTOR_NAME', value: cn.name });
   contract.push({ key: 'CONNECTOR_TYPE', value: cn.connector_type });
