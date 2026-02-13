@@ -12,7 +12,7 @@ import { useFormatter } from '../../../components/i18n';
 import LabelsVocabulariesMenu from './LabelsVocabulariesMenu';
 import VocabularyCreation from './attributes/VocabularyCreation';
 import useVocabularyCategory, { vocabFragment } from '../../../utils/hooks/useVocabularyCategory';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
+import { addFilter, emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
@@ -104,7 +104,8 @@ const Vocabularies = () => {
   );
 
   const { filters } = viewStorage;
-  const contextFilters = useBuildEntityTypeBasedFilterContext('Vocabulary', filters);
+  const baseContextFIlters = useBuildEntityTypeBasedFilterContext('Vocabulary', filters);
+  const contextFilters = addFilter(baseContextFIlters, 'category', category, 'eq', 'and');
 
   const queryPaginationOptions = {
     ...paginationOptions,
