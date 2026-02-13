@@ -510,10 +510,13 @@ const ThemeLight = (
         html: {
           scrollbarColor: `${accent || THEME_LIGHT_DEFAULT_ACCENT} ${paper || THEME_LIGHT_DEFAULT_PAPER}`,
           scrollbarWidth: 'thin',
+          background: `linear-gradient(100deg, ${background || THEME_LIGHT_DEFAULT_BACKGROUND} 0%, ${getAppBodyGradientEndColor(background)} 100%)`,
+          backgroundAttachment: 'fixed',
           backgroundColor: background || THEME_LIGHT_DEFAULT_BACKGROUND,
         },
         body: {
           background: `linear-gradient(100deg, ${background || THEME_LIGHT_DEFAULT_BACKGROUND} 0%, ${getAppBodyGradientEndColor(background)} 100%)`,
+          backgroundAttachment: 'fixed',
           scrollbarColor: `${accent || THEME_LIGHT_DEFAULT_ACCENT} ${paper || THEME_LIGHT_DEFAULT_PAPER}`,
           scrollbarWidth: 'thin',
           html: {
