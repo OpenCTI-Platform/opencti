@@ -61,7 +61,12 @@ const DraftToolbarComponent = ({
         zIndex: theme.zIndex.appBar + 1,
       }}
     >
-      <Typography variant="h6">{draft.name}</Typography>
+      <Typography
+        variant="h6"
+        sx={{ textTransform: 'none' }}
+      >
+        {draft.name}
+      </Typography>
       <DraftProcessingStatus forceRefetch={refetch} />
 
       <div style={{ flex: 1 }} />
