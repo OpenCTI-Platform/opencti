@@ -24,16 +24,6 @@ const HeaderConfig = ({ updateField }: HeaderConfigProps) => {
       <Field
         component={TextField}
         variant="standard"
-        name="name"
-        label="Name"
-        onSubmit={updateField}
-        required
-        fullWidth
-        style={{ marginTop: 20 }}
-      />
-      <Field
-        component={TextField}
-        variant="standard"
         name="firstname"
         label="First name"
         onSubmit={updateField}
