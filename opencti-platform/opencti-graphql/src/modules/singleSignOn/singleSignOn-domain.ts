@@ -11,7 +11,7 @@ import {
   StrategyType,
 } from '../../generated/graphql';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import { type BasicStoreEntitySingleSignOn, ENTITY_TYPE_SINGLE_SIGN_ON } from './singleSignOn-types';
+import { type BasicStoreEntitySingleSignOn, ENTITY_TYPE_SINGLE_SIGN_ON, type StoreEntitySingleSignOn } from './singleSignOn-types';
 import { now } from '../../utils/format';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
@@ -208,7 +208,7 @@ export const fieldPatchSingleSignOn = async (context: AuthContext, user: AuthUse
     }
   }
 
-  const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_SINGLE_SIGN_ON, finalInput);
+  const { element } = await updateAttribute<StoreEntitySingleSignOn>(context, user, id, ENTITY_TYPE_SINGLE_SIGN_ON, finalInput);
 
   const singleSignOnEntityAfterUpdate: BasicStoreEntitySingleSignOn = element;
   await publishUserAction({
@@ -245,7 +245,7 @@ export const deleteSingleSignOn = async (context: AuthContext, user: AuthUser, i
     await unregisterStrategy(singleSignOn);
   }
 
-  const deleted = await deleteElementById(context, user, id, ENTITY_TYPE_SINGLE_SIGN_ON);
+  const deleted = await deleteElementById<StoreEntitySingleSignOn>(context, user, id, ENTITY_TYPE_SINGLE_SIGN_ON);
   await publishUserAction({
     user,
     event_type: 'mutation',
