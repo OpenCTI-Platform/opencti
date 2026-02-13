@@ -30520,6 +30520,7 @@ export enum StrategyType {
 export type StreamCollection = {
   __typename?: 'StreamCollection';
   authorized_members?: Maybe<Array<MemberAccess>>;
+  consumers: Array<StreamCollectionConsumer>;
   description?: Maybe<Scalars['String']['output']>;
   filters?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
@@ -30541,6 +30542,22 @@ export type StreamCollectionConnection = {
   __typename?: 'StreamCollectionConnection';
   edges: Array<StreamCollectionEdge>;
   pageInfo: PageInfo;
+};
+
+export type StreamCollectionConsumer = {
+  __typename?: 'StreamCollectionConsumer';
+  connectedAt: Scalars['DateTime']['output'];
+  connectionId: Scalars['String']['output'];
+  deliveryRate: Scalars['Float']['output'];
+  estimatedOutOfDepth?: Maybe<Scalars['Float']['output']>;
+  lastEventDate?: Maybe<Scalars['DateTime']['output']>;
+  lastEventId: Scalars['String']['output'];
+  processingRate: Scalars['Float']['output'];
+  productionRate: Scalars['Float']['output'];
+  resolutionRate: Scalars['Float']['output'];
+  timeLag: Scalars['Float']['output'];
+  userEmail?: Maybe<Scalars['String']['output']>;
+  userId: Scalars['String']['output'];
 };
 
 export type StreamCollectionEdge = {
@@ -30815,6 +30832,7 @@ export enum SupportPackageOrdering {
 
 export type Synchronizer = {
   __typename?: 'Synchronizer';
+  consumer_metrics?: Maybe<StreamCollectionConsumer>;
   current_state_date?: Maybe<Scalars['DateTime']['output']>;
   id: Scalars['ID']['output'];
   listen_deletion: Scalars['Boolean']['output'];
@@ -37491,6 +37509,7 @@ export type ResolversTypes = ResolversObject<{
   StreamCollection: ResolverTypeWrapper<StreamCollection>;
   StreamCollectionAddInput: StreamCollectionAddInput;
   StreamCollectionConnection: ResolverTypeWrapper<StreamCollectionConnection>;
+  StreamCollectionConsumer: ResolverTypeWrapper<StreamCollectionConsumer>;
   StreamCollectionEdge: ResolverTypeWrapper<StreamCollectionEdge>;
   StreamCollectionEditMutations: ResolverTypeWrapper<StreamCollectionEditMutations>;
   StreamCollectionOrdering: StreamCollectionOrdering;
@@ -38417,6 +38436,7 @@ export type ResolversParentTypes = ResolversObject<{
   StreamCollection: StreamCollection;
   StreamCollectionAddInput: StreamCollectionAddInput;
   StreamCollectionConnection: StreamCollectionConnection;
+  StreamCollectionConsumer: StreamCollectionConsumer;
   StreamCollectionEdge: StreamCollectionEdge;
   StreamCollectionEditMutations: StreamCollectionEditMutations;
   String: Scalars['String']['output'];
@@ -47519,6 +47539,7 @@ export type StixSightingRelationshipsEdgeResolvers<ContextType = any, ParentType
 
 export type StreamCollectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StreamCollection'] = ResolversParentTypes['StreamCollection']> = ResolversObject<{
   authorized_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
+  consumers?: Resolver<Array<ResolversTypes['StreamCollectionConsumer']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -47530,6 +47551,21 @@ export type StreamCollectionResolvers<ContextType = any, ParentType extends Reso
 export type StreamCollectionConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StreamCollectionConnection'] = ResolversParentTypes['StreamCollectionConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['StreamCollectionEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+}>;
+
+export type StreamCollectionConsumerResolvers<ContextType = any, ParentType extends ResolversParentTypes['StreamCollectionConsumer'] = ResolversParentTypes['StreamCollectionConsumer']> = ResolversObject<{
+  connectedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  connectionId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  deliveryRate?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  estimatedOutOfDepth?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  lastEventDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  lastEventId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  processingRate?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  productionRate?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  resolutionRate?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  timeLag?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  userEmail?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  userId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export type StreamCollectionEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['StreamCollectionEdge'] = ResolversParentTypes['StreamCollectionEdge']> = ResolversObject<{
@@ -47633,6 +47669,7 @@ export type SupportPackageEdgeResolvers<ContextType = any, ParentType extends Re
 }>;
 
 export type SynchronizerResolvers<ContextType = any, ParentType extends ResolversParentTypes['Synchronizer'] = ResolversParentTypes['Synchronizer']> = ResolversObject<{
+  consumer_metrics?: Resolver<Maybe<ResolversTypes['StreamCollectionConsumer']>, ParentType, ContextType>;
   current_state_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   listen_deletion?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -49769,6 +49806,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   StixSightingRelationshipsEdge?: StixSightingRelationshipsEdgeResolvers<ContextType>;
   StreamCollection?: StreamCollectionResolvers<ContextType>;
   StreamCollectionConnection?: StreamCollectionConnectionResolvers<ContextType>;
+  StreamCollectionConsumer?: StreamCollectionConsumerResolvers<ContextType>;
   StreamCollectionEdge?: StreamCollectionEdgeResolvers<ContextType>;
   StreamCollectionEditMutations?: StreamCollectionEditMutationsResolvers<ContextType>;
   SubAttackPatternForMatrix?: SubAttackPatternForMatrixResolvers<ContextType>;

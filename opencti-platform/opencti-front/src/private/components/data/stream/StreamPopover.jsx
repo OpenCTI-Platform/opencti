@@ -13,11 +13,14 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import Slide from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
+import OpenInNewOutlined from '@mui/icons-material/OpenInNewOutlined';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
 import { ConnectionHandler } from 'relay-runtime';
 import DialogTitle from '@mui/material/DialogTitle';
 import Drawer from '../../common/drawer/Drawer';
 import inject18n from '../../../../components/i18n';
-import { commitMutation } from '../../../../relay/environment';
+import { commitMutation, APP_BASE_PATH } from '../../../../relay/environment';
 import StreamCollectionEdition, { streamCollectionMutationFieldPatch } from './StreamCollectionEdition';
 
 const styles = (theme) => ({
@@ -87,6 +90,11 @@ class StreamCollectionPopover extends Component {
     this.setState({ displayDelete: false });
   }
 
+  handleOpenStream() {
+    this.handleClose();
+    window.open(`${APP_BASE_PATH}/stream/${this.props.streamCollection.id}`, '_blank');
+  }
+
   handleOnOff() {
     this.handleClose();
     commitMutation({
@@ -154,6 +162,12 @@ class StreamCollectionPopover extends Component {
           </MenuItem>
           <MenuItem onClick={this.handleOpenDelete.bind(this)}>
             {t('Delete')}
+          </MenuItem>
+          <MenuItem onClick={this.handleOpenStream.bind(this)}>
+            <ListItemIcon>
+              <OpenInNewOutlined fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>{t('Open stream')}</ListItemText>
           </MenuItem>
         </Menu>
         <Drawer

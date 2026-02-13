@@ -16,7 +16,7 @@ export interface Certificates {
 export interface GetHttpClient {
   baseURL?: string;
   rejectUnauthorized?: boolean;
-  responseType: 'json' | 'arraybuffer' | 'text';
+  responseType: 'json' | 'arraybuffer' | 'text' | 'stream';
   headers?: RawAxiosRequestHeaders | AxiosHeaders | Partial<HeadersDefaults>;
   certificates?: Certificates;
   auth?: {

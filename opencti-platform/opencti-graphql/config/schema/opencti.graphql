@@ -671,6 +671,20 @@ type RemoteStreamCollection {
   description: String
   filters: String
 }
+type StreamCollectionConsumer {
+  connectionId: String!
+  userId: String!
+  userEmail: String
+  connectedAt: DateTime!
+  lastEventId: String!
+  lastEventDate: DateTime
+  productionRate: Float!
+  deliveryRate: Float!
+  processingRate: Float!
+  resolutionRate: Float!
+  timeLag: Float!
+  estimatedOutOfDepth: Float
+}
 type StreamCollection {
   id: ID!
   name: String
@@ -679,6 +693,7 @@ type StreamCollection {
   stream_live: Boolean
   stream_public: Boolean
   authorized_members: [MemberAccess!] @auth(for: [TAXIIAPI])
+  consumers: [StreamCollectionConsumer!]!
 }
 type StreamCollectionConnection {
   pageInfo: PageInfo!
@@ -817,6 +832,7 @@ type Synchronizer {
   synchronized: Boolean
   queue_messages: Int!
   toConfigurationExport: String!
+  consumer_metrics: StreamCollectionConsumer
 }
 
 type SynchronizerEdge {
