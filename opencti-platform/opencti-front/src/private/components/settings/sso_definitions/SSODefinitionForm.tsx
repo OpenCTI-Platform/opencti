@@ -30,6 +30,7 @@ import useFormikToSSOConfig from '@components/settings/sso_definitions/utils/use
 import { getStrategyConfigEnum } from '@components/settings/sso_definitions/utils/useStrategicConfig';
 import { getGroupOrOrganizationMapping } from '@components/settings/sso_definitions/utils/GroupOrOrganizationMapping';
 import { SingleSignOnEditInput } from '@components/settings/sso_definitions/__generated__/SSODefinitionEditionMutation.graphql';
+import HeaderConfig from '@components/settings/sso_definitions/HeaderConfig';
 
 interface SSODefinitionFormProps {
   onCancel: () => void;
@@ -446,6 +447,7 @@ const SSODefinitionForm = ({
               {selectedStrategy === 'SAML' && <SAMLConfig />}
               {selectedStrategy === 'OpenID' && <OpenIDConfig />}
               {selectedStrategy === 'LDAP' && <LDAPConfig />}
+              {selectedStrategy === 'Header' && <HeaderConfig updateField={updateField} />}
               {!selectedCert && (
                 <FieldArray name="advancedConfigurations">
                   {({ push, remove, form }) => (
