@@ -41,16 +41,16 @@ const HeaderConfig = ({ updateField }: HeaderConfigProps) => {
         fullWidth
         style={{ marginTop: 20 }}
       />
-      <Field
-        component={TextField}
-        variant="standard"
-        name="logout_uri"
-        label="Logout uri"
-        onSubmit={updateField}
-        required
-        fullWidth
-        style={{ marginTop: 20 }}
-      />
+      {/* <Field */}
+      {/*  component={TextField} */}
+      {/*  variant="standard" */}
+      {/*  name="logout_uri" */}
+      {/*  label="Logout uri" */}
+      {/*  onSubmit={updateField} */}
+      {/*  required */}
+      {/*  fullWidth */}
+      {/*  style={{ marginTop: 20 }} */}
+      {/* /> */}
     </>
   );
 };

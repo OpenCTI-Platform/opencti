@@ -98,6 +98,10 @@ export interface SSODefinitionFormValues {
   groupSearchBase: string;
   groupSearchFilter: string;
   allow_self_signed: boolean;
+  // Header
+  email: string;
+  firstname: string;
+  lastname: string;
 }
 
 export type SSOEditionFormInputKeys = keyof SSODefinitionFormValues;
@@ -142,6 +146,14 @@ const validationSchemaConfiguration = (selectedStrategy: string, t_i18n: (s: str
         groupSearchBase: Yup.string().required(t_i18n('This field is required')),
         groupSearchFilter: Yup.string().required(t_i18n('This field is required')),
         allow_self_signed: Yup.boolean().required(t_i18n('This field is required')),
+      });
+    }
+    case 'Header': {
+      return Yup.object().shape({
+        ...base,
+        email: Yup.string().required(t_i18n('This field is required')),
+        firstname: Yup.string().required(t_i18n('This field is required')),
+        lastname: Yup.string().required(t_i18n('This field is required')),
       });
     }
     default:
@@ -223,6 +235,10 @@ const SSODefinitionForm = ({
     groupSearchBase: '',
     groupSearchFilter: '',
     allow_self_signed: false,
+    // HEADER
+    email: '',
+    firstname: '',
+    lastname: '',
   };
 
   const getSourceAndTargetFromMapping = (groupMapping: string[]) => {
@@ -298,6 +314,8 @@ const SSODefinitionForm = ({
   const forceReauthenticationField = data?.configuration?.find((e) => e.key === 'forceReauthentication');
   // const enableDebugModeField = data?.configuration?.find((e) => e.key === 'enableDebugMode');
   const entryPointField = data?.configuration?.find((e) => e.key === 'entryPoint');
+  const emailField = data?.configuration?.find((e) => e.key === 'email');
+  const firstnameField = data?.configuration?.find((e) => e.key === 'firstname');
   const { advancedConfig: advancedConfigurations } = getBaseAndAdvancedConfigFromData((data?.configuration ?? []) as ConfigurationTypeInput[], selectedStrategy ?? '');
 
   const groupAttribute = data?.groups_management?.group_attribute;
@@ -380,6 +398,9 @@ const SSODefinitionForm = ({
     initialValues.groupSearchBase = groupSearchBase?.value ?? '';
     initialValues.groupSearchFilter = groupSearchFilter?.value ?? '';
     initialValues.allow_self_signed = allow_self_signed ? allow_self_signed?.value === 'true' : false;
+
+    initialValues.email = emailField ?? '';
+    initialValues.firstname = firstnameField ?? '';
   }
 
   const showGroupAndMapping = selectedStrategy !== 'LocalAuth' && !selectedCert;

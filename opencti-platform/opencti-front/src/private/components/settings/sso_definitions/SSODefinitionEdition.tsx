@@ -17,37 +17,37 @@ export const ssoDefinitionEditionMutation = graphql`
 `;
 
 export const ssoDefinitionEditionFragment = graphql`
-    fragment SSODefinitionEditionFragment on SingleSignOn {
-        id
-        name
-        identifier
-        label
-        description
-        enabled
-        strategy
-        organizations_management {
-            organizations_path
-            organizations_mapping
-            organizations_scope
-            read_userinfo
-            token_reference
-        }
-        groups_management {
-            group_attribute
-            group_attributes
-            groups_attributes
-            groups_path
-            groups_scope
-            groups_mapping
-            read_userinfo
-            token_reference
-        }
-        configuration {
-            key
-            value
-            type
-        }
+  fragment SSODefinitionEditionFragment on SingleSignOn {
+    id
+    name
+    identifier
+    label
+    description
+    enabled
+    strategy
+    organizations_management {
+      organizations_path
+      organizations_mapping
+      organizations_scope
+      read_userinfo
+      token_reference
     }
+    groups_management {
+      group_attribute
+      group_attributes
+      groups_attributes
+      groups_path
+      groups_scope
+      groups_mapping
+      read_userinfo
+      token_reference
+    }
+    configuration {
+        key
+        value
+        type
+    }
+  }
 `;
 
 interface SSODefinitionEditionProps {
