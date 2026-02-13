@@ -316,6 +316,7 @@ const SSODefinitionForm = ({
   const entryPointField = data?.configuration?.find((e) => e.key === 'entryPoint');
   const emailField = data?.configuration?.find((e) => e.key === 'email');
   const firstnameField = data?.configuration?.find((e) => e.key === 'firstname');
+  const lastnameField = data?.configuration?.find((e) => e.key === 'lastname');
   const { advancedConfig: advancedConfigurations } = getBaseAndAdvancedConfigFromData((data?.configuration ?? []) as ConfigurationTypeInput[], selectedStrategy ?? '');
 
   const groupAttribute = data?.groups_management?.group_attribute;
@@ -399,8 +400,9 @@ const SSODefinitionForm = ({
     initialValues.groupSearchFilter = groupSearchFilter?.value ?? '';
     initialValues.allow_self_signed = allow_self_signed ? allow_self_signed?.value === 'true' : false;
 
-    initialValues.email = emailField ?? '';
+    initialValues.email = emailField;
     initialValues.firstname = firstnameField ?? '';
+    initialValues.lastname = lastnameField ?? '';
   }
 
   const showGroupAndMapping = selectedStrategy !== 'LocalAuth' && !selectedCert;
