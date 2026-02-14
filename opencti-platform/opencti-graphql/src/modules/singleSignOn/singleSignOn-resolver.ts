@@ -3,11 +3,11 @@ import {
   findSingleSignOnById,
   findSingleSignOnPaginated,
   addSingleSignOn,
-  fieldPatchSingleSignOn,
+  editSingleSignOn,
   deleteSingleSignOn,
   runSingleSignOnRunMigration,
   getSingleSignOnSettings,
-  excludeEncryptedConfigurationKeys,
+  maskEncryptedConfigurationKeys,
 } from './singleSignOn-domain';
 
 const singleSignOnResolver: Resolvers = {
@@ -17,14 +17,14 @@ const singleSignOnResolver: Resolvers = {
     singleSignOnSettings: (_, __, ___) => getSingleSignOnSettings(),
   },
   SingleSignOn: {
-    configuration: (singleSignOn) => excludeEncryptedConfigurationKeys(singleSignOn),
+    configuration: (singleSignOn) => maskEncryptedConfigurationKeys(singleSignOn),
   },
   Mutation: {
     singleSignOnAdd: (_, { input }, context) => {
       return addSingleSignOn(context, context.user, input);
     },
-    singleSignOnFieldPatch: (_, { id, input }, context) => {
-      return fieldPatchSingleSignOn(context, context.user, id, input);
+    singleSignOnEdit: (_, { id, input }, context) => {
+      return editSingleSignOn(context, context.user, id, input);
     },
     singleSignOnDelete: (_, { id }, context) => {
       return deleteSingleSignOn(context, context.user, id);

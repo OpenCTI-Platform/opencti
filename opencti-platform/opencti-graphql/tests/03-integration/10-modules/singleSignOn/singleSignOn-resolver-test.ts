@@ -2,12 +2,11 @@ import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import {
   type ConfigurationTypeInput,
-  type EditInput,
-  EditOperation,
   FilterMode,
   FilterOperator,
   type SingleSignMigrationInput,
   type SingleSignOnAddInput,
+  type SingleSignOnEditInput,
   type SingleSignOnMigrationResult,
   StrategyType,
 } from '../../../../src/generated/graphql';
@@ -15,7 +14,7 @@ import { queryAsAdminWithSuccess, queryAsUserIsExpectedError, queryAsUserIsExpec
 import { ADMIN_USER, testContext, USER_PARTICIPATE, USER_SECURITY } from '../../../utils/testQuery';
 import { deleteElementById } from '../../../../src/database/middleware';
 import { ENTITY_TYPE_SINGLE_SIGN_ON } from '../../../../src/modules/singleSignOn/singleSignOn-types';
-import { TO_ENCRYPT_TYPE } from '../../../../src/modules/singleSignOn/singleSignOn-domain';
+import { SECRET_TYPE } from '../../../../src/modules/singleSignOn/singleSignOn-domain';
 
 export const SINGLE_SIGN_ON_LIST_QUERY = gql`
     query singleSignOns($first: Int $filters: FilterGroup) {
@@ -60,8 +59,8 @@ export const SINGLE_SIGN_ON_CREATE = gql`
     }
 `;
 export const SINGLE_SIGN_ON_UPDATE = gql`
-    mutation singleSignOnFieldPatch($id: ID!, $input: [EditInput!]!) {
-        singleSignOnFieldPatch(id: $id, input: $input) {
+    mutation singleSignOnEdit($id: ID!, $input: SingleSignOnEditInput!) {
+        singleSignOnEdit(id: $id, input: $input) {
             id
             name
             strategy
@@ -71,13 +70,13 @@ export const SINGLE_SIGN_ON_UPDATE = gql`
                 value
                 type
             }
-          groups_management {
-            groups_path
-            groups_mapping
-          }
-          organizations_management {
-              organizations_mapping
-          }
+            groups_management {
+                groups_path
+                groups_mapping
+            }
+            organizations_management {
+                organizations_mapping
+            }
         }
     }
 `;
@@ -154,8 +153,8 @@ describe('Single Sign On CRUD coverage', () => {
         { key: 'callbackUrl', value: 'http://myopencti/auth/samlTestDomain/callback', type: 'string' },
         { key: 'cert', value: '21341234', type: 'string' },
         { key: 'issuer', value: 'issuer', type: 'string' },
-        { key: 'privateKey', value: 'myPK', type: 'string' },
-        { key: 'mySecret', value: 'Ilove;Mint', type: TO_ENCRYPT_TYPE },
+        { key: 'privateKey', value: 'myPK', type: SECRET_TYPE },
+        { key: 'mySecret', value: 'Ilove;Mint', type: SECRET_TYPE },
       ],
     };
     it('should not create single sign on entity without SETAUTH capa', async () => {
@@ -230,7 +229,7 @@ describe('Single Sign On CRUD coverage', () => {
         query: SINGLE_SIGN_ON_UPDATE,
         variables: {
           id: createdSingleSignOn1Id,
-          input: { key: 'name', value: 'updated name 1' },
+          input: { name: 'updated name 1' } satisfies SingleSignOnEditInput,
         },
       });
     });
@@ -239,18 +238,17 @@ describe('Single Sign On CRUD coverage', () => {
         query: SINGLE_SIGN_ON_UPDATE,
         variables: {
           id: createdSingleSignOn1Id,
-          input: { key: 'name', value: 'updated name 1' },
+          input: { name: 'updated name 1' } satisfies SingleSignOnEditInput,
         },
       });
 
-      expect(result?.data?.singleSignOnFieldPatch).toBeDefined();
-      expect(result?.data?.singleSignOnFieldPatch?.name).toBe('updated name 1');
+      expect(result?.data?.singleSignOnEdit).toBeDefined();
+      expect(result?.data?.singleSignOnEdit?.name).toBe('updated name 1');
     });
 
     it('should edit whole configuration entity', async () => {
-      const editFieldInConfig: EditInput = {
-        key: 'configuration',
-        value: [
+      const editInput: SingleSignOnEditInput = {
+        configuration: [
           { key: 'callbackUrl', value: 'http://myopencti/auth/samlTestDomain/callback', type: 'string' },
           { key: 'idpCert', value: '21341234', type: 'string' },
           { key: 'issuer', value: 'issuer', type: 'string' },
@@ -262,13 +260,13 @@ describe('Single Sign On CRUD coverage', () => {
         query: SINGLE_SIGN_ON_UPDATE,
         variables: {
           id: createdSingleSignOn1Id,
-          input: [editFieldInConfig],
+          input: editInput,
         },
       });
 
-      expect(result?.data?.singleSignOnFieldPatch).toBeDefined();
-      expect(result?.data?.singleSignOnFieldPatch?.name).toBe('updated name 1');
-      const configurationData: ConfigurationTypeInput[] = result?.data?.singleSignOnFieldPatch?.configuration as ConfigurationTypeInput[];
+      expect(result?.data?.singleSignOnEdit).toBeDefined();
+      expect(result?.data?.singleSignOnEdit?.name).toBe('updated name 1');
+      const configurationData: ConfigurationTypeInput[] = result?.data?.singleSignOnEdit?.configuration as ConfigurationTypeInput[];
       expect(configurationData).toEqual([
         { key: 'callbackUrl', value: 'http://myopencti/auth/samlTestDomain/callback', type: 'string' },
         { key: 'idpCert', value: '21341234', type: 'string' },
@@ -278,30 +276,23 @@ describe('Single Sign On CRUD coverage', () => {
     });
 
     it('should edit one single configuration entity', async () => {
-      const editFieldInConfig: EditInput = {
-        key: 'configuration',
-        object_path: 'configuration',
-        operation: EditOperation.Add,
-        value: [{ key: 'issuer2', value: 'issuer2', type: 'string' }],
+      const editInput: SingleSignOnEditInput = {
+        configuration: [{ key: 'issuer2', value: 'issuer2', type: 'string' }],
       };
 
       const result = await queryAsAdminWithSuccess({
         query: SINGLE_SIGN_ON_UPDATE,
         variables: {
           id: createdSingleSignOn1Id,
-          input: [editFieldInConfig],
+          input: editInput,
         },
       });
 
-      expect(result?.data?.singleSignOnFieldPatch).toBeDefined();
-      expect(result?.data?.singleSignOnFieldPatch?.name).toBe('updated name 1');
+      expect(result?.data?.singleSignOnEdit).toBeDefined();
+      expect(result?.data?.singleSignOnEdit?.name).toBe('updated name 1');
 
-      const configurationData: ConfigurationTypeInput[] = result?.data?.singleSignOnFieldPatch?.configuration as ConfigurationTypeInput[];
+      const configurationData: ConfigurationTypeInput[] = result?.data?.singleSignOnEdit?.configuration as ConfigurationTypeInput[];
       expect(configurationData).toEqual([
-        { key: 'callbackUrl', value: 'http://myopencti/auth/samlTestDomain/callback', type: 'string' },
-        { key: 'idpCert', value: '21341234', type: 'string' },
-        { key: 'issuer', value: 'issuer', type: 'string' },
-        { key: 'newKey', value: 'newKey', type: 'string' },
         { key: 'issuer2', value: 'issuer2', type: 'string' },
       ]);
     });
@@ -311,23 +302,23 @@ describe('Single Sign On CRUD coverage', () => {
         query: SINGLE_SIGN_ON_UPDATE,
         variables: {
           id: createdSingleSignOn1Id,
-          input: { key: 'groups_management', value: [{
-            groups_path: ['member'],
-            groups_mapping: [
-              '/Connector:Connectors',
-            ],
-          }] },
+          input: {
+            groups_management: {
+              groups_path: ['member'],
+              groups_mapping: [
+                '/Connector:Connectors',
+              ],
+            } } satisfies SingleSignOnEditInput,
         },
       });
-      expect(result?.data?.singleSignOnFieldPatch).toBeDefined();
-      expect(result?.data?.singleSignOnFieldPatch?.groups_management.groups_path).toStrictEqual(['member']);
-      expect(result?.data?.singleSignOnFieldPatch?.groups_management.groups_mapping).toStrictEqual(['/Connector:Connectors']);
+      expect(result?.data?.singleSignOnEdit).toBeDefined();
+      expect(result?.data?.singleSignOnEdit?.groups_management.groups_path).toStrictEqual(['member']);
+      expect(result?.data?.singleSignOnEdit?.groups_management.groups_mapping).toStrictEqual(['/Connector:Connectors']);
     });
 
     it('should not edit empty value in input', async () => {
-      const editFieldInConfig: EditInput = {
-        key: 'configuration',
-        value: [
+      const editInput: SingleSignOnEditInput = {
+        configuration: [
           { key: 'callbackUrl', value: 'http://myopencti/auth/samlTestDomain/callback', type: 'string' },
           { key: 'idpCert', value: '21341234', type: 'string' },
           { key: 'issuer', value: 'issuer', type: 'string' },
@@ -341,11 +332,11 @@ describe('Single Sign On CRUD coverage', () => {
         query: SINGLE_SIGN_ON_UPDATE,
         variables: {
           id: createdSingleSignOn1Id,
-          input: [editFieldInConfig],
+          input: editInput,
         },
       });
-      expect(result?.data?.singleSignOnFieldPatch).toBeDefined();
-      const configurationData: ConfigurationTypeInput[] = result?.data?.singleSignOnFieldPatch?.configuration as ConfigurationTypeInput[];
+      expect(result?.data?.singleSignOnEdit).toBeDefined();
+      const configurationData: ConfigurationTypeInput[] = result?.data?.singleSignOnEdit?.configuration as ConfigurationTypeInput[];
       expect(configurationData).not.toContainEqual({ key: 'privateKey' });
     });
   });

@@ -218,8 +218,6 @@ const TimeoutLock: React.FunctionComponent = () => {
     }
   }, [state.idleCount]);
 
-  console.log('bannerHeightNumber', bannerHeightNumber);
-
   return (
     <Dialog
       open={dialogOpen}

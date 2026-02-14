@@ -2,54 +2,52 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import SSODefinitionForm, { SSOEditionFormInputKeys } from '@components/settings/sso_definitions/SSODefinitionForm';
-import { SSODefinitionEditionMutation } from '@components/settings/sso_definitions/__generated__/SSODefinitionEditionMutation.graphql';
+import SSODefinitionForm from '@components/settings/sso_definitions/SSODefinitionForm';
 import { SSODefinitionEditionFragment$key } from '@components/settings/sso_definitions/__generated__/SSODefinitionEditionFragment.graphql';
-import { getConfigFromData, getSSOConfigList } from '@components/settings/sso_definitions/utils/getConfigAndAdvancedConfigFromData';
+import { SingleSignOnEditInput, SSODefinitionEditionMutation } from '@components/settings/sso_definitions/__generated__/SSODefinitionEditionMutation.graphql';
 import { getStrategyConfigSelected } from '@components/settings/sso_definitions/utils/useStrategicConfig';
-import { formatStringToArray } from '@components/settings/sso_definitions/utils/format';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 export const ssoDefinitionEditionMutation = graphql`
-  mutation SSODefinitionEditionMutation($id: ID!, $input: [EditInput!]!) {
-    singleSignOnFieldPatch(id: $id, input: $input) {
-      ...SSODefinitionEditionFragment
+    mutation SSODefinitionEditionMutation($id: ID!, $input: SingleSignOnEditInput!) {
+        singleSignOnEdit(id: $id, input: $input) {
+            ...SSODefinitionEditionFragment
+        }
     }
-  }
 `;
 
 export const ssoDefinitionEditionFragment = graphql`
-  fragment SSODefinitionEditionFragment on SingleSignOn {
-    id
-    name
-    identifier
-    label
-    description
-    enabled
-    strategy
-    organizations_management {
-        organizations_path
-        organizations_mapping
-        organizations_scope
-        read_userinfo
-        token_reference
+    fragment SSODefinitionEditionFragment on SingleSignOn {
+        id
+        name
+        identifier
+        label
+        description
+        enabled
+        strategy
+        organizations_management {
+            organizations_path
+            organizations_mapping
+            organizations_scope
+            read_userinfo
+            token_reference
+        }
+        groups_management {
+            group_attribute
+            group_attributes
+            groups_attributes
+            groups_path
+            groups_scope
+            groups_mapping
+            read_userinfo
+            token_reference
+        }
+        configuration {
+            key
+            value
+            type
+        }
     }
-    groups_management {
-        group_attribute
-        group_attributes
-        groups_attributes
-        groups_path
-        groups_scope
-        groups_mapping
-        read_userinfo
-        token_reference
-    }
-    configuration {
-        key
-        value
-        type
-    }
-  }
 `;
 
 interface SSODefinitionEditionProps {
@@ -74,84 +72,17 @@ const SSODefinitionEdition = ({
     { successMessage: `${t_i18n('entity_SSO')} ${t_i18n('successfully updated')}` },
   );
 
-  const getGroupOrOrganizationManagementEditInputValue = (field: SSOEditionFormInputKeys, value: unknown, arrayValueList: string[]) => {
-    let fieldValue: string = field;
-    let inputValue = value;
-    if (field.includes('token_reference')) fieldValue = 'token_reference';
-    if (field.includes('read_userinfo')) {
-      fieldValue = 'read_userinfo';
-      inputValue = value === 'true';
-    }
-    if (arrayValueList.includes(field) && !Array.isArray(value)) {
-      return { [fieldValue]: [inputValue] };
-    }
-    return { [fieldValue]: inputValue };
-  };
-
-  const onEdit = (field: SSOEditionFormInputKeys, value: unknown) => {
-    const configurationKeyList = getSSOConfigList(selectedStrategy ?? '');
-    const groupManagementKeyList = ['group_attribute', 'groups_attributes', 'group_attributes', 'groups_path', 'groups_scope', 'groups_mapping', 'groups_token_reference', 'groups_read_userinfo'];
-    const organizationsManagementKeyList = ['organizations_path', 'organizations_mapping', 'organizations_scope', 'organizations_token_reference', 'organizations_read_userinfo'];
-
-    const input: { key: string; value: unknown[] } = { key: field, value: [value] };
-
-    if (configurationKeyList.includes(field)) {
-      input.key = 'configuration';
-      const configurations = [...(sso.configuration ?? [])];
-      const foundIndex = configurations.findIndex((item) => item.key === field);
-      const newEntry = {
-        key: field,
-        value: Array.isArray(value) ? JSON.stringify(value) : String(value),
-        type: Array.isArray(value) ? 'array' : typeof value,
-      };
-      if (foundIndex === -1) {
-        configurations.push(newEntry);
-      } else {
-        configurations[foundIndex] = newEntry;
-      }
-
-      input.value = [...configurations];
-    }
-
-    if (field === 'advancedConfigurations') {
-      input.key = 'configuration';
-      const config = getConfigFromData(sso.configuration ?? [], selectedStrategy ?? '');
-      input.value = Array.isArray(value) ? [...config, ...value] : [...config];
-    }
-
-    if (groupManagementKeyList.includes(field)) {
-      const attributesFields = ['group_attributes', 'groups_attributes'];
-      const arrayValueList = ['groups_path', 'groups_mapping', ...attributesFields];
-      input.key = 'groups_management';
-
-      const currentValue = attributesFields.includes(field)
-        ? formatStringToArray(String(value))
-        : value;
-
-      const inputValue = getGroupOrOrganizationManagementEditInputValue(field, currentValue, arrayValueList);
-      input.value = [{
-        ...sso.groups_management,
-        ...inputValue,
-      }];
-    }
-
-    if (organizationsManagementKeyList.includes(field)) {
-      const arrayValueList = ['organizations_path', 'organizations_mapping'];
-      input.key = 'organizations_management';
-
-      const currentValue = field === 'organizations_path'
-        ? formatStringToArray(String(value))
-        : value;
-
-      const inputValue = getGroupOrOrganizationManagementEditInputValue(field, currentValue, arrayValueList);
-      input.value = [{
-        ...sso.organizations_management,
-        ...inputValue,
-      }];
-    }
-
+  const onSubmit = (
+    finalValues: SingleSignOnEditInput,
+    { setSubmitting, resetForm}: { setSubmitting: (flag: boolean) => void; resetForm: () => void },
+  ) => {
+    setSubmitting(true);
     editMutation({
-      variables: { id: sso.id, input: [input] },
+      variables: { id: sso.id, input: finalValues },
+      onCompleted: () => {
+        setSubmitting(false);
+        resetForm();
+      },
     });
   };
 
@@ -163,7 +94,13 @@ const SSODefinitionEdition = ({
       open={isOpen}
       onClose={onClose}
     >
-      <SSODefinitionForm onCancel={onClose} onSubmitField={onEdit} data={sso} selectedStrategy={strategyConfigSelected} />
+      <SSODefinitionForm
+        onCancel={onClose}
+        onSubmit={onSubmit}
+        data={sso}
+        selectedStrategy={strategyConfigSelected}
+        isEditing
+      />
     </Drawer>
   );
 };

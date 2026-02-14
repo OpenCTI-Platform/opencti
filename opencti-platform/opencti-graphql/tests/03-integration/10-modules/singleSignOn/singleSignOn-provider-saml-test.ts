@@ -3,7 +3,7 @@ import { convertKeyValueToJsConfiguration } from '../../../../src/modules/single
 import type { BasicStoreEntitySingleSignOn } from '../../../../src/modules/singleSignOn/singleSignOn-types';
 import { type GroupsManagement, type OrganizationsManagement, StrategyType } from '../../../../src/generated/graphql';
 import { buildSAMLOptions, computeSamlGroupAndOrg, computeSamlUserInfo } from '../../../../src/modules/singleSignOn/singleSignOn-provider-saml';
-import { encryptAuthValue, ENCRYPTED_TYPE } from '../../../../src/modules/singleSignOn/singleSignOn-domain';
+import { encryptAuthValue, SECRET_TYPE } from '../../../../src/modules/singleSignOn/singleSignOn-domain';
 
 describe('SAML Single sign on Provider coverage tests', () => {
   describe('SAML configuration coverage', () => {
@@ -46,7 +46,7 @@ describe('SAML Single sign on Provider coverage tests', () => {
           {
             key: 'privateKey',
             value: `${encryptedKey}`,
-            type: ENCRYPTED_TYPE,
+            type: SECRET_TYPE,
           },
         ],
       };

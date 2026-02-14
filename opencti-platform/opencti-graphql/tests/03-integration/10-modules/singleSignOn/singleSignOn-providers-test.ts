@@ -6,7 +6,7 @@ import { isAuthenticationActivatedByIdentifier, type ProviderConfiguration, PROV
 import { clearProvider } from './singleSignOn-test-utils';
 import { initEnterpriseAuthenticationProviders } from '../../../../src/modules/singleSignOn/singleSignOn-init';
 import { waitInSec } from '../../../../src/database/utils';
-import { deleteSingleSignOn, encryptAuthValue, ENCRYPTED_TYPE, internalAddSingleSignOn } from '../../../../src/modules/singleSignOn/singleSignOn-domain';
+import { deleteSingleSignOn, encryptAuthValue, internalAddSingleSignOn, SECRET_TYPE } from '../../../../src/modules/singleSignOn/singleSignOn-domain';
 import { type SingleSignOnAddInput, StrategyType } from '../../../../src/generated/graphql';
 
 describe('Single sign on Provider coverage tests', () => {
@@ -164,7 +164,7 @@ describe('Single sign on Provider coverage tests', () => {
     it('should decrypt secret types', async () => {
       const encryptedValue = await encryptAuthValue('MyValueIsFine');
       expect(encryptedValue).not.toBe('MyValueIsFine');
-      const result = await parseValueAsType({ key: 'myKey', value: `${encryptedValue}`, type: ENCRYPTED_TYPE });
+      const result = await parseValueAsType({ key: 'myKey', value: `${encryptedValue}`, type: SECRET_TYPE });
       expect(result).toBe('MyValueIsFine');
     });
   });

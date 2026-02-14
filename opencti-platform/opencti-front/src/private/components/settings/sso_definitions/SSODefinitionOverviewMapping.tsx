@@ -15,7 +15,7 @@ import Tooltip from '@mui/material/Tooltip';
 import AccessesMenu from '@components/settings/AccessesMenu';
 import { EMPTY_VALUE } from '../../../../utils/String';
 import Card from '@common/card/Card';
-import { ConfigTypeArray, getAdvancedConfigFromData, getConfigFromData } from '@components/settings/sso_definitions/utils/getConfigAndAdvancedConfigFromData';
+import { getBaseAndAdvancedConfigFromData } from '@components/settings/sso_definitions/utils/getConfigAndAdvancedConfigFromData';
 
 export const ssoDefinitionOverviewMappingFragment = graphql`
   fragment SSODefinitionOverviewMappingFragment on SingleSignOn {
@@ -65,16 +65,16 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
     description,
     enabled,
     strategy,
-    configuration,
+    configuration = [],
     groups_management,
     organizations_management,
   } = ssoOverview;
 
   type Row = { key: string; value: unknown; type: string };
 
-  const getSsoConfigRows = (): { defaultRows: Row[]; advancedRows: Row[] } => {
+  const getSsoConfigRows = () => {
     const baseRows: Row[] = [
-      { key: 'name', value: name, type: 'string' },
+      { key: 'name', type: 'string', value: name },
       { key: 'identifier', type: 'string', value: identifier },
       { key: 'label', type: 'string', value: label },
       { key: 'description', type: 'string', value: description },
@@ -82,48 +82,22 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
       { key: 'strategy', type: 'string', value: strategy },
     ];
 
-    if (!configuration || configuration.length === 0) {
+    const config = (configuration ?? []).map(({ key, type, value }) => {
+      const mappedValue = (type === 'array' && value) ? JSON.parse(value).join(',') : value;
       return {
-        defaultRows: baseRows,
-        advancedRows: [],
+        key,
+        type,
+        value: mappedValue,
       };
-    }
-
-    const configArray: ConfigTypeArray = configuration.map((config) => ({
-      key: config.key,
-      value: config.value ?? '',
-      type: config.type ?? 'string',
-    }));
-
-    const baseConfig = getConfigFromData(configArray, strategy);
-    const advancedConfig = getAdvancedConfigFromData(configArray, strategy);
-
-    const defaultRows: Row[] = [
-      ...baseRows,
-      ...baseConfig.map((config) => ({
-        key: config.key,
-        value: config.value,
-        type: config.type,
-      })),
-    ];
-
-    configuration?.forEach((config) => {
-      let value = config.value;
-      if (config.type === 'array') value = JSON.parse(config.value).join(',');
-      baseConfig.push({
-        key: config.key,
-        value,
-        type: config.type,
-      });
     });
 
-    const advancedRows: Row[] = advancedConfig.map((config) => ({
-      key: config.key,
-      value: config.value,
-      type: config.type,
-    }));
+    const { baseConfig, advancedConfig } = getBaseAndAdvancedConfigFromData(config, strategy);
+    const basicRows = [
+      ...baseRows,
+      ...baseConfig,
+    ];
 
-    return { defaultRows, advancedRows };
+    return { basicRows, advancedRows: advancedConfig };
   };
 
   const getGroupsRows = (): Row[] => {
@@ -182,6 +156,18 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
   };
 
   const renderValue = (row: Row) => {
+    if (row.type === 'boolean') {
+      if (row.value === true || (row.value as string)?.toLowerCase?.() === 'true') {
+        return <ItemBoolean label={t_i18n('True')} status={true} />;
+      } else {
+        return <ItemBoolean label={t_i18n('False')} status={false} />;
+      }
+    }
+
+    if (!row.value) {
+      return EMPTY_VALUE;
+    }
+
     if (row.type === 'array' && Array.isArray(row.value)) {
       return (
         <List dense disablePadding>
@@ -196,24 +182,12 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
       );
     }
 
-    if (typeof row.value === 'object' && row.value !== null) {
+    if (typeof row.value === 'object') {
       return (
         <List dense disablePadding>
           <ListItem disableGutters>
             <ListItemText
               primary={JSON.stringify(row.value, null, 2)}
-            />
-          </ListItem>
-        </List>
-      );
-    }
-
-    if (row.type === 'encrypted' && row.value !== null) {
-      return (
-        <List dense disablePadding>
-          <ListItem disableGutters>
-            <ListItemText
-              primary="******"
             />
           </ListItem>
         </List>
@@ -253,8 +227,6 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
             </Grid>
           </Grid>
           {rows.map((row) => {
-            const valueIsTrue = row.value == 'true' || (row.key === 'enabled' && row.value);
-            const valueIsFalse = row.value == 'false' || (row.key === 'enabled' && !row.value);
             return (
               <Grid
                 container
@@ -269,11 +241,7 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
                   <Typography variant="body1">{row.key}</Typography>
                 </Grid>
                 <Grid size={{ xs: 12, md: 6 }} sx={{ display: 'flex', alignItems: 'center' }}>
-                  {valueIsTrue
-                    ? <ItemBoolean label={t_i18n('True')} status={true} />
-                    : valueIsFalse
-                      ? <ItemBoolean label={t_i18n('False')} status={false} />
-                      : row.value ? renderValue(row) : EMPTY_VALUE}
+                  {renderValue(row)}
                 </Grid>
               </Grid>
             );
@@ -283,7 +251,7 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
     </div>
   );
 
-  const { defaultRows, advancedRows } = getSsoConfigRows();
+  const { basicRows, advancedRows } = getSsoConfigRows();
   const groupsRows = getGroupsRows();
   const organizationsRows = getOrganizationsRows();
 
@@ -306,7 +274,7 @@ const SSODefinitionOverviewMapping = ({ sso }: SSODefinitionOverviewMappingProps
 
         {currentTab === 0 && (
           <>
-            {renderRows(defaultRows, t_i18n('Base configuration'))}
+            {renderRows(basicRows, t_i18n('Base configuration'))}
             {advancedRows.length > 0 && renderRows(advancedRows, t_i18n('Advanced configuration'))}
           </>
         )}

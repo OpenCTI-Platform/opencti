@@ -10,7 +10,6 @@ type TargetAutocompleteProps = {
   itemIcon: string;
   label: string;
   options: string[];
-  value: string;
 };
 
 const TargetAutocomplete = ({
@@ -19,7 +18,6 @@ const TargetAutocomplete = ({
   itemIcon,
   label,
   options,
-  value,
 }: TargetAutocompleteProps) => {
   const { t_i18n } = useFormatter();
 
@@ -34,9 +32,7 @@ const TargetAutocomplete = ({
         label: label,
       }}
       noOptionsText={t_i18n('No available options')}
-      value={value}
       options={options}
-      onChange={handleChange}
       onInputChange={handleChange}
       renderOption={(renderProps: React.HTMLAttributes<HTMLLIElement>, option: string) => {
         return (

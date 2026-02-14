@@ -1,19 +1,16 @@
 import { Field } from 'formik';
 import TextField from 'src/components/TextField';
 import React from 'react';
-import { SSODefinitionFormValues } from '@components/settings/sso_definitions/SSODefinitionForm';
 import { useFormatter } from 'src/components/i18n';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import SwitchField from '../../../../components/fields/SwitchField';
 import GroupAndOrganizationMapping from './mapping/GroupAndOrganizationMapping';
 
 type SSODefinitionGroupFormProps = {
-  isEditionMode: boolean;
   selectedStrategy: string | null;
-  updateField: (field: keyof SSODefinitionFormValues, value: unknown) => void;
 };
 
-const SSODefinitionGroupForm = ({ isEditionMode, selectedStrategy, updateField }: SSODefinitionGroupFormProps) => {
+const SSODefinitionGroupForm = ({ selectedStrategy }: SSODefinitionGroupFormProps) => {
   const { t_i18n } = useFormatter();
 
   const getGroupAttributeKeyName = () => {
@@ -33,7 +30,6 @@ const SSODefinitionGroupForm = ({ isEditionMode, selectedStrategy, updateField }
         component={TextField}
         variant="standard"
         name={name}
-        onSubmit={updateField}
         label={t_i18n('Attribute in token')}
         style={fieldSpacingContainerStyle}
         fullWidth
@@ -51,7 +47,6 @@ const SSODefinitionGroupForm = ({ isEditionMode, selectedStrategy, updateField }
             component={TextField}
             variant="standard"
             name="groups_path"
-            onSubmit={updateField}
             label="Group path"
             style={fieldSpacingContainerStyle}
             fullWidth
@@ -60,7 +55,6 @@ const SSODefinitionGroupForm = ({ isEditionMode, selectedStrategy, updateField }
             component={TextField}
             variant="standard"
             name="groups_scope"
-            onSubmit={updateField}
             label="Group scope"
             style={fieldSpacingContainerStyle}
             fullWidth
@@ -69,7 +63,6 @@ const SSODefinitionGroupForm = ({ isEditionMode, selectedStrategy, updateField }
             component={TextField}
             variant="standard"
             name="groups_token_reference"
-            onSubmit={updateField}
             label="Access token"
             style={fieldSpacingContainerStyle}
             fullWidth
@@ -77,17 +70,14 @@ const SSODefinitionGroupForm = ({ isEditionMode, selectedStrategy, updateField }
         </>
       )}
       <GroupAndOrganizationMapping
-        isEditionMode={isEditionMode}
         label={t_i18n('Group mapping value')}
         name="groups_mapping"
-        updateField={updateField}
       />
       <Field
         component={SwitchField}
         variant="standard"
         type="checkbox"
         name="groups_read_userinfo"
-        onChange={updateField}
         label={t_i18n('Automatically add users to default groups')}
         containerstyle={{ marginLeft: 2, marginTop: 30 }}
       />

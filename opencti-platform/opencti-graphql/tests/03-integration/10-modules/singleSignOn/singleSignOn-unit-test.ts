@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { excludeEncryptedConfigurationKeys } from '../../../../src/modules/singleSignOn/singleSignOn-domain';
+import { maskEncryptedConfigurationKeys } from '../../../../src/modules/singleSignOn/singleSignOn-domain';
 import type { BasicStoreEntitySingleSignOn } from '../../../../src/modules/singleSignOn/singleSignOn-types';
 
 describe('excludeEncryptedConfigurationKeys tests', () => {
@@ -7,14 +7,15 @@ describe('excludeEncryptedConfigurationKeys tests', () => {
     const sso = {
       name: 'name',
       configuration: [
-        { key: 'privateKey', value: 'issuer', type: 'encrypted' },
+        { key: 'privateKey', value: 'issuer', type: 'secret' },
         { key: 'issuer', value: 'issuer', type: 'string' },
         { key: 'newKey', value: 'newKey', type: 'string' },
       ],
     } as BasicStoreEntitySingleSignOn;
-    const configuration = excludeEncryptedConfigurationKeys(sso);
+    const configuration = maskEncryptedConfigurationKeys(sso);
     expect(configuration).not.toContainEqual({ key: 'privateKey' });
     expect(configuration).toStrictEqual([
+      { key: 'privateKey', value: '******', type: 'secret' },
       { key: 'issuer', value: 'issuer', type: 'string' },
       { key: 'newKey', value: 'newKey', type: 'string' },
     ]);

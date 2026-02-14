@@ -147,7 +147,7 @@ describe('Migration of SSO environment test coverage', () => {
         { key: 'xmlSignatureTransforms', type: 'array', value: '["http://www.w3.org/2000/09/xmldsig#enveloped-signature","http://www.w3.org/2001/10/xml-exc-c14n#"]' },
         { key: 'wantAssertionsSigned', type: 'boolean', value: 'true' },
         { key: 'organizations_default', type: 'array', value: '["OpenCTI"]' },
-        { key: 'decryptionPvk', type: 'string', value: '-----BEGIN PRIVATE KEY-----\\nMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\n/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+A\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nGLQ9wsHH5tQkNr581fConN+uq1iWNxtEz8mOc+Xa2BSuAhl3nX++t5BWs7zeBQP9\\njjfMi8aOQuv7/7lgCAY9oX7OnjF0Zk42AW2oJMC/h/OUvU9wTsyN7lOsyvCLSHoQ\\n77lV3ZvL2Uj6mB+FsjcrT/mD3wKBgQDJiTUGC0LjAJXnw6ncnbm3uxXwENwV4Slp\\narnhMJo7pokw3tHUbbDmmKmMXxtpDsJkHioCLqcL72cuZWPqCCKC4HmH1s+hdUov\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nQQQQQQQQQQQQQQQQQQQQQQQQ\\n-----END PRIVATE KEY-----' },
+        { key: 'decryptionPvk', type: 'secret', value: '-----BEGIN PRIVATE KEY-----\\nMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\n/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+/h+A\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nnMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\\nGLQ9wsHH5tQkNr581fConN+uq1iWNxtEz8mOc+Xa2BSuAhl3nX++t5BWs7zeBQP9\\njjfMi8aOQuv7/7lgCAY9oX7OnjF0Zk42AW2oJMC/h/OUvU9wTsyN7lOsyvCLSHoQ\\n77lV3ZvL2Uj6mB+FsjcrT/mD3wKBgQDJiTUGC0LjAJXnw6ncnbm3uxXwENwV4Slp\\narnhMJo7pokw3tHUbbDmmKmMXxtpDsJkHioCLqcL72cuZWPqCCKC4HmH1s+hdUov\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz\\nQQQQQQQQQQQQQQQQQQQQQQQQ\\n-----END PRIVATE KEY-----' },
         { key: 'disableRequestedAuthnContext', type: 'boolean', value: 'true' },
         { key: 'audience', type: 'string', value: 'MyAudience' },
         { key: 'account_attribute', type: 'string', value: 'MyAccount' },
@@ -156,7 +156,7 @@ describe('Migration of SSO environment test coverage', () => {
         { key: 'firstname_attribute', type: 'string', value: 'theFirstname' },
         { key: 'lastname_attribute', type: 'string', value: 'theLastName' },
         { key: 'mail_attribute', type: 'string', value: 'TheMail' },
-        { key: 'privateKey', type: 'string', value: 'MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM' },
+        { key: 'privateKey', type: 'secret', value: 'MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM' },
         { key: 'signatureAlgorithm', type: 'string', value: 'sha256' },
         { key: 'wantAuthnResponseSigned', type: 'boolean', value: 'false' },
       ]);
@@ -423,7 +423,7 @@ describe('Migration of SSO environment test coverage', () => {
       expect(minimalOpenIdConfiguration.configuration).toStrictEqual([
         { key: 'issuer', type: 'string', value: 'http://localhost:9999/realms/master' },
         { key: 'client_id', type: 'string', value: 'openctioid' },
-        { key: 'client_secret', type: 'string', value: 'youShallNotPass' },
+        { key: 'client_secret', type: 'secret', value: 'youShallNotPass' },
         { key: 'redirect_uri', type: 'string', value: 'http://localhost:4000/auth/oic/callback' },
       ]);
     });
@@ -460,7 +460,7 @@ describe('Migration of SSO environment test coverage', () => {
       expect(allTypesOpenIdConfiguration.configuration).toStrictEqual([
         { key: 'issuer', type: 'string', value: 'http://localhost:9999/realms/master' },
         { key: 'client_id', type: 'string', value: 'openctioid' },
-        { key: 'client_secret', type: 'string', value: 'youShallNotPass' },
+        { key: 'client_secret', type: 'secret', value: 'youShallNotPass' },
         { key: 'redirect_uri', type: 'string', value: 'http://localhost:4000/auth/oic/callback' },
         { key: 'entry_point', type: 'string', value: 'http://localhost:7777/realms/master/protocol/oic' },
         { key: 'default_scopes', type: 'array', value: '["myopenid","myemail","myprofile"]' },
@@ -502,7 +502,7 @@ describe('Migration of SSO environment test coverage', () => {
       expect(groupManagementOpenIdConfiguration.configuration).toStrictEqual([
         { key: 'issuer', type: 'string', value: 'http://localhost:9999/realms/master' },
         { key: 'client_id', type: 'string', value: 'openctioid' },
-        { key: 'client_secret', type: 'string', value: 'youShallNotPass' },
+        { key: 'client_secret', type: 'secret', value: 'youShallNotPass' },
         { key: 'redirect_uri', type: 'string', value: 'http://localhost:4000/auth/oic/callback' },
         { key: 'logout_remote', type: 'boolean', value: 'true' },
         { key: 'prevent_default_groups', type: 'boolean', value: 'false' },
@@ -554,7 +554,7 @@ describe('Migration of SSO environment test coverage', () => {
       expect(orgsOpenIdConfiguration.configuration).toStrictEqual([
         { key: 'issuer', type: 'string', value: 'http://localhost:9999/realms/master' },
         { key: 'client_id', type: 'string', value: 'oic_orgs' },
-        { key: 'client_secret', type: 'string', value: 'youShallNotPass' },
+        { key: 'client_secret', type: 'secret', value: 'youShallNotPass' },
         { key: 'redirect_uri', type: 'string', value: 'http://localhost:4000/auth/oic_orgs/callback' },
         { key: 'logout_remote', type: 'boolean', value: 'true' },
         { key: 'prevent_default_groups', type: 'boolean', value: 'false' },
@@ -603,7 +603,7 @@ describe('Migration of SSO environment test coverage', () => {
       expect(multiOicConfigurations[0].configuration).toStrictEqual([
         { key: 'issuer', type: 'string', value: 'http://localhost:9999/realms/master' },
         { key: 'client_id', type: 'string', value: 'openctioid' },
-        { key: 'client_secret', type: 'string', value: 'youShallNotPass' },
+        { key: 'client_secret', type: 'secret', value: 'youShallNotPass' },
         { key: 'redirect_uri', type: 'string', value: 'http://localhost:4000/auth/oic/callback' },
       ]);
       expect(multiOicConfigurations[1].strategy).toBe('OpenIDConnectStrategy');
@@ -612,7 +612,7 @@ describe('Migration of SSO environment test coverage', () => {
       expect(multiOicConfigurations[1].configuration).toStrictEqual([
         { key: 'issuer', type: 'string', value: 'http://localhost:9999/realms/master' },
         { key: 'client_id', type: 'string', value: 'openctioid' },
-        { key: 'client_secret', type: 'string', value: 'youShallNotPass' },
+        { key: 'client_secret', type: 'secret', value: 'youShallNotPass' },
         { key: 'redirect_uri', type: 'string', value: 'http://localhost:4000/auth/oic/callback' },
       ]);
     });
@@ -647,7 +647,7 @@ describe('Migration of SSO environment test coverage', () => {
       expect(defaultValuesConfiguration.configuration).toStrictEqual([
         { key: 'issuer', type: 'string', value: 'http://localhost:9999/realms/master' },
         { key: 'client_id', type: 'string', value: 'openctioid' },
-        { key: 'client_secret', type: 'string', value: 'youShallNotPass' },
+        { key: 'client_secret', type: 'secret', value: 'youShallNotPass' },
         { key: 'redirect_uri', type: 'string', value: 'http://localhost:4000/auth/oic/callback' },
       ]);
 
@@ -733,7 +733,7 @@ describe('Migration of SSO environment test coverage', () => {
       expect(minimalLDAPConfiguration.configuration).toStrictEqual([
         { key: 'url', type: 'string', value: 'ldap://51.178.68.23:390' },
         { key: 'bindDN', type: 'string', value: 'CN=user1,DC=fr' },
-        { key: 'bindCredentials', type: 'string', value: 'credentials' },
+        { key: 'bindCredentials', type: 'secret', value: 'credentials' },
         { key: 'searchBase', type: 'string', value: 'CN=user1' },
         { key: 'searchFilter', type: 'string', value: '(cn={{username}})' },
         { key: 'mail_attribute', type: 'string', value: 'userPrincipalName' },
@@ -771,7 +771,7 @@ describe('Migration of SSO environment test coverage', () => {
       expect(groupManagementLDAPConfiguration.configuration).toStrictEqual([
         { key: 'url', type: 'string', value: 'ldap://51.178.68.23:390' },
         { key: 'bindDN', type: 'string', value: 'CN=user1,DC=fr' },
-        { key: 'bindCredentials', type: 'string', value: 'credentials' },
+        { key: 'bindCredentials', type: 'secret', value: 'credentials' },
         { key: 'searchBase', type: 'string', value: 'CN=user1' },
         { key: 'searchFilter', type: 'string', value: '(cn={{username}})' },
         { key: 'mail_attribute', type: 'string', value: 'userPrincipalName' },
@@ -823,7 +823,7 @@ describe('Migration of SSO environment test coverage', () => {
       expect(multiOicConfigurations[0].configuration).toStrictEqual([
         { key: 'url', type: 'string', value: 'ldap://51.178.68.23:390' },
         { key: 'bindDN', type: 'string', value: 'CN=user1,DC=fr' },
-        { key: 'bindCredentials', type: 'string', value: 'credentials' },
+        { key: 'bindCredentials', type: 'secret', value: 'credentials' },
         { key: 'searchBase', type: 'string', value: 'CN=user1' },
         { key: 'searchFilter', type: 'string', value: '(cn={{username}})' },
         { key: 'mail_attribute', type: 'string', value: 'userPrincipalName' },
@@ -834,7 +834,7 @@ describe('Migration of SSO environment test coverage', () => {
       expect(multiOicConfigurations[1].configuration).toStrictEqual([
         { key: 'url', type: 'string', value: 'ldap://51.178.68.23:390' },
         { key: 'bindDN', type: 'string', value: 'CN=user2,DC=fr' },
-        { key: 'bindCredentials', type: 'string', value: 'credentials' },
+        { key: 'bindCredentials', type: 'secret', value: 'credentials' },
         { key: 'searchBase', type: 'string', value: 'CN=user2' },
         { key: 'searchFilter', type: 'string', value: '(cn={{username}})' },
         { key: 'mail_attribute', type: 'string', value: 'userPrincipalName' },
@@ -872,7 +872,7 @@ describe('Migration of SSO environment test coverage', () => {
       expect(defaultValuesConfiguration.configuration).toStrictEqual([
         { key: 'url', type: 'string', value: 'ldap://51.178.68.23:390' },
         { key: 'bindDN', type: 'string', value: 'CN=user1,DC=fr' },
-        { key: 'bindCredentials', type: 'string', value: 'credentials' },
+        { key: 'bindCredentials', type: 'secret', value: 'credentials' },
         { key: 'searchBase', type: 'string', value: 'CN=user1' },
         { key: 'searchFilter', type: 'string', value: '(cn={{username}})' },
         { key: 'mail_attribute', type: 'string', value: 'userPrincipalName' },
