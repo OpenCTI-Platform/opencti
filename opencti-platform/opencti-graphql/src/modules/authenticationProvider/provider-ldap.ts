@@ -43,7 +43,7 @@ export const registerLDAPStrategy = async (conf: LdapProviderConfiguration) => {
       identifier: conf.identifier,
       providerGroups: groups,
       providerOrganizations: organizations,
-      autoCreateGroup: conf.groups_mapping.auto_create_group,
+      autoCreateGroup: conf.groups_mapping.auto_create_groups,
     };
     await providerLoginHandler(userInfo, done, opts);
   };

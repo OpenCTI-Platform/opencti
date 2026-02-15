@@ -50,7 +50,7 @@ export const registerSAMLStrategy = async (conf: SamlProviderConfiguration) => {
       identifier: conf.identifier,
       providerGroups: groups,
       providerOrganizations: organizations,
-      autoCreateGroup: conf.groups_mapping.auto_create_group,
+      autoCreateGroup: conf.groups_mapping.auto_create_groups,
     };
     const userInfoWithMeta = {
       ...userInfo,

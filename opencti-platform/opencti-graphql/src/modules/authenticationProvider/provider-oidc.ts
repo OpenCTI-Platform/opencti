@@ -72,7 +72,7 @@ export const registerOpenIdStrategy = async (conf: OidcProviderConfiguration) =>
       identifier: conf.identifier,
       providerGroups: groups,
       providerOrganizations: organizations,
-      autoCreateGroup: conf.groups_mapping.auto_create_group ?? false,
+      autoCreateGroup: conf.groups_mapping.auto_create_groups,
     };
     await providerLoginHandler(userInfo, verified, opts);
   };

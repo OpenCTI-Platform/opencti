@@ -10114,6 +10114,7 @@ export type GroupsManagementInput = {
 
 export type GroupsMapping = {
   __typename?: 'GroupsMapping';
+  auto_create_groups: Scalars['Boolean']['output'];
   default_groups: Array<Scalars['String']['output']>;
   groups_expr: Array<Scalars['String']['output']>;
   groups_mapping: Array<MappingEntry>;
@@ -21175,6 +21176,7 @@ export type OrganizationsManagementInput = {
 
 export type OrganizationsMapping = {
   __typename?: 'OrganizationsMapping';
+  auto_create_organizations: Scalars['Boolean']['output'];
   default_organizations: Array<Scalars['String']['output']>;
   organizations_expr: Array<Scalars['String']['output']>;
   organizations_mapping: Array<MappingEntry>;
@@ -42936,6 +42938,7 @@ export type GroupsManagementResolvers<ContextType = any, ParentType extends Reso
 }>;
 
 export type GroupsMappingResolvers<ContextType = any, ParentType extends ResolversParentTypes['GroupsMapping'] = ResolversParentTypes['GroupsMapping']> = ResolversObject<{
+  auto_create_groups?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   default_groups?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   groups_expr?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   groups_mapping?: Resolver<Array<ResolversTypes['MappingEntry']>, ParentType, ContextType>;
@@ -46113,6 +46116,7 @@ export type OrganizationsManagementResolvers<ContextType = any, ParentType exten
 }>;
 
 export type OrganizationsMappingResolvers<ContextType = any, ParentType extends ResolversParentTypes['OrganizationsMapping'] = ResolversParentTypes['OrganizationsMapping']> = ResolversObject<{
+  auto_create_organizations?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   default_organizations?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   organizations_expr?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   organizations_mapping?: Resolver<Array<ResolversTypes['MappingEntry']>, ParentType, ContextType>;

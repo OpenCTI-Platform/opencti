@@ -6,23 +6,24 @@ export const ENTITY_TYPE_AUTHENTICATION_PROVIDER = 'AuthenticationProvider';
 
 // Mapping configuration
 export interface UserInfoMapping {
-  email_expr: string; // eg 'user_info/email'
-  name_expr: string; // eg 'user_info/username'
-  firstname_expr?: string; // eg 'user_info/given_name'
-  lastname_expr?: string; // eg 'user_info/family_name'
+  email_expr: string; // eg 'user_info.email'
+  name_expr: string; // eg 'user_info.username'
+  firstname_expr?: string; // eg 'user_info.given_name'
+  lastname_expr?: string; // eg 'user_info.family_name'
 }
 
 export interface GroupsMapping {
   default_groups: string[];
   groups_expr: string[];
   groups_mapping: { provider: string; platform: string }[];
-  auto_create_group: boolean;
+  auto_create_groups: boolean;
 }
 
 export interface OrganizationsMapping {
   default_organizations: string[];
   organizations_expr: string[];
   organizations_mapping: { provider: string; platform: string }[];
+  auto_create_organizations: boolean;
 }
 
 export type MappingConfiguration = {
