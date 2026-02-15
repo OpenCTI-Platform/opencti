@@ -1,9 +1,9 @@
-import { logAuthInfo } from '../__singleSignOn/singleSignOn-domain';
 import LocalStrategy from 'passport-local';
 import { login } from '../../domain/user';
 import { addUserLoginCount } from '../../manager/telemetryManager';
 import passport from 'passport';
 import { AuthType, EnvStrategyType, LOCAL_STRATEGY_IDENTIFIER, type ProviderConfiguration } from './providers-configuration';
+import { logAuthInfo } from './providers-logger';
 
 export let LOCAL_PROVIDER: ProviderConfiguration | undefined = undefined;
 
