@@ -106,6 +106,10 @@ import { SignJWT } from 'jose';
 import { getPlatformCrypto } from '../utils/platformCrypto';
 import { addUserTokenByAdmin, generateTokenHmac } from '../modules/user/user-domain';
 import { memoize } from '../utils/memoize';
+import { getSettings } from './settings';
+import { LOCAL_STRATEGY_IDENTIFIER, PROVIDERS } from '../modules/singleSignOn/providers-configuration';
+import { HEADER_PROVIDER } from '../modules/singleSignOn/singleSignOn-provider-header';
+import passport from 'passport';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -298,17 +302,6 @@ export const userOrganizationsPaginatedWithoutInferences = async (context, user,
 
 export const userOrganizationsPaginated = async (context, user, userId, opts) => {
   return pageRegardingEntitiesConnection(context, user, userId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION, false, opts);
-};
-
-// Get the creator of userId
-export const getCreator = async (context, _user, userId) => {
-  const allUsersInCache = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  const userLoaded = allUsersInCache.get(userId);
-  const firstCreatorId = Array.isArray(userLoaded.creator_id) && userLoaded.creator_id.length > 0
-    ? userLoaded.creator_id.at(0)
-    : userLoaded.creator_id;
-  const userCreatorFromCache = allUsersInCache.get(firstCreatorId);
-  return buildCreatorUser(userCreatorFromCache);
 };
 
 export const userRoles = async (context, _user, userId, opts) => {
@@ -1455,6 +1448,59 @@ export const otpUserDeactivation = async (context, user, id) => {
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
 };
 
+export const sessionLogin = async (context, input) => {
+  // We need to iterate on each provider to find one that validated the credentials
+  let loggedUser;
+  // Try registered providers first
+  const body = { username: input.email, password: input.password };
+  const formProviders = R.filter((p) => p.type === 'FORM', PROVIDERS);
+  for (let index = 0; index < formProviders.length; index += 1) {
+    const auth = formProviders[index];
+    const { user, provider } = await new Promise((resolve) => {
+      passport.authenticate(auth.provider, {}, (err, authUser, info) => {
+        if (err || info) {
+          logApp.warn('Token authenticate error', { cause: err, info, provider: auth.provider });
+        }
+        resolve({ user: authUser, provider: auth.provider });
+      })({ body });
+    });
+    // As soon as credential is validated, stop looking for another provider
+    if (user) {
+      loggedUser = await sessionAuthenticateUser(context, context.req, user, provider);
+      break;
+    }
+  }
+  // Try local is activated
+  if (!loggedUser) {
+    const settings = await getSettings(context);
+    const { user, provider } = await new Promise((resolve) => {
+      passport.authenticate(LOCAL_STRATEGY_IDENTIFIER, {}, (err, authUser, info) => {
+        if (err || info) {
+          logApp.warn('Token authenticate error', { cause: err, info, provider: LOCAL_STRATEGY_IDENTIFIER });
+        }
+        resolve({ user: authUser, provider: LOCAL_STRATEGY_IDENTIFIER });
+      })({ body });
+    });
+    if (settings.local_auth?.enabled || user.id === OPENCTI_ADMIN_UUID) {
+      loggedUser = await sessionAuthenticateUser(context, context.req, user, provider);
+    }
+  }
+  if (loggedUser) {
+    return loggedUser.api_token;
+  }
+  const auditUser = userWithOrigin(context.req, { user_email: input.email });
+  await publishUserAction({
+    user: auditUser,
+    event_type: 'authentication',
+    event_scope: 'login',
+    event_access: 'administration',
+    status: 'error',
+    context_data: { username: ENABLED_DEMO_MODE ? REDACTED_USER.name : input.email, provider: 'form' },
+  });
+  // User cannot be authenticated in any providers
+  throw AuthenticationFailure();
+};
+
 export const otpUserLogin = async (req, user, { code }) => {
   if (!user.otp_activated) {
     throw AuthenticationFailure();
@@ -1825,8 +1871,6 @@ export const sessionAuthenticateUser = async (context, req, user, provider) => {
   return userOrigin;
 };
 
-export const HEADERS_AUTHENTICATORS = [];
-
 export const JWT_TOKEN_PREFIX = 'ey';
 // This method can only be used in createAuthenticatedContext
 // If you need to check auth and create context, use directly createAuthenticatedContext method
@@ -1851,7 +1895,6 @@ export const authenticateUserFromRequest = async (context, req) => {
       return undefined;
     }
   }
-
   const sessionUser = req.session?.user;
   // region If user already have a session
   if (sessionUser) {
@@ -1863,13 +1906,11 @@ export const authenticateUserFromRequest = async (context, req) => {
   // endregion
   // region Direct authentication
   // If user not identified, try headers authentication
-  if (HEADERS_AUTHENTICATORS.length > 0) {
-    for (let i = 0; i < HEADERS_AUTHENTICATORS.length; i += 1) {
-      const headProvider = HEADERS_AUTHENTICATORS[i];
-      const user = await headProvider.reqLoginHandler(req);
-      if (user) {
-        return await authenticateUserByUserId(context, req, user.id);
-      }
+  const settings = await getSettings(context);
+  if (settings.headers_auth?.enabled) {
+    const user = await HEADER_PROVIDER?.reqLoginHandler(req);
+    if (user) {
+      return await authenticateUserByUserId(context, req, user.id);
     }
   }
   // If no bearer specified, try with basic auth

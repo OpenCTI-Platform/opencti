@@ -2,14 +2,15 @@ import React, { Suspense, useEffect, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import Alert from '@mui/material/Alert';
+import { Field, useFormikContext } from 'formik';
 import GroupField from '@components/common/form/GroupField';
 import { GroupSetDefaultGroupForIngestionUsersQuery } from '@components/settings/groups/__generated__/GroupSetDefaultGroupForIngestionUsersQuery.graphql';
-import { useFormikContext } from 'formik';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader from '../../../../components/Loader';
 import Card from '../../../../components/common/card/Card';
+import SwitchField from '../../../../components/fields/SwitchField';
 
 export const groupSetDefaultGroupForIngestionUsersFragment = graphql`
   fragment GroupSetDefaultGroupForIngestionUsersFragment on Group {
@@ -46,8 +47,10 @@ export const groupSetDefaultGroupForIngestionUsersQuery = graphql`
 `;
 interface GroupSetDefaultGroupForIngestionUsersComponentProps {
   queryRef: PreloadedQuery<GroupSetDefaultGroupForIngestionUsersQuery>;
+  showUsersVisibility?: boolean;
+  onFieldSubmit?: (name: string, value: string) => void;
 }
-const GroupSetDefaultGroupForIngestionUsersComponent = ({ queryRef }: GroupSetDefaultGroupForIngestionUsersComponentProps) => {
+const GroupSetDefaultGroupForIngestionUsersComponent = ({ queryRef, showUsersVisibility, onFieldSubmit }: GroupSetDefaultGroupForIngestionUsersComponentProps) => {
   const { t_i18n } = useFormatter();
   const [commitFieldPatch] = useApiMutation(groupSetDefaultGroupForIngestionUsersMutationFieldPatch);
   const [currentGroupForAutoIntegrationAssignation, setCurrentGroupForAutoIntegrationAssignation] = useState<
@@ -95,7 +98,7 @@ const GroupSetDefaultGroupForIngestionUsersComponent = ({ queryRef }: GroupSetDe
 
   return (
     <Grid item xs={6}>
-      <Card title={t_i18n('Service account policy')}>
+      <Card title={t_i18n('User policy')}>
         <Alert severity="info" variant="outlined">
           {t_i18n('Define a group that will be assigned to each service account created on the fly for each ingestion type. \n'
             + 'Service accounts will have specific rights (no ability to login via UI). ')}
@@ -107,12 +110,27 @@ const GroupSetDefaultGroupForIngestionUsersComponent = ({ queryRef }: GroupSetDe
           multiple={false}
           onChange={handleChange}
         />
+        {showUsersVisibility && onFieldSubmit && (
+          <Field
+            component={SwitchField}
+            type="checkbox"
+            name="view_all_users"
+            label={t_i18n('Allow users to view users of other organizations')}
+            containerstyle={{ marginTop: 40 }}
+            onChange={(name: string, value: string) => onFieldSubmit(name, value)}
+          />
+        )}
       </Card>
     </Grid>
   );
 };
 
-const GroupSetDefaultGroupForIngestionUsers = () => {
+interface GroupSetDefaultGroupForIngestionUsersProps {
+  showUsersVisibility?: boolean;
+  onFieldSubmit?: (name: string, value: string) => void;
+}
+
+const GroupSetDefaultGroupForIngestionUsers = ({ showUsersVisibility, onFieldSubmit }: GroupSetDefaultGroupForIngestionUsersProps) => {
   const queryRef = useQueryLoading<GroupSetDefaultGroupForIngestionUsersQuery>(groupSetDefaultGroupForIngestionUsersQuery, {
     filters: {
       mode: 'and',
@@ -130,7 +148,13 @@ const GroupSetDefaultGroupForIngestionUsers = () => {
 
   return (
     <Suspense fallback={<Loader />}>
-      {queryRef && <GroupSetDefaultGroupForIngestionUsersComponent queryRef={queryRef} />}
+      {queryRef && (
+        <GroupSetDefaultGroupForIngestionUsersComponent
+          queryRef={queryRef}
+          showUsersVisibility={showUsersVisibility}
+          onFieldSubmit={onFieldSubmit}
+        />
+      )}
     </Suspense>
   );
 };

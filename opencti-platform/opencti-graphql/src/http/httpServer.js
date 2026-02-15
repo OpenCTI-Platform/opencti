@@ -23,7 +23,7 @@ import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
-import { EnvStrategyType, isStrategyActivated } from '../modules/singleSignOn/providers-configuration';
+import { getSettings } from '../domain/settings';
 
 const MIN_20 = 20 * 60 * 1000;
 const REQ_TIMEOUT = conf.get('app:request_timeout');
@@ -45,7 +45,9 @@ const createHttpServer = async () => {
       const key = loadCert(CERT_KEY_PATH);
       const cert = loadCert(CERT_KEY_CERT);
       const ca = CA_CERTS.map((path) => loadCert(path));
-      const requestCert = isStrategyActivated(EnvStrategyType.STRATEGY_CERT);
+      const executeContext = executionContext('createHttpServer');
+      const settings = await getSettings(executeContext);
+      const requestCert = settings.cert_auth?.enabled;
       const passphrase = conf.get('app:https_cert:passphrase');
       const options = { key, cert, passphrase, requestCert, rejectUnauthorized, ca };
       httpServer = https.createServer(options, app);

@@ -10,6 +10,35 @@ export interface BasicStoreSettingsMessage {
   color: string;
 }
 
+export type CertAuthConfig = {
+  enabled: boolean;
+  button_label: string;
+};
+
+export type LocalAuthConfig = {
+  enabled: boolean;
+};
+
+export type HeadersAuthConfig = {
+  enabled: boolean;
+  header_email: string;
+  header_name?: string;
+  header_firstname?: string;
+  header_lastname?: string;
+  auto_create_group?: boolean;
+  headers_audit?: string[];
+  logout_uri?: string;
+  // Groups management
+  groups_header?: string;
+  groups_splitter?: string;
+  groups_mapping?: string[];
+  // Organizations management
+  organizations_default?: string[];
+  organizations_header?: string;
+  organizations_splitter?: string;
+  organizations_mapping?: string[];
+};
+
 export interface BasicStoreSettings extends BasicStoreEntity {
   platform_url: string;
   platform_email: string;
@@ -35,4 +64,7 @@ export interface BasicStoreSettings extends BasicStoreEntity {
   filigran_chatbot_ai_cgu_status: CguStatus;
   view_all_users: boolean;
   auth_strategy_migrated: string[];
+  local_auth?: LocalAuthConfig;
+  cert_auth?: CertAuthConfig;
+  headers_auth?: HeadersAuthConfig;
 }

@@ -67,7 +67,7 @@ const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
           </Card>
         )}
 
-        {consentOk && providers.length > 0 && (
+        {consentOk && providers.filter((p) => p.type === 'FORM').length > 0 && (
           <Card
             sx={{
               display: 'flex',

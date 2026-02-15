@@ -1539,6 +1539,67 @@ enum PlatformType {
   STANDARD
 }
 
+type LocalAuthConfig {
+  enabled: Boolean
+}
+
+type CertAuthConfig {
+  enabled: Boolean
+  button_label: String
+}
+
+type HeadersAuthConfig {
+  enabled: Boolean
+  header_email: String
+  header_name: String
+  header_firstname: String
+  header_lastname: String
+  logout_uri: String
+  auto_create_group: Boolean
+  headers_audit: [String]
+  groups_header: String
+  groups_splitter: String
+  groups_mapping: [String]
+  organizations_default: [String]
+  organizations_header: String
+  organizations_splitter: String
+  organizations_mapping: [String]
+}
+
+input LocalAuthConfigInput {
+  enabled: Boolean!
+  password_policy_min_length: Int
+  password_policy_max_length: Int
+  password_policy_min_symbols: Int
+  password_policy_min_numbers: Int
+  password_policy_min_words: Int
+  password_policy_min_lowercase: Int
+  password_policy_min_uppercase: Int
+}
+
+input CertAuthConfigInput {
+  enabled: Boolean!
+  button_label: String
+}
+
+input HeadersAuthConfigInput {
+  enabled: Boolean!
+  header_email: String!
+  header_name: String
+  header_firstname: String
+  header_lastname: String
+  logout_uri: String
+  auto_create_group: Boolean
+  headers_audit: [String]
+  groups_header: String
+  groups_splitter: String
+  groups_mapping: [String]
+  organizations_default: [String]
+  organizations_header: String
+  organizations_splitter: String
+  organizations_mapping: [String]
+}
+
 type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSettings {
   id: ID!
   standard_id: String!
@@ -1592,6 +1653,10 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   password_policy_min_words: Int
   password_policy_min_lowercase: Int
   password_policy_min_uppercase: Int
+  local_auth: LocalAuthConfig
+  cert_auth: CertAuthConfig
+  headers_auth: HeadersAuthConfig
+  platform_https_enabled: Boolean!
   platform_messages: [SettingsMessage!]
   platform_session_max_concurrent: Int
   messages_administration: [SettingsMessage!]
@@ -9628,6 +9693,9 @@ type SettingsEditMutations {
   contextClean: Settings
   editMessage(input: SettingsMessageInput!): Settings
   deleteMessage(input: String!): Settings
+  updateLocalAuth(input: LocalAuthConfigInput!): Settings
+  updateCertAuth(input: CertAuthConfigInput!): Settings
+  updateHeaderAuth(input: HeadersAuthConfigInput!): Settings
 }
 
 type SubTypeEditMutations {

@@ -33,13 +33,7 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
   const CreateSSODefinitionControlledDial = (props: DrawerControlledDialProps) => (
     <CreateSplitControlledDial
       entityType="SSODefinition"
-      options={[
-        'Create SAML',
-        'Create OpenID',
-        'Create LDAP',
-        'Create ClientCert',
-        'Create Header',
-      ]}
+      options={['Create SAML', 'Create OpenID', 'Create LDAP']}
       onOptionClick={(option) => {
         switch (option) {
           case 'Create SAML': {
@@ -52,14 +46,6 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
           }
           case 'Create LDAP': {
             setSelectedStrategy('LDAP');
-            break;
-          }
-          case 'Create ClientCert': {
-            setSelectedStrategy('ClientCert');
-            break;
-          }
-          case 'Create Header': {
-            setSelectedStrategy('Header');
             break;
           }
           default: setSelectedStrategy('');

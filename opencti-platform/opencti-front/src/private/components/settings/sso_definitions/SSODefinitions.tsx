@@ -1,7 +1,7 @@
 import { useFormatter } from '../../../../components/i18n';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import AccessesMenu from '@components/settings/AccessesMenu';
-import React from 'react';
+import React, { useState } from 'react';
 import { graphql } from 'react-relay';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
@@ -13,9 +13,16 @@ import { SSODefinitionsLines_data$data } from './__generated__/SSODefinitionsLin
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import SSODefinitionCreation from '@components/settings/sso_definitions/SSODefinitionCreation';
 import ItemBoolean from '../../../../components/ItemBoolean';
-import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
 import AuthenticationDefinitionAlert from '@components/settings/sso_definitions/AuthenticationDefinitionAlert';
+import SSOSingletonStrategies from '@components/settings/sso_definitions/SSOSingletonStrategies';
+import AuthenticationGlobalSettings from '@components/settings/sso_definitions/AuthenticationGlobalSettings';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import EditOutlined from '@mui/icons-material/EditOutlined';
+import IconButton from '@mui/material/IconButton';
+import SSODefinitionEdition from '@components/settings/sso_definitions/SSODefinitionEdition';
+import { SSODefinitionEditionFragment$key } from '@components/settings/sso_definitions/__generated__/SSODefinitionEditionFragment.graphql';
+import { getStrategyConfigSelected } from '@components/settings/sso_definitions/utils/useStrategicConfig';
 
 const LOCAL_STORAGE_KEY = 'SSODefinitions';
 
@@ -50,6 +57,7 @@ const ssoDefinitionsLineFragment = graphql`
     description
     enabled
     strategy
+    ...SSODefinitionEditionFragment
     organizations_management {
       organizations_path
       organizations_mapping
@@ -109,11 +117,20 @@ const ssoDefinitionsLinesFragment = graphql`
     }
   }
 `;
+
+interface EditingSSO {
+  data: SSODefinitionEditionFragment$key;
+  // strategy: string;
+}
+
 const SSODefinitions = () => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Authentication | Security | Settings'));
+
+  const [editingSSO, setEditingSSO] = useState<EditingSSO | null>(null);
+
   const initialValues = {
     searchTerm: '',
     sortBy: 'strategy',
@@ -127,35 +144,32 @@ const SSODefinitions = () => {
   const contextFilters = useBuildEntityTypeBasedFilterContext('SingleSignOn', filters);
   const queryPaginationOptions = { ...paginationOptions, filters: contextFilters };
 
+  const handleOpenEdition = (node: SSODefinitionEditionFragment$key) => {
+    setEditingSSO({ data: node });
+  };
+
   const dataColumns = {
-    strategy: {
-      label: t_i18n('Authentication strategy'),
-      percentWidth: 25,
-      isSortable: true,
-      render: (node: { strategy: string }) => <div>{node.strategy}</div>,
-    },
     name: {
       label: t_i18n('Configuration name'),
-      percentWidth: 25,
+      percentWidth: 45,
       isSortable: false,
       render: (node: { name: string }) => <div>{node.name}</div>,
     },
-    label: {
-      label: t_i18n('Login Button Name'),
-      percentWidth: 25,
-      isSortable: false,
-      render: (node: { label?: string; identifier: string }) => (
-        <div>{node.label === '' ? node.identifier : node.label}</div>
-      ),
+    strategy: {
+      label: t_i18n('Authentication strategy'),
+      percentWidth: 47,
+      isSortable: true,
+      render: (node: { strategy: string }) => <div>{getStrategyConfigSelected(node.strategy)}</div>,
     },
     enabled: {
-      label: t_i18n('Enabled'),
-      percentWidth: 25,
+      label: ' ',
+      percentWidth: 8,
       isSortable: false,
       render: (node: { enabled: boolean }) => (
-        node.enabled
-          ? <ItemBoolean label={t_i18n('True')} status={true} />
-          : <ItemBoolean label={t_i18n('False')} status={false} />
+        <ItemBoolean
+          label={node.enabled ? t_i18n('Enabled') : t_i18n('Disabled')}
+          status={node.enabled}
+        />
       ),
     },
   };
@@ -178,35 +192,49 @@ const SSODefinitions = () => {
       <Breadcrumbs elements={[
         { label: t_i18n('Settings') },
         { label: t_i18n('Security') },
-        { label: t_i18n('Authentication'), current: true }]}
+        { label: t_i18n('Authentications'), current: true }]}
       />
       <AccessesMenu />
-      {isEnterpriseEdition ? (
-        <>
-          {queryRef && (
-            <>
-              <AuthenticationDefinitionAlert preloadedPaginationProps={preloadedPaginationProps} />
-              <DataTable
-                dataColumns={dataColumns}
-                resolvePath={(data: SSODefinitionsLines_data$data) => data.singleSignOns?.edges?.map((e) => e?.node)}
-                storageKey={LOCAL_STORAGE_KEY}
-                initialValues={initialValues}
-                contextFilters={contextFilters}
-                lineFragment={ssoDefinitionsLineFragment}
-                preloadedPaginationProps={preloadedPaginationProps}
-                entityTypes={['SingleSignOn']}
-                searchContextFinal={{ entityTypes: ['SingleSignOn'] }}
-                disableToolBar
-                removeSelectAll
-                disableLineSelection
-                createButton={<SSODefinitionCreation paginationOptions={queryPaginationOptions} />}
-              />
-            </>
-          )}
-        </>
-      ) : (
-        <EnterpriseEdition feature="Authentication definitions" />
-      )}
+      <>
+        <AuthenticationGlobalSettings />
+        <SSOSingletonStrategies />
+        {!isEnterpriseEdition && (<EnterpriseEdition title="SSO Authentications" feature="SSO" />)}
+        {isEnterpriseEdition && queryRef && (
+          <>
+            <AuthenticationDefinitionAlert preloadedPaginationProps={preloadedPaginationProps} />
+            <DataTable
+              dataColumns={dataColumns}
+              resolvePath={(data: SSODefinitionsLines_data$data) => data.singleSignOns?.edges?.map((e) => e?.node)}
+              storageKey={LOCAL_STORAGE_KEY}
+              initialValues={initialValues}
+              contextFilters={contextFilters}
+              lineFragment={ssoDefinitionsLineFragment}
+              preloadedPaginationProps={preloadedPaginationProps}
+              entityTypes={['SingleSignOn']}
+              searchContextFinal={{ entityTypes: ['SingleSignOn'] }}
+              disableToolBar
+              removeSelectAll
+              disableLineSelection
+              disableNavigation
+              onLineClick={handleOpenEdition}
+              actions={() => (
+                <IconButton size="small">
+                  <EditOutlined fontSize="small" />
+                </IconButton>
+              )}
+              createButton={<SSODefinitionCreation paginationOptions={queryPaginationOptions} />}
+            />
+          </>
+        )}
+        {editingSSO && (
+          <SSODefinitionEdition
+            isOpen={!!editingSSO}
+            onClose={() => setEditingSSO(null)}
+            data={editingSSO.data}
+            paginationOptions={queryPaginationOptions}
+          />
+        )}
+      </>
     </div>
   );
 };

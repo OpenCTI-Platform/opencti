@@ -220,7 +220,6 @@ const telemetryInitializer = async (): Promise<HandlerInput> => {
 export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
   try {
     const context = executionContext('telemetry_manager');
-
     // region Settings information
     const settings = await getEntityFromCache<BasicStoreSettings>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_SETTINGS);
     manager.setIsEEActivated(isEnterpriseEditionFromSettings(settings) ? 1 : 0);
@@ -268,14 +267,14 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setPirCount(pirs.length);
     // endregion
 
+    manager.setSsoLocalStrategyEnabled(settings.local_auth?.enabled ? 1 : 0);
+    manager.setSsoCertStrategyEnabled(settings.cert_auth?.enabled ? 1 : 0);
+    manager.setSsoHeaderStrategyEnabled(settings.headers_auth?.enabled ? 1 : 0);
     // region SSO providers configuration
-    manager.setSsoLocalStrategyEnabled(isStrategyActivated(EnvStrategyType.STRATEGY_LOCAL) ? 1 : 0);
     manager.setSsoOpenidStrategyEnabled(isStrategyActivated(EnvStrategyType.STRATEGY_OPENID) ? 1 : 0);
     manager.setSsoLDAPStrategyEnabled(isStrategyActivated(EnvStrategyType.STRATEGY_LDAP) ? 1 : 0);
     manager.setSsoSAMLStrategyEnabled(isStrategyActivated(EnvStrategyType.STRATEGY_SAML) ? 1 : 0);
     manager.setSsoAuthZeroStrategyEnabled(isStrategyActivated(EnvStrategyType.STRATEGY_AUTH0) ? 1 : 0);
-    manager.setSsoCertStrategyEnabled(isStrategyActivated(EnvStrategyType.STRATEGY_CERT) ? 1 : 0);
-    manager.setSsoHeaderStrategyEnabled(isStrategyActivated(EnvStrategyType.STRATEGY_HEADER) ? 1 : 0);
     manager.setSsoFacebookStrategyEnabled(isStrategyActivated(EnvStrategyType.STRATEGY_FACEBOOK) ? 1 : 0);
     manager.setSsoGoogleStrategyEnabled(isStrategyActivated(EnvStrategyType.STRATEGY_GOOGLE) ? 1 : 0);
     manager.setSsoGithubStrategyEnabled(isStrategyActivated(EnvStrategyType.STRATEGY_GITHUB) ? 1 : 0);

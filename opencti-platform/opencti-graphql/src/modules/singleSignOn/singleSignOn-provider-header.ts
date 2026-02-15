@@ -1,13 +1,22 @@
-import { convertKeyValueToJsConfiguration } from './singleSignOn-providers';
 import { logAuthInfo } from './singleSignOn-domain';
-import { AuthType, EnvStrategyType, genConfigMapper, providerLoginHandler, PROVIDERS, type ProviderUserInfo } from './providers-configuration';
-
-import type { BasicStoreEntitySingleSignOn } from './singleSignOn-types';
+import {
+  AuthType,
+  EnvStrategyType,
+  genConfigMapper,
+  HEADER_STRATEGY_IDENTIFIER,
+  type ProviderConfiguration,
+  providerLoginHandler,
+  type ProviderUserInfo,
+} from './providers-configuration';
 import { logApp } from '../../config/conf';
 import { isEmptyField, isNotEmptyField } from '../../database/utils';
 import validator from 'validator';
 import { addUserLoginCount } from '../../manager/telemetryManager';
-import { HEADERS_AUTHENTICATORS } from '../../domain/user';
+import type { BasicStoreSettings, HeadersAuthConfig } from '../../types/settings';
+import type { AuthContext } from '../../types/user';
+import { getSettings } from '../../domain/settings';
+
+export let HEADER_PROVIDER: ProviderConfiguration | undefined = undefined;
 
 export const computeHeaderUserInfo = (ssoConfiguration: any, headerProfile: any) => {
   const userMail = ssoConfiguration.header_email ? headerProfile[ssoConfiguration.header_email] : headerProfile.email;
@@ -25,68 +34,70 @@ export const computeHeaderUserInfo = (ssoConfiguration: any, headerProfile: any)
   return userInfo;
 };
 
-export const computeGroupsMapping = (ssoEntity: BasicStoreEntitySingleSignOn, req: any) => {
-  const groupsMapping = ssoEntity.groups_management?.groups_mapping || [];
-  const groupsSplitter = ssoEntity.groups_management?.groups_splitter || ',';
-  const availableGroups = (req.header(ssoEntity.groups_management?.groups_header) ?? '').split(groupsSplitter);
+// Settings-based group mapping (used by header strategy from Settings entity)
+export const computeGroupsMappingFromSettings = (headerAuth: HeadersAuthConfig, req: any) => {
+  const groupsMapping = headerAuth.groups_mapping ?? [];
+  const groupsSplitter = headerAuth.groups_splitter ?? ',';
+  const availableGroups = (req.header(headerAuth.groups_header) ?? '').split(groupsSplitter);
   const groupsMapper = genConfigMapper(groupsMapping);
   return availableGroups.map((a: any) => groupsMapper[a]).filter((r: any) => isNotEmptyField(r));
 };
 
-export const computeOrganizationsMapping = (ssoEntity: BasicStoreEntitySingleSignOn, orgaDefault: string[], req: any) => {
-  const orgasMapping = ssoEntity.organizations_management?.organizations_mapping || [];
-  const orgasSplitter = ssoEntity.organizations_management?.organizations_splitter || ',';
-  const availableOrgas = (req.header(ssoEntity.organizations_management?.organizations_header) ?? '').split(orgasSplitter);
+// Settings-based org mapping (used by header strategy from Settings entity)
+export const computeOrganizationsMappingFromSettings = (headerAuth: HeadersAuthConfig, req: any) => {
+  const orgaDefault = headerAuth.organizations_default ?? [];
+  const orgasMapping = headerAuth.organizations_mapping ?? [];
+  const orgasSplitter = headerAuth.organizations_splitter ?? ',';
+  const availableOrgas = (req.header(headerAuth.organizations_header) ?? '').split(orgasSplitter);
   const orgasMapper = genConfigMapper(orgasMapping);
   return [...orgaDefault, ...availableOrgas.map((a: any) => orgasMapper[a]).filter((r: any) => isNotEmptyField(r))];
 };
 
-export const registerHeadertrategy = async (ssoEntity: BasicStoreEntitySingleSignOn) => {
-  const providerRef = ssoEntity.identifier || 'header';
-  const ssoConfig = await convertKeyValueToJsConfiguration(ssoEntity);
-  const providerName = ssoConfig?.label || providerRef;
-
-  logAuthInfo('Configuring Header', EnvStrategyType.STRATEGY_HEADER, { id: ssoEntity.id, identifier: ssoEntity.identifier, providerRef });
-
+export const registerHeaderStrategy = async (context: AuthContext) => {
+  const providerName = 'Headers strategy';
+  logAuthInfo('Configuring Header', EnvStrategyType.STRATEGY_HEADER, { providerRef: HEADER_STRATEGY_IDENTIFIER });
   // This strategy is directly handled on the fly on graphql
-  logApp.info(`[ENV-PROVIDER][HEADER] Strategy found in configuration providerRef:${providerRef}`);
+  logApp.info(`[ENV-PROVIDER][HEADER] Strategy found in configuration providerRef:${HEADER_STRATEGY_IDENTIFIER}`);
   const reqLoginHandler = async (req: any) => {
+    const settings = await getSettings(context) as unknown as BasicStoreSettings;
+    const headerStrategy = settings.headers_auth;
+    if (!headerStrategy) {
+      return null;
+    }
     // Group computations
-    const isGroupMapping = isNotEmptyField(ssoEntity.groups_management) && isNotEmptyField(ssoEntity.groups_management?.groups_mapping);
-
-    const mappedGroups = isGroupMapping ? computeGroupsMapping(ssoEntity, req) : [];
+    const isGroupMapping = isNotEmptyField(headerStrategy.groups_header) && isNotEmptyField(headerStrategy.groups_mapping);
+    const mappedGroups = isGroupMapping ? computeGroupsMappingFromSettings(headerStrategy, req) : [];
     // Organization computations
-    const isOrgaMapping = isNotEmptyField(ssoConfig.organizations_default) || isNotEmptyField(ssoEntity.organizations_management);
-    const organizationsToAssociate = isOrgaMapping ? computeOrganizationsMapping(ssoEntity, ssoConfig.organizations_default ?? [], req) : [];
+    const isOrgaMapping = isNotEmptyField(headerStrategy.organizations_default) || isNotEmptyField(headerStrategy.organizations_header);
+    const organizationsToAssociate = isOrgaMapping ? computeOrganizationsMappingFromSettings(headerStrategy, req) : [];
     // Build the user login
-    const email = req.header(ssoConfig.header_email);
+    const email = req.header(headerStrategy.header_email);
     if (isEmptyField(email) || !validator.isEmail(email)) {
       return null;
     }
-    const name = req.header(ssoConfig.header_name);
-    const firstname = req.header(ssoConfig.header_firstname);
-    const lastname = req.header(ssoConfig.header_lastname);
+    const name = req.header(headerStrategy.header_name);
+    const firstname = req.header(headerStrategy.header_firstname);
+    const lastname = req.header(headerStrategy.header_lastname);
     const opts = {
       providerGroups: mappedGroups,
       providerOrganizations: organizationsToAssociate,
-      autoCreateGroup: ssoConfig.auto_create_group ?? false,
+      autoCreateGroup: headerStrategy.auto_create_group ?? false,
     };
-    const provider_metadata = { headers_audit: ssoConfig.headers_audit };
+    const provider_metadata = { headers_audit: headerStrategy.headers_audit };
     addUserLoginCount();
     return new Promise((resolve) => {
-      providerLoginHandler({ email, name, firstname, provider_metadata, lastname }, (err: any, user: any) => {
+      const userInfo = { email, name, firstname, provider_metadata, lastname };
+      const done = (_: any, user: any) => {
         resolve(user);
-      }, opts);
+      };
+      providerLoginHandler(userInfo, done, opts);
     });
   };
-  const headerProvider = {
+  HEADER_PROVIDER = {
     name: providerName,
     reqLoginHandler,
     type: AuthType.AUTH_REQ,
     strategy: EnvStrategyType.STRATEGY_HEADER,
-    logout_uri: ssoConfig.logout_uri,
-    provider: providerRef,
+    provider: HEADER_STRATEGY_IDENTIFIER,
   };
-  PROVIDERS.push(headerProvider);
-  HEADERS_AUTHENTICATORS.push(headerProvider);
 };

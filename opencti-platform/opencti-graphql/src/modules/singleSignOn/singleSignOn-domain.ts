@@ -3,8 +3,6 @@ import {
   type ConfigurationTypeInput,
   type EditInput,
   EditOperation,
-  FilterMode,
-  FilterOperator,
   type SingleSignMigrationInput,
   type SingleSignOnAddInput,
   type SingleSignOnEditInput,
@@ -110,30 +108,16 @@ export const maskEncryptedConfigurationKeys = (singleSignOn: BasicStoreEntitySin
 };
 
 export const findSingleSignOnById = async (context: AuthContext, user: AuthUser, id: string) => {
-  await checkSSOAllowed(context);
   return storeLoadById<BasicStoreEntitySingleSignOn>(context, user, id, ENTITY_TYPE_SINGLE_SIGN_ON);
 };
 
 export const findSingleSignOnPaginated = async (context: AuthContext, user: AuthUser, args: any) => {
-  await checkSSOAllowed(context);
   return pageEntitiesConnection<BasicStoreEntitySingleSignOn>(context, user, [ENTITY_TYPE_SINGLE_SIGN_ON], args);
 };
 
 // For migration purpose, we need to be able to create an SSO enabled, but not start it immediately
 export const internalAddSingleSignOn = async (context: AuthContext, user: AuthUser, input: SingleSignOnAddInput, skipRegister: boolean) => {
   // ensure that only one local strategy is created, as it doesn't make sense to have multiple local strategy
-  if (input.strategy === StrategyType.LocalStrategy) {
-    const filters = {
-      mode: FilterMode.And,
-      filters: [{ key: ['strategy'], values: [StrategyType.LocalStrategy], operator: FilterOperator.Eq }],
-      filterGroups: [],
-    };
-    const hasLocalStrategy = await findSingleSignOnPaginated(context, user, { filters });
-    if (hasLocalStrategy.edges.length > 0) {
-      throw FunctionalError('Local Strategy already exists in database');
-    }
-  }
-
   const configuration = (await encryptConfigurationSecrets(input.configuration ?? []));
 
   // Overriding configuration
@@ -271,14 +255,12 @@ export const deleteSingleSignOn = async (context: AuthContext, user: AuthUser, i
 };
 
 export const runSingleSignOnRunMigration = async (context: AuthContext, user: AuthUser, input: SingleSignMigrationInput) => {
-  await checkSSOAllowed(context);
   logApp.info(`[SSO MIGRATION] Migration requested with dry_run = ${input.dry_run}`);
   const ssoConfigurationEnv = nconf.get('providers');
   return parseSingleSignOnRunConfiguration(context, user, ssoConfigurationEnv, input.dry_run);
 };
 
 export const findAllSingleSignOn = async (context: AuthContext, user: AuthUser): Promise<BasicStoreEntitySingleSignOn[]> => {
-  await checkSSOAllowed(context);
   return fullEntitiesList(context, user, [ENTITY_TYPE_SINGLE_SIGN_ON]);
 };
 

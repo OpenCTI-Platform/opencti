@@ -15,6 +15,9 @@ import {
   settingsCleanContext,
   settingsEditContext,
   settingsEditField,
+  updateLocalAuth,
+  updateCertAuth,
+  updateHeaderAuth,
 } from '../domain/settings';
 import { fetchEditContext } from '../database/redis';
 import { subscribeToInstanceEvents, subscribeToPlatformSettingsEvents } from '../graphql/subscriptionWrapper';
@@ -65,6 +68,7 @@ const settingsResolvers = {
     request_access_enabled: (_, __, context) => isRequestAccessEnabled(context, context.user),
     platform_ai_enabled: (settings) => settings.platform_ai_enabled ?? true,
     filigran_chatbot_ai_cgu_status: (settings) => settings.filigran_chatbot_ai_cgu_status ?? CguStatus.Pending,
+    platform_https_enabled: () => !!(nconf.get('app:https_cert:key') && nconf.get('app:https_cert:crt')),
     metrics_definition: () => getEntityMetricsConfiguration(),
     is_authentication_locked: () => isAuthenticationEditionLocked(),
   },
@@ -83,6 +87,9 @@ const settingsResolvers = {
       contextClean: () => settingsCleanContext(context, context.user, id),
       editMessage: ({ input }) => settingEditMessage(context, context.user, id, input),
       deleteMessage: ({ input }) => settingDeleteMessage(context, context.user, id, input),
+      updateLocalAuth: ({ input }) => updateLocalAuth(context, context.user, id, input),
+      updateCertAuth: ({ input }) => updateCertAuth(context, context.user, id, input),
+      updateHeaderAuth: ({ input }) => updateHeaderAuth(context, context.user, id, input),
     }),
   },
   Subscription: {

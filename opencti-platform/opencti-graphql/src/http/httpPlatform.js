@@ -15,7 +15,7 @@ import contentDisposition from 'content-disposition';
 import { printSchema } from 'graphql/utilities';
 import { basePath, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION, PLATFORM_VERSION, AUTH_PAYLOAD_BODY_SIZE, getBaseUrl } from '../config/conf';
 import passport from '../modules/singleSignOn/providers-initialization';
-import { HEADERS_AUTHENTICATORS, loginFromProvider, sessionAuthenticateUser, userWithOrigin } from '../domain/user';
+import { loginFromProvider, sessionAuthenticateUser, userWithOrigin } from '../domain/user';
 import { downloadFile, getFileContent, isStorageAlive } from '../database/raw-file-storage';
 import { loadFile } from '../database/file-storage';
 import { DEFAULT_INVALID_CONF_VALUE, executionContext, SYSTEM_USER } from '../utils/access';
@@ -33,7 +33,9 @@ import initHttpRollingFeeds from './httpRollingFeed';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { setCookieError } from './httpUtils';
 import { getChatbotProxy } from './httpChatbotProxy';
-import { EnvStrategyType, isStrategyActivated, PROVIDERS } from '../modules/singleSignOn/providers-configuration';
+import { PROVIDERS } from '../modules/singleSignOn/providers-configuration';
+import { HEADER_PROVIDER } from '../modules/singleSignOn/singleSignOn-provider-header';
+import { getSettings } from '../domain/settings';
 
 export const sanitizeReferer = (refererToSanitize) => {
   // NOTE: basePath will be configured, if the site is hosted behind a reverseProxy otherwise '/' should be accurate
@@ -356,11 +358,12 @@ const createApp = async (app, schema) => {
   });
 
   // -- Client HTTPS Cert login custom strategy
-  app.get(`${basePath}/auth/cert`, (req, res) => {
+  app.get(`${basePath}/auth/cert`, async (req, res) => {
     try {
       const context = executionContext('cert_strategy');
       const redirect = extractRefererPathFromReq(req) ?? '/';
-      const isActivated = isStrategyActivated(EnvStrategyType.STRATEGY_CERT);
+      const settings = await getSettings(context);
+      const isActivated = settings.cert_auth?.enabled;
       if (!isActivated) {
         setCookieError(res, 'Cert authentication is not available');
         res.redirect(redirect);
@@ -412,12 +415,11 @@ const createApp = async (app, schema) => {
         });
         await delUserContext(user);
         res.clearCookie(OPENCTI_SESSION);
-
         let providerCache = PROVIDERS.find((conf) => conf.provider === provider);
         logApp.debug(`[LOGOUT] checking remote logout for ${provider}`, { providerCache });
         req.session.destroy(() => {
           const strategy = passport._strategy(provider);
-          if (strategy) {
+          if (strategy && providerCache) {
             if (providerCache.logout_remote === true) {
               if (strategy.logout) {
                 logApp.debug('[LOGOUT] requesting remote logout using authentication strategy parameters.');
@@ -440,13 +442,10 @@ const createApp = async (app, schema) => {
               logApp.debug('[LOGOUT] OpenCTI logout only, remote logout on IDP not requested.');
               res.redirect(referer);
             }
+          } else if (HEADER_PROVIDER && provider === HEADER_PROVIDER.provider) {
+            res.redirect(HEADER_PROVIDER.logout_uri ?? referer);
           } else {
-            const headerStrategy = HEADERS_AUTHENTICATORS.find((h) => h.provider === provider);
-            if (headerStrategy && headerStrategy.logout_uri) {
-              res.redirect(headerStrategy.logout_uri);
-            } else {
-              res.redirect(referer);
-            }
+            res.redirect(referer);
           }
         });
       }

@@ -41,7 +41,6 @@ const Sessions = lazy(() => import('./Sessions'));
 const Settings = lazy(() => import('./Settings'));
 const SettingsOrganizations = lazy(() => import('./SettingsOrganizations'));
 const SSODefinitions = lazy(() => import('./sso_definitions/SSODefinitions'));
-const SSODefinition = lazy(() => import('./sso_definitions/SSODefinition'));
 const FileIndexing = lazy(() => import('./file_indexing/FileIndexing'));
 const StatusTemplates = lazy(() => import('./status_templates/StatusTemplates'));
 const RootSubType = lazy(() => import('./sub_types/Root'));
@@ -296,21 +295,6 @@ const Root = () => {
               >
                 {!isSsoAuthenticationLocked ? (
                   <SSODefinitions />
-                ) : (
-                  <Navigate to={urlWithCapabilities()} />
-                )}
-              </Security>
-            )}
-          />
-          <Route
-            path="/accesses/authentication/:singleSignOnId/*"
-            element={(
-              <Security
-                needs={[SETTINGS_SETAUTH]}
-                placeholder={<Navigate to={urlWithCapabilities()} />}
-              >
-                {!isSsoAuthenticationLocked ? (
-                  <SSODefinition />
                 ) : (
                   <Navigate to={urlWithCapabilities()} />
                 )}
