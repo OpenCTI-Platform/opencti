@@ -32,6 +32,7 @@ import { CguStatus, PlatformType } from '../generated/graphql';
 import { getEntityMetricsConfiguration } from '../modules/metrics/metrics-utils';
 import { ALLOW_EMAIL_REWRITE, smtpConfiguredEmail } from '../database/smtp';
 import { isAuthenticationEditionLocked } from '../modules/singleSignOn/providers-configuration';
+import { isAuthenticationEditionLocked2 } from '../modules/authenticationProvider/providers-configuration';
 
 const settingsResolvers = {
   Query: {

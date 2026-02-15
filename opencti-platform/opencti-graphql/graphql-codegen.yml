@@ -70,6 +70,7 @@ generates:
         EmailTemplate: ../modules/emailTemplate/emailTemplate-types#BasicStoreEntityEmailTemplate
         Form: ../modules/form/form-types#BasicStoreEntityForm
         SingleSignOn: ../modules/singleSignOn/singleSignOn-types#BasicStoreEntitySingleSignOn
+        AuthenticationProvider: ../modules/authenticationProvider/authenticationProvider-types#BasicStoreEntityAuthenticationProvider
 
   ./graphql.schema.json:
     plugins:

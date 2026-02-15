@@ -32,3 +32,7 @@ export const promiseMap = async <T, R>(
 
   return results;
 };
+
+export const forgetPromise = (promise: Promise<unknown>) => {
+  promise.catch(() => {}); // avoid unhandled promise rejection
+};

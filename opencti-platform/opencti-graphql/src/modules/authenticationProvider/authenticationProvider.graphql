@@ -1,0 +1,294 @@
+### User info, group & organization mapping
+
+type UserInfoMapping {
+    email_expr: String!
+    name_expr: String!
+    firstname_expr: String
+    lastname_expr: String
+}
+
+input UserInfoMappingInput {
+    email_expr: String!
+    name_expr: String!
+    firstname_expr: String
+    lastname_expr: String
+}
+
+type MappingEntry {
+    provider: String! # name or ID ?
+    platform: String! # name or ID ?
+}
+
+input MappingEntryInput {
+    provider: String! # name or ID ?
+    platform: String! # name or ID ?
+}
+
+type GroupsMapping {
+    default_groups: [String!]!
+    groups_expr: [String!]!
+    groups_mapping: [MappingEntry!]!
+    # read_userinfo: Boolean -> TODO changed with new mechanism, to be handled in migration
+    # token_reference: String -> TODO changed with new mechanism, to be handled in migration
+    # groups_scope: String -> not needed here, must be configured in OpenID provider scope TODO to be handled in migration
+    # groups_splitter: String -> TODO changed with new mechanism, to be handled in migration
+    # groups_header: String -> TODO use mapping instead
+}
+
+input GroupsMappingInput {
+    default_groups: [String!]!
+    groups_expr: [String!]!
+    groups_mapping: [MappingEntryInput!]!
+}
+
+type OrganizationsMapping {
+    default_organizations: [String!]!
+    organizations_expr: [String!]!
+    organizations_mapping: [MappingEntry!]!
+    # organizations_scope: String -> not needed here, must be configured in OpenID provider scope TODO to be handled in migration
+    # read_userinfo: Boolean -> TODO changed with new mechanism, to be handled in migration
+    # token_reference: String -> TODO changed with new mechanism, to be handled in migration
+    # organizations_splitter: String -> TODO changed with new mechanism, to be handled in migration
+    # organizations_header: String -> TODO use mapping instead
+}
+
+input OrganizationsMappingInput {
+    default_organizations: [String!]!
+    organizations_expr: [String!]!
+    organizations_mapping: [MappingEntryInput!]!
+}
+
+### Extra configuration
+
+enum ExtraConfEntryType {
+    String
+    Number
+    Boolean
+}
+
+type ExtraConfEntry {
+    type: ExtraConfEntryType!
+    key: String!
+    value: String!
+}
+
+input ExtraConfEntryInput {
+    type: ExtraConfEntryType!
+    key: String!
+    string: String!
+}
+
+### OIDC
+
+type OidcConfiguration {
+    issuer: String!
+    client_id: String!
+    scopes: [String!]
+    audience: String
+    callback_url: String # optional, if not provided, it's automatically computed
+    logout_remote: Boolean!
+    logout_callback_url: String
+    use_proxy: Boolean!
+    user_info_mapping: UserInfoMapping!
+    groups_mapping: GroupsMapping!
+    organizations_mapping: OrganizationsMapping!
+    extra_conf: [ExtraConfEntry!]!
+}
+
+input OidcConfigurationInput {
+    issuer: String!
+    client_id: String!
+    client_secret_cleartext: String
+    scopes: [String!]
+    audience: String
+    callback_url: String
+    logout_remote: Boolean!
+    logout_callback_url: String
+    use_proxy: Boolean!
+    user_info_mapping: UserInfoMappingInput!
+    groups_mapping: GroupsMappingInput!
+    organizations_mapping: OrganizationsMappingInput!
+    extra_conf: [ExtraConfEntryInput!]!
+}
+
+### SAML
+
+type SamlConfiguration {
+    issuer: String!
+    entry_point: String!
+    idp_certificate: String!
+    callback_url: String # optional, if not provided, it's automatically computed
+    logout_remote: Boolean!
+    user_info_mapping: UserInfoMapping!
+    groups_mapping: GroupsMapping!
+    organizations_mapping: OrganizationsMapping!
+    extra_conf: [ExtraConfEntry!]!
+}
+
+input SamlConfigurationInput {
+    issuer: String!
+    entry_point: String!
+    idp_certificate: String!
+    private_key_cleartext: String,
+    callback_url: String # optional, if not provided, it's automatically computed
+    logout_remote: Boolean!
+    user_info_mapping: UserInfoMappingInput!
+    groups_mapping: GroupsMappingInput!
+    organizations_mapping: OrganizationsMappingInput!
+    extra_conf: [ExtraConfEntryInput!]!
+}
+
+### LDAP
+
+type LdapConfiguration {
+    url: String!
+    bind_dn: String!
+    search_base: String!
+    search_filter: String!
+    group_base: String!
+    group_filter: String!
+    allow_self_signed: Boolean!
+    user_info_mapping: UserInfoMapping!
+    groups_mapping: GroupsMapping!
+    organizations_mapping: OrganizationsMapping!
+    extra_configuration: [ExtraConfEntry!]!
+}
+
+input LdapConfigurationInput {
+    url: String!
+    bind_dn: String!
+    bind_credentials_cleartext: String
+    search_base: String!
+    search_filter: String!
+    group_base: String!
+    group_filter: String!
+    allow_self_signed: Boolean!
+    user_info_mapping: UserInfoMappingInput!
+    groups_mapping: GroupsMappingInput!
+    organizations_mapping: OrganizationsMappingInput!
+    extra_configuration: [ExtraConfEntryInput!]
+}
+
+### AuthenticationProvider
+
+union AuthenticationConfiguration = OidcConfiguration | SamlConfiguration | LdapConfiguration
+
+enum AuthenticationProviderType {
+    OIDC
+    SAML
+    LDAP
+}
+
+interface AuthenticationProviderBase {
+  name: String!
+  description: String
+  enabled: Boolean!
+  button_label_override: String # use name if not button_label_override is provided
+  identifier_override: String # use id if no identifier_override is provided
+}
+
+type AuthenticationProvider implements InternalObject & BasicObject & AuthenticationProviderBase {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  metrics:[Metric] # needed ?
+  created_at: DateTime!
+  updated_at: DateTime!
+  # Authentication provider specific fields
+  name: String!
+  description: String
+  enabled: Boolean!
+  button_label_override: String # use name if not button_label_override is provided
+  identifier_override: String # use id if no identifier_override is provided
+  type: AuthenticationProviderType!
+  configuration: AuthenticationConfiguration!
+}
+
+enum AuthenticationProviderOrdering {
+  name
+  enabled
+  strategy
+  _score
+}
+
+type AuthenticationProviderEdge {
+  cursor: String!
+  node: AuthenticationProvider!
+}
+
+type AuthenticationProviderConnection {
+  pageInfo: PageInfo!
+  edges: [AuthenticationProviderEdge!]!
+}
+
+input AuthenticationProviderBaseInput {
+  name: String!
+  description: String
+  enabled: Boolean!
+  button_label_override: String # use name if not button_label_override is provided
+  identifier_override: String # use id if no identifier_override is provided
+}
+
+input OidcInput {
+  base: AuthenticationProviderBaseInput!
+  configuration: OidcConfigurationInput!
+}
+
+input SamlInput {
+  base: AuthenticationProviderBaseInput!
+  configuration: LdapConfigurationInput!
+}
+
+input LdapInput {
+  base: AuthenticationProviderBaseInput!
+  configuration: LdapConfigurationInput!
+}
+
+type AuthenticationProviderSettings {
+  is_force_env: Boolean!
+  is_edition_locked: Boolean!
+}
+
+input AuthenticationProviderMigrationInput {
+  dry_run: Boolean!
+}
+
+type AuthenticationProviderMigrationResult {
+  name: String!
+  description: String
+  enabled: Boolean!
+  button_label_override: String
+  identifier_override: String
+  type: AuthenticationProviderType!
+  configuration: AuthenticationConfiguration!
+}
+
+type Query {
+  authenticationProvider(id: String!): AuthenticationProvider @auth(for: [SETTINGS_SETAUTH])
+  authenticationProviders(
+    first: Int
+    after: ID
+    orderBy: AuthenticationProviderOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+  ): AuthenticationProviderConnection @auth(for: [SETTINGS_SETAUTH])
+  authenticationProviderSettings: AuthenticationProviderSettings @auth
+}
+
+type Mutation {
+  oidcProviderAdd(input: OidcInput!): AuthenticationProvider @auth(for: [SETTINGS_SETAUTH])
+  oidcProviderEdit(id: ID!, input: OidcInput!): AuthenticationProvider @auth(for: [SETTINGS_SETAUTH])
+  oidcProviderDelete(id: ID!): ID @auth(for: [SETTINGS_SETAUTH])
+
+  samlProviderAdd(input: SamlInput!): AuthenticationProvider @auth(for: [SETTINGS_SETAUTH])
+  samlProviderEdit(id: ID!, input: SamlInput!): AuthenticationProvider @auth(for: [SETTINGS_SETAUTH])
+  samlProviderDelete(id: ID!): ID @auth(for: [SETTINGS_SETAUTH])
+
+  ldapProviderAdd(input: LdapInput!): AuthenticationProvider @auth(for: [SETTINGS_SETAUTH])
+  ldapProviderEdit(id: ID!, input: LdapInput!): AuthenticationProvider @auth(for: [SETTINGS_SETAUTH])
+  ldapProviderDelete(id: ID!): ID @auth(for: [SETTINGS_SETAUTH])
+
+  authenticationProviderRunMigration(input: AuthenticationProviderMigrationInput!): [AuthenticationProviderMigrationResult] @auth(for: [BYPASS])
+}

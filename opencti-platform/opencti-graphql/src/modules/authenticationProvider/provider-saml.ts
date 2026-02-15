@@ -1,0 +1,81 @@
+import type { SamlProviderConfiguration } from './authenticationProvider-types';
+import { logAuthInfo } from './providers-logger';
+import { AuthType, type ProviderConfiguration, providerLoginHandler } from './providers-configuration';
+import { addUserLoginCount } from '../../manager/telemetryManager';
+import { registerAuthenticationProvider } from './providers-initialization';
+import { ConfigurationError } from '../../config/errors';
+import type { PassportSamlConfig, VerifyWithoutRequest } from '@node-saml/passport-saml/lib/types';
+import { AuthenticationProviderType } from '../../generated/graphql';
+import { Strategy as SamlStrategy } from '@node-saml/passport-saml/lib/strategy';
+import { resolveGroups, resolveOrganizations, resolvePath, resolveUserInfo } from './mappings-utils';
+
+// TODO migration  conf.mail_attribute -> conf.user_info_mapping.email_expr
+// TODO migration  conf.account_attribute -> conf.user_info_mapping.name_expr
+// TODO migration  conf.firstname_attribute -> conf.user_info_mapping.firstname_expr
+// TODO migration  conf.lastname_attribute -> conf.user_info_mapping.lastname_expr
+// TODO migration  groupsManagement?.group_attributes || ['groups']  -> conf.groups_mapping.groups_expr
+// TODO migration  orgsManagement?.organizations_path || ['organizations']; -> conf.organizations_mapping.organizations_expr
+
+export const buildSAMLOptions = (conf: SamlProviderConfiguration): PassportSamlConfig => ({
+  name: conf.name,
+  issuer: conf.issuer,
+  idpCert: conf.idp_certificate,
+  callbackUrl: conf.callback_url,
+  ...conf.extra_conf,
+});
+
+export const registerSAMLStrategy = async (conf: SamlProviderConfiguration) => {
+  logAuthInfo('Configuring SAML', AuthenticationProviderType.Saml, { conf });
+
+  const samlOptions = buildSAMLOptions(conf);
+
+  const samlLoginCallback: VerifyWithoutRequest = async (profile, done) => {
+    if (!profile) {
+      throw ConfigurationError('No profile in SAML response, please verify SAML server configuration');
+    }
+    logAuthInfo('Successfully logged from provider, computing groups and organizations', AuthenticationProviderType.Saml, { profile });
+
+    const attributes = profile.attribute ?? profile;
+    const userInfo = await resolveUserInfo(conf.user_info_mapping, (expr) => resolvePath(attributes, expr.split('.')));
+    const groups = await resolveGroups(conf.groups_mapping, (expr) => resolvePath(attributes, expr.split('.')));
+    const organizations = await resolveOrganizations(conf.organizations_mapping, (expr) => resolvePath(attributes, expr.split('.')));
+
+    if (groups.length > 0) {
+      addUserLoginCount();
+      const opts = {
+        providerGroups: groups,
+        providerOrganizations: organizations,
+        autoCreateGroup: conf.groups_mapping.auto_create_group,
+      };
+      logAuthInfo('All configuration is fine, login user with', AuthenticationProviderType.Saml, { opts, userInfo });
+      const userInfoWithMeta = {
+        ...userInfo,
+        email: userInfo.email || profile.nameID,
+        provider_metadata: {
+          nameID: profile.nameID,
+          nameIDFormat: profile.nameIDFormat,
+        },
+      };
+      await providerLoginHandler(userInfoWithMeta, done, opts);
+    } else {
+      logAuthInfo('Group configuration not found', AuthenticationProviderType.Saml, { groups, profile });
+      done({ name: 'SAML error', message: 'Restricted access, ask your administrator' });
+    }
+  };
+
+  const samlLogoutCallback: VerifyWithoutRequest = (profile) => {
+    // SAML Logout function
+    logAuthInfo(`Logout done for ${profile}`, AuthenticationProviderType.Saml);
+  };
+
+  const samlStrategy = new SamlStrategy(samlOptions, samlLoginCallback, samlLogoutCallback);
+
+  const providerConfig: ProviderConfiguration = {
+    name: conf.name,
+    type: AuthType.AUTH_SSO,
+    strategy: AuthenticationProviderType.Saml,
+    provider: conf.identifier,
+    logout_remote: conf.logout_remote,
+  };
+  registerAuthenticationProvider(conf.identifier, samlStrategy, providerConfig);
+};
