@@ -76,7 +76,7 @@ type SamlCommonConfiguration = MappingConfiguration & {
   issuer: string;
   entry_point: string;
   idp_certificate: string;
-  callback_url?: string;
+  callback_url: string;
   logout_remote: boolean;
 };
 

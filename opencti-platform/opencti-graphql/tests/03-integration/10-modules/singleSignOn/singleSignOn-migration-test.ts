@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { parseSingleSignOnRunConfiguration } from '../../../../src/modules/singleSignOn/singleSignOn-migration';
+import { parseSingleSignOnRunConfiguration } from '../../../../src/modules/__singleSignOn/singleSignOn-migration';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
-import { deleteSingleSignOn } from '../../../../src/modules/singleSignOn/singleSignOn-domain';
-import { EnvStrategyType, MIGRATED_STRATEGY } from '../../../../src/modules/singleSignOn/providers-configuration';
+import { deleteSingleSignOn } from '../../../../src/modules/__singleSignOn/singleSignOn-domain';
+import { EnvStrategyType, MIGRATED_STRATEGY } from '../../../../src/modules/__singleSignOn/providers-configuration';
 
 describe('Migration of SSO environment test coverage', () => {
   describe('Dry run of SAML migrations', () => {

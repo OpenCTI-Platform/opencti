@@ -46,7 +46,6 @@ import type { BasicStoreEntitySecurityPlatform } from '../modules/securityPlatfo
 import type { BasicStoreEntitySecurityCoverage } from '../modules/securityCoverage/securityCoverage-types';
 import type { BasicStoreEntityEmailTemplate } from '../modules/emailTemplate/emailTemplate-types';
 import type { BasicStoreEntityForm } from '../modules/form/form-types';
-import type { BasicStoreEntitySingleSignOn } from '../modules/singleSignOn/singleSignOn-types';
 import type { BasicStoreEntityAuthenticationProvider } from '../modules/authenticationProvider/authenticationProvider-types';
 export type Maybe<T> = T | null | undefined;
 export type InputMaybe<T> = T | null;
@@ -13922,6 +13921,7 @@ export type LdapConfiguration = {
   organizations_mapping: OrganizationsMapping;
   search_base: Scalars['String']['output'];
   search_filter: Scalars['String']['output'];
+  type: AuthenticationProviderType;
   url: Scalars['String']['output'];
   user_info_mapping: UserInfoMapping;
 };
@@ -20460,13 +20460,13 @@ export type OidcConfiguration = {
   logout_remote: Scalars['Boolean']['output'];
   organizations_mapping: OrganizationsMapping;
   scopes?: Maybe<Array<Scalars['String']['output']>>;
+  type: AuthenticationProviderType;
   use_proxy: Scalars['Boolean']['output'];
   user_info_mapping: UserInfoMapping;
 };
 
 export type OidcConfigurationInput = {
   audience?: InputMaybe<Scalars['String']['input']>;
-  callback_url?: InputMaybe<Scalars['String']['input']>;
   client_id: Scalars['String']['input'];
   client_secret_cleartext?: InputMaybe<Scalars['String']['input']>;
   extra_conf: Array<ExtraConfEntryInput>;
@@ -27627,11 +27627,11 @@ export type SamlConfiguration = {
   issuer: Scalars['String']['output'];
   logout_remote: Scalars['Boolean']['output'];
   organizations_mapping: OrganizationsMapping;
+  type: AuthenticationProviderType;
   user_info_mapping: UserInfoMapping;
 };
 
 export type SamlConfigurationInput = {
-  callback_url?: InputMaybe<Scalars['String']['input']>;
   entry_point: Scalars['String']['input'];
   extra_conf: Array<ExtraConfEntryInput>;
   groups_mapping: GroupsMappingInput;
@@ -27645,7 +27645,7 @@ export type SamlConfigurationInput = {
 
 export type SamlInput = {
   base: AuthenticationProviderBaseInput;
-  configuration: LdapConfigurationInput;
+  configuration: SamlConfigurationInput;
 };
 
 export type SavedFilter = BasicObject & InternalObject & {
@@ -37090,7 +37090,7 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
     | ( BasicStoreEntitySecurityCoverage )
     | ( BasicStoreEntitySecurityPlatform )
     | ( Omit<Settings, 'activity_listeners' | 'editContext' | 'messages_administration' | 'platform_critical_alerts' | 'platform_messages' | 'platform_organization' | 'platform_theme'> & { activity_listeners?: Maybe<Array<_RefType['Member']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, messages_administration?: Maybe<Array<_RefType['SettingsMessage']>>, platform_critical_alerts: Array<_RefType['PlatformCriticalAlert']>, platform_messages?: Maybe<Array<_RefType['SettingsMessage']>>, platform_organization?: Maybe<_RefType['Organization']>, platform_theme?: Maybe<_RefType['Theme']> } )
-    | ( BasicStoreEntitySingleSignOn )
+    | ( SingleSignOn )
     | ( Omit<Software, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'vulnerabilities' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, vulnerabilities?: Maybe<_RefType['VulnerabilityConnection']>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( Omit<StixFile, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'obsContent' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, obsContent?: Maybe<_RefType['Artifact']>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( BasicStoreEntitySupportPackage )
@@ -37189,7 +37189,7 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
     | ( Omit<Role, 'capabilities' | 'capabilitiesInDraft' | 'editContext'> & { capabilities?: Maybe<Array<Maybe<_RefType['Capability']>>>, capabilitiesInDraft?: Maybe<Array<Maybe<_RefType['Capability']>>>, editContext?: Maybe<Array<_RefType['EditUserContext']>> } )
     | ( BasicStoreEntitySavedFilter )
     | ( Omit<Settings, 'activity_listeners' | 'editContext' | 'messages_administration' | 'platform_critical_alerts' | 'platform_messages' | 'platform_organization' | 'platform_theme'> & { activity_listeners?: Maybe<Array<_RefType['Member']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, messages_administration?: Maybe<Array<_RefType['SettingsMessage']>>, platform_critical_alerts: Array<_RefType['PlatformCriticalAlert']>, platform_messages?: Maybe<Array<_RefType['SettingsMessage']>>, platform_organization?: Maybe<_RefType['Organization']>, platform_theme?: Maybe<_RefType['Theme']> } )
-    | ( BasicStoreEntitySingleSignOn )
+    | ( SingleSignOn )
     | ( BasicStoreEntitySupportPackage )
     | ( TaskTemplate )
     | ( BasicStoreEntityTheme )
@@ -38301,10 +38301,10 @@ export type ResolversTypes = ResolversObject<{
   SettingsMessage: ResolverTypeWrapper<Omit<SettingsMessage, 'recipients'> & { recipients?: Maybe<Array<ResolversTypes['Member']>> }>;
   SettingsMessageInput: SettingsMessageInput;
   SingleSignMigrationInput: SingleSignMigrationInput;
-  SingleSignOn: ResolverTypeWrapper<BasicStoreEntitySingleSignOn>;
+  SingleSignOn: ResolverTypeWrapper<SingleSignOn>;
   SingleSignOnAddInput: SingleSignOnAddInput;
-  SingleSignOnConnection: ResolverTypeWrapper<Omit<SingleSignOnConnection, 'edges'> & { edges: Array<ResolversTypes['SingleSignOnEdge']> }>;
-  SingleSignOnEdge: ResolverTypeWrapper<Omit<SingleSignOnEdge, 'node'> & { node: ResolversTypes['SingleSignOn'] }>;
+  SingleSignOnConnection: ResolverTypeWrapper<SingleSignOnConnection>;
+  SingleSignOnEdge: ResolverTypeWrapper<SingleSignOnEdge>;
   SingleSignOnEditInput: SingleSignOnEditInput;
   SingleSignOnMigrationResult: ResolverTypeWrapper<SingleSignOnMigrationResult>;
   SingleSignOnOrdering: SingleSignOnOrdering;
@@ -39292,10 +39292,10 @@ export type ResolversParentTypes = ResolversObject<{
   SettingsMessage: Omit<SettingsMessage, 'recipients'> & { recipients?: Maybe<Array<ResolversParentTypes['Member']>> };
   SettingsMessageInput: SettingsMessageInput;
   SingleSignMigrationInput: SingleSignMigrationInput;
-  SingleSignOn: BasicStoreEntitySingleSignOn;
+  SingleSignOn: SingleSignOn;
   SingleSignOnAddInput: SingleSignOnAddInput;
-  SingleSignOnConnection: Omit<SingleSignOnConnection, 'edges'> & { edges: Array<ResolversParentTypes['SingleSignOnEdge']> };
-  SingleSignOnEdge: Omit<SingleSignOnEdge, 'node'> & { node: ResolversParentTypes['SingleSignOn'] };
+  SingleSignOnConnection: SingleSignOnConnection;
+  SingleSignOnEdge: SingleSignOnEdge;
   SingleSignOnEditInput: SingleSignOnEditInput;
   SingleSignOnMigrationResult: SingleSignOnMigrationResult;
   SingleSignOnSettings: SingleSignOnSettings;
@@ -44224,6 +44224,7 @@ export type LdapConfigurationResolvers<ContextType = any, ParentType extends Res
   organizations_mapping?: Resolver<ResolversTypes['OrganizationsMapping'], ParentType, ContextType>;
   search_base?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   search_filter?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['AuthenticationProviderType'], ParentType, ContextType>;
   url?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   user_info_mapping?: Resolver<ResolversTypes['UserInfoMapping'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -45891,6 +45892,7 @@ export type OidcConfigurationResolvers<ContextType = any, ParentType extends Res
   logout_remote?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   organizations_mapping?: Resolver<ResolversTypes['OrganizationsMapping'], ParentType, ContextType>;
   scopes?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['AuthenticationProviderType'], ParentType, ContextType>;
   use_proxy?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   user_info_mapping?: Resolver<ResolversTypes['UserInfoMapping'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -47616,6 +47618,7 @@ export type SamlConfigurationResolvers<ContextType = any, ParentType extends Res
   issuer?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   logout_remote?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   organizations_mapping?: Resolver<ResolversTypes['OrganizationsMapping'], ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['AuthenticationProviderType'], ParentType, ContextType>;
   user_info_mapping?: Resolver<ResolversTypes['UserInfoMapping'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;

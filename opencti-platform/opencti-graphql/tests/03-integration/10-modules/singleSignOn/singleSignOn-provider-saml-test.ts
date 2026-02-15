@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { convertKeyValueToJsConfiguration } from '../../../../src/modules/singleSignOn/singleSignOn-providers';
-import type { BasicStoreEntitySingleSignOn } from '../../../../src/modules/singleSignOn/singleSignOn-types';
+import { convertKeyValueToJsConfiguration } from '../../../../src/modules/__singleSignOn/singleSignOn-providers';
+import type { BasicStoreEntitySingleSignOn } from '../../../../src/modules/__singleSignOn/singleSignOn-types';
 import { type GroupsManagement, type OrganizationsManagement, StrategyType } from '../../../../src/generated/graphql';
-import { buildSAMLOptions, computeSamlGroupAndOrg, computeSamlUserInfo } from '../../../../src/modules/singleSignOn/singleSignOn-provider-saml';
-import { encryptAuthValue, SECRET_TYPE } from '../../../../src/modules/singleSignOn/singleSignOn-domain';
+import { buildSAMLOptions, computeSamlGroupAndOrg, computeSamlUserInfo } from '../../../../src/modules/__singleSignOn/singleSignOn-provider-saml';
+import { encryptAuthValue, SECRET_TYPE } from '../../../../src/modules/__singleSignOn/singleSignOn-domain';
 
 describe('SAML Single sign on Provider coverage tests', () => {
   describe('SAML configuration coverage', () => {

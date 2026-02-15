@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { convertKeyValueToJsConfiguration } from '../../../../src/modules/singleSignOn/singleSignOn-providers';
-import type { BasicStoreEntitySingleSignOn } from '../../../../src/modules/singleSignOn/singleSignOn-types';
-import { computeLdapGroups, computeLdapOrganizations, computeLdapUserInfo } from '../../../../src/modules/singleSignOn/singleSignOn-provider-ldap';
-import { encryptAuthValue } from '../../../../src/modules/singleSignOn/singleSignOn-domain';
+import { convertKeyValueToJsConfiguration } from '../../../../src/modules/__singleSignOn/singleSignOn-providers';
+import type { BasicStoreEntitySingleSignOn } from '../../../../src/modules/__singleSignOn/singleSignOn-types';
+import { computeLdapGroups, computeLdapOrganizations, computeLdapUserInfo } from '../../../../src/modules/__singleSignOn/singleSignOn-provider-ldap';
+import { encryptAuthValue } from '../../../../src/modules/__singleSignOn/singleSignOn-domain';
 
 describe('LDAP Single sign on Provider coverage tests', () => {
   describe('LDAP userInfo mapping coverage', () => {

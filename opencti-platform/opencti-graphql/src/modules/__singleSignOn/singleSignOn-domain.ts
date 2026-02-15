@@ -148,7 +148,7 @@ export const internalAddSingleSignOn = async (context: AuthContext, user: AuthUs
 
   if (created.enabled && !skipRegister) {
     logAuthInfo('Activating new strategy', input.strategy, { identifier: input.identifier });
-    await notify(BUS_TOPICS[ENTITY_TYPE_SINGLE_SIGN_ON].EDIT_TOPIC, created, user);
+    // await notify(BUS_TOPICS[ENTITY_TYPE_SINGLE_SIGN_ON].EDIT_TOPIC, created, user);
   }
   return created;
 };
@@ -217,7 +217,7 @@ export const editSingleSignOn = async (context: AuthContext, user: AuthUser, id:
   });
 
   if (!isAuthenticationForcedFromEnv()) {
-    await notify(BUS_TOPICS[ENTITY_TYPE_SINGLE_SIGN_ON].EDIT_TOPIC, element, user);
+    // await notify(BUS_TOPICS[ENTITY_TYPE_SINGLE_SIGN_ON].EDIT_TOPIC, element, user);
   }
 
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);

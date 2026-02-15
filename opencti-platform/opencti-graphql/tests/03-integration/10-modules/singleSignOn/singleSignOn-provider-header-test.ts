@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import type { BasicStoreEntitySingleSignOn } from '../../../../src/modules/singleSignOn/singleSignOn-types';
-import { convertKeyValueToJsConfiguration } from '../../../../src/modules/singleSignOn/singleSignOn-providers';
+import type { BasicStoreEntitySingleSignOn } from '../../../../src/modules/__singleSignOn/singleSignOn-types';
+import { convertKeyValueToJsConfiguration } from '../../../../src/modules/__singleSignOn/singleSignOn-providers';
 import {
   computeHeaderUserInfo,
   computeGroupsMappingFromSettings,
   computeOrganizationsMappingFromSettings,
-} from '../../../../src/modules/singleSignOn/singleSignOn-provider-header';
+} from '../../../../src/modules/__singleSignOn/singleSignOn-provider-header';
 import type { HeadersAuthConfig } from '../../../../src/types/settings';
 
 describe('Header Single sign on Provider coverage tests', () => {

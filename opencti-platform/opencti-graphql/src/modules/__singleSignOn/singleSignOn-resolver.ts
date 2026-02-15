@@ -9,6 +9,7 @@ import {
   getSingleSignOnSettings,
   maskEncryptedConfigurationKeys,
 } from './singleSignOn-domain';
+import type { BasicStoreEntitySingleSignOn } from './singleSignOn-types';
 
 const singleSignOnResolver: Resolvers = {
   Query: {
@@ -17,7 +18,7 @@ const singleSignOnResolver: Resolvers = {
     singleSignOnSettings: (_, __, ___) => getSingleSignOnSettings(),
   },
   SingleSignOn: {
-    configuration: (singleSignOn) => maskEncryptedConfigurationKeys(singleSignOn),
+    configuration: (singleSignOn) => maskEncryptedConfigurationKeys(singleSignOn as unknown as BasicStoreEntitySingleSignOn),
   },
   Mutation: {
     singleSignOnAdd: (_, { input }, context) => {

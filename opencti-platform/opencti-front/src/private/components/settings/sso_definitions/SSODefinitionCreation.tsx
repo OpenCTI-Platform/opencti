@@ -1,24 +1,11 @@
 import React, { FunctionComponent, useState } from 'react';
-import { graphql } from 'react-relay';
-import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { useFormatter } from '../../../../components/i18n';
 import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
-import { insertNode } from '../../../../utils/store';
-import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
 import { PaginationOptions } from '../../../../components/list_lines';
 import CreateSplitControlledDial from '../../../../components/CreateSplitControlledDial';
-import SSODefinitionForm from '@components/settings/sso_definitions/SSODefinitionForm';
-import { SingleSignOnEditInput } from '@components/settings/sso_definitions/__generated__/SSODefinitionEditionMutation.graphql';
-
-const ssoDefinitionMutation = graphql`
-  mutation SSODefinitionCreationMutation(
-    $input: SingleSignOnAddInput!
-  ) {
-    singleSignOnAdd(input: $input) {
-      ...SSODefinitionsLine_node
-    }
-  }
-`;
+import OidcProviderForm from './OidcProviderForm';
+import SamlProviderForm from './SamlProviderForm';
+import LdapProviderForm from './LdapProviderForm';
 
 interface SSODefinitionCreationProps {
   paginationOptions: PaginationOptions;
@@ -33,15 +20,15 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
   const CreateSSODefinitionControlledDial = (props: DrawerControlledDialProps) => (
     <CreateSplitControlledDial
       entityType="SSODefinition"
-      options={['Create SAML', 'Create OpenID', 'Create LDAP']}
+      options={['Create OIDC', 'Create SAML', 'Create LDAP']}
       onOptionClick={(option) => {
         switch (option) {
-          case 'Create SAML': {
-            setSelectedStrategy('SAML');
+          case 'Create OIDC': {
+            setSelectedStrategy('OIDC');
             break;
           }
-          case 'Create OpenID': {
-            setSelectedStrategy('OpenID');
+          case 'Create SAML': {
+            setSelectedStrategy('SAML');
             break;
           }
           case 'Create LDAP': {
@@ -55,48 +42,60 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
     />
   );
 
-  const onSubmit = (
-    finalValues: SingleSignOnEditInput,
-    { setSubmitting, resetForm }: { setSubmitting: (flag: boolean) => void; resetForm: () => void },
-  ) => {
-    commitMutation({
-      ...defaultCommitMutation,
-      mutation: ssoDefinitionMutation,
-      variables: { input: finalValues },
-      updater: (store: RecordSourceSelectorProxy) => {
-        insertNode(
-          store,
-          'Pagination_singleSignOns',
-          paginationOptions,
-          'singleSignOnAdd',
-        );
-      },
-      setSubmitting,
-      onCompleted: () => {
-        setSubmitting(false);
-        resetForm();
-        setSelectedStrategy('');
-      },
-    });
+  const getTitle = () => {
+    switch (selectedStrategy) {
+      case 'OIDC': return t_i18n('Create OIDC Authentication');
+      case 'SAML': return t_i18n('Create SAML Authentication');
+      case 'LDAP': return t_i18n('Create LDAP Authentication');
+      default: return t_i18n('Create Authentication');
+    }
   };
 
   return (
     <Drawer
-      title={
-        selectedStrategy
-          ? t_i18n(`Create ${selectedStrategy} Authentication`)
-          : t_i18n('Create Authentication')
-      }
+      title={getTitle()}
       controlledDial={CreateSSODefinitionControlledDial}
     >
-      {({ onClose }) => (
-        <SSODefinitionForm
-          onCancel={onClose}
-          onSubmit={onSubmit}
-          selectedStrategy={selectedStrategy}
-        />
-      )}
+      {({ onClose }) => {
+        const handleCompleted = () => {
+          onClose();
+          setSelectedStrategy('');
+        };
+        const handleCancel = () => {
+          onClose();
+          setSelectedStrategy('');
+        };
+        switch (selectedStrategy) {
+          case 'OIDC':
+            return (
+              <OidcProviderForm
+                onCancel={handleCancel}
+                onCompleted={handleCompleted}
+                paginationOptions={paginationOptions}
+              />
+            );
+          case 'SAML':
+            return (
+              <SamlProviderForm
+                onCancel={handleCancel}
+                onCompleted={handleCompleted}
+                paginationOptions={paginationOptions}
+              />
+            );
+          case 'LDAP':
+            return (
+              <LdapProviderForm
+                onCancel={handleCancel}
+                onCompleted={handleCompleted}
+                paginationOptions={paginationOptions}
+              />
+            );
+          default:
+            return null;
+        }
+      }}
     </Drawer>
   );
 };
+
 export default SSODefinitionCreation;

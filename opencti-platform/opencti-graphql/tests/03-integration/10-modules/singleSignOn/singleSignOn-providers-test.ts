@@ -1,12 +1,12 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
-import { parseValueAsType, registerLocalStrategy } from '../../../../src/modules/singleSignOn/singleSignOn-providers';
+import { parseValueAsType, registerLocalStrategy } from '../../../../src/modules/__singleSignOn/singleSignOn-providers';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
-import * as providerConfig from '../../../../src/modules/singleSignOn/providers-configuration';
-import { isAuthenticationActivatedByIdentifier, type ProviderConfiguration, PROVIDERS } from '../../../../src/modules/singleSignOn/providers-configuration';
+import * as providerConfig from '../../../../src/modules/__singleSignOn/providers-configuration';
+import { isAuthenticationActivatedByIdentifier, type ProviderConfiguration, PROVIDERS } from '../../../../src/modules/__singleSignOn/providers-configuration';
 import { clearProvider } from './singleSignOn-test-utils';
-import { initEnterpriseAuthenticationProviders } from '../../../../src/modules/singleSignOn/singleSignOn-init';
+import { initEnterpriseAuthenticationProviders } from '../../../../src/modules/__singleSignOn/singleSignOn-init';
 import { waitInSec } from '../../../../src/database/utils';
-import { deleteSingleSignOn, encryptAuthValue, internalAddSingleSignOn, SECRET_TYPE } from '../../../../src/modules/singleSignOn/singleSignOn-domain';
+import { deleteSingleSignOn, encryptAuthValue, internalAddSingleSignOn, SECRET_TYPE } from '../../../../src/modules/__singleSignOn/singleSignOn-domain';
 import { type SingleSignOnAddInput, StrategyType } from '../../../../src/generated/graphql';
 
 describe('Single sign on Provider coverage tests', () => {

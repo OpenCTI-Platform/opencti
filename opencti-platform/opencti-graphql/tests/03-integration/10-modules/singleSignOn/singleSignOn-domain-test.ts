@@ -8,14 +8,14 @@ import {
   findAllSingleSignOn,
   findSingleSignOnById,
   SECRET_TYPE,
-} from '../../../../src/modules/singleSignOn/singleSignOn-domain';
+} from '../../../../src/modules/__singleSignOn/singleSignOn-domain';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { StrategyType, type SingleSignOnAddInput } from '../../../../src/generated/graphql';
-import { PROVIDERS } from '../../../../src/modules/singleSignOn/providers-configuration';
-import type { BasicStoreEntitySingleSignOn, ConfigurationType, StixSingleSignOn, StoreEntitySingleSignOn } from '../../../../src/modules/singleSignOn/singleSignOn-types';
-import convertSingleSignOnToStix from '../../../../src/modules/singleSignOn/singleSignOn-converter';
-import { onAuthenticationMessageAdd, onAuthenticationMessageDelete, onAuthenticationMessageEdit } from '../../../../src/modules/singleSignOn/singleSignOn-listener';
-import * as providerConfig from '../../../../src/modules/singleSignOn/providers-configuration';
+import { PROVIDERS } from '../../../../src/modules/__singleSignOn/providers-configuration';
+import type { BasicStoreEntitySingleSignOn, ConfigurationType, StixSingleSignOn, StoreEntitySingleSignOn } from '../../../../src/modules/__singleSignOn/singleSignOn-types';
+import convertSingleSignOnToStix from '../../../../src/modules/__singleSignOn/singleSignOn-converter';
+import { onAuthenticationMessageAdd, onAuthenticationMessageDelete, onAuthenticationMessageEdit } from '../../../../src/modules/__singleSignOn/singleSignOn-listener';
+import * as providerConfig from '../../../../src/modules/__singleSignOn/providers-configuration';
 import { getFakeAuthUser } from '../../../utils/domainQueryHelper';
 
 describe('Single sign on Domain coverage tests', () => {

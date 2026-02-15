@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { maskEncryptedConfigurationKeys } from '../../../../src/modules/singleSignOn/singleSignOn-domain';
-import type { BasicStoreEntitySingleSignOn } from '../../../../src/modules/singleSignOn/singleSignOn-types';
+import { maskEncryptedConfigurationKeys } from '../../../../src/modules/__singleSignOn/singleSignOn-domain';
+import type { BasicStoreEntitySingleSignOn } from '../../../../src/modules/__singleSignOn/singleSignOn-types';
 
 describe('excludeEncryptedConfigurationKeys tests', () => {
   it('should not return encrypted values', async () => {

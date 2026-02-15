@@ -16,7 +16,7 @@ const AuthenticationDefinitionAlert = ({ preloadedPaginationProps }: Authenticat
     SSODefinitionsLines_data$key
   >(preloadedPaginationProps);
 
-  const isForceEnv = data?.singleSignOnSettings?.is_force_env ?? false;
+  const isForceEnv = data?.authenticationProviderSettings?.is_force_env ?? false;
 
   return (
     <>

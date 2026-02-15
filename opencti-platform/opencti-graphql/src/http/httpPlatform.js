@@ -2,6 +2,7 @@ import { URL } from 'node:url';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import express from 'express';
+import passport from 'passport';
 import bodyParser from 'body-parser';
 import compression, { filter as compressionFilter } from 'compression';
 import helmet from 'helmet';
@@ -14,7 +15,6 @@ import rateLimit from 'express-rate-limit';
 import contentDisposition from 'content-disposition';
 import { printSchema } from 'graphql/utilities';
 import { basePath, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION, PLATFORM_VERSION, AUTH_PAYLOAD_BODY_SIZE, getBaseUrl } from '../config/conf';
-import passport from '../modules/singleSignOn/providers-initialization';
 import { loginFromProvider, sessionAuthenticateUser, userWithOrigin } from '../domain/user';
 import { downloadFile, getFileContent, isStorageAlive } from '../database/raw-file-storage';
 import { loadFile } from '../database/file-storage';
@@ -33,9 +33,9 @@ import initHttpRollingFeeds from './httpRollingFeed';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { setCookieError } from './httpUtils';
 import { getChatbotProxy } from './httpChatbotProxy';
-import { PROVIDERS } from '../modules/singleSignOn/providers-configuration';
-import { HEADER_PROVIDER } from '../modules/singleSignOn/singleSignOn-provider-header';
 import { getSettings } from '../domain/settings';
+import { PROVIDERS } from '../modules/authenticationProvider/providers-configuration';
+import { HEADER_PROVIDER } from '../modules/authenticationProvider/provider-header';
 
 export const sanitizeReferer = (refererToSanitize) => {
   // NOTE: basePath will be configured, if the site is hosted behind a reverseProxy otherwise '/' should be accurate

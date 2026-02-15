@@ -154,6 +154,7 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
   const existingIdentifiers = await getAllIdentifiers(context, user);
   const confProviders = getProvidersFromEnvironment();
   let shouldRunSSOMigration = false;
+
   if (confProviders) {
     const providerKeys = Object.keys(confProviders);
     for (let i = 0; i < providerKeys.length; i += 1) {

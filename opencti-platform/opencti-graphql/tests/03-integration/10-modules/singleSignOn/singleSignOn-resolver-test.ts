@@ -13,8 +13,8 @@ import {
 import { queryAsAdminWithSuccess, queryAsUserIsExpectedError, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
 import { ADMIN_USER, testContext, USER_PARTICIPATE, USER_SECURITY } from '../../../utils/testQuery';
 import { deleteElementById } from '../../../../src/database/middleware';
-import { ENTITY_TYPE_SINGLE_SIGN_ON } from '../../../../src/modules/singleSignOn/singleSignOn-types';
-import { SECRET_TYPE } from '../../../../src/modules/singleSignOn/singleSignOn-domain';
+import { ENTITY_TYPE_SINGLE_SIGN_ON } from '../../../../src/modules/__singleSignOn/singleSignOn-types';
+import { SECRET_TYPE } from '../../../../src/modules/__singleSignOn/singleSignOn-domain';
 
 export const SINGLE_SIGN_ON_LIST_QUERY = gql`
     query singleSignOns($first: Int $filters: FilterGroup) {

@@ -1,8 +1,8 @@
-import { PROVIDERS } from '../../../../src/modules/singleSignOn/providers-configuration';
+import { PROVIDERS } from '../../../../src/modules/__singleSignOn/providers-configuration';
 import { expect } from 'vitest';
 import { fullEntitiesList } from '../../../../src/database/middleware-loader';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
-import { ENTITY_TYPE_SINGLE_SIGN_ON } from '../../../../src/modules/singleSignOn/singleSignOn-types';
+import { ENTITY_TYPE_SINGLE_SIGN_ON } from '../../../../src/modules/__singleSignOn/singleSignOn-types';
 import { deleteElementById } from '../../../../src/database/middleware';
 
 export const clearProvider = async () => {

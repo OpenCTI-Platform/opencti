@@ -12,7 +12,7 @@ import {
   getConfigurationAdminPassword,
   getConfigurationAdminToken,
 } from './providers-configuration';
-import { getAllIdentifiers, logAuthInfo, runAuthenticationProviderMigration } from './authenticationProvider-domain';
+import { getAllIdentifiers, runAuthenticationProviderMigration } from './authenticationProvider-domain';
 import * as R from 'ramda';
 import passport from 'passport';
 import GitHub from 'github-api';
@@ -31,9 +31,10 @@ import { DEFAULT_INVALID_CONF_VALUE, SYSTEM_USER } from '../../utils/access';
 import { OPENCTI_ADMIN_UUID } from '../../schema/general';
 import { findById, initAdmin, userDelete } from '../../domain/user';
 import { isEmptyField, isNotEmptyField } from '../../database/utils';
-import { addUserLoginCount } from '../../manager/telemetryManager';
 import { enrichWithRemoteCredentials } from '../../config/credentials';
 import { forgetPromise } from '../../utils/promiseUtils';
+import { getSettings } from '../../domain/settings';
+import { logAuthInfo } from './providers-logger';
 
 // (providerRef: string)
 export const unregisterAuthenticationProvider = (providerRef) => {
@@ -576,6 +577,13 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
             passport.use(providerRef, auth0Strategy);
             PROVIDERS.push({ name: providerName, type: AuthType.AUTH_SSO, strategy, provider: providerRef, logout_remote: mappedConfig.logout_remote });
           }).catch((reason) => logApp.error('[ENV-PROVIDER][AUTH0] Error when enrich with remote credentials', { cause: reason }));
+        }
+        // Singleton authentications always migrated
+        const settings = await getSettings(context);
+        if (!settings.local_auth || !settings.headers_auth || !settings.cert_auth) {
+          const data = { local: !settings.local_auth, headers: !settings.headers_auth, cert: !settings.cert_auth };
+          logApp.info('[ENV-PROVIDER] Singletons is about to be converted to database configuration.', data);
+          shouldRunMigration = true;
         }
       }
     }

@@ -34,7 +34,6 @@ import clusterManager from './manager/clusterManager';
 import activityListener from './manager/activityListener';
 import activityManager from './manager/activityManager';
 import draftValidationConnector from './modules/draftWorkspace/draftWorkspace-connector';
-import singleSignOnListener from './modules/singleSignOn/singleSignOn-listener';
 import authenticationProviderListener from './modules/authenticationProvider/authenticationProvider-listener';
 import supportPackageListener from './modules/support/supportPackage-listener';
 
@@ -145,7 +144,6 @@ export const startModules = async () => {
   // endregion
 
   await supportPackageListener.start();
-  await singleSignOnListener.start();
   await authenticationProviderListener.start();
 };
 
@@ -229,7 +227,6 @@ export const shutdownModules = async () => {
   stoppingPromises.push(activityManager.shutdown());
   // endregion
   stoppingPromises.push(supportPackageListener.shutdown());
-  stoppingPromises.push(singleSignOnListener.shutdown());
   stoppingPromises.push(authenticationProviderListener.shutdown());
   await Promise.all(stoppingPromises);
 };

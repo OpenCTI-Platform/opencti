@@ -31,7 +31,7 @@ import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { createEntity, deleteElementById, patchAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
-import { BUS_TOPICS, logApp } from '../../config/conf';
+import { BUS_TOPICS, getBaseUrl, logApp } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import nconf from 'nconf';
 import { parseAuthenticationProviderConfiguration } from './authenticationProvider-migration';
@@ -41,6 +41,7 @@ import { getConfigurationAdminEmail, isAuthenticationEditionLocked, isAuthentica
 import { getPlatformCrypto } from '../../utils/platformCrypto';
 import { memoize } from '../../utils/memoize';
 import { logAuthInfo } from './providers-logger';
+import { isNotEmptyField } from '../../database/utils';
 
 export const isConfigurationAdminUser = (user: AuthUser): boolean => {
   return user.user_email === getConfigurationAdminEmail();
@@ -67,7 +68,7 @@ export const decryptAuthValue = async (value: string) => {
   return (await keyPair.decrypt(decodedBuffer)).toString();
 };
 
-const secretFieldsByType = {
+export const secretFieldsByType = {
   [AuthenticationProviderType.Oidc]: oidcSecretFields,
   [AuthenticationProviderType.Saml]: samlSecretFields,
   [AuthenticationProviderType.Ldap]: ldapSecretFields,
@@ -76,20 +77,26 @@ const secretFieldsByType = {
 const graphQLToStoreConfiguration = async (
   type: AuthenticationProviderType,
   input: Record<string, unknown>,
-  previousConfiguration?: any,
+  existing?: BasicStoreEntityAuthenticationProvider<any>,
 ) => {
   const secretsFields = secretFieldsByType[type];
-
   // duplicate input -> encrypt cleartext values and normalize null/undefined value to undefined
-  const output = Object.fromEntries(Object.entries(secretsFields).map(([key, value]) => [key, value ?? undefined]));
+  const output = Object.fromEntries(Object.entries(input)
+    .map(([key, value]) => [key, value ?? undefined]));
+  output.type = type;
+  // Handle secrets fields
   for await (const fieldName of secretsFields) {
     const clearTextFieldName = `${fieldName}_cleartext`;
     const inputClearTextValue = input[clearTextFieldName] as string | undefined;
-    const previousEncryptedValue = previousConfiguration?.[`${fieldName}_encrypted`] as string | undefined;
-    const encryptedValue = inputClearTextValue !== undefined ? await encryptAuthValue(inputClearTextValue) : previousEncryptedValue;
+    const previousEncryptedValue = existing?.configuration?.[`${fieldName}_encrypted`] as string | undefined;
+    const encryptedValue = inputClearTextValue && isNotEmptyField(inputClearTextValue)
+      ? await encryptAuthValue(inputClearTextValue) : previousEncryptedValue;
     if (!encryptedValue) {
       throw FunctionalError('Secret field must be provided', { fieldName });
     }
+    // Replace cleartext field by encrypted field
+    delete output[fieldName];
+    output[`${fieldName}_encrypted`] = encryptedValue;
   }
   return output;
 };
@@ -109,14 +116,15 @@ const createExtraConf = (extraConfInput: ExtraConfEntry[]) => extraConfInput.red
 export const oidcStoreToProvider = async (providerConfig: BasicStoreEntityAuthenticationProvider<OidcStoreConfiguration>) => {
   // TODO add  enrichWithRemoteCredentials(`providers:${providerRef}`, rawConfig);
   const { configuration } = providerConfig;
+  const identifier = providerConfig.identifier_override ?? providerConfig.internal_id;
   return {
     name: providerConfig.name,
-    identifier: providerConfig.identifier_override ?? providerConfig.internal_id,
+    identifier,
     issuer: configuration.issuer,
     client_id: configuration.client_id,
     client_secret: await decryptAuthValue(configuration.client_secret_encrypted),
     scopes: configuration.scopes,
-    callback_url: configuration.callback_url,
+    callback_url: `${getBaseUrl()}/auth/${identifier}/callback`,
     logout_remote: configuration.logout_remote,
     logout_callback_url: configuration.logout_callback_url,
     use_proxy: configuration.use_proxy,
@@ -130,14 +138,15 @@ export const oidcStoreToProvider = async (providerConfig: BasicStoreEntityAuthen
 export const samlStoreToProvider = async (providerConfig: BasicStoreEntityAuthenticationProvider<SamlStoreConfiguration>) => {
   // TODO add  enrichWithRemoteCredentials(`providers:${providerRef}`, rawConfig);
   const { configuration } = providerConfig;
+  const identifier = providerConfig.identifier_override ?? providerConfig.internal_id;
   return {
     name: providerConfig.name,
-    identifier: providerConfig.identifier_override ?? providerConfig.internal_id,
+    identifier,
     issuer: configuration.issuer,
     entry_point: configuration.entry_point,
     idp_certificate: configuration.idp_certificate,
     private_key: await decryptAuthValue(configuration.private_key_encrypted),
-    callback_url: configuration.callback_url,
+    callback_url: `${getBaseUrl()}/auth/${identifier}/callback`,
     logout_remote: configuration.logout_remote,
     user_info_mapping: configuration.user_info_mapping,
     groups_mapping: configuration.groups_mapping,
@@ -214,10 +223,7 @@ export const addAuthenticationProvider = async (
   const skipRegister = skipRegisterParam ?? isAuthenticationForcedFromEnv();
 
   // Create the store object
-  const input = {
-    ...base,
-    configuration: await graphQLToStoreConfiguration(type, configuration),
-  };
+  const input = { ...base, type, configuration: await graphQLToStoreConfiguration(type, configuration) };
 
   const created: BasicStoreEntityAuthenticationProvider = await createEntity(
     context,
@@ -270,16 +276,12 @@ export const editAuthenticationProvider = async (
   }
 
   // Create the store object
-  const input = {
-    ...base,
-    configuration: await graphQLToStoreConfiguration(type, configuration, existing),
-  };
+  const input = { ...base, type, configuration: await graphQLToStoreConfiguration(type, configuration, existing) };
 
   const { element } = await patchAttribute(context, user, id, ENTITY_TYPE_AUTHENTICATION_PROVIDER, input);
 
   const providerId = element.internal_id;
   const identifier = element.identifier_override ?? providerId;
-
   await publishUserAction({
     user,
     event_type: 'mutation',

@@ -15,6 +15,20 @@ const authenticationProviderResolver: Resolvers = {
     authenticationProviders: (_, args, context) => findAuthenticationProviderByIdPaginated(context, context.user, args),
     authenticationProviderSettings: (_, __, ___) => getAuthenticationProviderSettings(),
   },
+  AuthenticationConfiguration: {
+    __resolveType(obj) {
+      if (obj.type === AuthenticationProviderType.Ldap) {
+        return 'LdapConfiguration';
+      }
+      if (obj.type === AuthenticationProviderType.Saml) {
+        return 'SamlConfiguration';
+      }
+      if (obj.type === AuthenticationProviderType.Oidc) {
+        return 'OidcConfiguration';
+      }
+      return obj.type;
+    },
+  },
   Mutation: {
     oidcProviderAdd: (_, { input }, context) => {
       return addAuthenticationProvider(context, context.user, input, AuthenticationProviderType.Oidc);

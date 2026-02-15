@@ -107,9 +107,9 @@ import { getPlatformCrypto } from '../utils/platformCrypto';
 import { addUserTokenByAdmin, generateTokenHmac } from '../modules/user/user-domain';
 import { memoize } from '../utils/memoize';
 import { getSettings } from './settings';
-import { LOCAL_STRATEGY_IDENTIFIER, PROVIDERS } from '../modules/singleSignOn/providers-configuration';
-import { HEADER_PROVIDER } from '../modules/singleSignOn/singleSignOn-provider-header';
 import passport from 'passport';
+import { LOCAL_STRATEGY_IDENTIFIER, PROVIDERS } from '../modules/authenticationProvider/providers-configuration';
+import { HEADER_PROVIDER } from '../modules/authenticationProvider/provider-header';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { convertKeyValueToJsConfiguration } from '../../../../src/modules/singleSignOn/singleSignOn-providers';
-import type { BasicStoreEntitySingleSignOn, GroupsManagement, OrganizationsManagement } from '../../../../src/modules/singleSignOn/singleSignOn-types';
-import { computeOpenIdUserInfo, computeOpenIdGroupsMapping, computeOpenIdOrganizationsMapping } from '../../../../src/modules/singleSignOn/singleSignOn-provider-openid';
+import { convertKeyValueToJsConfiguration } from '../../../../src/modules/__singleSignOn/singleSignOn-providers';
+import type { BasicStoreEntitySingleSignOn, GroupsManagement, OrganizationsManagement } from '../../../../src/modules/__singleSignOn/singleSignOn-types';
+import { computeOpenIdUserInfo, computeOpenIdGroupsMapping, computeOpenIdOrganizationsMapping } from '../../../../src/modules/__singleSignOn/singleSignOn-provider-openid';
 
 describe('OpenID Single sign on Provider coverage tests', () => {
   describe('OpenID userInfo mapping coverage', () => {

@@ -81,6 +81,7 @@ input ExtraConfEntryInput {
 ### OIDC
 
 type OidcConfiguration {
+    type: AuthenticationProviderType!
     issuer: String!
     client_id: String!
     scopes: [String!]
@@ -101,7 +102,6 @@ input OidcConfigurationInput {
     client_secret_cleartext: String
     scopes: [String!]
     audience: String
-    callback_url: String
     logout_remote: Boolean!
     logout_callback_url: String
     use_proxy: Boolean!
@@ -114,6 +114,7 @@ input OidcConfigurationInput {
 ### SAML
 
 type SamlConfiguration {
+    type: AuthenticationProviderType!
     issuer: String!
     entry_point: String!
     idp_certificate: String!
@@ -130,7 +131,6 @@ input SamlConfigurationInput {
     entry_point: String!
     idp_certificate: String!
     private_key_cleartext: String,
-    callback_url: String # optional, if not provided, it's automatically computed
     logout_remote: Boolean!
     user_info_mapping: UserInfoMappingInput!
     groups_mapping: GroupsMappingInput!
@@ -141,6 +141,7 @@ input SamlConfigurationInput {
 ### LDAP
 
 type LdapConfiguration {
+    type: AuthenticationProviderType!
     url: String!
     bind_dn: String!
     search_base: String!
@@ -237,7 +238,7 @@ input OidcInput {
 
 input SamlInput {
   base: AuthenticationProviderBaseInput!
-  configuration: LdapConfigurationInput!
+  configuration: SamlConfigurationInput!
 }
 
 input LdapInput {

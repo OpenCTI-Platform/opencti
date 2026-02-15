@@ -20,8 +20,8 @@ import { initExclusionListCache } from '../../src/database/exclusionListCache';
 import { initLockFork } from '../../src/lock/master-lock';
 import { ADMIN_USER, createTestUsers, isPlatformAlive, testContext } from '../utils/testQuery';
 import { initializeStreamStack } from '../../src/database/stream/stream-handler';
-import { initializeAdminUser } from '../../src/modules/singleSignOn/providers-initialization';
-import { initializeAuthenticationProviders } from '../../src/modules/singleSignOn/singleSignOn-init';
+import { initializeAdminUser } from '../../src/modules/authenticationProvider/providers-initialization';
+import { initializeAuthenticationProviders } from '../../src/modules/authenticationProvider/authenticationProvider-init';
 
 /**
  * This is run once before all tests (for setup) and after all (for teardown).

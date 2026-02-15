@@ -22,7 +22,6 @@ import EditOutlined from '@mui/icons-material/EditOutlined';
 import IconButton from '@mui/material/IconButton';
 import SSODefinitionEdition from '@components/settings/sso_definitions/SSODefinitionEdition';
 import { SSODefinitionEditionFragment$key } from '@components/settings/sso_definitions/__generated__/SSODefinitionEditionFragment.graphql';
-import { getStrategyConfigSelected } from '@components/settings/sso_definitions/utils/useStrategicConfig';
 
 const LOCAL_STORAGE_KEY = 'SSODefinitions';
 
@@ -31,7 +30,7 @@ export const ssoDefinitionsLinesQuery = graphql`
     $search: String
     $count: Int!
     $cursor: ID
-    $orderBy: SingleSignOnOrdering
+    $orderBy: AuthenticationProviderOrdering
     $orderMode: OrderingMode
     $filters: FilterGroup
   ) {
@@ -48,33 +47,16 @@ export const ssoDefinitionsLinesQuery = graphql`
 `;
 
 const ssoDefinitionsLineFragment = graphql`
-  fragment SSODefinitionsLine_node on SingleSignOn {
+  fragment SSODefinitionsLine_node on AuthenticationProvider {
     id
-    name
     entity_type
-    identifier
-    label
+    name
     description
     enabled
-    strategy
+    button_label_override
+    identifier_override
+    type
     ...SSODefinitionEditionFragment
-    organizations_management {
-      organizations_path
-      organizations_mapping
-    }
-    groups_management{
-      groups_attributes
-      group_attributes
-      group_attribute
-      groups_path
-      groups_mapping
-      read_userinfo
-    }
-    configuration {
-      key
-      value
-      type
-    }
   }
 `;
 const ssoDefinitionsLinesFragment = graphql`
@@ -84,21 +66,21 @@ const ssoDefinitionsLinesFragment = graphql`
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
     orderBy: {
-        type: "SingleSignOnOrdering"
-        defaultValue: strategy
+        type: "AuthenticationProviderOrdering"
+        defaultValue: name
     }
     orderMode: { type: "OrderingMode", defaultValue: asc }
     filters: { type: "FilterGroup" }
   )
-  @refetchable(queryName: "SingleSignOnsLinesRefetchQuery") {
-    singleSignOns(
+  @refetchable(queryName: "AuthenticationProvidersLinesRefetchQuery") {
+    authenticationProviders(
       search: $search
       first: $count
       after: $cursor
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
-    ) @connection(key: "Pagination_singleSignOns") {
+    ) @connection(key: "Pagination_authenticationProviders") {
       edges {
         node {
           id
@@ -112,7 +94,7 @@ const ssoDefinitionsLinesFragment = graphql`
         globalCount
       }
     }
-    singleSignOnSettings {
+    authenticationProviderSettings {
       is_force_env
     }
   }
@@ -120,7 +102,6 @@ const ssoDefinitionsLinesFragment = graphql`
 
 interface EditingSSO {
   data: SSODefinitionEditionFragment$key;
-  // strategy: string;
 }
 
 const SSODefinitions = () => {
@@ -133,7 +114,7 @@ const SSODefinitions = () => {
 
   const initialValues = {
     searchTerm: '',
-    sortBy: 'strategy',
+    sortBy: 'name',
     orderAsc: true,
     filters: emptyFilterGroup,
   };
@@ -141,7 +122,7 @@ const SSODefinitions = () => {
     LOCAL_STORAGE_KEY,
     initialValues,
   );
-  const contextFilters = useBuildEntityTypeBasedFilterContext('SingleSignOn', filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext('AuthenticationProvider', filters);
   const queryPaginationOptions = { ...paginationOptions, filters: contextFilters };
 
   const handleOpenEdition = (node: SSODefinitionEditionFragment$key) => {
@@ -152,19 +133,19 @@ const SSODefinitions = () => {
     name: {
       label: t_i18n('Configuration name'),
       percentWidth: 45,
-      isSortable: false,
+      isSortable: true,
       render: (node: { name: string }) => <div>{node.name}</div>,
     },
-    strategy: {
+    type: {
       label: t_i18n('Authentication strategy'),
-      percentWidth: 47,
-      isSortable: true,
-      render: (node: { strategy: string }) => <div>{getStrategyConfigSelected(node.strategy)}</div>,
+      percentWidth: 40,
+      isSortable: false,
+      render: (node: { type: string }) => <div>{node.type}</div>,
     },
     enabled: {
       label: ' ',
-      percentWidth: 8,
-      isSortable: false,
+      percentWidth: 15,
+      isSortable: true,
       render: (node: { enabled: boolean }) => (
         <ItemBoolean
           label={node.enabled ? t_i18n('Enabled') : t_i18n('Disabled')}
@@ -183,7 +164,7 @@ const SSODefinitions = () => {
     linesQuery: ssoDefinitionsLinesQuery,
     linesFragment: ssoDefinitionsLinesFragment,
     queryRef,
-    nodePath: ['singleSignOns', 'pageInfo', 'globalCount'],
+    nodePath: ['authenticationProviders', 'pageInfo', 'globalCount'],
     setNumberOfElements: helpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<SSODefinitionsLinesPaginationQuery>;
 
@@ -204,14 +185,14 @@ const SSODefinitions = () => {
             <AuthenticationDefinitionAlert preloadedPaginationProps={preloadedPaginationProps} />
             <DataTable
               dataColumns={dataColumns}
-              resolvePath={(data: SSODefinitionsLines_data$data) => data.singleSignOns?.edges?.map((e) => e?.node)}
+              resolvePath={(data: SSODefinitionsLines_data$data) => data.authenticationProviders?.edges?.map((e) => e?.node)}
               storageKey={LOCAL_STORAGE_KEY}
               initialValues={initialValues}
               contextFilters={contextFilters}
               lineFragment={ssoDefinitionsLineFragment}
               preloadedPaginationProps={preloadedPaginationProps}
-              entityTypes={['SingleSignOn']}
-              searchContextFinal={{ entityTypes: ['SingleSignOn'] }}
+              entityTypes={['AuthenticationProvider']}
+              searchContextFinal={{ entityTypes: ['AuthenticationProvider'] }}
               disableToolBar
               removeSelectAll
               disableLineSelection
