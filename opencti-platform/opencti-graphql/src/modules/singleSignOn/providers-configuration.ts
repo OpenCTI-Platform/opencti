@@ -2,8 +2,8 @@ import conf, { booleanConf, logApp } from '../../config/conf';
 import { loginFromProvider } from '../../domain/user';
 import * as R from 'ramda';
 
-export const INTERNAL_SECURITY_PROVIDER = '__internal_security_local_provider__';
 export const LOCAL_STRATEGY_IDENTIFIER = 'local';
+export const HEADER_STRATEGY_IDENTIFIER = 'headers';
 
 const IS_AUTHENTICATION_FORCE_FROM_ENV = booleanConf('app:authentication:force_env', false);
 export const isAuthenticationForcedFromEnv = () => {
@@ -70,11 +70,11 @@ export interface ProviderUserInfo {
 export const providerLoginHandler = (userInfo: ProviderUserInfo, done: any, opts = {}) => {
   loginFromProvider(userInfo, opts)
     .then((user: any) => {
-      logApp.info('[SSO] providerLoginHandler user:', { userId: user.id });
+      logApp.info('[SSO] providerLoginHandler user', { userId: user.id });
       done(null, user);
     })
     .catch((err: any) => {
-      logApp.info('[SSO] providerLoginHandler error:', err);
+      logApp.info('[SSO] providerLoginHandler error', err);
       done(err);
     });
 };

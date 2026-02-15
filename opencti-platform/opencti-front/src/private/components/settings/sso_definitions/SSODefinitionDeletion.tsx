@@ -1,10 +1,12 @@
 import { graphql } from 'react-relay';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
 import React, { ReactNode, UIEvent } from 'react';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { useFormatter } from '../../../../components/i18n';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import stopEvent from '../../../../utils/domEvent';
 import DeleteDialog from '../../../../components/DeleteDialog';
+import { deleteNode } from '../../../../utils/store';
 import { SSODefinitionDeletionMutation } from '@components/settings/sso_definitions/__generated__/SSODefinitionDeletionMutation.graphql';
 
 const ssoDefinitionDeletionMutation = graphql`
@@ -20,11 +22,12 @@ interface ChildrenProps {
 
 interface SSODefinitionDeletionProps {
   ssoId: string;
+  paginationOptions?: Record<string, unknown>;
   onDeleteComplete?: () => void;
   children: (props: ChildrenProps) => ReactNode;
 }
 
-const SSODefinitionDeletion = ({ ssoId, onDeleteComplete, children }: SSODefinitionDeletionProps) => {
+const SSODefinitionDeletion = ({ ssoId, paginationOptions, onDeleteComplete, children }: SSODefinitionDeletionProps) => {
   const { t_i18n } = useFormatter();
 
   const [deleteMutation, deleting] = useApiMutation<SSODefinitionDeletionMutation>(
@@ -40,6 +43,11 @@ const SSODefinitionDeletion = ({ ssoId, onDeleteComplete, children }: SSODefinit
     stopEvent(e);
     deleteMutation({
       variables: { id: ssoId },
+      updater: (store: RecordSourceSelectorProxy) => {
+        if (paginationOptions) {
+          deleteNode(store, 'Pagination_singleSignOns', paginationOptions, ssoId);
+        }
+      },
       onCompleted: () => {
         handleCloseDelete();
         onDeleteComplete?.();

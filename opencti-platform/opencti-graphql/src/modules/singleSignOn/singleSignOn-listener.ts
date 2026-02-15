@@ -1,5 +1,5 @@
 import { type BasicStoreEntitySingleSignOn, ENTITY_TYPE_SINGLE_SIGN_ON } from './singleSignOn-types';
-import { refreshStrategy, registerStrategy, unregisterStrategy } from './singleSignOn-providers';
+import { refreshStrategy, registerSSOStrategy, unregisterStrategy } from './singleSignOn-providers';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import { pubSubSubscription } from '../../database/redis';
 import { logApp, NODE_INSTANCE_ID, TOPIC_PREFIX } from '../../config/conf';
@@ -45,7 +45,7 @@ export const onAuthenticationMessageAdd = async (event: { instance: BasicStoreEn
   try {
     if (event.instance.entity_type === ENTITY_TYPE_SINGLE_SIGN_ON) {
       const ssoEntity = event.instance as BasicStoreEntitySingleSignOn;
-      await registerStrategy(ssoEntity);
+      await registerSSOStrategy(ssoEntity);
     } else {
       logApp.warn('Entity cannot be sent to Authentication PubSubListener', { type: event.instance.entity_type });
     }

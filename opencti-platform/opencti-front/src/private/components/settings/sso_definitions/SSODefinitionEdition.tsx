@@ -3,10 +3,13 @@ import { graphql, useFragment } from 'react-relay';
 import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import SSODefinitionForm from '@components/settings/sso_definitions/SSODefinitionForm';
+import SSODefinitionDeletion from '@components/settings/sso_definitions/SSODefinitionDeletion';
 import { SSODefinitionEditionFragment$key } from '@components/settings/sso_definitions/__generated__/SSODefinitionEditionFragment.graphql';
 import { SingleSignOnEditInput, SSODefinitionEditionMutation } from '@components/settings/sso_definitions/__generated__/SSODefinitionEditionMutation.graphql';
 import { getStrategyConfigSelected } from '@components/settings/sso_definitions/utils/useStrategicConfig';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import IconButton from '@mui/material/IconButton';
+import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
 
 export const ssoDefinitionEditionMutation = graphql`
     mutation SSODefinitionEditionMutation($id: ID!, $input: SingleSignOnEditInput!) {
@@ -53,15 +56,15 @@ export const ssoDefinitionEditionFragment = graphql`
 interface SSODefinitionEditionProps {
   isOpen: boolean;
   onClose: () => void;
-  selectedStrategy: string;
   data: SSODefinitionEditionFragment$key;
+  paginationOptions?: Record<string, unknown>;
 }
 
 const SSODefinitionEdition = ({
   isOpen,
   onClose,
   data,
-  selectedStrategy,
+  paginationOptions,
 }: SSODefinitionEditionProps) => {
   const { t_i18n } = useFormatter();
   const sso = useFragment(ssoDefinitionEditionFragment, data);
@@ -86,13 +89,32 @@ const SSODefinitionEdition = ({
     });
   };
 
-  const strategyConfigSelected = getStrategyConfigSelected(selectedStrategy);
+  const strategyConfigSelected = getStrategyConfigSelected(sso.strategy);
 
   return (
     <Drawer
       title={t_i18n(`Update a ${strategyConfigSelected} Authentication`)}
       open={isOpen}
       onClose={onClose}
+      header={(
+        <SSODefinitionDeletion
+          ssoId={sso.id}
+          paginationOptions={paginationOptions}
+          onDeleteComplete={onClose}
+        >
+          {({ handleOpenDelete, deleting }) => (
+            <IconButton
+              onClick={handleOpenDelete}
+              disabled={deleting}
+              color="error"
+              size="small"
+              aria-label={t_i18n('Delete')}
+            >
+              <DeleteOutlined fontSize="small" />
+            </IconButton>
+          )}
+        </SSODefinitionDeletion>
+      )}
     >
       <SSODefinitionForm
         onCancel={onClose}

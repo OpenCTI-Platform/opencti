@@ -2,7 +2,6 @@ import { NODE_INSTANCE_ID } from '../../config/conf';
 import {
   EnvStrategyType,
   isAuthenticationProviderMigrated,
-  LOCAL_STRATEGY_IDENTIFIER,
   isAuthenticationActivatedByIdentifier,
   getProvidersFromEnvironment,
   isAuthenticationForcedFromEnv,
@@ -20,21 +19,21 @@ import GitHub from 'github-api';
 import { jwtDecode } from 'jwt-decode';
 import FacebookStrategy from 'passport-facebook';
 import GithubStrategy from 'passport-github';
-import LocalStrategy from 'passport-local';
 import LdapStrategy from 'passport-ldapauth';
 import { Strategy as SamlStrategy } from '@node-saml/passport-saml';
 import { custom as OpenIDCustom, Issuer as OpenIDIssuer, Strategy as OpenIDStrategy } from 'openid-clientv5';
 import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
 import validator from 'validator';
 import { getPlatformHttpProxyAgent, logApp } from '../../config/conf';
-import { AuthenticationFailure, ConfigurationError } from '../../config/errors';
-import { AuthType, INTERNAL_SECURITY_PROVIDER, PROVIDERS } from './providers-configuration';
+import { ConfigurationError } from '../../config/errors';
+import { AuthType, PROVIDERS } from './providers-configuration';
 import { DEFAULT_INVALID_CONF_VALUE, SYSTEM_USER } from '../../utils/access';
 import { OPENCTI_ADMIN_UUID } from '../../schema/general';
-import { findById, HEADERS_AUTHENTICATORS, initAdmin, login, userDelete } from '../../domain/user';
+import { findById, initAdmin, userDelete } from '../../domain/user';
 import { isEmptyField, isNotEmptyField } from '../../database/utils';
 import { addUserLoginCount } from '../../manager/telemetryManager';
 import { enrichWithRemoteCredentials } from '../../config/credentials';
+import { getSettings } from '../../domain/settings';
 
 // (providerRef: string)
 export const unregisterAuthenticationProvider = (providerRef) => {
@@ -62,7 +61,6 @@ export const registerAuthenticationProvider = (providerRef, strategy, configurat
     logApp.warn(`[SSO] identifier ${configuration.provider} already registered. Please check your configuration to see if there is not 2 time the same identifier.`);
     unregisterAuthenticationProvider(configuration.provider);
   }
-
   passport.use(providerRef, strategy);
   PROVIDERS.push(configuration);
   logAuthInfo(`Strategy ${providerRef} registered on node ${NODE_INSTANCE_ID}`, configuration.strategy);
@@ -156,45 +154,15 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
   const existingIdentifiers = await getAllIdentifiers(context, user);
   const confProviders = getProvidersFromEnvironment();
   let shouldRunSSOMigration = false;
-
   if (confProviders) {
     const providerKeys = Object.keys(confProviders);
     for (let i = 0; i < providerKeys.length; i += 1) {
       const providerIdent = providerKeys[i];
       const provider = confProviders[providerIdent];
-
       const { identifier, strategy, config } = provider;
       const mappedConfig = configRemapping(config);
       if (config === undefined || !config.disabled) {
         const providerName = config?.label || providerIdent;
-        // FORM Strategies
-        if (strategy === EnvStrategyType.STRATEGY_LOCAL) {
-          logApp.info('[ENV-PROVIDER][LOCAL] LocalStrategy found in configuration');
-          if (isForcedEnv) {
-            // region backward compatibility
-            const localStrategy = new LocalStrategy({}, (username, password, done) => {
-              return login(username, password)
-                .then((info) => {
-                  logApp.info('[ENV-PROVIDER][LOCAL] Successfully logged', { username });
-                  addUserLoginCount();
-                  return done(null, info);
-                })
-                .catch((err) => {
-                  done(err);
-                });
-            });
-            passport.use('local', localStrategy);
-            PROVIDERS.push({ name: providerName, type: AuthType.AUTH_FORM, strategy, provider: 'local' });
-            // end region backward compatibility
-          } else {
-            if (isAuthenticationProviderMigrated(existingIdentifiers, LOCAL_STRATEGY_IDENTIFIER)) {
-              logApp.info('[ENV-PROVIDER][LOCAL] LocalStrategy already in database, skipping old configuration');
-            } else {
-              logApp.info('[ENV-PROVIDER][LOCAL] LocalStrategy is about to be converted to database configuration.');
-              shouldRunSSOMigration = true;
-            }
-          }
-        }
         if (strategy === EnvStrategyType.STRATEGY_LDAP) {
           const providerRef = identifier || 'ldapauth';
           logApp.info(`[ENV-PROVIDER][LDAP] LdapStrategy found in configuration providerRef:${providerRef}`);
@@ -270,7 +238,6 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
             }
           }
         }
-        // SSO Strategies
         if (strategy === EnvStrategyType.STRATEGY_SAML) {
           const providerRef = identifier || 'saml';
           logApp.info(`[ENV-PROVIDER][SAML] SamlStrategy found in configuration providerRef:${providerRef}`);
@@ -612,117 +579,14 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
             PROVIDERS.push({ name: providerName, type: AuthType.AUTH_SSO, strategy, provider: providerRef, logout_remote: mappedConfig.logout_remote });
           }).catch((reason) => logApp.error('[ENV-PROVIDER][AUTH0] Error when enrich with remote credentials', { cause: reason }));
         }
-        // CERT Strategies
-        if (strategy === EnvStrategyType.STRATEGY_CERT) {
-          const providerRef = identifier || 'cert';
-          logApp.info(`[ENV-PROVIDER][CERT] Strategy found in configuration providerRef:${providerRef}`);
-          if (isForcedEnv) {
-            // region backward compatibility
-            // This strategy is directly handled by express
-            PROVIDERS.push({ name: providerName, type: AuthType.AUTH_SSO, strategy, provider: providerRef });
-          } else {
-            if (isAuthenticationProviderMigrated(existingIdentifiers, providerRef)) {
-              logApp.info(`[ENV-PROVIDER][CERT] ${providerRef} already in database, skipping old configuration`);
-            } else {
-              logApp.info(`[ENV-PROVIDER][CERT] ${providerRef} is about to be converted to database configuration.`);
-              shouldRunSSOMigration = true;
-            }
-          }
-        }
-        // HEADER Strategies
-        if (strategy === EnvStrategyType.STRATEGY_HEADER) {
-          // This strategy is directly handled on the fly on graphql
-          const providerRef = identifier || 'header';
-          logApp.info(`[ENV-PROVIDER][HEADER] Strategy found in configuration providerRef:${providerRef}`);
-          if (isForcedEnv) {
-            const reqLoginHandler = async (req) => {
-              // Group computations
-              const isGroupMapping = isNotEmptyField(mappedConfig.groups_management) && isNotEmptyField(mappedConfig.groups_management?.groups_mapping);
-              const computeGroupsMapping = () => {
-                const groupsMapping = mappedConfig.groups_management?.groups_mapping || [];
-                const groupsSplitter = mappedConfig.groups_management?.groups_splitter || ',';
-                const availableGroups = (req.header(mappedConfig.groups_management?.groups_header) ?? '').split(groupsSplitter);
-                const groupsMapper = genConfigMapper(groupsMapping);
-                return availableGroups.map((a) => groupsMapper[a]).filter((r) => isNotEmptyField(r));
-              };
-              const mappedGroups = isGroupMapping ? computeGroupsMapping() : [];
-              // Organization computations
-              const isOrgaMapping = isNotEmptyField(mappedConfig.organizations_default) || isNotEmptyField(mappedConfig.organizations_management);
-              const computeOrganizationsMapping = () => {
-                const orgaDefault = mappedConfig.organizations_default ?? [];
-                const orgasMapping = mappedConfig.organizations_management?.organizations_mapping || [];
-                const orgasSplitter = mappedConfig.organizations_management?.organizations_splitter || ',';
-                const availableOrgas = (req.header(mappedConfig.organizations_management?.organizations_header) ?? '').split(orgasSplitter);
-                const orgasMapper = genConfigMapper(orgasMapping);
-                return [...orgaDefault, ...availableOrgas.map((a) => orgasMapper[a]).filter((r) => isNotEmptyField(r))];
-              };
-              const organizationsToAssociate = isOrgaMapping ? computeOrganizationsMapping() : [];
-              // Build the user login
-              const email = req.header(mappedConfig.header_email);
-              if (isEmptyField(email) || !validator.isEmail(email)) {
-                return null;
-              }
-              const name = req.header(mappedConfig.header_name);
-              const firstname = req.header(mappedConfig.header_firstname);
-              const lastname = req.header(mappedConfig.header_lastname);
-              const opts = {
-                providerGroups: mappedGroups,
-                providerOrganizations: organizationsToAssociate,
-                autoCreateGroup: mappedConfig.auto_create_group ?? false,
-              };
-              const provider_metadata = { headers_audit: mappedConfig.headers_audit };
-              addUserLoginCount();
-              return new Promise((resolve) => {
-                providerLoginHandler({ email, name, firstname, provider_metadata, lastname }, (err, user) => {
-                  resolve(user);
-                }, opts);
-              });
-            };
-            const headerProvider = {
-              name: providerName,
-              reqLoginHandler,
-              type: AuthType.AUTH_REQ,
-              strategy,
-              logout_uri: mappedConfig.logout_uri,
-              provider: providerRef,
-            };
-            PROVIDERS.push(headerProvider);
-            HEADERS_AUTHENTICATORS.push(headerProvider);
-          } else {
-            if (isAuthenticationProviderMigrated(existingIdentifiers, providerRef)) {
-              logApp.info(`[ENV-PROVIDER][HEADER] ${providerRef} already in database, skipping old configuration`);
-            } else {
-              logApp.info(`[ENV-PROVIDER][HEADER] ${providerRef} is about to be converted to database configuration.`);
-              shouldRunSSOMigration = true;
-            }
-          }
+        // Singleton authentications always migrated
+        const settings = await getSettings(context);
+        if (!settings.local_auth || !settings.headers_auth || !settings.cert_auth) {
+          const data = { local: !settings.local_auth, headers: !settings.headers_auth, cert: !settings.cert_auth };
+          logApp.info('[ENV-PROVIDER] Singletons is about to be converted to database configuration.', data);
+          shouldRunSSOMigration = true;
         }
       }
-    }
-    // In case of disable local strategy, setup protected fallback for the admin user
-    const hasLocal = PROVIDERS.find((p) => p.strategy === EnvStrategyType.STRATEGY_LOCAL);
-    if (!hasLocal && isForcedEnv) {
-      logApp.info('[ENV-PROVIDER][FALLBACK] No local strategy, adding the fallback one');
-      const adminLocalStrategy = new LocalStrategy({}, (username, password, done) => {
-        if (username !== getConfigurationAdminEmail()) {
-          return done(AuthenticationFailure());
-        }
-        return login(username, password)
-          .then((info) => {
-            addUserLoginCount();
-            return done(null, info);
-          })
-          .catch((err) => {
-            done(err);
-          });
-      });
-      passport.use(LOCAL_STRATEGY_IDENTIFIER, adminLocalStrategy);
-      PROVIDERS.push({
-        name: INTERNAL_SECURITY_PROVIDER,
-        type: AuthType.AUTH_FORM,
-        strategy: EnvStrategyType.STRATEGY_LOCAL,
-        provider: LOCAL_STRATEGY_IDENTIFIER,
-      });
     }
   } else {
     logApp.info('[ENV-PROVIDER] No provider in environment.');

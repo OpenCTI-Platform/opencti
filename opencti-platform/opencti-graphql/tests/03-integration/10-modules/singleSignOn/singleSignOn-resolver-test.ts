@@ -86,58 +86,6 @@ export const SINGLE_SIGN_ON_DELETE = gql`
     }
 `;
 
-describe('SSO: Local strategy dedicated behaviour', () => {
-  let localStrategyId: string;
-  it('should get Local Strategy', async () => {
-    const localStrategy = await queryAsAdminWithSuccess({
-      query: SINGLE_SIGN_ON_LIST_QUERY,
-      variables: {
-        filters: {
-          mode: FilterMode.And,
-          filters: [{ key: ['strategy'], values: [StrategyType.LocalStrategy], operator: FilterOperator.Eq }],
-          filterGroups: [],
-        },
-      },
-    });
-    expect(localStrategy).toBeDefined();
-    expect(localStrategy?.data?.singleSignOns.edges[0].node.identifier).toBe('local');
-    localStrategyId = localStrategy?.data?.singleSignOns.edges[0].node.id;
-  });
-  it('should not create 2nd Local Strategy', async () => {
-    const createInput: SingleSignOnAddInput = {
-      name: 'local2',
-      strategy: StrategyType.LocalStrategy,
-      enabled: true,
-      identifier: 'local2',
-      configuration: [
-        { key: 'label', value: 'local label', type: 'string' },
-      ],
-    };
-    await queryAsUserIsExpectedError(USER_SECURITY.client, {
-      query: SINGLE_SIGN_ON_CREATE,
-      variables: { input: createInput },
-    }, 'Local Strategy already exists in database', 'FUNCTIONAL_ERROR');
-  });
-  it('should not delete Local Strategy', async () => {
-    await queryAsUserIsExpectedError(USER_SECURITY.client, {
-      query: SINGLE_SIGN_ON_DELETE,
-      variables: { id: localStrategyId },
-    }, 'Cannot delete Local Strategy', 'FUNCTIONAL_ERROR');
-  });
-  it('should delete Local Strategy', async () => {
-    await deleteElementById(testContext, ADMIN_USER, localStrategyId, ENTITY_TYPE_SINGLE_SIGN_ON);
-    const singleSignOnList = await queryAsAdminWithSuccess({
-      query: SINGLE_SIGN_ON_LIST_QUERY,
-      variables: { first: 10 },
-    });
-
-    expect(singleSignOnList).toBeDefined();
-    const ssoList = singleSignOnList?.data?.singleSignOns.edges;
-    expect(ssoList.find((item: any) => item?.node?.id === localStrategyId)).toBeUndefined();
-    expect(ssoList.find((item: any) => item?.node?.id === localStrategyId)).toBeUndefined();
-  });
-});
-
 describe('Single Sign On CRUD coverage', () => {
   let createdSingleSignOn1Id: string;
   let createdSingleSignOn2Id: string;
@@ -338,28 +286,6 @@ describe('Single Sign On CRUD coverage', () => {
       expect(result?.data?.singleSignOnEdit).toBeDefined();
       const configurationData: ConfigurationTypeInput[] = result?.data?.singleSignOnEdit?.configuration as ConfigurationTypeInput[];
       expect(configurationData).not.toContainEqual({ key: 'privateKey' });
-    });
-  });
-
-  describe('configuration migration coverage', async () => {
-    it('should migration dry run not raise errors', async () => {
-      const input: SingleSignMigrationInput = {
-        dry_run: true,
-      };
-      const result = await queryAsAdminWithSuccess({
-        query: gql`
-            mutation singleSignOnRunMigration($input: SingleSignMigrationInput!) {
-                singleSignOnRunMigration(input: $input) {
-                    name
-                    description
-                }
-            }
-        `,
-        variables: { input },
-      });
-      expect(result?.data?.singleSignOnRunMigration).toBeDefined();
-      const ssoConfig: SingleSignOnMigrationResult[] = result?.data?.singleSignOnRunMigration;
-      expect(ssoConfig[0]?.description).toMatch(/Automatically detected from local */);
     });
   });
 

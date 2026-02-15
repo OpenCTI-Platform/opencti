@@ -3,25 +3,18 @@ import LocalStrategy from 'passport-local';
 import { login } from '../../domain/user';
 import { addUserLoginCount } from '../../manager/telemetryManager';
 import { decryptAuthValue, logAuthError, logAuthInfo, SECRET_TYPE } from './singleSignOn-domain';
-import {
-  AuthType,
-  EnvStrategyType,
-  getConfigurationAdminEmail,
-  INTERNAL_SECURITY_PROVIDER,
-  isAuthenticationActivatedByIdentifier,
-  LOCAL_STRATEGY_IDENTIFIER,
-  type ProviderConfiguration,
-  PROVIDERS,
-} from './providers-configuration';
+import { AuthType, EnvStrategyType, LOCAL_STRATEGY_IDENTIFIER, type ProviderConfiguration } from './providers-configuration';
 import type { BasicStoreEntitySingleSignOn, ConfigurationType } from './singleSignOn-types';
-import { AuthenticationFailure, ConfigurationError } from '../../config/errors';
+import { ConfigurationError } from '../../config/errors';
 import { isNotEmptyField } from '../../database/utils';
-import { registerAuthenticationProvider, unregisterAuthenticationProvider } from './providers-initialization';
+import { unregisterAuthenticationProvider } from './providers-initialization';
 import { registerSAMLStrategy } from './singleSignOn-provider-saml';
 import { registerLDAPStrategy } from './singleSignOn-provider-ldap';
 import { GraphQLError } from 'graphql/index';
 import { registerOpenIdStrategy } from './singleSignOn-provider-openid';
-import { registerHeadertrategy } from './singleSignOn-provider-header';
+import passport from 'passport';
+
+export let LOCAL_PROVIDER: ProviderConfiguration | undefined = undefined;
 
 export const parseValueAsType = async (config: ConfigurationType): Promise<string | number | any[] | boolean> => {
   if (isNotEmptyField(config.value) && isNotEmptyField(config.key) && isNotEmptyField(config.type)) {
@@ -65,93 +58,42 @@ export const convertKeyValueToJsConfiguration = async (ssoEntity: BasicStoreEnti
   }
 };
 
-export const registerAdminLocalStrategy = async () => {
-  logAuthInfo('Configuring internal local', EnvStrategyType.STRATEGY_LOCAL);
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore as per document new LocalStrategy is the right way, not sure what to do.
-  const adminLocalStrategy = new LocalStrategy({}, (username: string, password: string, done: any) => {
-    if (username !== getConfigurationAdminEmail()) {
-      return done(AuthenticationFailure());
-    }
-    return login(username, password)
-      .then((info) => {
-        addUserLoginCount();
-        return done(null, info);
-      })
-      .catch((err) => {
-        done(err);
-      });
-  });
-
-  // Only one local, remove existing.
-  const providerConfig: ProviderConfiguration
-    = { name: INTERNAL_SECURITY_PROVIDER, type: AuthType.AUTH_FORM, strategy: EnvStrategyType.STRATEGY_LOCAL, provider: LOCAL_STRATEGY_IDENTIFIER };
-  if (isAuthenticationActivatedByIdentifier('local')) {
-    unregisterAuthenticationProvider('local');
-  }
-  registerAuthenticationProvider(INTERNAL_SECURITY_PROVIDER, adminLocalStrategy, providerConfig);
-};
-
 export const registerLocalStrategy = async () => {
   logAuthInfo('Configuring local', EnvStrategyType.STRATEGY_LOCAL);
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore as per document new LocalStrategy is the right way, not sure what to do.
   const localStrategy = new LocalStrategy({}, (username: string, password: string, done: any) => {
-    return login(username, password)
-      .then((info) => {
-        logAuthInfo('Successfully logged', EnvStrategyType.STRATEGY_LOCAL, { username });
-        addUserLoginCount();
-        return done(null, info);
-      })
-      .catch((err) => {
-        done(err);
-      });
+    return login(username, password).then((info) => {
+      logAuthInfo('Successfully logged', EnvStrategyType.STRATEGY_LOCAL, { username });
+      addUserLoginCount();
+      // TODO JRI FIND A WAY FOR ROOT LOGIN
+      return done(null, info);
+    }).catch((err) => {
+      done(err);
+    });
   });
-
-  // Only one local, remove existing.
   const providerConfig: ProviderConfiguration = {
     name: LOCAL_STRATEGY_IDENTIFIER,
     type: AuthType.AUTH_FORM,
     strategy: EnvStrategyType.STRATEGY_LOCAL,
     provider: LOCAL_STRATEGY_IDENTIFIER,
   };
-  if (isAuthenticationActivatedByIdentifier(LOCAL_STRATEGY_IDENTIFIER)) {
-    unregisterAuthenticationProvider(LOCAL_STRATEGY_IDENTIFIER);
-  }
-  registerAuthenticationProvider(LOCAL_STRATEGY_IDENTIFIER, localStrategy, providerConfig);
-};
-
-const registerCertStrategy = async (ssoEntity: BasicStoreEntitySingleSignOn) => {
-  const providerRef = 'cert';
-
-  logAuthInfo('Configuring Cert', EnvStrategyType.STRATEGY_CERT, { id: ssoEntity.id, identifier: ssoEntity.identifier, providerRef });
-  PROVIDERS.push({ name: providerRef, type: AuthType.AUTH_SSO, strategy: EnvStrategyType.STRATEGY_CERT, provider: providerRef });
-  logAuthInfo('Cert configured', EnvStrategyType.STRATEGY_CERT, { id: ssoEntity.id, identifier: ssoEntity.identifier, providerRef });
+  passport.use(LOCAL_STRATEGY_IDENTIFIER, localStrategy);
+  LOCAL_PROVIDER = providerConfig;
 };
 
 export const refreshStrategy = async (authenticationStrategy: BasicStoreEntitySingleSignOn) => {
   await unregisterStrategy(authenticationStrategy);
-
   if (authenticationStrategy.enabled) {
-    await registerStrategy(authenticationStrategy);
+    await registerSSOStrategy(authenticationStrategy);
   }
 };
 
 export const unregisterStrategy = async (authenticationStrategy: BasicStoreEntitySingleSignOn) => {
-  if (authenticationStrategy.strategy === StrategyType.LocalStrategy) {
-    if (authenticationStrategy.identifier === LOCAL_STRATEGY_IDENTIFIER) {
-      unregisterAuthenticationProvider(LOCAL_STRATEGY_IDENTIFIER);
-      await registerAdminLocalStrategy();
-    } else if (authenticationStrategy.identifier === INTERNAL_SECURITY_PROVIDER) {
-      unregisterAuthenticationProvider(INTERNAL_SECURITY_PROVIDER);
-      await registerLocalStrategy();
-    }
-  } else {
-    unregisterAuthenticationProvider(authenticationStrategy.identifier);
-  }
+  unregisterAuthenticationProvider(authenticationStrategy.identifier);
 };
 
-export const registerStrategy = async (authenticationStrategy: BasicStoreEntitySingleSignOn) => {
+export const registerSSOStrategy = async (authenticationStrategy: BasicStoreEntitySingleSignOn) => {
   try {
     if (authenticationStrategy.strategy && authenticationStrategy.identifier) {
       const configuration = authenticationStrategy.configuration;
@@ -169,51 +111,32 @@ export const registerStrategy = async (authenticationStrategy: BasicStoreEntityS
           }
         }
       }
-
-      if (authenticationStrategy.strategy === StrategyType.LocalStrategy) {
-        logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_LOCAL);
-        if (authenticationStrategy.enabled) {
-          await registerLocalStrategy();
-        } else {
-          await registerAdminLocalStrategy();
-        }
-      } else {
-        if (authenticationStrategy.enabled) {
-          switch (authenticationStrategy.strategy) {
-            case StrategyType.SamlStrategy:
-              logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_SAML);
-              if (authenticationStrategy.enabled) {
-                await registerSAMLStrategy(authenticationStrategy);
-              }
-              break;
-            case StrategyType.OpenIdConnectStrategy:
-              logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_OPENID);
-              if (authenticationStrategy.enabled) {
-                await registerOpenIdStrategy(authenticationStrategy);
-              }
-              break;
-            case StrategyType.LdapStrategy:
-              logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_LDAP);
-              if (authenticationStrategy.enabled) {
-                await registerLDAPStrategy(authenticationStrategy);
-              }
-              break;
-            case StrategyType.HeaderStrategy:
-              logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_HEADER);
-              await registerHeadertrategy(authenticationStrategy);
-              break;
-            case StrategyType.ClientCertStrategy:
-              logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_CERT);
-              await registerCertStrategy(authenticationStrategy);
-              break;
-
-            default:
-              logAuthError('Unknown strategy should not be possible, skipping', undefined, {
-                name: authenticationStrategy?.name,
-                strategy: authenticationStrategy.strategy,
-              });
-              break;
-          }
+      if (authenticationStrategy.enabled) {
+        switch (authenticationStrategy.strategy) {
+          case StrategyType.SamlStrategy:
+            logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_SAML);
+            if (authenticationStrategy.enabled) {
+              await registerSAMLStrategy(authenticationStrategy);
+            }
+            break;
+          case StrategyType.OpenIdConnectStrategy:
+            logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_OPENID);
+            if (authenticationStrategy.enabled) {
+              await registerOpenIdStrategy(authenticationStrategy);
+            }
+            break;
+          case StrategyType.LdapStrategy:
+            logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_LDAP);
+            if (authenticationStrategy.enabled) {
+              await registerLDAPStrategy(authenticationStrategy);
+            }
+            break;
+          default:
+            logAuthError('Unknown strategy should not be possible, skipping', undefined, {
+              name: authenticationStrategy?.name,
+              strategy: authenticationStrategy.strategy,
+            });
+            break;
         }
       }
     } else {

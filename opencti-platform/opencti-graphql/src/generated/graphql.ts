@@ -3486,6 +3486,17 @@ export enum CatalogsOrdering {
   Name = 'name'
 }
 
+export type CertAuthConfig = {
+  __typename?: 'CertAuthConfig';
+  button_label?: Maybe<Scalars['String']['output']>;
+  enabled?: Maybe<Scalars['Boolean']['output']>;
+};
+
+export type CertAuthConfigInput = {
+  button_label?: InputMaybe<Scalars['String']['input']>;
+  enabled: Scalars['Boolean']['input'];
+};
+
 export type ChangePasswordInput = {
   newPassword: Scalars['String']['input'];
   otp: Scalars['String']['input'];
@@ -10009,6 +10020,43 @@ export type HeaderInput = {
   value: Scalars['String']['input'];
 };
 
+export type HeadersAuthConfig = {
+  __typename?: 'HeadersAuthConfig';
+  auto_create_group?: Maybe<Scalars['Boolean']['output']>;
+  enabled?: Maybe<Scalars['Boolean']['output']>;
+  groups_header?: Maybe<Scalars['String']['output']>;
+  groups_mapping?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  groups_splitter?: Maybe<Scalars['String']['output']>;
+  header_email?: Maybe<Scalars['String']['output']>;
+  header_firstname?: Maybe<Scalars['String']['output']>;
+  header_lastname?: Maybe<Scalars['String']['output']>;
+  header_name?: Maybe<Scalars['String']['output']>;
+  headers_audit?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  logout_uri?: Maybe<Scalars['String']['output']>;
+  organizations_default?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  organizations_header?: Maybe<Scalars['String']['output']>;
+  organizations_mapping?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  organizations_splitter?: Maybe<Scalars['String']['output']>;
+};
+
+export type HeadersAuthConfigInput = {
+  auto_create_group?: InputMaybe<Scalars['Boolean']['input']>;
+  enabled: Scalars['Boolean']['input'];
+  groups_header?: InputMaybe<Scalars['String']['input']>;
+  groups_mapping?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  groups_splitter?: InputMaybe<Scalars['String']['input']>;
+  header_email: Scalars['String']['input'];
+  header_firstname?: InputMaybe<Scalars['String']['input']>;
+  header_lastname?: InputMaybe<Scalars['String']['input']>;
+  header_name?: InputMaybe<Scalars['String']['input']>;
+  headers_audit?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  logout_uri?: InputMaybe<Scalars['String']['input']>;
+  organizations_default?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  organizations_header?: InputMaybe<Scalars['String']['input']>;
+  organizations_mapping?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  organizations_splitter?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type HealthConnectorStatusInput = {
   id: Scalars['ID']['input'];
   is_in_reboot_loop: Scalars['Boolean']['input'];
@@ -13559,6 +13607,22 @@ export type ListTaskAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   ids?: InputMaybe<Array<Scalars['ID']['input']>>;
   scope: BackgroundTaskScope;
+};
+
+export type LocalAuthConfig = {
+  __typename?: 'LocalAuthConfig';
+  enabled?: Maybe<Scalars['Boolean']['output']>;
+};
+
+export type LocalAuthConfigInput = {
+  enabled: Scalars['Boolean']['input'];
+  password_policy_max_length?: InputMaybe<Scalars['Int']['input']>;
+  password_policy_min_length?: InputMaybe<Scalars['Int']['input']>;
+  password_policy_min_lowercase?: InputMaybe<Scalars['Int']['input']>;
+  password_policy_min_numbers?: InputMaybe<Scalars['Int']['input']>;
+  password_policy_min_symbols?: InputMaybe<Scalars['Int']['input']>;
+  password_policy_min_uppercase?: InputMaybe<Scalars['Int']['input']>;
+  password_policy_min_words?: InputMaybe<Scalars['Int']['input']>;
 };
 
 export type Location = {
@@ -27966,13 +28030,16 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   __typename?: 'Settings';
   activity_listeners?: Maybe<Array<Member>>;
   analytics_google_analytics_v4?: Maybe<Scalars['String']['output']>;
+  cert_auth?: Maybe<CertAuthConfig>;
   created_at: Scalars['DateTime']['output'];
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
   filigran_chatbot_ai_cgu_status: CguStatus;
   filigran_chatbot_ai_url?: Maybe<Scalars['String']['output']>;
+  headers_auth?: Maybe<HeadersAuthConfig>;
   id: Scalars['ID']['output'];
   is_authentication_locked?: Maybe<Scalars['Boolean']['output']>;
+  local_auth?: Maybe<LocalAuthConfig>;
   messages_administration?: Maybe<Array<SettingsMessage>>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   metrics_definition?: Maybe<Array<MetricDefinition>>;
@@ -28001,6 +28068,7 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   platform_enterprise_edition: PlatformEe;
   platform_favicon?: Maybe<Scalars['String']['output']>;
   platform_feature_flags?: Maybe<Array<Module>>;
+  platform_https_enabled: Scalars['Boolean']['output'];
   platform_language?: Maybe<Scalars['String']['output']>;
   platform_login_message?: Maybe<Scalars['String']['output']>;
   platform_map_tile_server_dark?: Maybe<Scalars['String']['output']>;
@@ -28047,6 +28115,9 @@ export type SettingsEditMutations = {
   deleteMessage?: Maybe<Settings>;
   editMessage?: Maybe<Settings>;
   fieldPatch?: Maybe<Settings>;
+  updateCertAuth?: Maybe<Settings>;
+  updateHeaderAuth?: Maybe<Settings>;
+  updateLocalAuth?: Maybe<Settings>;
 };
 
 
@@ -28067,6 +28138,21 @@ export type SettingsEditMutationsEditMessageArgs = {
 
 export type SettingsEditMutationsFieldPatchArgs = {
   input: Array<InputMaybe<EditInput>>;
+};
+
+
+export type SettingsEditMutationsUpdateCertAuthArgs = {
+  input: CertAuthConfigInput;
+};
+
+
+export type SettingsEditMutationsUpdateHeaderAuthArgs = {
+  input: HeadersAuthConfigInput;
+};
+
+
+export type SettingsEditMutationsUpdateLocalAuthArgs = {
+  input: LocalAuthConfigInput;
 };
 
 export type SettingsMessage = {
@@ -36922,6 +37008,8 @@ export type ResolversTypes = ResolversObject<{
   CatalogConnection: ResolverTypeWrapper<Omit<CatalogConnection, 'edges'> & { edges: Array<ResolversTypes['CatalogEdge']> }>;
   CatalogEdge: ResolverTypeWrapper<Omit<CatalogEdge, 'node'> & { node: ResolversTypes['Catalog'] }>;
   CatalogsOrdering: CatalogsOrdering;
+  CertAuthConfig: ResolverTypeWrapper<CertAuthConfig>;
+  CertAuthConfigInput: CertAuthConfigInput;
   ChangePasswordInput: ChangePasswordInput;
   Channel: ResolverTypeWrapper<BasicStoreEntityChannel>;
   ChannelAddInput: ChannelAddInput;
@@ -37185,6 +37273,8 @@ export type ResolversTypes = ResolversObject<{
   HashInput: HashInput;
   HashedObservable: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['HashedObservable']>;
   HeaderInput: HeaderInput;
+  HeadersAuthConfig: ResolverTypeWrapper<HeadersAuthConfig>;
+  HeadersAuthConfigInput: HeadersAuthConfigInput;
   HealthConnectorStatusInput: HealthConnectorStatusInput;
   HistoryChange: ResolverTypeWrapper<HistoryChange>;
   Hostname: ResolverTypeWrapper<Omit<Hostname, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
@@ -37315,6 +37405,8 @@ export type ResolversTypes = ResolversObject<{
   LicenseActivationInput: LicenseActivationInput;
   ListTask: ResolverTypeWrapper<Omit<ListTask, 'work'> & { work?: Maybe<ResolversTypes['Work']> }>;
   ListTaskAddInput: ListTaskAddInput;
+  LocalAuthConfig: ResolverTypeWrapper<LocalAuthConfig>;
+  LocalAuthConfigInput: LocalAuthConfigInput;
   Location: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['Location']>;
   LocationAddInput: LocationAddInput;
   LocationConnection: ResolverTypeWrapper<Omit<LocationConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['LocationEdge']>>> }>;
@@ -37601,7 +37693,7 @@ export type ResolversTypes = ResolversObject<{
   SendUserMailInput: SendUserMailInput;
   SessionDetail: ResolverTypeWrapper<SessionDetail>;
   Settings: ResolverTypeWrapper<Omit<Settings, 'activity_listeners' | 'editContext' | 'messages_administration' | 'platform_critical_alerts' | 'platform_messages' | 'platform_organization' | 'platform_theme'> & { activity_listeners?: Maybe<Array<ResolversTypes['Member']>>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, messages_administration?: Maybe<Array<ResolversTypes['SettingsMessage']>>, platform_critical_alerts: Array<ResolversTypes['PlatformCriticalAlert']>, platform_messages?: Maybe<Array<ResolversTypes['SettingsMessage']>>, platform_organization?: Maybe<ResolversTypes['Organization']>, platform_theme?: Maybe<ResolversTypes['Theme']> }>;
-  SettingsEditMutations: ResolverTypeWrapper<Omit<SettingsEditMutations, 'contextClean' | 'contextPatch' | 'deleteMessage' | 'editMessage' | 'fieldPatch'> & { contextClean?: Maybe<ResolversTypes['Settings']>, contextPatch?: Maybe<ResolversTypes['Settings']>, deleteMessage?: Maybe<ResolversTypes['Settings']>, editMessage?: Maybe<ResolversTypes['Settings']>, fieldPatch?: Maybe<ResolversTypes['Settings']> }>;
+  SettingsEditMutations: ResolverTypeWrapper<Omit<SettingsEditMutations, 'contextClean' | 'contextPatch' | 'deleteMessage' | 'editMessage' | 'fieldPatch' | 'updateCertAuth' | 'updateHeaderAuth' | 'updateLocalAuth'> & { contextClean?: Maybe<ResolversTypes['Settings']>, contextPatch?: Maybe<ResolversTypes['Settings']>, deleteMessage?: Maybe<ResolversTypes['Settings']>, editMessage?: Maybe<ResolversTypes['Settings']>, fieldPatch?: Maybe<ResolversTypes['Settings']>, updateCertAuth?: Maybe<ResolversTypes['Settings']>, updateHeaderAuth?: Maybe<ResolversTypes['Settings']>, updateLocalAuth?: Maybe<ResolversTypes['Settings']> }>;
   SettingsMessage: ResolverTypeWrapper<Omit<SettingsMessage, 'recipients'> & { recipients?: Maybe<Array<ResolversTypes['Member']>> }>;
   SettingsMessageInput: SettingsMessageInput;
   SingleSignMigrationInput: SingleSignMigrationInput;
@@ -37971,6 +38063,8 @@ export type ResolversParentTypes = ResolversObject<{
   Catalog: GraphqlCatalog;
   CatalogConnection: Omit<CatalogConnection, 'edges'> & { edges: Array<ResolversParentTypes['CatalogEdge']> };
   CatalogEdge: Omit<CatalogEdge, 'node'> & { node: ResolversParentTypes['Catalog'] };
+  CertAuthConfig: CertAuthConfig;
+  CertAuthConfigInput: CertAuthConfigInput;
   ChangePasswordInput: ChangePasswordInput;
   Channel: BasicStoreEntityChannel;
   ChannelAddInput: ChannelAddInput;
@@ -38194,6 +38288,8 @@ export type ResolversParentTypes = ResolversObject<{
   HashInput: HashInput;
   HashedObservable: ResolversInterfaceTypes<ResolversParentTypes>['HashedObservable'];
   HeaderInput: HeaderInput;
+  HeadersAuthConfig: HeadersAuthConfig;
+  HeadersAuthConfigInput: HeadersAuthConfigInput;
   HealthConnectorStatusInput: HealthConnectorStatusInput;
   HistoryChange: HistoryChange;
   Hostname: Omit<Hostname, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
@@ -38304,6 +38400,8 @@ export type ResolversParentTypes = ResolversObject<{
   LicenseActivationInput: LicenseActivationInput;
   ListTask: Omit<ListTask, 'work'> & { work?: Maybe<ResolversParentTypes['Work']> };
   ListTaskAddInput: ListTaskAddInput;
+  LocalAuthConfig: LocalAuthConfig;
+  LocalAuthConfigInput: LocalAuthConfigInput;
   Location: ResolversInterfaceTypes<ResolversParentTypes>['Location'];
   LocationAddInput: LocationAddInput;
   LocationConnection: Omit<LocationConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['LocationEdge']>>> };
@@ -38556,7 +38654,7 @@ export type ResolversParentTypes = ResolversObject<{
   SendUserMailInput: SendUserMailInput;
   SessionDetail: SessionDetail;
   Settings: Omit<Settings, 'activity_listeners' | 'editContext' | 'messages_administration' | 'platform_critical_alerts' | 'platform_messages' | 'platform_organization' | 'platform_theme'> & { activity_listeners?: Maybe<Array<ResolversParentTypes['Member']>>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, messages_administration?: Maybe<Array<ResolversParentTypes['SettingsMessage']>>, platform_critical_alerts: Array<ResolversParentTypes['PlatformCriticalAlert']>, platform_messages?: Maybe<Array<ResolversParentTypes['SettingsMessage']>>, platform_organization?: Maybe<ResolversParentTypes['Organization']>, platform_theme?: Maybe<ResolversParentTypes['Theme']> };
-  SettingsEditMutations: Omit<SettingsEditMutations, 'contextClean' | 'contextPatch' | 'deleteMessage' | 'editMessage' | 'fieldPatch'> & { contextClean?: Maybe<ResolversParentTypes['Settings']>, contextPatch?: Maybe<ResolversParentTypes['Settings']>, deleteMessage?: Maybe<ResolversParentTypes['Settings']>, editMessage?: Maybe<ResolversParentTypes['Settings']>, fieldPatch?: Maybe<ResolversParentTypes['Settings']> };
+  SettingsEditMutations: Omit<SettingsEditMutations, 'contextClean' | 'contextPatch' | 'deleteMessage' | 'editMessage' | 'fieldPatch' | 'updateCertAuth' | 'updateHeaderAuth' | 'updateLocalAuth'> & { contextClean?: Maybe<ResolversParentTypes['Settings']>, contextPatch?: Maybe<ResolversParentTypes['Settings']>, deleteMessage?: Maybe<ResolversParentTypes['Settings']>, editMessage?: Maybe<ResolversParentTypes['Settings']>, fieldPatch?: Maybe<ResolversParentTypes['Settings']>, updateCertAuth?: Maybe<ResolversParentTypes['Settings']>, updateHeaderAuth?: Maybe<ResolversParentTypes['Settings']>, updateLocalAuth?: Maybe<ResolversParentTypes['Settings']> };
   SettingsMessage: Omit<SettingsMessage, 'recipients'> & { recipients?: Maybe<Array<ResolversParentTypes['Member']>> };
   SettingsMessageInput: SettingsMessageInput;
   SingleSignMigrationInput: SingleSignMigrationInput;
@@ -39889,6 +39987,11 @@ export type CatalogConnectionResolvers<ContextType = any, ParentType extends Res
 export type CatalogEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['CatalogEdge'] = ResolversParentTypes['CatalogEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Catalog'], ParentType, ContextType>;
+}>;
+
+export type CertAuthConfigResolvers<ContextType = any, ParentType extends ResolversParentTypes['CertAuthConfig'] = ResolversParentTypes['CertAuthConfig']> = ResolversObject<{
+  button_label?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  enabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
 }>;
 
 export type ChannelResolvers<ContextType = any, ParentType extends ResolversParentTypes['Channel'] = ResolversParentTypes['Channel']> = ResolversObject<{
@@ -42124,6 +42227,24 @@ export type HashedObservableResolvers<ContextType = any, ParentType extends Reso
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
 }>;
 
+export type HeadersAuthConfigResolvers<ContextType = any, ParentType extends ResolversParentTypes['HeadersAuthConfig'] = ResolversParentTypes['HeadersAuthConfig']> = ResolversObject<{
+  auto_create_group?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  enabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  groups_header?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  groups_mapping?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  groups_splitter?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  header_email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  header_firstname?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  header_lastname?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  header_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  headers_audit?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  logout_uri?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  organizations_default?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  organizations_header?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  organizations_mapping?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  organizations_splitter?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
 export type HistoryChangeResolvers<ContextType = any, ParentType extends ResolversParentTypes['HistoryChange'] = ResolversParentTypes['HistoryChange']> = ResolversObject<{
   changes_added?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   changes_removed?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -43352,6 +43473,10 @@ export type ListTaskResolvers<ContextType = any, ParentType extends ResolversPar
   type?: Resolver<Maybe<ResolversTypes['BackgroundTaskType']>, ParentType, ContextType>;
   work?: Resolver<Maybe<ResolversTypes['Work']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type LocalAuthConfigResolvers<ContextType = any, ParentType extends ResolversParentTypes['LocalAuthConfig'] = ResolversParentTypes['LocalAuthConfig']> = ResolversObject<{
+  enabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
 }>;
 
 export type LocationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Location'] = ResolversParentTypes['Location']> = ResolversObject<{
@@ -46963,13 +47088,16 @@ export type SessionDetailResolvers<ContextType = any, ParentType extends Resolve
 export type SettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['Settings'] = ResolversParentTypes['Settings']> = ResolversObject<{
   activity_listeners?: Resolver<Maybe<Array<ResolversTypes['Member']>>, ParentType, ContextType>;
   analytics_google_analytics_v4?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  cert_auth?: Resolver<Maybe<ResolversTypes['CertAuthConfig']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   filigran_chatbot_ai_cgu_status?: Resolver<ResolversTypes['CGUStatus'], ParentType, ContextType>;
   filigran_chatbot_ai_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  headers_auth?: Resolver<Maybe<ResolversTypes['HeadersAuthConfig']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   is_authentication_locked?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  local_auth?: Resolver<Maybe<ResolversTypes['LocalAuthConfig']>, ParentType, ContextType>;
   messages_administration?: Resolver<Maybe<Array<ResolversTypes['SettingsMessage']>>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   metrics_definition?: Resolver<Maybe<Array<ResolversTypes['MetricDefinition']>>, ParentType, ContextType>;
@@ -46998,6 +47126,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_enterprise_edition?: Resolver<ResolversTypes['PlatformEE'], ParentType, ContextType>;
   platform_favicon?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_feature_flags?: Resolver<Maybe<Array<ResolversTypes['Module']>>, ParentType, ContextType>;
+  platform_https_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   platform_language?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_login_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_map_tile_server_dark?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -47044,6 +47173,9 @@ export type SettingsEditMutationsResolvers<ContextType = any, ParentType extends
   deleteMessage?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType, RequireFields<SettingsEditMutationsDeleteMessageArgs, 'input'>>;
   editMessage?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType, RequireFields<SettingsEditMutationsEditMessageArgs, 'input'>>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType, RequireFields<SettingsEditMutationsFieldPatchArgs, 'input'>>;
+  updateCertAuth?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType, RequireFields<SettingsEditMutationsUpdateCertAuthArgs, 'input'>>;
+  updateHeaderAuth?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType, RequireFields<SettingsEditMutationsUpdateHeaderAuthArgs, 'input'>>;
+  updateLocalAuth?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType, RequireFields<SettingsEditMutationsUpdateLocalAuthArgs, 'input'>>;
 }>;
 
 export type SettingsMessageResolvers<ContextType = any, ParentType extends ResolversParentTypes['SettingsMessage'] = ResolversParentTypes['SettingsMessage']> = ResolversObject<{
@@ -49658,6 +49790,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Catalog?: CatalogResolvers<ContextType>;
   CatalogConnection?: CatalogConnectionResolvers<ContextType>;
   CatalogEdge?: CatalogEdgeResolvers<ContextType>;
+  CertAuthConfig?: CertAuthConfigResolvers<ContextType>;
   Channel?: ChannelResolvers<ContextType>;
   ChannelConnection?: ChannelConnectionResolvers<ContextType>;
   ChannelEdge?: ChannelEdgeResolvers<ContextType>;
@@ -49820,6 +49953,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   GroupsManagement?: GroupsManagementResolvers<ContextType>;
   Hash?: HashResolvers<ContextType>;
   HashedObservable?: HashedObservableResolvers<ContextType>;
+  HeadersAuthConfig?: HeadersAuthConfigResolvers<ContextType>;
   HistoryChange?: HistoryChangeResolvers<ContextType>;
   Hostname?: HostnameResolvers<ContextType>;
   IPv4Addr?: IPv4AddrResolvers<ContextType>;
@@ -49902,6 +50036,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   LanguageConnection?: LanguageConnectionResolvers<ContextType>;
   LanguageEdge?: LanguageEdgeResolvers<ContextType>;
   ListTask?: ListTaskResolvers<ContextType>;
+  LocalAuthConfig?: LocalAuthConfigResolvers<ContextType>;
   Location?: LocationResolvers<ContextType>;
   LocationConnection?: LocationConnectionResolvers<ContextType>;
   LocationEdge?: LocationEdgeResolvers<ContextType>;

@@ -1,7 +1,4 @@
-import * as R from 'ramda';
-import { BUS_TOPICS, ENABLED_DEMO_MODE, logApp } from '../config/conf';
-import { AuthenticationFailure } from '../config/errors';
-import passport from '../modules/singleSignOn/providers-initialization';
+import { BUS_TOPICS, ENABLED_DEMO_MODE } from '../config/conf';
 import { internalLoadById } from '../database/middleware-loader';
 import { fetchEditContext } from '../database/redis';
 import { applicationSession, findSessions, findUserSessions, killSession, killUserSessions } from '../database/session';
@@ -10,7 +7,6 @@ import {
   addBookmark,
   addUser,
   assignOrganizationToUser,
-  sessionAuthenticateUser,
   bookmarks,
   buildCompleteUser,
   deleteBookmark,
@@ -48,10 +44,10 @@ import {
   userIdDeleteRelation,
   userOrganizationsPaginated,
   userOrganizationsPaginatedWithoutInferences,
-  userWithOrigin,
   userRoles,
   sendEmailToUser,
   findUserPaginated,
+  sessionLogin,
 } from '../domain/user';
 import { subscribeToInstanceEvents, subscribeToUserEvents } from '../graphql/subscriptionWrapper';
 import { publishUserAction } from '../listener/UserActionListener';
@@ -59,9 +55,8 @@ import { findById as findDraftById } from '../modules/draftWorkspace/draftWorksp
 import { addUserToken, revokeUserToken, revokeUserTokenByAdmin, addUserTokenByAdmin } from '../modules/user/user-domain';
 import { findById as findWorskpaceById } from '../modules/workspace/workspace-domain';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
-import { executionContext, REDACTED_USER } from '../utils/access';
+import { REDACTED_USER } from '../utils/access';
 import { getNotifiers } from '../modules/notifier/notifier-domain';
-import { PROVIDERS } from '../modules/singleSignOn/providers-configuration';
 import { RELATION_HAS_CAPABILITY_IN_DRAFT } from '../schema/internalRelationship';
 import { loadCreator } from '../database/members';
 import { issueConnectorJWT } from '../database/repository';
@@ -147,46 +142,7 @@ const userResolvers = {
     otpActivation: (_, { input }, context) => otpUserActivation(context, context.user, input),
     otpDeactivation: (_, __, context) => otpUserDeactivation(context, context.user, context.user.id),
     otpLogin: (_, { input }, { req, user }) => otpUserLogin(req, user, input),
-    token: async (_, { input }, { req }) => {
-      // We need to iterate on each provider to find one that validated the credentials
-      const formProviders = R.filter((p) => p.type === 'FORM', PROVIDERS);
-      if (formProviders.length === 0) {
-        logApp.warn('Cant authenticate without any form providers');
-      }
-      let loggedUser;
-      for (let index = 0; index < formProviders.length; index += 1) {
-        const auth = formProviders[index];
-        const body = { username: input.email, password: input.password };
-        const { user, provider } = await new Promise((resolve) => {
-          passport.authenticate(auth.provider, {}, (err, authUser, info) => {
-            if (err || info) {
-              logApp.warn('Token authenticate error', { cause: err, info, provider: auth.provider });
-            }
-            resolve({ user: authUser, provider: auth.provider });
-          })({ body });
-        });
-        // As soon as credential is validated, stop looking for another provider
-        if (user) {
-          const context = executionContext(`${provider}_strategy`);
-          loggedUser = await sessionAuthenticateUser(context, req, user, provider);
-          break;
-        }
-      }
-      if (loggedUser) {
-        return loggedUser.api_token;
-      }
-      const auditUser = userWithOrigin(req, { user_email: input.email });
-      await publishUserAction({
-        user: auditUser,
-        event_type: 'authentication',
-        event_scope: 'login',
-        event_access: 'administration',
-        status: 'error',
-        context_data: { username: ENABLED_DEMO_MODE ? REDACTED_USER.name : input.email, provider: 'form' },
-      });
-      // User cannot be authenticated in any providers
-      throw AuthenticationFailure();
-    },
+    token: async (_, { input }, context) => sessionLogin(context, input),
     connectorJWT: () => issueConnectorJWT(),
     sessionKill: async (_, { id }, context) => {
       const { store } = applicationSession;

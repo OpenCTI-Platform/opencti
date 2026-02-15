@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { BasicStoreEntitySingleSignOn } from '../../../../src/modules/singleSignOn/singleSignOn-types';
 import { convertKeyValueToJsConfiguration } from '../../../../src/modules/singleSignOn/singleSignOn-providers';
-import { computeGroupsMapping, computeOrganizationsMapping, computeHeaderUserInfo } from '../../../../src/modules/singleSignOn/singleSignOn-provider-header';
+import {
+  computeHeaderUserInfo,
+  computeGroupsMappingFromSettings,
+  computeOrganizationsMappingFromSettings,
+} from '../../../../src/modules/singleSignOn/singleSignOn-provider-header';
+import type { HeadersAuthConfig } from '../../../../src/types/settings';
 
 describe('Header Single sign on Provider coverage tests', () => {
   describe('Header userInfo mapping coverage', () => {
@@ -37,43 +42,43 @@ describe('Header Single sign on Provider coverage tests', () => {
     it('should Header group mapping be computed correctly with default', () => {
       const headers: Record<string, string> = { 'X-MY-USER-GROUPS': 'headerGroupA' };
       const req = { header: (key: string) => headers[key] };
-      const groupManagementConfig: Partial <BasicStoreEntitySingleSignOn> = {
-        groups_management: {
-          groups_mapping: ['headerGroupA:openCTIGroupA', 'headerGroupB:openCTIGroupB', 'headerGroupC:openCTIGroupC'],
-          groups_header: 'X-MY-USER-GROUPS',
-        },
+      const groupManagementConfig: HeadersAuthConfig = {
+        enabled: true,
+        header_email: 'X-MY-USER-EMAIL',
+        groups_mapping: ['headerGroupA:openCTIGroupA', 'headerGroupB:openCTIGroupB', 'headerGroupC:openCTIGroupC'],
+        groups_header: 'X-MY-USER-GROUPS',
       };
       // no config on read user info => userInfo can be undefined
-      const result = computeGroupsMapping(groupManagementConfig as BasicStoreEntitySingleSignOn, req);
+      const result = computeGroupsMappingFromSettings(groupManagementConfig, req);
       expect(result).toStrictEqual(['openCTIGroupA']);
     });
 
     it('should Header group mapping be computed correctly with splitter', () => {
       const headers: Record<string, string> = { 'X-MY-USER-GROUPS': 'headerGroupA;headerGroupB' };
       const req = { header: (key: string) => headers[key] };
-      const groupManagementConfig: Partial <BasicStoreEntitySingleSignOn> = {
-        groups_management: {
-          groups_mapping: ['headerGroupA:openCTIGroupA', 'headerGroupB:openCTIGroupB', 'headerGroupC:openCTIGroupC'],
-          groups_header: 'X-MY-USER-GROUPS',
-          groups_splitter: ';',
-        },
+      const groupManagementConfig: HeadersAuthConfig = {
+        enabled: true,
+        header_email: 'X-MY-USER-EMAIL',
+        groups_mapping: ['headerGroupA:openCTIGroupA', 'headerGroupB:openCTIGroupB', 'headerGroupC:openCTIGroupC'],
+        groups_header: 'X-MY-USER-GROUPS',
+        groups_splitter: ';',
       };
-      const result = computeGroupsMapping(groupManagementConfig as BasicStoreEntitySingleSignOn, req);
+      const result = computeGroupsMappingFromSettings(groupManagementConfig, req);
       expect(result).toStrictEqual(['openCTIGroupA', 'openCTIGroupB']);
     });
 
     it('should Header org mapping be computed correctly with default org', () => {
       const headers: Record<string, string> = { 'X-MY-USER-ORG': 'headerOrgA;headerOrgB' };
       const req = { header: (key: string) => headers[key] };
-      const orgManagementConfig: Partial <BasicStoreEntitySingleSignOn> = {
-        organizations_management: {
-          organizations_mapping: ['headerOrgA:openCTIOrgA', 'headerOrgB:openCTIOrgB', 'headerOrgC:openCTIOrgC'],
-          organizations_header: 'X-MY-USER-ORG',
-          organizations_splitter: ';',
-        },
+      const orgManagementConfig: HeadersAuthConfig = {
+        enabled: true,
+        header_email: 'X-MY-USER-EMAIL',
+        organizations_mapping: ['headerOrgA:openCTIOrgA', 'headerOrgB:openCTIOrgB', 'headerOrgC:openCTIOrgC'],
+        organizations_header: 'X-MY-USER-ORG',
+        organizations_splitter: ';',
       };
-      const result = computeOrganizationsMapping(orgManagementConfig as BasicStoreEntitySingleSignOn, ['openCTIOrgC'], req);
-      expect(result).toStrictEqual(['openCTIOrgC', 'openCTIOrgA', 'openCTIOrgB']);
+      const result = computeOrganizationsMappingFromSettings(orgManagementConfig, req);
+      expect(result).toStrictEqual(['openCTIOrgA', 'openCTIOrgB']);
     });
   });
 });

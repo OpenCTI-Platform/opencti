@@ -75,12 +75,11 @@ const AccessesMenu: FunctionComponent = () => {
       isEE: true,
     },
   ];
-  const singleSignOnEntries: MenuEntry[] = [
+  const authenticationEntries: MenuEntry[] = [
     {
       path: '/dashboard/settings/accesses/authentications',
-      label: 'Authentication',
+      label: 'Authentications',
       icon: <KeyOutlined fontSize="medium" />,
-      isEE: true,
     },
   ];
   const setAccess = useGranted([SETTINGS_SETACCESSES]);
@@ -94,6 +93,9 @@ const AccessesMenu: FunctionComponent = () => {
   if (setAccess) {
     menuEntries.push(...entries);
   }
+  if (setAuthentication && !isSsoAuthenticationLocked && featureFlagSingleSignOn) {
+    menuEntries.push(...authenticationEntries);
+  }
   if (setMarkings) {
     menuEntries.push(...markingEntries);
   }
@@ -102,9 +104,6 @@ const AccessesMenu: FunctionComponent = () => {
   }
   if (setAccess) {
     menuEntries.push(...emailTemplateEntries);
-  }
-  if (setAuthentication && !isSsoAuthenticationLocked && featureFlagSingleSignOn) {
-    menuEntries.push(...singleSignOnEntries);
   }
   if (!setAccess && isOrgaAdmin) {
     menuEntries.push(

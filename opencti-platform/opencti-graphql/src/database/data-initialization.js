@@ -452,6 +452,9 @@ export const initializeData = async (context, withMarkings = true) => {
     platform_theme: darkTheme.id,
     platform_language: 'auto',
     view_all_users: false,
+    local_auth: { enabled: true },
+    cert_auth: { enabled: false },
+    headers_auth: { enabled: false },
   });
 
   await initCreateEntitySettings(context, SYSTEM_USER);

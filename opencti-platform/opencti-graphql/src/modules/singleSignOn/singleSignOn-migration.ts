@@ -11,13 +11,18 @@ import {
 import { logApp } from '../../config/conf';
 import { now } from 'moment';
 import { nowTime } from '../../utils/format';
-import { AUTH_SECRET_LIST, getAllIdentifiers, internalAddSingleSignOn, SECRET_TYPE } from './singleSignOn-domain';
+import { AUTH_SECRET_LIST, findAllSingleSignOn, getAllIdentifiers, internalAddSingleSignOn, SECRET_TYPE } from './singleSignOn-domain';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { v4 as uuid } from 'uuid';
-import { EnvStrategyType, isAuthenticationProviderMigrated, LOCAL_STRATEGY_IDENTIFIER, MIGRATED_STRATEGY } from './providers-configuration';
+import { EnvStrategyType, isAuthenticationProviderMigrated } from './providers-configuration';
 import { configRemapping } from './providers-initialization';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES } from '../../utils/access';
 import { AuthRequired } from '../../config/errors';
+import { patchAttribute } from '../../database/middleware';
+import { getSettings } from '../../domain/settings';
+import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
+import type { BasicStoreSettings, CertAuthConfig, HeadersAuthConfig, LocalAuthConfig } from '../../types/settings';
+import { elDeleteElements } from '../../database/engine';
 
 // Key that should not be present after migration
 const DEPRECATED_KEYS = ['roles_management'];
@@ -293,50 +298,52 @@ const parseLDAPStrategyConfiguration = (ssoKey: string, envConfiguration: any, d
   return authEntity;
 };
 
-const parseHEADERStrategyConfiguration = (ssoKey: string, envConfiguration: any, dryRun: boolean) => {
-  const { configuration, groups_management, organizations_management } = computeConfiguration(envConfiguration, StrategyType.HeaderStrategy);
-  const identifier = envConfiguration?.identifier || 'header';
-
-  const authEntity: SingleSignOnAddInput = {
-    identifier,
-    strategy: StrategyType.HeaderStrategy,
-    name: computeAuthenticationName(ssoKey, envConfiguration, identifier),
-    label: computeAuthenticationLabel(ssoKey, envConfiguration),
-    description: `${StrategyType.HeaderStrategy} Automatically ${dryRun ? 'detected' : 'created'} from ${ssoKey} at ${now()}`,
+const parseHEADERStrategyConfiguration = async (context: AuthContext, user: AuthUser, ssoKey: string, envConfiguration: any, dryRun: boolean) => {
+  const settings = await getSettings(context) as unknown as BasicStoreSettings;
+  const config: HeadersAuthConfig = {
     enabled: computeEnabled(envConfiguration),
-    configuration,
-    groups_management,
-    organizations_management,
+    header_email: envConfiguration?.config?.header_email,
+    header_name: envConfiguration?.config?.header_name,
+    header_firstname: envConfiguration?.config?.header_firstname,
+    header_lastname: envConfiguration?.config?.header_lastname,
+    auto_create_group: envConfiguration?.config?.auto_create_group ?? false,
+    headers_audit: envConfiguration?.config?.headers_audit ?? [],
+    logout_uri: envConfiguration?.config?.logout_uri,
+    // Groups management
+    groups_header: envConfiguration?.config?.groups_management?.groups_header,
+    groups_splitter: envConfiguration?.config?.groups_management?.groups_splitter,
+    groups_mapping: envConfiguration?.config?.groups_management?.groups_mapping ?? [],
+    // Organizations management
+    organizations_default: envConfiguration?.config?.organizations_default ?? [],
+    organizations_header: envConfiguration?.config?.organizations_management?.organizations_header,
+    organizations_splitter: envConfiguration?.config?.organizations_management?.organizations_splitter,
+    organizations_mapping: envConfiguration?.config?.organizations_management?.organizations_mapping ?? [],
   };
-  return authEntity;
+  const data = { headers_auth: config };
+  if (!dryRun && !settings.headers_auth) { // Migrate only if not already done
+    await patchAttribute(context, user, settings.id, ENTITY_TYPE_SETTINGS, data);
+  }
+  return data;
 };
 
-const parseCERTStrategyConfiguration = (ssoKey: string, envConfiguration: any, dryRun: boolean) => {
-  const { configuration } = computeConfiguration(envConfiguration, StrategyType.ClientCertStrategy);
-  const identifier = envConfiguration?.identifier || 'cert';
-
-  const authEntity: SingleSignOnAddInput = {
-    identifier,
-    strategy: StrategyType.ClientCertStrategy,
-    name: computeAuthenticationName(ssoKey, envConfiguration, identifier),
-    label: computeAuthenticationLabel(ssoKey, envConfiguration),
-    description: `${StrategyType.ClientCertStrategy} Automatically ${dryRun ? 'detected' : 'created'} from ${ssoKey} at ${now()}`,
-    enabled: computeEnabled(envConfiguration),
-    configuration,
-  };
-  return authEntity;
+const parseCERTStrategyConfiguration = async (context: AuthContext, user: AuthUser, ssoKey: string, envConfiguration: any, dryRun: boolean) => {
+  const settings = await getSettings(context) as unknown as BasicStoreSettings;
+  const config: CertAuthConfig = { enabled: computeEnabled(envConfiguration), button_label: computeAuthenticationLabel(ssoKey, envConfiguration) };
+  const data = { cert_auth: config };
+  if (!dryRun && !settings.cert_auth) { // Migrate only if not already done
+    await patchAttribute(context, user, settings.id, ENTITY_TYPE_SETTINGS, data);
+  }
+  return data;
 };
 
-const parseLocalStrategyConfiguration = (ssoKey: string, envConfiguration: any, dryRun: boolean) => {
-  const authEntity: SingleSignOnAddInput = {
-    strategy: StrategyType.LocalStrategy,
-    name: computeAuthenticationName(ssoKey, envConfiguration, LOCAL_STRATEGY_IDENTIFIER),
-    label: computeAuthenticationLabel(ssoKey, envConfiguration),
-    description: `${StrategyType.LocalStrategy} Automatically ${dryRun ? 'detected' : 'created'} from ${ssoKey} at ${now()}`,
-    enabled: computeEnabled(envConfiguration),
-    identifier: LOCAL_STRATEGY_IDENTIFIER,
-  };
-  return authEntity;
+const parseLocalStrategyConfiguration = async (context: AuthContext, user: AuthUser, envConfiguration: any, dryRun: boolean) => {
+  const settings = await getSettings(context) as unknown as BasicStoreSettings;
+  const config: LocalAuthConfig = { enabled: computeEnabled(envConfiguration) };
+  const data = { local_auth: config };
+  if (!dryRun && !settings.local_auth) { // Migrate only if not already done
+    await patchAttribute(context, user, settings.id, ENTITY_TYPE_SETTINGS, data);
+  }
+  return data;
 };
 
 export const parseSingleSignOnRunConfiguration = async (context: AuthContext, user: AuthUser, envConfiguration: any, dryRun: boolean) => {
@@ -344,60 +351,52 @@ export const parseSingleSignOnRunConfiguration = async (context: AuthContext, us
   for (const ssoKey in envConfiguration) {
     const currentSSOconfig = envConfiguration[ssoKey];
     logApp.info(`[SSO CONVERSION] reading ${ssoKey}`);
-
     if (currentSSOconfig.strategy) {
-      if (!MIGRATED_STRATEGY.some((strategyName) => strategyName === currentSSOconfig.strategy)) {
-        // Allow migration only for full migrated strategies.
-        logApp.info(`[SSO CONVERSION] ${currentSSOconfig.strategy} detected but conversion is not implemented yet`);
-      } else {
-        switch (currentSSOconfig.strategy) {
-          case EnvStrategyType.STRATEGY_LOCAL:
-            logApp.info('[SSO CONVERSION] Looking at LocalStrategy conversion');
-            authenticationStrategiesInput.push(parseLocalStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
-            break;
-          case EnvStrategyType.STRATEGY_OPENID:
-            logApp.info('[SSO CONVERSION] Looking at OpenID conversion');
-            authenticationStrategiesInput.push(parseOpenIdStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
-            break;
-          case EnvStrategyType.STRATEGY_SAML:
-            logApp.info('[SSO CONVERSION] Looking at SAML conversion');
-            authenticationStrategiesInput.push(parseSAMLStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
-            break;
-          case EnvStrategyType.STRATEGY_LDAP:
-            logApp.info('[SSO CONVERSION] Looking at LDAP conversion');
-            authenticationStrategiesInput.push(parseLDAPStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
-            break;
-          case EnvStrategyType.STRATEGY_CERT:
-            logApp.info('[SSO MIGRATION] Looking at CERT migration');
-            authenticationStrategiesInput.push(parseCERTStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
-            break;
-          case EnvStrategyType.STRATEGY_HEADER:
-            logApp.info('[SSO MIGRATION] Looking at HEADER migration');
-            authenticationStrategiesInput.push(parseHEADERStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
-            break;
-          case EnvStrategyType.STRATEGY_FACEBOOK:
-            logApp.warn(`[SSO CONVERSION] DEPRECATED ${currentSSOconfig.strategy} detected.`);
-            break;
-          case EnvStrategyType.STRATEGY_AUTH0:
-            logApp.warn(`[SSO CONVERSION] DEPRECATED ${currentSSOconfig.strategy} detected.`);
-            break;
-          case EnvStrategyType.STRATEGY_GITHUB:
-            logApp.warn(`[SSO CONVERSION] DEPRECATED ${currentSSOconfig.strategy} detected.`);
-            break;
-          case EnvStrategyType.STRATEGY_GOOGLE:
-            logApp.warn(`[SSO CONVERSION] DEPRECATED ${currentSSOconfig.strategy} detected.`);
-            break;
+      switch (currentSSOconfig.strategy) {
+        case EnvStrategyType.STRATEGY_LOCAL:
+          logApp.info('[SSO CONVERSION] Looking at LocalStrategy conversion');
+          await parseLocalStrategyConfiguration(context, user, currentSSOconfig, dryRun);
+          break;
+        case EnvStrategyType.STRATEGY_OPENID:
+          logApp.info('[SSO CONVERSION] Looking at OpenID conversion');
+          authenticationStrategiesInput.push(parseOpenIdStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
+          break;
+        case EnvStrategyType.STRATEGY_SAML:
+          logApp.info('[SSO CONVERSION] Looking at SAML conversion');
+          authenticationStrategiesInput.push(parseSAMLStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
+          break;
+        case EnvStrategyType.STRATEGY_LDAP:
+          logApp.info('[SSO CONVERSION] Looking at LDAP conversion');
+          authenticationStrategiesInput.push(parseLDAPStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
+          break;
+        case EnvStrategyType.STRATEGY_CERT:
+          logApp.info('[SSO MIGRATION] Looking at CERT migration');
+          await parseCERTStrategyConfiguration(context, user, ssoKey, currentSSOconfig, dryRun);
+          break;
+        case EnvStrategyType.STRATEGY_HEADER:
+          logApp.info('[SSO MIGRATION] Looking at HEADER migration');
+          await parseHEADERStrategyConfiguration(context, user, ssoKey, currentSSOconfig, dryRun);
+          break;
+        case EnvStrategyType.STRATEGY_FACEBOOK:
+          logApp.warn(`[SSO CONVERSION] DEPRECATED ${currentSSOconfig.strategy} detected.`);
+          break;
+        case EnvStrategyType.STRATEGY_AUTH0:
+          logApp.warn(`[SSO CONVERSION] DEPRECATED ${currentSSOconfig.strategy} detected.`);
+          break;
+        case EnvStrategyType.STRATEGY_GITHUB:
+          logApp.warn(`[SSO CONVERSION] DEPRECATED ${currentSSOconfig.strategy} detected.`);
+          break;
+        case EnvStrategyType.STRATEGY_GOOGLE:
+          logApp.warn(`[SSO CONVERSION] DEPRECATED ${currentSSOconfig.strategy} detected.`);
+          break;
 
-          default:
-            logApp.error('[SSO CONVERSION] unknown strategy in configuration', {
-              providerKey: ssoKey,
-              strategy: currentSSOconfig.strategy,
-            });
-            break;
-        }
+        default:
+          logApp.error('[SSO CONVERSION] unknown strategy in configuration', {
+            providerKey: ssoKey,
+            strategy: currentSSOconfig.strategy,
+          });
+          break;
       }
-    } else {
-      logApp.error('[SSO CONVERSION] strategy not defined in configuration', { providerKey: ssoKey });
     }
   }
 
@@ -426,8 +425,13 @@ export const parseSingleSignOnRunConfiguration = async (context: AuthContext, us
     // When no dry run: save in database, and then convert BasicStore into display object
     logApp.info('[SSO CONVERSION] starting to write migrated SSO in database');
     const authenticationStrategies: SingleSignOnMigrationResult[] = [];
+    // Remove singleton strategies already migrated
+    const ssoAuthentications = await findAllSingleSignOn(context, user);
+    const singletons = [StrategyType.LocalStrategy, StrategyType.ClientCertStrategy, StrategyType.HeaderStrategy];
+    const elements = ssoAuthentications.filter((auth) => singletons.includes(auth.strategy));
+    await elDeleteElements(context, user, elements, { forceDelete: true, forceRefresh: true });
+    // Handle migration
     const identifiersInDb = await getAllIdentifiers(context, user);
-
     for (let i = 0; i < authenticationStrategiesInput.length; i++) {
       const currentAuthProvider = authenticationStrategiesInput[i];
       try {
