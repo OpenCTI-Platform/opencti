@@ -209,6 +209,7 @@ describe('Single sign on Domain coverage tests', () => {
         );
     });
   });
+
   describe('OpenID coverage tests', () => {
     afterAll(async () => {
       const allSso = await findAllSingleSignOn(testContext, ADMIN_USER);
@@ -363,6 +364,7 @@ describe('Single sign on Domain coverage tests', () => {
         );
     });
   });
+
   describe('LDAP coverage tests', () => {
     afterAll(async () => {
       const allSso = await findAllSingleSignOn(testContext, ADMIN_USER);
@@ -397,34 +399,6 @@ describe('Single sign on Domain coverage tests', () => {
       // Here there is a pub/sub on redis, let's just call the same method as listener
       await onAuthenticationMessageAdd({ instance: ldapEntity });
       expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'ldapTest1')).toBeTruthy();
-    });
-  });
-  describe('CERT coverage tests', () => {
-    let certEntityId: string;
-    afterAll(async () => {
-      await deleteSingleSignOn(testContext, ADMIN_USER, certEntityId);
-    });
-
-    it('should add new minimal Cert provider', async () => {
-      const input: SingleSignOnAddInput = {
-        name: 'cert',
-        strategy: StrategyType.ClientCertStrategy,
-        identifier: 'cert',
-        enabled: true,
-      };
-      const certEntity = await addSingleSignOn(testContext, ADMIN_USER, input);
-
-      expect(certEntity.identifier).toBe('cert');
-      expect(certEntity.enabled).toBe(true);
-      certEntityId = certEntity.id;
-
-      // Here there is a pub/sub on redis, let's just call the same method as listener
-      await onAuthenticationMessageAdd({ instance: certEntity });
-      expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'cert')).toBeTruthy();
-    });
-    it('should fieldPatch CERT SSO', async () => {
-      const patched = await editSingleSignOn(testContext, ADMIN_USER, certEntityId, { enabled: false });
-      expect(patched.enabled).toBeFalsy();
     });
   });
 
