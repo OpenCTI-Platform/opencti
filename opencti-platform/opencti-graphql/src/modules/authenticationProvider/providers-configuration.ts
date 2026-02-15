@@ -2,6 +2,8 @@ import conf, { booleanConf, logApp } from '../../config/conf';
 import { loginFromProvider } from '../../domain/user';
 import * as R from 'ramda';
 import type { AuthenticationProviderType } from '../../generated/graphql';
+import { addUserLoginCount } from '../../manager/telemetryManager';
+import { logAuthError, logAuthInfo } from './providers-logger';
 
 const IS_AUTHENTICATION_FORCE_FROM_ENV = booleanConf('app:authentication:force_env', false);
 export const isAuthenticationForcedFromEnv = () => {
@@ -59,9 +61,17 @@ export interface ProviderUserInfo {
   provider_metadata?: any;
 }
 
-export const providerLoginHandler = async (userInfo: ProviderUserInfo, done: any, opts = {}) => {
+export const providerLoginHandler = async (userInfo: ProviderUserInfo, done: (error: any, user?: any) => void, opts: any = {}) => {
+  if (!userInfo.email) {
+    logAuthError('Login has no resolved user email', opts.strategy ?? 'unknown', { userInfo, name: opts.name, identifier: opts.identifier });
+    done(Error('No user email found, please verify provider configuration and server response'));
+    return;
+  }
+
+  logAuthInfo('Login with resolved user info groups and organizations', opts.strategy ?? 'unknown', { userInfo, name: opts.name, identifier: opts.identifier });
   try {
     const user = await loginFromProvider(userInfo, opts);
+    addUserLoginCount();
     logApp.info('[AUTH] providerLoginHandler user:', { userId: user.id });
     done(null, user);
   } catch (err) {

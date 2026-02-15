@@ -1,8 +1,7 @@
 import type { LdapProviderConfiguration } from './authenticationProvider-types';
-import { logAuthInfo, logAuthWarn } from './providers-logger';
-import { AuthType, EnvStrategyType, type ProviderConfiguration, providerLoginHandler } from './providers-configuration';
+import { logAuthInfo } from './providers-logger';
+import { AuthType, providerLoginHandler } from './providers-configuration';
 import LdapStrategy, { type VerifyCallback, type VerifyDoneCallback } from 'passport-ldapauth';
-import { addUserLoginCount } from '../../manager/telemetryManager';
 import { registerAuthenticationProvider } from './providers-initialization';
 import { AuthenticationProviderType } from '../../generated/graphql';
 import { resolveGroups, resolveOrganizations, resolvePath, resolveUserInfo } from './mappings-utils';
@@ -38,26 +37,26 @@ export const registerLDAPStrategy = async (conf: LdapProviderConfiguration) => {
     const groups = await resolveGroups(conf.groups_mapping, (expr) => resolvePath(user._groups, expr.split('.')));
     const organizations = await resolveOrganizations(conf.organizations_mapping, (expr) => resolvePath(user, expr.split('.')));
 
-    if (!userInfo.email) {
-      logAuthWarn('[ENV-PROVIDER]LDAP Configuration error, cannot map email', AuthenticationProviderType.Ldap, { userInfo });
-      done({ message: 'Configuration error, ask your administrator' });
-    } else if (groups.length > 0) {
-      logAuthInfo(`[ENV-PROVIDER][LDAP] Connecting/creating account with ${userInfo.email} [name=${userInfo.name}]`, AuthenticationProviderType.Ldap);
-      const opts = {
-        providerGroups: groups,
-        providerOrganizations: organizations,
-        autoCreateGroup: conf.groups_mapping.auto_create_group,
-      };
-      addUserLoginCount();
-      await providerLoginHandler(userInfo, done, opts);
-    } else {
-      logAuthWarn('[ENV-PROVIDER]LDAP Group or Org configuration error', AuthenticationProviderType.Ldap, { userInfo, groups, organizations });
-      done({ message: 'Restricted access, ask your administrator' });
-    }
+    const opts = {
+      strategy: AuthenticationProviderType.Ldap,
+      name: conf.name,
+      identifier: conf.identifier,
+      providerGroups: groups,
+      providerOrganizations: organizations,
+      autoCreateGroup: conf.groups_mapping.auto_create_group,
+    };
+    await providerLoginHandler(userInfo, done, opts);
   };
 
   const ldapStrategy = new LdapStrategy(ldapOptions, ldapLoginCallback);
-
-  const providerConfig: ProviderConfiguration = { name: conf.name, type: AuthType.AUTH_FORM, strategy: AuthenticationProviderType.Ldap, provider: conf.identifier };
-  registerAuthenticationProvider(conf.identifier, ldapStrategy, providerConfig);
+  registerAuthenticationProvider(
+    conf.identifier,
+    ldapStrategy,
+    {
+      name: conf.name,
+      type: AuthType.AUTH_FORM,
+      strategy: AuthenticationProviderType.Ldap,
+      provider: conf.identifier,
+    },
+  );
 };

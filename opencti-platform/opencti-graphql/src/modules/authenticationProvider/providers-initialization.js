@@ -179,7 +179,6 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
             const ldapOptions = { server: tlsConfig };
             const ldapStrategy = new LdapStrategy(ldapOptions, (user, done) => {
               logApp.info('[ENV-PROVIDER][LDAP] Successfully logged', { user });
-              addUserLoginCount();
               const userMail = mappedConfig.mail_attribute ? user[mappedConfig.mail_attribute] : user.mail;
               const userName = mappedConfig.account_attribute ? user[mappedConfig.account_attribute] : user.givenName;
               const firstname = user[mappedConfig.firstname_attribute] || '';
@@ -251,7 +250,6 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
             const samlOptions = { ...mappedConfig };
             const samlStrategy = new SamlStrategy(samlOptions, (profile, done) => {
               logApp.info('[ENV-PROVIDER][SAML] Successfully logged', { profile });
-              addUserLoginCount();
               const { nameID, nameIDFormat } = profile;
               const samlAttributes = profile.attributes ? profile.attributes : profile;
               const roleAttributes = mappedConfig.roles_management?.role_attributes || ['roles'];
@@ -356,7 +354,6 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
                 const debugCallback = (message, meta) => logApp.info(message, meta);
                 const openIDStrategy = new OpenIDStrategy(options, debugCallback, (_, tokenset, userinfo, done) => {
                   logApp.info('[ENV-PROVIDER][OPENID] Successfully logged', { userinfo });
-                  addUserLoginCount();
                   const isGroupMapping = (isNotEmptyField(mappedConfig.groups_management) && isNotEmptyField(mappedConfig.groups_management?.groups_mapping));
                   logApp.info('[ENV-PROVIDER][OPENID] Groups management configuration', { groupsManagement: mappedConfig.groups_management });
                   // region groups mapping
@@ -460,7 +457,6 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
             (_, __, ___, profile, done) => {
               const data = profile._json;
               logApp.info('[ENV-PROVIDER][FACEBOOK] Successfully logged', { profile: data });
-              addUserLoginCount();
               const { email } = data;
               forgetPromise(providerLoginHandler({ email, name: data.first_name }, done));
             },
@@ -476,7 +472,6 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
           const googleOptions = { passReqToCallback: true, ...mappedConfig, ...specificConfig };
           const googleStrategy = new GoogleStrategy(googleOptions, (_, __, ___, profile, done) => {
             logApp.info('[ENV-PROVIDER][GOOGLE] Successfully logged', { profile });
-            addUserLoginCount();
             const email = R.head(profile.emails).value;
             const name = profile.displayName;
             let authorized = true;
@@ -502,7 +497,6 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
           const githubOptions = { passReqToCallback: true, ...mappedConfig, scope };
           const githubStrategy = new GithubStrategy(githubOptions, async (_, token, __, profile, done) => {
             logApp.info('[ENV-PROVIDER][GITHUB] Successfully logged', { profile });
-            addUserLoginCount();
             let authorized = true;
             if (organizations.length > 0) {
               const github = new GitHub({ token });
@@ -562,7 +556,6 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
             const debugCallback = (message, meta) => logApp.info(message, meta);
             const auth0Strategy = new OpenIDStrategy(options, debugCallback, (_, tokenset, userinfo, done) => {
               logApp.info('[ENV-PROVIDER][AUTH0] Successfully logged', { userinfo });
-              addUserLoginCount();
               const { email, name } = userinfo;
               forgetPromise(providerLoginHandler({ email, name }, done));
             });

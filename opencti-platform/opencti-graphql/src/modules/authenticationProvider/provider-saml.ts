@@ -1,7 +1,6 @@
 import type { SamlProviderConfiguration } from './authenticationProvider-types';
 import { logAuthInfo } from './providers-logger';
 import { AuthType, type ProviderConfiguration, providerLoginHandler } from './providers-configuration';
-import { addUserLoginCount } from '../../manager/telemetryManager';
 import { registerAuthenticationProvider } from './providers-initialization';
 import { ConfigurationError } from '../../config/errors';
 import type { PassportSamlConfig, VerifyWithoutRequest } from '@node-saml/passport-saml/lib/types';
@@ -40,27 +39,23 @@ export const registerSAMLStrategy = async (conf: SamlProviderConfiguration) => {
     const groups = await resolveGroups(conf.groups_mapping, (expr) => resolvePath(attributes, expr.split('.')));
     const organizations = await resolveOrganizations(conf.organizations_mapping, (expr) => resolvePath(attributes, expr.split('.')));
 
-    if (groups.length > 0) {
-      addUserLoginCount();
-      const opts = {
-        providerGroups: groups,
-        providerOrganizations: organizations,
-        autoCreateGroup: conf.groups_mapping.auto_create_group,
-      };
-      logAuthInfo('All configuration is fine, login user with', AuthenticationProviderType.Saml, { opts, userInfo });
-      const userInfoWithMeta = {
-        ...userInfo,
-        email: userInfo.email || profile.nameID,
-        provider_metadata: {
-          nameID: profile.nameID,
-          nameIDFormat: profile.nameIDFormat,
-        },
-      };
-      await providerLoginHandler(userInfoWithMeta, done, opts);
-    } else {
-      logAuthInfo('Group configuration not found', AuthenticationProviderType.Saml, { groups, profile });
-      done({ name: 'SAML error', message: 'Restricted access, ask your administrator' });
-    }
+    const opts = {
+      strategy: AuthenticationProviderType.Saml,
+      name: conf.name,
+      identifier: conf.identifier,
+      providerGroups: groups,
+      providerOrganizations: organizations,
+      autoCreateGroup: conf.groups_mapping.auto_create_group,
+    };
+    const userInfoWithMeta = {
+      ...userInfo,
+      email: userInfo.email || profile.nameID,
+      provider_metadata: {
+        nameID: profile.nameID,
+        nameIDFormat: profile.nameIDFormat,
+      },
+    };
+    await providerLoginHandler(userInfoWithMeta, done, opts);
   };
 
   const samlLogoutCallback: VerifyWithoutRequest = (profile) => {
