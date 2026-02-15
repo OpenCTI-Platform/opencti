@@ -9,8 +9,6 @@ import * as enterpriseEdition from '../../../../src/enterprise-edition/ee';
 import { clearProvider, clearSsoDatabase } from './singleSignOn-test-utils';
 import { initializeAuthenticationProviders } from '../../../../src/modules/singleSignOn/singleSignOn-init';
 import { waitInSec } from '../../../../src/database/utils';
-import { fullEntitiesList } from '../../../../src/database/middleware-loader';
-import { ENTITY_TYPE_SINGLE_SIGN_ON } from '../../../../src/modules/singleSignOn/singleSignOn-types';
 import { findById as findUserById } from '../../../../src/domain/user';
 import { v4 as uuid } from 'uuid';
 import { initializeAdminUser } from '../../../../src/modules/singleSignOn/providers-initialization';
@@ -22,6 +20,7 @@ describe('Providers initialization coverage', () => {
   const PROVIDERS_SAVE: ProviderConfiguration[] = [];
 
   beforeAll(async () => {
+    await clearProvider();
     // Copy existing configuration and reset it for tests purpose.
     for (let i = 0; i < PROVIDERS.length; i++) {
       PROVIDERS_SAVE.push(PROVIDERS[i]);
@@ -90,7 +89,7 @@ describe('Providers initialization coverage', () => {
       // THEN no new authentication is registered on passport
       expect(registerAuthSpy, 'Register should not be called at all with force env = true').not.toHaveBeenCalled();
       expect(unregisterAuthSpy, 'Unregister should not be called at all with force env = true').not.toHaveBeenCalled();
-      expect(PROVIDERS.length).toBe(3);
+      expect(PROVIDERS.length).toBe(2);
     });
 
     it('[EE & forceEnv = true & editionLocked = true] should force env avoid any call to database register in passport', async () => {
@@ -108,62 +107,19 @@ describe('Providers initialization coverage', () => {
       // THEN no new authentication is registered on passport
       expect(registerAuthSpy, 'Register should not be called at all with force env = true').not.toHaveBeenCalled();
       expect(unregisterAuthSpy, 'Unregister should not be called at all with force env = true').not.toHaveBeenCalled();
-      expect(PROVIDERS.length).toBe(3);
-    });
-
-    it('[CE & forceEnv = false & editionLocked = true] should community edition not register SSO, only local', async () => {
-      // GIVEN lots of provider in env
-      vi.spyOn(providerConfig, 'isAuthenticationForcedFromEnv').mockReturnValue(false);
-      vi.spyOn(providerConfig, 'isAuthenticationEditionLocked').mockReturnValue(true);
-      vi.spyOn(providerConfig, 'getProvidersFromEnvironment').mockReturnValue(advancedEnvConfig);
-      vi.spyOn(enterpriseEdition, 'isEnterpriseEdition').mockResolvedValue(false);
-
-      const registerAuthSpy = vi.spyOn(providerInit, 'registerAuthenticationProvider');
-      const unregisterAuthSpy = vi.spyOn(providerInit, 'unregisterAuthenticationProvider');
-
-      // WHEN initialization is run on startup
-      await initializeAuthenticationProviders(testContext);
-
-      // THEN only local authentication is registered in passport
-      expect(registerAuthSpy, 'Register should be called only once for local').toHaveBeenCalledOnce();
-      expect(unregisterAuthSpy, 'Unregister should not be called at all with force env = true').not.toHaveBeenCalled();
-      expect(PROVIDERS).toStrictEqual([{
-        name: 'local',
-        type: 'FORM',
-        strategy: 'LocalStrategy',
-        provider: 'local',
-      }]); // local only
-    });
-
-    it('[CE & forceEnv = true & editionLocked = true] should community edition and force env not register SSO, only local the old way', async () => {
-      // GIVEN lots of provider in env
-      vi.spyOn(providerConfig, 'isAuthenticationForcedFromEnv').mockReturnValue(true);
-      vi.spyOn(providerConfig, 'getProvidersFromEnvironment').mockReturnValue(advancedEnvConfig);
-      vi.spyOn(enterpriseEdition, 'isEnterpriseEdition').mockResolvedValue(false);
-
-      const registerAuthSpy = vi.spyOn(providerInit, 'registerAuthenticationProvider');
-      const unregisterAuthSpy = vi.spyOn(providerInit, 'unregisterAuthenticationProvider');
-
-      // WHEN initialization is run on startup
-      await initializeAuthenticationProviders(testContext);
-
-      // THEN only local authentication is registered in passport
-      expect(registerAuthSpy, 'Register should be called only once for local - CE not impacted by force anv').toHaveBeenCalledOnce();
-      expect(unregisterAuthSpy, 'Unregister should not be called at all with CE').not.toHaveBeenCalled();
-      expect(PROVIDERS).toStrictEqual([{
-        name: 'local',
-        type: 'FORM',
-        strategy: 'LocalStrategy',
-        provider: 'local',
-      }]); // local only
-
-      // AND THEN nothing is stored in database
-      const ssoInDb = await fullEntitiesList(testContext, ADMIN_USER, [ENTITY_TYPE_SINGLE_SIGN_ON]);
-      expect(ssoInDb).toStrictEqual([]);
+      expect(PROVIDERS.length).toBe(2);
     });
   });
 
   describe('Providers from environment coverage', () => {
+    beforeEach(async () => {
+      // we are testing platform initialization, so need to start from scratch on all tests
+      await clearProvider();
+      expect(PROVIDERS).toStrictEqual([]);
+
+      await clearSsoDatabase();
+    });
+
     const deprecatedProviders = [
       { identifier: 'google',
         strategyLogName: 'GOOGLE',
@@ -208,7 +164,6 @@ describe('Providers initialization coverage', () => {
         },
       },
     ];
-
     it.each(deprecatedProviders)('should read deprecated strategy from env and warn', async (useCase) => {
       vi.spyOn(providerConfig, 'getProvidersFromEnvironment').mockReturnValue(useCase.configuration);
       vi.spyOn(providerConfig, 'isAuthenticationForcedFromEnv').mockReturnValue(false);
@@ -226,6 +181,7 @@ describe('Providers initialization coverage', () => {
           `[ENV-PROVIDER][${useCase.strategyLogName}] DEPRECATED Strategy found in configuration providerRef:${useCase.identifier}, please consider using OpenID`,
         );
     });
+
     const envProviders = {
       oic: {
         identifier: 'oic',
@@ -259,16 +215,6 @@ describe('Providers initialization coverage', () => {
       },
     };
     const convertedProviders = [
-    /* TODO
-    { identifier: 'local',
-      strategyLogName: 'LOCAL',
-      strategyId: 'LocalStrategy',
-      configuration: {
-        local: {
-          strategy: 'LocalStrategy',
-        },
-      },
-    }, */
       { identifier: 'oic',
         strategyLogName: 'OPENID',
         strategyId: 'OpenIDConnectStrategy',
@@ -325,6 +271,7 @@ describe('Providers initialization coverage', () => {
 
       const logAppInfoSpy = vi.spyOn(logApp, 'info');
       await initializeEnvAuthenticationProviders(testContext, ADMIN_USER);
+
       for (let index = 0; index < convertedProviders.length; index += 1) {
         const useCase = convertedProviders[index];
         // Provider must not be registered
