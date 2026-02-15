@@ -27622,25 +27622,35 @@ export type SamlConfiguration = {
   callback_url?: Maybe<Scalars['String']['output']>;
   entry_point: Scalars['String']['output'];
   extra_conf: Array<ExtraConfEntry>;
+  force_reauthentication: Scalars['Boolean']['output'];
   groups_mapping: GroupsMapping;
   idp_certificate: Scalars['String']['output'];
   issuer: Scalars['String']['output'];
   logout_remote: Scalars['Boolean']['output'];
   organizations_mapping: OrganizationsMapping;
+  signing_cert?: Maybe<Scalars['String']['output']>;
+  sso_binding_type?: Maybe<Scalars['String']['output']>;
   type: AuthenticationProviderType;
   user_info_mapping: UserInfoMapping;
+  want_assertions_signed: Scalars['Boolean']['output'];
+  want_authn_response_signed: Scalars['Boolean']['output'];
 };
 
 export type SamlConfigurationInput = {
   entry_point: Scalars['String']['input'];
   extra_conf: Array<ExtraConfEntryInput>;
+  force_reauthentication: Scalars['Boolean']['input'];
   groups_mapping: GroupsMappingInput;
   idp_certificate: Scalars['String']['input'];
   issuer: Scalars['String']['input'];
   logout_remote: Scalars['Boolean']['input'];
   organizations_mapping: OrganizationsMappingInput;
   private_key_cleartext?: InputMaybe<Scalars['String']['input']>;
+  signing_cert?: InputMaybe<Scalars['String']['input']>;
+  sso_binding_type?: InputMaybe<Scalars['String']['input']>;
   user_info_mapping: UserInfoMappingInput;
+  want_assertions_signed: Scalars['Boolean']['input'];
+  want_authn_response_signed: Scalars['Boolean']['input'];
 };
 
 export type SamlInput = {
@@ -47613,13 +47623,18 @@ export type SamlConfigurationResolvers<ContextType = any, ParentType extends Res
   callback_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entry_point?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   extra_conf?: Resolver<Array<ResolversTypes['ExtraConfEntry']>, ParentType, ContextType>;
+  force_reauthentication?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   groups_mapping?: Resolver<ResolversTypes['GroupsMapping'], ParentType, ContextType>;
   idp_certificate?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   issuer?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   logout_remote?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   organizations_mapping?: Resolver<ResolversTypes['OrganizationsMapping'], ParentType, ContextType>;
+  signing_cert?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  sso_binding_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   type?: Resolver<ResolversTypes['AuthenticationProviderType'], ParentType, ContextType>;
   user_info_mapping?: Resolver<ResolversTypes['UserInfoMapping'], ParentType, ContextType>;
+  want_assertions_signed?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  want_authn_response_signed?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

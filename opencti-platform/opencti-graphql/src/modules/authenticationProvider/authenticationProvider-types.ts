@@ -78,6 +78,11 @@ type SamlCommonConfiguration = MappingConfiguration & {
   idp_certificate: string;
   callback_url: string;
   logout_remote: boolean;
+  want_assertions_signed: boolean;
+  want_authn_response_signed: boolean;
+  signing_cert?: string;
+  sso_binding_type: string;
+  force_reauthentication: boolean;
 };
 
 export type SamlStoreConfiguration = SamlCommonConfiguration & {
@@ -123,8 +128,6 @@ export interface BasicStoreEntityAuthenticationProvider<T extends Authentication
   identifier_override?: string;
   type: AuthenticationProviderType;
   configuration: T;
-  organizations_management?: OrganizationsMapping; // TODO
-  groups_management?: GroupsMapping; // TODO
 }
 
 export interface StoreEntityAuthenticationProvider<T = OidcConfiguration | SamlConfiguration | LdapConfiguration> extends StoreEntity {
@@ -135,8 +138,6 @@ export interface StoreEntityAuthenticationProvider<T = OidcConfiguration | SamlC
   identifier_override?: string;
   type: AuthenticationProviderType;
   configuration: T;
-  organizations_management?: OrganizationsMapping; // TODO
-  groups_management?: GroupsMapping; // TODO
 }
 
 export interface StixAuthenticationProvider extends StixObject {
