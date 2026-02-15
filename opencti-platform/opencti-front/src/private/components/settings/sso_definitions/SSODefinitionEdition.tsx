@@ -64,6 +64,11 @@ export const ssoDefinitionEditionFragment = graphql`
                 idp_certificate
                 callback_url
                 logout_remote
+                want_assertions_signed
+                want_authn_response_signed
+                signing_cert
+                sso_binding_type
+                force_reauthentication
                 user_info_mapping {
                     email_expr
                     name_expr
@@ -122,7 +127,7 @@ export const ssoDefinitionEditionFragment = graphql`
                         platform
                     }
                 }
-                extra_configuration {
+                extra_conf {
                     type
                     key
                     value

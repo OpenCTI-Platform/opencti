@@ -272,7 +272,7 @@ const OidcProviderForm = ({
         extra_conf: values.extra_conf.map((e) => ({
           type: e.type as 'String' | 'Number' | 'Boolean',
           key: e.key,
-          string: e.value,
+          value: e.value,
         })),
       },
     };

@@ -15658,6 +15658,7 @@ type GroupsMapping {
   default_groups: [String!]!
   groups_expr: [String!]!
   groups_mapping: [MappingEntry!]!
+  auto_create_groups: Boolean!
 }
 
 input GroupsMappingInput {
@@ -15670,6 +15671,7 @@ type OrganizationsMapping {
   default_organizations: [String!]!
   organizations_expr: [String!]!
   organizations_mapping: [MappingEntry!]!
+  auto_create_organizations: Boolean!
 }
 
 input OrganizationsMappingInput {
@@ -15693,7 +15695,7 @@ type ExtraConfEntry {
 input ExtraConfEntryInput {
   type: ExtraConfEntryType!
   key: String!
-  string: String!
+  value: String!
 }
 
 type OidcConfiguration {
@@ -15734,6 +15736,11 @@ type SamlConfiguration {
   idp_certificate: String!
   callback_url: String
   logout_remote: Boolean!
+  want_assertions_signed: Boolean!
+  want_authn_response_signed: Boolean!
+  signing_cert: String
+  sso_binding_type: String
+  force_reauthentication: Boolean!
   user_info_mapping: UserInfoMapping!
   groups_mapping: GroupsMapping!
   organizations_mapping: OrganizationsMapping!
@@ -15746,6 +15753,11 @@ input SamlConfigurationInput {
   idp_certificate: String!
   private_key_cleartext: String
   logout_remote: Boolean!
+  want_assertions_signed: Boolean!
+  want_authn_response_signed: Boolean!
+  signing_cert: String
+  sso_binding_type: String
+  force_reauthentication: Boolean!
   user_info_mapping: UserInfoMappingInput!
   groups_mapping: GroupsMappingInput!
   organizations_mapping: OrganizationsMappingInput!
@@ -15764,7 +15776,7 @@ type LdapConfiguration {
   user_info_mapping: UserInfoMapping!
   groups_mapping: GroupsMapping!
   organizations_mapping: OrganizationsMapping!
-  extra_configuration: [ExtraConfEntry!]!
+  extra_conf: [ExtraConfEntry!]!
 }
 
 input LdapConfigurationInput {
@@ -15779,7 +15791,7 @@ input LdapConfigurationInput {
   user_info_mapping: UserInfoMappingInput!
   groups_mapping: GroupsMappingInput!
   organizations_mapping: OrganizationsMappingInput!
-  extra_configuration: [ExtraConfEntryInput!]
+  extra_conf: [ExtraConfEntryInput!]
 }
 
 union AuthenticationConfiguration = OidcConfiguration | SamlConfiguration | LdapConfiguration

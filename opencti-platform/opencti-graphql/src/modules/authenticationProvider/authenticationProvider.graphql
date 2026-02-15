@@ -77,7 +77,7 @@ type ExtraConfEntry {
 input ExtraConfEntryInput {
     type: ExtraConfEntryType!
     key: String!
-    string: String!
+    value: String!
 }
 
 ### OIDC
@@ -164,7 +164,7 @@ type LdapConfiguration {
     user_info_mapping: UserInfoMapping!
     groups_mapping: GroupsMapping!
     organizations_mapping: OrganizationsMapping!
-    extra_configuration: [ExtraConfEntry!]!
+    extra_conf: [ExtraConfEntry!]!
 }
 
 input LdapConfigurationInput {
@@ -179,7 +179,7 @@ input LdapConfigurationInput {
     user_info_mapping: UserInfoMappingInput!
     groups_mapping: GroupsMappingInput!
     organizations_mapping: OrganizationsMappingInput!
-    extra_configuration: [ExtraConfEntryInput!]
+    extra_conf: [ExtraConfEntryInput!]
 }
 
 ### AuthenticationProvider

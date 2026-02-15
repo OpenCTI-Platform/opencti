@@ -431,7 +431,6 @@ export const parseAuthenticationProviderConfiguration = async (context: AuthCont
     const ssoAuthentications = await findAllAuthenticationProvider(context, user);
     const singletons = [AuthenticationProviderType.Ldap, AuthenticationProviderType.Oidc, AuthenticationProviderType.Saml];
     const elements = ssoAuthentications.filter((auth) => !singletons.includes(auth.type));
-    console.log('DELETING', JSON.stringify(elements));
     await elDeleteElements(context, user, elements, { forceDelete: true, forceRefresh: true });
     // Handle migration
     const identifiersInDb = await getAllIdentifiers(context, user);

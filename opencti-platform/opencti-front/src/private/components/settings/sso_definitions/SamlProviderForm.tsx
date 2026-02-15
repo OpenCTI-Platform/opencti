@@ -77,6 +77,11 @@ interface SamlFormValues {
   idp_certificate: string;
   private_key_cleartext: string;
   logout_remote: boolean;
+  want_assertions_signed: boolean;
+  want_authn_response_signed: boolean;
+  signing_cert: string;
+  sso_binding_type: string;
+  force_reauthentication: boolean;
   email_expr: string;
   name_expr: string;
   firstname_expr: string;
@@ -125,6 +130,11 @@ const defaultValues: SamlFormValues = {
   idp_certificate: '',
   private_key_cleartext: '',
   logout_remote: false,
+  want_assertions_signed: false,
+  want_authn_response_signed: false,
+  signing_cert: '',
+  sso_binding_type: '',
+  force_reauthentication: false,
   email_expr: '',
   name_expr: '',
   firstname_expr: '',
@@ -155,6 +165,11 @@ const buildInitialValues = (data: SamlProviderData): SamlFormValues => {
     idp_certificate: conf.idp_certificate ?? '',
     private_key_cleartext: '',
     logout_remote: conf.logout_remote ?? false,
+    want_assertions_signed: conf.want_assertions_signed ?? false,
+    want_authn_response_signed: conf.want_authn_response_signed ?? false,
+    signing_cert: conf.signing_cert ?? '',
+    sso_binding_type: conf.sso_binding_type ?? '',
+    force_reauthentication: conf.force_reauthentication ?? false,
     email_expr: conf.user_info_mapping?.email_expr ?? '',
     name_expr: conf.user_info_mapping?.name_expr ?? '',
     firstname_expr: conf.user_info_mapping?.firstname_expr ?? '',
@@ -242,6 +257,11 @@ const SamlProviderForm = ({
         idp_certificate: values.idp_certificate,
         private_key_cleartext: values.private_key_cleartext || null,
         logout_remote: values.logout_remote,
+        want_assertions_signed: values.want_assertions_signed,
+        want_authn_response_signed: values.want_authn_response_signed,
+        signing_cert: values.signing_cert || null,
+        sso_binding_type: values.sso_binding_type || null,
+        force_reauthentication: values.force_reauthentication,
         user_info_mapping: {
           email_expr: values.email_expr,
           name_expr: values.name_expr,
@@ -261,7 +281,7 @@ const SamlProviderForm = ({
         extra_conf: values.extra_conf.map((e) => ({
           type: e.type as 'String' | 'Number' | 'Boolean',
           key: e.key,
-          string: e.value,
+          value: e.value,
         })),
       },
     };
@@ -470,6 +490,24 @@ const SamlProviderForm = ({
                       label={t_i18n('Logout remote')}
                     />
                     <Field
+                      component={SwitchField}
+                      type="checkbox"
+                      name="want_assertions_signed"
+                      label={t_i18n('Want assertion signed')}
+                    />
+                    <Field
+                      component={SwitchField}
+                      type="checkbox"
+                      name="want_authn_response_signed"
+                      label={t_i18n('Want authn response signed')}
+                    />
+                    <Field
+                      component={SwitchField}
+                      type="checkbox"
+                      name="force_reauthentication"
+                      label={t_i18n('Force reauthentication')}
+                    />
+                    <Field
                       component={TextField}
                       variant="standard"
                       name="description"
@@ -482,6 +520,24 @@ const SamlProviderForm = ({
                       variant="standard"
                       name="button_label_override"
                       label={t_i18n('Login button label')}
+                      fullWidth
+                      style={{ marginTop: 20 }}
+                    />
+                    <Field
+                      component={TextField}
+                      variant="standard"
+                      name="signing_cert"
+                      label={t_i18n('Signing certificate')}
+                      fullWidth
+                      multiline
+                      rows={4}
+                      style={{ marginTop: 20 }}
+                    />
+                    <Field
+                      component={TextField}
+                      variant="standard"
+                      name="sso_binding_type"
+                      label={t_i18n('SSO Binding type')}
                       fullWidth
                       style={{ marginTop: 20 }}
                     />

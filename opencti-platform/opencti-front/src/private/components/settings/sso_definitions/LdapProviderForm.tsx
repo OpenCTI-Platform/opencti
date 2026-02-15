@@ -88,7 +88,7 @@ interface LdapFormValues {
     organizations_expr: string[];
     organizations_mapping: MappingEntry[];
   };
-  extra_configuration: ExtraConfEntry[];
+  extra_conf: ExtraConfEntry[];
 }
 
 interface LdapProviderFormProps {
@@ -127,7 +127,7 @@ const defaultValues: LdapFormValues = {
     organizations_expr: [],
     organizations_mapping: [],
   },
-  extra_configuration: [],
+  extra_conf: [],
 };
 
 const buildInitialValues = (data: LdapProviderData): LdapFormValues => {
@@ -159,7 +159,7 @@ const buildInitialValues = (data: LdapProviderData): LdapFormValues => {
       organizations_expr: [...(conf.organizations_mapping?.organizations_expr ?? [])],
       organizations_mapping: (conf.organizations_mapping?.organizations_mapping ?? []).map((m) => ({ provider: m.provider, platform: m.platform })),
     },
-    extra_configuration: (conf.extra_configuration ?? []).map((e) => ({ type: e.type, key: e.key, value: e.value })),
+    extra_conf: (conf.extra_conf ?? []).map((e) => ({ type: e.type, key: e.key, value: e.value })),
   };
 };
 
@@ -233,10 +233,10 @@ const LdapProviderForm = ({
           organizations_expr: values.organizations_mapping.organizations_expr,
           organizations_mapping: values.organizations_mapping.organizations_mapping,
         },
-        extra_configuration: values.extra_configuration.map((e) => ({
+        extra_conf: values.extra_conf.map((e) => ({
           type: e.type as 'String' | 'Number' | 'Boolean',
           key: e.key,
-          string: e.value,
+          value: e.value,
         })),
       },
     };
@@ -445,7 +445,7 @@ const LdapProviderForm = ({
                   />
 
                   {/* Extra configuration */}
-                  <FieldArray name="extra_configuration">
+                  <FieldArray name="extra_conf">
                     {({ push, remove }) => (
                       <>
                         <div style={{ display: 'flex', alignItems: 'center', marginTop: 20 }}>
@@ -460,7 +460,7 @@ const LdapProviderForm = ({
                             <Add fontSize="small" color="primary" />
                           </IconButton>
                         </div>
-                        {values.extra_configuration.map((_: ExtraConfEntry, index: number) => (
+                        {values.extra_conf.map((_: ExtraConfEntry, index: number) => (
                           <div
                             key={index}
                             style={{
@@ -473,7 +473,7 @@ const LdapProviderForm = ({
                             <Field
                               component={SelectField}
                               variant="standard"
-                              name={`extra_configuration[${index}].type`}
+                              name={`extra_conf[${index}].type`}
                               label={t_i18n('Type')}
                               containerstyle={{ width: '20%' }}
                             >
@@ -484,14 +484,14 @@ const LdapProviderForm = ({
                             <Field
                               component={TextField}
                               variant="standard"
-                              name={`extra_configuration[${index}].key`}
+                              name={`extra_conf[${index}].key`}
                               label={t_i18n('Key')}
                               fullWidth
                             />
                             <Field
                               component={TextField}
                               variant="standard"
-                              name={`extra_configuration[${index}].value`}
+                              name={`extra_conf[${index}].value`}
                               label={t_i18n('Value')}
                               fullWidth
                             />

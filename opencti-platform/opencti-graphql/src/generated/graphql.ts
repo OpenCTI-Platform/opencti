@@ -8974,8 +8974,8 @@ export type ExtraConfEntry = {
 
 export type ExtraConfEntryInput = {
   key: Scalars['String']['input'];
-  string: Scalars['String']['input'];
   type: ExtraConfEntryType;
+  value: Scalars['String']['input'];
 };
 
 export enum ExtraConfEntryType {
@@ -13915,7 +13915,7 @@ export type LdapConfiguration = {
   __typename?: 'LdapConfiguration';
   allow_self_signed: Scalars['Boolean']['output'];
   bind_dn: Scalars['String']['output'];
-  extra_configuration: Array<ExtraConfEntry>;
+  extra_conf: Array<ExtraConfEntry>;
   group_base: Scalars['String']['output'];
   group_filter: Scalars['String']['output'];
   groups_mapping: GroupsMapping;
@@ -13931,7 +13931,7 @@ export type LdapConfigurationInput = {
   allow_self_signed: Scalars['Boolean']['input'];
   bind_credentials_cleartext?: InputMaybe<Scalars['String']['input']>;
   bind_dn: Scalars['String']['input'];
-  extra_configuration?: InputMaybe<Array<ExtraConfEntryInput>>;
+  extra_conf?: InputMaybe<Array<ExtraConfEntryInput>>;
   group_base: Scalars['String']['input'];
   group_filter: Scalars['String']['input'];
   groups_mapping: GroupsMappingInput;
@@ -44230,7 +44230,7 @@ export type LanguageEdgeResolvers<ContextType = any, ParentType extends Resolver
 export type LdapConfigurationResolvers<ContextType = any, ParentType extends ResolversParentTypes['LdapConfiguration'] = ResolversParentTypes['LdapConfiguration']> = ResolversObject<{
   allow_self_signed?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   bind_dn?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  extra_configuration?: Resolver<Array<ResolversTypes['ExtraConfEntry']>, ParentType, ContextType>;
+  extra_conf?: Resolver<Array<ResolversTypes['ExtraConfEntry']>, ParentType, ContextType>;
   group_base?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   group_filter?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   groups_mapping?: Resolver<ResolversTypes['GroupsMapping'], ParentType, ContextType>;
