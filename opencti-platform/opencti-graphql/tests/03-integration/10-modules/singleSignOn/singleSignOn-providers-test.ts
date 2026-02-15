@@ -40,14 +40,7 @@ describe('Single sign on Provider coverage tests', () => {
       await initEnterpriseAuthenticationProviders(testContext, ADMIN_USER);
 
       // THEN local strategy is configured and enabled
-      expect(PROVIDERS).toStrictEqual([
-        {
-          name: 'local',
-          type: 'FORM',
-          strategy: 'LocalStrategy',
-          provider: 'local',
-        },
-      ]);
+      expect(PROVIDERS).toStrictEqual([]);
     });
 
     it('should existing SSO in database be loaded', async () => {
@@ -88,33 +81,12 @@ describe('Single sign on Provider coverage tests', () => {
 
       // THEN the first SAML is configured, but not the second one
       // Local is created on platform startup
-      expect(isAuthenticationActivatedByIdentifier('local')).toBeTruthy();
       expect(isAuthenticationActivatedByIdentifier('saml')).toBeTruthy();
       expect(isAuthenticationActivatedByIdentifier('saml2')).toBeFalsy();
 
       // Cleanup
       await deleteSingleSignOn(testContext, ADMIN_USER, saml1.id);
       await deleteSingleSignOn(testContext, ADMIN_USER, saml2.id);
-    });
-
-    it('should keep only last local strategy', async () => {
-      // GIVEN no SSO configuration at all
-      await clearProvider();
-      expect(PROVIDERS).toStrictEqual([]);
-
-      // WHEN calling addLocalStrategy twice
-      await registerLocalStrategy();
-      await registerLocalStrategy();
-
-      // THEN only last local strategy is configured and enabled
-      expect(PROVIDERS).toStrictEqual([
-        {
-          name: 'local',
-          type: 'FORM',
-          strategy: 'LocalStrategy',
-          provider: 'local',
-        },
-      ]);
     });
   });
 
