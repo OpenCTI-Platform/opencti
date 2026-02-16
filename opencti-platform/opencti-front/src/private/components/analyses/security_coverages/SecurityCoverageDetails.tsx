@@ -12,8 +12,6 @@ import ListItemButton from '@mui/material/ListItemButton';
 import { Theme } from '@mui/material/styles/createTheme';
 import SecurityCoverageInformation from '@components/analyses/security_coverages/SecurityCoverageInformation';
 import { Link } from 'react-router-dom';
-import Button from '@mui/material/Button';
-import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
@@ -22,9 +20,6 @@ import { SecurityCoverageDetails_securityCoverage$key } from './__generated__/Se
 import SecurityCoverageSecurityPlatforms from './SecurityCoverageSecurityPlatforms';
 import SecurityCoverageVulnerabilities from './SecurityCoverageVulnerabilities';
 import { isNotEmptyField } from '../../../../utils/utils';
-import { fileUri } from '../../../../relay/environment';
-import obasDark from '../../../../static/images/xtm/obas_dark.png';
-import obasLight from '../../../../static/images/xtm/obas_light.png';
 import ExternalLinkPopover from '../../../../components/ExternalLinkPopover';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -73,7 +68,6 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
   securityCoverage,
 }) => {
   const classes = useStyles();
-  const theme = useTheme<Theme>();
   const { t_i18n, fndt } = useFormatter();
   const data = useFragment(securityCoverageDetailsFragment, securityCoverage);
   const [displayExternalLink, setDisplayExternalLink] = useState(false);

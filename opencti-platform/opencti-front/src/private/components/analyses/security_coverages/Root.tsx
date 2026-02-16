@@ -1,11 +1,5 @@
-import React, {Suspense, useEffect, useMemo, useState} from 'react';
-import {
-	fetchQuery,
-	graphql,
-	PreloadedQuery,
-	usePreloadedQuery, useRelayEnvironment,
-	useSubscription
-} from 'react-relay';
+import React, { Suspense, useMemo, useState } from 'react';
+import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { Link, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
@@ -24,20 +18,18 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
-import {getCurrentTab, getPaddingRight, isNotEmptyField} from '../../../../utils/utils';
+import { getCurrentTab, getPaddingRight, isNotEmptyField } from '../../../../utils/utils';
 import SecurityCoverageEdition from './SecurityCoverageEdition';
 import SecurityCoverageDeletion from './SecurityCoverageDeletion';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import Button from "@mui/material/Button";
-import {fileUri} from "../../../../relay/environment";
-import obasDark from "../../../../static/images/xtm/obas_dark.png";
-import obasLight from "../../../../static/images/xtm/obas_light.png";
-import {useTheme} from "@mui/styles";
-import {Theme} from "@mui/material/styles/createTheme";
-import ExternalLinkPopover from "../../../../components/ExternalLinkPopover";
-import {
-	RootSecurityCoverageSubscription
-} from "@components/analyses/security_coverages/__generated__/RootSecurityCoverageSubscription.graphql";
+import Button from '@mui/material/Button';
+import { fileUri } from '../../../../relay/environment';
+import obasDark from '../../../../static/images/xtm/obas_dark.png';
+import obasLight from '../../../../static/images/xtm/obas_light.png';
+import { useTheme } from '@mui/styles';
+import { Theme } from '@mui/material/styles/createTheme';
+import ExternalLinkPopover from '../../../../components/ExternalLinkPopover';
+import { RootSecurityCoverageSubscription } from '@components/analyses/security_coverages/__generated__/RootSecurityCoverageSubscription.graphql';
 
 const subscription = graphql`
     subscription RootSecurityCoverageSubscription($id: ID!) {
@@ -86,7 +78,7 @@ type RootSecurityCoverageProps = {
 
 const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCoverageProps) => {
   const location = useLocation();
-	const theme = useTheme<Theme>();
+  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const {
     securityCoverage,
@@ -94,15 +86,15 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
     connectorsForImport,
   } = usePreloadedQuery<RootSecurityCoverageQuery>(securityCoverageQuery, queryRef);
 
-	const subConfig = useMemo(() => ({
-		subscription,
-		variables: { id: securityCoverageId },
-	}), [securityCoverageId]);
+  const subConfig = useMemo(() => ({
+    subscription,
+    variables: { id: securityCoverageId },
+  }), [securityCoverageId]);
 
-	useSubscription<RootSecurityCoverageSubscription>(subConfig);
+  useSubscription<RootSecurityCoverageSubscription>(subConfig);
 
-	const [displayExternalLink, setDisplayExternalLink] = useState(false);
-	const hasExternalUri = isNotEmptyField(securityCoverage?.external_uri);
+  const [displayExternalLink, setDisplayExternalLink] = useState(false);
+  const hasExternalUri = isNotEmptyField(securityCoverage?.external_uri);
   const paddingRight = getPaddingRight(location.pathname, securityCoverageId, '/dashboard/analyses/security_coverages');
 
   return (
@@ -169,39 +161,39 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
                 label={t_i18n('History')}
               />
             </Tabs>
-						{hasExternalUri ? (
-							<>
-								<Button
-									style={{ marginBottom : 8}}
-									color="primary"
-									startIcon={(
-										<img
-											style={{ width: 20 }}
-											src={fileUri(theme.palette.mode === 'dark' ? obasDark : obasLight)}
-											alt="OAEV"
-										/>
-									)}
-									variant="outlined"
-									onClick={() => setDisplayExternalLink(true)}
-									title={securityCoverage.external_uri} // tooltip on hover
-								>
-									{t_i18n('Go to OpenAEV')}
-								</Button>
-								<ExternalLinkPopover
-									externalLink={securityCoverage.external_uri}
-									displayExternalLink={displayExternalLink}
-									setDisplayExternalLink={setDisplayExternalLink}
-								/>
-							</>
-						) : (
-							<Button
-								style={{ marginBottom: 8 }}
-								variant="outlined"
-								disabled
-							>
-								{t_i18n('Provisioning OpenAEV')}
-							</Button>
-						)}
+            {hasExternalUri ? (
+              <>
+                <Button
+                  style={{ marginBottom: 8 }}
+                  color="primary"
+                  startIcon={(
+                    <img
+                      style={{ width: 20 }}
+                      src={fileUri(theme.palette.mode === 'dark' ? obasDark : obasLight)}
+                      alt="OAEV"
+                    />
+                  )}
+                  variant="outlined"
+                  onClick={() => setDisplayExternalLink(true)}
+                  title={securityCoverage.external_uri} // tooltip on hover
+                >
+                  {t_i18n('Go to OpenAEV')}
+                </Button>
+                <ExternalLinkPopover
+                  externalLink={securityCoverage.external_uri}
+                  displayExternalLink={displayExternalLink}
+                  setDisplayExternalLink={setDisplayExternalLink}
+                />
+              </>
+            ) : (
+              <Button
+                style={{ marginBottom: 8 }}
+                variant="outlined"
+                disabled
+              >
+                {t_i18n('Provisioning OpenAEV')}
+              </Button>
+            )}
           </Box>
           <Routes>
             <Route
@@ -270,11 +262,11 @@ const Root = () => {
     id: securityCoverageId,
   });
   return (
-		<Suspense fallback={<Loader variant={LoaderVariant.container}/>}>
-			{queryRef && (
-				<RootSecurityCoverage queryRef={queryRef} securityCoverageId={securityCoverageId}/>
-			)}
-		</Suspense>
+    <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
+      {queryRef && (
+        <RootSecurityCoverage queryRef={queryRef} securityCoverageId={securityCoverageId} />
+      )}
+    </Suspense>
   );
 };
 

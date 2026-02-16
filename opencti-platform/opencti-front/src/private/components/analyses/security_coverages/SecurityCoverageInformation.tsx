@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
 import { Avatar, Tooltip } from '@mui/material';
-import {HourglassEmpty} from '@mui/icons-material';
+import { HourglassEmpty } from '@mui/icons-material';
 import Chart from '@components/common/charts/Chart';
 import { ApexOptions } from 'apexcharts';
 import { useFormatter } from '../../../../components/i18n';
@@ -103,7 +103,7 @@ const SecurityCoverageInformation: FunctionComponent<SecurityCoverageInformation
             <Chart options={options} series={series} type="donut" width={chartSize} height={chartSize} />
             <Tooltip title="Pending" placement="bottom">
               <Avatar className={classes.iconOverlay} sx={{ bgcolor: 'transparent', width: iconSize, height: iconSize }} style={{ top: iconPosition, left: iconPosition, fontSize: iconSize - 2 }}>
-                <span style={{ color: theme.palette.text?.primary }}><HourglassEmpty style={{ fontSize: iconSize }}/></span>
+                <span style={{ color: theme.palette.text?.primary }}><HourglassEmpty style={{ fontSize: iconSize }} /></span>
               </Avatar>
             </Tooltip>
           </div>
@@ -142,7 +142,7 @@ const SecurityCoverageInformation: FunctionComponent<SecurityCoverageInformation
               <Chart options={options} series={series} type="donut" width={70} height={70} />
               <Tooltip title="Pending" placement="top">
                 <Avatar className={classes.iconOverlay} sx={{ bgcolor: 'transparent', width: 24, height: 24 }} style={{ top: 24, left: 23 }}>
-                  <span style={{ color: theme.palette.text?.primary, fontSize: 18 }}><HourglassEmpty style={{ fontSize: 23 }}/></span>
+                  <span style={{ color: theme.palette.text?.primary, fontSize: 18 }}><HourglassEmpty style={{ fontSize: 23 }} /></span>
                 </Avatar>
               </Tooltip>
             </div>
