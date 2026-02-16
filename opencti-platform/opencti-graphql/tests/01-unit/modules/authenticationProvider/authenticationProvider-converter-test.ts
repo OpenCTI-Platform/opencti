@@ -1506,7 +1506,7 @@ describe('Real-world configuration scenarios', () => {
   });
 
   it('should convert the old test fixture (SAML with all types) to the new format', () => {
-    // Reproduces the "all types" test case from singleSignOn-migration-test.ts
+    // Reproduces the "all types" test case from authenticationProvider-migration-test.ts
     const entry: EnvProviderEntry = {
       identifier: 'saml_all_types',
       strategy: 'SamlStrategy',
