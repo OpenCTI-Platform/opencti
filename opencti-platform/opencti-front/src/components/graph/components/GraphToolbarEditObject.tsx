@@ -30,6 +30,7 @@ const GraphToolbarEditObject = ({
   const { updateNode, addLink } = useGraphInteractions();
 
   const {
+    rawObjects,
     graphState: {
       selectedNodes,
       selectedLinks,
@@ -67,7 +68,8 @@ const GraphToolbarEditObject = ({
       if (category === 'domainObject' || category === 'observable') {
         const data = await fetchQuery(stixCoreObjectRefetchQuery, { id: objectToEdit.id })
           .toPromise() as { stixCoreObject: ObjectToParse };
-        updateNode(data.stixCoreObject);
+        const existingNode = rawObjects.find((rawObject) => rawObject.id === objectToEdit.id);
+        updateNode({ ...data.stixCoreObject, linkedContainers: existingNode?.linkedContainers ?? [] });
       } else {
         const data = await fetchQuery(relationshipRefetchQuery, { id: objectToEdit.id })
           .toPromise() as { stixRelationship: ObjectToParse };
