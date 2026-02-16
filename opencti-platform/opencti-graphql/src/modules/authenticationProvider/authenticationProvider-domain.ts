@@ -48,8 +48,6 @@ export const isConfigurationAdminUser = (user: AuthUser): boolean => {
 };
 
 // Type for data that are encrypted
-export const SECRET_TYPE = 'secret';
-
 const getKeyPair = memoize(async () => {
   const factory = await getPlatformCrypto();
   return factory.deriveAesKey(['authentication', 'elastic'], 1);
@@ -92,7 +90,7 @@ const graphQLToStoreConfiguration = async (
     const encryptedValue = inputClearTextValue && isNotEmptyField(inputClearTextValue)
       ? await encryptAuthValue(inputClearTextValue) : previousEncryptedValue;
     if (!encryptedValue) {
-      throw FunctionalError('Secret field must be provided', { fieldName });
+      throw FunctionalError('Secret field must be provided', { field: fieldName });
     }
     // Replace cleartext field by encrypted field
     delete output[fieldName];
