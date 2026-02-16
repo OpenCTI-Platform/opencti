@@ -15669,6 +15669,7 @@ input MappingEntryInput {
 type GroupsMapping {
   default_groups: [String!]!
   groups_expr: [String!]!
+  group_splitter: String
   groups_mapping: [MappingEntry!]!
   auto_create_groups: Boolean!
   prevent_default_groups: Boolean!
@@ -15677,6 +15678,7 @@ type GroupsMapping {
 input GroupsMappingInput {
   default_groups: [String!]!
   groups_expr: [String!]!
+  group_splitter: String
   groups_mapping: [MappingEntryInput!]!
   auto_create_groups: Boolean!
   prevent_default_groups: Boolean!
@@ -15685,6 +15687,7 @@ input GroupsMappingInput {
 type OrganizationsMapping {
   default_organizations: [String!]!
   organizations_expr: [String!]!
+  organizations_splitter: String
   organizations_mapping: [MappingEntry!]!
   auto_create_organizations: Boolean!
 }
@@ -15692,6 +15695,7 @@ type OrganizationsMapping {
 input OrganizationsMappingInput {
   default_organizations: [String!]!
   organizations_expr: [String!]!
+  organizations_splitter: String
   organizations_mapping: [MappingEntryInput!]!
   auto_create_organizations: Boolean!
 }

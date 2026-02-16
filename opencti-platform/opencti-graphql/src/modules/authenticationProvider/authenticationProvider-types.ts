@@ -24,6 +24,7 @@ export interface UserInfoMapping {
 export interface GroupsMapping {
   default_groups: string[];
   groups_expr: string[]; // each element is a dot-separated expression resolved against the provider context
+  group_splitter?: string | undefined;
   groups_mapping: { provider: string; platform: string }[];
   auto_create_groups: boolean;
   prevent_default_groups: boolean;
@@ -32,6 +33,7 @@ export interface GroupsMapping {
 export interface OrganizationsMapping {
   default_organizations: string[];
   organizations_expr: string[]; // each element is a dot-separated expression resolved against the provider context
+  organizations_splitter?: string | undefined;
   organizations_mapping: { provider: string; platform: string }[];
   auto_create_organizations: boolean;
 }

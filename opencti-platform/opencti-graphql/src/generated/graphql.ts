@@ -10126,6 +10126,7 @@ export type GroupsMapping = {
   __typename?: 'GroupsMapping';
   auto_create_groups: Scalars['Boolean']['output'];
   default_groups: Array<Scalars['String']['output']>;
+  group_splitter?: Maybe<Scalars['String']['output']>;
   groups_expr: Array<Scalars['String']['output']>;
   groups_mapping: Array<MappingEntry>;
   prevent_default_groups: Scalars['Boolean']['output'];
@@ -10134,6 +10135,7 @@ export type GroupsMapping = {
 export type GroupsMappingInput = {
   auto_create_groups: Scalars['Boolean']['input'];
   default_groups: Array<Scalars['String']['input']>;
+  group_splitter?: InputMaybe<Scalars['String']['input']>;
   groups_expr: Array<Scalars['String']['input']>;
   groups_mapping: Array<MappingEntryInput>;
   prevent_default_groups: Scalars['Boolean']['input'];
@@ -21206,6 +21208,7 @@ export type OrganizationsMapping = {
   default_organizations: Array<Scalars['String']['output']>;
   organizations_expr: Array<Scalars['String']['output']>;
   organizations_mapping: Array<MappingEntry>;
+  organizations_splitter?: Maybe<Scalars['String']['output']>;
 };
 
 export type OrganizationsMappingInput = {
@@ -21213,6 +21216,7 @@ export type OrganizationsMappingInput = {
   default_organizations: Array<Scalars['String']['input']>;
   organizations_expr: Array<Scalars['String']['input']>;
   organizations_mapping: Array<MappingEntryInput>;
+  organizations_splitter?: InputMaybe<Scalars['String']['input']>;
 };
 
 export enum OrganizationsOrdering {
@@ -42990,6 +42994,7 @@ export type GroupsManagementResolvers<ContextType = any, ParentType extends Reso
 export type GroupsMappingResolvers<ContextType = any, ParentType extends ResolversParentTypes['GroupsMapping'] = ResolversParentTypes['GroupsMapping']> = ResolversObject<{
   auto_create_groups?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   default_groups?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  group_splitter?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   groups_expr?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   groups_mapping?: Resolver<Array<ResolversTypes['MappingEntry']>, ParentType, ContextType>;
   prevent_default_groups?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -46177,6 +46182,7 @@ export type OrganizationsMappingResolvers<ContextType = any, ParentType extends 
   default_organizations?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   organizations_expr?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   organizations_mapping?: Resolver<Array<ResolversTypes['MappingEntry']>, ParentType, ContextType>;
+  organizations_splitter?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type OtpElementResolvers<ContextType = any, ParentType extends ResolversParentTypes['OtpElement'] = ResolversParentTypes['OtpElement']> = ResolversObject<{

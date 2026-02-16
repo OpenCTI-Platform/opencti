@@ -43,13 +43,12 @@ export const resolveUserInfo = async (
 export const resolveGroups = async (conf: GroupsMapping, resolveExpr: (expr: string) => undefined | string | string[] | Promise<undefined | string | string[]>) => {
   const allGroups: string[] = [];
   for await (const expr of conf.groups_expr) {
-    const group = await resolveExpr(expr);
-    if (group) {
-      if (Array.isArray(group)) {
-        pushAll(allGroups, group);
-      } else {
-        allGroups.push(group);
-      }
+    const resolved = await resolveExpr(expr);
+    if (resolved) {
+      const groups = (Array.isArray(resolved) ? resolved : [resolved])
+        .map((g) => conf.group_splitter ? g.split(conf.group_splitter) : [g])
+        .flat();
+      pushAll(allGroups, groups);
     }
   }
 
@@ -64,13 +63,12 @@ export const resolveGroups = async (conf: GroupsMapping, resolveExpr: (expr: str
 export const resolveOrganizations = async (conf: OrganizationsMapping, resolveExpr: (expr: string) => undefined | string | string[] | Promise<undefined | string | string[]>) => {
   const allOrganization: string[] = [];
   for await (const expr of conf.organizations_expr) {
-    const organizations = await resolveExpr(expr);
-    if (organizations) {
-      if (Array.isArray(organizations)) {
-        pushAll(allOrganization, organizations);
-      } else {
-        allOrganization.push(organizations);
-      }
+    const resolved = await resolveExpr(expr);
+    if (resolved) {
+      const groups = (Array.isArray(resolved) ? resolved : [resolved])
+        .map((g) => conf.organizations_splitter ? g.split(conf.organizations_splitter) : [g])
+        .flat();
+      pushAll(allOrganization, groups);
     }
   }
 
