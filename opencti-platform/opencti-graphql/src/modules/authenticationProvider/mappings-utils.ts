@@ -3,27 +3,20 @@ import * as R from 'ramda';
 import { pushAll } from '../../utils/arrayUtil';
 
 export const resolvePath = async <T>(obj: any, [name, ...rest]: string[]): Promise<T | undefined> => {
-  const { [name]: value } = obj;
-  const isFunction = typeof value === 'function';
-  const functionHasArgs = isFunction && value.length > 0;
-  if (functionHasArgs) {
-    const [argValue, ...restArgs] = rest;
-    const resolvedValue = await value(argValue);
-    if (restArgs.length === 0) {
-      return resolvedValue;
-    }
-    return resolvePath(resolvedValue, restArgs);
+  const { [name]: value } = obj ?? {};
+  if (value === undefined || obj === null) {
+    return undefined;
   }
 
-  const resolvedValue = typeof value === 'function' ? await value() : value;
+  const isFunction = typeof value === 'function';
+  const functionHasArgs = isFunction && value.length > 0;
+  const [argValue] = functionHasArgs ? rest.splice(0, 1) : [];
+  const resolvedValue = isFunction ? await value(argValue) : value;
   if (rest.length === 0) {
     return resolvedValue;
   }
 
-  if (resolvedValue) {
-    return resolvePath(resolvedValue, rest);
-  }
-  return undefined;
+  return resolvePath(resolvedValue, rest);
 };
 
 export const resolveDotPath = async <T>(obj: any, path: string): Promise<T | undefined> => resolvePath(obj, path.split('.'));
