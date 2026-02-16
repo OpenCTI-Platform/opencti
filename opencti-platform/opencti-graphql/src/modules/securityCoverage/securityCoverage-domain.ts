@@ -34,8 +34,8 @@ export const COVERED_ENTITIES_TYPE = [
 
 // region CRUD
 export const findSecurityCoverageById = (context: AuthContext, user: AuthUser, SecurityCoverageId: string) => {
-   const store = storeLoadById<BasicStoreEntitySecurityCoverage>(context, user, SecurityCoverageId, ENTITY_TYPE_SECURITY_COVERAGE);
-	return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, store, user);
+  const store = storeLoadById<BasicStoreEntitySecurityCoverage>(context, user, SecurityCoverageId, ENTITY_TYPE_SECURITY_COVERAGE);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, store, user);
 };
 
 export const pageSecurityCoverageConnections = (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreEntitySecurityCoverage>) => {
@@ -63,7 +63,7 @@ export const securityCoverageStixBundle = async (context: AuthContext, user: Aut
   const stixAssessmentRefs = stixRefsExtractor(stixAssessment);
   const refElements = await storeLoadByIdsWithRefs(context, user, stixAssessmentRefs);
   for (const element of refElements) {
-		const refElement = element;
+    const refElement = element;
     const stixRefElement = convertStoreToStix_2_1(refElement);
     objects.push(stixRefElement);
   }
