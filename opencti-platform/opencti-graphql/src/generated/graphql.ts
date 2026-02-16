@@ -10121,6 +10121,7 @@ export type GroupsMapping = {
 };
 
 export type GroupsMappingInput = {
+  auto_create_groups: Scalars['Boolean']['input'];
   default_groups: Array<Scalars['String']['input']>;
   groups_expr: Array<Scalars['String']['input']>;
   groups_mapping: Array<MappingEntryInput>;
@@ -21183,6 +21184,7 @@ export type OrganizationsMapping = {
 };
 
 export type OrganizationsMappingInput = {
+  auto_create_organizations: Scalars['Boolean']['input'];
   default_organizations: Array<Scalars['String']['input']>;
   organizations_expr: Array<Scalars['String']['input']>;
   organizations_mapping: Array<MappingEntryInput>;

@@ -168,7 +168,7 @@ export const ldapStoreToProvider = async (providerConfig: BasicStoreEntityAuthen
     bind_dn: configuration.bind_dn,
     bind_credentials: await decryptAuthValue(configuration.bind_credentials_encrypted),
     search_base: configuration.search_base,
-    search_filter: configuration.search_base,
+    search_filter: configuration.search_filter,
     group_base: configuration.group_base,
     group_filter: configuration.group_filter,
     allow_self_signed: configuration.allow_self_signed,

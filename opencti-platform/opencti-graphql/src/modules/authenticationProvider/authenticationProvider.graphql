@@ -40,6 +40,7 @@ input GroupsMappingInput {
     default_groups: [String!]!
     groups_expr: [String!]!
     groups_mapping: [MappingEntryInput!]!
+    auto_create_groups: Boolean!
 }
 
 type OrganizationsMapping {
@@ -58,6 +59,7 @@ input OrganizationsMappingInput {
     default_organizations: [String!]!
     organizations_expr: [String!]!
     organizations_mapping: [MappingEntryInput!]!
+    auto_create_organizations: Boolean!
 }
 
 ### Extra configuration

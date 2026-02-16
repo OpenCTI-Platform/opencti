@@ -19,8 +19,9 @@ export const buildSAMLOptions = (conf: SamlProviderConfiguration): PassportSamlC
   name: conf.name,
   issuer: conf.issuer,
   idpCert: conf.idp_certificate,
+  privateKey: conf.private_key,
   callbackUrl: conf.callback_url,
-  wantAssertionsSigned: conf.want_authn_response_signed,
+  wantAssertionsSigned: conf.want_assertions_signed,
   wantAuthnResponseSigned: conf.want_authn_response_signed,
   publicCert: conf.signing_cert, // TODO check if public cert is the correct field for passport-saml
   authnRequestBinding: conf.sso_binding_type, // TODO check if sso_binding_type is the correct field for passport-saml
