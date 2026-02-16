@@ -337,6 +337,7 @@ const LdapProviderForm = ({
                 fullWidth
                 required={!isEditing}
                 style={{ marginTop: 20 }}
+                type="password"
               />
               <Field
                 component={TextField}

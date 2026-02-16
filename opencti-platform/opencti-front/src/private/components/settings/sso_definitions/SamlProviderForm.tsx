@@ -411,6 +411,7 @@ const SamlProviderForm = ({
                   multiline
                   rows={4}
                   style={{ marginTop: 20 }}
+                  type="password"
                 />
 
                 <Typography variant="h4" style={{ marginTop: 30 }}>{t_i18n('User information mapping')}</Typography>
