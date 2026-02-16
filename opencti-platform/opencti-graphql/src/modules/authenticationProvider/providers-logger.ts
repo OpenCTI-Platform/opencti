@@ -2,7 +2,7 @@
 import type { EnvStrategyType } from './providers-configuration';
 import type { AuthenticationProviderType } from '../../generated/graphql';
 import { logApp } from '../../config/conf';
-import type { CERT_PROVIDER_NAME, HEADER_PROVIDER_NAME } from './providers';
+import { CERT_PROVIDER_NAME, HEADER_PROVIDER_NAME } from './providers';
 
 export const logAuthInfo = (message: string, strategyType: EnvStrategyType | AuthenticationProviderType, meta?: any) => {
   logApp.info(`[Auth][${strategyType.toUpperCase()}]${message}`, { meta });

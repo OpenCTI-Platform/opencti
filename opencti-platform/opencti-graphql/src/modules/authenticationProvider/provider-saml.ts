@@ -12,6 +12,7 @@ import { getBaseUrl } from '../../config/conf';
 
 export const buildSAMLOptions = async (meta: ProviderMeta, conf: SamlStoreConfiguration): Promise<PassportSamlConfig> => ({
   name: meta.name,
+  entryPoint: conf.entry_point,
   issuer: conf.issuer,
   idpCert: conf.idp_certificate,
   privateKey: await decryptAuthValue(conf.private_key_encrypted),
@@ -42,7 +43,7 @@ export const registerSAMLStrategy = async (logger: AuthenticationProviderLogger,
     }
     logger.info('Successfully logged on IdP', { profile });
 
-    const attributes = profile.attribute ?? profile;
+    const attributes = profile.attributes ?? profile;
     const userInfo = await resolveUserInfo((expr) => resolveDotPath(attributes, expr));
     const groups = await resolveGroups((expr) => resolveDotPath(attributes, expr));
     const organizations = await resolveOrganizations((expr) => resolveDotPath(attributes, expr));
