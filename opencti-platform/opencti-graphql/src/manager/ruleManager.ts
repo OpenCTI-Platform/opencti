@@ -3,11 +3,20 @@ import type { Operation } from 'fast-json-patch';
 import * as jsonpatch from 'fast-json-patch';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import { createStreamProcessor } from '../database/stream/stream-handler';
-import { redisFinishAsyncCall, redisGetAsyncCall, redisGetManagerEventState, redisInitializeAsyncCall, redisSetManagerEventState } from '../database/redis';
+import { redisGetManagerEventState, redisSetManagerEventState } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { createEntity, patchAttribute, stixLoadById, storeLoadByIdWithRefs } from '../database/middleware';
-import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, isNotEmptyField, READ_DATA_INDICES, wait } from '../database/utils';
+import {
+  EVENT_TYPE_CREATE,
+  EVENT_TYPE_DELETE,
+  EVENT_TYPE_MERGE,
+  EVENT_TYPE_UPDATE,
+  isEmptyField,
+  isNotEmptyField,
+  READ_DATA_INDICES,
+  runFunctionAsLongRunning,
+} from '../database/utils';
 import { ABSTRACT_STIX_RELATIONSHIP, OPENCTI_NAMESPACE, RULE_PREFIX } from '../schema/general';
 import { ENTITY_TYPE_RULE_MANAGER } from '../schema/internalObject';
 import { ALREADY_DELETED_ERROR, FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
@@ -32,7 +41,6 @@ import { isStixObject } from '../schema/stixCoreObject';
 import { buildCreateEvent, EVENT_CURRENT_VERSION, LIVE_STREAM_NAME, type StreamProcessor } from '../database/stream/stream-utils';
 import jsonCanonicalize from 'canonicalize';
 import { v5 as uuidv5 } from 'uuid';
-import { getDraftContext } from '../utils/draftContext';
 
 import { pushAll } from '../utils/arrayUtil';
 
@@ -380,40 +388,10 @@ export const ruleApplyAsync = async (context: AuthContext, user: AuthUser, eleme
   }
   const dataCanonicalize = jsonCanonicalize({ elementId, ruleId, executionId }) as string;
   const ruleApplyId = uuidv5(dataCanonicalize, OPENCTI_NAMESPACE);
-  let lock: { unlock: () => any } | undefined;
-  try {
-    // Try to get the lock in redis
-    lock = await lockResources(ruleApplyId, { draftId: getDraftContext(context, user) });
-    const currentAsyncCall = await redisGetAsyncCall(ruleApplyId);
-    // If a call was already processed and is finished, return true
-    if (currentAsyncCall && currentAsyncCall !== '0') {
-      await lock?.unlock();
-      return true;
-    } else {
-      // Otherwise, it means that either the rule apply wasn't started yet, or the node processing it went down and that the call couldn't finish.
-      // In any case, we have to start it over
-      await redisInitializeAsyncCall(ruleApplyId);
-      const timeoutPromise = wait(10000, { timeout: true });
-      const fullRuleApply = async () => {
-        try {
-          await ruleApply(context, user, elementId, ruleId);
-        } catch (err: any) {
-          logApp.error('[OPENCTI] Error during rule apply', { cause: err });
-        }
-        await redisFinishAsyncCall(ruleApplyId);
-        await lock?.unlock();
-      };
-      const fullRuleApplyPromise = fullRuleApply();
-      const raceResult = await Promise.race([fullRuleApplyPromise, timeoutPromise]) as { timeout?: boolean };
-      return !raceResult?.timeout;
-    }
-  } catch (err: any) {
-    if (err.name === TYPE_LOCK_ERROR) {
-      return false;
-    }
-    await lock?.unlock();
-    throw err;
-  }
+  const ruleApplyFunction = async () => {
+    await executeRuleApply(context, user, rule, elementId);
+  };
+  return runFunctionAsLongRunning(context, user, ruleApplyFunction, ruleApplyId);
 };
 
 export const ruleClear = async (context: AuthContext, user: AuthUser, elementId: string, ruleId: string) => {
