@@ -1,5 +1,11 @@
-import React, {Suspense, useMemo, useState} from 'react';
-import {graphql, PreloadedQuery, useFragment, usePreloadedQuery, useSubscription} from 'react-relay';
+import React, {Suspense, useEffect, useMemo, useState} from 'react';
+import {
+	fetchQuery,
+	graphql,
+	PreloadedQuery,
+	usePreloadedQuery, useRelayEnvironment,
+	useSubscription
+} from 'react-relay';
 import { Link, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
@@ -8,11 +14,8 @@ import Security from 'src/utils/Security';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import FileManager from '@components/common/files/FileManager';
 import StixCoreObjectHistory from '@components/common/stix_core_objects/StixCoreObjectHistory';
-import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import AIInsights from '@components/common/ai/AIInsights';
 import SecurityCoverageKnowledge from '@components/analyses/security_coverages/SecurityCoverageKnowledge';
 import StixCoreRelationship from '@components/common/stix_core_relationships/StixCoreRelationship';
-import { RootSecurityCoverageSubscription } from '@components/analyses/security_coverages/__generated__/RootSecurityCoverageSubscription.graphql';
 import SecurityCoverage from './SecurityCoverage';
 import { RootSecurityCoverageQuery } from './__generated__/RootSecurityCoverageQuery.graphql';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -32,30 +35,29 @@ import obasLight from "../../../../static/images/xtm/obas_light.png";
 import {useTheme} from "@mui/styles";
 import {Theme} from "@mui/material/styles/createTheme";
 import ExternalLinkPopover from "../../../../components/ExternalLinkPopover";
+import {
+	RootSecurityCoverageSubscription
+} from "@components/analyses/security_coverages/__generated__/RootSecurityCoverageSubscription.graphql";
 
 const subscription = graphql`
-  subscription RootSecurityCoverageSubscription($id: ID!) {
-    stixDomainObject(id: $id) {
-      ... on SecurityCoverage {
-        ...SecurityCoverage_securityCoverage
-      }
-      ...FileImportViewer_entity
-      ...FileExportViewer_entity
-      ...FileExternalReferencesViewer_entity
-      ...WorkbenchFileViewer_entity
+    subscription RootSecurityCoverageSubscription($id: ID!) {
+        securityCoverage(id: $id) {
+            id
+            external_uri
+            ...SecurityCoverage_securityCoverage
+        }
     }
-  }
 `;
 
 const securityCoverageQuery = graphql`
   query RootSecurityCoverageQuery($id: String!) {
     securityCoverage(id: $id) {
       id
+      external_uri
       standard_id
       entity_type
       name
       description
-      external_uri
       objectMarking {
         id
       }
@@ -83,23 +85,26 @@ type RootSecurityCoverageProps = {
 };
 
 const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCoverageProps) => {
-  const subConfig = useMemo<GraphQLSubscriptionConfig<RootSecurityCoverageSubscription>>(() => ({
-    subscription,
-    variables: { id: securityCoverageId },
-  }), [securityCoverageId]);
   const location = useLocation();
 	const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  useSubscription<RootSecurityCoverageSubscription>(subConfig);
   const {
     securityCoverage,
     connectorsForExport,
     connectorsForImport,
   } = usePreloadedQuery<RootSecurityCoverageQuery>(securityCoverageQuery, queryRef);
-	console.log('securityCoverage dans le root', securityCoverage)
-	const [displayExternalLink, setDisplayExternalLink] = useState(false);
 
+	const subConfig = useMemo(() => ({
+		subscription,
+		variables: { id: securityCoverageId },
+	}), [securityCoverageId]);
+
+	useSubscription<RootSecurityCoverageSubscription>(subConfig);
+
+	const [displayExternalLink, setDisplayExternalLink] = useState(false);
+	const hasExternalUri = isNotEmptyField(securityCoverage?.external_uri);
   const paddingRight = getPaddingRight(location.pathname, securityCoverageId, '/dashboard/analyses/security_coverages');
+
   return (
     <>
       {securityCoverage ? (
@@ -164,30 +169,38 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
                 label={t_i18n('History')}
               />
             </Tabs>
-						{isNotEmptyField(securityCoverage.external_uri) && (
+						{hasExternalUri ? (
+							<>
+								<Button
+									style={{ marginBottom : 8}}
+									color="primary"
+									startIcon={(
+										<img
+											style={{ width: 20 }}
+											src={fileUri(theme.palette.mode === 'dark' ? obasDark : obasLight)}
+											alt="OAEV"
+										/>
+									)}
+									variant="outlined"
+									onClick={() => setDisplayExternalLink(true)}
+									title={securityCoverage.external_uri} // tooltip on hover
+								>
+									{t_i18n('Go to OpenAEV')}
+								</Button>
+								<ExternalLinkPopover
+									externalLink={securityCoverage.external_uri}
+									displayExternalLink={displayExternalLink}
+									setDisplayExternalLink={setDisplayExternalLink}
+								/>
+							</>
+						) : (
 							<Button
-								style={{ marginBottom : 8}}
-								color="primary"
-													startIcon={(
-									<img
-										style={{ width: 20 }}
-										src={fileUri(theme.palette.mode === 'dark' ? obasDark : obasLight)}
-										alt="OAEV"
-									/>
-								)}
+								style={{ marginBottom: 8 }}
 								variant="outlined"
-								onClick={() => setDisplayExternalLink(true)}
-								title={securityCoverage?.external_uri} // tooltip on hover
+								disabled
 							>
-								{t_i18n('Go to OAEV')}
+								{t_i18n('Provisioning OpenAEV')}
 							</Button>
-						)}
-						{isNotEmptyField(securityCoverage.external_uri) && (
-							<ExternalLinkPopover
-								externalLink={securityCoverage.external_uri}
-								displayExternalLink={displayExternalLink}
-								setDisplayExternalLink={setDisplayExternalLink}
-							/>
 						)}
           </Box>
           <Routes>

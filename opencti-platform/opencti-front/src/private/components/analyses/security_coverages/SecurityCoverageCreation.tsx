@@ -465,7 +465,6 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
         resetForm();
         handleClose();
         if (response.securityCoverageAdd && shouldRedirect) {
-									console.log("response :", response)
           navigate(`/dashboard/analyses/security_coverages/${response.securityCoverageAdd.id}`);
         }
       },

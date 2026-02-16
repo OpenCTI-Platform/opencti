@@ -76,7 +76,6 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
   const theme = useTheme<Theme>();
   const { t_i18n, fndt } = useFormatter();
   const data = useFragment(securityCoverageDetailsFragment, securityCoverage);
-	console.log('security coverage dans le details ', securityCoverage)
   const [displayExternalLink, setDisplayExternalLink] = useState(false);
 
   return (
@@ -102,23 +101,6 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Coverage information')}
             </Typography>
-            {isNotEmptyField(data.external_uri) && (
-              <Button
-                color="primary"
-                startIcon={(
-                  <img
-                    style={{ width: 20 }}
-                    src={fileUri(theme.palette.mode === 'dark' ? obasDark : obasLight)}
-                    alt="OBAS"
-                  />
-                )}
-                variant="outlined"
-                onClick={() => setDisplayExternalLink(true)}
-                title={data.external_uri} // tooltip on hover
-              >
-                {t_i18n('Exposure validation')}
-              </Button>
-            )}
             <Paper variant="outlined" style={{ padding: 20, marginTop: 10 }}>
               <SecurityCoverageInformation coverage_information={data.coverage_information ?? []} variant="details" />
             </Paper>
