@@ -5,23 +5,33 @@ import { AuthenticationProviderType, ExtraConfEntryType, type LdapConfiguration,
 export const ENTITY_TYPE_AUTHENTICATION_PROVIDER = 'AuthenticationProvider';
 
 // Mapping configuration
+//
+// All _expr fields use dot-separated notation (e.g. 'user_info.email', 'tokens.access_token.groups').
+// Resolution splits on '.' and traverses the path: resolvePath(root, expr.split('.'))
+//
+// OIDC:  context = { tokens: fn(name), user_info: fn() } — paths like 'user_info.email' or 'tokens.id_token.sub'
+// SAML:  context = profile.attributes ?? profile — paths like 'email' (flat) or 'org.list' (nested)
+// LDAP user_info: special case — uses direct property access user[expr] (simple attribute name)
+// LDAP groups:    special case — iterates user._groups entries and reads g[expr] (simple attribute name)
+// LDAP orgs:      uses dot-separated paths on the user object: resolvePath(user, expr.split('.'))
 export interface UserInfoMapping {
-  email_expr: string; // eg 'user_info.email'
-  name_expr: string; // eg 'user_info.username'
-  firstname_expr?: string; // eg 'user_info.given_name'
-  lastname_expr?: string; // eg 'user_info.family_name'
+  email_expr: string; // dot-separated path, e.g. 'user_info.email' (OIDC) or 'mail' (LDAP)
+  name_expr: string; // dot-separated path, e.g. 'user_info.name' (OIDC) or 'givenName' (LDAP)
+  firstname_expr?: string; // dot-separated path, e.g. 'user_info.given_name'
+  lastname_expr?: string; // dot-separated path, e.g. 'user_info.family_name'
 }
 
 export interface GroupsMapping {
   default_groups: string[];
-  groups_expr: string[];
+  groups_expr: string[]; // each element is a dot-separated expression resolved against the provider context
   groups_mapping: { provider: string; platform: string }[];
   auto_create_groups: boolean;
+  prevent_default_groups: boolean;
 }
 
 export interface OrganizationsMapping {
   default_organizations: string[];
-  organizations_expr: string[];
+  organizations_expr: string[]; // each element is a dot-separated expression resolved against the provider context
   organizations_mapping: { provider: string; platform: string }[];
   auto_create_organizations: boolean;
 }

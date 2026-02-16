@@ -1546,6 +1546,11 @@ type LocalAuthConfig {
 type CertAuthConfig {
   enabled: Boolean
   button_label: String
+  groups_mapping: [String]
+  auto_create_group: Boolean
+  prevent_default_groups: Boolean
+  organizations_default: [String]
+  organizations_mapping: [String]
 }
 
 type HeadersAuthConfig {
@@ -1556,6 +1561,7 @@ type HeadersAuthConfig {
   header_lastname: String
   logout_uri: String
   auto_create_group: Boolean
+  prevent_default_groups: Boolean
   headers_audit: [String]
   groups_header: String
   groups_splitter: String
@@ -1580,6 +1586,11 @@ input LocalAuthConfigInput {
 input CertAuthConfigInput {
   enabled: Boolean!
   button_label: String
+  groups_mapping: [String]
+  auto_create_group: Boolean
+  prevent_default_groups: Boolean
+  organizations_default: [String]
+  organizations_mapping: [String]
 }
 
 input HeadersAuthConfigInput {
@@ -1590,6 +1601,7 @@ input HeadersAuthConfigInput {
   header_lastname: String
   logout_uri: String
   auto_create_group: Boolean
+  prevent_default_groups: Boolean
   headers_audit: [String]
   groups_header: String
   groups_splitter: String
@@ -15659,6 +15671,7 @@ type GroupsMapping {
   groups_expr: [String!]!
   groups_mapping: [MappingEntry!]!
   auto_create_groups: Boolean!
+  prevent_default_groups: Boolean!
 }
 
 input GroupsMappingInput {
@@ -15666,6 +15679,7 @@ input GroupsMappingInput {
   groups_expr: [String!]!
   groups_mapping: [MappingEntryInput!]!
   auto_create_groups: Boolean!
+  prevent_default_groups: Boolean!
 }
 
 type OrganizationsMapping {
@@ -15908,11 +15922,11 @@ input AuthenticationProviderMigrationInput {
 }
 
 type AuthenticationProviderMigrationResult {
+  env_key: String!
   name: String!
-  description: String
-  enabled: Boolean!
-  button_label_override: String
-  identifier_override: String
-  type: AuthenticationProviderType!
-  configuration: AuthenticationConfiguration!
+  status: String!
+  type: String
+  identifier: String
+  reason: String
+  warnings: [String]
 }

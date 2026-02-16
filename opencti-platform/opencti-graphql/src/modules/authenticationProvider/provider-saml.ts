@@ -56,6 +56,7 @@ export const registerSAMLStrategy = async (logger: AuthenticationProviderLogger,
       providerGroups: groups,
       providerOrganizations: organizations,
       autoCreateGroup: conf.groups_mapping.auto_create_groups,
+      preventDefaultGroups: conf.groups_mapping.prevent_default_groups,
     };
     const userInfoWithMeta = {
       ...userInfo,

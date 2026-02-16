@@ -3781,13 +3781,23 @@ export enum CatalogsOrdering {
 
 export type CertAuthConfig = {
   __typename?: 'CertAuthConfig';
+  auto_create_group?: Maybe<Scalars['Boolean']['output']>;
   button_label?: Maybe<Scalars['String']['output']>;
   enabled?: Maybe<Scalars['Boolean']['output']>;
+  groups_mapping?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  organizations_default?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  organizations_mapping?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  prevent_default_groups?: Maybe<Scalars['Boolean']['output']>;
 };
 
 export type CertAuthConfigInput = {
+  auto_create_group?: InputMaybe<Scalars['Boolean']['input']>;
   button_label?: InputMaybe<Scalars['String']['input']>;
   enabled: Scalars['Boolean']['input'];
+  groups_mapping?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  organizations_default?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  organizations_mapping?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  prevent_default_groups?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 export type ChangePasswordInput = {
@@ -10118,6 +10128,7 @@ export type GroupsMapping = {
   default_groups: Array<Scalars['String']['output']>;
   groups_expr: Array<Scalars['String']['output']>;
   groups_mapping: Array<MappingEntry>;
+  prevent_default_groups: Scalars['Boolean']['output'];
 };
 
 export type GroupsMappingInput = {
@@ -10125,6 +10136,7 @@ export type GroupsMappingInput = {
   default_groups: Array<Scalars['String']['input']>;
   groups_expr: Array<Scalars['String']['input']>;
   groups_mapping: Array<MappingEntryInput>;
+  prevent_default_groups: Scalars['Boolean']['input'];
 };
 
 export enum GroupsOrdering {
@@ -10372,6 +10384,7 @@ export type HeadersAuthConfig = {
   organizations_header?: Maybe<Scalars['String']['output']>;
   organizations_mapping?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   organizations_splitter?: Maybe<Scalars['String']['output']>;
+  prevent_default_groups?: Maybe<Scalars['Boolean']['output']>;
 };
 
 export type HeadersAuthConfigInput = {
@@ -10390,6 +10403,7 @@ export type HeadersAuthConfigInput = {
   organizations_header?: InputMaybe<Scalars['String']['input']>;
   organizations_mapping?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   organizations_splitter?: InputMaybe<Scalars['String']['input']>;
+  prevent_default_groups?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 export type HealthConnectorStatusInput = {
@@ -40776,8 +40790,13 @@ export type CatalogEdgeResolvers<ContextType = any, ParentType extends Resolvers
 }>;
 
 export type CertAuthConfigResolvers<ContextType = any, ParentType extends ResolversParentTypes['CertAuthConfig'] = ResolversParentTypes['CertAuthConfig']> = ResolversObject<{
+  auto_create_group?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   button_label?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   enabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  groups_mapping?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  organizations_default?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  organizations_mapping?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  prevent_default_groups?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
 }>;
 
 export type ChannelResolvers<ContextType = any, ParentType extends ResolversParentTypes['Channel'] = ResolversParentTypes['Channel']> = ResolversObject<{
@@ -42973,6 +42992,7 @@ export type GroupsMappingResolvers<ContextType = any, ParentType extends Resolve
   default_groups?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   groups_expr?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   groups_mapping?: Resolver<Array<ResolversTypes['MappingEntry']>, ParentType, ContextType>;
+  prevent_default_groups?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
 }>;
 
 export type HashResolvers<ContextType = any, ParentType extends ResolversParentTypes['Hash'] = ResolversParentTypes['Hash']> = ResolversObject<{
@@ -43046,6 +43066,7 @@ export type HeadersAuthConfigResolvers<ContextType = any, ParentType extends Res
   organizations_header?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   organizations_mapping?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   organizations_splitter?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  prevent_default_groups?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
 }>;
 
 export type HistoryChangeResolvers<ContextType = any, ParentType extends ResolversParentTypes['HistoryChange'] = ResolversParentTypes['HistoryChange']> = ResolversObject<{

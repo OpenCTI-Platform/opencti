@@ -47,6 +47,7 @@ export const registerLDAPStrategy = async (logger: AuthenticationProviderLogger,
       providerGroups: groups,
       providerOrganizations: organizations,
       autoCreateGroup: storeConf.groups_mapping.auto_create_groups,
+      preventDefaultGroups: storeConf.groups_mapping.prevent_default_groups,
     };
     await providerLoginHandler(userInfo, done, opts);
   };

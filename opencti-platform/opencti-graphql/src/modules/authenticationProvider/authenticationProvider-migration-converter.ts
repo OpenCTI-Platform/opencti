@@ -31,9 +31,9 @@ import {
   type UserInfoMappingInput,
 } from '../../generated/graphql';
 
-// TODO default conf for LDAP user info mapping : email -> 'mail' & name -> 'givenName'
-// TODO default conf for LDAP group mapping : ['_groups/cn'] or just ['cn'] ?
-// TODO default conf for LDAP orga mapping : ['organizations'] ?
+// [/] default conf for LDAP user info mapping : email -> 'mail' & name -> 'givenName'
+// [/] default conf for LDAP group mapping : ['_groups/cn'] or just ['cn'] ?
+// [/] default conf for LDAP orga mapping : ['organizations'] ?
 
 // TODO default conf for SAML  conf.mail_attribute -> conf.user_info_mapping.email_expr
 // TODO default conf for SAML  conf.account_attribute -> conf.user_info_mapping.name_expr
@@ -168,10 +168,12 @@ export const convertMappingEntries = (entries: EnvMappingEntry[] | undefined): M
 };
 
 /**
- * Build an ExtraConfEntryInput from a key and a value.
+ * Build ExtraConfEntryInput(s) from a key and a value.
  * Infers type from the JS runtime type of the value.
+ * Arrays produce one entry per element (same key repeated), so the backend
+ * groups them back into an array at runtime.
  */
-export const toExtraConfEntry = (key: string, value: unknown): ExtraConfEntryInput | null => {
+export const toExtraConfEntry = (key: string, value: unknown): ExtraConfEntryInput | ExtraConfEntryInput[] | null => {
   if (value === undefined || value === null) return null;
   if (typeof value === 'boolean') {
     return { type: ExtraConfEntryType.Boolean, key, value: String(value) };
@@ -183,7 +185,10 @@ export const toExtraConfEntry = (key: string, value: unknown): ExtraConfEntryInp
     return { type: ExtraConfEntryType.String, key, value };
   }
   if (Array.isArray(value)) {
-    return { type: ExtraConfEntryType.String, key, value: JSON.stringify(value) };
+    return value
+      .map((v) => toExtraConfEntry(key, v))
+      .flat()
+      .filter((e): e is ExtraConfEntryInput => e !== null);
   }
   // Objects and functions cannot be serialized
   return null;
@@ -249,9 +254,14 @@ const collectExtraConf = (
       warnings.push(`Config key "${key}" is a function and cannot be migrated.`);
       continue;
     }
-    const entry = toExtraConfEntry(key, value);
-    if (entry) {
-      extraConf.push(entry);
+    const result = toExtraConfEntry(key, value);
+    if (result) {
+      // toExtraConfEntry returns a single entry or an array (for array values)
+      if (Array.isArray(result)) {
+        extraConf.push(...result);
+      } else {
+        extraConf.push(result);
+      }
     } else {
       warnings.push(`Config key "${key}" could not be converted to extra_conf (unsupported type: ${typeof value}).`);
     }
@@ -264,19 +274,21 @@ const collectExtraConf = (
 // ---------------------------------------------------------------------------
 
 const buildOidcGroupsExpr = (gm: EnvGroupsManagement | undefined): string[] => {
-  if (!gm) return [];
-  const paths = gm.groups_path ?? ['groups'];
-  const readUserinfo = gm.read_userinfo ?? false;
-  const tokenRef = gm.token_reference ?? 'access_token';
+  // Always populate with defaults — in the new model we never hide default paths.
+  // Old default: groups_path=['groups'], token_reference='access_token', read_userinfo=false
+  const paths = gm?.groups_path ?? ['groups'];
+  const readUserinfo = gm?.read_userinfo ?? false;
+  const tokenRef = gm?.token_reference ?? 'access_token';
   const prefix = readUserinfo ? 'user_info' : `tokens.${tokenRef}`;
   return paths.map((p) => `${prefix}.${p}`);
 };
 
 const buildOidcOrgsExpr = (om: EnvOrganizationsManagement | undefined): string[] => {
-  if (!om) return [];
-  const paths = om.organizations_path ?? ['organizations'];
-  const readUserinfo = om.read_userinfo ?? false;
-  const tokenRef = om.token_reference ?? 'access_token';
+  // Always populate with defaults — in the new model we never hide default paths.
+  // Old default: organizations_path=['organizations'], token_reference='access_token', read_userinfo=false
+  const paths = om?.organizations_path ?? ['organizations'];
+  const readUserinfo = om?.read_userinfo ?? false;
+  const tokenRef = om?.token_reference ?? 'access_token';
   const prefix = readUserinfo ? 'user_info' : `tokens.${tokenRef}`;
   return paths.map((p) => `${prefix}.${p}`);
 };
@@ -297,8 +309,11 @@ export const convertOidcEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   const logoutCallbackUrl = ext.get<string | null>('logout_callback_url', null);
   const useProxy = ext.get<boolean>('use_proxy', false);
 
-  // Callback URL — if set in env config, store it as an override
-  const callbackUrl = ext.get<string | null>('callback_url', null);
+  // Callback URL — redirect_uris (OIDC standard) or callback_url (OpenCTI convention)
+  // redirect_uris can be an array; if so, take the first element
+  const rawRedirectUris = ext.get<string | string[] | null>('redirect_uris', null);
+  const redirectUri = Array.isArray(rawRedirectUris) ? (rawRedirectUris[0] ?? null) : rawRedirectUris;
+  const callbackUrl = ext.get<string | null>('callback_url', null) ?? redirectUri;
   // If callback_url is provided, it already contains the full routing path — no need for identifier_override
   if (callbackUrl) {
     base.identifier_override = null;
@@ -329,8 +344,10 @@ export const convertOidcEnvConfig = (envKey: string, entry: EnvProviderEntry): C
 
   // Groups mapping
   const autoCreateGroup = ext.get<boolean>('auto_create_group', false);
+  const preventDefaultGroups = ext.get<boolean>('prevent_default_groups', false);
   const groupsMapping: GroupsMappingInput = {
     auto_create_groups: autoCreateGroup,
+    prevent_default_groups: preventDefaultGroups,
     default_groups: [],
     groups_expr: buildOidcGroupsExpr(gm),
     groups_mapping: convertMappingEntries(gm?.groups_mapping),
@@ -439,23 +456,32 @@ export const convertSamlEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   };
 
   // Groups mapping: SAML uses group_attributes (attribute names in SAML assertion)
+  // Always populate with defaults — old default: group_attributes=['groups']
   const autoCreateGroup = ext.get<boolean>('auto_create_group', false);
+  const preventDefaultGroups = ext.get<boolean>('prevent_default_groups', false);
   const gm = ext.get<EnvGroupsManagement | undefined>('groups_management', undefined);
-  const groupsExpr = gm?.group_attributes ?? (gm ? ['groups'] : []);
+  const groupsExpr = gm?.group_attributes ?? ['groups'];
   const groupsMapping: GroupsMappingInput = {
     auto_create_groups: autoCreateGroup,
+    prevent_default_groups: preventDefaultGroups,
     default_groups: [],
     groups_expr: groupsExpr,
     groups_mapping: convertMappingEntries(gm?.groups_mapping),
   };
 
   // Organizations mapping
+  // Always populate with defaults — old default: organizations_path=['organizations']
+  // In the old SAML code, organizations_path was used as R.path(orgaPath, profile) — the array
+  // was the path segments (e.g. ['org', 'list'] → profile.org.list). In the new model, each
+  // array element is a dot-separated expression resolved independently. So we join the old
+  // array into a single dot-separated string.
   const om = ext.get<EnvOrganizationsManagement | undefined>('organizations_management', undefined);
   const organizationsDefault = ext.get<string[]>('organizations_default', []);
+  const rawOrgPath = om?.organizations_path ?? ['organizations'];
   const organizationsMapping: OrganizationsMappingInput = {
     auto_create_organizations: false,
     default_organizations: organizationsDefault,
-    organizations_expr: om?.organizations_path ?? (om ? ['organizations'] : []),
+    organizations_expr: [rawOrgPath.join('.')],
     organizations_mapping: convertMappingEntries(om?.organizations_mapping),
   };
 
@@ -540,23 +566,27 @@ export const convertLdapEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   };
 
   // Groups mapping: LDAP uses group_attribute (attribute name in _groups entries, default 'cn')
+  // Always populate with defaults — old default: group_attribute='cn'
   const autoCreateGroup = ext.get<boolean>('auto_create_group', false);
+  const preventDefaultGroups = ext.get<boolean>('prevent_default_groups', false);
   const gm = ext.get<EnvGroupsManagement | undefined>('groups_management', undefined);
-  const groupsExpr = gm?.group_attribute ? [gm.group_attribute] : (gm ? ['cn'] : []);
+  const groupsExpr = [gm?.group_attribute ?? 'cn'];
   const groupsMapping: GroupsMappingInput = {
     auto_create_groups: autoCreateGroup,
+    prevent_default_groups: preventDefaultGroups,
     default_groups: [],
     groups_expr: groupsExpr,
     groups_mapping: convertMappingEntries(gm?.groups_mapping),
   };
 
   // Organizations mapping
+  // Always populate with defaults — old default: organizations_path=['organizations']
   const om = ext.get<EnvOrganizationsManagement | undefined>('organizations_management', undefined);
   const organizationsDefault = ext.get<string[]>('organizations_default', []);
   const organizationsMapping: OrganizationsMappingInput = {
     auto_create_organizations: false,
     default_organizations: organizationsDefault,
-    organizations_expr: om?.organizations_path ?? (om ? ['organizations'] : []),
+    organizations_expr: om?.organizations_path ?? ['organizations'],
     organizations_mapping: convertMappingEntries(om?.organizations_mapping),
   };
 
@@ -662,8 +692,10 @@ export const convertDeprecatedToOidc = (envKey: string, entry: EnvProviderEntry)
   const clientSecret = ext.get<string | null>('client_secret', 'default');
   const logoutRemote = ext.get<boolean>('logout_remote', false);
 
-  // Callback URL — if set in env config, store it as an override
-  const callbackUrl = ext.get<string | null>('callback_url', null);
+  // Callback URL — redirect_uris (OIDC standard) or callback_url (OpenCTI convention)
+  const rawRedirectUris = ext.get<string | string[] | null>('redirect_uris', null);
+  const redirectUri = Array.isArray(rawRedirectUris) ? (rawRedirectUris[0] ?? null) : rawRedirectUris;
+  const callbackUrl = ext.get<string | null>('callback_url', null) ?? redirectUri;
   // If callback_url is provided, it already contains the full routing path — no need for identifier_override
   if (callbackUrl) {
     base.identifier_override = null;
@@ -703,7 +735,7 @@ export const convertDeprecatedToOidc = (envKey: string, entry: EnvProviderEntry)
         firstname_expr: 'user_info.given_name',
         lastname_expr: 'user_info.family_name',
       },
-      groups_mapping: { auto_create_groups: false, default_groups: [], groups_expr: [], groups_mapping: [] },
+      groups_mapping: { auto_create_groups: false, prevent_default_groups: false, default_groups: [], groups_expr: [], groups_mapping: [] },
       organizations_mapping: { auto_create_organizations: false, default_organizations: [], organizations_expr: [], organizations_mapping: [] },
       extra_conf: collectExtraConf(ext, warnings),
     };
@@ -732,17 +764,21 @@ export const convertDeprecatedToOidc = (envKey: string, entry: EnvProviderEntry)
     ext.consume('organizations');
   }
 
-  // Consume redirect_uris if present (some configs use it)
-  ext.consume('redirect_uris');
-
   const extraConf = collectExtraConf(ext, warnings);
 
   // Re-add strategy-specific fields as extra_conf so administrators can see them
+  // Arrays are stored as multiple entries with the same key
   if (entry.strategy === 'GoogleStrategy' && entry.config?.domains) {
-    extraConf.push({ type: ExtraConfEntryType.String, key: 'domains', value: JSON.stringify(entry.config.domains) });
+    const domains = Array.isArray(entry.config.domains) ? entry.config.domains : [entry.config.domains];
+    for (const d of domains) {
+      extraConf.push({ type: ExtraConfEntryType.String, key: 'domains', value: String(d) });
+    }
   }
   if (entry.strategy === 'GithubStrategy' && entry.config?.organizations) {
-    extraConf.push({ type: ExtraConfEntryType.String, key: 'organizations', value: JSON.stringify(entry.config.organizations) });
+    const orgs = Array.isArray(entry.config.organizations) ? entry.config.organizations : [entry.config.organizations];
+    for (const o of orgs) {
+      extraConf.push({ type: ExtraConfEntryType.String, key: 'organizations', value: String(o) });
+    }
   }
 
   const configuration: OidcConfigurationInput = {
@@ -761,7 +797,7 @@ export const convertDeprecatedToOidc = (envKey: string, entry: EnvProviderEntry)
       firstname_expr: 'user_info.given_name',
       lastname_expr: 'user_info.family_name',
     },
-    groups_mapping: { auto_create_groups: false, default_groups: [], groups_expr: [], groups_mapping: [] },
+    groups_mapping: { auto_create_groups: false, prevent_default_groups: false, default_groups: [], groups_expr: [], groups_mapping: [] },
     organizations_mapping: { auto_create_organizations: false, default_organizations: [], organizations_expr: [], organizations_mapping: [] },
     extra_conf: extraConf,
   };

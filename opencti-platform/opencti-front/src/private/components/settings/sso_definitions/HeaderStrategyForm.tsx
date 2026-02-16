@@ -4,6 +4,7 @@ import * as Yup from 'yup';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { useTheme } from '@mui/styles';
 import Box from '@mui/material/Box';
+import Paper from '@mui/material/Paper';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
@@ -15,6 +16,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
+import PreventDefaultGroupsRow from './PreventDefaultGroupsRow';
 import type { HeaderStrategyFormQuery } from './__generated__/HeaderStrategyFormQuery.graphql';
 import type { HeaderStrategyFormMutation } from './__generated__/HeaderStrategyFormMutation.graphql';
 
@@ -30,6 +32,7 @@ const headerStrategyFormQuery = graphql`
         header_lastname
         logout_uri
         auto_create_group
+        prevent_default_groups
         headers_audit
         groups_header
         groups_splitter
@@ -56,6 +59,7 @@ const headerStrategyFormMutation = graphql`
           header_lastname
           logout_uri
           auto_create_group
+          prevent_default_groups
           headers_audit
           groups_header
           groups_splitter
@@ -79,6 +83,7 @@ const validationSchema = Yup.object().shape({
   logout_uri: Yup.string().nullable(),
   headers_audit: Yup.array().of(Yup.string()),
   auto_create_group: Yup.boolean(),
+  prevent_default_groups: Yup.boolean(),
   groups_header: Yup.string().nullable(),
   groups_splitter: Yup.string().nullable(),
   groups_mapping: Yup.array().of(
@@ -112,6 +117,7 @@ interface HeaderStrategyFormValues {
   logout_uri: string;
   headers_audit: string[];
   auto_create_group: boolean;
+  prevent_default_groups: boolean;
   groups_header: string;
   groups_splitter: string;
   groups_mapping: MappingEntry[];
@@ -169,6 +175,7 @@ const HeaderStrategyForm = ({ onCancel }: HeaderStrategyFormProps) => {
     logout_uri: headerAuth?.logout_uri ?? '',
     headers_audit: (headerAuth?.headers_audit ?? []).filter((s): s is string => s !== null && s !== undefined),
     auto_create_group: headerAuth?.auto_create_group ?? false,
+    prevent_default_groups: headerAuth?.prevent_default_groups ?? false,
     groups_header: headerAuth?.groups_header ?? '',
     groups_splitter: headerAuth?.groups_splitter ?? '',
     groups_mapping: parseMappingEntries(headerAuth?.groups_mapping),
@@ -195,6 +202,7 @@ const HeaderStrategyForm = ({ onCancel }: HeaderStrategyFormProps) => {
           logout_uri: values.logout_uri || null,
           headers_audit: filterStringArray(values.headers_audit),
           auto_create_group: values.auto_create_group,
+          prevent_default_groups: values.prevent_default_groups,
           groups_header: values.groups_header || null,
           groups_splitter: values.groups_splitter || null,
           groups_mapping: formatMappingEntries(values.groups_mapping),
@@ -284,44 +292,48 @@ const HeaderStrategyForm = ({ onCancel }: HeaderStrategyFormProps) => {
               />
               {/* Headers audit - multi-value list */}
               <FieldArray name="headers_audit">
-                {({ push, remove, form }) => (
-                  <>
-                    <div style={{ display: 'flex', alignItems: 'center', marginTop: 20 }}>
-                      <Typography variant="h4" sx={{ m: 0 }}>{t_i18n('Headers audit')}</Typography>
-                      <IconButton
-                        color="primary"
-                        aria-label={t_i18n('Add')}
-                        size="default"
-                        style={{ marginLeft: 8 }}
-                        onClick={() => push('')}
-                      >
-                        <Add fontSize="small" color="primary" />
-                      </IconButton>
-                    </div>
-                    {(form.values as HeaderStrategyFormValues).headers_audit.map((_: string, index: number) => (
-                      <div
-                        key={index}
-                        style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 20 }}
-                      >
-                        <Field
-                          component={TextField}
-                          variant="standard"
-                          name={`headers_audit[${index}]`}
-                          label={t_i18n('Header name')}
-                          fullWidth
-                        />
+                {({ push, remove, form }) => {
+                  const entries = (form.values as HeaderStrategyFormValues).headers_audit;
+                  return (
+                    <Paper variant="outlined" sx={{ mt: 2, borderRadius: 1, overflow: 'hidden' }}>
+                      <Box sx={{ px: 2, py: 1, backgroundColor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Typography variant="h4" sx={{ m: 0 }}>{t_i18n('Headers audit')}</Typography>
                         <IconButton
                           color="primary"
-                          aria-label={t_i18n('Delete')}
-                          onClick={() => remove(index)}
-                          style={{ marginTop: 10 }}
+                          aria-label={t_i18n('Add')}
+                          size="default"
+                          onClick={() => push('')}
                         >
-                          <Delete fontSize="small" />
+                          <Add fontSize="small" color="primary" />
                         </IconButton>
-                      </div>
-                    ))}
-                  </>
-                )}
+                      </Box>
+                      <Box sx={{ px: 2, pb: entries.length > 0 ? 1 : 0 }}>
+                        {entries.map((_: string, index: number) => (
+                          <div
+                            key={index}
+                            style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}
+                          >
+                            <Field
+                              component={TextField}
+                              variant="standard"
+                              name={`headers_audit[${index}]`}
+                              label={t_i18n('Header name')}
+                              fullWidth
+                            />
+                            <IconButton
+                              color="primary"
+                              aria-label={t_i18n('Delete')}
+                              onClick={() => remove(index)}
+                              style={{ marginTop: 10 }}
+                            >
+                              <Delete fontSize="small" />
+                            </IconButton>
+                          </div>
+                        ))}
+                      </Box>
+                    </Paper>
+                  );
+                }}
               </FieldArray>
             </>
           )}
@@ -329,6 +341,13 @@ const HeaderStrategyForm = ({ onCancel }: HeaderStrategyFormProps) => {
           {/* Tab 2: Groups */}
           {currentTab === 1 && (
             <>
+              <PreventDefaultGroupsRow fieldName="prevent_default_groups" />
+              <Field
+                component={SwitchField}
+                type="checkbox"
+                name="auto_create_group"
+                label={t_i18n('Auto create group')}
+              />
               <Field
                 component={TextField}
                 variant="standard"
@@ -348,59 +367,56 @@ const HeaderStrategyForm = ({ onCancel }: HeaderStrategyFormProps) => {
               />
               {/* Groups mapping - source:target pairs */}
               <FieldArray name="groups_mapping">
-                {({ push, remove, form }) => (
-                  <>
-                    <div style={{ display: 'flex', alignItems: 'center', marginTop: 20 }}>
-                      <Typography variant="h4" sx={{ m: 0 }}>{t_i18n('Groups mapping')}</Typography>
-                      <IconButton
-                        color="primary"
-                        aria-label={t_i18n('Add')}
-                        size="default"
-                        style={{ marginLeft: 8 }}
-                        onClick={() => push({ source: '', target: '' })}
-                      >
-                        <Add fontSize="small" color="primary" />
-                      </IconButton>
-                    </div>
-                    {(form.values as HeaderStrategyFormValues).groups_mapping.map((_: MappingEntry, index: number) => (
-                      <div
-                        key={index}
-                        style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 20 }}
-                      >
-                        <Field
-                          component={TextField}
-                          variant="standard"
-                          name={`groups_mapping[${index}].source`}
-                          label={t_i18n('Remote group name')}
-                          fullWidth
-                        />
-                        <Field
-                          component={TextField}
-                          variant="standard"
-                          name={`groups_mapping[${index}].target`}
-                          label={t_i18n('OpenCTI group name')}
-                          fullWidth
-                        />
+                {({ push, remove, form }) => {
+                  const entries = (form.values as HeaderStrategyFormValues).groups_mapping;
+                  return (
+                    <Paper variant="outlined" sx={{ mt: 2, borderRadius: 1, overflow: 'hidden' }}>
+                      <Box sx={{ px: 2, py: 1, backgroundColor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Typography variant="h4" sx={{ m: 0 }}>{t_i18n('Groups mapping')}</Typography>
                         <IconButton
                           color="primary"
-                          aria-label={t_i18n('Delete')}
-                          onClick={() => remove(index)}
-                          style={{ marginTop: 10 }}
+                          aria-label={t_i18n('Add')}
+                          size="default"
+                          onClick={() => push({ source: '', target: '' })}
                         >
-                          <Delete fontSize="small" />
+                          <Add fontSize="small" color="primary" />
                         </IconButton>
-                      </div>
-                    ))}
-                  </>
-                )}
+                      </Box>
+                      <Box sx={{ px: 2, pb: entries.length > 0 ? 1 : 0 }}>
+                        {entries.map((_: MappingEntry, index: number) => (
+                          <div
+                            key={index}
+                            style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}
+                          >
+                            <Field
+                              component={TextField}
+                              variant="standard"
+                              name={`groups_mapping[${index}].source`}
+                              label={t_i18n('Remote group name')}
+                              fullWidth
+                            />
+                            <Field
+                              component={TextField}
+                              variant="standard"
+                              name={`groups_mapping[${index}].target`}
+                              label={t_i18n('OpenCTI group name')}
+                              fullWidth
+                            />
+                            <IconButton
+                              color="primary"
+                              aria-label={t_i18n('Delete')}
+                              onClick={() => remove(index)}
+                              style={{ marginTop: 10 }}
+                            >
+                              <Delete fontSize="small" />
+                            </IconButton>
+                          </div>
+                        ))}
+                      </Box>
+                    </Paper>
+                  );
+                }}
               </FieldArray>
-              <Field
-                component={SwitchField}
-                type="checkbox"
-                name="auto_create_group"
-                label={t_i18n('Auto create group')}
-                containerstyle={{ marginTop: 20 }}
-              />
             </>
           )}
 
@@ -426,92 +442,100 @@ const HeaderStrategyForm = ({ onCancel }: HeaderStrategyFormProps) => {
               />
               {/* Organizations mapping - source:target pairs */}
               <FieldArray name="organizations_mapping">
-                {({ push, remove, form }) => (
-                  <>
-                    <div style={{ display: 'flex', alignItems: 'center', marginTop: 20 }}>
-                      <Typography variant="h4" sx={{ m: 0 }}>{t_i18n('Organizations mapping')}</Typography>
-                      <IconButton
-                        color="primary"
-                        aria-label={t_i18n('Add')}
-                        size="default"
-                        style={{ marginLeft: 8 }}
-                        onClick={() => push({ source: '', target: '' })}
-                      >
-                        <Add fontSize="small" color="primary" />
-                      </IconButton>
-                    </div>
-                    {(form.values as HeaderStrategyFormValues).organizations_mapping.map((_: MappingEntry, index: number) => (
-                      <div
-                        key={index}
-                        style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 20 }}
-                      >
-                        <Field
-                          component={TextField}
-                          variant="standard"
-                          name={`organizations_mapping[${index}].source`}
-                          label={t_i18n('Remote organization name')}
-                          fullWidth
-                        />
-                        <Field
-                          component={TextField}
-                          variant="standard"
-                          name={`organizations_mapping[${index}].target`}
-                          label={t_i18n('OpenCTI organization name')}
-                          fullWidth
-                        />
+                {({ push, remove, form }) => {
+                  const entries = (form.values as HeaderStrategyFormValues).organizations_mapping;
+                  return (
+                    <Paper variant="outlined" sx={{ mt: 2, borderRadius: 1, overflow: 'hidden' }}>
+                      <Box sx={{ px: 2, py: 1, backgroundColor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Typography variant="h4" sx={{ m: 0 }}>{t_i18n('Organizations mapping')}</Typography>
                         <IconButton
                           color="primary"
-                          aria-label={t_i18n('Delete')}
-                          onClick={() => remove(index)}
-                          style={{ marginTop: 10 }}
+                          aria-label={t_i18n('Add')}
+                          size="default"
+                          onClick={() => push({ source: '', target: '' })}
                         >
-                          <Delete fontSize="small" />
+                          <Add fontSize="small" color="primary" />
                         </IconButton>
-                      </div>
-                    ))}
-                  </>
-                )}
+                      </Box>
+                      <Box sx={{ px: 2, pb: entries.length > 0 ? 1 : 0 }}>
+                        {entries.map((_: MappingEntry, index: number) => (
+                          <div
+                            key={index}
+                            style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}
+                          >
+                            <Field
+                              component={TextField}
+                              variant="standard"
+                              name={`organizations_mapping[${index}].source`}
+                              label={t_i18n('Remote organization name')}
+                              fullWidth
+                            />
+                            <Field
+                              component={TextField}
+                              variant="standard"
+                              name={`organizations_mapping[${index}].target`}
+                              label={t_i18n('OpenCTI organization name')}
+                              fullWidth
+                            />
+                            <IconButton
+                              color="primary"
+                              aria-label={t_i18n('Delete')}
+                              onClick={() => remove(index)}
+                              style={{ marginTop: 10 }}
+                            >
+                              <Delete fontSize="small" />
+                            </IconButton>
+                          </div>
+                        ))}
+                      </Box>
+                    </Paper>
+                  );
+                }}
               </FieldArray>
               {/* Organizations default - multi-value list */}
               <FieldArray name="organizations_default">
-                {({ push, remove, form }) => (
-                  <>
-                    <div style={{ display: 'flex', alignItems: 'center', marginTop: 20 }}>
-                      <Typography variant="h4" sx={{ m: 0 }}>{t_i18n('Default organizations')}</Typography>
-                      <IconButton
-                        color="primary"
-                        aria-label={t_i18n('Add')}
-                        size="default"
-                        style={{ marginLeft: 8 }}
-                        onClick={() => push('')}
-                      >
-                        <Add fontSize="small" color="primary" />
-                      </IconButton>
-                    </div>
-                    {(form.values as HeaderStrategyFormValues).organizations_default.map((_: string, index: number) => (
-                      <div
-                        key={index}
-                        style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 20 }}
-                      >
-                        <Field
-                          component={TextField}
-                          variant="standard"
-                          name={`organizations_default[${index}]`}
-                          label={t_i18n('Organization name')}
-                          fullWidth
-                        />
+                {({ push, remove, form }) => {
+                  const entries = (form.values as HeaderStrategyFormValues).organizations_default;
+                  return (
+                    <Paper variant="outlined" sx={{ mt: 2, borderRadius: 1, overflow: 'hidden' }}>
+                      <Box sx={{ px: 2, py: 1, backgroundColor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Typography variant="h4" sx={{ m: 0 }}>{t_i18n('Default organizations')}</Typography>
                         <IconButton
                           color="primary"
-                          aria-label={t_i18n('Delete')}
-                          onClick={() => remove(index)}
-                          style={{ marginTop: 10 }}
+                          aria-label={t_i18n('Add')}
+                          size="default"
+                          onClick={() => push('')}
                         >
-                          <Delete fontSize="small" />
+                          <Add fontSize="small" color="primary" />
                         </IconButton>
-                      </div>
-                    ))}
-                  </>
-                )}
+                      </Box>
+                      <Box sx={{ px: 2, pb: entries.length > 0 ? 1 : 0 }}>
+                        {entries.map((_: string, index: number) => (
+                          <div
+                            key={index}
+                            style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}
+                          >
+                            <Field
+                              component={TextField}
+                              variant="standard"
+                              name={`organizations_default[${index}]`}
+                              label={t_i18n('Organization name')}
+                              fullWidth
+                            />
+                            <IconButton
+                              color="primary"
+                              aria-label={t_i18n('Delete')}
+                              onClick={() => remove(index)}
+                              style={{ marginTop: 10 }}
+                            >
+                              <Delete fontSize="small" />
+                            </IconButton>
+                          </div>
+                        ))}
+                      </Box>
+                    </Paper>
+                  );
+                }}
               </FieldArray>
             </>
           )}

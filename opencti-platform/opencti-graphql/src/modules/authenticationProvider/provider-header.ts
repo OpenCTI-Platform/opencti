@@ -83,6 +83,7 @@ export const registerHeaderStrategy = async (context: AuthContext) => {
       providerGroups: mappedGroups,
       providerOrganizations: organizationsToAssociate,
       autoCreateGroup: headerStrategy.auto_create_group ?? false,
+      preventDefaultGroups: headerStrategy.prevent_default_groups ?? false,
     };
     const provider_metadata = { headers_audit: headerStrategy.headers_audit };
     addUserLoginCount();

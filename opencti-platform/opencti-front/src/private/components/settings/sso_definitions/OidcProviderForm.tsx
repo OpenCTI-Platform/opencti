@@ -91,6 +91,8 @@ interface OidcFormValues {
     default_groups: string[];
     groups_expr: string[];
     groups_mapping: MappingEntry[];
+    auto_create_groups: boolean;
+    prevent_default_groups: boolean;
   };
   organizations_mapping: {
     default_organizations: string[];
@@ -135,18 +137,20 @@ const defaultValues: OidcFormValues = {
   logout_remote: false,
   logout_callback_url: '',
   use_proxy: false,
-  email_expr: '',
-  name_expr: '',
-  firstname_expr: '',
-  lastname_expr: '',
+  email_expr: 'user_info.email',
+  name_expr: 'user_info.name',
+  firstname_expr: 'user_info.given_name',
+  lastname_expr: 'user_info.family_name',
   groups_mapping: {
     default_groups: [],
-    groups_expr: [],
+    groups_expr: ['tokens.access_token.groups'],
     groups_mapping: [],
+    auto_create_groups: false,
+    prevent_default_groups: false,
   },
   organizations_mapping: {
     default_organizations: [],
-    organizations_expr: [],
+    organizations_expr: ['tokens.access_token.organizations'],
     organizations_mapping: [],
   },
   extra_conf: [],
@@ -177,6 +181,8 @@ const buildInitialValues = (data: OidcProviderData): OidcFormValues => {
       default_groups: [...(conf.groups_mapping?.default_groups ?? [])],
       groups_expr: [...(conf.groups_mapping?.groups_expr ?? [])],
       groups_mapping: (conf.groups_mapping?.groups_mapping ?? []).map((m) => ({ provider: m.provider, platform: m.platform })),
+      auto_create_groups: conf.groups_mapping?.auto_create_groups ?? false,
+      prevent_default_groups: conf.groups_mapping?.prevent_default_groups ?? false,
     },
     organizations_mapping: {
       default_organizations: [...(conf.organizations_mapping?.default_organizations ?? [])],
@@ -269,11 +275,14 @@ const OidcProviderForm = ({
           default_groups: values.groups_mapping.default_groups,
           groups_expr: values.groups_mapping.groups_expr,
           groups_mapping: values.groups_mapping.groups_mapping,
+          auto_create_groups: values.groups_mapping.auto_create_groups,
+          prevent_default_groups: values.groups_mapping.prevent_default_groups,
         },
         organizations_mapping: {
           default_organizations: values.organizations_mapping.default_organizations,
           organizations_expr: values.organizations_mapping.organizations_expr,
           organizations_mapping: values.organizations_mapping.organizations_mapping,
+          auto_create_organizations: false,
         },
         extra_conf: values.extra_conf.map((e) => ({
           type: e.type as 'String' | 'Number' | 'Boolean',

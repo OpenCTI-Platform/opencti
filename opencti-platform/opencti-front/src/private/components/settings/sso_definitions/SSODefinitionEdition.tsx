@@ -43,6 +43,8 @@ export const ssoDefinitionEditionFragment = graphql`
                         provider
                         platform
                     }
+                    auto_create_groups
+                    prevent_default_groups
                 }
                 organizations_mapping {
                     default_organizations
@@ -51,6 +53,7 @@ export const ssoDefinitionEditionFragment = graphql`
                         provider
                         platform
                     }
+                    auto_create_organizations
                 }
                 extra_conf {
                     type
@@ -90,6 +93,8 @@ export const ssoDefinitionEditionFragment = graphql`
                         provider
                         platform
                     }
+                    auto_create_groups
+                    prevent_default_groups
                 }
                 organizations_mapping {
                     default_organizations
@@ -98,6 +103,7 @@ export const ssoDefinitionEditionFragment = graphql`
                         provider
                         platform
                     }
+                    auto_create_organizations
                 }
                 extra_conf {
                     type
@@ -131,6 +137,8 @@ export const ssoDefinitionEditionFragment = graphql`
                         provider
                         platform
                     }
+                    auto_create_groups
+                    prevent_default_groups
                 }
                 organizations_mapping {
                     default_organizations
@@ -139,6 +147,7 @@ export const ssoDefinitionEditionFragment = graphql`
                         provider
                         platform
                     }
+                    auto_create_organizations
                 }
                 extra_conf {
                     type

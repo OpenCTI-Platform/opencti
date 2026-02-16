@@ -93,17 +93,31 @@ const graphQLToStoreConfiguration = async (
   return output;
 };
 
-export const flatExtraConf = (extraConfInput: ExtraConfEntry[]) => extraConfInput.reduce((acc, conf) => {
-  let value;
-  if (conf.type === ExtraConfEntryType.Boolean) {
-    value = conf.value === 'true';
-  } else if (conf.type === ExtraConfEntryType.Number) {
-    value = Number(conf.value);
-  } else {
-    value = conf.value;
+const parseExtraConfValue = (conf: ExtraConfEntry): unknown => {
+  if (conf.type === ExtraConfEntryType.Boolean) return conf.value === 'true';
+  if (conf.type === ExtraConfEntryType.Number) return Number(conf.value);
+  return conf.value;
+};
+
+// Multiple entries with the same key are grouped into an array.
+// A single entry stays scalar.
+export const flatExtraConf = (extraConfInput: ExtraConfEntry[]) => {
+  const grouped = new Map<string, unknown[]>();
+  for (const conf of extraConfInput) {
+    const value = parseExtraConfValue(conf);
+    const existing = grouped.get(conf.key);
+    if (existing) {
+      existing.push(value);
+    } else {
+      grouped.set(conf.key, [value]);
+    }
   }
-  return ({ ...acc, [conf.key]: value });
-}, {});
+  const result: Record<string, unknown> = {};
+  for (const [key, values] of grouped) {
+    result[key] = values.length === 1 ? values[0] : values;
+  }
+  return result;
+};
 
 type ConfigurationInput = OidcConfigurationInput | SamlConfigurationInput | LdapConfigurationInput;
 

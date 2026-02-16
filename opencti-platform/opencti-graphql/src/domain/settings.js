@@ -325,7 +325,7 @@ export const updateLocalAuth = async (context, user, settingsId, input) => {
 };
 
 export const updateCertAuth = async (context, user, settingsId, input) => {
-  const patch = { cert_auth: { enabled: input.enabled, button_label: input.button_label ?? null } };
+  const patch = { cert_auth: input };
   const { element } = await patchAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, patch);
   await publishUserAction({
     user,

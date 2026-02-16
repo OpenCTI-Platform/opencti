@@ -79,6 +79,7 @@ export const registerOpenIdStrategy = async (logger: AuthenticationProviderLogge
       providerGroups: groups,
       providerOrganizations: organizations,
       autoCreateGroup: conf.groups_mapping.auto_create_groups,
+      preventDefaultGroups: conf.groups_mapping.prevent_default_groups,
     };
     await providerLoginHandler(userInfo, verified, opts);
   };

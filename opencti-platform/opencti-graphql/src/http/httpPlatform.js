@@ -16,6 +16,7 @@ import contentDisposition from 'content-disposition';
 import { printSchema } from 'graphql/utilities';
 import { basePath, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION, PLATFORM_VERSION, AUTH_PAYLOAD_BODY_SIZE, getBaseUrl } from '../config/conf';
 import { loginFromProvider, sessionAuthenticateUser, userWithOrigin } from '../domain/user';
+import { genConfigMapper } from '../modules/authenticationProvider/providers-configuration';
 import { downloadFile, getFileContent, isStorageAlive } from '../database/raw-file-storage';
 import { loadFile } from '../database/file-storage';
 import { DEFAULT_INVALID_CONF_VALUE, executionContext, SYSTEM_USER } from '../utils/access';
@@ -370,13 +371,30 @@ const createApp = async (app, schema) => {
       } else {
         const cert = req.socket.getPeerCertificate();
         if (isNotEmptyField(cert) && req.client.authorized) {
-          const { CN, emailAddress } = cert.subject;
+          const { CN, emailAddress, OU, O } = cert.subject;
           if (isEmptyField(emailAddress)) {
             setCookieError(res, 'Client certificate need a correct emailAddress');
             res.redirect(redirect);
           } else {
+            const certAuth = settings.cert_auth;
+            // Groups from OU field
+            const ouValues = Array.isArray(OU) ? OU : (OU ? [OU] : []);
+            const isGroupMapping = isNotEmptyField(certAuth?.groups_mapping);
+            const groupsMapper = isGroupMapping ? genConfigMapper(certAuth.groups_mapping ?? []) : {};
+            const mappedGroups = ouValues.map((v) => groupsMapper[v]).filter((r) => isNotEmptyField(r));
+            // Organizations from O field
+            const oValues = Array.isArray(O) ? O : (O ? [O] : []);
+            const isOrgMapping = isNotEmptyField(certAuth?.organizations_default) || isNotEmptyField(certAuth?.organizations_mapping);
+            const orgMapper = isOrgMapping ? genConfigMapper(certAuth.organizations_mapping ?? []) : {};
+            const mappedOrgs = [...(certAuth?.organizations_default ?? []), ...oValues.map((v) => orgMapper[v]).filter((r) => isNotEmptyField(r))];
             const userInfo = { email: emailAddress, name: isEmptyField(CN) ? emailAddress : CN };
-            loginFromProvider(userInfo)
+            const opts = {
+              providerGroups: mappedGroups,
+              providerOrganizations: mappedOrgs,
+              autoCreateGroup: certAuth?.auto_create_group ?? false,
+              preventDefaultGroups: certAuth?.prevent_default_groups ?? false,
+            };
+            loginFromProvider(userInfo, opts)
               .then(async (user) => {
                 await sessionAuthenticateUser(context, req, user, 'cert');
                 res.redirect(redirect);

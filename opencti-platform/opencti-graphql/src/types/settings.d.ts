@@ -13,6 +13,13 @@ export interface BasicStoreSettingsMessage {
 export type CertAuthConfig = {
   enabled: boolean;
   button_label: string;
+  // Groups management (from cert OU field)
+  groups_mapping?: string[];
+  auto_create_group?: boolean;
+  prevent_default_groups?: boolean;
+  // Organizations management (from cert O field)
+  organizations_default?: string[];
+  organizations_mapping?: string[];
 };
 
 export type LocalAuthConfig = {
@@ -26,6 +33,7 @@ export type HeadersAuthConfig = {
   header_firstname?: string;
   header_lastname?: string;
   auto_create_group?: boolean;
+  prevent_default_groups?: boolean;
   headers_audit?: string[];
   logout_uri?: string;
   // Groups management

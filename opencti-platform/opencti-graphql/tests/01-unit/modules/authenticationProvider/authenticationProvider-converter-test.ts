@@ -128,10 +128,23 @@ describe('toExtraConfEntry', () => {
     });
   });
 
-  it('should convert arrays as JSON strings', () => {
-    expect(toExtraConfEntry('transforms', ['a', 'b'])).toStrictEqual({
-      type: ExtraConfEntryType.String, key: 'transforms', value: '["a","b"]',
-    });
+  it('should convert arrays to multiple entries with the same key', () => {
+    expect(toExtraConfEntry('transforms', ['a', 'b'])).toStrictEqual([
+      { type: ExtraConfEntryType.String, key: 'transforms', value: 'a' },
+      { type: ExtraConfEntryType.String, key: 'transforms', value: 'b' },
+    ]);
+  });
+
+  it('should convert arrays of mixed types to multiple entries', () => {
+    expect(toExtraConfEntry('mixed', ['hello', 42, true])).toStrictEqual([
+      { type: ExtraConfEntryType.String, key: 'mixed', value: 'hello' },
+      { type: ExtraConfEntryType.Number, key: 'mixed', value: '42' },
+      { type: ExtraConfEntryType.Boolean, key: 'mixed', value: 'true' },
+    ]);
+  });
+
+  it('should return empty array for empty array value', () => {
+    expect(toExtraConfEntry('empty', [])).toStrictEqual([]);
   });
 
   it('should return null for undefined/null values', () => {
@@ -264,6 +277,17 @@ describe('convertOidcEnvConfig', () => {
     expect(result.configuration.logout_remote).toBe(false);
     expect(result.configuration.use_proxy).toBe(false);
     expect(result.warnings).toStrictEqual([]);
+
+    // Default mapping values are always populated (never hidden)
+    expect(result.configuration.user_info_mapping).toStrictEqual({
+      email_expr: 'user_info.email',
+      name_expr: 'user_info.name',
+      firstname_expr: 'user_info.given_name',
+      lastname_expr: 'user_info.family_name',
+    });
+    expect(result.configuration.groups_mapping.groups_expr).toStrictEqual(['tokens.access_token.groups']);
+    expect(result.configuration.groups_mapping.prevent_default_groups).toBe(false);
+    expect(result.configuration.organizations_mapping.organizations_expr).toStrictEqual(['tokens.access_token.organizations']);
   });
 
   it('should merge scopes from default + groups_scope + organizations_scope', () => {
@@ -417,6 +441,55 @@ describe('convertOidcEnvConfig', () => {
     ]);
   });
 
+  it('should convert redirect_uris array to callback_url (first element)', () => {
+    const entry: EnvProviderEntry = {
+      strategy: 'OpenIDConnectStrategy',
+      config: {
+        issuer: 'https://idp.example.com',
+        client_id: 'c',
+        client_secret: 's',
+        redirect_uris: ['https://opencti.example.com/auth/oic/callback', 'https://other.example.com/callback'],
+      },
+    };
+
+    const result = convertOidcEnvConfig('oic', entry);
+    expect(result.configuration.callback_url).toBe('https://opencti.example.com/auth/oic/callback');
+    // callback_url is provided via redirect_uris, so identifier_override should be null
+    expect(result.base.identifier_override).toBeNull();
+  });
+
+  it('should convert redirect_uris string to callback_url', () => {
+    const entry: EnvProviderEntry = {
+      strategy: 'OpenIDConnectStrategy',
+      config: {
+        issuer: 'https://idp.example.com',
+        client_id: 'c',
+        client_secret: 's',
+        redirect_uris: 'https://opencti.example.com/auth/oic/callback',
+      },
+    };
+
+    const result = convertOidcEnvConfig('oic', entry);
+    expect(result.configuration.callback_url).toBe('https://opencti.example.com/auth/oic/callback');
+    expect(result.base.identifier_override).toBeNull();
+  });
+
+  it('should prefer callback_url over redirect_uris', () => {
+    const entry: EnvProviderEntry = {
+      strategy: 'OpenIDConnectStrategy',
+      config: {
+        issuer: 'https://idp.example.com',
+        client_id: 'c',
+        client_secret: 's',
+        callback_url: 'https://opencti.example.com/auth/oic/callback',
+        redirect_uris: ['https://other.example.com/callback'],
+      },
+    };
+
+    const result = convertOidcEnvConfig('oic', entry);
+    expect(result.configuration.callback_url).toBe('https://opencti.example.com/auth/oic/callback');
+  });
+
   it('should put unknown keys into extra_conf', () => {
     const entry: EnvProviderEntry = {
       strategy: 'OpenIDConnectStrategy',
@@ -529,6 +602,17 @@ describe('convertSamlEnvConfig', () => {
     expect(result.configuration.want_authn_response_signed).toBe(false);
     expect(result.configuration.force_reauthentication).toBe(false);
     expect(result.warnings).toStrictEqual([]);
+
+    // Default mapping values are always populated (never hidden)
+    expect(result.configuration.user_info_mapping).toStrictEqual({
+      email_expr: 'email',
+      name_expr: 'name',
+      firstname_expr: null,
+      lastname_expr: null,
+    });
+    expect(result.configuration.groups_mapping.groups_expr).toStrictEqual(['groups']);
+    expect(result.configuration.groups_mapping.prevent_default_groups).toBe(false);
+    expect(result.configuration.organizations_mapping.organizations_expr).toStrictEqual(['organizations']);
   });
 
   it('should convert SAML config with all first-class boolean fields', () => {
@@ -801,6 +885,17 @@ describe('convertLdapEnvConfig', () => {
     expect(result.configuration.search_filter).toBe('(cn={{username}})');
     expect(result.configuration.allow_self_signed).toBe(false);
     expect(result.warnings).toStrictEqual([]);
+
+    // Default mapping values are always populated (never hidden)
+    expect(result.configuration.user_info_mapping).toStrictEqual({
+      email_expr: 'mail',
+      name_expr: 'givenName',
+      firstname_expr: null,
+      lastname_expr: null,
+    });
+    expect(result.configuration.groups_mapping.groups_expr).toStrictEqual(['cn']);
+    expect(result.configuration.groups_mapping.prevent_default_groups).toBe(false);
+    expect(result.configuration.organizations_mapping.organizations_expr).toStrictEqual(['organizations']);
   });
 
   it('should convert bind_credentials to string when it is a number', () => {
@@ -1546,10 +1641,11 @@ describe('convertDeprecatedToOidc', () => {
     expect(config.scopes).toStrictEqual(['openid', 'email', 'profile']);
     expect(config.logout_remote).toBe(false);
 
-    // domains should be preserved in extra_conf for the administrator
-    const domainsExtra = config.extra_conf.find((e) => e.key === 'domains');
-    expect(domainsExtra).toBeDefined();
-    expect(domainsExtra?.value).toBe('["example.com","filigran.io"]');
+    // domains should be preserved in extra_conf as multiple entries with the same key
+    const domainsExtra = config.extra_conf.filter((e) => e.key === 'domains');
+    expect(domainsExtra).toHaveLength(2);
+    expect(domainsExtra[0].value).toBe('example.com');
+    expect(domainsExtra[1].value).toBe('filigran.io');
 
     // Should have deprecation warning
     expect(provider.warnings.some((w) => w.includes('deprecated'))).toBe(true);
@@ -1601,10 +1697,11 @@ describe('convertDeprecatedToOidc', () => {
     expect(config.client_id).toBe('gh-client-id');
     expect(config.scopes).toStrictEqual(['user:email']);
 
-    // organizations should be preserved in extra_conf
-    const orgsExtra = config.extra_conf.find((e) => e.key === 'organizations');
-    expect(orgsExtra).toBeDefined();
-    expect(orgsExtra?.value).toBe('["filigran","opencti"]');
+    // organizations should be preserved in extra_conf as multiple entries with the same key
+    const orgsExtra = config.extra_conf.filter((e) => e.key === 'organizations');
+    expect(orgsExtra).toHaveLength(2);
+    expect(orgsExtra[0].value).toBe('filigran');
+    expect(orgsExtra[1].value).toBe('opencti');
 
     // Should warn about placeholder issuer
     expect(result.provider.warnings.some((w) => w.includes('placeholder'))).toBe(true);
@@ -1889,6 +1986,24 @@ describe('Edge cases', () => {
     const result = convertSamlEnvConfig('saml', entry);
     expect(result.configuration.organizations_mapping.organizations_expr).toStrictEqual(['organizations']);
     expect(result.configuration.organizations_mapping.organizations_mapping).toStrictEqual([]);
+  });
+
+  it('should join SAML multi-segment organizations_path into a single dot-separated expression', () => {
+    // In the old SAML code, organizations_path was used as R.path(orgaPath, profile) —
+    // the array was the path segments. The migration joins them into a single dot expression.
+    const entry: EnvProviderEntry = {
+      strategy: 'SamlStrategy',
+      config: {
+        issuer: 'x', entry_point: 'y', cert: 'z',
+        organizations_management: {
+          organizations_path: ['company', 'org', 'list'],
+          organizations_mapping: [],
+        },
+      },
+    };
+
+    const result = convertSamlEnvConfig('saml', entry);
+    expect(result.configuration.organizations_mapping.organizations_expr).toStrictEqual(['company.org.list']);
   });
 
   it('should handle LDAP config with organizations_management empty', () => {

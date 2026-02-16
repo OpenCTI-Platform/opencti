@@ -102,6 +102,8 @@ interface SamlFormValues {
     default_groups: string[];
     groups_expr: string[];
     groups_mapping: MappingEntry[];
+    auto_create_groups: boolean;
+    prevent_default_groups: boolean;
   };
   organizations_mapping: {
     default_organizations: string[];
@@ -157,18 +159,20 @@ const defaultValues: SamlFormValues = {
   skip_request_compression: false,
   decryption_pvk_cleartext: '',
   decryption_cert: '',
-  email_expr: '',
-  name_expr: '',
+  email_expr: 'email',
+  name_expr: 'name',
   firstname_expr: '',
   lastname_expr: '',
   groups_mapping: {
     default_groups: [],
-    groups_expr: [],
+    groups_expr: ['groups'],
     groups_mapping: [],
+    auto_create_groups: false,
+    prevent_default_groups: false,
   },
   organizations_mapping: {
     default_organizations: [],
-    organizations_expr: [],
+    organizations_expr: ['organizations'],
     organizations_mapping: [],
   },
   extra_conf: [],
@@ -210,6 +214,8 @@ const buildInitialValues = (data: SamlProviderData): SamlFormValues => {
       default_groups: [...(conf.groups_mapping?.default_groups ?? [])],
       groups_expr: [...(conf.groups_mapping?.groups_expr ?? [])],
       groups_mapping: (conf.groups_mapping?.groups_mapping ?? []).map((m) => ({ provider: m.provider, platform: m.platform })),
+      auto_create_groups: conf.groups_mapping?.auto_create_groups ?? false,
+      prevent_default_groups: conf.groups_mapping?.prevent_default_groups ?? false,
     },
     organizations_mapping: {
       default_organizations: [...(conf.organizations_mapping?.default_organizations ?? [])],
@@ -314,11 +320,14 @@ const SamlProviderForm = ({
           default_groups: values.groups_mapping.default_groups,
           groups_expr: values.groups_mapping.groups_expr,
           groups_mapping: values.groups_mapping.groups_mapping,
+          auto_create_groups: values.groups_mapping.auto_create_groups,
+          prevent_default_groups: values.groups_mapping.prevent_default_groups,
         },
         organizations_mapping: {
           default_organizations: values.organizations_mapping.default_organizations,
           organizations_expr: values.organizations_mapping.organizations_expr,
           organizations_mapping: values.organizations_mapping.organizations_mapping,
+          auto_create_organizations: false,
         },
         extra_conf: values.extra_conf.map((e) => ({
           type: e.type as 'String' | 'Number' | 'Boolean',
