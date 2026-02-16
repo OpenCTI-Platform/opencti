@@ -41,7 +41,7 @@ export interface ExtraConfEntry {
 
 // Common configuration for all providers
 
-interface ProviderConfiguration {
+export interface ProviderMeta {
   name: string;
   identifier: string;
 }
@@ -63,11 +63,6 @@ type OidcCommonConfiguration = MappingConfiguration & {
 export type OidcStoreConfiguration = OidcCommonConfiguration & {
   client_secret_encrypted: string;
   extra_conf: ExtraConfEntry[];
-};
-
-export type OidcProviderConfiguration = ProviderConfiguration & OidcCommonConfiguration & {
-  client_secret: string;
-  extra_conf: { [extraKey: string]: unknown };
 };
 
 // SAML configuration
@@ -100,12 +95,6 @@ export type SamlStoreConfiguration = SamlCommonConfiguration & {
   extra_conf: ExtraConfEntry[];
 };
 
-export type SamlProviderConfiguration = ProviderConfiguration & SamlCommonConfiguration & {
-  private_key: string;
-  decryption_pvk?: string;
-  extra_conf: { [extraKey: string]: unknown };
-};
-
 // LDAP configuration
 export const ldapSecretFields = ['bind_credentials'];
 
@@ -127,11 +116,6 @@ export type LdapCommonConfiguration = MappingConfiguration & {
 export type LdapStoreConfiguration = LdapCommonConfiguration & {
   bind_credentials_encrypted: string;
   extra_conf: ExtraConfEntry[];
-};
-
-export type LdapProviderConfiguration = ProviderConfiguration & LdapCommonConfiguration & {
-  bind_credentials: string;
-  extra_conf: { [extraKey: string]: unknown };
 };
 
 export type AuthenticationProviderStoreConfiguration = OidcStoreConfiguration | SamlStoreConfiguration | LdapStoreConfiguration;

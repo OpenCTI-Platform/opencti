@@ -31,6 +31,17 @@ import {
   type UserInfoMappingInput,
 } from '../../generated/graphql';
 
+// TODO default conf for LDAP user info mapping : email -> 'mail' & name -> 'givenName'
+// TODO default conf for LDAP group mapping : ['_groups/cn'] or just ['cn'] ?
+// TODO default conf for LDAP orga mapping : ['organizations'] ?
+
+// TODO default conf for SAML  conf.mail_attribute -> conf.user_info_mapping.email_expr
+// TODO default conf for SAML  conf.account_attribute -> conf.user_info_mapping.name_expr
+// TODO default conf for SAML  conf.firstname_attribute -> conf.user_info_mapping.firstname_expr
+// TODO default conf for SAML  conf.lastname_attribute -> conf.user_info_mapping.lastname_expr
+// TODO default conf for SAML  groupsManagement?.group_attributes || ['groups']  -> conf.groups_mapping.groups_expr
+// TODO default conf for SAML  orgsManagement?.organizations_path || ['organizations']; -> conf.organizations_mapping.organizations_expr
+
 // ---------------------------------------------------------------------------
 // ConfigExtractor — tracks which keys are consumed during conversion
 // ---------------------------------------------------------------------------

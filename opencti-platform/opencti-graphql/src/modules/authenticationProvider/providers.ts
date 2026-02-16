@@ -1,6 +1,5 @@
 import { AuthenticationProviderType } from '../../generated/graphql';
-import { ldapStoreToProvider, oidcStoreToProvider, samlStoreToProvider } from './authenticationProvider-domain';
-import { logAuthError, logAuthInfo } from './providers-logger';
+import { createAuthLogger } from './providers-logger';
 import type { BasicStoreEntityAuthenticationProvider, LdapStoreConfiguration, OidcStoreConfiguration, SamlStoreConfiguration } from './authenticationProvider-types';
 import { unregisterAuthenticationProvider } from './providers-initialization';
 import { registerSAMLStrategy } from './provider-saml';
@@ -22,40 +21,38 @@ export const unregisterStrategy = async (authenticationStrategy: BasicStoreEntit
 };
 
 export const registerStrategy = async (authenticationProvider: BasicStoreEntityAuthenticationProvider) => {
-  const { type, name, internal_id, identifier_override } = authenticationProvider;
-  const identifier = identifier_override ?? internal_id;
+  const { type, name, identifier_override } = authenticationProvider;
+  const identifier = identifier_override ?? name; // TODO slug name
+  const logger = createAuthLogger(type, identifier);
+  logger.info('Configuring strategy');
   try {
     if (authenticationProvider.enabled) {
+      const meta = { name, identifier };
       switch (type) {
         case AuthenticationProviderType.Saml:
-          logAuthInfo(`Configuring ${name} - ${identifier}`, AuthenticationProviderType.Saml);
-          await registerSAMLStrategy(await samlStoreToProvider(authenticationProvider as BasicStoreEntityAuthenticationProvider<SamlStoreConfiguration>));
+          await registerSAMLStrategy(logger, meta, authenticationProvider.configuration as SamlStoreConfiguration);
           break;
         case AuthenticationProviderType.Oidc:
-          logAuthInfo(`Configuring ${name} - ${identifier}`, AuthenticationProviderType.Oidc);
-          await registerOpenIdStrategy(await oidcStoreToProvider(authenticationProvider as BasicStoreEntityAuthenticationProvider<OidcStoreConfiguration>));
+          await registerOpenIdStrategy(logger, meta, authenticationProvider.configuration as OidcStoreConfiguration);
           break;
         case AuthenticationProviderType.Ldap:
-          logAuthInfo(`Configuring ${name} - ${identifier}`, AuthenticationProviderType.Ldap);
-          await registerLDAPStrategy(await ldapStoreToProvider(authenticationProvider as BasicStoreEntityAuthenticationProvider<LdapStoreConfiguration>));
+          await registerLDAPStrategy(logger, meta, authenticationProvider.configuration as LdapStoreConfiguration);
           break;
 
         default:
-          logAuthError('Unknown strategy should not be possible, skipping', undefined, { name, type });
+          logger.error('Unknown strategy should not be possible, skipping');
           break;
       }
     }
   } catch (e) {
     if (e instanceof GraphQLError) {
-      logAuthError(
+      logger.error(
         `Error when initializing an authentication provider (id: ${authenticationProvider?.id ?? 'no id'}, identifier: ${identifier ?? 'no identifier'}), cause: ${e.message}.`,
-        undefined,
         { message: e.message, data: e.extensions.data },
       );
     } else {
-      logAuthError(
+      logger.error(
         `Unknown error when initializing an authentication provider (id: ${authenticationProvider?.id ?? 'no id'}, identifier: ${identifier ?? 'no identifier'})`,
-        undefined,
         e,
       );
     }

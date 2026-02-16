@@ -1,4 +1,4 @@
-import type { GroupsMapping, OrganizationsMapping, UserInfoMapping } from './authenticationProvider-types';
+import type { GroupsMapping, MappingConfiguration, OrganizationsMapping, UserInfoMapping } from './authenticationProvider-types';
 import * as R from 'ramda';
 import { pushAll } from '../../utils/arrayUtil';
 
@@ -25,6 +25,8 @@ export const resolvePath = async <T>(obj: any, [name, ...rest]: string[]): Promi
   }
   return undefined;
 };
+
+export const resolveDotPath = async <T>(obj: any, path: string): Promise<T | undefined> => resolvePath(obj, path.split('.'));
 
 export const resolveUserInfo = async (
   { email_expr, name_expr, firstname_expr, lastname_expr }: UserInfoMapping,
@@ -79,3 +81,15 @@ export const resolveOrganizations = async (conf: OrganizationsMapping, resolveEx
 
   return R.uniq([...conf.default_organizations, ...mappedOrga]);
 };
+
+export const createMappers = (conf: MappingConfiguration) => ({
+  resolveGroups: (resolveExpr: (expr: string) => undefined | string | string[] | Promise<undefined | string | string[]>) => {
+    return resolveGroups(conf.groups_mapping, resolveExpr);
+  },
+  resolveOrganizations: (resolveExpr: (expr: string) => undefined | string | string[] | Promise<undefined | string | string[]>) => {
+    return resolveOrganizations(conf.organizations_mapping, resolveExpr);
+  },
+  resolveUserInfo: (resolveExpr: (expr: string) => string | undefined | Promise<string | undefined>) => {
+    return resolveUserInfo(conf.user_info_mapping, resolveExpr);
+  },
+});

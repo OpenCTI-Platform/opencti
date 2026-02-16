@@ -7,15 +7,17 @@ export const logAuthInfo = (message: string, strategyType: EnvStrategyType | Aut
   logApp.info(`[Auth][${strategyType.toUpperCase()}]${message}`, { meta });
 };
 
-export const logAuthWarn = (message: string, strategyType: EnvStrategyType | AuthenticationProviderType, meta?: any) => {
-  logApp.warn(`[Auth][${strategyType.toUpperCase()}]${message}`, { meta });
-};
-
 export const logAuthError = (message: string, strategyType: EnvStrategyType | AuthenticationProviderType | undefined, meta?: any) => {
   logApp.error(`[Auth][${strategyType ? strategyType.toUpperCase() : 'Not provided'}]${message}`, { meta });
 };
 
-export const createAuthLogger = (type: AuthenticationProviderType, identifier: string) => {
+export interface AuthenticationProviderLogger {
+  info: (message: string, meta?: any) => void;
+  warn: (message: string, meta?: any) => void;
+  error: (message: string, meta?: any) => void;
+}
+
+export const createAuthLogger = (type: AuthenticationProviderType, identifier: string): AuthenticationProviderLogger => {
   const logPrefix = `[Auth-${type.toUpperCase()}] `;
   return ({
     info: (message: string, meta: any = {}) => logApp.info(`${logPrefix}${message}`, { meta: { ...meta, type, identifier } }),

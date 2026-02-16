@@ -1,20 +1,17 @@
-import type { LdapProviderConfiguration } from './authenticationProvider-types';
-import { logAuthInfo } from './providers-logger';
+import type { LdapStoreConfiguration, ProviderMeta } from './authenticationProvider-types';
+import { flatExtraConf, decryptAuthValue } from './authenticationProvider-domain';
+import { type AuthenticationProviderLogger } from './providers-logger';
 import { AuthType, providerLoginHandler } from './providers-configuration';
 import LdapStrategy, { type VerifyCallback, type VerifyDoneCallback } from 'passport-ldapauth';
 import { registerAuthenticationProvider } from './providers-initialization';
 import { AuthenticationProviderType } from '../../generated/graphql';
-import { resolveGroups, resolveOrganizations, resolvePath, resolveUserInfo } from './mappings-utils';
+import { createMappers, resolveDotPath } from './mappings-utils';
 
-// TODO default conf for LDAP user info mapping : email -> 'mail' & name -> 'givenName'
-// TODO default conf for LDAP group mapping : ['_groups/cn'] or just ['cn'] ?
-// TODO default conf for LDAP orga mapping : ['organizations'] ?
-
-const convertConfiguration = (conf: LdapProviderConfiguration): LdapStrategy.Options => ({
+const createLdapOptions = async (conf: LdapStoreConfiguration): Promise<LdapStrategy.Options> => ({
   server: {
     url: conf.url,
     bindDN: conf.bind_dn,
-    bindCredentials: conf.bind_credentials,
+    bindCredentials: await decryptAuthValue(conf.bind_credentials_encrypted),
     searchBase: conf.search_base,
     searchFilter: conf.search_filter,
     searchAttributes: conf.search_attributes,
@@ -24,43 +21,45 @@ const convertConfiguration = (conf: LdapProviderConfiguration): LdapStrategy.Opt
     tlsOptions: {
       rejectUnauthorized: !(conf.allow_self_signed ?? false),
     },
-    ...conf.extra_conf,
+    ...flatExtraConf(conf.extra_conf),
   },
   usernameField: conf.username_field,
   passwordField: conf.password_field,
 });
 
-export const registerLDAPStrategy = async (conf: LdapProviderConfiguration) => {
-  logAuthInfo('Configuring LDAP', AuthenticationProviderType.Ldap, { conf });
+export const registerLDAPStrategy = async (logger: AuthenticationProviderLogger, meta: ProviderMeta, storeConf: LdapStoreConfiguration) => {
+  const ldapOptions = await createLdapOptions(storeConf);
+  const { resolveUserInfo, resolveGroups, resolveOrganizations } = createMappers(storeConf);
 
-  const ldapOptions = convertConfiguration(conf);
   const ldapLoginCallback: VerifyCallback = async (user: any, done: VerifyDoneCallback) => {
-    logAuthInfo('Successfully logged', AuthenticationProviderType.Ldap, { user });
+    logger.info('Successfully logged on IdP', { user });
 
-    const userInfo = await resolveUserInfo(conf.user_info_mapping, (expr) => expr ? user[expr] : undefined);
-    const groups = await resolveGroups(conf.groups_mapping, (expr) => resolvePath(user._groups, expr.split('.')));
-    const organizations = await resolveOrganizations(conf.organizations_mapping, (expr) => resolvePath(user, expr.split('.')));
+    const userInfo = await resolveUserInfo((expr) => expr ? user[expr] : undefined);
+    const groups = await resolveGroups((expr) => resolveDotPath(user._groups, expr));
+    const organizations = await resolveOrganizations((expr) => resolveDotPath(user, expr));
+
+    logger.info('User info resolved', { userInfo, groups, organizations });
 
     const opts = {
       strategy: AuthenticationProviderType.Ldap,
-      name: conf.name,
-      identifier: conf.identifier,
+      name: meta.name,
+      identifier: meta.identifier,
       providerGroups: groups,
       providerOrganizations: organizations,
-      autoCreateGroup: conf.groups_mapping.auto_create_groups,
+      autoCreateGroup: storeConf.groups_mapping.auto_create_groups,
     };
     await providerLoginHandler(userInfo, done, opts);
   };
 
   const ldapStrategy = new LdapStrategy(ldapOptions, ldapLoginCallback);
   registerAuthenticationProvider(
-    conf.identifier,
+    meta.identifier,
     ldapStrategy,
     {
-      name: conf.name,
+      name: meta.name,
       type: AuthType.AUTH_FORM,
       strategy: AuthenticationProviderType.Ldap,
-      provider: conf.identifier,
+      provider: meta.identifier,
     },
   );
 };

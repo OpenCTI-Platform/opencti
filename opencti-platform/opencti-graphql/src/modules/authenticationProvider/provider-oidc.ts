@@ -1,4 +1,4 @@
-import { getPlatformHttpProxyAgent } from '../../config/conf';
+import { getBaseUrl, getPlatformHttpProxyAgent } from '../../config/conf';
 import { allowInsecureRequests, buildEndSessionUrl, customFetch, discovery as oidcDiscovery, fetchUserInfo } from 'openid-client';
 import type { StrategyOptions, VerifyFunction } from 'openid-client/passport';
 import { Strategy as OpenIDStrategy } from 'openid-client/passport';
@@ -7,20 +7,23 @@ import * as R from 'ramda';
 import { jwtDecode } from 'jwt-decode';
 import { AuthType, providerLoginHandler } from './providers-configuration';
 import { registerAuthenticationProvider } from './providers-initialization';
-import type { OidcProviderConfiguration } from './authenticationProvider-types';
-import { createAuthLogger } from './providers-logger';
+import type { OidcStoreConfiguration, ProviderMeta } from './authenticationProvider-types';
+import { type AuthenticationProviderLogger } from './providers-logger';
 import { memoize } from '../../utils/memoize';
-import { resolveGroups, resolveOrganizations, resolvePath, resolveUserInfo } from './mappings-utils';
+import { createMappers, resolveDotPath } from './mappings-utils';
 import { AuthenticationProviderType } from '../../generated/graphql';
+import { flatExtraConf, decryptAuthValue } from './authenticationProvider-domain';
 
 const buildProxiedFetch = (issuerUrl: URL): typeof fetch => {
   const dispatcher = getPlatformHttpProxyAgent(issuerUrl.toString(), true);
   return (url, options) => fetch(url, { ...options, dispatcher });
 };
 
-export const registerOpenIdStrategy = async (conf: OidcProviderConfiguration) => {
-  const log = createAuthLogger(AuthenticationProviderType.Oidc, conf.identifier);
-  log.info('Configuring strategy');
+export const registerOpenIdStrategy = async (logger: AuthenticationProviderLogger, meta: ProviderMeta, conf: OidcStoreConfiguration) => {
+  const client_secret = await decryptAuthValue(conf.client_secret_encrypted);
+  const callbackURL = conf.callback_url || `${getBaseUrl()}/auth/${meta.identifier}/callback`;
+  const extraConf = flatExtraConf(conf.extra_conf);
+  const { resolveUserInfo, resolveGroups, resolveOrganizations } = createMappers(conf);
 
   const issuer = new URL(conf.issuer);
   const customFetchImpl = conf.use_proxy ? buildProxiedFetch(issuer) : undefined;
@@ -29,8 +32,8 @@ export const registerOpenIdStrategy = async (conf: OidcProviderConfiguration) =>
     issuer,
     conf.client_id,
     {
-      client_secret: conf.client_secret,
-      ...conf.extra_conf,
+      ...extraConf,
+      client_secret,
     },
     undefined,
     {
@@ -42,18 +45,18 @@ export const registerOpenIdStrategy = async (conf: OidcProviderConfiguration) =>
   const options: StrategyOptions = {
     config,
     scope: R.uniq(conf.scopes ?? ['openid', 'email', 'profile']).join(' '),
-    callbackURL: conf.callback_url,
+    callbackURL,
     passReqToCallback: false,
-    ...conf.extra_conf,
+    ...extraConf,
   };
 
   const verify: VerifyFunction = async (tokens, verified: AuthenticateCallback) => {
-    log.info('Successfully logged on IdP');
+    logger.info('Successfully logged on IdP');
 
     const user_info = memoize(async () => {
       const sub = tokens.claims()?.sub;
       const userInfo = sub ? await fetchUserInfo(config, tokens.access_token, sub) : undefined;
-      log.info('User info fetched', { sub: sub ?? null, userInfo: userInfo ?? null });
+      logger.info('User info fetched', { sub: sub ?? null, userInfo: userInfo ?? null });
       return userInfo;
     });
 
@@ -61,18 +64,18 @@ export const registerOpenIdStrategy = async (conf: OidcProviderConfiguration) =>
       tokens: (name: string) => typeof tokens[name] === 'string' ? jwtDecode(tokens[name]) : undefined,
       user_info,
     };
-    const resolveExpr = (expr: string) => resolvePath<string>(context, expr.split('.'));
+    const resolveExpr = (expr: string) => resolveDotPath<string>(context, expr);
 
-    const userInfo = await resolveUserInfo(conf.user_info_mapping, resolveExpr);
-    const groups = await resolveGroups(conf.groups_mapping, resolveExpr);
-    const organizations = await resolveOrganizations(conf.organizations_mapping, resolveExpr);
+    const userInfo = await resolveUserInfo(resolveExpr);
+    const groups = await resolveGroups(resolveExpr);
+    const organizations = await resolveOrganizations(resolveExpr);
 
-    log.info('User info resolved', { userInfo, groups, organizations });
+    logger.info('User info resolved', { userInfo, groups, organizations });
 
     const opts = {
       strategy: AuthenticationProviderType.Oidc,
-      name: conf.name,
-      identifier: conf.identifier,
+      name: meta.name,
+      identifier: meta.identifier,
       providerGroups: groups,
       providerOrganizations: organizations,
       autoCreateGroup: conf.groups_mapping.auto_create_groups,
@@ -116,13 +119,13 @@ export const registerOpenIdStrategy = async (conf: OidcProviderConfiguration) =>
   Object.assign(openIDStrategy, { logout });
 
   registerAuthenticationProvider(
-    conf.identifier,
+    meta.identifier,
     openIDStrategy,
     {
-      name: conf.name,
+      name: meta.name,
       type: AuthType.AUTH_SSO,
       strategy: AuthenticationProviderType.Oidc,
-      provider: conf.identifier,
+      provider: meta.identifier,
       logout_remote: conf.logout_remote,
     },
   );
