@@ -63,6 +63,40 @@ export const htmlToPdf = (fileName: string, content: string) => {
 };
 
 /**
+ * Part to handle the embedded images of a file
+ */
+const normalizeEntityBaseUrl = (url: string) =>
+  url
+    .replace(/\/content\/?$/, '')
+    .replace(/\/$/, '');
+
+const entityBaseUrl = `${window.location.origin}${window.location.pathname}`.replace(/\/$/, '');
+const resolvedEntityBaseUrl = normalizeEntityBaseUrl(entityBaseUrl);
+
+const resolvePdfMakeEmbeddedImages = async (
+  pdfMakeObject: TDocumentDefinitions, resolvedEntityBaseUrl: string,
+) => {
+  if (!pdfMakeObject.images) return;
+
+  const refs = pdfMakeObject.images as unknown as Record<string, string>;
+  const resolved: Record<string, string> = { ...refs };
+
+  await Promise.all(
+    Object.entries(refs).map(async ([key, value]) => {
+      if (!value.startsWith('embedded/')) return;
+
+      const fileName = value.slice('embedded/'.length);
+      const url = `${resolvedEntityBaseUrl}/embedded/${encodeURIComponent(fileName)}`;
+
+      const img = await getBase64ImageFromURL(url);
+      resolved[key] = img.startsWith('data:') ? img : `data:image/png;base64,${img}`;
+    }),
+  );
+
+  pdfMakeObject.images = resolved as never;
+};
+
+/**
  * Transform html file into a PDF that can be downloaded.
  * /!\ Used for outcome templates reports.
  *
@@ -118,6 +152,10 @@ export const htmlToPdfReport = async (
       td: { font: selectedFont },
     },
   }) as unknown as TDocumentDefinitions; // Because wrong type when using imagesByReference: true.
+
+  if (entityBaseUrl) {
+    await resolvePdfMakeEmbeddedImages(pdfMakeObject, resolvedEntityBaseUrl);
+  }
 
   const linearGradiant = [
     fintelDesign?.gradiantFromColor || DARK,
