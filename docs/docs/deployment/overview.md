@@ -1,6 +1,6 @@
 # Overview
 
-Before starting the installation, let's discover how OpenCTI is working, which dependencies are needed and what are the minimal requirements to deploy it in production.
+Before starting the installation, let's discover how OpenCTI works, which dependencies are needed and what are the minimal requirements to deploy it in production.
 
 !!! tip "Docker deployment of the full XTM suite (OpenCTI - OpenAEV - OpenGRC)"
 
@@ -12,17 +12,17 @@ The OpenCTI platform relies on several external databases and services in order 
 
 ![Architecture](assets/architecture.png)
 
-### Platform
+### Core
 
-The platform is the central part of the OpenCTI technological stack. It allows users to access to the user interface but also provides the [GraphQL API](https://graphql.org) used by connectors and workers to insert data. In the context of a production deployment, you may need to scale horizontally and launch multiple platforms behind a load balancer connected to the same databases (ElasticSearch, Redis, S3, RabbitMQ).
+The platform core is the central part of the OpenCTI technological stack. It allows users to access to the user interface but also provides the [GraphQL API](https://graphql.org) used by connectors and workers to insert data. In the context of a production deployment, you may need to scale horizontally and launch multiple cores behind a load balancer connected to the same databases (ElasticSearch, Redis, S3, RabbitMQ).
 
 ### Workers
 
-The workers are standalone Python processes consuming messages from the RabbitMQ broker in order to do asynchronous write queries. You can launch as many workers as you need to increase the write performances. At some point, the write performances will be limited by the throughput of the ElasticSearch database cluster.
+The workers are standalone Python processes consuming messages from the RabbitMQ broker in order to execute asynchronous write operations. You can launch as many workers as you need to increase the writes performance. At some point, the writes performance will be limited by the throughput of the ElasticSearch database cluster.
 
 !!! note "Number of workers"
 
-    If you need to increase performances, it is better to launch more platforms to handle worker queries. The recommended setup is to have at least one platform for 3 workers (ie. 9 workers distributed over 3 platforms).
+    If you need to increase performance, it is better to spawn more core instances to handle worker queries. The recommended setup is to have at least one core running for 3 workers (ie. 9 workers distributed over 3 cores).
 
 ### Connectors
 
