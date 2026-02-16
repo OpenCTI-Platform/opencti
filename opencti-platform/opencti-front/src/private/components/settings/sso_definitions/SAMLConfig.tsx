@@ -66,7 +66,6 @@ const SAMLConfig = () => {
           type="checkbox"
           name="wantAssertionsSigned"
           label={t_i18n('Want assertion signed')}
-
           containerstyle={{ marginLeft: 2 }}
         />
         <Field
@@ -75,7 +74,6 @@ const SAMLConfig = () => {
           type="checkbox"
           name="wantAuthnResponseSigned"
           label={t_i18n('Requires SAML responses to be signed')}
-
           containerstyle={{ marginLeft: 2, marginTop: 0 }}
         />
       </div>
