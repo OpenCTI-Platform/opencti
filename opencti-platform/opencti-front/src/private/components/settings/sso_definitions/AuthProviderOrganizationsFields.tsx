@@ -4,6 +4,7 @@ import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import { Add, Delete } from '@mui/icons-material';
+import SwitchField from '../../../../components/fields/SwitchField';
 import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
 import IconButton from '@common/button/IconButton';
@@ -16,7 +17,9 @@ interface MappingEntry {
 interface OrganizationsMappingValues {
   default_organizations: string[];
   organizations_expr: string[];
+  organizations_splitter: string;
   organizations_mapping: MappingEntry[];
+  auto_create_organizations: boolean;
 }
 
 const AuthProviderOrganizationsFields = () => {
@@ -24,6 +27,14 @@ const AuthProviderOrganizationsFields = () => {
 
   return (
     <>
+      <Field
+        component={SwitchField}
+        type="checkbox"
+        name="organizations_mapping.auto_create_organizations"
+        label={t_i18n('Auto create organizations')}
+        containerstyle={{ marginTop: 20 }}
+      />
+
       {/* Default organizations */}
       <FieldArray name="organizations_mapping.default_organizations">
         {({ push, remove, form }) => {
@@ -109,6 +120,16 @@ const AuthProviderOrganizationsFields = () => {
           );
         }}
       </FieldArray>
+
+      <Field
+        component={TextField}
+        variant="standard"
+        name="organizations_mapping.organizations_splitter"
+        label={t_i18n('Organizations splitter')}
+        placeholder=","
+        fullWidth
+        style={{ marginTop: 20 }}
+      />
 
       {/* Organizations mapping (provider -> platform) */}
       <FieldArray name="organizations_mapping.organizations_mapping">

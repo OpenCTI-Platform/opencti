@@ -21,6 +21,7 @@ import {
   ldapSecretFields,
   type ExtraConfEntry,
   resolveProviderIdentifier,
+  slugifyName,
 } from './authenticationProvider-types';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { createEntity, deleteElementById, patchAttribute } from '../../database/middleware';
@@ -145,6 +146,38 @@ export const getAllIdentifiers = async (context: AuthContext, user: AuthUser) =>
   return allProvider.map((provider) => resolveProviderIdentifier(provider));
 };
 
+/**
+ * Resolve the identifier that a provider would have from its base input,
+ * using the same logic as resolveProviderIdentifier (override ?? slugified name).
+ */
+const resolveIdentifierFromInput = (base: AuthenticationProviderBaseInput): string => {
+  return base.identifier_override ?? slugifyName(base.name);
+};
+
+/**
+ * Ensure the resolved identifier is not already used by another provider.
+ */
+const ensureUniqueIdentifier = async (
+  context: AuthContext,
+  user: AuthUser,
+  base: AuthenticationProviderBaseInput,
+  excludeId?: string,
+) => {
+  const newIdentifier = resolveIdentifierFromInput(base);
+  const allProviders = await findAllAuthenticationProvider(context, user);
+  const conflict = allProviders.find((p) => {
+    if (excludeId && p.internal_id === excludeId) return false;
+    return resolveProviderIdentifier(p) === newIdentifier;
+  });
+  if (conflict) {
+    throw FunctionalError('An authentication provider with the same identifier already exists', {
+      identifier: newIdentifier,
+      conflicting_provider_id: conflict.internal_id,
+      conflicting_provider_name: conflict.name,
+    });
+  }
+};
+
 // For migration purpose, we need to be able to create a provider enabled, but not start it immediately
 export const addAuthenticationProvider = async (
   context: AuthContext,
@@ -154,6 +187,9 @@ export const addAuthenticationProvider = async (
   skipRegisterParam?: boolean,
 ) => {
   checkAuthenticationEditionLocked(user);
+
+  // Ensure no other provider resolves to the same identifier
+  await ensureUniqueIdentifier(context, user, base);
 
   const skipRegister = skipRegisterParam ?? isAuthenticationForcedFromEnv();
 
@@ -208,6 +244,9 @@ export const editAuthenticationProvider = async (
       expectedType: type,
     });
   }
+
+  // Ensure the new identifier does not conflict with another provider (exclude self)
+  await ensureUniqueIdentifier(context, user, base, id);
 
   // Create the store object
   const input = { ...base, type, configuration: await graphQLToStoreConfiguration(type, configuration, existing) };

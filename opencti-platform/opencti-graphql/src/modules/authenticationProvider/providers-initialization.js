@@ -33,8 +33,135 @@ import { findById, initAdmin, userDelete } from '../../domain/user';
 import { isEmptyField, isNotEmptyField } from '../../database/utils';
 import { enrichWithRemoteCredentials } from '../../config/credentials';
 import { forgetPromise } from '../../utils/promiseUtils';
-import { getSettings } from '../../domain/settings';
+import { getSettings, updateLocalAuth, updateHeaderAuth, updateCertAuth } from '../../domain/settings';
 import { logAuthInfo } from './providers-logger';
+
+// ---------------------------------------------------------------------------
+// Singleton settings migration — ensure all singleton auth settings exist
+// Handles both: attribute absent (create with defaults) and old flat format (convert)
+// ---------------------------------------------------------------------------
+
+const parseMappingStrings = (mapping) => {
+  if (!mapping || !Array.isArray(mapping)) return [];
+  return mapping
+    .filter((s) => typeof s === 'string')
+    .map((s) => {
+      const parts = s.split(':');
+      return { provider: parts[0] || '', platform: parts[1] || '' };
+    })
+    .filter((m) => m.provider || m.platform);
+};
+
+/**
+ * Ensure local_auth exists.
+ * - If absent: create with default { enabled: true }
+ * - If present: no-op
+ * Returns true if the attribute was absent and had to be created.
+ */
+const migrateLocalAuthIfNeeded = async (context, user, settings) => {
+  if (settings.local_auth) return false;
+  logApp.info('[SINGLETON-MIGRATION] local_auth is absent, creating with defaults');
+  await updateLocalAuth(context, user, settings.id, { enabled: true });
+  logApp.info('[SINGLETON-MIGRATION] local_auth successfully ensured');
+  return true;
+};
+
+/**
+ * Ensure headers_auth is in the new nested format.
+ * - If absent: create with defaults
+ * - If old flat format (no user_info_mapping): convert flat fields to nested
+ * - If already nested: no-op
+ */
+const migrateHeadersAuthIfNeeded = async (context, user, settings) => {
+  const ha = settings.headers_auth;
+
+  // Already in new format
+  if (ha?.user_info_mapping) return;
+
+  if (!ha) {
+    logApp.info('[SINGLETON-MIGRATION] headers_auth is absent, creating with defaults');
+  } else {
+    logApp.info('[SINGLETON-MIGRATION] Converting headers_auth from flat to nested format');
+  }
+
+  const nested = {
+    enabled: ha?.enabled ?? false,
+    logout_uri: ha?.logout_uri ?? null,
+    headers_audit: ha?.headers_audit ?? [],
+    user_info_mapping: {
+      email_expr: ha?.header_email || 'x-email',
+      name_expr: ha?.header_name || 'x-name',
+      firstname_expr: ha?.header_firstname || null,
+      lastname_expr: ha?.header_lastname || null,
+    },
+    groups_mapping: {
+      default_groups: [],
+      groups_expr: ha?.groups_header ? [ha.groups_header] : [],
+      group_splitter: ha?.groups_splitter || null,
+      groups_mapping: parseMappingStrings(ha?.groups_mapping),
+      auto_create_groups: ha?.auto_create_group ?? false,
+      prevent_default_groups: ha?.prevent_default_groups ?? false,
+    },
+    organizations_mapping: {
+      default_organizations: ha?.organizations_default ?? [],
+      organizations_expr: ha?.organizations_header ? [ha.organizations_header] : [],
+      organizations_splitter: ha?.organizations_splitter || null,
+      organizations_mapping: parseMappingStrings(ha?.organizations_mapping),
+      auto_create_organizations: false,
+    },
+  };
+
+  await updateHeaderAuth(context, user, settings.id, nested);
+  logApp.info('[SINGLETON-MIGRATION] headers_auth successfully ensured in nested format');
+};
+
+/**
+ * Ensure cert_auth is in the new nested format.
+ * - If absent: create with defaults
+ * - If old flat format (no user_info_mapping): convert flat fields to nested
+ * - If already nested: no-op
+ */
+const migrateCertAuthIfNeeded = async (context, user, settings) => {
+  const ca = settings.cert_auth;
+
+  // Already in new format
+  if (ca?.user_info_mapping) return;
+
+  if (!ca) {
+    logApp.info('[SINGLETON-MIGRATION] cert_auth is absent, creating with defaults');
+  } else {
+    logApp.info('[SINGLETON-MIGRATION] Converting cert_auth from flat to nested format');
+  }
+
+  const nested = {
+    enabled: ca?.enabled ?? false,
+    button_label: ca?.button_label ?? null,
+    user_info_mapping: {
+      email_expr: ca?.email_expr || 'subject.emailAddress',
+      name_expr: ca?.name_expr || 'subject.CN',
+      firstname_expr: ca?.firstname_expr || null,
+      lastname_expr: ca?.lastname_expr || null,
+    },
+    groups_mapping: {
+      default_groups: [],
+      groups_expr: Array.isArray(ca?.groups_expr) ? ca.groups_expr : (ca?.groups_expr ? [ca.groups_expr] : ['subject.OU']),
+      group_splitter: null,
+      groups_mapping: parseMappingStrings(ca?.groups_mapping),
+      auto_create_groups: ca?.auto_create_group ?? ca?.auto_create_groups ?? false,
+      prevent_default_groups: ca?.prevent_default_groups ?? false,
+    },
+    organizations_mapping: {
+      default_organizations: ca?.organizations_default ?? [],
+      organizations_expr: Array.isArray(ca?.organizations_expr) ? ca.organizations_expr : (ca?.organizations_expr ? [ca.organizations_expr] : ['subject.O']),
+      organizations_splitter: null,
+      organizations_mapping: parseMappingStrings(ca?.organizations_mapping),
+      auto_create_organizations: false,
+    },
+  };
+
+  await updateCertAuth(context, user, settings.id, nested);
+  logApp.info('[SINGLETON-MIGRATION] cert_auth successfully ensured in nested format');
+};
 
 // (providerRef: string)
 export const unregisterAuthenticationProvider = (providerRef) => {
@@ -578,13 +705,11 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
             PROVIDERS.push({ name: providerName, type: AuthType.AUTH_SSO, strategy, provider: providerRef, logout_remote: mappedConfig.logout_remote });
           }).catch((reason) => logApp.error('[ENV-PROVIDER][AUTH0] Error when enrich with remote credentials', { cause: reason }));
         }
-        // Singleton authentications always migrated
+        // Singleton authentications: ensure they all exist and are in the correct nested format
         const settings = await getSettings(context);
-        if (!settings.local_auth || !settings.headers_auth || !settings.cert_auth) {
-          const data = { local: !settings.local_auth, headers: !settings.headers_auth, cert: !settings.cert_auth };
-          logApp.info('[ENV-PROVIDER] Singletons is about to be converted to database configuration.', data);
-          shouldRunMigration = true;
-        }
+        await migrateLocalAuthIfNeeded(context, user, settings);
+        await migrateHeadersAuthIfNeeded(context, user, settings);
+        await migrateCertAuthIfNeeded(context, user, settings);
       }
     }
   } else {
@@ -595,4 +720,3 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
   }
   logApp.info('[ENV-PROVIDER] End of reading environment');
 };
-export default passport;

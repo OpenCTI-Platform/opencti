@@ -1546,30 +1546,18 @@ type LocalAuthConfig {
 type CertAuthConfig {
   enabled: Boolean
   button_label: String
-  groups_mapping: [String]
-  auto_create_group: Boolean
-  prevent_default_groups: Boolean
-  organizations_default: [String]
-  organizations_mapping: [String]
+  user_info_mapping: UserInfoMapping!
+  groups_mapping: GroupsMapping!
+  organizations_mapping: OrganizationsMapping!
 }
 
 type HeadersAuthConfig {
   enabled: Boolean
-  header_email: String
-  header_name: String
-  header_firstname: String
-  header_lastname: String
   logout_uri: String
-  auto_create_group: Boolean
-  prevent_default_groups: Boolean
   headers_audit: [String]
-  groups_header: String
-  groups_splitter: String
-  groups_mapping: [String]
-  organizations_default: [String]
-  organizations_header: String
-  organizations_splitter: String
-  organizations_mapping: [String]
+  user_info_mapping: UserInfoMapping!
+  groups_mapping: GroupsMapping!
+  organizations_mapping: OrganizationsMapping!
 }
 
 input LocalAuthConfigInput {
@@ -1584,32 +1572,20 @@ input LocalAuthConfigInput {
 }
 
 input CertAuthConfigInput {
-  enabled: Boolean!
+  enabled: Boolean
   button_label: String
-  groups_mapping: [String]
-  auto_create_group: Boolean
-  prevent_default_groups: Boolean
-  organizations_default: [String]
-  organizations_mapping: [String]
+  user_info_mapping: UserInfoMappingInput!
+  groups_mapping: GroupsMappingInput!
+  organizations_mapping: OrganizationsMappingInput!
 }
 
 input HeadersAuthConfigInput {
-  enabled: Boolean!
-  header_email: String!
-  header_name: String
-  header_firstname: String
-  header_lastname: String
+  enabled: Boolean
   logout_uri: String
-  auto_create_group: Boolean
-  prevent_default_groups: Boolean
   headers_audit: [String]
-  groups_header: String
-  groups_splitter: String
-  groups_mapping: [String]
-  organizations_default: [String]
-  organizations_header: String
-  organizations_splitter: String
-  organizations_mapping: [String]
+  user_info_mapping: UserInfoMappingInput!
+  groups_mapping: GroupsMappingInput!
+  organizations_mapping: OrganizationsMappingInput!
 }
 
 type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSettings {

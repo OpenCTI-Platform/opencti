@@ -87,6 +87,7 @@ interface LdapFormValues {
   groups_mapping: {
     default_groups: string[];
     groups_expr: string[];
+    group_splitter: string;
     groups_mapping: MappingEntry[];
     auto_create_groups: boolean;
     prevent_default_groups: boolean;
@@ -94,7 +95,9 @@ interface LdapFormValues {
   organizations_mapping: {
     default_organizations: string[];
     organizations_expr: string[];
+    organizations_splitter: string;
     organizations_mapping: MappingEntry[];
+    auto_create_organizations: boolean;
   };
   extra_conf: ExtraConfEntry[];
 }
@@ -133,6 +136,7 @@ const defaultValues: LdapFormValues = {
   groups_mapping: {
     default_groups: [],
     groups_expr: ['cn'],
+    group_splitter: '',
     groups_mapping: [],
     auto_create_groups: false,
     prevent_default_groups: false,
@@ -140,7 +144,9 @@ const defaultValues: LdapFormValues = {
   organizations_mapping: {
     default_organizations: [],
     organizations_expr: ['organizations'],
+    organizations_splitter: '',
     organizations_mapping: [],
+    auto_create_organizations: false,
   },
   extra_conf: [],
 };
@@ -172,6 +178,7 @@ const buildInitialValues = (data: LdapProviderData): LdapFormValues => {
     groups_mapping: {
       default_groups: [...(conf.groups_mapping?.default_groups ?? [])],
       groups_expr: [...(conf.groups_mapping?.groups_expr ?? [])],
+      group_splitter: conf.groups_mapping?.group_splitter ?? '',
       groups_mapping: (conf.groups_mapping?.groups_mapping ?? []).map((m) => ({ provider: m.provider, platform: m.platform })),
       auto_create_groups: conf.groups_mapping?.auto_create_groups ?? false,
       prevent_default_groups: conf.groups_mapping?.prevent_default_groups ?? false,
@@ -179,7 +186,9 @@ const buildInitialValues = (data: LdapProviderData): LdapFormValues => {
     organizations_mapping: {
       default_organizations: [...(conf.organizations_mapping?.default_organizations ?? [])],
       organizations_expr: [...(conf.organizations_mapping?.organizations_expr ?? [])],
+      organizations_splitter: conf.organizations_mapping?.organizations_splitter ?? '',
       organizations_mapping: (conf.organizations_mapping?.organizations_mapping ?? []).map((m) => ({ provider: m.provider, platform: m.platform })),
+      auto_create_organizations: conf.organizations_mapping?.auto_create_organizations ?? false,
     },
     extra_conf: (conf.extra_conf ?? []).map((e) => ({ type: e.type, key: e.key, value: e.value })),
   };
@@ -252,6 +261,7 @@ const LdapProviderForm = ({
         groups_mapping: {
           default_groups: values.groups_mapping.default_groups,
           groups_expr: values.groups_mapping.groups_expr,
+          group_splitter: values.groups_mapping.group_splitter || null,
           groups_mapping: values.groups_mapping.groups_mapping,
           auto_create_groups: values.groups_mapping.auto_create_groups,
           prevent_default_groups: values.groups_mapping.prevent_default_groups,
@@ -259,8 +269,9 @@ const LdapProviderForm = ({
         organizations_mapping: {
           default_organizations: values.organizations_mapping.default_organizations,
           organizations_expr: values.organizations_mapping.organizations_expr,
+          organizations_splitter: values.organizations_mapping.organizations_splitter || null,
           organizations_mapping: values.organizations_mapping.organizations_mapping,
-          auto_create_organizations: false,
+          auto_create_organizations: values.organizations_mapping.auto_create_organizations,
         },
         extra_conf: values.extra_conf.map((e) => ({
           type: e.type as 'String' | 'Number' | 'Boolean',

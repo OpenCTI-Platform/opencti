@@ -30,6 +30,7 @@ import {
   type SamlConfigurationInput,
   type UserInfoMappingInput,
 } from '../../generated/graphql';
+import { slugifyName } from './authenticationProvider-types';
 
 // [/] default conf for LDAP user info mapping : email -> 'mail' & name -> 'givenName'
 // [/] default conf for LDAP group mapping : ['_groups/cn'] or just ['cn'] ?
@@ -332,10 +333,6 @@ export const convertOidcEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   const rawRedirectUris = ext.get<string | string[] | null>('redirect_uris', null);
   const redirectUri = Array.isArray(rawRedirectUris) ? (rawRedirectUris[0] ?? null) : rawRedirectUris;
   const callbackUrl = ext.get<string | null>('callback_url', null) ?? redirectUri;
-  // If callback_url is provided, it already contains the full routing path — no need for identifier_override
-  if (callbackUrl) {
-    base.identifier_override = null;
-  }
 
   // Scopes: merge default + groups_scope + organizations_scope
   const defaultScopes = ext.get<string[]>('default_scopes', ['openid', 'email', 'profile']);
@@ -460,10 +457,6 @@ export const convertSamlEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   const samlCallbackUrl = ext.get<string | null>('saml_callback_url', null);
   const callbackUrl = ext.get<string | null>('callback_url', null);
   const resolvedCallbackUrl = samlCallbackUrl || callbackUrl;
-  // If callback_url is provided, it already contains the full routing path — no need for identifier_override
-  if (resolvedCallbackUrl) {
-    base.identifier_override = null;
-  }
 
   // User info mapping — SAML uses attribute names directly from SAML assertions
   const userInfoMapping: UserInfoMappingInput = {
@@ -714,10 +707,6 @@ export const convertDeprecatedToOidc = (envKey: string, entry: EnvProviderEntry)
   const rawRedirectUris = ext.get<string | string[] | null>('redirect_uris', null);
   const redirectUri = Array.isArray(rawRedirectUris) ? (rawRedirectUris[0] ?? null) : rawRedirectUris;
   const callbackUrl = ext.get<string | null>('callback_url', null) ?? redirectUri;
-  // If callback_url is provided, it already contains the full routing path — no need for identifier_override
-  if (callbackUrl) {
-    base.identifier_override = null;
-  }
 
   // Issuer: Auth0 derives from config.domain, others use well-known URLs
   let issuer: string;
@@ -884,7 +873,8 @@ export const convertAllEnvProviders = (
 
     // Deduplicate converted providers by resolved identifier
     if (result.status === 'converted') {
-      const identifier = result.provider.base.identifier_override ?? envKey;
+      // Resolve identifier the same way as resolveProviderIdentifier: override, or slugified name
+      const identifier = result.provider.base.identifier_override ?? slugifyName(result.provider.base.name);
       const existingEnvKey = seenIdentifiers.get(identifier);
       if (existingEnvKey !== undefined) {
         results.push({

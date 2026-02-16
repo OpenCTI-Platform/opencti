@@ -39,6 +39,7 @@ export const ssoDefinitionEditionFragment = graphql`
                 groups_mapping {
                     default_groups
                     groups_expr
+                    group_splitter
                     groups_mapping {
                         provider
                         platform
@@ -49,6 +50,7 @@ export const ssoDefinitionEditionFragment = graphql`
                 organizations_mapping {
                     default_organizations
                     organizations_expr
+                    organizations_splitter
                     organizations_mapping {
                         provider
                         platform
@@ -89,6 +91,7 @@ export const ssoDefinitionEditionFragment = graphql`
                 groups_mapping {
                     default_groups
                     groups_expr
+                    group_splitter
                     groups_mapping {
                         provider
                         platform
@@ -99,6 +102,7 @@ export const ssoDefinitionEditionFragment = graphql`
                 organizations_mapping {
                     default_organizations
                     organizations_expr
+                    organizations_splitter
                     organizations_mapping {
                         provider
                         platform
@@ -133,6 +137,7 @@ export const ssoDefinitionEditionFragment = graphql`
                 groups_mapping {
                     default_groups
                     groups_expr
+                    group_splitter
                     groups_mapping {
                         provider
                         platform
@@ -143,6 +148,7 @@ export const ssoDefinitionEditionFragment = graphql`
                 organizations_mapping {
                     default_organizations
                     organizations_expr
+                    organizations_splitter
                     organizations_mapping {
                         provider
                         platform

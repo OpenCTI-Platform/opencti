@@ -160,7 +160,7 @@ export interface StixAuthenticationProvider extends StixObject {
   identifier_override?: string;
 }
 
-const slugifyName = (name: string): string => {
+export const slugifyName = (name: string): string => {
   return name
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')

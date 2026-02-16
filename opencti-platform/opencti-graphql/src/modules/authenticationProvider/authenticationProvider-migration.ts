@@ -13,6 +13,7 @@ import { addAuthenticationProvider, getAllIdentifiers } from './authenticationPr
 import { isUserHasCapability, SETTINGS_SET_ACCESSES } from '../../utils/access';
 import { AuthRequired } from '../../config/errors';
 import { isAuthenticationProviderMigrated } from './providers-configuration';
+import { slugifyName } from './authenticationProvider-types';
 
 // ---------------------------------------------------------------------------
 // Provider type mapping
@@ -85,7 +86,8 @@ export const parseAuthenticationProviderConfiguration = async (
 
     // result.status === 'converted'
     const { provider } = result as { status: 'converted'; provider: ConvertedProvider };
-    const identifier = provider.base.identifier_override ?? envKey;
+    // Resolve identifier the same way as resolveProviderIdentifier: override, or slugified name
+    const identifier = provider.base.identifier_override ?? slugifyName(provider.base.name);
 
     const providerType = PROVIDER_TYPE_MAP[provider.type];
     if (!providerType) {

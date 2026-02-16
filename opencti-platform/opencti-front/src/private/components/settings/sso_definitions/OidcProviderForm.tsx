@@ -16,7 +16,8 @@ import Divider from '@mui/material/Divider';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
-import { Add, Delete, ExpandMoreOutlined } from '@mui/icons-material';
+import Tooltip from '@mui/material/Tooltip';
+import { Add, Delete, ErrorOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import SwitchField from '../../../../components/fields/SwitchField';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/fields/SelectField';
@@ -90,6 +91,7 @@ interface OidcFormValues {
   groups_mapping: {
     default_groups: string[];
     groups_expr: string[];
+    group_splitter: string;
     groups_mapping: MappingEntry[];
     auto_create_groups: boolean;
     prevent_default_groups: boolean;
@@ -97,7 +99,9 @@ interface OidcFormValues {
   organizations_mapping: {
     default_organizations: string[];
     organizations_expr: string[];
+    organizations_splitter: string;
     organizations_mapping: MappingEntry[];
+    auto_create_organizations: boolean;
   };
   extra_conf: ExtraConfEntry[];
 }
@@ -144,6 +148,7 @@ const defaultValues: OidcFormValues = {
   groups_mapping: {
     default_groups: [],
     groups_expr: ['tokens.access_token.groups'],
+    group_splitter: '',
     groups_mapping: [],
     auto_create_groups: false,
     prevent_default_groups: false,
@@ -151,7 +156,9 @@ const defaultValues: OidcFormValues = {
   organizations_mapping: {
     default_organizations: [],
     organizations_expr: ['tokens.access_token.organizations'],
+    organizations_splitter: '',
     organizations_mapping: [],
+    auto_create_organizations: false,
   },
   extra_conf: [],
 };
@@ -180,6 +187,7 @@ const buildInitialValues = (data: OidcProviderData): OidcFormValues => {
     groups_mapping: {
       default_groups: [...(conf.groups_mapping?.default_groups ?? [])],
       groups_expr: [...(conf.groups_mapping?.groups_expr ?? [])],
+      group_splitter: conf.groups_mapping?.group_splitter ?? '',
       groups_mapping: (conf.groups_mapping?.groups_mapping ?? []).map((m) => ({ provider: m.provider, platform: m.platform })),
       auto_create_groups: conf.groups_mapping?.auto_create_groups ?? false,
       prevent_default_groups: conf.groups_mapping?.prevent_default_groups ?? false,
@@ -187,7 +195,9 @@ const buildInitialValues = (data: OidcProviderData): OidcFormValues => {
     organizations_mapping: {
       default_organizations: [...(conf.organizations_mapping?.default_organizations ?? [])],
       organizations_expr: [...(conf.organizations_mapping?.organizations_expr ?? [])],
+      organizations_splitter: conf.organizations_mapping?.organizations_splitter ?? '',
       organizations_mapping: (conf.organizations_mapping?.organizations_mapping ?? []).map((m) => ({ provider: m.provider, platform: m.platform })),
+      auto_create_organizations: conf.organizations_mapping?.auto_create_organizations ?? false,
     },
     extra_conf: (conf.extra_conf ?? []).map((e) => ({ type: e.type, key: e.key, value: e.value })),
   };
@@ -274,6 +284,7 @@ const OidcProviderForm = ({
         groups_mapping: {
           default_groups: values.groups_mapping.default_groups,
           groups_expr: values.groups_mapping.groups_expr,
+          group_splitter: values.groups_mapping.group_splitter || null,
           groups_mapping: values.groups_mapping.groups_mapping,
           auto_create_groups: values.groups_mapping.auto_create_groups,
           prevent_default_groups: values.groups_mapping.prevent_default_groups,
@@ -281,8 +292,9 @@ const OidcProviderForm = ({
         organizations_mapping: {
           default_organizations: values.organizations_mapping.default_organizations,
           organizations_expr: values.organizations_mapping.organizations_expr,
+          organizations_splitter: values.organizations_mapping.organizations_splitter || null,
           organizations_mapping: values.organizations_mapping.organizations_mapping,
-          auto_create_organizations: false,
+          auto_create_organizations: values.organizations_mapping.auto_create_organizations,
         },
         extra_conf: values.extra_conf.map((e) => ({
           type: e.type as 'String' | 'Number' | 'Boolean',
@@ -348,11 +360,7 @@ const OidcProviderForm = ({
 
         const handleToggleCallbackUrl = (enabled: boolean) => {
           setOverrideCallbackUrl(enabled);
-          if (enabled) {
-            // Callback URL already contains the identifier, so disable identifier override
-            setOverrideIdentifier(false);
-            setFieldValue('identifier_override', '');
-          } else {
+          if (!enabled) {
             setFieldValue('callback_url', '');
           }
         };
@@ -360,6 +368,12 @@ const OidcProviderForm = ({
         const displayedCallbackUrl = overrideCallbackUrl && values.callback_url
           ? values.callback_url
           : computedCallbackUrl;
+
+        // Detect mismatch between callback URL override and the effective identifier
+        const callbackUrlMismatch = overrideCallbackUrl
+          && values.callback_url
+          && effectiveIdentifier
+          && !values.callback_url.includes(`/auth/${effectiveIdentifier}/callback`);
 
         return (
           <Form>
@@ -411,16 +425,15 @@ const OidcProviderForm = ({
                   <Box sx={{
                     display: 'grid',
                     gridTemplateColumns: 'auto 1fr',
-                    gridAutoRows: 48,
                     alignItems: 'end',
                     columnGap: 2,
+                    rowGap: 2,
                     px: 2,
                     pt: 1.5,
                     pb: 3,
                   }}
                   >
                     <FormControlLabel
-                      disabled={overrideCallbackUrl}
                       control={(
                         <MuiSwitch
                           checked={overrideIdentifier}
@@ -432,17 +445,17 @@ const OidcProviderForm = ({
                       componentsProps={{ typography: { variant: 'body2' } }}
                       sx={{ m: 0 }}
                     />
-                    {overrideIdentifier ? (
-                      <Field
-                        component={TextField}
-                        variant="standard"
-                        name="identifier_override"
-                        label={t_i18n('Provider identifier')}
-                        fullWidth
-                        size="small"
-                        disabled={overrideCallbackUrl}
-                      />
-                    ) : <span />}
+                    <Field
+                      component={TextField}
+                      variant="standard"
+                      name="identifier_override"
+                      label={t_i18n('Provider identifier')}
+                      placeholder={slugifyIdentifier(values.name) || undefined}
+                      InputLabelProps={{ shrink: true }}
+                      fullWidth
+                      size="small"
+                      disabled={!overrideIdentifier}
+                    />
                     <FormControlLabel
                       control={(
                         <MuiSwitch
@@ -456,14 +469,23 @@ const OidcProviderForm = ({
                       sx={{ m: 0 }}
                     />
                     {overrideCallbackUrl ? (
-                      <Field
-                        component={TextField}
-                        variant="standard"
-                        name="callback_url"
-                        label={t_i18n('Callback URL override')}
-                        fullWidth
-                        size="small"
-                      />
+                      <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
+                        <Field
+                          component={TextField}
+                          variant="standard"
+                          name="callback_url"
+                          label={t_i18n('Callback URL override')}
+                          fullWidth
+                          size="small"
+                        />
+                        {callbackUrlMismatch && (
+                          <Tooltip
+                            title={t_i18n('The callback URL does not contain the expected identifier path. The authentication callback will not work unless the URL includes "/auth/{identifier}/callback" where {identifier} matches the provider identifier.')}
+                          >
+                            <ErrorOutlined color="error" sx={{ mb: 0.5, fontSize: 20 }} />
+                          </Tooltip>
+                        )}
+                      </Box>
                     ) : <span />}
                   </Box>
                 </Paper>

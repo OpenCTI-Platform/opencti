@@ -18,6 +18,7 @@ interface MappingEntry {
 interface GroupsMappingValues {
   default_groups: string[];
   groups_expr: string[];
+  group_splitter: string;
   groups_mapping: MappingEntry[];
   auto_create_groups: boolean;
   prevent_default_groups: boolean;
@@ -122,6 +123,16 @@ const AuthProviderGroupsFields = () => {
           );
         }}
       </FieldArray>
+
+      <Field
+        component={TextField}
+        variant="standard"
+        name="groups_mapping.group_splitter"
+        label={t_i18n('Groups splitter')}
+        placeholder=","
+        fullWidth
+        style={{ marginTop: 20 }}
+      />
 
       {/* Groups mapping (provider -> platform) */}
       <FieldArray name="groups_mapping.groups_mapping">

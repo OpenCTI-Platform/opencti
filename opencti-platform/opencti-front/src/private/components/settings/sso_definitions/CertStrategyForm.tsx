@@ -1,22 +1,24 @@
 import React, { useState } from 'react';
-import { Field, FieldArray, Form, Formik } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { useTheme } from '@mui/styles';
 import Box from '@mui/material/Box';
-import Paper from '@mui/material/Paper';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import Accordion from '@mui/material/Accordion';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import AccordionDetails from '@mui/material/AccordionDetails';
 import Typography from '@mui/material/Typography';
-import { Add, Delete } from '@mui/icons-material';
+import { ExpandMoreOutlined } from '@mui/icons-material';
 import SwitchField from '../../../../components/fields/SwitchField';
 import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
 import Button from '@common/button/Button';
-import IconButton from '@common/button/IconButton';
-import PreventDefaultGroupsRow from './PreventDefaultGroupsRow';
+import AuthProviderGroupsFields from './AuthProviderGroupsFields';
+import AuthProviderOrganizationsFields from './AuthProviderOrganizationsFields';
 import type { CertStrategyFormQuery } from './__generated__/CertStrategyFormQuery.graphql';
 import type { CertStrategyFormMutation } from './__generated__/CertStrategyFormMutation.graphql';
 
@@ -27,11 +29,33 @@ const certStrategyFormQuery = graphql`
       cert_auth {
         enabled
         button_label
-        groups_mapping
-        auto_create_group
-        prevent_default_groups
-        organizations_default
-        organizations_mapping
+        user_info_mapping {
+          email_expr
+          name_expr
+          firstname_expr
+          lastname_expr
+        }
+        groups_mapping {
+          default_groups
+          groups_expr
+          group_splitter
+          groups_mapping {
+            provider
+            platform
+          }
+          auto_create_groups
+          prevent_default_groups
+        }
+        organizations_mapping {
+          default_organizations
+          organizations_expr
+          organizations_splitter
+          organizations_mapping {
+            provider
+            platform
+          }
+          auto_create_organizations
+        }
       }
     }
   }
@@ -45,71 +69,78 @@ const certStrategyFormMutation = graphql`
         cert_auth {
           enabled
           button_label
-          groups_mapping
-          auto_create_group
-          prevent_default_groups
-          organizations_default
-          organizations_mapping
+          user_info_mapping {
+            email_expr
+            name_expr
+            firstname_expr
+            lastname_expr
+          }
+          groups_mapping {
+            default_groups
+            groups_expr
+            group_splitter
+            groups_mapping {
+              provider
+              platform
+            }
+            auto_create_groups
+            prevent_default_groups
+          }
+          organizations_mapping {
+            default_organizations
+            organizations_expr
+            organizations_splitter
+            organizations_mapping {
+              provider
+              platform
+            }
+            auto_create_organizations
+          }
         }
       }
     }
   }
 `;
 
-const validationSchema = Yup.object().shape({
-  enabled: Yup.boolean(),
-  button_label: Yup.string().nullable(),
-  auto_create_group: Yup.boolean(),
-  prevent_default_groups: Yup.boolean(),
-  groups_mapping: Yup.array().of(
-    Yup.object().shape({
-      source: Yup.string(),
-      target: Yup.string(),
-    }),
-  ),
-  organizations_default: Yup.array().of(Yup.string()),
-  organizations_mapping: Yup.array().of(
-    Yup.object().shape({
-      source: Yup.string(),
-      target: Yup.string(),
-    }),
-  ),
-});
-
 interface MappingEntry {
-  source: string;
-  target: string;
+  provider: string;
+  platform: string;
 }
 
 interface CertStrategyFormValues {
   enabled: boolean;
   button_label: string;
-  auto_create_group: boolean;
-  prevent_default_groups: boolean;
-  groups_mapping: MappingEntry[];
-  organizations_default: string[];
-  organizations_mapping: MappingEntry[];
+  user_info_mapping: {
+    email_expr: string;
+    name_expr: string;
+    firstname_expr: string;
+    lastname_expr: string;
+  };
+  groups_mapping: {
+    default_groups: string[];
+    groups_expr: string[];
+    group_splitter: string;
+    groups_mapping: MappingEntry[];
+    auto_create_groups: boolean;
+    prevent_default_groups: boolean;
+  };
+  organizations_mapping: {
+    default_organizations: string[];
+    organizations_expr: string[];
+    organizations_splitter: string;
+    organizations_mapping: MappingEntry[];
+    auto_create_organizations: boolean;
+  };
 }
 
-const parseMappingEntries = (mapping: ReadonlyArray<string | null | undefined> | null | undefined): MappingEntry[] => {
-  if (!mapping) return [];
-  return mapping
-    .filter((s): s is string => s !== null && s !== undefined)
-    .map((s) => {
-      const parts = s.split(':');
-      return { source: parts[0] || '', target: parts[1] || '' };
-    });
-};
-
-const formatMappingEntries = (entries: MappingEntry[]): string[] => {
-  return entries
-    .filter((m) => m.source.trim() !== '' || m.target.trim() !== '')
-    .map((m) => `${m.source}:${m.target}`);
-};
-
-const filterStringArray = (arr: string[]): string[] => {
-  return arr.filter((s) => s.trim() !== '');
-};
+const validationSchema = Yup.object().shape({
+  enabled: Yup.boolean(),
+  button_label: Yup.string().nullable(),
+  user_info_mapping: Yup.object().shape({
+    email_expr: Yup.string().required('This field is required'),
+    name_expr: Yup.string().required('This field is required'),
+  }),
+});
 
 interface CertStrategyFormProps {
   onCancel: () => void;
@@ -130,14 +161,34 @@ const CertStrategyForm = ({ onCancel }: CertStrategyFormProps) => {
     { successMessage: t_i18n('Authentication successfully updated') },
   );
 
+  const gm = certAuth?.groups_mapping;
+  const om = certAuth?.organizations_mapping;
+  const uim = certAuth?.user_info_mapping;
+
   const initialValues: CertStrategyFormValues = {
     enabled: certAuth?.enabled ?? false,
     button_label: certAuth?.button_label ?? '',
-    auto_create_group: certAuth?.auto_create_group ?? false,
-    prevent_default_groups: certAuth?.prevent_default_groups ?? false,
-    groups_mapping: parseMappingEntries(certAuth?.groups_mapping),
-    organizations_default: (certAuth?.organizations_default ?? []).filter((s): s is string => s !== null && s !== undefined),
-    organizations_mapping: parseMappingEntries(certAuth?.organizations_mapping),
+    user_info_mapping: {
+      email_expr: uim?.email_expr ?? 'subject.emailAddress',
+      name_expr: uim?.name_expr ?? 'subject.CN',
+      firstname_expr: uim?.firstname_expr ?? '',
+      lastname_expr: uim?.lastname_expr ?? '',
+    },
+    groups_mapping: {
+      default_groups: [...(gm?.default_groups ?? [])],
+      groups_expr: [...(gm?.groups_expr ?? ['subject.OU'])],
+      group_splitter: gm?.group_splitter ?? '',
+      groups_mapping: (gm?.groups_mapping ?? []).map((m) => ({ provider: m.provider, platform: m.platform })),
+      auto_create_groups: gm?.auto_create_groups ?? false,
+      prevent_default_groups: gm?.prevent_default_groups ?? false,
+    },
+    organizations_mapping: {
+      default_organizations: [...(om?.default_organizations ?? [])],
+      organizations_expr: [...(om?.organizations_expr ?? ['subject.O'])],
+      organizations_splitter: om?.organizations_splitter ?? '',
+      organizations_mapping: (om?.organizations_mapping ?? []).map((m) => ({ provider: m.provider, platform: m.platform })),
+      auto_create_organizations: om?.auto_create_organizations ?? false,
+    },
   };
 
   const handleSubmit = (
@@ -151,11 +202,31 @@ const CertStrategyForm = ({ onCancel }: CertStrategyFormProps) => {
         input: {
           enabled: values.enabled,
           button_label: values.button_label || null,
-          auto_create_group: values.auto_create_group,
-          prevent_default_groups: values.prevent_default_groups,
-          groups_mapping: formatMappingEntries(values.groups_mapping),
-          organizations_default: filterStringArray(values.organizations_default),
-          organizations_mapping: formatMappingEntries(values.organizations_mapping),
+          user_info_mapping: {
+            email_expr: values.user_info_mapping.email_expr,
+            name_expr: values.user_info_mapping.name_expr,
+            firstname_expr: values.user_info_mapping.firstname_expr || null,
+            lastname_expr: values.user_info_mapping.lastname_expr || null,
+          },
+          groups_mapping: {
+            default_groups: values.groups_mapping.default_groups.filter((s) => s.trim() !== ''),
+            groups_expr: values.groups_mapping.groups_expr.filter((s) => s.trim() !== ''),
+            group_splitter: values.groups_mapping.group_splitter || null,
+            groups_mapping: values.groups_mapping.groups_mapping
+              .filter((m) => m.provider.trim() !== '' || m.platform.trim() !== '')
+              .map((m) => ({ provider: m.provider, platform: m.platform })),
+            auto_create_groups: values.groups_mapping.auto_create_groups,
+            prevent_default_groups: values.groups_mapping.prevent_default_groups,
+          },
+          organizations_mapping: {
+            default_organizations: values.organizations_mapping.default_organizations.filter((s) => s.trim() !== ''),
+            organizations_expr: values.organizations_mapping.organizations_expr.filter((s) => s.trim() !== ''),
+            organizations_splitter: values.organizations_mapping.organizations_splitter || null,
+            organizations_mapping: values.organizations_mapping.organizations_mapping
+              .filter((m) => m.provider.trim() !== '' || m.platform.trim() !== '')
+              .map((m) => ({ provider: m.provider, platform: m.platform })),
+            auto_create_organizations: values.organizations_mapping.auto_create_organizations,
+          },
         },
       },
       onCompleted: () => {
@@ -199,186 +270,69 @@ const CertStrategyForm = ({ onCancel }: CertStrategyFormProps) => {
               <Field
                 component={TextField}
                 variant="standard"
-                name="button_label"
-                label={t_i18n('Button label')}
+                name="user_info_mapping.email_expr"
+                label={t_i18n('Email attribute')}
+                placeholder="subject.emailAddress"
+                required
                 fullWidth
                 style={{ marginTop: 20 }}
               />
+              <Field
+                component={TextField}
+                variant="standard"
+                name="user_info_mapping.name_expr"
+                label={t_i18n('Name attribute')}
+                placeholder="subject.CN"
+                required
+                fullWidth
+                style={{ marginTop: 20 }}
+              />
+              <Field
+                component={TextField}
+                variant="standard"
+                name="user_info_mapping.firstname_expr"
+                label={t_i18n('Firstname attribute')}
+                placeholder={t_i18n('Leave empty if not available')}
+                fullWidth
+                style={{ marginTop: 20 }}
+              />
+              <Field
+                component={TextField}
+                variant="standard"
+                name="user_info_mapping.lastname_expr"
+                label={t_i18n('Lastname attribute')}
+                placeholder={t_i18n('Leave empty if not available')}
+                fullWidth
+                style={{ marginTop: 20 }}
+              />
+
+              {/* --- Display & Metadata --- */}
+              <Accordion variant="outlined" style={{ marginTop: 20 }}>
+                <AccordionSummary expandIcon={<ExpandMoreOutlined />}>
+                  <Typography>{t_i18n('Display & Metadata')}</Typography>
+                </AccordionSummary>
+                <AccordionDetails sx={{ display: 'block', pb: 2 }}>
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="button_label"
+                    label={t_i18n('Button label')}
+                    fullWidth
+                    style={{ marginTop: 10 }}
+                  />
+                </AccordionDetails>
+              </Accordion>
             </>
           )}
 
           {/* Tab 1: Groups */}
           {currentTab === 1 && (
-            <>
-              <PreventDefaultGroupsRow fieldName="prevent_default_groups" />
-              <Field
-                component={SwitchField}
-                type="checkbox"
-                name="auto_create_group"
-                label={t_i18n('Auto create group')}
-              />
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-                {t_i18n('Groups are resolved from the OU (Organizational Unit) field of the client certificate.')}
-              </Typography>
-              {/* Groups mapping - OU:platformGroup pairs */}
-              <FieldArray name="groups_mapping">
-                {({ push, remove, form }) => {
-                  const entries = (form.values as CertStrategyFormValues).groups_mapping;
-                  return (
-                    <Paper variant="outlined" sx={{ mt: 2, borderRadius: 1, overflow: 'hidden' }}>
-                      <Box sx={{ px: 2, py: 1, backgroundColor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Typography variant="h4" sx={{ m: 0 }}>{t_i18n('Groups mapping')}</Typography>
-                        <IconButton
-                          color="primary"
-                          aria-label={t_i18n('Add')}
-                          size="default"
-                          onClick={() => push({ source: '', target: '' })}
-                        >
-                          <Add fontSize="small" color="primary" />
-                        </IconButton>
-                      </Box>
-                      <Box sx={{ px: 2, pb: entries.length > 0 ? 1 : 0 }}>
-                        {entries.map((_: MappingEntry, index: number) => (
-                          <div
-                            key={index}
-                            style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}
-                          >
-                            <Field
-                              component={TextField}
-                              variant="standard"
-                              name={`groups_mapping[${index}].source`}
-                              label={t_i18n('Certificate OU value')}
-                              fullWidth
-                            />
-                            <Field
-                              component={TextField}
-                              variant="standard"
-                              name={`groups_mapping[${index}].target`}
-                              label={t_i18n('OpenCTI group name')}
-                              fullWidth
-                            />
-                            <IconButton
-                              color="primary"
-                              aria-label={t_i18n('Delete')}
-                              onClick={() => remove(index)}
-                              style={{ marginTop: 10 }}
-                            >
-                              <Delete fontSize="small" />
-                            </IconButton>
-                          </div>
-                        ))}
-                      </Box>
-                    </Paper>
-                  );
-                }}
-              </FieldArray>
-            </>
+            <AuthProviderGroupsFields />
           )}
 
           {/* Tab 2: Organizations */}
           {currentTab === 2 && (
-            <>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-                {t_i18n('Organizations are resolved from the O (Organization) field of the client certificate.')}
-              </Typography>
-              {/* Organizations mapping - O:platformOrg pairs */}
-              <FieldArray name="organizations_mapping">
-                {({ push, remove, form }) => {
-                  const entries = (form.values as CertStrategyFormValues).organizations_mapping;
-                  return (
-                    <Paper variant="outlined" sx={{ mt: 2, borderRadius: 1, overflow: 'hidden' }}>
-                      <Box sx={{ px: 2, py: 1, backgroundColor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Typography variant="h4" sx={{ m: 0 }}>{t_i18n('Organizations mapping')}</Typography>
-                        <IconButton
-                          color="primary"
-                          aria-label={t_i18n('Add')}
-                          size="default"
-                          onClick={() => push({ source: '', target: '' })}
-                        >
-                          <Add fontSize="small" color="primary" />
-                        </IconButton>
-                      </Box>
-                      <Box sx={{ px: 2, pb: entries.length > 0 ? 1 : 0 }}>
-                        {entries.map((_: MappingEntry, index: number) => (
-                          <div
-                            key={index}
-                            style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}
-                          >
-                            <Field
-                              component={TextField}
-                              variant="standard"
-                              name={`organizations_mapping[${index}].source`}
-                              label={t_i18n('Certificate O value')}
-                              fullWidth
-                            />
-                            <Field
-                              component={TextField}
-                              variant="standard"
-                              name={`organizations_mapping[${index}].target`}
-                              label={t_i18n('OpenCTI organization name')}
-                              fullWidth
-                            />
-                            <IconButton
-                              color="primary"
-                              aria-label={t_i18n('Delete')}
-                              onClick={() => remove(index)}
-                              style={{ marginTop: 10 }}
-                            >
-                              <Delete fontSize="small" />
-                            </IconButton>
-                          </div>
-                        ))}
-                      </Box>
-                    </Paper>
-                  );
-                }}
-              </FieldArray>
-              {/* Organizations default - multi-value list */}
-              <FieldArray name="organizations_default">
-                {({ push, remove, form }) => {
-                  const entries = (form.values as CertStrategyFormValues).organizations_default;
-                  return (
-                    <Paper variant="outlined" sx={{ mt: 2, borderRadius: 1, overflow: 'hidden' }}>
-                      <Box sx={{ px: 2, py: 1, backgroundColor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Typography variant="h4" sx={{ m: 0 }}>{t_i18n('Default organizations')}</Typography>
-                        <IconButton
-                          color="primary"
-                          aria-label={t_i18n('Add')}
-                          size="default"
-                          onClick={() => push('')}
-                        >
-                          <Add fontSize="small" color="primary" />
-                        </IconButton>
-                      </Box>
-                      <Box sx={{ px: 2, pb: entries.length > 0 ? 1 : 0 }}>
-                        {entries.map((_: string, index: number) => (
-                          <div
-                            key={index}
-                            style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}
-                          >
-                            <Field
-                              component={TextField}
-                              variant="standard"
-                              name={`organizations_default[${index}]`}
-                              label={t_i18n('Organization name')}
-                              fullWidth
-                            />
-                            <IconButton
-                              color="primary"
-                              aria-label={t_i18n('Delete')}
-                              onClick={() => remove(index)}
-                              style={{ marginTop: 10 }}
-                            >
-                              <Delete fontSize="small" />
-                            </IconButton>
-                          </div>
-                        ))}
-                      </Box>
-                    </Paper>
-                  );
-                }}
-              </FieldArray>
-            </>
+            <AuthProviderOrganizationsFields />
           )}
 
           {/* Shared Cancel / Update buttons */}

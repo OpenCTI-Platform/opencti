@@ -16,7 +16,8 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
-import PreventDefaultGroupsRow from './PreventDefaultGroupsRow';
+import AuthProviderGroupsFields from './AuthProviderGroupsFields';
+import AuthProviderOrganizationsFields from './AuthProviderOrganizationsFields';
 import type { HeaderStrategyFormQuery } from './__generated__/HeaderStrategyFormQuery.graphql';
 import type { HeaderStrategyFormMutation } from './__generated__/HeaderStrategyFormMutation.graphql';
 
@@ -26,21 +27,35 @@ const headerStrategyFormQuery = graphql`
       id
       headers_auth {
         enabled
-        header_email
-        header_name
-        header_firstname
-        header_lastname
         logout_uri
-        auto_create_group
-        prevent_default_groups
         headers_audit
-        groups_header
-        groups_splitter
-        groups_mapping
-        organizations_default
-        organizations_header
-        organizations_splitter
-        organizations_mapping
+        user_info_mapping {
+          email_expr
+          name_expr
+          firstname_expr
+          lastname_expr
+        }
+        groups_mapping {
+          default_groups
+          groups_expr
+          group_splitter
+          groups_mapping {
+            provider
+            platform
+          }
+          auto_create_groups
+          prevent_default_groups
+        }
+        organizations_mapping {
+          default_organizations
+          organizations_expr
+          organizations_splitter
+          organizations_mapping {
+            provider
+            platform
+          }
+          auto_create_organizations
+        }
       }
     }
   }
@@ -53,99 +68,81 @@ const headerStrategyFormMutation = graphql`
         id
         headers_auth {
           enabled
-          header_email
-          header_name
-          header_firstname
-          header_lastname
           logout_uri
-          auto_create_group
-          prevent_default_groups
           headers_audit
-          groups_header
-          groups_splitter
-          groups_mapping
-          organizations_default
-          organizations_header
-          organizations_splitter
-          organizations_mapping
+          user_info_mapping {
+            email_expr
+            name_expr
+            firstname_expr
+            lastname_expr
+          }
+          groups_mapping {
+            default_groups
+            groups_expr
+            group_splitter
+            groups_mapping {
+              provider
+              platform
+            }
+            auto_create_groups
+            prevent_default_groups
+          }
+          organizations_mapping {
+            default_organizations
+            organizations_expr
+            organizations_splitter
+            organizations_mapping {
+              provider
+              platform
+            }
+            auto_create_organizations
+          }
         }
       }
     }
   }
 `;
 
-const validationSchema = Yup.object().shape({
-  enabled: Yup.boolean(),
-  header_email: Yup.string().required('This field is required'),
-  header_name: Yup.string().nullable(),
-  header_firstname: Yup.string().nullable(),
-  header_lastname: Yup.string().nullable(),
-  logout_uri: Yup.string().nullable(),
-  headers_audit: Yup.array().of(Yup.string()),
-  auto_create_group: Yup.boolean(),
-  prevent_default_groups: Yup.boolean(),
-  groups_header: Yup.string().nullable(),
-  groups_splitter: Yup.string().nullable(),
-  groups_mapping: Yup.array().of(
-    Yup.object().shape({
-      source: Yup.string(),
-      target: Yup.string(),
-    }),
-  ),
-  organizations_default: Yup.array().of(Yup.string()),
-  organizations_header: Yup.string().nullable(),
-  organizations_splitter: Yup.string().nullable(),
-  organizations_mapping: Yup.array().of(
-    Yup.object().shape({
-      source: Yup.string(),
-      target: Yup.string(),
-    }),
-  ),
-});
-
 interface MappingEntry {
-  source: string;
-  target: string;
+  provider: string;
+  platform: string;
 }
 
 interface HeaderStrategyFormValues {
   enabled: boolean;
-  header_email: string;
-  header_name: string;
-  header_firstname: string;
-  header_lastname: string;
   logout_uri: string;
   headers_audit: string[];
-  auto_create_group: boolean;
-  prevent_default_groups: boolean;
-  groups_header: string;
-  groups_splitter: string;
-  groups_mapping: MappingEntry[];
-  organizations_default: string[];
-  organizations_header: string;
-  organizations_splitter: string;
-  organizations_mapping: MappingEntry[];
+  user_info_mapping: {
+    email_expr: string;
+    name_expr: string;
+    firstname_expr: string;
+    lastname_expr: string;
+  };
+  groups_mapping: {
+    default_groups: string[];
+    groups_expr: string[];
+    group_splitter: string;
+    groups_mapping: MappingEntry[];
+    auto_create_groups: boolean;
+    prevent_default_groups: boolean;
+  };
+  organizations_mapping: {
+    default_organizations: string[];
+    organizations_expr: string[];
+    organizations_splitter: string;
+    organizations_mapping: MappingEntry[];
+    auto_create_organizations: boolean;
+  };
 }
-// ReadonlyArray<string | null | undefined> | null | undefined
-const parseMappingEntries = (mapping: ReadonlyArray<string | null | undefined> | null | undefined): MappingEntry[] => {
-  if (!mapping) return [];
-  return mapping
-    .filter((s): s is string => s !== null && s !== undefined)
-    .map((s) => {
-      const parts = s.split(':');
-      return { source: parts[0] || '', target: parts[1] || '' };
-    });
-};
 
-const formatMappingEntries = (entries: MappingEntry[]): string[] => {
-  return entries
-    .filter((m) => m.source.trim() !== '' || m.target.trim() !== '')
-    .map((m) => `${m.source}:${m.target}`);
-};
-
-const filterStringArray = (arr: string[]): string[] => {
-  return arr.filter((s) => s.trim() !== '');
-};
+const validationSchema = Yup.object().shape({
+  enabled: Yup.boolean(),
+  logout_uri: Yup.string().nullable(),
+  user_info_mapping: Yup.object().shape({
+    email_expr: Yup.string().required('This field is required'),
+    name_expr: Yup.string().required('This field is required'),
+  }),
+});
 
 interface HeaderStrategyFormProps {
   onCancel: () => void;
@@ -166,24 +163,38 @@ const HeaderStrategyForm = ({ onCancel }: HeaderStrategyFormProps) => {
     { successMessage: t_i18n('Authentication successfully updated') },
   );
 
+  const gm = headerAuth?.groups_mapping;
+  const om = headerAuth?.organizations_mapping;
+  const uim = headerAuth?.user_info_mapping;
+
   const initialValues: HeaderStrategyFormValues = {
     enabled: headerAuth?.enabled ?? false,
-    header_email: headerAuth?.header_email ?? '',
-    header_name: headerAuth?.header_name ?? '',
-    header_firstname: headerAuth?.header_firstname ?? '',
-    header_lastname: headerAuth?.header_lastname ?? '',
     logout_uri: headerAuth?.logout_uri ?? '',
     headers_audit: (headerAuth?.headers_audit ?? []).filter((s): s is string => s !== null && s !== undefined),
-    auto_create_group: headerAuth?.auto_create_group ?? false,
-    prevent_default_groups: headerAuth?.prevent_default_groups ?? false,
-    groups_header: headerAuth?.groups_header ?? '',
-    groups_splitter: headerAuth?.groups_splitter ?? '',
-    groups_mapping: parseMappingEntries(headerAuth?.groups_mapping),
-    organizations_default: (headerAuth?.organizations_default ?? []).filter((s): s is string => s !== null && s !== undefined),
-    organizations_header: headerAuth?.organizations_header ?? '',
-    organizations_splitter: headerAuth?.organizations_splitter ?? '',
-    organizations_mapping: parseMappingEntries(headerAuth?.organizations_mapping),
+    user_info_mapping: {
+      email_expr: uim?.email_expr ?? '',
+      name_expr: uim?.name_expr ?? '',
+      firstname_expr: uim?.firstname_expr ?? '',
+      lastname_expr: uim?.lastname_expr ?? '',
+    },
+    groups_mapping: {
+      default_groups: [...(gm?.default_groups ?? [])],
+      groups_expr: [...(gm?.groups_expr ?? [])],
+      group_splitter: gm?.group_splitter ?? '',
+      groups_mapping: (gm?.groups_mapping ?? []).map((m) => ({ provider: m.provider, platform: m.platform })),
+      auto_create_groups: gm?.auto_create_groups ?? false,
+      prevent_default_groups: gm?.prevent_default_groups ?? false,
+    },
+    organizations_mapping: {
+      default_organizations: [...(om?.default_organizations ?? [])],
+      organizations_expr: [...(om?.organizations_expr ?? [])],
+      organizations_splitter: om?.organizations_splitter ?? '',
+      organizations_mapping: (om?.organizations_mapping ?? []).map((m) => ({ provider: m.provider, platform: m.platform })),
+      auto_create_organizations: om?.auto_create_organizations ?? false,
+    },
   };
+
+  const filterStringArray = (arr: string[]): string[] => arr.filter((s) => s.trim() !== '');
 
   const handleSubmit = (
     values: HeaderStrategyFormValues,
@@ -195,21 +206,33 @@ const HeaderStrategyForm = ({ onCancel }: HeaderStrategyFormProps) => {
         id: settings.id,
         input: {
           enabled: values.enabled,
-          header_email: values.header_email,
-          header_name: values.header_name || null,
-          header_firstname: values.header_firstname || null,
-          header_lastname: values.header_lastname || null,
           logout_uri: values.logout_uri || null,
           headers_audit: filterStringArray(values.headers_audit),
-          auto_create_group: values.auto_create_group,
-          prevent_default_groups: values.prevent_default_groups,
-          groups_header: values.groups_header || null,
-          groups_splitter: values.groups_splitter || null,
-          groups_mapping: formatMappingEntries(values.groups_mapping),
-          organizations_default: filterStringArray(values.organizations_default),
-          organizations_header: values.organizations_header || null,
-          organizations_splitter: values.organizations_splitter || null,
-          organizations_mapping: formatMappingEntries(values.organizations_mapping),
+          user_info_mapping: {
+            email_expr: values.user_info_mapping.email_expr,
+            name_expr: values.user_info_mapping.name_expr,
+            firstname_expr: values.user_info_mapping.firstname_expr || null,
+            lastname_expr: values.user_info_mapping.lastname_expr || null,
+          },
+          groups_mapping: {
+            default_groups: filterStringArray(values.groups_mapping.default_groups),
+            groups_expr: filterStringArray(values.groups_mapping.groups_expr),
+            group_splitter: values.groups_mapping.group_splitter || null,
+            groups_mapping: values.groups_mapping.groups_mapping
+              .filter((m) => m.provider.trim() !== '' || m.platform.trim() !== '')
+              .map((m) => ({ provider: m.provider, platform: m.platform })),
+            auto_create_groups: values.groups_mapping.auto_create_groups,
+            prevent_default_groups: values.groups_mapping.prevent_default_groups,
+          },
+          organizations_mapping: {
+            default_organizations: filterStringArray(values.organizations_mapping.default_organizations),
+            organizations_expr: filterStringArray(values.organizations_mapping.organizations_expr),
+            organizations_splitter: values.organizations_mapping.organizations_splitter || null,
+            organizations_mapping: values.organizations_mapping.organizations_mapping
+              .filter((m) => m.provider.trim() !== '' || m.platform.trim() !== '')
+              .map((m) => ({ provider: m.provider, platform: m.platform })),
+            auto_create_organizations: values.organizations_mapping.auto_create_organizations,
+          },
         },
       },
       onCompleted: () => {
@@ -240,7 +263,7 @@ const HeaderStrategyForm = ({ onCancel }: HeaderStrategyFormProps) => {
             </Tabs>
           </Box>
 
-          {/* Tab 1: Configuration */}
+          {/* Tab 0: Configuration */}
           {currentTab === 0 && (
             <>
               <Field
@@ -253,23 +276,25 @@ const HeaderStrategyForm = ({ onCancel }: HeaderStrategyFormProps) => {
               <Field
                 component={TextField}
                 variant="standard"
-                name="header_email"
+                name="user_info_mapping.email_expr"
                 label={t_i18n('Email header name')}
+                required
                 fullWidth
                 style={{ marginTop: 20 }}
               />
               <Field
                 component={TextField}
                 variant="standard"
-                name="header_name"
+                name="user_info_mapping.name_expr"
                 label={t_i18n('Name header name')}
+                required
                 fullWidth
                 style={{ marginTop: 20 }}
               />
               <Field
                 component={TextField}
                 variant="standard"
-                name="header_firstname"
+                name="user_info_mapping.firstname_expr"
                 label={t_i18n('Firstname header name')}
                 fullWidth
                 style={{ marginTop: 20 }}
@@ -277,7 +302,7 @@ const HeaderStrategyForm = ({ onCancel }: HeaderStrategyFormProps) => {
               <Field
                 component={TextField}
                 variant="standard"
-                name="header_lastname"
+                name="user_info_mapping.lastname_expr"
                 label={t_i18n('Lastname header name')}
                 fullWidth
                 style={{ marginTop: 20 }}
@@ -338,206 +363,14 @@ const HeaderStrategyForm = ({ onCancel }: HeaderStrategyFormProps) => {
             </>
           )}
 
-          {/* Tab 2: Groups */}
+          {/* Tab 1: Groups */}
           {currentTab === 1 && (
-            <>
-              <PreventDefaultGroupsRow fieldName="prevent_default_groups" />
-              <Field
-                component={SwitchField}
-                type="checkbox"
-                name="auto_create_group"
-                label={t_i18n('Auto create group')}
-              />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="groups_header"
-                label={t_i18n('Groups header name')}
-                fullWidth
-                style={{ marginTop: 20 }}
-              />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="groups_splitter"
-                label={t_i18n('Groups splitter')}
-                placeholder=","
-                fullWidth
-                style={{ marginTop: 20 }}
-              />
-              {/* Groups mapping - source:target pairs */}
-              <FieldArray name="groups_mapping">
-                {({ push, remove, form }) => {
-                  const entries = (form.values as HeaderStrategyFormValues).groups_mapping;
-                  return (
-                    <Paper variant="outlined" sx={{ mt: 2, borderRadius: 1, overflow: 'hidden' }}>
-                      <Box sx={{ px: 2, py: 1, backgroundColor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Typography variant="h4" sx={{ m: 0 }}>{t_i18n('Groups mapping')}</Typography>
-                        <IconButton
-                          color="primary"
-                          aria-label={t_i18n('Add')}
-                          size="default"
-                          onClick={() => push({ source: '', target: '' })}
-                        >
-                          <Add fontSize="small" color="primary" />
-                        </IconButton>
-                      </Box>
-                      <Box sx={{ px: 2, pb: entries.length > 0 ? 1 : 0 }}>
-                        {entries.map((_: MappingEntry, index: number) => (
-                          <div
-                            key={index}
-                            style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}
-                          >
-                            <Field
-                              component={TextField}
-                              variant="standard"
-                              name={`groups_mapping[${index}].source`}
-                              label={t_i18n('Remote group name')}
-                              fullWidth
-                            />
-                            <Field
-                              component={TextField}
-                              variant="standard"
-                              name={`groups_mapping[${index}].target`}
-                              label={t_i18n('OpenCTI group name')}
-                              fullWidth
-                            />
-                            <IconButton
-                              color="primary"
-                              aria-label={t_i18n('Delete')}
-                              onClick={() => remove(index)}
-                              style={{ marginTop: 10 }}
-                            >
-                              <Delete fontSize="small" />
-                            </IconButton>
-                          </div>
-                        ))}
-                      </Box>
-                    </Paper>
-                  );
-                }}
-              </FieldArray>
-            </>
+            <AuthProviderGroupsFields />
           )}
 
-          {/* Tab 3: Organizations */}
+          {/* Tab 2: Organizations */}
           {currentTab === 2 && (
-            <>
-              <Field
-                component={TextField}
-                variant="standard"
-                name="organizations_header"
-                label={t_i18n('Organizations header name')}
-                fullWidth
-                style={{ marginTop: 20 }}
-              />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="organizations_splitter"
-                label={t_i18n('Organizations splitter')}
-                placeholder=","
-                fullWidth
-                style={{ marginTop: 20 }}
-              />
-              {/* Organizations mapping - source:target pairs */}
-              <FieldArray name="organizations_mapping">
-                {({ push, remove, form }) => {
-                  const entries = (form.values as HeaderStrategyFormValues).organizations_mapping;
-                  return (
-                    <Paper variant="outlined" sx={{ mt: 2, borderRadius: 1, overflow: 'hidden' }}>
-                      <Box sx={{ px: 2, py: 1, backgroundColor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Typography variant="h4" sx={{ m: 0 }}>{t_i18n('Organizations mapping')}</Typography>
-                        <IconButton
-                          color="primary"
-                          aria-label={t_i18n('Add')}
-                          size="default"
-                          onClick={() => push({ source: '', target: '' })}
-                        >
-                          <Add fontSize="small" color="primary" />
-                        </IconButton>
-                      </Box>
-                      <Box sx={{ px: 2, pb: entries.length > 0 ? 1 : 0 }}>
-                        {entries.map((_: MappingEntry, index: number) => (
-                          <div
-                            key={index}
-                            style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}
-                          >
-                            <Field
-                              component={TextField}
-                              variant="standard"
-                              name={`organizations_mapping[${index}].source`}
-                              label={t_i18n('Remote organization name')}
-                              fullWidth
-                            />
-                            <Field
-                              component={TextField}
-                              variant="standard"
-                              name={`organizations_mapping[${index}].target`}
-                              label={t_i18n('OpenCTI organization name')}
-                              fullWidth
-                            />
-                            <IconButton
-                              color="primary"
-                              aria-label={t_i18n('Delete')}
-                              onClick={() => remove(index)}
-                              style={{ marginTop: 10 }}
-                            >
-                              <Delete fontSize="small" />
-                            </IconButton>
-                          </div>
-                        ))}
-                      </Box>
-                    </Paper>
-                  );
-                }}
-              </FieldArray>
-              {/* Organizations default - multi-value list */}
-              <FieldArray name="organizations_default">
-                {({ push, remove, form }) => {
-                  const entries = (form.values as HeaderStrategyFormValues).organizations_default;
-                  return (
-                    <Paper variant="outlined" sx={{ mt: 2, borderRadius: 1, overflow: 'hidden' }}>
-                      <Box sx={{ px: 2, py: 1, backgroundColor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Typography variant="h4" sx={{ m: 0 }}>{t_i18n('Default organizations')}</Typography>
-                        <IconButton
-                          color="primary"
-                          aria-label={t_i18n('Add')}
-                          size="default"
-                          onClick={() => push('')}
-                        >
-                          <Add fontSize="small" color="primary" />
-                        </IconButton>
-                      </Box>
-                      <Box sx={{ px: 2, pb: entries.length > 0 ? 1 : 0 }}>
-                        {entries.map((_: string, index: number) => (
-                          <div
-                            key={index}
-                            style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}
-                          >
-                            <Field
-                              component={TextField}
-                              variant="standard"
-                              name={`organizations_default[${index}]`}
-                              label={t_i18n('Organization name')}
-                              fullWidth
-                            />
-                            <IconButton
-                              color="primary"
-                              aria-label={t_i18n('Delete')}
-                              onClick={() => remove(index)}
-                              style={{ marginTop: 10 }}
-                            >
-                              <Delete fontSize="small" />
-                            </IconButton>
-                          </div>
-                        ))}
-                      </Box>
-                    </Paper>
-                  );
-                }}
-              </FieldArray>
-            </>
+            <AuthProviderOrganizationsFields />
           )}
 
           {/* Shared Cancel / Update buttons */}

@@ -442,9 +442,7 @@ export const initializeData = async (context, withMarkings = true) => {
   if (isNotEmptyField(platformId)) {
     logApp.warn(`[INIT] Platform identifier forced to [${platformId}]`);
   }
-
   const darkTheme = await initDefaultTheme(context);
-
   await addSettings(context, SYSTEM_USER, {
     internal_id: platformId,
     platform_title: 'OpenCTI - Cyber Threat Intelligence Platform',
@@ -453,10 +451,55 @@ export const initializeData = async (context, withMarkings = true) => {
     platform_language: 'auto',
     view_all_users: false,
     local_auth: { enabled: true },
-    cert_auth: { enabled: false },
-    headers_auth: { enabled: false },
+    cert_auth: {
+      enabled: false,
+      user_info_mapping: {
+        email_expr: 'subject.emailAddress',
+        name_expr: 'subject.CN',
+        firstname_expr: null,
+        lastname_expr: null,
+      },
+      groups_mapping: {
+        default_groups: [],
+        groups_expr: ['subject.OU'],
+        groups_mapping: [],
+        auto_create_groups: false,
+        prevent_default_groups: false,
+      },
+      organizations_mapping: {
+        default_organizations: [],
+        organizations_expr: ['subject.O'],
+        organizations_mapping: [],
+        auto_create_organizations: false,
+      },
+    },
+    headers_auth: {
+      enabled: false,
+      logout_uri: null,
+      headers_audit: [],
+      user_info_mapping: {
+        email_expr: 'x-email',
+        name_expr: 'x-name',
+        firstname_expr: null,
+        lastname_expr: null,
+      },
+      groups_mapping: {
+        default_groups: [],
+        groups_expr: [],
+        group_splitter: null,
+        groups_mapping: [],
+        auto_create_groups: false,
+        prevent_default_groups: false,
+      },
+      organizations_mapping: {
+        default_organizations: [],
+        organizations_expr: [],
+        organizations_splitter: null,
+        organizations_mapping: [],
+        auto_create_organizations: false,
+      },
+    },
   });
-
   await initCreateEntitySettings(context, SYSTEM_USER);
   await initManagerConfigurations(context, SYSTEM_USER);
   await initDecayRules(context, SYSTEM_USER);
