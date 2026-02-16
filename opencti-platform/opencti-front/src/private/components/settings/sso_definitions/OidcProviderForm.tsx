@@ -32,6 +32,7 @@ import AuthProviderOrganizationsFields from './AuthProviderOrganizationsFields';
 import type { OidcProviderFormCreateMutation } from './__generated__/OidcProviderFormCreateMutation.graphql';
 import type { OidcProviderFormEditMutation } from './__generated__/OidcProviderFormEditMutation.graphql';
 import type { SSODefinitionEditionFragment$data } from './__generated__/SSODefinitionEditionFragment.graphql';
+import { PaginationOptions } from '../../../../components/list_lines';
 
 // --- GraphQL Mutations ---
 
@@ -101,7 +102,7 @@ interface OidcProviderFormProps {
   data?: OidcProviderData;
   onCancel: () => void;
   onCompleted: () => void;
-  paginationOptions?: Record<string, unknown>;
+  paginationOptions?: PaginationOptions;
 }
 
 // --- Helpers ---

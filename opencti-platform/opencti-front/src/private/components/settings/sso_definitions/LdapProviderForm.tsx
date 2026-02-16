@@ -27,6 +27,7 @@ import AuthProviderOrganizationsFields from './AuthProviderOrganizationsFields';
 import type { LdapProviderFormCreateMutation } from './__generated__/LdapProviderFormCreateMutation.graphql';
 import type { LdapProviderFormEditMutation } from './__generated__/LdapProviderFormEditMutation.graphql';
 import type { SSODefinitionEditionFragment$data } from './__generated__/SSODefinitionEditionFragment.graphql';
+import { PaginationOptions } from '../../../../components/list_lines';
 
 // --- GraphQL Mutations ---
 
@@ -95,7 +96,7 @@ interface LdapProviderFormProps {
   data?: LdapProviderData;
   onCancel: () => void;
   onCompleted: () => void;
-  paginationOptions?: Record<string, unknown>;
+  paginationOptions?: PaginationOptions;
 }
 
 // --- Helpers ---

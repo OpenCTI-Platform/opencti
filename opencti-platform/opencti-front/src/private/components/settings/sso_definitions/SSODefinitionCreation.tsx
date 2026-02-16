@@ -91,7 +91,7 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
               />
             );
           default:
-            return null;
+            return <></>;
         }
       }}
     </Drawer>

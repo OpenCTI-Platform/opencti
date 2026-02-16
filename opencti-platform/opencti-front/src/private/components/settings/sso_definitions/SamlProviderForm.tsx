@@ -32,6 +32,7 @@ import AuthProviderOrganizationsFields from './AuthProviderOrganizationsFields';
 import type { SamlProviderFormCreateMutation } from './__generated__/SamlProviderFormCreateMutation.graphql';
 import type { SamlProviderFormEditMutation } from './__generated__/SamlProviderFormEditMutation.graphql';
 import type { SSODefinitionEditionFragment$data } from './__generated__/SSODefinitionEditionFragment.graphql';
+import { PaginationOptions } from '../../../../components/list_lines';
 
 // --- GraphQL Mutations ---
 
@@ -103,7 +104,7 @@ interface SamlProviderFormProps {
   data?: SamlProviderData;
   onCancel: () => void;
   onCompleted: () => void;
-  paginationOptions?: Record<string, unknown>;
+  paginationOptions?: PaginationOptions;
 }
 
 // --- Helpers ---
