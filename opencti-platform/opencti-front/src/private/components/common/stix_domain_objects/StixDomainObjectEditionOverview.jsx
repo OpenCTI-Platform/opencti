@@ -2,11 +2,7 @@ import React, { useEffect } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
-import Typography from '@mui/material/Typography';
-import IconButton from '@common/button/IconButton';
-import { Close } from '@mui/icons-material';
 import * as Yup from 'yup';
-import makeStyles from '@mui/styles/makeStyles';
 import { commitMutation, requestSubscription } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
@@ -21,27 +17,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../form/ConfidenceField';
 import { convertMarkings } from '../../../../utils/edition';
 import useAttributes from '../../../../utils/hooks/useAttributes';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
-  title: {
-    float: 'left',
-  },
-}));
+import DrawerHeader from '@common/drawer/DrawerHeader';
 
 const subscription = graphql`
   subscription StixDomainObjectEditionOverviewSubscription($id: ID!) {
@@ -124,7 +100,6 @@ const stixDomainObjectValidation = (t) => Yup.object().shape({
 const StixDomainObjectEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
   const { typesWithoutName } = useAttributes();
-  const classes = useStyles();
 
   const { handleClose, stixDomainObject, noStoreUpdate } = props;
 
@@ -303,22 +278,12 @@ const StixDomainObjectEditionContainer = (props) => {
   }
   return (
     <div>
-      <div className={classes.header}>
-        <IconButton
-          aria-label="Close"
-          className={classes.closeButton}
-          onClick={handleClose}
-          color="primary"
-        >
-          <Close fontSize="small" color="primary" />
-        </IconButton>
-        <Typography variant="h6" classes={{ root: classes.title }}>
-          {t_i18n('Update an entity')}
-        </Typography>
-        <SubscriptionAvatars context={editContext} />
-        <div className="clearfix" />
-      </div>
-      <div className={classes.container}>
+      <DrawerHeader
+        onClose={handleClose}
+        title={t_i18n('Update an entity')}
+        endContent={<SubscriptionAvatars context={editContext} />}
+      />
+      <div style={{ padding: '10px 20px 20px 20px' }}>
         <Formik
           enableReinitialize={true}
           initialValues={initialValues}
