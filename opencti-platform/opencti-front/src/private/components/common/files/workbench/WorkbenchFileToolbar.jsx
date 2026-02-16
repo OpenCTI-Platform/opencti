@@ -19,6 +19,7 @@ import { MESSAGING$ } from '../../../../../relay/environment';
 import { UserContext } from '../../../../../utils/hooks/useAuth';
 import withHooksSettingsMessagesBannerHeight from '../../../settings/settings_messages/withHooksSettingsMessagesBannerHeight';
 import ObjectMarkingField from '../../form/ObjectMarkingField';
+import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -172,7 +173,7 @@ class WorkbenchFileToolbar extends Component {
               variant: 'elevation',
               elevation: 1,
               style: {
-                paddingLeft: navOpen ? 185 : 60,
+                paddingLeft: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
                 bottom: bannerSettings.bannerHeightNumber,
               },
             }}

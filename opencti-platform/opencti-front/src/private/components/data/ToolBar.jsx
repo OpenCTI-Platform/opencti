@@ -5,6 +5,7 @@ import Drawer from '@mui/material/Drawer';
 import Slide from '@mui/material/Slide';
 import DataTableToolBar from './DataTableToolBar';
 import { UserContext } from '../../../utils/hooks/useAuth';
+import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
 import useDraftContext, { DRAFT_TOOLBAR_HEIGHT } from '../../../utils/hooks/useDraftContext';
 import { useTheme } from '@mui/styles';
 
@@ -93,7 +94,7 @@ const ToolBar = (props) => {
             variant: 'elevation',
             elevation: 1,
             style: {
-              marginLeft: navOpen ? 180 : 55,
+              marginLeft: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
               bottom: (bannerSettings?.bannerHeightNumber ?? 0) + posBottom,
               zIndex: theme.zIndex.appBar - 2,
             },

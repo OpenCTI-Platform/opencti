@@ -18,6 +18,7 @@ import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
 import useAuth from '../../../../utils/hooks/useAuth';
 import type { EntitySetting } from '../../../../utils/hooks/useEntitySettings';
 import useEntitySettings from '../../../../utils/hooks/useEntitySettings';
@@ -171,7 +172,10 @@ const ToolBar: FunctionComponent<{
       PaperProps={{
         variant: 'elevation',
         elevation: 1,
-        style: { paddingLeft: navOpen ? 185 : 60, bottom: bannerHeightNumber },
+        style: {
+          paddingLeft: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
+          bottom: bannerHeightNumber,
+        },
       }}
     >
       <Toolbar style={{ minHeight: 54 }}>

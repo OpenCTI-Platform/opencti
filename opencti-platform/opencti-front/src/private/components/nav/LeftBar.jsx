@@ -430,7 +430,6 @@ const LeftBarComponent = ({ queryRef }) => {
       sx={{
         width: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
         zIndex: 999,
-        position: 'sticky',
         top: 0,
         height: '100vh',
         overflow: 'hidden',
