@@ -285,6 +285,9 @@ const stixCyberObservableDetailsFragment = graphql`
       comment
       created
     }
+    ... on AIPrompt {
+      value
+    }
     ...StixCyberObservableIndicators_stixCyberObservable
   }
 `;

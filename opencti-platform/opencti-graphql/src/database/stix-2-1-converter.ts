@@ -92,6 +92,7 @@ import {
   ENTITY_HASHED_OBSERVABLE_ARTIFACT,
   ENTITY_HASHED_OBSERVABLE_STIX_FILE,
   ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE,
+  ENTITY_AI_PROMPT,
   ENTITY_HOSTNAME,
   ENTITY_IPV4_ADDR,
   ENTITY_IPV6_ADDR,
@@ -1213,6 +1214,24 @@ const convertSSHKeyToStix = (instance: StoreCyberObservable, type: string): SCO.
   };
 };
 
+const convertAIPromptToStix = (instance: StoreCyberObservable, type: string): SCO.StixAIPrompt => {
+  assertType(ENTITY_AI_PROMPT, type);
+  const stixCyberObject = buildStixCyberObservable(instance);
+  return {
+    ...stixCyberObject,
+    value: instance.value,
+    labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
+    description: instance.x_opencti_description,
+    score: instance.x_opencti_score,
+    created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
+    external_references: buildExternalReferences(instance),
+    extensions: {
+      [STIX_EXT_OCTI]: stixCyberObject.extensions[STIX_EXT_OCTI],
+      [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' },
+    },
+  };
+};
+
 const checkInstanceCompletion = (instance: StoreRelation) => {
   if (instance.from === undefined || isEmptyField(instance.from)) {
     throw UnsupportedError(`Cannot convert relation without a resolved from: ${instance.fromId}`);
@@ -1661,6 +1680,9 @@ const convertToStix_2_1 = (instance: StoreCommon): S.StixObject => {
     }
     if (ENTITY_SSH_KEY === type) {
       return convertSSHKeyToStix(cyber, type);
+    }
+    if (ENTITY_AI_PROMPT === type) {
+      return convertAIPromptToStix(cyber, type);
     }
     // No converter_2_1 found
     throw UnsupportedError(`No observable converter available for ${type}`);

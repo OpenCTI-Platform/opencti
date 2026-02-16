@@ -114,6 +114,7 @@ STIX_CYBER_OBSERVABLE_MAPPING = {
     "simple-observable": "Simple-Observable",
     "persona": "Persona",
     "ssh-key": "SSH-Key",
+    "ai-prompt": "AI-Prompt",
 }
 
 STIX_OBJECTS = (
@@ -152,6 +153,7 @@ PATTERN_MAPPING = {
     "Tracking-Number": ["value"],
     "Credential": ["value"],
     "Media-Content": ["url"],
+    "AI-Prompt": ["value"],
 }
 
 OBSERVABLES_VALUE_INT = [

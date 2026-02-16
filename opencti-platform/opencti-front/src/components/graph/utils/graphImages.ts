@@ -354,6 +354,10 @@ const GRAPH_IMAGES: GraphImages = {
     rawImg: StixCyberObservable,
     img: generateHtmlImageElement(StixCyberObservable),
   },
+  'AI-Prompt': {
+    rawImg: StixCyberObservable,
+    img: generateHtmlImageElement(StixCyberObservable),
+  },
   Text: {
     rawImg: StixCyberObservable,
     img: generateHtmlImageElement(StixCyberObservable),

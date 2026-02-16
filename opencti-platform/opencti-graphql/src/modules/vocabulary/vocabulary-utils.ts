@@ -823,6 +823,7 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
     { key: 'spl' },
     { key: 'eql' },
     { key: 'shodan' },
+    { key: 'nova' },
   ],
   processor_architecture_ov: [
     {

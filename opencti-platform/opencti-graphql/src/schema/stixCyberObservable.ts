@@ -34,6 +34,7 @@ export const ENTITY_PAYMENT_CARD = 'Payment-Card'; // Custom
 export const ENTITY_MEDIA_CONTENT = 'Media-Content'; // Custom
 export const ENTITY_PERSONA = 'Persona'; // Custom
 export const ENTITY_SSH_KEY = 'SSH-Key'; // Custom
+export const ENTITY_AI_PROMPT = 'AI-Prompt'; // Custom
 
 const STIX_CYBER_OBSERVABLES_HASHED_OBSERVABLES = [
   ENTITY_HASHED_OBSERVABLE_ARTIFACT,
@@ -75,6 +76,7 @@ export const STIX_CYBER_OBSERVABLES = [
   ENTITY_MEDIA_CONTENT,
   ENTITY_PERSONA,
   ENTITY_SSH_KEY,
+  ENTITY_AI_PROMPT,
 ];
 schemaTypesDefinition.register(ABSTRACT_STIX_CYBER_OBSERVABLE, STIX_CYBER_OBSERVABLES);
 

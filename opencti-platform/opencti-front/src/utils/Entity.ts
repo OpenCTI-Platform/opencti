@@ -149,6 +149,8 @@ export const resolveLink = (type = 'unknown'): string | null => {
       return '/dashboard/settings/accesses/email_templates';
     case 'SSH-Key':
       return '/dashboard/observations/observables';
+    case 'AI-Prompt':
+      return '/dashboard/observations/observables';
     case 'SingleSignOn':
       return '/dashboard/settings/accesses/authentication';
     default:

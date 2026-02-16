@@ -108,6 +108,7 @@ const stixCyberObservableMutation = graphql`
     $Credential: CredentialAddInput
     $Persona: PersonaAddInput
     $SSHKey: SSHKeyAddInput
+    $AIPrompt: AIPromptAddInput
   ) {
     stixCyberObservableAdd(
       type: $type
@@ -151,6 +152,7 @@ const stixCyberObservableMutation = graphql`
       Credential: $Credential
       Persona: $Persona
       SSHKey: $SSHKey
+      AIPrompt: $AIPrompt
     ) {
       id
       draftVersion {
@@ -211,6 +213,7 @@ const BULK_OBSERVABLES = [
   { type: 'Tracking-Number', keys: ['value'] },
   { type: 'Url', keys: ['value'] },
   { type: 'User-Agent', keys: ['value'] },
+  { type: 'AI-Prompt', keys: ['value'] },
   { type: 'StixFile', keys: ['name', 'hashes_MD5', 'hashes_SHA-1', 'hashes_SHA-256', 'hashes_SHA-512'] },
   { type: 'Artifact', keys: ['hashes_MD5', 'hashes_SHA-1', 'hashes_SHA-256', 'hashes_SHA-512'] },
   { type: 'X509-Certificate', keys: ['hashes_MD5', 'hashes_SHA-1', 'hashes_SHA-256', 'hashes_SHA-512'] },
