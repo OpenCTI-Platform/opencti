@@ -24,7 +24,7 @@ import { lockResources } from './lock/master-lock';
 import { loadEntityMetricsConfiguration } from './modules/metrics/metrics-utils';
 import { initializeStreamStack } from './database/stream/stream-handler';
 import { initializeAdminUser } from './modules/authenticationProvider/providers-initialization';
-import { initializeAuthenticationProviders } from './modules/authenticationProvider/authenticationProvider-init';
+import { initializeAuthenticationProviders } from './modules/authenticationProvider/providers';
 
 // region Platform constants
 const PLATFORM_LOCK_ID = 'platform_init_lock';

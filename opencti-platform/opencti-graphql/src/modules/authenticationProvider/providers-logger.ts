@@ -2,6 +2,7 @@
 import type { EnvStrategyType } from './providers-configuration';
 import type { AuthenticationProviderType } from '../../generated/graphql';
 import { logApp } from '../../config/conf';
+import type { CERT_PROVIDER_NAME, HEADER_PROVIDER_NAME } from './providers';
 
 export const logAuthInfo = (message: string, strategyType: EnvStrategyType | AuthenticationProviderType, meta?: any) => {
   logApp.info(`[Auth][${strategyType.toUpperCase()}]${message}`, { meta });
@@ -17,7 +18,7 @@ export interface AuthenticationProviderLogger {
   error: (message: string, meta?: any) => void;
 }
 
-export const createAuthLogger = (type: AuthenticationProviderType, identifier: string): AuthenticationProviderLogger => {
+export const createAuthLogger = (type: AuthenticationProviderType | typeof HEADER_PROVIDER_NAME | typeof CERT_PROVIDER_NAME, identifier: string): AuthenticationProviderLogger => {
   const logPrefix = `[Auth-${type.toUpperCase()}] `;
   return ({
     info: (message: string, meta: any = {}) => logApp.info(`${logPrefix}${message}`, { meta: { ...meta, type, identifier } }),

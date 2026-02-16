@@ -109,7 +109,7 @@ import { memoize } from '../utils/memoize';
 import { getSettings } from './settings';
 import passport from 'passport';
 import { LOCAL_STRATEGY_IDENTIFIER, PROVIDERS } from '../modules/authenticationProvider/providers-configuration';
-import { HEADER_PROVIDER } from '../modules/authenticationProvider/provider-header';
+import { HEADER_PROVIDER } from '../modules/authenticationProvider/providers';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';

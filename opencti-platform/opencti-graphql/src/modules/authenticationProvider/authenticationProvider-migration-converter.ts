@@ -54,6 +54,12 @@ import {
 // token_reference: String -> TODO changed with new mechanism, to be handled in migration
 // organizations_header: String -> TODO use mapping instead
 
+// TODO certs
+// email :  subject.emailAddress
+// name  :  subject.CN or subject.emailAddress
+// groups:  subject.OU
+// orga  :  subject.O
+
 // ---------------------------------------------------------------------------
 // ConfigExtractor — tracks which keys are consumed during conversion
 // ---------------------------------------------------------------------------

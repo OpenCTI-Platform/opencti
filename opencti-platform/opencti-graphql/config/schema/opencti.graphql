@@ -1452,13 +1452,9 @@ type LocalAuthConfig {
 type CertAuthConfig {
   enabled: Boolean
   button_label: String
-  # Groups management (from cert OU field)
-  groups_mapping: [String]
-  auto_create_group: Boolean
-  prevent_default_groups: Boolean
-  # Organizations management (from cert O field)
-  organizations_default: [String]
-  organizations_mapping: [String]
+  user_info_mapping: UserInfoMapping!
+  groups_mapping: GroupsMapping!
+  organizations_mapping: OrganizationsMapping!
 }
 
 type HeadersAuthConfig {

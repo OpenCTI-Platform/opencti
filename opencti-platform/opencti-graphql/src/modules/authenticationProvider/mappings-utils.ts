@@ -47,7 +47,8 @@ export const resolveGroups = async (conf: GroupsMapping, resolveExpr: (expr: str
     if (resolved) {
       const groups = (Array.isArray(resolved) ? resolved : [resolved])
         .map((g) => conf.group_splitter ? g.split(conf.group_splitter) : [g])
-        .flat();
+        .flat()
+        .map((s) => s.trim());
       pushAll(allGroups, groups);
     }
   }
@@ -67,7 +68,8 @@ export const resolveOrganizations = async (conf: OrganizationsMapping, resolveEx
     if (resolved) {
       const groups = (Array.isArray(resolved) ? resolved : [resolved])
         .map((g) => conf.organizations_splitter ? g.split(conf.organizations_splitter) : [g])
-        .flat();
+        .flat()
+        .map((s) => s.trim());
       pushAll(allOrganization, groups);
     }
   }

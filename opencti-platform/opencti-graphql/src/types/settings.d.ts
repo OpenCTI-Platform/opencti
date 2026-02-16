@@ -1,5 +1,6 @@
 import type { BasicStoreEntity } from './store';
 import type { XtmHubRegistrationStatus, CguStatus } from '../generated/graphql';
+import type { GroupsMapping, OrganizationsMapping, UserInfoMapping } from '../modules/authenticationProvider/authenticationProvider-types';
 
 export interface BasicStoreSettingsMessage {
   id: string;
@@ -13,13 +14,9 @@ export interface BasicStoreSettingsMessage {
 export type CertAuthConfig = {
   enabled: boolean;
   button_label: string;
-  // Groups management (from cert OU field)
-  groups_mapping?: string[];
-  auto_create_group?: boolean;
-  prevent_default_groups?: boolean;
-  // Organizations management (from cert O field)
-  organizations_default?: string[];
-  organizations_mapping?: string[];
+  user_info_mapping: UserInfoMapping;
+  groups_mapping: GroupsMapping;
+  organizations_mapping: OrganizationsMapping;
 };
 
 export type LocalAuthConfig = {
@@ -28,23 +25,11 @@ export type LocalAuthConfig = {
 
 export type HeadersAuthConfig = {
   enabled: boolean;
-  header_email: string;
-  header_name?: string;
-  header_firstname?: string;
-  header_lastname?: string;
-  auto_create_group?: boolean;
-  prevent_default_groups?: boolean;
-  headers_audit?: string[];
+  user_info_mapping: UserInfoMapping;
+  groups_mapping: GroupsMapping;
+  organizations_mapping: OrganizationsMapping;
+  headers_audit: string[];
   logout_uri?: string;
-  // Groups management
-  groups_header?: string;
-  groups_splitter?: string;
-  groups_mapping?: string[];
-  // Organizations management
-  organizations_default?: string[];
-  organizations_header?: string;
-  organizations_splitter?: string;
-  organizations_mapping?: string[];
 };
 
 export interface BasicStoreSettings extends BasicStoreEntity {

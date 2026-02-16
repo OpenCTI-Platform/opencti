@@ -3781,13 +3781,11 @@ export enum CatalogsOrdering {
 
 export type CertAuthConfig = {
   __typename?: 'CertAuthConfig';
-  auto_create_group?: Maybe<Scalars['Boolean']['output']>;
   button_label?: Maybe<Scalars['String']['output']>;
   enabled?: Maybe<Scalars['Boolean']['output']>;
-  groups_mapping?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-  organizations_default?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-  organizations_mapping?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-  prevent_default_groups?: Maybe<Scalars['Boolean']['output']>;
+  groups_mapping: GroupsMapping;
+  organizations_mapping: OrganizationsMapping;
+  user_info_mapping: UserInfoMapping;
 };
 
 export type CertAuthConfigInput = {
@@ -40563,13 +40561,11 @@ export type CatalogEdgeResolvers<ContextType = any, ParentType extends Resolvers
 }>;
 
 export type CertAuthConfigResolvers<ContextType = any, ParentType extends ResolversParentTypes['CertAuthConfig'] = ResolversParentTypes['CertAuthConfig']> = ResolversObject<{
-  auto_create_group?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   button_label?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   enabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  groups_mapping?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  organizations_default?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  organizations_mapping?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  prevent_default_groups?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  groups_mapping?: Resolver<ResolversTypes['GroupsMapping'], ParentType, ContextType>;
+  organizations_mapping?: Resolver<ResolversTypes['OrganizationsMapping'], ParentType, ContextType>;
+  user_info_mapping?: Resolver<ResolversTypes['UserInfoMapping'], ParentType, ContextType>;
 }>;
 
 export type ChannelResolvers<ContextType = any, ParentType extends ResolversParentTypes['Channel'] = ResolversParentTypes['Channel']> = ResolversObject<{

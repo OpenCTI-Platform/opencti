@@ -15,8 +15,7 @@ import rateLimit from 'express-rate-limit';
 import contentDisposition from 'content-disposition';
 import { printSchema } from 'graphql/utilities';
 import { basePath, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION, PLATFORM_VERSION, AUTH_PAYLOAD_BODY_SIZE, getBaseUrl } from '../config/conf';
-import { loginFromProvider, sessionAuthenticateUser, userWithOrigin } from '../domain/user';
-import { genConfigMapper } from '../modules/authenticationProvider/providers-configuration';
+import { sessionAuthenticateUser, userWithOrigin } from '../domain/user';
 import { downloadFile, getFileContent, isStorageAlive } from '../database/raw-file-storage';
 import { loadFile } from '../database/file-storage';
 import { DEFAULT_INVALID_CONF_VALUE, executionContext, SYSTEM_USER } from '../utils/access';
@@ -32,11 +31,11 @@ import createSseMiddleware from '../graphql/sseMiddleware';
 import initTaxiiApi from './httpTaxii';
 import initHttpRollingFeeds from './httpRollingFeed';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
-import { setCookieError } from './httpUtils';
+import { extractRefererPathFromReq, setCookieError } from './httpUtils';
 import { getChatbotProxy } from './httpChatbotProxy';
-import { getSettings } from '../domain/settings';
 import { PROVIDERS } from '../modules/authenticationProvider/providers-configuration';
-import { HEADER_PROVIDER } from '../modules/authenticationProvider/provider-header';
+import { HEADER_PROVIDER } from '../modules/authenticationProvider/providers';
+import { handleCertAuthenticationRequest } from '../modules/authenticationProvider/provider-cert';
 
 export const sanitizeReferer = (refererToSanitize) => {
   // NOTE: basePath will be configured, if the site is hosted behind a reverseProxy otherwise '/' should be accurate
@@ -59,21 +58,6 @@ export const sanitizeReferer = (refererToSanitize) => {
   }
   logApp.info('Error auth provider callback : url has been altered', { url: refererToSanitize });
   return base2return;
-};
-
-const extractRefererPathFromReq = (req) => {
-  if (isEmptyField(req.headers.referer)) {
-    return undefined;
-  }
-
-  try {
-    const refererUrl = new URL(req.headers.referer);
-    // Keep only the pathname and search to prevent OPEN REDIRECT CWE-601
-    return refererUrl.pathname + refererUrl.search;
-  } catch {
-    // prevent any invalid referer
-    logApp.warn('Invalid referer for redirect extraction', { referer: req.headers.referer });
-  }
 };
 
 const publishFileDownload = async (executeContext, auth, file) => {
@@ -361,54 +345,7 @@ const createApp = async (app, schema) => {
   // -- Client HTTPS Cert login custom strategy
   app.get(`${basePath}/auth/cert`, async (req, res) => {
     try {
-      const context = executionContext('cert_strategy');
-      const redirect = extractRefererPathFromReq(req) ?? '/';
-      const settings = await getSettings(context);
-      const isActivated = settings.cert_auth?.enabled;
-      if (!isActivated) {
-        setCookieError(res, 'Cert authentication is not available');
-        res.redirect(redirect);
-      } else {
-        const cert = req.socket.getPeerCertificate();
-        if (isNotEmptyField(cert) && req.client.authorized) {
-          const { CN, emailAddress, OU, O } = cert.subject;
-          if (isEmptyField(emailAddress)) {
-            setCookieError(res, 'Client certificate need a correct emailAddress');
-            res.redirect(redirect);
-          } else {
-            const certAuth = settings.cert_auth;
-            // Groups from OU field
-            const ouValues = Array.isArray(OU) ? OU : (OU ? [OU] : []);
-            const isGroupMapping = isNotEmptyField(certAuth?.groups_mapping);
-            const groupsMapper = isGroupMapping ? genConfigMapper(certAuth.groups_mapping ?? []) : {};
-            const mappedGroups = ouValues.map((v) => groupsMapper[v]).filter((r) => isNotEmptyField(r));
-            // Organizations from O field
-            const oValues = Array.isArray(O) ? O : (O ? [O] : []);
-            const isOrgMapping = isNotEmptyField(certAuth?.organizations_default) || isNotEmptyField(certAuth?.organizations_mapping);
-            const orgMapper = isOrgMapping ? genConfigMapper(certAuth.organizations_mapping ?? []) : {};
-            const mappedOrgs = [...(certAuth?.organizations_default ?? []), ...oValues.map((v) => orgMapper[v]).filter((r) => isNotEmptyField(r))];
-            const userInfo = { email: emailAddress, name: isEmptyField(CN) ? emailAddress : CN };
-            const opts = {
-              providerGroups: mappedGroups,
-              providerOrganizations: mappedOrgs,
-              autoCreateGroup: certAuth?.auto_create_group ?? false,
-              preventDefaultGroups: certAuth?.prevent_default_groups ?? false,
-            };
-            loginFromProvider(userInfo, opts)
-              .then(async (user) => {
-                await sessionAuthenticateUser(context, req, user, 'cert');
-                res.redirect(redirect);
-              })
-              .catch((err) => {
-                setCookieError(res, err?.message);
-                res.redirect(redirect);
-              });
-          }
-        } else {
-          setCookieError(res, 'You must select a correct certificate');
-          res.redirect(redirect);
-        }
-      }
+      await handleCertAuthenticationRequest(req, res);
     } catch (e) {
       setCookieError(res, e.message);
       logApp.error('Error auth by cert', { cause: e });
