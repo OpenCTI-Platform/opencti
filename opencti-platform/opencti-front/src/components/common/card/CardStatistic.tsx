@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Theme } from '../../Theme';
 import Card from './Card';
 import { Stack, Typography } from '@mui/material';

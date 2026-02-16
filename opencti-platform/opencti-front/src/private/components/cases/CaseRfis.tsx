@@ -16,9 +16,7 @@ import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocum
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
 
-interface CaseRfisProps {
-  inputValue?: string;
-}
+type CaseRfisProps = Record<string, never>;
 
 const caseFragment = graphql`
   fragment CaseRfisLineCase_node on CaseRfi {
@@ -122,7 +120,7 @@ const caseRfisLinesFragment = graphql`
   }
 `;
 
-export const LOCAL_STORAGE_KEY = 'caseRfis';
+export const LOCAL_STORAGE_KEY_CASE_RFIS = 'caseRfis';
 
 const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
   const { t_i18n } = useFormatter();
@@ -138,7 +136,7 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
     filters: emptyFilterGroup,
   };
   const { viewStorage, helpers: storageHelpers, paginationOptions } = usePaginationLocalStorage<CaseRfisLinesCasesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY,
+    LOCAL_STORAGE_KEY_CASE_RFIS,
     initialValues,
   );
 
@@ -194,7 +192,7 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
         <DataTable
           dataColumns={dataColumns}
           resolvePath={(data: CaseRfisLinesCases_data$data) => data.caseRfis?.edges?.map((n) => n?.node)}
-          storageKey={LOCAL_STORAGE_KEY}
+          storageKey={LOCAL_STORAGE_KEY_CASE_RFIS}
           initialValues={initialValues}
           contextFilters={contextFilters}
           preloadedPaginationProps={preloadedPaginationProps}

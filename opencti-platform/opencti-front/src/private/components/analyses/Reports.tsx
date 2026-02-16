@@ -204,7 +204,7 @@ const Reports: FunctionComponent = () => {
     },
   };
   return (
-    <span data-testid="report-page">
+    <div data-testid="report-page">
       <Breadcrumbs elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('Reports'), current: true }]} />
       {queryRef && (
         <DataTable
@@ -229,7 +229,7 @@ const Reports: FunctionComponent = () => {
           )}
         />
       )}
-    </span>
+    </div>
   );
 };
 

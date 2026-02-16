@@ -209,7 +209,7 @@ const Indicators = () => {
           exportContext={{ entity_type: 'Indicator' }}
           additionalHeaderButtons={[
             <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}>
-              <StixCoreObjectForms entityType="Threat-Actor-Group" />
+              <StixCoreObjectForms entityType="Indicator" />
             </Security>,
           ]}
           createButton={(

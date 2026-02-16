@@ -604,10 +604,10 @@ export const storeLoadById = async <T extends BasicStoreCommon>(context: AuthCon
   return data;
 };
 
-export const storeLoadByIds = async <T extends BasicStoreBase>(context: AuthContext, user: AuthUser, ids: string[], type: string): Promise<T[]> => {
+export const storeLoadByIds = async <T extends BasicStoreBase>(context: AuthContext, user: AuthUser, ids: string[], type: string): Promise<(T | undefined)[]> => {
   if (R.isNil(type) || R.isEmpty(type)) {
     throw FunctionalError('You need to specify a type when loading elements', { ids });
   }
   const hits = await elFindByIds(context, user, ids, { type, indices: READ_DATA_INDICES });
-  return ids.map((id) => (hits as T[]).find((h: T) => h.internal_id === id)) as T[];
+  return ids.map((id) => (hits as T[]).find((h: T) => h.internal_id === id));
 };

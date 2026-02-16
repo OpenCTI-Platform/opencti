@@ -65,7 +65,7 @@ const WidgetHorizontalBars = ({
       legend,
       stackType,
     ) as ApexOptions;
-  }, [categories, legend, stackType]);
+  }, [categories, legend, stackType, theme, distributed, stacked, total, navigate, redirectionUtils]);
 
   return (
     <Chart

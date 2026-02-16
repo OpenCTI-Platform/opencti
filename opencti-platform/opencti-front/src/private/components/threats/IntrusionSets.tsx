@@ -168,16 +168,16 @@ const IntrusionSets = () => {
             lineFragment={IntrusionSetCardFragment}
             exportContext={{ entity_type: 'Intrusion-Set' }}
             additionalHeaderToggleButtons={[
-              <ToggleButton key="cards" value="cards" aria-label="cards">
-                <Tooltip title={t_i18n('Cards view')}>
+              <Tooltip key="cards" title={t_i18n('Cards view')}>
+                <ToggleButton value="cards" aria-label="cards">
                   <ViewModuleOutlined fontSize="small" />
-                </Tooltip>
-              </ToggleButton>,
-              <ToggleButton key="lines" value="lines" aria-label="lines">
-                <Tooltip title={t_i18n('Lines view')}>
+                </ToggleButton>
+              </Tooltip>,
+              <Tooltip key="lines" title={t_i18n('Lines view')}>
+                <ToggleButton value="lines" aria-label="lines">
                   <ViewListOutlined fontSize="small" />
-                </Tooltip>
-              </ToggleButton>,
+                </ToggleButton>
+              </Tooltip>,
             ]}
             additionalHeaderButtons={[
               <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE]}>
@@ -196,7 +196,7 @@ const IntrusionSets = () => {
   };
 
   return (
-    <div data-testid="instrusion-set-page">
+    <div data-testid="intrusion-set-page">
       <Breadcrumbs elements={[{ label: t_i18n('Threats') }, { label: t_i18n('Intrusion sets'), current: true }]} />
       {viewStorage.view !== 'lines' ? renderCards() : renderList()}
     </div>

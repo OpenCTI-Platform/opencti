@@ -19,9 +19,7 @@ import Security from '../../../utils/Security';
 
 const LOCAL_STORAGE_KEY = 'groupings';
 
-interface GroupingsProps {
-  match: { params: { groupingContext: string } };
-}
+type GroupingsProps = Record<string, never>;
 
 const groupingLineFragment = graphql`
   fragment GroupingsLine_node on Grouping {
@@ -201,7 +199,7 @@ const Groupings: FunctionComponent<GroupingsProps> = () => {
   } as UsePreloadedPaginationFragment<GroupingsLinesPaginationQuery>;
 
   return (
-    <span data-testid="groupings-page">
+    <div data-testid="groupings-page">
       <Breadcrumbs elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('Groupings'), current: true }]} />
       {queryRef && (
         <DataTable
@@ -225,7 +223,7 @@ const Groupings: FunctionComponent<GroupingsProps> = () => {
           )}
         />
       )}
-    </span>
+    </div>
   );
 };
 

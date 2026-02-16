@@ -280,7 +280,7 @@ export const batchLoader = (loader, context, user) => {
       const elementsToLoad = elements.map((e) => e.elementToLoad);
       return loader(context, user, elementsToLoad);
     },
-    { maxBatchSize: MAX_BATCH_SIZE, cache: false },
+    { maxBatchSize: MAX_BATCH_SIZE },
   );
   return {
     load: (element) => {

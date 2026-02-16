@@ -8,7 +8,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Toolbar from '@mui/material/Toolbar';
 import Tooltip from '@mui/material/Tooltip';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
@@ -135,7 +135,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
     return () => {
       sub.unsubscribe();
     };
-  });
+  }, []);
   useEffect(() => {
     page();
   }, [location.pathname]);
@@ -197,7 +197,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
 
   const getAppTopBarGradient = (): string => {
     const defaultGradientDark = `${alpha(THEME_DARK_DEFAULT_BACKGROUND, 0.9)} 0%, ${alpha(THEME_DARK_DEFAULT_BODY_END_GRADIENT, 0.9)}`;
-    if (theme.palette.background.gradient?.start && theme.palette.background.gradient?.start) {
+    if (theme.palette.background.gradient?.start && theme.palette.background.gradient?.end) {
       return `${alpha(theme.palette.background.gradient?.start, 0.9)} 0%, ${alpha(theme.palette.background.gradient?.end, 0.9)}`;
     }
     return defaultGradientDark;

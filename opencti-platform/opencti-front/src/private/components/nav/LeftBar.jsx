@@ -68,7 +68,7 @@ import {
   ShieldSearch,
   Timetable,
 } from 'mdi-material-ui';
-import React, { useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { graphql, usePreloadedQuery } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { THEME_LIGHT_DEFAULT_BACKGROUND, THEME_LIGHT_DEFAULT_PAPER } from '../../../components/ThemeLight';
@@ -283,14 +283,14 @@ const LeftBarComponent = ({ queryRef }) => {
     setNavOpen(!navOpen);
     MESSAGING$.toggleNav.next('toggle');
   };
-  const handleSelectedMenuOpen = (menu) => {
+  const handleSelectedMenuOpen = useCallback((menu) => {
     const updatedMenu = (navOpen && submenu_auto_collapse) ? addMenuUnique(menu) : [menu];
     setSelectedMenu(updatedMenu);
-  };
-  const handleSelectedMenuClose = () => {
+  }, [navOpen, submenu_auto_collapse, selectedMenu]);
+  const handleSelectedMenuClose = useCallback(() => {
     setSelectedMenu([]);
-  };
-  const handleSelectedMenuToggle = (menu) => {
+  }, []);
+  const handleSelectedMenuToggle = useCallback((menu) => {
     let updatedMenu;
     if (submenu_auto_collapse) {
       updatedMenu = selectedMenu.includes(menu) ? [] : [menu];
@@ -302,14 +302,14 @@ const LeftBarComponent = ({ queryRef }) => {
       setSelectedMenu(updatedMenu);
     }
     localStorage.setItem('selectedMenu', JSON.stringify(updatedMenu));
-  };
-  const handleGoToPage = (event, link) => {
+  }, [submenu_auto_collapse, selectedMenu]);
+  const handleGoToPage = useCallback((event, link) => {
     if (event.ctrlKey) {
       window.open(link, '_blank');
     } else {
       navigate(link);
     }
-  };
+  }, [navigate]);
   const hiddenEntities = useHiddenEntities();
   const hideAnalyses = useIsHiddenEntities(
     'Report',
@@ -387,7 +387,7 @@ const LeftBarComponent = ({ queryRef }) => {
 
   const isMobile = dimension.width < 768;
 
-  const itemProps = {
+  const itemProps = useMemo(() => ({
     navOpen,
     selectedMenu,
     isMobile,
@@ -398,7 +398,7 @@ const LeftBarComponent = ({ queryRef }) => {
     onMenuClose: handleSelectedMenuClose,
     onGoToPage: handleGoToPage,
     submenuShowIcons: submenu_show_icons,
-  };
+  }), [navOpen, selectedMenu, isMobile, classes, hiddenEntities, handleSelectedMenuToggle, handleSelectedMenuOpen, handleSelectedMenuClose, handleGoToPage, submenu_show_icons]);
 
   const isLightTheme = theme.palette.mode === 'light';
   const getBackground = () => {
@@ -451,7 +451,7 @@ const LeftBarComponent = ({ queryRef }) => {
         hasXtmHubAccess={hasXtmHubAccess}
       />
 
-      <div
+      <nav
         ref={ref}
         aria-label="Main navigation"
         style={{
@@ -782,7 +782,7 @@ const LeftBarComponent = ({ queryRef }) => {
             </MenuList>
           )}
         </Security>
-      </div>
+      </nav>
 
       {/** Bottom **/}
       <div

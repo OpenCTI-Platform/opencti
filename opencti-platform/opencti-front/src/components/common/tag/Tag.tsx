@@ -79,10 +79,10 @@ const Tag = ({
       },
     }),
     '& .MuiChip-deleteIcon': {
-      color: '#F2F2F3',
+      color: theme.palette.text.secondary,
       fontSize: 18,
       '&:hover': {
-        color: '#FFFFFF',
+        color: theme.palette.text.primary,
       },
       background: 'none',
       marginLeft: '8px',

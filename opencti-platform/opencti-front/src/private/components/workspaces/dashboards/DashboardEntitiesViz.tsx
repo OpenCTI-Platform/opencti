@@ -17,7 +17,7 @@ import StixCoreObjectsTreeMap from '@components/common/stix_core_objects/StixCor
 import StixCoreObjectsWordCloud from '@components/common/stix_core_objects/StixCoreObjectsWordCloud';
 import type { Widget } from '../../../../utils/widget/widget';
 import { computerRelativeDate, dayStartDate, formatDate } from '../../../../utils/Time';
-import { useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import { removeIdAndIncorrectKeysFromFilterGroupObject, useAvailableFilterKeysForEntityTypes } from '../../../../utils/filters/filtersUtils';
 import { Box } from '@mui/material';
 
 interface DashboardEntitiesVizProps {
@@ -49,11 +49,14 @@ const DashboardEntitiesViz = ({
   } else if (widget.perspective === 'audits') {
     mainEntityTypes = ['History'];
   }
+  const mainAvailableFilterKeys = useAvailableFilterKeysForEntityTypes(mainEntityTypes).concat(['ids']);
+  const stixCoreAvailableFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Core-Object']).concat(['ids']);
+
   const dataSelection = widget.dataSelection.map((data) => ({
     ...data,
-    filters: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.filters, mainEntityTypes),
-    dynamicFrom: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.dynamicFrom, ['Stix-Core-Object']),
-    dynamicTo: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.dynamicTo, ['Stix-Core-Object']),
+    filters: removeIdAndIncorrectKeysFromFilterGroupObject(data.filters, mainAvailableFilterKeys),
+    dynamicFrom: removeIdAndIncorrectKeysFromFilterGroupObject(data.dynamicFrom, stixCoreAvailableFilterKeys),
+    dynamicTo: removeIdAndIncorrectKeysFromFilterGroupObject(data.dynamicTo, stixCoreAvailableFilterKeys),
   }));
 
   switch (widget.type) {

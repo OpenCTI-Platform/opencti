@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import { LRUCache } from 'lru-cache';
 import {
   buildRestrictedEntity,
   createEntity,
@@ -115,7 +116,7 @@ import { findById as findDraftById } from '../modules/draftWorkspace/draftWorksp
 import { buildTranslatedIdsMap } from '../database/data-changes';
 
 const AI_INSIGHTS_REFRESH_TIMEOUT = conf.get('ai:insights_refresh_timeout');
-const aiResponseCache = {};
+const aiResponseCache = new LRUCache({ max: 500, ttl: 1000 * 60 * 60 });
 const threats = [ENTITY_TYPE_THREAT_ACTOR_GROUP, ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_MALWARE];
 // const arsenal = [ENTITY_TYPE_TOOL, ENTITY_TYPE_ATTACK_PATTERN];
 const victims = [
@@ -1077,9 +1078,10 @@ export const aiActivity = async (context, user, args) => {
   const { id, language = 'English', forceRefresh = false } = args;
   // Resolve in cache
   const identifier = `${id}-activity`;
-  if (!forceRefresh && aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT))) {
-    await notify(BUS_TOPICS[AI_BUS].EDIT_TOPIC, { bus_id: identifier, content: aiResponseCache[identifier].result }, user);
-    return aiResponseCache[identifier];
+  const cachedActivity = aiResponseCache.get(identifier);
+  if (!forceRefresh && cachedActivity && utcDate(cachedActivity.updatedAt).isAfter(minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT))) {
+    await notify(BUS_TOPICS[AI_BUS].EDIT_TOPIC, { bus_id: identifier, content: cachedActivity.result }, user);
+    return cachedActivity;
   }
   // Resolve the entity
   const stixCoreObject = await storeLoadById(context, user, id, ABSTRACT_STIX_CORE_OBJECT);
@@ -1107,7 +1109,7 @@ export const aiActivity = async (context, user, args) => {
     trend,
     updated_at: now(),
   };
-  aiResponseCache[identifier] = activity;
+  aiResponseCache.set(identifier, activity);
   return activity;
 };
 
@@ -1117,8 +1119,9 @@ export const aiForecast = async (context, user, args) => {
   const { id, language = 'English', forceRefresh = false } = args;
   // Resolve in cache
   const identifier = `${id}-forecast`;
-  if (!forceRefresh && aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT))) {
-    return aiResponseCache[identifier];
+  const cachedForecast = aiResponseCache.get(identifier);
+  if (!forceRefresh && cachedForecast && utcDate(cachedForecast.updatedAt).isAfter(minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT))) {
+    return cachedForecast;
   }
   // Resolve the entity
   const stixCoreObject = await storeLoadById(context, user, id, ABSTRACT_STIX_CORE_OBJECT);
@@ -1138,7 +1141,7 @@ export const aiForecast = async (context, user, args) => {
     result: finalResult,
     updated_at: now(),
   };
-  aiResponseCache[identifier] = activity;
+  aiResponseCache.set(identifier, activity);
   return activity;
 };
 
@@ -1147,8 +1150,9 @@ export const aiHistory = async (context, user, args) => {
   const { id, language = 'English', forceRefresh = false } = args;
   // Resolve in cache
   const identifier = `${id}-history`;
-  if (!forceRefresh && aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT))) {
-    return aiResponseCache[identifier];
+  const cachedHistory = aiResponseCache.get(identifier);
+  if (!forceRefresh && cachedHistory && utcDate(cachedHistory.updatedAt).isAfter(minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT))) {
+    return cachedHistory;
   }
   // Resolve the entity
   const stixCoreObject = await storeLoadById(context, user, id, ABSTRACT_STIX_CORE_OBJECT);
@@ -1183,7 +1187,7 @@ export const aiHistory = async (context, user, args) => {
   const finalResult = cleanHtmlTags(result);
 
   const history = { result: finalResult, updated_at: now() };
-  aiResponseCache[identifier] = history;
+  aiResponseCache.set(identifier, history);
   return history;
 };
 
@@ -1192,20 +1196,28 @@ export const aiActivityForThreats = async (context, user, stixCoreObject, langua
   const indicatorsStats = await getIndicatorsStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const victimologyStats = await getVictimologyStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const topSectors = {};
-
-  for (let i = 0; i < 8; i++) {
-    topSectors[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_IDENTITY_SECTOR], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
-  }
   const topCountries = {};
-
-  for (let i = 0; i < 8; i++) {
-    topCountries[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_LOCATION_COUNTRY], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
-  }
   const topRegions = {};
 
+  const victimPromises = [];
   for (let i = 0; i < 8; i++) {
-    topRegions[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_LOCATION_REGION], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
+    const label = `From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`;
+    victimPromises.push(
+      getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_IDENTITY_SECTOR], monthsAgo(i * 3 + 3), monthsAgo(i * 3))
+        .then((result) => {
+          topSectors[label] = result;
+        }),
+      getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_LOCATION_COUNTRY], monthsAgo(i * 3 + 3), monthsAgo(i * 3))
+        .then((result) => {
+          topCountries[label] = result;
+        }),
+      getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_LOCATION_REGION], monthsAgo(i * 3 + 3), monthsAgo(i * 3))
+        .then((result) => {
+          topRegions[label] = result;
+        }),
+    );
   }
+  await Promise.all(victimPromises);
 
   const userPrompt = `
   # Context
@@ -1308,20 +1320,28 @@ export const aiForecastForThreats = async (context, user, stixCoreObject, langua
   const indicatorsStats = await getIndicatorsStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const victimologyStats = await getVictimologyStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const topSectors = {};
-
-  for (let i = 0; i < 8; i++) {
-    topSectors[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_IDENTITY_SECTOR], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
-  }
   const topCountries = {};
-
-  for (let i = 0; i < 8; i++) {
-    topCountries[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_LOCATION_COUNTRY], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
-  }
   const topRegions = {};
 
+  const victimPromises = [];
   for (let i = 0; i < 8; i++) {
-    topRegions[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_LOCATION_REGION], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
+    const label = `From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`;
+    victimPromises.push(
+      getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_IDENTITY_SECTOR], monthsAgo(i * 3 + 3), monthsAgo(i * 3))
+        .then((result) => {
+          topSectors[label] = result;
+        }),
+      getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_LOCATION_COUNTRY], monthsAgo(i * 3 + 3), monthsAgo(i * 3))
+        .then((result) => {
+          topCountries[label] = result;
+        }),
+      getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_LOCATION_REGION], monthsAgo(i * 3 + 3), monthsAgo(i * 3))
+        .then((result) => {
+          topRegions[label] = result;
+        }),
+    );
   }
+  await Promise.all(victimPromises);
 
   const userPrompt = `
   # Context
@@ -1381,15 +1401,23 @@ export const aiActivityForVictims = async (context, user, stixCoreObject, langua
   const targetingStats = await getTargetingStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const containersStats = await getContainersStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const topIntrusionSets = {};
-
-  for (let i = 0; i < 8; i++) {
-    topIntrusionSets[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopThreats(context, user, stixCoreObject.id, [ENTITY_TYPE_INTRUSION_SET], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
-  }
   const topMalwares = {};
 
+  const threatPromises = [];
   for (let i = 0; i < 8; i++) {
-    topMalwares[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopThreats(context, user, stixCoreObject.id, [ENTITY_TYPE_MALWARE], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
+    const label = `From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`;
+    threatPromises.push(
+      getTopThreats(context, user, stixCoreObject.id, [ENTITY_TYPE_INTRUSION_SET], monthsAgo(i * 3 + 3), monthsAgo(i * 3))
+        .then((result) => {
+          topIntrusionSets[label] = result;
+        }),
+      getTopThreats(context, user, stixCoreObject.id, [ENTITY_TYPE_MALWARE], monthsAgo(i * 3 + 3), monthsAgo(i * 3))
+        .then((result) => {
+          topMalwares[label] = result;
+        }),
+    );
   }
+  await Promise.all(threatPromises);
 
   const userPrompt = `
   # Context
@@ -1488,15 +1516,23 @@ export const aiForecastForVictims = async (context, user, stixCoreObject, langua
   const targetingStats = await getTargetingStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const containersStats = await getContainersStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const topIntrusionSets = {};
-
-  for (let i = 0; i < 8; i++) {
-    topIntrusionSets[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopThreats(context, user, stixCoreObject.id, [ENTITY_TYPE_INTRUSION_SET], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
-  }
   const topMalwares = {};
 
+  const threatPromises = [];
   for (let i = 0; i < 8; i++) {
-    topMalwares[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopThreats(context, user, stixCoreObject.id, [ENTITY_TYPE_MALWARE], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
+    const label = `From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`;
+    threatPromises.push(
+      getTopThreats(context, user, stixCoreObject.id, [ENTITY_TYPE_INTRUSION_SET], monthsAgo(i * 3 + 3), monthsAgo(i * 3))
+        .then((result) => {
+          topIntrusionSets[label] = result;
+        }),
+      getTopThreats(context, user, stixCoreObject.id, [ENTITY_TYPE_MALWARE], monthsAgo(i * 3 + 3), monthsAgo(i * 3))
+        .then((result) => {
+          topMalwares[label] = result;
+        }),
+    );
   }
+  await Promise.all(threatPromises);
 
   const userPrompt = `
   # Context

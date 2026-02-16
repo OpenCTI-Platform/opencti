@@ -17,7 +17,7 @@ import { fetchEditContext } from '../database/redis';
 import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
 import { distributionRelations, stixLoadByIdStringify, timeSeriesRelations } from '../database/middleware';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
-import { findById as findStatusById, getTypeStatuses } from '../domain/status';
+import { findById as findStatusById, isGlobalWorkflowEnabled } from '../domain/status';
 import { addOrganizationRestriction, removeOrganizationRestriction } from '../domain/stix';
 import { numberOfContainersForObject } from '../domain/container';
 import { casesPaginated, containersPaginated, externalReferencesPaginated, notesPaginated, opinionsPaginated, reportsPaginated } from '../domain/stixCoreObject';
@@ -72,10 +72,7 @@ const stixSightingRelationshipResolvers = {
     toStix: (rel, args, context) => stixLoadByIdStringify(context, context.user, rel.id, args),
     editContext: (rel) => fetchEditContext(rel.id),
     status: (entity, _, context) => (entity.x_opencti_workflow_id ? findStatusById(context, context.user, entity.x_opencti_workflow_id) : null),
-    workflowEnabled: async (entity, _, context) => {
-      const statusesEdges = await getTypeStatuses(context, context.user, entity.entity_type);
-      return statusesEdges.edges.length > 0;
-    },
+    workflowEnabled: (entity, _, context) => isGlobalWorkflowEnabled(context, context.user, entity.entity_type),
     // Figures
     containersNumber: (rel, args, context) => numberOfContainersForObject(context, context.user, { ...args, objectId: rel.id }),
   },

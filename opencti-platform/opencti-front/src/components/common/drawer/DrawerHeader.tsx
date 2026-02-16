@@ -1,4 +1,4 @@
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Theme } from '../../Theme';
 import { Stack, Typography } from '@mui/material';
 import IconButton from '../button/IconButton';

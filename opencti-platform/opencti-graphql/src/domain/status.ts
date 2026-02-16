@@ -40,7 +40,8 @@ export const findAllTemplatesByStatusScope = async (context: AuthContext, user: 
   const platformStatuses = await getEntitiesListFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS);
   const allStatusesByScope = platformStatuses.filter((status) => status.scope === args.scope);
   const templateIds = allStatusesByScope.map((status) => status.template_id);
-  return storeLoadByIds<BasicWorkflowStatus>(context, user, templateIds, ENTITY_TYPE_STATUS_TEMPLATE);
+  const results = await storeLoadByIds<BasicWorkflowStatus>(context, user, templateIds, ENTITY_TYPE_STATUS_TEMPLATE);
+  return results.filter((r): r is BasicWorkflowStatus => r !== undefined);
 };
 export const findById = async (context: AuthContext, user: AuthUser, statusId: string): Promise<BasicWorkflowStatus> => {
   const platformStatuses = await getEntitiesListFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS);

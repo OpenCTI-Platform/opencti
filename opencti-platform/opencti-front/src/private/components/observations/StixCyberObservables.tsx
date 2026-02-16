@@ -130,7 +130,7 @@ const StixCyberObservables: FunctionComponent = () => {
   );
 
   return (
-    <span data-testid="observables-page">
+    <div data-testid="observables-page">
       <ExportContextProvider>
         <Breadcrumbs elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Observables'), current: true }]} />
         {queryRef && (
@@ -145,7 +145,7 @@ const StixCyberObservables: FunctionComponent = () => {
             handleCopy={handleCopy}
             exportContext={{ entity_type: 'Stix-Cyber-Observable' }}
             availableEntityTypes={['Stix-Cyber-Observable']}
-            searchContextFinal={{ entityTypes: ['Stix-Cyber-Observable'] }} // ???? for entity_type fileter
+            searchContextFinal={{ entityTypes: ['Stix-Cyber-Observable'] }}
             createButton={(
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <StixCyberObservableCreation
@@ -164,7 +164,7 @@ const StixCyberObservables: FunctionComponent = () => {
           />
         )}
       </ExportContextProvider>
-    </span>
+    </div>
   );
 };
 

@@ -92,7 +92,7 @@ const ThreatActorsGroup = () => {
         exportContext={{ entity_type: 'Threat-Actor-Group' }}
         keyword={searchTerm}
         filters={filters}
-        paginationOptions={paginationOptions}
+        paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
         handleChangeView={helpers.handleChangeView}
         additionalHeaderButtons={[
