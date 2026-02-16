@@ -1439,13 +1439,13 @@ export type AuthenticationProviderMigrationInput = {
 
 export type AuthenticationProviderMigrationResult = {
   __typename?: 'AuthenticationProviderMigrationResult';
-  button_label_override?: Maybe<Scalars['String']['output']>;
-  configuration: AuthenticationConfiguration;
-  description?: Maybe<Scalars['String']['output']>;
-  enabled: Scalars['Boolean']['output'];
-  identifier_override?: Maybe<Scalars['String']['output']>;
+  env_key: Scalars['String']['output'];
+  identifier?: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
-  type: AuthenticationProviderType;
+  reason?: Maybe<Scalars['String']['output']>;
+  status: Scalars['String']['output'];
+  type?: Maybe<Scalars['String']['output']>;
+  warnings?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
 };
 
 export enum AuthenticationProviderOrdering {
@@ -13916,31 +13916,41 @@ export type LdapConfiguration = {
   __typename?: 'LdapConfiguration';
   allow_self_signed: Scalars['Boolean']['output'];
   bind_dn: Scalars['String']['output'];
+  credentials_lookup?: Maybe<Scalars['String']['output']>;
   extra_conf: Array<ExtraConfEntry>;
   group_base: Scalars['String']['output'];
   group_filter: Scalars['String']['output'];
+  group_search_attributes?: Maybe<Array<Scalars['String']['output']>>;
   groups_mapping: GroupsMapping;
   organizations_mapping: OrganizationsMapping;
+  password_field?: Maybe<Scalars['String']['output']>;
+  search_attributes?: Maybe<Array<Scalars['String']['output']>>;
   search_base: Scalars['String']['output'];
   search_filter: Scalars['String']['output'];
   type: AuthenticationProviderType;
   url: Scalars['String']['output'];
   user_info_mapping: UserInfoMapping;
+  username_field?: Maybe<Scalars['String']['output']>;
 };
 
 export type LdapConfigurationInput = {
   allow_self_signed: Scalars['Boolean']['input'];
   bind_credentials_cleartext?: InputMaybe<Scalars['String']['input']>;
   bind_dn: Scalars['String']['input'];
+  credentials_lookup?: InputMaybe<Scalars['String']['input']>;
   extra_conf?: InputMaybe<Array<ExtraConfEntryInput>>;
   group_base: Scalars['String']['input'];
   group_filter: Scalars['String']['input'];
+  group_search_attributes?: InputMaybe<Array<Scalars['String']['input']>>;
   groups_mapping: GroupsMappingInput;
   organizations_mapping: OrganizationsMappingInput;
+  password_field?: InputMaybe<Scalars['String']['input']>;
+  search_attributes?: InputMaybe<Array<Scalars['String']['input']>>;
   search_base: Scalars['String']['input'];
   search_filter: Scalars['String']['input'];
   url: Scalars['String']['input'];
   user_info_mapping: UserInfoMappingInput;
+  username_field?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type LdapInput = {
@@ -20469,6 +20479,7 @@ export type OidcConfiguration = {
 
 export type OidcConfigurationInput = {
   audience?: InputMaybe<Scalars['String']['input']>;
+  callback_url?: InputMaybe<Scalars['String']['input']>;
   client_id: Scalars['String']['input'];
   client_secret_cleartext?: InputMaybe<Scalars['String']['input']>;
   extra_conf: Array<ExtraConfEntryInput>;
@@ -27623,16 +27634,24 @@ export type SshKeyAddInput = {
 
 export type SamlConfiguration = {
   __typename?: 'SamlConfiguration';
+  authn_context?: Maybe<Array<Scalars['String']['output']>>;
   callback_url?: Maybe<Scalars['String']['output']>;
+  decryption_cert?: Maybe<Scalars['String']['output']>;
+  digest_algorithm?: Maybe<Scalars['String']['output']>;
+  disable_request_acs_url: Scalars['Boolean']['output'];
+  disable_requested_authn_context: Scalars['Boolean']['output'];
   entry_point: Scalars['String']['output'];
   extra_conf: Array<ExtraConfEntry>;
   force_reauthentication: Scalars['Boolean']['output'];
   groups_mapping: GroupsMapping;
+  identifier_format?: Maybe<Scalars['String']['output']>;
   idp_certificate: Scalars['String']['output'];
   issuer: Scalars['String']['output'];
   logout_remote: Scalars['Boolean']['output'];
   organizations_mapping: OrganizationsMapping;
+  signature_algorithm?: Maybe<Scalars['String']['output']>;
   signing_cert?: Maybe<Scalars['String']['output']>;
+  skip_request_compression: Scalars['Boolean']['output'];
   sso_binding_type?: Maybe<Scalars['String']['output']>;
   type: AuthenticationProviderType;
   user_info_mapping: UserInfoMapping;
@@ -27641,16 +27660,26 @@ export type SamlConfiguration = {
 };
 
 export type SamlConfigurationInput = {
+  authn_context?: InputMaybe<Array<Scalars['String']['input']>>;
+  callback_url?: InputMaybe<Scalars['String']['input']>;
+  decryption_cert?: InputMaybe<Scalars['String']['input']>;
+  decryption_pvk_cleartext?: InputMaybe<Scalars['String']['input']>;
+  digest_algorithm?: InputMaybe<Scalars['String']['input']>;
+  disable_request_acs_url?: InputMaybe<Scalars['Boolean']['input']>;
+  disable_requested_authn_context?: InputMaybe<Scalars['Boolean']['input']>;
   entry_point: Scalars['String']['input'];
   extra_conf: Array<ExtraConfEntryInput>;
   force_reauthentication: Scalars['Boolean']['input'];
   groups_mapping: GroupsMappingInput;
+  identifier_format?: InputMaybe<Scalars['String']['input']>;
   idp_certificate: Scalars['String']['input'];
   issuer: Scalars['String']['input'];
   logout_remote: Scalars['Boolean']['input'];
   organizations_mapping: OrganizationsMappingInput;
   private_key_cleartext?: InputMaybe<Scalars['String']['input']>;
+  signature_algorithm?: InputMaybe<Scalars['String']['input']>;
   signing_cert?: InputMaybe<Scalars['String']['input']>;
+  skip_request_compression?: InputMaybe<Scalars['Boolean']['input']>;
   sso_binding_type?: InputMaybe<Scalars['String']['input']>;
   user_info_mapping: UserInfoMappingInput;
   want_assertions_signed: Scalars['Boolean']['input'];
@@ -37542,7 +37571,7 @@ export type ResolversTypes = ResolversObject<{
   AuthenticationProviderConnection: ResolverTypeWrapper<Omit<AuthenticationProviderConnection, 'edges'> & { edges: Array<ResolversTypes['AuthenticationProviderEdge']> }>;
   AuthenticationProviderEdge: ResolverTypeWrapper<Omit<AuthenticationProviderEdge, 'node'> & { node: ResolversTypes['AuthenticationProvider'] }>;
   AuthenticationProviderMigrationInput: AuthenticationProviderMigrationInput;
-  AuthenticationProviderMigrationResult: ResolverTypeWrapper<Omit<AuthenticationProviderMigrationResult, 'configuration'> & { configuration: ResolversTypes['AuthenticationConfiguration'] }>;
+  AuthenticationProviderMigrationResult: ResolverTypeWrapper<AuthenticationProviderMigrationResult>;
   AuthenticationProviderOrdering: AuthenticationProviderOrdering;
   AuthenticationProviderSettings: ResolverTypeWrapper<AuthenticationProviderSettings>;
   AuthenticationProviderType: AuthenticationProviderType;
@@ -38644,7 +38673,7 @@ export type ResolversParentTypes = ResolversObject<{
   AuthenticationProviderConnection: Omit<AuthenticationProviderConnection, 'edges'> & { edges: Array<ResolversParentTypes['AuthenticationProviderEdge']> };
   AuthenticationProviderEdge: Omit<AuthenticationProviderEdge, 'node'> & { node: ResolversParentTypes['AuthenticationProvider'] };
   AuthenticationProviderMigrationInput: AuthenticationProviderMigrationInput;
-  AuthenticationProviderMigrationResult: Omit<AuthenticationProviderMigrationResult, 'configuration'> & { configuration: ResolversParentTypes['AuthenticationConfiguration'] };
+  AuthenticationProviderMigrationResult: AuthenticationProviderMigrationResult;
   AuthenticationProviderSettings: AuthenticationProviderSettings;
   AutoRegisterInput: AutoRegisterInput;
   AutonomousSystem: Omit<AutonomousSystem, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
@@ -40061,13 +40090,13 @@ export type AuthenticationProviderEdgeResolvers<ContextType = any, ParentType ex
 }>;
 
 export type AuthenticationProviderMigrationResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['AuthenticationProviderMigrationResult'] = ResolversParentTypes['AuthenticationProviderMigrationResult']> = ResolversObject<{
-  button_label_override?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  configuration?: Resolver<ResolversTypes['AuthenticationConfiguration'], ParentType, ContextType>;
-  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  identifier_override?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  env_key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  identifier?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  type?: Resolver<ResolversTypes['AuthenticationProviderType'], ParentType, ContextType>;
+  reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  warnings?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
 }>;
 
 export type AuthenticationProviderSettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['AuthenticationProviderSettings'] = ResolversParentTypes['AuthenticationProviderSettings']> = ResolversObject<{
@@ -44232,16 +44261,21 @@ export type LanguageEdgeResolvers<ContextType = any, ParentType extends Resolver
 export type LdapConfigurationResolvers<ContextType = any, ParentType extends ResolversParentTypes['LdapConfiguration'] = ResolversParentTypes['LdapConfiguration']> = ResolversObject<{
   allow_self_signed?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   bind_dn?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  credentials_lookup?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   extra_conf?: Resolver<Array<ResolversTypes['ExtraConfEntry']>, ParentType, ContextType>;
   group_base?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   group_filter?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  group_search_attributes?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   groups_mapping?: Resolver<ResolversTypes['GroupsMapping'], ParentType, ContextType>;
   organizations_mapping?: Resolver<ResolversTypes['OrganizationsMapping'], ParentType, ContextType>;
+  password_field?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  search_attributes?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   search_base?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   search_filter?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   type?: Resolver<ResolversTypes['AuthenticationProviderType'], ParentType, ContextType>;
   url?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   user_info_mapping?: Resolver<ResolversTypes['UserInfoMapping'], ParentType, ContextType>;
+  username_field?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -47626,16 +47660,24 @@ export type SshKeyResolvers<ContextType = any, ParentType extends ResolversParen
 }>;
 
 export type SamlConfigurationResolvers<ContextType = any, ParentType extends ResolversParentTypes['SamlConfiguration'] = ResolversParentTypes['SamlConfiguration']> = ResolversObject<{
+  authn_context?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   callback_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  decryption_cert?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  digest_algorithm?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  disable_request_acs_url?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  disable_requested_authn_context?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   entry_point?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   extra_conf?: Resolver<Array<ResolversTypes['ExtraConfEntry']>, ParentType, ContextType>;
   force_reauthentication?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   groups_mapping?: Resolver<ResolversTypes['GroupsMapping'], ParentType, ContextType>;
+  identifier_format?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   idp_certificate?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   issuer?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   logout_remote?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   organizations_mapping?: Resolver<ResolversTypes['OrganizationsMapping'], ParentType, ContextType>;
+  signature_algorithm?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   signing_cert?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  skip_request_compression?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   sso_binding_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   type?: Resolver<ResolversTypes['AuthenticationProviderType'], ParentType, ContextType>;
   user_info_mapping?: Resolver<ResolversTypes['UserInfoMapping'], ParentType, ContextType>;

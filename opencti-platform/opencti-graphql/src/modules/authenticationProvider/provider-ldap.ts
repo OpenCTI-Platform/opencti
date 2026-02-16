@@ -17,13 +17,17 @@ const convertConfiguration = (conf: LdapProviderConfiguration): LdapStrategy.Opt
     bindCredentials: conf.bind_credentials,
     searchBase: conf.search_base,
     searchFilter: conf.search_filter,
+    searchAttributes: conf.search_attributes,
     groupSearchBase: conf.group_base,
     groupSearchFilter: conf.group_filter,
+    groupSearchAttributes: conf.group_search_attributes,
     tlsOptions: {
       rejectUnauthorized: !(conf.allow_self_signed ?? false),
     },
     ...conf.extra_conf,
   },
+  usernameField: conf.username_field,
+  passwordField: conf.password_field,
 });
 
 export const registerLDAPStrategy = async (conf: LdapProviderConfiguration) => {

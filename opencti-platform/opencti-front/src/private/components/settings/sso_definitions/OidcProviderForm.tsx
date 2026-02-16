@@ -12,6 +12,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Paper from '@mui/material/Paper';
 import MuiSwitch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import Divider from '@mui/material/Divider';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -73,6 +74,7 @@ interface OidcFormValues {
   enabled: boolean;
   button_label_override: string;
   identifier_override: string;
+  callback_url: string;
   issuer: string;
   client_id: string;
   client_secret_cleartext: string;
@@ -124,6 +126,7 @@ const defaultValues: OidcFormValues = {
   enabled: true,
   button_label_override: '',
   identifier_override: '',
+  callback_url: '',
   issuer: '',
   client_id: '',
   client_secret_cleartext: '',
@@ -157,6 +160,7 @@ const buildInitialValues = (data: OidcProviderData): OidcFormValues => {
     enabled: data.enabled,
     button_label_override: data.button_label_override ?? '',
     identifier_override: data.identifier_override ?? '',
+    callback_url: conf.callback_url ?? '',
     issuer: conf.issuer ?? '',
     client_id: conf.client_id ?? '',
     client_secret_cleartext: '',
@@ -210,9 +214,9 @@ const OidcProviderForm = ({
   const { settings } = useAuth();
   const theme = useTheme<Theme>();
   const [currentTab, setCurrentTab] = useState(0);
-  const [advancedOpen, setAdvancedOpen] = useState(false);
   const isEditing = !!data;
   const [overrideIdentifier, setOverrideIdentifier] = useState(!!data?.identifier_override);
+  const [overrideCallbackUrl, setOverrideCallbackUrl] = useState(!!data?.configuration?.callback_url);
 
   const [commitCreate] = useApiMutation<OidcProviderFormCreateMutation>(oidcCreateMutation);
   const [commitEdit] = useApiMutation<OidcProviderFormEditMutation>(oidcEditMutation);
@@ -227,7 +231,7 @@ const OidcProviderForm = ({
       client_secret_cleartext: Yup.string().required(t_i18n('This field is required')),
     }),
     ...(overrideIdentifier && {
-      identifier_override: Yup.string().trim().required(t_i18n('This field is required')),
+      identifier_override: Yup.string().trim(),
     }),
   });
 
@@ -249,6 +253,7 @@ const OidcProviderForm = ({
         issuer: values.issuer,
         client_id: values.client_id,
         client_secret_cleartext: values.client_secret_cleartext || null,
+        callback_url: overrideCallbackUrl ? (values.callback_url || null) : null,
         scopes: values.scopes ? values.scopes.split(',').map((s) => s.trim()).filter(Boolean) : [],
         audience: values.audience || null,
         logout_remote: values.logout_remote,
@@ -332,6 +337,21 @@ const OidcProviderForm = ({
           }
         };
 
+        const handleToggleCallbackUrl = (enabled: boolean) => {
+          setOverrideCallbackUrl(enabled);
+          if (enabled) {
+            // Callback URL already contains the identifier, so disable identifier override
+            setOverrideIdentifier(false);
+            setFieldValue('identifier_override', '');
+          } else {
+            setFieldValue('callback_url', '');
+          }
+        };
+
+        const displayedCallbackUrl = overrideCallbackUrl && values.callback_url
+          ? values.callback_url
+          : computedCallbackUrl;
+
         return (
           <Form>
             <IdentifierSanitizeEffect />
@@ -349,7 +369,7 @@ const OidcProviderForm = ({
                   component={SwitchField}
                   type="checkbox"
                   name="enabled"
-                  label={t_i18n('Enabled')}
+                  label={t_i18n('Enable OIDC authentication')}
                   containerstyle={{ marginTop: 20 }}
                 />
 
@@ -363,6 +383,82 @@ const OidcProviderForm = ({
                   required
                   style={{ marginTop: 20 }}
                 />
+
+                {/* Provider routing — right below Configuration name */}
+                <Paper variant="outlined" sx={{ mt: 2, borderRadius: 1, overflow: 'hidden' }}>
+                  <Box sx={{ px: 2, py: 1.5, backgroundColor: 'action.hover', display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Typography variant="caption" color="textSecondary" sx={{ whiteSpace: 'nowrap' }}>
+                      {t_i18n('Callback URL')}
+                    </Typography>
+                    {displayedCallbackUrl ? (
+                      <ItemCopy content={displayedCallbackUrl} variant="inLine" />
+                    ) : (
+                      <Typography variant="body2" color="textSecondary" sx={{ fontStyle: 'italic' }}>
+                        {t_i18n('Enter a configuration name to generate the callback URL.')}
+                      </Typography>
+                    )}
+                  </Box>
+                  <Divider />
+                  <Box sx={{
+                    display: 'grid',
+                    gridTemplateColumns: 'auto 1fr',
+                    gridAutoRows: 48,
+                    alignItems: 'end',
+                    columnGap: 2,
+                    px: 2,
+                    pt: 1.5,
+                    pb: 3,
+                  }}
+                  >
+                    <FormControlLabel
+                      disabled={overrideCallbackUrl}
+                      control={(
+                        <MuiSwitch
+                          checked={overrideIdentifier}
+                          onChange={(_, checked) => handleToggleOverride(checked)}
+                          size="small"
+                        />
+                      )}
+                      label={t_i18n('Override identifier')}
+                      componentsProps={{ typography: { variant: 'body2' } }}
+                      sx={{ m: 0 }}
+                    />
+                    {overrideIdentifier ? (
+                      <Field
+                        component={TextField}
+                        variant="standard"
+                        name="identifier_override"
+                        label={t_i18n('Provider identifier')}
+                        fullWidth
+                        size="small"
+                        disabled={overrideCallbackUrl}
+                      />
+                    ) : <span />}
+                    <FormControlLabel
+                      control={(
+                        <MuiSwitch
+                          checked={overrideCallbackUrl}
+                          onChange={(_, checked) => handleToggleCallbackUrl(checked)}
+                          size="small"
+                        />
+                      )}
+                      label={t_i18n('Override callback URL')}
+                      componentsProps={{ typography: { variant: 'body2' } }}
+                      sx={{ m: 0 }}
+                    />
+                    {overrideCallbackUrl ? (
+                      <Field
+                        component={TextField}
+                        variant="standard"
+                        name="callback_url"
+                        label={t_i18n('Callback URL override')}
+                        fullWidth
+                        size="small"
+                      />
+                    ) : <span />}
+                  </Box>
+                </Paper>
+
                 <Field
                   component={TextField}
                   variant="standard"
@@ -412,55 +508,10 @@ const OidcProviderForm = ({
                   style={{ marginTop: 20 }}
                 />
 
-                {/* Provider identifier & callback URL */}
-                <Paper variant="outlined" sx={{ mt: 3, p: 2, borderRadius: 1 }}>
-                  <Typography variant="body2" color="textSecondary">
-                    {t_i18n('Callback URL')}
-                  </Typography>
-                  {computedCallbackUrl ? (
-                    <ItemCopy content={computedCallbackUrl} variant="inLine" />
-                  ) : (
-                    <Typography variant="body2" color="textSecondary" sx={{ fontStyle: 'italic', mt: 0.5 }}>
-                      {t_i18n('Enter a configuration name to generate the callback URL.')}
-                    </Typography>
-                  )}
-                  <FormControlLabel
-                    control={(
-                      <MuiSwitch
-                        checked={overrideIdentifier}
-                        onChange={(_, checked) => handleToggleOverride(checked)}
-                        size="small"
-                      />
-                    )}
-                    label={(
-                      <Typography variant="body2">
-                        {t_i18n('Customize provider identifier')}
-                      </Typography>
-                    )}
-                    sx={{ mt: 1.5 }}
-                  />
-                  {overrideIdentifier && (
-                    <Field
-                      component={TextField}
-                      variant="standard"
-                      name="identifier_override"
-                      label={t_i18n('Provider identifier')}
-                      fullWidth
-                      required
-                      style={{ marginTop: 10 }}
-                    />
-                  )}
-                </Paper>
-
-                {/* Advanced configuration - collapsed by default */}
-                <Accordion
-                  expanded={advancedOpen}
-                  onChange={() => setAdvancedOpen(!advancedOpen)}
-                  variant="outlined"
-                  style={{ marginTop: 30 }}
-                >
+                {/* --- Protocol & Scopes --- */}
+                <Accordion variant="outlined" style={{ marginTop: 30 }}>
                   <AccordionSummary expandIcon={<ExpandMoreOutlined />}>
-                    <Typography>{t_i18n('Advanced configuration')}</Typography>
+                    <Typography>{t_i18n('Protocol & Scopes')}</Typography>
                   </AccordionSummary>
                   <AccordionDetails sx={{ display: 'block' }}>
                     <Field
@@ -474,22 +525,6 @@ const OidcProviderForm = ({
                       type="checkbox"
                       name="use_proxy"
                       label={t_i18n('Use proxy')}
-                    />
-                    <Field
-                      component={TextField}
-                      variant="standard"
-                      name="description"
-                      label={t_i18n('Description')}
-                      fullWidth
-                      style={{ marginTop: 20 }}
-                    />
-                    <Field
-                      component={TextField}
-                      variant="standard"
-                      name="button_label_override"
-                      label={t_i18n('Login button label')}
-                      fullWidth
-                      style={{ marginTop: 20 }}
                     />
                     <Field
                       component={TextField}
@@ -515,6 +550,31 @@ const OidcProviderForm = ({
                       fullWidth
                       style={{ marginTop: 20 }}
                     />
+                  </AccordionDetails>
+                </Accordion>
+
+                {/* --- Display & Metadata --- */}
+                <Accordion variant="outlined" style={{ marginTop: 10 }}>
+                  <AccordionSummary expandIcon={<ExpandMoreOutlined />}>
+                    <Typography>{t_i18n('Display & Metadata')}</Typography>
+                  </AccordionSummary>
+                  <AccordionDetails sx={{ display: 'block' }}>
+                    <Field
+                      component={TextField}
+                      variant="standard"
+                      name="description"
+                      label={t_i18n('Description')}
+                      fullWidth
+                      style={{ marginTop: 10 }}
+                    />
+                    <Field
+                      component={TextField}
+                      variant="standard"
+                      name="button_label_override"
+                      label={t_i18n('Login button label')}
+                      fullWidth
+                      style={{ marginTop: 20 }}
+                    />
                     <Field
                       component={TextField}
                       variant="standard"
@@ -531,23 +591,36 @@ const OidcProviderForm = ({
                       fullWidth
                       style={{ marginTop: 20 }}
                     />
+                  </AccordionDetails>
+                </Accordion>
 
-                    {/* Extra configuration */}
+                {/* --- Extra configuration --- */}
+                <Accordion variant="outlined" style={{ marginTop: 10 }}>
+                  <AccordionSummary expandIcon={<ExpandMoreOutlined />}>
+                    <Typography>{t_i18n('Extra configuration')}</Typography>
+                  </AccordionSummary>
+                  <AccordionDetails sx={{ display: 'block' }}>
                     <FieldArray name="extra_conf">
                       {({ push, remove }) => (
                         <>
-                          <div style={{ display: 'flex', alignItems: 'center', marginTop: 20 }}>
-                            <Typography variant="h4" sx={{ m: 0 }}>{t_i18n('Extra configuration')}</Typography>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <Typography variant="body2" color="textSecondary" style={{ width: '20%' }}>{t_i18n('Type')}</Typography>
+                            <Typography variant="body2" color="textSecondary" style={{ flex: 1 }}>{t_i18n('Key')}</Typography>
+                            <Typography variant="body2" color="textSecondary" style={{ flex: 1 }}>{t_i18n('Value')}</Typography>
                             <IconButton
                               color="primary"
                               aria-label={t_i18n('Add')}
                               size="default"
-                              style={{ marginLeft: 8 }}
                               onClick={() => push({ type: 'String', key: '', value: '' })}
                             >
                               <Add fontSize="small" color="primary" />
                             </IconButton>
                           </div>
+                          {values.extra_conf.length === 0 && (
+                            <Typography variant="body2" color="textSecondary" sx={{ fontStyle: 'italic', mt: 1 }}>
+                              {t_i18n('No extra configuration entries. Click + to add one.')}
+                            </Typography>
+                          )}
                           {values.extra_conf.map((_: ExtraConfEntry, index: number) => (
                             <div
                               key={index}
@@ -555,7 +628,7 @@ const OidcProviderForm = ({
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: 8,
-                                marginTop: 20,
+                                marginTop: 10,
                               }}
                             >
                               <Field

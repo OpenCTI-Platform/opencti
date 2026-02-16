@@ -75,6 +75,11 @@ interface LdapFormValues {
   group_base: string;
   group_filter: string;
   allow_self_signed: boolean;
+  search_attributes: string;
+  username_field: string;
+  password_field: string;
+  credentials_lookup: string;
+  group_search_attributes: string;
   email_expr: string;
   name_expr: string;
   firstname_expr: string;
@@ -114,6 +119,11 @@ const defaultValues: LdapFormValues = {
   group_base: '',
   group_filter: '',
   allow_self_signed: false,
+  search_attributes: '',
+  username_field: '',
+  password_field: '',
+  credentials_lookup: '',
+  group_search_attributes: '',
   email_expr: '',
   name_expr: '',
   firstname_expr: '',
@@ -146,6 +156,11 @@ const buildInitialValues = (data: LdapProviderData): LdapFormValues => {
     group_base: conf.group_base ?? '',
     group_filter: conf.group_filter ?? '',
     allow_self_signed: conf.allow_self_signed ?? false,
+    search_attributes: (conf.search_attributes ?? []).join(', '),
+    username_field: conf.username_field ?? '',
+    password_field: conf.password_field ?? '',
+    credentials_lookup: conf.credentials_lookup ?? '',
+    group_search_attributes: (conf.group_search_attributes ?? []).join(', '),
     email_expr: conf.user_info_mapping?.email_expr ?? '',
     name_expr: conf.user_info_mapping?.name_expr ?? '',
     firstname_expr: conf.user_info_mapping?.firstname_expr ?? '',
@@ -175,7 +190,6 @@ const LdapProviderForm = ({
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const [currentTab, setCurrentTab] = useState(0);
-  const [advancedOpen, setAdvancedOpen] = useState(false);
   const isEditing = !!data;
 
   const [commitCreate] = useApiMutation<LdapProviderFormCreateMutation>(ldapCreateMutation);
@@ -218,6 +232,11 @@ const LdapProviderForm = ({
         group_base: values.group_base,
         group_filter: values.group_filter,
         allow_self_signed: values.allow_self_signed,
+        search_attributes: values.search_attributes ? values.search_attributes.split(',').map((s) => s.trim()).filter(Boolean) : null,
+        username_field: values.username_field || null,
+        password_field: values.password_field || null,
+        credentials_lookup: values.credentials_lookup || null,
+        group_search_attributes: values.group_search_attributes ? values.group_search_attributes.split(',').map((s) => s.trim()).filter(Boolean) : null,
         user_info_mapping: {
           email_expr: values.email_expr,
           name_expr: values.name_expr,
@@ -396,15 +415,10 @@ const LdapProviderForm = ({
                 style={{ marginTop: 20 }}
               />
 
-              {/* Advanced configuration - collapsed by default */}
-              <Accordion
-                expanded={advancedOpen}
-                onChange={() => setAdvancedOpen(!advancedOpen)}
-                variant="outlined"
-                style={{ marginTop: 30 }}
-              >
+              {/* --- Search & Authentication --- */}
+              <Accordion variant="outlined" style={{ marginTop: 30 }}>
                 <AccordionSummary expandIcon={<ExpandMoreOutlined />}>
-                  <Typography>{t_i18n('Advanced configuration')}</Typography>
+                  <Typography>{t_i18n('Search & Authentication')}</Typography>
                 </AccordionSummary>
                 <AccordionDetails sx={{ display: 'block' }}>
                   <Field
@@ -416,10 +430,59 @@ const LdapProviderForm = ({
                   <Field
                     component={TextField}
                     variant="standard"
+                    name="search_attributes"
+                    label={t_i18n('Search attributes (comma-separated)')}
+                    fullWidth
+                    style={{ marginTop: 20 }}
+                  />
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="username_field"
+                    label={t_i18n('Username field')}
+                    fullWidth
+                    style={{ marginTop: 20 }}
+                  />
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="password_field"
+                    label={t_i18n('Password field')}
+                    fullWidth
+                    style={{ marginTop: 20 }}
+                  />
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="credentials_lookup"
+                    label={t_i18n('Credentials lookup')}
+                    fullWidth
+                    style={{ marginTop: 20 }}
+                  />
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="group_search_attributes"
+                    label={t_i18n('Group search attributes (comma-separated)')}
+                    fullWidth
+                    style={{ marginTop: 20 }}
+                  />
+                </AccordionDetails>
+              </Accordion>
+
+              {/* --- Display & Metadata --- */}
+              <Accordion variant="outlined" style={{ marginTop: 10 }}>
+                <AccordionSummary expandIcon={<ExpandMoreOutlined />}>
+                  <Typography>{t_i18n('Display & Metadata')}</Typography>
+                </AccordionSummary>
+                <AccordionDetails sx={{ display: 'block' }}>
+                  <Field
+                    component={TextField}
+                    variant="standard"
                     name="description"
                     label={t_i18n('Description')}
                     fullWidth
-                    style={{ marginTop: 20 }}
+                    style={{ marginTop: 10 }}
                   />
                   <Field
                     component={TextField}
@@ -445,23 +508,36 @@ const LdapProviderForm = ({
                     fullWidth
                     style={{ marginTop: 20 }}
                   />
+                </AccordionDetails>
+              </Accordion>
 
-                  {/* Extra configuration */}
+              {/* --- Extra configuration --- */}
+              <Accordion variant="outlined" style={{ marginTop: 10 }}>
+                <AccordionSummary expandIcon={<ExpandMoreOutlined />}>
+                  <Typography>{t_i18n('Extra configuration')}</Typography>
+                </AccordionSummary>
+                <AccordionDetails sx={{ display: 'block' }}>
                   <FieldArray name="extra_conf">
                     {({ push, remove }) => (
                       <>
-                        <div style={{ display: 'flex', alignItems: 'center', marginTop: 20 }}>
-                          <Typography variant="h4" sx={{ m: 0 }}>{t_i18n('Extra configuration')}</Typography>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <Typography variant="body2" color="textSecondary" style={{ width: '20%' }}>{t_i18n('Type')}</Typography>
+                          <Typography variant="body2" color="textSecondary" style={{ flex: 1 }}>{t_i18n('Key')}</Typography>
+                          <Typography variant="body2" color="textSecondary" style={{ flex: 1 }}>{t_i18n('Value')}</Typography>
                           <IconButton
                             color="primary"
                             aria-label={t_i18n('Add')}
                             size="default"
-                            style={{ marginLeft: 8 }}
                             onClick={() => push({ type: 'String', key: '', value: '' })}
                           >
                             <Add fontSize="small" color="primary" />
                           </IconButton>
                         </div>
+                        {values.extra_conf.length === 0 && (
+                          <Typography variant="body2" color="textSecondary" sx={{ fontStyle: 'italic', mt: 1 }}>
+                            {t_i18n('No extra configuration entries. Click + to add one.')}
+                          </Typography>
+                        )}
                         {values.extra_conf.map((_: ExtraConfEntry, index: number) => (
                           <div
                             key={index}
@@ -469,7 +545,7 @@ const LdapProviderForm = ({
                               display: 'flex',
                               alignItems: 'center',
                               gap: 8,
-                              marginTop: 20,
+                              marginTop: 10,
                             }}
                           >
                             <Field

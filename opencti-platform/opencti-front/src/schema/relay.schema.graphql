@@ -15720,6 +15720,7 @@ input OidcConfigurationInput {
   issuer: String!
   client_id: String!
   client_secret_cleartext: String
+  callback_url: String
   scopes: [String!]
   audience: String
   logout_remote: Boolean!
@@ -15743,6 +15744,14 @@ type SamlConfiguration {
   signing_cert: String
   sso_binding_type: String
   force_reauthentication: Boolean!
+  identifier_format: String
+  signature_algorithm: String
+  digest_algorithm: String
+  authn_context: [String!]
+  disable_requested_authn_context: Boolean!
+  disable_request_acs_url: Boolean!
+  skip_request_compression: Boolean!
+  decryption_cert: String
   user_info_mapping: UserInfoMapping!
   groups_mapping: GroupsMapping!
   organizations_mapping: OrganizationsMapping!
@@ -15754,12 +15763,22 @@ input SamlConfigurationInput {
   entry_point: String!
   idp_certificate: String!
   private_key_cleartext: String
+  callback_url: String
   logout_remote: Boolean!
   want_assertions_signed: Boolean!
   want_authn_response_signed: Boolean!
   signing_cert: String
   sso_binding_type: String
   force_reauthentication: Boolean!
+  identifier_format: String
+  signature_algorithm: String
+  digest_algorithm: String
+  authn_context: [String!]
+  disable_requested_authn_context: Boolean
+  disable_request_acs_url: Boolean
+  skip_request_compression: Boolean
+  decryption_pvk_cleartext: String
+  decryption_cert: String
   user_info_mapping: UserInfoMappingInput!
   groups_mapping: GroupsMappingInput!
   organizations_mapping: OrganizationsMappingInput!
@@ -15775,6 +15794,11 @@ type LdapConfiguration {
   group_base: String!
   group_filter: String!
   allow_self_signed: Boolean!
+  search_attributes: [String!]
+  username_field: String
+  password_field: String
+  credentials_lookup: String
+  group_search_attributes: [String!]
   user_info_mapping: UserInfoMapping!
   groups_mapping: GroupsMapping!
   organizations_mapping: OrganizationsMapping!
@@ -15790,6 +15814,11 @@ input LdapConfigurationInput {
   group_base: String!
   group_filter: String!
   allow_self_signed: Boolean!
+  search_attributes: [String!]
+  username_field: String
+  password_field: String
+  credentials_lookup: String
+  group_search_attributes: [String!]
   user_info_mapping: UserInfoMappingInput!
   groups_mapping: GroupsMappingInput!
   organizations_mapping: OrganizationsMappingInput!

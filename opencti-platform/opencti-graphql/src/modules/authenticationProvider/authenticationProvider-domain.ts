@@ -93,7 +93,7 @@ const graphQLToStoreConfiguration = async (
       throw FunctionalError('Secret field must be provided', { field: fieldName });
     }
     // Replace cleartext field by encrypted field
-    delete output[fieldName];
+    delete output[clearTextFieldName];
     output[`${fieldName}_encrypted`] = encryptedValue;
   }
   return output;
@@ -122,7 +122,7 @@ export const oidcStoreToProvider = async (providerConfig: BasicStoreEntityAuthen
     client_id: configuration.client_id,
     client_secret: await decryptAuthValue(configuration.client_secret_encrypted),
     scopes: configuration.scopes,
-    callback_url: `${getBaseUrl()}/auth/${identifier}/callback`,
+    callback_url: configuration.callback_url || `${getBaseUrl()}/auth/${identifier}/callback`,
     logout_remote: configuration.logout_remote,
     logout_callback_url: configuration.logout_callback_url,
     use_proxy: configuration.use_proxy,
@@ -144,13 +144,22 @@ export const samlStoreToProvider = async (providerConfig: BasicStoreEntityAuthen
     entry_point: configuration.entry_point,
     idp_certificate: configuration.idp_certificate,
     private_key: await decryptAuthValue(configuration.private_key_encrypted),
-    callback_url: `${getBaseUrl()}/auth/${identifier}/callback`,
+    callback_url: configuration.callback_url || `${getBaseUrl()}/auth/${identifier}/callback`,
     logout_remote: configuration.logout_remote,
     want_assertions_signed: configuration.want_assertions_signed,
     want_authn_response_signed: configuration.want_authn_response_signed,
     signing_cert: configuration.signing_cert,
     sso_binding_type: configuration.sso_binding_type,
     force_reauthentication: configuration.force_reauthentication,
+    identifier_format: configuration.identifier_format,
+    signature_algorithm: configuration.signature_algorithm,
+    digest_algorithm: configuration.digest_algorithm,
+    authn_context: configuration.authn_context,
+    disable_requested_authn_context: configuration.disable_requested_authn_context,
+    disable_request_acs_url: configuration.disable_request_acs_url,
+    skip_request_compression: configuration.skip_request_compression,
+    decryption_pvk: configuration.decryption_pvk_encrypted ? await decryptAuthValue(configuration.decryption_pvk_encrypted) : undefined,
+    decryption_cert: configuration.decryption_cert,
     user_info_mapping: configuration.user_info_mapping,
     groups_mapping: configuration.groups_mapping,
     organizations_mapping: configuration.organizations_mapping,
@@ -172,6 +181,11 @@ export const ldapStoreToProvider = async (providerConfig: BasicStoreEntityAuthen
     group_base: configuration.group_base,
     group_filter: configuration.group_filter,
     allow_self_signed: configuration.allow_self_signed,
+    search_attributes: configuration.search_attributes,
+    username_field: configuration.username_field,
+    password_field: configuration.password_field,
+    credentials_lookup: configuration.credentials_lookup,
+    group_search_attributes: configuration.group_search_attributes,
     user_info_mapping: configuration.user_info_mapping,
     groups_mapping: configuration.groups_mapping,
     organizations_mapping: configuration.organizations_mapping,

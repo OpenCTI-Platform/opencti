@@ -29,7 +29,8 @@ const PROVIDER_TYPE_MAP: Record<string, AuthenticationProviderType> = {
 // ---------------------------------------------------------------------------
 
 export interface MigrationResultEntry {
-  envKey: string;
+  env_key: string;
+  name: string;
   status: 'created' | 'skipped_already_migrated' | 'skipped' | 'error';
   type?: string;
   identifier?: string;
@@ -71,28 +72,32 @@ export const parseAuthenticationProviderConfiguration = async (
   // 3. Persist converted providers
   for (const { envKey, result } of conversionResults) {
     if (result.status === 'skipped') {
-      results.push({ envKey, status: 'skipped', reason: result.reason });
+      results.push({ env_key: envKey, name: envKey, status: 'skipped', reason: result.reason });
       logApp.info(`[MIGRATION] Skipped "${envKey}": ${result.reason}`);
       continue;
     }
 
     if (result.status === 'error') {
-      results.push({ envKey, status: 'error', reason: result.reason });
+      results.push({ env_key: envKey, name: envKey, status: 'error', reason: result.reason });
       logApp.error(`[MIGRATION] Error for "${envKey}": ${result.reason}`);
       continue;
     }
 
     // result.status === 'converted'
     const { provider } = result as { status: 'converted'; provider: ConvertedProvider };
-    const identifier = provider.base.identifier_override!; // always set by resolveIdentifier()
+    const identifier = provider.base.identifier_override ?? envKey;
+
+    const providerType = PROVIDER_TYPE_MAP[provider.type];
+    if (!providerType) {
+      results.push({ env_key: envKey, name: provider.base.name, status: 'error', reason: `Unknown provider type "${provider.type}".` });
+      continue;
+    }
 
     // Skip if already migrated
     if (isAuthenticationProviderMigrated(existingIdentifiers, identifier)) {
       results.push({
-        envKey,
-        status: 'skipped_already_migrated',
-        type: provider.type,
-        identifier,
+        env_key: envKey, name: provider.base.name, status: 'skipped_already_migrated',
+        type: provider.type, identifier,
         reason: `Provider "${identifier}" already exists in database.`,
       });
       logApp.info(`[MIGRATION] Skipped "${envKey}" (${provider.type}): already migrated as "${identifier}".`);
@@ -104,19 +109,10 @@ export const parseAuthenticationProviderConfiguration = async (
       logApp.warn(`[MIGRATION] "${envKey}" (${provider.type}): ${warning}`);
     }
 
-    const providerType = PROVIDER_TYPE_MAP[provider.type];
-    if (!providerType) {
-      results.push({ envKey, status: 'error', reason: `Unknown provider type "${provider.type}".` });
-      continue;
-    }
-
     if (dryRun) {
       results.push({
-        envKey,
-        status: 'created',
-        type: provider.type,
-        identifier,
-        warnings: provider.warnings,
+        env_key: envKey, name: provider.base.name, status: 'created',
+        type: provider.type, identifier, warnings: provider.warnings,
         reason: '[DRY RUN] Would create provider.',
       });
       logApp.info(`[MIGRATION] [DRY RUN] Would create ${provider.type} provider "${identifier}" from "${envKey}".`);
@@ -125,16 +121,13 @@ export const parseAuthenticationProviderConfiguration = async (
         const input = { base: provider.base, configuration: provider.configuration };
         await addAuthenticationProvider(context, user, input, providerType, true);
         results.push({
-          envKey,
-          status: 'created',
-          type: provider.type,
-          identifier,
-          warnings: provider.warnings,
+          env_key: envKey, name: provider.base.name, status: 'created',
+          type: provider.type, identifier, warnings: provider.warnings,
         });
         logApp.info(`[MIGRATION] Created ${provider.type} provider "${identifier}" from "${envKey}".`);
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
-        results.push({ envKey, status: 'error', type: provider.type, identifier, reason: message });
+        results.push({ env_key: envKey, name: provider.base.name, status: 'error', type: provider.type, identifier, reason: message });
         logApp.error(`[MIGRATION] Failed to create ${provider.type} provider "${identifier}": ${message}`);
       }
     }

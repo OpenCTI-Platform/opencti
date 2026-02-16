@@ -15,6 +15,7 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import Card from '../../../components/common/card/Card';
 import MarkdownField from '../../../components/fields/MarkdownField';
 import SelectField from '../../../components/fields/SelectField';
+import SwitchField from '../../../components/fields/SwitchField';
 
 import { useFormatter } from '../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../components/Loader';
@@ -132,7 +133,6 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
     platform_consent_confirm_text: settings.platform_consent_confirm_text,
     platform_banner_level: settings.platform_banner_level,
     platform_banner_text: settings.platform_banner_text,
-    default_group_for_ingestion_users: null,
     view_all_users: settings.view_all_users ?? false,
   };
   return (
@@ -219,6 +219,10 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                                   setPlatformOrganization(values.platform_organization);
                                   setOpenPlatformOrganizationChanges(false);
                                   handleSubmitField('platform_organization', values.platform_organization);
+                                  if (values.platform_organization) {
+                                    setFieldValue('view_all_users', false);
+                                    handleSubmitField('view_all_users', 'false');
+                                  }
                                 }}
                               >
                                 {t_i18n('Validate')}
@@ -230,12 +234,60 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                     />
                   </Grid>
 
-                  <GroupSetDefaultGroupForIngestionUsers
-                    showUsersVisibility={isUsersVisibilityFeatureEnable}
-                    onFieldSubmit={handleSubmitField}
-                  />
+                  <GroupSetDefaultGroupForIngestionUsers />
+
+                  {isUsersVisibilityFeatureEnable && (
+                    <Grid item xs={6}>
+                      <Card title={t_i18n('Users visibility')}>
+                        <Alert severity="info" variant="outlined">
+                          {t_i18n('This option is automatically disabled when a platform organization is set.')}
+                        </Alert>
+                        <Field
+                          component={SwitchField}
+                          type="checkbox"
+                          name="view_all_users"
+                          label={t_i18n('Allow users to view users of other organizations')}
+                          containerstyle={{ marginTop: 20 }}
+                          disabled={!!values.platform_organization}
+                          onChange={(name: string, value: string) => handleSubmitField(name, value)}
+                        />
+                      </Card>
+                    </Grid>
+                  )}
 
                   <Grid item xs={6}>
+                    <Card title={t_i18n('Platform Banner Configuration')}>
+                      <Field
+                        component={SelectField}
+                        variant="standard"
+                        name="platform_banner_level"
+                        label={t_i18n('Platform banner level')}
+                        fullWidth={true}
+                        containerstyle={{ marginTop: 5, width: '100%' }}
+                        onSubmit={(name: string, value: string) => {
+                          return handleSubmitField(name, value);
+                        }}
+                        displ
+                      >
+                        <MenuItem value="">&nbsp;</MenuItem>
+                        <MenuItem value="GREEN">{t_i18n('GREEN')}</MenuItem>
+                        <MenuItem value="RED">{t_i18n('RED')}</MenuItem>
+                        <MenuItem value="YELLOW">{t_i18n('YELLOW')}</MenuItem>
+                      </Field>
+                      <Field
+                        component={TextField}
+                        variant="standard"
+                        style={{ marginTop: 20 }}
+                        name="platform_banner_text"
+                        label={t_i18n('Platform banner text')}
+                        fullWidth={true}
+                        onSubmit={handleSubmitField}
+                      />
+                    </Card>
+                  </Grid>
+
+                  {/* Full width: Login messages */}
+                  <Grid item xs={12}>
                     <Card title={t_i18n('Login messages')}>
                       <Field
                         component={MarkdownField}
@@ -265,36 +317,6 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                         height={38}
                         onSubmit={handleSubmitField}
                         variant="standard"
-                      />
-                    </Card>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Card title={t_i18n('Platform Banner Configuration')}>
-                      <Field
-                        component={SelectField}
-                        variant="standard"
-                        name="platform_banner_level"
-                        label={t_i18n('Platform banner level')}
-                        fullWidth={true}
-                        containerstyle={{ marginTop: 5, width: '100%' }}
-                        onSubmit={(name: string, value: string) => {
-                          return handleSubmitField(name, value);
-                        }}
-                        displ
-                      >
-                        <MenuItem value="">&nbsp;</MenuItem>
-                        <MenuItem value="GREEN">{t_i18n('GREEN')}</MenuItem>
-                        <MenuItem value="RED">{t_i18n('RED')}</MenuItem>
-                        <MenuItem value="YELLOW">{t_i18n('YELLOW')}</MenuItem>
-                      </Field>
-                      <Field
-                        component={TextField}
-                        variant="standard"
-                        style={{ marginTop: 20 }}
-                        name="platform_banner_text"
-                        label={t_i18n('Platform banner text')}
-                        fullWidth={true}
-                        onSubmit={handleSubmitField}
                       />
                     </Card>
                   </Grid>

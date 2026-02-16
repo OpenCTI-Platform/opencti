@@ -71,28 +71,38 @@ export type OidcProviderConfiguration = ProviderConfiguration & OidcCommonConfig
 };
 
 // SAML configuration
-export const samlSecretFields = ['private_key'];
+export const samlSecretFields = ['private_key', 'decryption_pvk'];
 
 type SamlCommonConfiguration = MappingConfiguration & {
   issuer: string;
   entry_point: string;
   idp_certificate: string;
-  callback_url: string;
+  callback_url?: string;
   logout_remote: boolean;
   want_assertions_signed: boolean;
   want_authn_response_signed: boolean;
   signing_cert?: string;
   sso_binding_type: string;
   force_reauthentication: boolean;
+  identifier_format?: string;
+  signature_algorithm?: 'sha1' | 'sha256' | 'sha512';
+  digest_algorithm?: string;
+  authn_context?: string[];
+  disable_requested_authn_context: boolean;
+  disable_request_acs_url: boolean;
+  skip_request_compression: boolean;
+  decryption_cert?: string;
 };
 
 export type SamlStoreConfiguration = SamlCommonConfiguration & {
   private_key_encrypted: string;
+  decryption_pvk_encrypted?: string;
   extra_conf: ExtraConfEntry[];
 };
 
 export type SamlProviderConfiguration = ProviderConfiguration & SamlCommonConfiguration & {
   private_key: string;
+  decryption_pvk?: string;
   extra_conf: { [extraKey: string]: unknown };
 };
 
@@ -107,6 +117,11 @@ export type LdapCommonConfiguration = MappingConfiguration & {
   group_base: string;
   group_filter: string;
   allow_self_signed: boolean;
+  search_attributes?: string[];
+  username_field?: string;
+  password_field?: string;
+  credentials_lookup?: string;
+  group_search_attributes?: string[];
 };
 
 export type LdapStoreConfiguration = LdapCommonConfiguration & {

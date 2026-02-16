@@ -16,7 +16,6 @@
  *
  * References:
  * - authentication_binding.md for field-by-field mapping documentation
- * - configurationMapping in providers-initialization.js for camelCase remapping
  */
 
 import {
@@ -225,32 +224,9 @@ export const buildBaseInput = (
 };
 
 /**
- * camelCase remapping for extra_conf keys.
- * The env config uses snake_case, but passport libraries expect camelCase.
- * Keys not in this map are passed as-is.
- */
-const EXTRA_KEY_REMAP: Record<string, string> = {
-  // SAML remappings
-  identifier_format: 'identifierFormat',
-  signature_algorithm: 'signatureAlgorithm',
-  digest_algorithm: 'digestAlgorithm',
-  authn_context: 'authnContext',
-  disable_requested_authn_context: 'disableRequestedAuthnContext',
-  disable_request_acs_url: 'disableRequestAcsUrl',
-  skip_request_compression: 'skipRequestCompression',
-  decryption_pvk: 'decryptionPvk',
-  decryption_cert: 'decryptionCert',
-  // LDAP remappings
-  search_attributes: 'searchAttributes',
-  username_field: 'usernameField',
-  password_field: 'passwordField',
-  credentials_lookup: 'credentialsLookup',
-  group_search_attributes: 'groupSearchAttributes',
-};
-
-/**
  * Collect unconsumed config entries into ExtraConfEntryInput[].
- * Applies camelCase remapping and type inference.
+ * Keys are passed through as-is — all known fields that needed camelCase
+ * remapping are now consumed as first-class fields by the converters.
  */
 const collectExtraConf = (
   extractor: ConfigExtractor,
@@ -262,8 +238,7 @@ const collectExtraConf = (
       warnings.push(`Config key "${key}" is a function and cannot be migrated.`);
       continue;
     }
-    const remappedKey = EXTRA_KEY_REMAP[key] ?? key;
-    const entry = toExtraConfEntry(remappedKey, value);
+    const entry = toExtraConfEntry(key, value);
     if (entry) {
       extraConf.push(entry);
     } else {
@@ -311,6 +286,13 @@ export const convertOidcEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   const logoutCallbackUrl = ext.get<string | null>('logout_callback_url', null);
   const useProxy = ext.get<boolean>('use_proxy', false);
 
+  // Callback URL — if set in env config, store it as an override
+  const callbackUrl = ext.get<string | null>('callback_url', null);
+  // If callback_url is provided, it already contains the full routing path — no need for identifier_override
+  if (callbackUrl) {
+    base.identifier_override = null;
+  }
+
   // Scopes: merge default + groups_scope + organizations_scope
   const defaultScopes = ext.get<string[]>('default_scopes', ['openid', 'email', 'profile']);
   const gm = ext.get<EnvGroupsManagement | undefined>('groups_management', undefined);
@@ -319,9 +301,6 @@ export const convertOidcEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   if (gm?.groups_scope) scopes.push(gm.groups_scope);
   if (om?.organizations_scope) scopes.push(om.organizations_scope);
   const uniqueScopes = [...new Set(scopes)];
-
-  // Callback URL — consumed but not stored (computed at runtime)
-  ext.consume('callback_url');
 
   // User info mapping
   const getFromIdToken = ext.get<boolean>('get_user_attributes_from_id_token', false);
@@ -338,7 +317,9 @@ export const convertOidcEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   };
 
   // Groups mapping
+  const autoCreateGroup = ext.get<boolean>('auto_create_group', false);
   const groupsMapping: GroupsMappingInput = {
+    auto_create_groups: autoCreateGroup,
     default_groups: [],
     groups_expr: buildOidcGroupsExpr(gm),
     groups_mapping: convertMappingEntries(gm?.groups_mapping),
@@ -347,13 +328,13 @@ export const convertOidcEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   // Organizations mapping
   const organizationsDefault = ext.get<string[]>('organizations_default', []);
   const organizationsMapping: OrganizationsMappingInput = {
+    auto_create_organizations: false,
     default_organizations: organizationsDefault,
     organizations_expr: buildOidcOrgsExpr(om),
     organizations_mapping: convertMappingEntries(om?.organizations_mapping),
   };
 
   // Deprecated / consumed-but-ignored
-  ext.consume('auto_create_group');
   if (ext.has('roles_management')) {
     ext.consume('roles_management');
     warnings.push('roles_management is deprecated and has been ignored.');
@@ -366,6 +347,7 @@ export const convertOidcEnvConfig = (envKey: string, entry: EnvProviderEntry): C
     issuer,
     client_id: clientId,
     client_secret_cleartext: clientSecret,
+    callback_url: callbackUrl,
     scopes: uniqueScopes,
     audience,
     logout_remote: logoutRemote,
@@ -408,8 +390,34 @@ export const convertSamlEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   const ssoBindingType = ext.get<string | null>('sso_binding_type', null);
   const forceAuthn = ext.get<boolean>('force_authn', false);
 
-  // Callback URLs — consumed but not stored (computed at runtime)
-  ext.consume('saml_callback_url', 'callback_url');
+  // Promoted fields (previously in extra_conf, now first-class)
+  const identifierFormat = ext.get<string | null>('identifier_format', null);
+  const rawSignatureAlgorithm = ext.get<string | null>('signature_algorithm', null);
+  const VALID_SIGNATURE_ALGORITHMS = ['sha1', 'sha256', 'sha512'];
+  let signatureAlgorithm: string | null = rawSignatureAlgorithm;
+  if (rawSignatureAlgorithm && !VALID_SIGNATURE_ALGORITHMS.includes(rawSignatureAlgorithm)) {
+    warnings.push(`signature_algorithm "${rawSignatureAlgorithm}" is not valid (allowed: ${VALID_SIGNATURE_ALGORITHMS.join(', ')}). Falling back to null.`);
+    signatureAlgorithm = null;
+  }
+  const digestAlgorithm = ext.get<string | null>('digest_algorithm', null);
+  const rawAuthnContext = ext.get<string | string[] | null>('authn_context', null);
+  const authnContext: string[] | null = rawAuthnContext
+    ? (Array.isArray(rawAuthnContext) ? rawAuthnContext : [rawAuthnContext])
+    : null;
+  const disableRequestedAuthnContext = ext.get<boolean>('disable_requested_authn_context', false);
+  const disableRequestAcsUrl = ext.get<boolean>('disable_request_acs_url', false);
+  const skipRequestCompression = ext.get<boolean>('skip_request_compression', false);
+  const decryptionPvk = ext.get<string | null>('decryption_pvk', null);
+  const decryptionCert = ext.get<string | null>('decryption_cert', null);
+
+  // Callback URL — if set in env config, store it as an override
+  const samlCallbackUrl = ext.get<string | null>('saml_callback_url', null);
+  const callbackUrl = ext.get<string | null>('callback_url', null);
+  const resolvedCallbackUrl = samlCallbackUrl || callbackUrl;
+  // If callback_url is provided, it already contains the full routing path — no need for identifier_override
+  if (resolvedCallbackUrl) {
+    base.identifier_override = null;
+  }
 
   // User info mapping — SAML uses attribute names directly from SAML assertions
   const userInfoMapping: UserInfoMappingInput = {
@@ -420,9 +428,11 @@ export const convertSamlEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   };
 
   // Groups mapping: SAML uses group_attributes (attribute names in SAML assertion)
+  const autoCreateGroup = ext.get<boolean>('auto_create_group', false);
   const gm = ext.get<EnvGroupsManagement | undefined>('groups_management', undefined);
   const groupsExpr = gm?.group_attributes ?? (gm ? ['groups'] : []);
   const groupsMapping: GroupsMappingInput = {
+    auto_create_groups: autoCreateGroup,
     default_groups: [],
     groups_expr: groupsExpr,
     groups_mapping: convertMappingEntries(gm?.groups_mapping),
@@ -432,13 +442,13 @@ export const convertSamlEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   const om = ext.get<EnvOrganizationsManagement | undefined>('organizations_management', undefined);
   const organizationsDefault = ext.get<string[]>('organizations_default', []);
   const organizationsMapping: OrganizationsMappingInput = {
+    auto_create_organizations: false,
     default_organizations: organizationsDefault,
     organizations_expr: om?.organizations_path ?? (om ? ['organizations'] : []),
     organizations_mapping: convertMappingEntries(om?.organizations_mapping),
   };
 
   // Deprecated / consumed-but-ignored
-  ext.consume('auto_create_group');
   if (ext.has('roles_management')) {
     ext.consume('roles_management');
     warnings.push('roles_management is deprecated and has been ignored.');
@@ -452,12 +462,22 @@ export const convertSamlEnvConfig = (envKey: string, entry: EnvProviderEntry): C
     entry_point: entryPoint,
     idp_certificate: idpCertificate,
     private_key_cleartext: privateKey,
+    callback_url: resolvedCallbackUrl,
     logout_remote: logoutRemote,
     want_assertions_signed: wantAssertionsSigned,
     want_authn_response_signed: wantAuthnResponseSigned,
     signing_cert: signingCert,
     sso_binding_type: ssoBindingType,
     force_reauthentication: forceAuthn,
+    identifier_format: identifierFormat,
+    signature_algorithm: signatureAlgorithm,
+    digest_algorithm: digestAlgorithm,
+    authn_context: authnContext,
+    disable_requested_authn_context: disableRequestedAuthnContext,
+    disable_request_acs_url: disableRequestAcsUrl,
+    skip_request_compression: skipRequestCompression,
+    decryption_pvk_cleartext: decryptionPvk,
+    decryption_cert: decryptionCert,
     user_info_mapping: userInfoMapping,
     groups_mapping: groupsMapping,
     organizations_mapping: organizationsMapping,
@@ -493,6 +513,13 @@ export const convertLdapEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   const groupSearchFilter = ext.get<string>('group_search_filter', '');
   const allowSelfSigned = ext.get<any>('allow_self_signed', false);
 
+  // Promoted fields (previously in extra_conf, now first-class)
+  const searchAttributes = ext.get<string[] | null>('search_attributes', null);
+  const usernameField = ext.get<string | null>('username_field', null);
+  const passwordField = ext.get<string | null>('password_field', null);
+  const credentialsLookup = ext.get<string | null>('credentials_lookup', null);
+  const groupSearchAttributes = ext.get<string[] | null>('group_search_attributes', null);
+
   // User info mapping — LDAP uses direct attribute names on the LDAP user object
   const userInfoMapping: UserInfoMappingInput = {
     email_expr: ext.get<string>('mail_attribute', 'mail'),
@@ -502,9 +529,11 @@ export const convertLdapEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   };
 
   // Groups mapping: LDAP uses group_attribute (attribute name in _groups entries, default 'cn')
+  const autoCreateGroup = ext.get<boolean>('auto_create_group', false);
   const gm = ext.get<EnvGroupsManagement | undefined>('groups_management', undefined);
   const groupsExpr = gm?.group_attribute ? [gm.group_attribute] : (gm ? ['cn'] : []);
   const groupsMapping: GroupsMappingInput = {
+    auto_create_groups: autoCreateGroup,
     default_groups: [],
     groups_expr: groupsExpr,
     groups_mapping: convertMappingEntries(gm?.groups_mapping),
@@ -514,13 +543,13 @@ export const convertLdapEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   const om = ext.get<EnvOrganizationsManagement | undefined>('organizations_management', undefined);
   const organizationsDefault = ext.get<string[]>('organizations_default', []);
   const organizationsMapping: OrganizationsMappingInput = {
+    auto_create_organizations: false,
     default_organizations: organizationsDefault,
     organizations_expr: om?.organizations_path ?? (om ? ['organizations'] : []),
     organizations_mapping: convertMappingEntries(om?.organizations_mapping),
   };
 
   // Deprecated / consumed-but-ignored
-  ext.consume('auto_create_group');
   if (ext.has('roles_management')) {
     ext.consume('roles_management');
     warnings.push('roles_management is deprecated and has been ignored.');
@@ -538,6 +567,11 @@ export const convertLdapEnvConfig = (envKey: string, entry: EnvProviderEntry): C
     group_base: groupSearchBase,
     group_filter: groupSearchFilter,
     allow_self_signed: allowSelfSigned === true || allowSelfSigned === 'true',
+    search_attributes: searchAttributes,
+    username_field: usernameField,
+    password_field: passwordField,
+    credentials_lookup: credentialsLookup,
+    group_search_attributes: groupSearchAttributes,
     user_info_mapping: userInfoMapping,
     groups_mapping: groupsMapping,
     organizations_mapping: organizationsMapping,
@@ -617,8 +651,12 @@ export const convertDeprecatedToOidc = (envKey: string, entry: EnvProviderEntry)
   const clientSecret = ext.get<string | null>('client_secret', 'default');
   const logoutRemote = ext.get<boolean>('logout_remote', false);
 
-  // Callback URL — consumed but not stored (computed at runtime)
-  ext.consume('callback_url');
+  // Callback URL — if set in env config, store it as an override
+  const callbackUrl = ext.get<string | null>('callback_url', null);
+  // If callback_url is provided, it already contains the full routing path — no need for identifier_override
+  if (callbackUrl) {
+    base.identifier_override = null;
+  }
 
   // Issuer: Auth0 derives from config.domain, others use well-known URLs
   let issuer: string;
@@ -642,6 +680,7 @@ export const convertDeprecatedToOidc = (envKey: string, entry: EnvProviderEntry)
       issuer,
       client_id: clientId,
       client_secret_cleartext: clientSecret,
+      callback_url: callbackUrl,
       scopes,
       audience: null,
       logout_remote: logoutRemote,
@@ -653,8 +692,8 @@ export const convertDeprecatedToOidc = (envKey: string, entry: EnvProviderEntry)
         firstname_expr: 'user_info.given_name',
         lastname_expr: 'user_info.family_name',
       },
-      groups_mapping: { default_groups: [], groups_expr: [], groups_mapping: [] },
-      organizations_mapping: { default_organizations: [], organizations_expr: [], organizations_mapping: [] },
+      groups_mapping: { auto_create_groups: false, default_groups: [], groups_expr: [], groups_mapping: [] },
+      organizations_mapping: { auto_create_organizations: false, default_organizations: [], organizations_expr: [], organizations_mapping: [] },
       extra_conf: collectExtraConf(ext, warnings),
     };
 
@@ -699,6 +738,7 @@ export const convertDeprecatedToOidc = (envKey: string, entry: EnvProviderEntry)
     issuer,
     client_id: clientId,
     client_secret_cleartext: clientSecret,
+    callback_url: callbackUrl,
     scopes,
     audience: null,
     logout_remote: logoutRemote,
@@ -710,8 +750,8 @@ export const convertDeprecatedToOidc = (envKey: string, entry: EnvProviderEntry)
       firstname_expr: 'user_info.given_name',
       lastname_expr: 'user_info.family_name',
     },
-    groups_mapping: { default_groups: [], groups_expr: [], groups_mapping: [] },
-    organizations_mapping: { default_organizations: [], organizations_expr: [], organizations_mapping: [] },
+    groups_mapping: { auto_create_groups: false, default_groups: [], groups_expr: [], groups_mapping: [] },
+    organizations_mapping: { auto_create_organizations: false, default_organizations: [], organizations_expr: [], organizations_mapping: [] },
     extra_conf: extraConf,
   };
 

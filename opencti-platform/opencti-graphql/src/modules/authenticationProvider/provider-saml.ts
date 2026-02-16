@@ -20,12 +20,20 @@ export const buildSAMLOptions = (conf: SamlProviderConfiguration): PassportSamlC
   issuer: conf.issuer,
   idpCert: conf.idp_certificate,
   privateKey: conf.private_key,
-  callbackUrl: conf.callback_url,
+  callbackUrl: conf.callback_url ?? '',
   wantAssertionsSigned: conf.want_assertions_signed,
   wantAuthnResponseSigned: conf.want_authn_response_signed,
-  publicCert: conf.signing_cert, // TODO check if public cert is the correct field for passport-saml
-  authnRequestBinding: conf.sso_binding_type, // TODO check if sso_binding_type is the correct field for passport-saml
-  forceAuthn: conf.force_reauthentication, // TODO check if force_reauthentication is the correct field for passport-saml
+  publicCert: conf.signing_cert,
+  authnRequestBinding: conf.sso_binding_type,
+  forceAuthn: conf.force_reauthentication,
+  identifierFormat: conf.identifier_format,
+  signatureAlgorithm: conf.signature_algorithm,
+  digestAlgorithm: conf.digest_algorithm,
+  authnContext: conf.authn_context,
+  disableRequestedAuthnContext: conf.disable_requested_authn_context,
+  disableRequestAcsUrl: conf.disable_request_acs_url,
+  skipRequestCompression: conf.skip_request_compression,
+  decryptionPvk: conf.decryption_pvk,
   ...conf.extra_conf,
 });
 

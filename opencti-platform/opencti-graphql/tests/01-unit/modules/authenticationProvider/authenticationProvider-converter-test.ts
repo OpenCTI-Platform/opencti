@@ -468,7 +468,7 @@ describe('convertOidcEnvConfig', () => {
     expect(result.configuration.use_proxy).toBe(true);
   });
 
-  it('should not include callback_url in extra_conf (it is computed at runtime)', () => {
+  it('should store callback_url as first-class field when provided in env config', () => {
     const entry: EnvProviderEntry = {
       strategy: 'OpenIDConnectStrategy',
       config: {
@@ -478,8 +478,23 @@ describe('convertOidcEnvConfig', () => {
     };
 
     const result = convertOidcEnvConfig('oic', entry);
+    expect(result.configuration.callback_url).toBe('https://example.com/auth/oic/callback');
+    // When callback_url is provided, identifier_override should be null
+    expect(result.base.identifier_override).toBeNull();
     const extraKeys = result.configuration.extra_conf.map((e) => e.key);
     expect(extraKeys).not.toContain('callback_url');
+  });
+
+  it('should have null callback_url when not provided in env config', () => {
+    const entry: EnvProviderEntry = {
+      strategy: 'OpenIDConnectStrategy',
+      config: {
+        issuer: 'x', client_id: 'c', client_secret: 's',
+      },
+    };
+
+    const result = convertOidcEnvConfig('oic', entry);
+    expect(result.configuration.callback_url).toBeNull();
   });
 });
 
@@ -648,71 +663,81 @@ describe('convertSamlEnvConfig', () => {
     ]);
   });
 
-  it('should remap SAML extra_conf keys to camelCase for passport-saml', () => {
+  it('should consume promoted SAML fields as first-class (not in extra_conf)', () => {
     const entry: EnvProviderEntry = {
       strategy: 'SamlStrategy',
       config: {
         issuer: 'x', entry_point: 'y', cert: 'z',
         identifier_format: 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress',
         signature_algorithm: 'sha256',
+        digest_algorithm: 'sha256',
+        authn_context: ['urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport'],
         disable_requested_authn_context: true,
+        disable_request_acs_url: false,
         skip_request_compression: false,
+        decryption_pvk: '-----BEGIN PRIVATE KEY-----\nXXX\n-----END PRIVATE KEY-----',
+        decryption_cert: '-----BEGIN CERTIFICATE-----\nYYY\n-----END CERTIFICATE-----',
       },
     };
 
     const result = convertSamlEnvConfig('saml', entry);
+
+    // Verify first-class fields are set correctly
+    expect(result.configuration.identifier_format).toBe('urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress');
+    expect(result.configuration.signature_algorithm).toBe('sha256');
+    expect(result.configuration.digest_algorithm).toBe('sha256');
+    expect(result.configuration.authn_context).toStrictEqual(['urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport']);
+    expect(result.configuration.disable_requested_authn_context).toBe(true);
+    expect(result.configuration.disable_request_acs_url).toBe(false);
+    expect(result.configuration.skip_request_compression).toBe(false);
+    expect(result.configuration.decryption_pvk_cleartext).toContain('BEGIN PRIVATE KEY');
+    expect(result.configuration.decryption_cert).toContain('BEGIN CERTIFICATE');
+
+    // Verify none of these appear in extra_conf
     const extraKeys = result.configuration.extra_conf.map((e) => e.key);
-
-    // Verify camelCase remapping
-    expect(extraKeys).toContain('identifierFormat');
-    expect(extraKeys).toContain('signatureAlgorithm');
-    expect(extraKeys).toContain('disableRequestedAuthnContext');
-    expect(extraKeys).toContain('skipRequestCompression');
-
-    // Verify snake_case originals are NOT present
     expect(extraKeys).not.toContain('identifier_format');
     expect(extraKeys).not.toContain('signature_algorithm');
-
-    // Verify values
-    const identifierFormat = result.configuration.extra_conf.find((e) => e.key === 'identifierFormat');
-    expect(identifierFormat?.value).toBe('urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress');
-    expect(identifierFormat?.type).toBe(ExtraConfEntryType.String);
-
-    const disableAuthn = result.configuration.extra_conf.find((e) => e.key === 'disableRequestedAuthnContext');
-    expect(disableAuthn?.value).toBe('true');
-    expect(disableAuthn?.type).toBe(ExtraConfEntryType.Boolean);
+    expect(extraKeys).not.toContain('digest_algorithm');
+    expect(extraKeys).not.toContain('authn_context');
+    expect(extraKeys).not.toContain('disable_requested_authn_context');
+    expect(extraKeys).not.toContain('decryption_pvk');
+    expect(extraKeys).not.toContain('decryption_cert');
+    expect(extraKeys).toHaveLength(0);
   });
 
-  it('should map decryption_pvk to extra_conf with camelCase key', () => {
-    const entry: EnvProviderEntry = {
-      strategy: 'SamlStrategy',
-      config: {
-        issuer: 'x', entry_point: 'y', cert: 'z',
-        decryption_pvk: '-----BEGIN PRIVATE KEY-----\nXXX\n-----END PRIVATE KEY-----',
-      },
-    };
-
-    const result = convertSamlEnvConfig('saml', entry);
-    const pvk = result.configuration.extra_conf.find((e) => e.key === 'decryptionPvk');
-    expect(pvk).toBeDefined();
-    expect(pvk?.type).toBe(ExtraConfEntryType.String);
-    expect(pvk?.value).toContain('BEGIN PRIVATE KEY');
-  });
-
-  it('should NOT include saml_callback_url or callback_url in extra_conf', () => {
+  it('should store callback_url from saml_callback_url or callback_url as first-class field', () => {
     const entry: EnvProviderEntry = {
       strategy: 'SamlStrategy',
       config: {
         issuer: 'x', entry_point: 'y', cert: 'z',
         saml_callback_url: 'https://example.com/auth/saml/callback',
+        callback_url: 'https://example.com/auth/saml/callback2',
+      },
+    };
+
+    const result = convertSamlEnvConfig('saml', entry);
+    // saml_callback_url takes priority over callback_url
+    expect(result.configuration.callback_url).toBe('https://example.com/auth/saml/callback');
+    // When callback_url is provided, identifier_override should be null
+    expect(result.base.identifier_override).toBeNull();
+    const extraKeys = result.configuration.extra_conf.map((e) => e.key);
+    expect(extraKeys).not.toContain('saml_callback_url');
+    expect(extraKeys).not.toContain('callback_url');
+  });
+
+  it('should fall back to callback_url when saml_callback_url is not set', () => {
+    const entry: EnvProviderEntry = {
+      strategy: 'SamlStrategy',
+      config: {
+        issuer: 'x', entry_point: 'y', cert: 'z',
         callback_url: 'https://example.com/auth/saml/callback',
       },
     };
 
     const result = convertSamlEnvConfig('saml', entry);
-    const extraKeys = result.configuration.extra_conf.map((e) => e.key);
-    expect(extraKeys).not.toContain('saml_callback_url');
-    expect(extraKeys).not.toContain('callback_url');
+    expect(result.configuration.callback_url).toBe('https://example.com/auth/saml/callback');
+    // When callback_url is provided, identifier_override should be null
+    expect(result.base.identifier_override).toBeNull();
   });
 
   it('should emit warning for roles_management (deprecated)', () => {
@@ -917,7 +942,7 @@ describe('convertLdapEnvConfig', () => {
     expect(convertLdapEnvConfig('ldap', entry3).configuration.allow_self_signed).toBe(false);
   });
 
-  it('should remap LDAP extra_conf keys to camelCase', () => {
+  it('should consume promoted LDAP fields as first-class (not in extra_conf)', () => {
     const entry: EnvProviderEntry = {
       strategy: 'LdapStrategy',
       config: {
@@ -925,22 +950,28 @@ describe('convertLdapEnvConfig', () => {
         search_attributes: ['mail', 'cn'],
         username_field: 'uid',
         password_field: 'passwd',
+        credentials_lookup: 'custom_lookup',
+        group_search_attributes: ['cn', 'dn'],
       },
     };
 
     const result = convertLdapEnvConfig('ldap', entry);
+
+    // Verify first-class fields are set correctly
+    expect(result.configuration.search_attributes).toStrictEqual(['mail', 'cn']);
+    expect(result.configuration.username_field).toBe('uid');
+    expect(result.configuration.password_field).toBe('passwd');
+    expect(result.configuration.credentials_lookup).toBe('custom_lookup');
+    expect(result.configuration.group_search_attributes).toStrictEqual(['cn', 'dn']);
+
+    // Verify none of these appear in extra_conf
     const extraKeys = result.configuration.extra_conf?.map((e) => e.key) ?? [];
-
-    expect(extraKeys).toContain('searchAttributes');
-    expect(extraKeys).toContain('usernameField');
-    expect(extraKeys).toContain('passwordField');
-
-    const searchAttrs = result.configuration.extra_conf?.find((e) => e.key === 'searchAttributes');
-    expect(searchAttrs?.value).toBe('["mail","cn"]');
-    expect(searchAttrs?.type).toBe(ExtraConfEntryType.String);
-
-    const usernameField = result.configuration.extra_conf?.find((e) => e.key === 'usernameField');
-    expect(usernameField?.value).toBe('uid');
+    expect(extraKeys).not.toContain('search_attributes');
+    expect(extraKeys).not.toContain('username_field');
+    expect(extraKeys).not.toContain('password_field');
+    expect(extraKeys).not.toContain('credentials_lookup');
+    expect(extraKeys).not.toContain('group_search_attributes');
+    expect(extraKeys).toHaveLength(0);
   });
 
   it('should warn about function-type config keys', () => {
@@ -948,13 +979,13 @@ describe('convertLdapEnvConfig', () => {
       strategy: 'LdapStrategy',
       config: {
         url: 'ldap://x:389', bind_dn: 'x', search_base: 'x',
-        credentials_lookup: () => 'secret',
+        some_callback: () => 'secret',
       },
     };
 
     const result = convertLdapEnvConfig('ldap', entry);
     expect(result.warnings).toContain(
-      'Config key "credentials_lookup" is a function and cannot be migrated.',
+      'Config key "some_callback" is a function and cannot be migrated.',
     );
   });
 
@@ -1296,15 +1327,13 @@ describe('Real-world configuration scenarios', () => {
     expect(result.configuration.force_reauthentication).toBe(false);
     expect(result.configuration.sso_binding_type).toBe('HTTP-Redirect');
 
-    // Extra conf should contain remapped keys
-    const identifierFormat = result.configuration.extra_conf.find((e) => e.key === 'identifierFormat');
-    expect(identifierFormat?.value).toBe('urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress');
+    // Promoted fields should be first-class
+    expect(result.configuration.identifier_format).toBe('urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress');
+    expect(result.configuration.signature_algorithm).toBe('sha256');
+    expect(result.configuration.disable_requested_authn_context).toBe(true);
 
-    const signAlgo = result.configuration.extra_conf.find((e) => e.key === 'signatureAlgorithm');
-    expect(signAlgo?.value).toBe('sha256');
-
-    const disableAuthn = result.configuration.extra_conf.find((e) => e.key === 'disableRequestedAuthnContext');
-    expect(disableAuthn?.value).toBe('true');
+    // extra_conf should be empty
+    expect(result.configuration.extra_conf).toHaveLength(0);
 
     // Groups
     expect(result.configuration.groups_mapping.groups_expr).toStrictEqual([
@@ -1430,27 +1459,30 @@ describe('Real-world configuration scenarios', () => {
     // Orgs
     expect(result.configuration.organizations_mapping.default_organizations).toStrictEqual(['OpenCTI']);
 
-    // Extra conf: everything not consumed as first-class
+    // Promoted fields should be first-class
+    expect(result.configuration.decryption_pvk_cleartext).toContain('BEGIN PRIVATE KEY');
+    expect(result.configuration.disable_requested_authn_context).toBe(true);
+    expect(result.configuration.signature_algorithm).toBe('sha256');
+
+    // Extra conf: only truly unknown keys remain
     const extraKeys = result.configuration.extra_conf.map((e) => e.key);
     expect(extraKeys).toContain('acceptedClockSkewMs'); // number, not consumed
     expect(extraKeys).toContain('xmlSignatureTransforms'); // array, not consumed
-    expect(extraKeys).toContain('decryptionPvk'); // remapped from decryption_pvk
-    expect(extraKeys).toContain('disableRequestedAuthnContext'); // remapped
     expect(extraKeys).toContain('audience'); // not a consumed SAML key
     expect(extraKeys).toContain('pi'); // number, unknown
-    expect(extraKeys).toContain('signatureAlgorithm'); // remapped from signature_algorithm
+
+    // Promoted fields should NOT be in extra_conf
+    expect(extraKeys).not.toContain('decryption_pvk');
+    expect(extraKeys).not.toContain('disable_requested_authn_context');
+    expect(extraKeys).not.toContain('signature_algorithm');
 
     // callback_url should NOT be in extra_conf
     expect(extraKeys).not.toContain('saml_callback_url');
 
-    // Verify remapped key values
+    // Verify remaining extra_conf values
     const clockSkew = result.configuration.extra_conf.find((e) => e.key === 'acceptedClockSkewMs');
     expect(clockSkew?.type).toBe(ExtraConfEntryType.Number);
     expect(clockSkew?.value).toBe('5');
-
-    const signAlgo = result.configuration.extra_conf.find((e) => e.key === 'signatureAlgorithm');
-    expect(signAlgo?.type).toBe(ExtraConfEntryType.String);
-    expect(signAlgo?.value).toBe('sha256');
   });
 
   it('should handle an OIDC config with CyberArk credentials_provider (extra_conf)', () => {
@@ -1504,7 +1536,8 @@ describe('convertDeprecatedToOidc', () => {
     const { provider } = result;
     expect(provider.type).toBe('OIDC');
     expect(provider.base.name).toBe('Login with Google');
-    expect(provider.base.identifier_override).toBe('google');
+    // callback_url is provided, so identifier_override should be null
+    expect(provider.base.identifier_override).toBeNull();
 
     const config = provider.configuration as OidcConfigurationInput;
     expect(config.issuer).toBe('https://accounts.google.com');
@@ -1691,7 +1724,7 @@ describe('convertDeprecatedToOidc', () => {
     expect(extraKeys).not.toContain('clientSecret');
   });
 
-  it('should not include callback_url in extra_conf for deprecated strategies', () => {
+  it('should store callback_url as first-class field for deprecated strategies', () => {
     const entry: EnvProviderEntry = {
       identifier: 'google',
       strategy: 'GoogleStrategy',
@@ -1706,6 +1739,9 @@ describe('convertDeprecatedToOidc', () => {
     if (result.status !== 'converted') return;
 
     const config = result.provider.configuration as OidcConfigurationInput;
+    expect(config.callback_url).toBe('https://opencti.example.com/auth/google/callback');
+    // When callback_url is provided, identifier_override should be null
+    expect(result.provider.base.identifier_override).toBeNull();
     const extraKeys = config.extra_conf.map((e) => e.key);
     expect(extraKeys).not.toContain('callback_url');
   });
@@ -1769,6 +1805,15 @@ describe('Edge cases', () => {
         signing_cert: 'sc',
         sso_binding_type: 'HTTP-POST',
         force_authn: true,
+        identifier_format: 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress',
+        signature_algorithm: 'sha256',
+        digest_algorithm: 'sha256',
+        authn_context: 'urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport', // string → wrapped to array by converter
+        disable_requested_authn_context: true,
+        disable_request_acs_url: false,
+        skip_request_compression: false,
+        decryption_pvk: 'dpvk',
+        decryption_cert: 'dcert',
         mail_attribute: 'mail',
         account_attribute: 'acct',
         firstname_attribute: 'fn',
@@ -1792,6 +1837,11 @@ describe('Edge cases', () => {
         search_base: 'sb', search_filter: 'sf',
         group_search_base: 'gsb', group_search_filter: 'gsf',
         allow_self_signed: true,
+        search_attributes: ['mail', 'cn'],
+        username_field: 'uid',
+        password_field: 'passwd',
+        credentials_lookup: 'lookup',
+        group_search_attributes: ['cn'],
         label: 'L',
         disabled: false,
         mail_attribute: 'mail',

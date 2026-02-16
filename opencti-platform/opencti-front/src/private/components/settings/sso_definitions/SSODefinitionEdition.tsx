@@ -69,6 +69,14 @@ export const ssoDefinitionEditionFragment = graphql`
                 signing_cert
                 sso_binding_type
                 force_reauthentication
+                identifier_format
+                signature_algorithm
+                digest_algorithm
+                authn_context
+                disable_requested_authn_context
+                disable_request_acs_url
+                skip_request_compression
+                decryption_cert
                 user_info_mapping {
                     email_expr
                     name_expr
@@ -105,6 +113,11 @@ export const ssoDefinitionEditionFragment = graphql`
                 group_base
                 group_filter
                 allow_self_signed
+                search_attributes
+                username_field
+                password_field
+                credentials_lookup
+                group_search_attributes
                 user_info_mapping {
                     email_expr
                     name_expr
