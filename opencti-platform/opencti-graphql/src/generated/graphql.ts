@@ -3789,13 +3789,11 @@ export type CertAuthConfig = {
 };
 
 export type CertAuthConfigInput = {
-  auto_create_group?: InputMaybe<Scalars['Boolean']['input']>;
   button_label?: InputMaybe<Scalars['String']['input']>;
-  enabled: Scalars['Boolean']['input'];
-  groups_mapping?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  organizations_default?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  organizations_mapping?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  prevent_default_groups?: InputMaybe<Scalars['Boolean']['input']>;
+  enabled?: InputMaybe<Scalars['Boolean']['input']>;
+  groups_mapping: GroupsMappingInput;
+  organizations_mapping: OrganizationsMappingInput;
+  user_info_mapping: UserInfoMappingInput;
 };
 
 export type ChangePasswordInput = {
@@ -10329,41 +10327,21 @@ export type HeaderInput = {
 
 export type HeadersAuthConfig = {
   __typename?: 'HeadersAuthConfig';
-  auto_create_group?: Maybe<Scalars['Boolean']['output']>;
   enabled?: Maybe<Scalars['Boolean']['output']>;
-  groups_header?: Maybe<Scalars['String']['output']>;
-  groups_mapping?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-  groups_splitter?: Maybe<Scalars['String']['output']>;
-  header_email?: Maybe<Scalars['String']['output']>;
-  header_firstname?: Maybe<Scalars['String']['output']>;
-  header_lastname?: Maybe<Scalars['String']['output']>;
-  header_name?: Maybe<Scalars['String']['output']>;
+  groups_mapping: GroupsMapping;
   headers_audit?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   logout_uri?: Maybe<Scalars['String']['output']>;
-  organizations_default?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-  organizations_header?: Maybe<Scalars['String']['output']>;
-  organizations_mapping?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-  organizations_splitter?: Maybe<Scalars['String']['output']>;
-  prevent_default_groups?: Maybe<Scalars['Boolean']['output']>;
+  organizations_mapping: OrganizationsMapping;
+  user_info_mapping: UserInfoMapping;
 };
 
 export type HeadersAuthConfigInput = {
-  auto_create_group?: InputMaybe<Scalars['Boolean']['input']>;
-  enabled: Scalars['Boolean']['input'];
-  groups_header?: InputMaybe<Scalars['String']['input']>;
-  groups_mapping?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  groups_splitter?: InputMaybe<Scalars['String']['input']>;
-  header_email: Scalars['String']['input'];
-  header_firstname?: InputMaybe<Scalars['String']['input']>;
-  header_lastname?: InputMaybe<Scalars['String']['input']>;
-  header_name?: InputMaybe<Scalars['String']['input']>;
+  enabled?: InputMaybe<Scalars['Boolean']['input']>;
+  groups_mapping: GroupsMappingInput;
   headers_audit?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   logout_uri?: InputMaybe<Scalars['String']['input']>;
-  organizations_default?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  organizations_header?: InputMaybe<Scalars['String']['input']>;
-  organizations_mapping?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  organizations_splitter?: InputMaybe<Scalars['String']['input']>;
-  prevent_default_groups?: InputMaybe<Scalars['Boolean']['input']>;
+  organizations_mapping: OrganizationsMappingInput;
+  user_info_mapping: UserInfoMappingInput;
 };
 
 export type HealthConnectorStatusInput = {
@@ -42802,22 +42780,12 @@ export type HashedObservableResolvers<ContextType = any, ParentType extends Reso
 }>;
 
 export type HeadersAuthConfigResolvers<ContextType = any, ParentType extends ResolversParentTypes['HeadersAuthConfig'] = ResolversParentTypes['HeadersAuthConfig']> = ResolversObject<{
-  auto_create_group?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   enabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  groups_header?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  groups_mapping?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  groups_splitter?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  header_email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  header_firstname?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  header_lastname?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  header_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  groups_mapping?: Resolver<ResolversTypes['GroupsMapping'], ParentType, ContextType>;
   headers_audit?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   logout_uri?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  organizations_default?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  organizations_header?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  organizations_mapping?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  organizations_splitter?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  prevent_default_groups?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  organizations_mapping?: Resolver<ResolversTypes['OrganizationsMapping'], ParentType, ContextType>;
+  user_info_mapping?: Resolver<ResolversTypes['UserInfoMapping'], ParentType, ContextType>;
 }>;
 
 export type HistoryChangeResolvers<ContextType = any, ParentType extends ResolversParentTypes['HistoryChange'] = ResolversParentTypes['HistoryChange']> = ResolversObject<{
