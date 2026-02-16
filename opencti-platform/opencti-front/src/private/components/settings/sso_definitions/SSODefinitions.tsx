@@ -12,12 +12,13 @@ import { SSODefinitionsLinesPaginationQuery } from './__generated__/SSODefinitio
 import { SSODefinitionsLines_data$data } from './__generated__/SSODefinitionsLines_data.graphql';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import SSODefinitionCreation from '@components/settings/sso_definitions/SSODefinitionCreation';
+import Box from '@mui/material/Box';
 import ItemBoolean from '../../../../components/ItemBoolean';
-import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
 import AuthenticationDefinitionAlert from '@components/settings/sso_definitions/AuthenticationDefinitionAlert';
 import SSOSingletonStrategies from '@components/settings/sso_definitions/SSOSingletonStrategies';
 import AuthenticationGlobalSettings from '@components/settings/sso_definitions/AuthenticationGlobalSettings';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import EEChip from '@components/common/entreprise_edition/EEChip';
 import EditOutlined from '@mui/icons-material/EditOutlined';
 import IconButton from '@mui/material/IconButton';
 import SSODefinitionEdition from '@components/settings/sso_definitions/SSODefinitionEdition';
@@ -147,10 +148,13 @@ const SSODefinitions = () => {
       percentWidth: 15,
       isSortable: true,
       render: (node: { enabled: boolean }) => (
-        <ItemBoolean
-          label={node.enabled ? t_i18n('Enabled') : t_i18n('Disabled')}
-          status={node.enabled}
-        />
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <ItemBoolean
+            label={node.enabled && isEnterpriseEdition ? t_i18n('Enabled') : t_i18n('Disabled')}
+            status={node.enabled && isEnterpriseEdition}
+          />
+          {!isEnterpriseEdition && <span onClick={(e) => e.stopPropagation()}><EEChip /></span>}
+        </Box>
       ),
     },
   };
@@ -179,8 +183,7 @@ const SSODefinitions = () => {
       <>
         <AuthenticationGlobalSettings />
         <SSOSingletonStrategies />
-        {!isEnterpriseEdition && (<EnterpriseEdition title="SSO Authentications" feature="SSO" />)}
-        {isEnterpriseEdition && queryRef && (
+        {queryRef && (
           <>
             <AuthenticationDefinitionAlert preloadedPaginationProps={preloadedPaginationProps} />
             <DataTable

@@ -40,7 +40,7 @@ const ssoSingletonStrategiesQuery = graphql`
   }
 `;
 
-const rowSx = (theme: Theme, isLast: boolean, isClickable: boolean, isDimmed: boolean) => ({
+const rowSx = (theme: Theme, isLast: boolean, isClickable: boolean, isDimmed = false) => ({
   display: 'flex',
   alignItems: 'center',
   height: 50,
@@ -75,20 +75,20 @@ const SSOSingletonStrategiesContent = () => {
   const drawerTitles: Record<StrategyType, string> = {
     local: t_i18n('Local Authentication'),
     cert: t_i18n('Client Certificate Authentication'),
-    header: t_i18n('Header Authentication'),
+    header: t_i18n('HTTP Headers Authentication'),
   };
 
   return (
     <div style={{ marginBottom: 30 }}>
       <Card title={t_i18n('Authentication strategies')} padding="none">
         {/* Local Authentication */}
-        <Box sx={rowSx(theme, false, true, false)} onClick={() => setEditingStrategy('local')}>
+        <Box sx={rowSx(theme, false, true)} onClick={() => setEditingStrategy('local')}>
           <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
             <Typography variant="body2" noWrap sx={{ fontWeight: 500 }}>
               {t_i18n('Local')}
             </Typography>
           </Box>
-          <Box sx={{ width: 140, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Box sx={{ width: 160, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
             <ItemBoolean
               label={localEnabled ? t_i18n('Enabled') : t_i18n('Disabled')}
               status={localEnabled}
@@ -101,70 +101,60 @@ const SSOSingletonStrategiesContent = () => {
           </Box>
         </Box>
 
-        {/* Header Authentication */}
-        <Box sx={rowSx(theme, false, isEnterpriseEdition, !isEnterpriseEdition)} onClick={() => setEditingStrategy('header')}>
+        {/* HTTP Headers Authentication */}
+        <Box sx={rowSx(theme, false, true)} onClick={() => setEditingStrategy('header')}>
           <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
             <Typography variant="body2" noWrap sx={{ fontWeight: 500 }}>
-              {t_i18n('Query headers')}
+              {t_i18n('HTTP headers')}
             </Typography>
           </Box>
-          <Box sx={{ width: 140, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Box sx={{ width: 160, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
             <ItemBoolean
               label={headerEnabled && isEnterpriseEdition ? t_i18n('Enabled') : t_i18n('Disabled')}
               status={headerEnabled && isEnterpriseEdition}
             />
+            {!isEnterpriseEdition && <span onClick={(e) => e.stopPropagation()}><EEChip /></span>}
           </Box>
           <Box sx={{ width: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <IconButton size="small">
-              {isEnterpriseEdition ? <EditOutlined fontSize="small" /> : <EEChip />}
+              <EditOutlined fontSize="small" />
             </IconButton>
           </Box>
         </Box>
 
         {/* Client Certificate Authentication */}
-        {isHttpsEnabled && isEnterpriseEdition ? (
-          <Box sx={rowSx(theme, true, isEnterpriseEdition, false)} onClick={() => setEditingStrategy('cert')}>
-            <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
-              <Typography variant="body2" noWrap sx={{ fontWeight: 500 }}>
-                {t_i18n('Client Certificate')}
-              </Typography>
-            </Box>
-            <Box sx={{ width: 140, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <ItemBoolean
-                label={certEnabled && isEnterpriseEdition ? t_i18n('Enabled') : t_i18n('Disabled')}
-                status={certEnabled && isEnterpriseEdition}
-              />
-            </Box>
-            <Box sx={{ width: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <IconButton size="small">
-                <EditOutlined fontSize="small" />
-              </IconButton>
-            </Box>
+        <Box
+          sx={rowSx(theme, true, !!isHttpsEnabled, !isHttpsEnabled)}
+          onClick={() => isHttpsEnabled && setEditingStrategy('cert')}
+        >
+          <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
+            <Typography variant="body2" noWrap sx={{ fontWeight: 500 }}>
+              {t_i18n('Client Certificate')}
+            </Typography>
           </Box>
-        ) : (
-          <Box sx={rowSx(theme, true, false, true)}>
-            <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
-              <Typography variant="body2" noWrap sx={{ fontWeight: 500 }}>
-                {t_i18n('Client Certificate')}
-              </Typography>
-            </Box>
-            <Box sx={{ width: 140, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <ItemBoolean
-                label={t_i18n('Disabled')}
-                status={false}
-              />
-            </Box>
-            <Box sx={{ width: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Box sx={{ width: 160, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+            <ItemBoolean
+              label={isHttpsEnabled && certEnabled && isEnterpriseEdition ? t_i18n('Enabled') : t_i18n('Disabled')}
+              status={!!(isHttpsEnabled && certEnabled && isEnterpriseEdition)}
+            />
+            {!isEnterpriseEdition && isHttpsEnabled && <span onClick={(e) => e.stopPropagation()}><EEChip /></span>}
+          </Box>
+          <Box sx={{ width: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {!isHttpsEnabled ? (
               <Tooltip title={t_i18n('Client certificate requires the platform to be configured with HTTPS')}>
                 <span>
-                  <IconButton size="small">
-                    {isEnterpriseEdition ? <InfoOutlined fontSize="small" /> : <EEChip />}
+                  <IconButton size="small" disabled>
+                    <InfoOutlined fontSize="small" />
                   </IconButton>
                 </span>
               </Tooltip>
-            </Box>
+            ) : (
+              <IconButton size="small">
+                <EditOutlined fontSize="small" />
+              </IconButton>
+            )}
           </Box>
-        )}
+        </Box>
       </Card>
 
       {editingStrategy && (

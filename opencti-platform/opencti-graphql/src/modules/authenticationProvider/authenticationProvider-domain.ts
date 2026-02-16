@@ -29,7 +29,6 @@ import { BUS_TOPICS, logApp } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import nconf from 'nconf';
 import { parseAuthenticationProviderConfiguration } from './authenticationProvider-migration';
-import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import { unregisterStrategy } from './providers';
 import { getConfigurationAdminEmail, isAuthenticationEditionLocked, isAuthenticationForcedFromEnv } from './providers-configuration';
 import { getPlatformCrypto } from '../../utils/platformCrypto';
@@ -127,23 +126,16 @@ export const checkAuthenticationEditionLocked = (user: AuthUser) => {
   }
 };
 
-export const checkAllowed = async (context: AuthContext) => {
-  if (!await isEnterpriseEdition(context)) throw UnsupportedError('Enterprise licence is required');
-};
-
 export const findAuthenticationProviderById
   = async <T extends OidcConfiguration | SamlConfiguration | LdapConfiguration | unknown = unknown>(context: AuthContext, user: AuthUser, id: string) => {
-    await checkAllowed(context);
     return storeLoadById<BasicStoreEntityAuthenticationProvider<T>>(context, user, id, ENTITY_TYPE_AUTHENTICATION_PROVIDER);
   };
 
 export const findAuthenticationProviderByIdPaginated = async (context: AuthContext, user: AuthUser, args: any) => {
-  await checkAllowed(context);
   return pageEntitiesConnection<BasicStoreEntityAuthenticationProvider>(context, user, [ENTITY_TYPE_AUTHENTICATION_PROVIDER], args);
 };
 
 export const findAllAuthenticationProvider = async (context: AuthContext, user: AuthUser): Promise<BasicStoreEntityAuthenticationProvider[]> => {
-  await checkAllowed(context);
   return fullEntitiesList(context, user, [ENTITY_TYPE_AUTHENTICATION_PROVIDER]);
 };
 
@@ -160,7 +152,6 @@ export const addAuthenticationProvider = async (
   type: AuthenticationProviderType,
   skipRegisterParam?: boolean,
 ) => {
-  await checkAllowed(context);
   checkAuthenticationEditionLocked(user);
 
   const skipRegister = skipRegisterParam ?? isAuthenticationForcedFromEnv();
@@ -204,7 +195,6 @@ export const editAuthenticationProvider = async (
   { base, configuration }: { base: AuthenticationProviderBaseInput; configuration: ConfigurationInput },
   type: AuthenticationProviderType,
 ) => {
-  await checkAllowed(context);
   checkAuthenticationEditionLocked(user);
   const existing = await findAuthenticationProviderById(context, user, id);
   if (!existing) {
@@ -242,7 +232,6 @@ export const editAuthenticationProvider = async (
 };
 
 export const deleteAuthenticationProvider = async (context: AuthContext, user: AuthUser, id: string, type: AuthenticationProviderType) => {
-  await checkAllowed(context);
   checkAuthenticationEditionLocked(user);
   const provider = await findAuthenticationProviderById(context, user, id);
   if (!provider) {
@@ -275,7 +264,6 @@ export const deleteAuthenticationProvider = async (context: AuthContext, user: A
 };
 
 export const runAuthenticationProviderMigration = async (context: AuthContext, user: AuthUser, input: AuthenticationProviderMigrationInput) => {
-  await checkAllowed(context);
   logApp.info(`[AUTH PROVIDER MIGRATION] Migration requested with dry_run = ${input.dry_run}`);
   const providerConfigurationEnv = nconf.get('providers');
   return parseAuthenticationProviderConfiguration(context, user, providerConfigurationEnv, input.dry_run);
