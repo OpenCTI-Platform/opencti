@@ -423,18 +423,18 @@ const OidcProviderForm = ({
                     </Typography>
                   )}
                   <FormControlLabel
-                    control={
+                    control={(
                       <MuiSwitch
                         checked={overrideIdentifier}
                         onChange={(_, checked) => handleToggleOverride(checked)}
                         size="small"
                       />
-                    }
-                    label={
+                    )}
+                    label={(
                       <Typography variant="body2">
                         {t_i18n('Customize provider identifier')}
                       </Typography>
-                    }
+                    )}
                     sx={{ mt: 1.5 }}
                   />
                   {overrideIdentifier && (
