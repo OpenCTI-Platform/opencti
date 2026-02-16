@@ -149,38 +149,38 @@ const DraftWorkspaceDialogCreation: FunctionComponent<DraftWorkspaceCreationProp
               fullWidth
             />
             {isFeatureEnable('DRAFT_METADATA') && (
-                <>
-                  <Field
-                    component={MarkdownField}
-                    name="description"
-                    label={t_i18n('Description')}
-                    required={mandatoryAttributes.includes('description')}
-                    fullWidth={true}
-                    multiline={true}
-                    rows="4"
-                    style={fieldSpacingContainerStyle}
-                    askAi={true}
-                  />
-                  <ObjectAssigneeField
-                    name="objectAssignee"
-                    style={fieldSpacingContainerStyle}
-                    required={mandatoryAttributes.includes('objectAssignee')}
-                  />
-                  <ObjectParticipantField
-                    name="objectParticipant"
-                    style={fieldSpacingContainerStyle}
-                    required={mandatoryAttributes.includes('objectParticipant')}
-                  />
-                  <CreatedByField
-                    name="createdBy"
-                    required={mandatoryAttributes.includes('createdBy')}
-                    style={fieldSpacingContainerStyle}
-                    setFieldValue={setFieldValue}
-                  />
-                </>
-              )}
-              <Field
-                name="authorized_members"
+              <>
+                <Field
+                  component={MarkdownField}
+                  name="description"
+                  label={t_i18n('Description')}
+                  required={mandatoryAttributes.includes('description')}
+                  fullWidth={true}
+                  multiline={true}
+                  rows="4"
+                  style={fieldSpacingContainerStyle}
+                  askAi={true}
+                />
+                <ObjectAssigneeField
+                  name="objectAssignee"
+                  style={fieldSpacingContainerStyle}
+                  required={mandatoryAttributes.includes('objectAssignee')}
+                />
+                <ObjectParticipantField
+                  name="objectParticipant"
+                  style={fieldSpacingContainerStyle}
+                  required={mandatoryAttributes.includes('objectParticipant')}
+                />
+                <CreatedByField
+                  name="createdBy"
+                  required={mandatoryAttributes.includes('createdBy')}
+                  style={fieldSpacingContainerStyle}
+                  setFieldValue={setFieldValue}
+                />
+              </>
+            )}
+            <Field
+              name="authorized_members"
               component={AuthorizedMembersField}
               owner={owner}
               showAllMembersLine={showAllMembersLine}

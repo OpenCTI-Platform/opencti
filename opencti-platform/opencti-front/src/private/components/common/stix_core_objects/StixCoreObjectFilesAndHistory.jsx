@@ -394,48 +394,48 @@ const StixCoreObjectFilesAndHistory = ({
               )}
               {values.validation_mode === 'draft' && (
                 <>
-                    {isFeatureEnable('DRAFT_METADATA') && (
-                      <>
-                        <Field
-                          component={MarkdownField}
-                          name="description"
-                          label={t_i18n('Description')}
-                          required={mandatoryAttributes.includes('description')}
-                          fullWidth={true}
-                          multiline={true}
-                          rows="4"
-                          style={fieldSpacingContainerStyle}
-                          askAi={true}
-                        />
-                        <ObjectAssigneeField
-                          name="objectAssignee"
-                          style={fieldSpacingContainerStyle}
-                          required={mandatoryAttributes.includes('objectAssignee')}
-                        />
-                        <ObjectParticipantField
-                          name="objectParticipant"
-                          style={fieldSpacingContainerStyle}
-                          required={mandatoryAttributes.includes('objectParticipant')}
-                        />
-                        <CreatedByField
-                          name="createdBy"
-                          required={mandatoryAttributes.includes('createdBy')}
-                          style={fieldSpacingContainerStyle}
-                          setFieldValue={setFieldValue}
-                        />
-                      </>
-                    )}
-                    <Field
-                      name="authorizedMembers"
-                      component={AuthorizedMembersField}
-                      owner={owner}
-                      showAllMembersLine={showAllMembersLine}
-                      canDeactivate
-                      addMeUserWithAdminRights
-                      enableAccesses
-                      applyAccesses
-                      style={fieldSpacingContainerStyle}
-                    />
+                  {isFeatureEnable('DRAFT_METADATA') && (
+                    <>
+                      <Field
+                        component={MarkdownField}
+                        name="description"
+                        label={t_i18n('Description')}
+                        required={mandatoryAttributes.includes('description')}
+                        fullWidth={true}
+                        multiline={true}
+                        rows="4"
+                        style={fieldSpacingContainerStyle}
+                        askAi={true}
+                      />
+                      <ObjectAssigneeField
+                        name="objectAssignee"
+                        style={fieldSpacingContainerStyle}
+                        required={mandatoryAttributes.includes('objectAssignee')}
+                      />
+                      <ObjectParticipantField
+                        name="objectParticipant"
+                        style={fieldSpacingContainerStyle}
+                        required={mandatoryAttributes.includes('objectParticipant')}
+                      />
+                      <CreatedByField
+                        name="createdBy"
+                        required={mandatoryAttributes.includes('createdBy')}
+                        style={fieldSpacingContainerStyle}
+                        setFieldValue={setFieldValue}
+                      />
+                    </>
+                  )}
+                  <Field
+                    name="authorizedMembers"
+                    component={AuthorizedMembersField}
+                    owner={owner}
+                    showAllMembersLine={showAllMembersLine}
+                    canDeactivate
+                    addMeUserWithAdminRights
+                    enableAccesses
+                    applyAccesses
+                    style={fieldSpacingContainerStyle}
+                  />
                 </>
               )}
               {selectedConnector?.configurations?.length > 0
