@@ -242,3 +242,6 @@ type Mutation {
   securityCoverageRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 
+extend type Subscription {
+    securityCoverage(id: ID!): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
+}

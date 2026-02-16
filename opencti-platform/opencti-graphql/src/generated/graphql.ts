@@ -30385,6 +30385,7 @@ export type Subscription = {
   me?: Maybe<MeUser>;
   notification?: Maybe<Notification>;
   notificationsNumber?: Maybe<NotificationCount>;
+  securityCoverage?: Maybe<SecurityCoverage>;
   settings?: Maybe<Settings>;
   settingsMessages?: Maybe<Settings>;
   statusTemplate?: Maybe<StatusTemplate>;
@@ -30440,6 +30441,11 @@ export type SubscriptionManagerConfigurationArgs = {
 
 
 export type SubscriptionMarkingDefinitionArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type SubscriptionSecurityCoverageArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -47197,6 +47203,7 @@ export type SubscriptionResolvers<ContextType = any, ParentType extends Resolver
   me?: SubscriptionResolver<Maybe<ResolversTypes['MeUser']>, "me", ParentType, ContextType>;
   notification?: SubscriptionResolver<Maybe<ResolversTypes['Notification']>, "notification", ParentType, ContextType>;
   notificationsNumber?: SubscriptionResolver<Maybe<ResolversTypes['NotificationCount']>, "notificationsNumber", ParentType, ContextType>;
+  securityCoverage?: SubscriptionResolver<Maybe<ResolversTypes['SecurityCoverage']>, "securityCoverage", ParentType, ContextType, RequireFields<SubscriptionSecurityCoverageArgs, 'id'>>;
   settings?: SubscriptionResolver<Maybe<ResolversTypes['Settings']>, "settings", ParentType, ContextType, RequireFields<SubscriptionSettingsArgs, 'id'>>;
   settingsMessages?: SubscriptionResolver<Maybe<ResolversTypes['Settings']>, "settingsMessages", ParentType, ContextType, RequireFields<SubscriptionSettingsMessagesArgs, 'id'>>;
   statusTemplate?: SubscriptionResolver<Maybe<ResolversTypes['StatusTemplate']>, "statusTemplate", ParentType, ContextType, RequireFields<SubscriptionStatusTemplateArgs, 'id'>>;
