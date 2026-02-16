@@ -9490,6 +9490,10 @@ type Query {
   stixObjectOrStixRelationship(id: String!): StixObjectOrStixRelationship
   stixObjectOrStixRelationships(first: Int, after: ID, search: String, filters: FilterGroup): StixObjectOrStixRelationshipConnection
   stixCoreObjectOrStixCoreRelationship(id: String!): StixCoreObjectOrStixCoreRelationship
+  workflowDefinition(entityType: String!): WorkflowSchema
+  workflowInstance(entityId: String!): WorkflowInstance
+  allowedNextStatuses(entityId: String!): [Status!]!
+  allowedTransitions(entityId: String!): [WorkflowTransition!]!
   csvMapperTest(configuration: String!, content: String!): CsvMapperTestResult @deprecated(reason: "[>=6.4 & <6.7]. Use `csvMapperTest mutation`.")
   channel(id: String!): Channel
   channels(first: Int, after: ID, orderBy: ChannelsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): ChannelConnection
@@ -10306,6 +10310,9 @@ type Mutation {
   stixRefRelationshipEdit(id: ID!): StixRefRelationshipEditMutations
   stixSightingRelationshipAdd(input: StixSightingRelationshipAddInput!): StixSightingRelationship
   stixSightingRelationshipEdit(id: ID!): StixSightingRelationshipEditMutations
+  workflowDefinitionSet(entityType: String!, definition: String!): EntitySetting
+  workflowDefinitionDelete(entityType: String!): EntitySetting
+  triggerWorkflowEvent(entityId: String!, eventName: String!): WorkflowTriggerResult!
   channelAdd(input: ChannelAddInput!): Channel
   channelDelete(id: ID!): ID
   channelFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Channel
@@ -10591,6 +10598,110 @@ type Mutation {
   singleSignOnEdit(id: ID!, input: SingleSignOnEditInput!): SingleSignOn
   singleSignOnDelete(id: ID!): ID
   singleSignOnRunMigration(input: SingleSignMigrationInput!): [SingleSignOnMigrationResult]
+}
+
+enum WorkflowActionMode {
+  sync
+  async
+}
+
+type WorkflowActionConfig {
+  type: String!
+  params: String
+  mode: WorkflowActionMode!
+}
+
+type WorkflowConditionConfig {
+  field: String!
+  operator: String!
+  value: String
+}
+
+type WorkflowSerializedState {
+  name: String!
+  onEnter: [WorkflowActionConfig!]
+  onExit: [WorkflowActionConfig!]
+}
+
+type WorkflowSerializedTransition {
+  from: String!
+  to: String!
+  event: String!
+  actions: [WorkflowActionConfig!]
+  conditions: [WorkflowConditionConfig!]
+}
+
+type WorkflowSchema {
+  id: ID!
+  name: String!
+  initialState: String!
+  states: [WorkflowSerializedState!]!
+  transitions: [WorkflowSerializedTransition!]!
+}
+
+type EntitySetting implements InternalObject & BasicObject {
+  workflow_configuration: Boolean
+  workflow_id: String
+  id: ID!
+  entity_type: String!
+  standard_id: String!
+  parent_types: [String!]!
+  metrics: [Metric]
+  target_type: String!
+  platform_entity_files_ref: Boolean
+  platform_hidden_type: Boolean
+  enforce_reference: Boolean
+  attributes_configuration: String
+  attributesDefinitions: [TypeAttribute!]!
+  mandatoryAttributes: [String!]!
+  scaleAttributes: [ScaleAttribute!]!
+  defaultValuesAttributes: [DefaultValueAttribute!]!
+  availableSettings: [String!]!
+  created_at: DateTime!
+  updated_at: DateTime!
+  refreshed_at: DateTime
+  overview_layout_customization: [OverviewWidgetCustomization!]
+  fintelTemplates(first: Int, after: ID, orderBy: FintelTemplateOrdering, orderMode: OrderingMode, search: String): FintelTemplateConnection
+  requestAccessConfiguration: RequestAccessConfiguration
+}
+
+type WorkflowTriggerResult {
+  success: Boolean!
+  newState: String
+  reason: String
+  status: Status
+}
+
+type WorkflowTransition {
+  event: String!
+  toState: String!
+  toStatus: Status
+}
+
+type WorkflowInstance {
+  id: ID!
+  currentState: String!
+  allowedTransitions: [WorkflowTransition!]!
+}
+
+type DraftWorkspace implements InternalObject & BasicObject {
+  workflowInstance: WorkflowInstance
+  id: ID!
+  entity_type: String!
+  standard_id: String!
+  parent_types: [String!]!
+  metrics: [Metric]
+  name: String!
+  created_at: DateTime!
+  creators: [Creator!]
+  entity_id: String
+  objectsCount: DraftObjectsCount!
+  draft_status: DraftStatus!
+  processingCount: Int!
+  works(first: Int): [Work!]
+  validationWork: Work
+  authorizedMembers: [MemberAccess!]!
+  currentUserAccessRight: String
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -12739,30 +12850,6 @@ type OverviewWidgetCustomization {
   label: String!
 }
 
-type EntitySetting implements InternalObject & BasicObject {
-  id: ID!
-  entity_type: String!
-  standard_id: String!
-  parent_types: [String!]!
-  metrics: [Metric]
-  target_type: String!
-  platform_entity_files_ref: Boolean
-  platform_hidden_type: Boolean
-  enforce_reference: Boolean
-  attributes_configuration: String
-  attributesDefinitions: [TypeAttribute!]!
-  mandatoryAttributes: [String!]!
-  scaleAttributes: [ScaleAttribute!]!
-  defaultValuesAttributes: [DefaultValueAttribute!]!
-  availableSettings: [String!]!
-  created_at: DateTime!
-  updated_at: DateTime!
-  refreshed_at: DateTime
-  overview_layout_customization: [OverviewWidgetCustomization!]
-  fintelTemplates(first: Int, after: ID, orderBy: FintelTemplateOrdering, orderMode: OrderingMode, search: String): FintelTemplateConnection
-  requestAccessConfiguration: RequestAccessConfiguration
-}
-
 enum EntitySettingsOrdering {
   target_type
   _score
@@ -14738,25 +14825,6 @@ input ExclusionListFileAddInput {
 enum DraftStatus {
   open
   validated
-}
-
-type DraftWorkspace implements InternalObject & BasicObject {
-  id: ID!
-  entity_type: String!
-  standard_id: String!
-  parent_types: [String!]!
-  metrics: [Metric]
-  name: String!
-  created_at: DateTime!
-  creators: [Creator!]
-  entity_id: String
-  objectsCount: DraftObjectsCount!
-  draft_status: DraftStatus!
-  processingCount: Int!
-  works(first: Int): [Work!]
-  validationWork: Work
-  authorizedMembers: [MemberAccess!]!
-  currentUserAccessRight: String
 }
 
 type DraftObjectsCount {

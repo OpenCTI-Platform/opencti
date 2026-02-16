@@ -1,0 +1,79 @@
+enum WorkflowActionMode {
+  sync
+  async
+}
+
+type WorkflowActionConfig {
+    type: String!
+    params: String
+    mode: WorkflowActionMode!
+}
+
+type WorkflowConditionConfig {
+    field: String!
+    operator: String!
+    value: String
+}
+
+type WorkflowSerializedState {
+    name: String!
+    onEnter: [WorkflowActionConfig!]
+    onExit: [WorkflowActionConfig!]
+}
+
+type WorkflowSerializedTransition {
+    from: String!
+    to: String!
+    event: String!
+    actions: [WorkflowActionConfig!]
+    conditions: [WorkflowConditionConfig!]
+}
+
+type WorkflowSchema {
+    id: ID!
+    name: String!
+    initialState: String!
+    states: [WorkflowSerializedState!]!
+    transitions: [WorkflowSerializedTransition!]!
+}
+
+extend type EntitySetting {
+    workflow_configuration: Boolean
+    workflow_id: String
+}
+
+type WorkflowTriggerResult {
+    success: Boolean!
+    newState: String
+    reason: String
+    status: Status
+}
+
+type WorkflowTransition {
+    event: String!
+    toState: String!
+    toStatus: Status
+}
+
+type WorkflowInstance {
+    id: ID!
+    currentState: String!
+    allowedTransitions: [WorkflowTransition!]!
+}
+
+extend type DraftWorkspace {
+    workflowInstance: WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE])
+}
+
+extend type Query {
+    workflowDefinition(entityType: String!): WorkflowSchema @auth(for: [SETTINGS_SETCUSTOMIZATION])
+    workflowInstance(entityId: String!): WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE])
+    allowedNextStatuses(entityId: String!): [Status!]! @auth(for: [KNOWLEDGE_KNUPDATE])
+    allowedTransitions(entityId: String!): [WorkflowTransition!]! @auth(for: [KNOWLEDGE_KNUPDATE])
+}
+
+extend type Mutation {
+    workflowDefinitionSet(entityType: String!, definition: String!): EntitySetting @auth(for: [SETTINGS_SETCUSTOMIZATION])
+    workflowDefinitionDelete(entityType: String!): EntitySetting @auth(for: [SETTINGS_SETCUSTOMIZATION])
+    triggerWorkflowEvent(entityId: String!, eventName: String!): WorkflowTriggerResult! @auth(for: [KNOWLEDGE_KNUPDATE])
+}
