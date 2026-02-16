@@ -20,7 +20,7 @@ const buildProxiedFetch = (issuerUrl: URL): typeof fetch => {
 
 export const registerOpenIdStrategy = async (conf: OidcProviderConfiguration) => {
   const log = createAuthLogger(AuthenticationProviderType.Oidc, conf.identifier);
-  log.info('Configuring strategy', { conf });
+  log.info('Configuring strategy');
 
   const issuer = new URL(conf.issuer);
   const customFetchImpl = conf.use_proxy ? buildProxiedFetch(issuer) : undefined;
@@ -48,7 +48,7 @@ export const registerOpenIdStrategy = async (conf: OidcProviderConfiguration) =>
   };
 
   const verify: VerifyFunction = async (tokens, verified: AuthenticateCallback) => {
-    log.info('Successfully logged on IdP', { tokens });
+    log.info('Successfully logged on IdP');
 
     const user_info = memoize(async () => {
       const sub = tokens.claims()?.sub;
