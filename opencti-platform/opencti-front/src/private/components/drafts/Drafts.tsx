@@ -191,7 +191,7 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
     setNumberOfElements: storageHelpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<DraftsLinesPaginationQuery>;
 
-  const previousDataColumns: DataTableProps['dataColumns'] = {
+  const dataColumnsWithoutMetadata: DataTableProps['dataColumns'] = {
     name: {
       percentWidth: 50,
       isSortable: true,
@@ -308,7 +308,7 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
       {queryRef && (
         <>
           <DataTable
-            dataColumns={isFeatureEnable('DRAFT_METADATA') ? dataColumns : previousDataColumns}
+            dataColumns={isFeatureEnable('DRAFT_METADATA') ? dataColumns : dataColumnsWithoutMetadata}
             resolvePath={(data: DraftsLines_data$data) => (data.draftWorkspaces?.edges ?? []).map((n) => n?.node)}
             storageKey={LOCAL_STORAGE_KEY}
             initialValues={initialValues}
