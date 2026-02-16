@@ -20,6 +20,7 @@ const styles = (theme) => ({
       duration: theme.transitions.duration.enteringScreen,
     }),
     padding: 0,
+    backgroundColor: theme.palette.background.drawer,
   },
 });
 
@@ -47,7 +48,7 @@ class StixDomainObjectEdition extends Component {
       <Drawer
         open={open}
         anchor="right"
-        elevation={1}
+        elevation={0}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaperInGraph }}
         onClose={handleClose.bind(this)}
