@@ -136,7 +136,7 @@ const DataTableFilters = ({
             />
           )}
         </div>
-        <div style={{ display: 'flex', gap: theme.spacing(1) }}>
+        <div style={{ display: 'flex', gap: theme.spacing(1), flexShrink: 0 }}>
           {(variant === DataTableVariant.default) && (
             <DataTablePagination
               page={page}
