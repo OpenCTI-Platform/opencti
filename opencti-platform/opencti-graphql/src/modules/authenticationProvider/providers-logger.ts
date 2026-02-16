@@ -14,3 +14,12 @@ export const logAuthWarn = (message: string, strategyType: EnvStrategyType | Aut
 export const logAuthError = (message: string, strategyType: EnvStrategyType | AuthenticationProviderType | undefined, meta?: any) => {
   logApp.error(`[Auth][${strategyType ? strategyType.toUpperCase() : 'Not provided'}]${message}`, { meta });
 };
+
+export const createAuthLogger = (type: AuthenticationProviderType, identifier: string) => {
+  const logPrefix = `[Auth-${type.toUpperCase()}] `;
+  return ({
+    info: (message: string, meta: any = {}) => logApp.info(`${logPrefix}${message}`, { meta: { ...meta, type, identifier } }),
+    warn: (message: string, meta: any = {}) => logApp.warn(`${logPrefix}${message}`, { meta: { ...meta, type, identifier } }),
+    error: (message: string, meta: any = {}) => logApp.error(`${logPrefix}${message}`, { meta: { ...meta, type, identifier } }),
+  });
+};

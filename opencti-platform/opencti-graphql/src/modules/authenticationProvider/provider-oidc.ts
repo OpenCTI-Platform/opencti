@@ -8,7 +8,7 @@ import { jwtDecode } from 'jwt-decode';
 import { AuthType, providerLoginHandler } from './providers-configuration';
 import { registerAuthenticationProvider } from './providers-initialization';
 import type { OidcProviderConfiguration } from './authenticationProvider-types';
-import { logAuthInfo } from './providers-logger';
+import { createAuthLogger } from './providers-logger';
 import { memoize } from '../../utils/memoize';
 import { resolveGroups, resolveOrganizations, resolvePath, resolveUserInfo } from './mappings-utils';
 import { AuthenticationProviderType } from '../../generated/graphql';
@@ -19,7 +19,8 @@ const buildProxiedFetch = (issuerUrl: URL): typeof fetch => {
 };
 
 export const registerOpenIdStrategy = async (conf: OidcProviderConfiguration) => {
-  logAuthInfo('Configuring OpenID strategy', AuthenticationProviderType.Ldap, { conf });
+  const log = createAuthLogger(AuthenticationProviderType.Oidc, conf.identifier);
+  log.info('Configuring strategy', { conf });
 
   const issuer = new URL(conf.issuer);
   const customFetchImpl = conf.use_proxy ? buildProxiedFetch(issuer) : undefined;
@@ -47,12 +48,12 @@ export const registerOpenIdStrategy = async (conf: OidcProviderConfiguration) =>
   };
 
   const verify: VerifyFunction = async (tokens, verified: AuthenticateCallback) => {
-    logAuthInfo('Successfully logged on IdP', AuthenticationProviderType.Oidc);
+    log.info('Successfully logged on IdP', { tokens });
 
     const user_info = memoize(async () => {
       const sub = tokens.claims()?.sub;
       const userInfo = sub ? await fetchUserInfo(config, tokens.access_token, sub) : undefined;
-      logAuthInfo('User info fetched', AuthenticationProviderType.Oidc, { sub, userInfo });
+      log.info('User info fetched', { sub: sub ?? null, userInfo: userInfo ?? null });
       return userInfo;
     });
 
@@ -65,6 +66,8 @@ export const registerOpenIdStrategy = async (conf: OidcProviderConfiguration) =>
     const userInfo = await resolveUserInfo(conf.user_info_mapping, resolveExpr);
     const groups = await resolveGroups(conf.groups_mapping, resolveExpr);
     const organizations = await resolveOrganizations(conf.organizations_mapping, resolveExpr);
+
+    log.info('User info resolved', { userInfo, groups, organizations });
 
     const opts = {
       strategy: AuthenticationProviderType.Oidc,
