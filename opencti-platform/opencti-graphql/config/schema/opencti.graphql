@@ -13546,6 +13546,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | StixFile
   | X509Certificate
   | SSHKey
+  | AIPrompt
   | IPv4Addr
   | IPv6Addr
   | MacAddr
@@ -13637,6 +13638,7 @@ union StixObjectOrStixRelationship =
   | StixFile
   | X509Certificate
   | SSHKey
+  | AIPrompt
   | IPv4Addr
   | IPv6Addr
   | MacAddr
@@ -13722,6 +13724,7 @@ union StixCoreObjectOrStixCoreRelationship =
   | StixFile
   | X509Certificate
   | SSHKey
+  | AIPrompt
   | IPv4Addr
   | IPv6Addr
   | MacAddr
