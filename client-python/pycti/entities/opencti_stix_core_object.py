@@ -1899,7 +1899,7 @@ class StixCoreObject:
         if element_id is not None and rule_id is not None and execution_id is not None:
             while not rule_apply_complete:
                 self.opencti.app_logger.info(
-                    "Apply rule async stix_core_object", {"id": element_id}
+                    "Apply rule async stix_core_object", {"id": element_id, "execution_id": execution_id}
                 )
                 query = """
                         mutation StixCoreApplyRule($elementId: ID!, $ruleId: ID!, $executionId: ID!) {
@@ -1915,9 +1915,9 @@ class StixCoreObject:
                     },
                 )
                 rule_apply_complete = result["data"]["ruleApplyAsync"]
-                self.opencti.app_logger.info(
-                    "Apply rule async stix_core_object complete", {"id": element_id}
-                )
+            self.opencti.app_logger.info(
+                "Apply rule async stix_core_object complete", {"id": element_id}
+            )
         else:
             self.opencti.app_logger.error(
                 "[stix_core_object] Cannot apply rule, missing parameters: id"
