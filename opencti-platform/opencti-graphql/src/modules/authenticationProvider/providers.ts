@@ -6,6 +6,7 @@ import { registerSAMLStrategy } from './provider-saml';
 import { registerLDAPStrategy } from './provider-ldap';
 import { GraphQLError } from 'graphql/index';
 import { registerOpenIdStrategy } from './provider-oidc';
+import { resolveProviderIdentifier } from './authenticationProvider-types';
 
 export const refreshStrategy = async (authenticationStrategy: BasicStoreEntityAuthenticationProvider) => {
   await unregisterStrategy(authenticationStrategy);
@@ -16,13 +17,13 @@ export const refreshStrategy = async (authenticationStrategy: BasicStoreEntityAu
 };
 
 export const unregisterStrategy = async (authenticationStrategy: BasicStoreEntityAuthenticationProvider) => {
-  const identifier = authenticationStrategy.identifier_override ?? authenticationStrategy.internal_id;
+  const identifier = resolveProviderIdentifier(authenticationStrategy);
   unregisterAuthenticationProvider(identifier);
 };
 
 export const registerStrategy = async (authenticationProvider: BasicStoreEntityAuthenticationProvider) => {
-  const { type, name, identifier_override } = authenticationProvider;
-  const identifier = identifier_override ?? name; // TODO slug name
+  const { type, name } = authenticationProvider;
+  const identifier = resolveProviderIdentifier(authenticationProvider);
   const logger = createAuthLogger(type, identifier);
   logger.info('Configuring strategy');
   try {

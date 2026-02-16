@@ -20,6 +20,7 @@ import {
   samlSecretFields,
   ldapSecretFields,
   type ExtraConfEntry,
+  resolveProviderIdentifier,
 } from './authenticationProvider-types';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { createEntity, deleteElementById, patchAttribute } from '../../database/middleware';
@@ -141,7 +142,7 @@ export const findAllAuthenticationProvider = async (context: AuthContext, user: 
 
 export const getAllIdentifiers = async (context: AuthContext, user: AuthUser) => {
   const allProvider = await findAllAuthenticationProvider(context, user);
-  return allProvider.map((provider) => provider.identifier_override ?? provider.id);
+  return allProvider.map((provider) => resolveProviderIdentifier(provider));
 };
 
 // For migration purpose, we need to be able to create a provider enabled, but not start it immediately
@@ -166,7 +167,7 @@ export const addAuthenticationProvider = async (
     ENTITY_TYPE_AUTHENTICATION_PROVIDER,
   );
   const providerId = created.internal_id;
-  const identifier = created.identifier_override ?? providerId;
+  const identifier = resolveProviderIdentifier(created);
 
   await publishUserAction({
     user,
@@ -213,8 +214,7 @@ export const editAuthenticationProvider = async (
 
   const { element } = await patchAttribute(context, user, id, ENTITY_TYPE_AUTHENTICATION_PROVIDER, input);
 
-  const providerId = element.internal_id;
-  const identifier = element.identifier_override ?? providerId;
+  const identifier = resolveProviderIdentifier(element as BasicStoreEntityAuthenticationProvider);
   await publishUserAction({
     user,
     event_type: 'mutation',
