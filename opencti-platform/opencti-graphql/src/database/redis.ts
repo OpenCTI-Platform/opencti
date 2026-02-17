@@ -737,6 +737,7 @@ const AUTH_LOG_LIST_KEY_PREFIX = 'auth_logs:';
 const AUTH_LOG_MAX_SIZE = 50;
 
 export interface AuthLogEntry {
+  timestamp: number;
   level: 'info' | 'warn' | 'error';
   type: string;
   identifier: string;
@@ -746,7 +747,7 @@ export interface AuthLogEntry {
 
 const authLogListKey = (identifier: string) => `${AUTH_LOG_LIST_KEY_PREFIX}${identifier}`;
 
-export const redisPushAuthLog = async (entry: AuthLogEntry) => {
+export const redisPushAuthLog = async (entry: Omit<AuthLogEntry, 'timestamp'>) => {
   try {
     const key = authLogListKey(entry.identifier);
     const value = JSON.stringify({ timestamp: Date.now(), ...entry });

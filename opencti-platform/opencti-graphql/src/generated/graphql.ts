@@ -1385,10 +1385,27 @@ export type AuditsTimeSeriesParameters = {
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+export type AuthLogEntry = {
+  __typename?: 'AuthLogEntry';
+  identifier: Scalars['String']['output'];
+  level: AuthLogLevel;
+  message: Scalars['String']['output'];
+  meta?: Maybe<Scalars['JSON']['output']>;
+  timestamp: Scalars['DateTime']['output'];
+  type: Scalars['String']['output'];
+};
+
+export enum AuthLogLevel {
+  Error = 'error',
+  Info = 'info',
+  Warn = 'warn'
+}
+
 export type AuthenticationConfiguration = LdapConfiguration | OidcConfiguration | SamlConfiguration;
 
 export type AuthenticationProvider = AuthenticationProviderBase & BasicObject & InternalObject & {
   __typename?: 'AuthenticationProvider';
+  authLogHistory: Array<AuthLogEntry>;
   button_label_override?: Maybe<Scalars['String']['output']>;
   configuration: AuthenticationConfiguration;
   created_at: Scalars['DateTime']['output'];
@@ -37361,6 +37378,8 @@ export type ResolversTypes = ResolversObject<{
   AttributesMap: ResolverTypeWrapper<AttributesMap>;
   AttributesOrdering: AttributesOrdering;
   AuditsTimeSeriesParameters: AuditsTimeSeriesParameters;
+  AuthLogEntry: ResolverTypeWrapper<AuthLogEntry>;
+  AuthLogLevel: AuthLogLevel;
   AuthenticationConfiguration: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['AuthenticationConfiguration']>;
   AuthenticationProvider: ResolverTypeWrapper<BasicStoreEntityAuthenticationProvider>;
   AuthenticationProviderBase: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['AuthenticationProviderBase']>;
@@ -38447,6 +38466,7 @@ export type ResolversParentTypes = ResolversObject<{
   AttributeRefInput: AttributeRefInput;
   AttributesMap: AttributesMap;
   AuditsTimeSeriesParameters: AuditsTimeSeriesParameters;
+  AuthLogEntry: AuthLogEntry;
   AuthenticationConfiguration: ResolversUnionTypes<ResolversParentTypes>['AuthenticationConfiguration'];
   AuthenticationProvider: BasicStoreEntityAuthenticationProvider;
   AuthenticationProviderBase: ResolversInterfaceTypes<ResolversParentTypes>['AuthenticationProviderBase'];
@@ -39815,11 +39835,21 @@ export type AttributesMapResolvers<ContextType = any, ParentType extends Resolve
   type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
+export type AuthLogEntryResolvers<ContextType = any, ParentType extends ResolversParentTypes['AuthLogEntry'] = ResolversParentTypes['AuthLogEntry']> = ResolversObject<{
+  identifier?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  level?: Resolver<ResolversTypes['AuthLogLevel'], ParentType, ContextType>;
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  meta?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
+  timestamp?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
 export type AuthenticationConfigurationResolvers<ContextType = any, ParentType extends ResolversParentTypes['AuthenticationConfiguration'] = ResolversParentTypes['AuthenticationConfiguration']> = ResolversObject<{
   __resolveType: TypeResolveFn<'LdapConfiguration' | 'OidcConfiguration' | 'SamlConfiguration', ParentType, ContextType>;
 }>;
 
 export type AuthenticationProviderResolvers<ContextType = any, ParentType extends ResolversParentTypes['AuthenticationProvider'] = ResolversParentTypes['AuthenticationProvider']> = ResolversObject<{
+  authLogHistory?: Resolver<Array<ResolversTypes['AuthLogEntry']>, ParentType, ContextType>;
   button_label_override?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   configuration?: Resolver<ResolversTypes['AuthenticationConfiguration'], ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -50337,6 +50367,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   AttributePath?: AttributePathResolvers<ContextType>;
   AttributeRef?: AttributeRefResolvers<ContextType>;
   AttributesMap?: AttributesMapResolvers<ContextType>;
+  AuthLogEntry?: AuthLogEntryResolvers<ContextType>;
   AuthenticationConfiguration?: AuthenticationConfigurationResolvers<ContextType>;
   AuthenticationProvider?: AuthenticationProviderResolvers<ContextType>;
   AuthenticationProviderBase?: AuthenticationProviderBaseResolvers<ContextType>;

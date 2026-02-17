@@ -1,4 +1,5 @@
-import { AuthenticationProviderType, type Resolvers } from '../../generated/graphql';
+import { AuthenticationProviderType, AuthLogLevel, type Resolvers } from '../../generated/graphql';
+import { redisGetAuthLogHistory } from '../../database/redis';
 import {
   addAuthenticationProvider,
   deleteAuthenticationProvider,
@@ -6,10 +7,37 @@ import {
   findAuthenticationProviderById,
   findAuthenticationProviderByIdPaginated,
   getAuthenticationProviderSettings,
+  resolveProviderIdentifier,
   runAuthenticationProviderMigration,
 } from './authenticationProvider-domain';
+import type { BasicStoreEntityAuthenticationProvider } from './authenticationProvider-types';
+import { DatabaseError } from '../../config/errors';
+
+const levelToLevel = (level: string) => {
+  switch (level) {
+    case 'info':
+      return AuthLogLevel.Info;
+    case 'warn':
+      return AuthLogLevel.Warn;
+    case 'error':
+      return AuthLogLevel.Error;
+    default:
+      throw DatabaseError('Unknown log level', { level });
+  }
+};
 
 const authenticationProviderResolver: Resolvers = {
+  AuthenticationProvider: {
+    authLogHistory: async (parent) => {
+      const identifier = resolveProviderIdentifier(parent as BasicStoreEntityAuthenticationProvider);
+      const entries = await redisGetAuthLogHistory(identifier);
+      return entries.map(({ timestamp, level, ...others }) => ({
+        timestamp: new Date(timestamp),
+        level: levelToLevel(level),
+        ...others,
+      }));
+    },
+  },
   Query: {
     authenticationProvider: (_, { id }, context) => findAuthenticationProviderById(context, context.user, id),
     authenticationProviders: (_, args, context) => findAuthenticationProviderByIdPaginated(context, context.user, args),

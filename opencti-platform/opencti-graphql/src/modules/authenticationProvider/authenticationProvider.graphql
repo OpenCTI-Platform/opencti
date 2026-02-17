@@ -211,6 +211,21 @@ input LdapConfigurationInput {
 
 ### AuthenticationProvider
 
+enum AuthLogLevel {
+  info
+  warn
+  error
+}
+
+type AuthLogEntry {
+  timestamp: DateTime!
+  level: AuthLogLevel!
+  message: String!
+  type: String!
+  identifier: String!
+  meta: JSON
+}
+
 union AuthenticationConfiguration = OidcConfiguration | SamlConfiguration | LdapConfiguration
 
 enum AuthenticationProviderType {
@@ -243,6 +258,7 @@ type AuthenticationProvider implements InternalObject & BasicObject & Authentica
   identifier_override: String # use id if no identifier_override is provided
   type: AuthenticationProviderType!
   configuration: AuthenticationConfiguration!
+  authLogHistory: [AuthLogEntry!]!
 }
 
 enum AuthenticationProviderOrdering {
