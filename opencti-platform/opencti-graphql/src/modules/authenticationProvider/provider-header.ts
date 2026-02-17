@@ -21,8 +21,12 @@ export const createHeaderLoginHandler = (logger: AuthenticationProviderLogger, c
 
   logger.info('Processing login request');
 
-  const mapper = createMapper(headerStrategy);
-  const providerLoginInfo = await mapper((name: string) => req.headers[name.toLowerCase()]);
+  const resolveExpr = (expr: string) => (obj: unknown) => {
+    const headers = obj as Record<string, string>;
+    return headers[expr.toLowerCase()];
+  };
+  const mapper = createMapper(headerStrategy, resolveExpr);
+  const providerLoginInfo = await mapper(req.headers);
   const infoWithMeta = {
     ...providerLoginInfo,
     userMapping: {

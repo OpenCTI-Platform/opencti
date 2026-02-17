@@ -33,9 +33,10 @@ export const handleCertAuthenticationRequest = async (req: Request, res: Respons
 
       const opts = {
         providerGroups: info.groupsMapping.groups,
-        providerOrganizations: info.organizationsMapping.organizations,
         autoCreateGroup: cert_auth.groups_mapping.auto_create_groups,
         preventDefaultGroups: cert_auth.groups_mapping.prevent_default_groups,
+        providerOrganizations: info.organizationsMapping.organizations,
+        autoCreateOrganization: cert_auth?.organizations_mapping.auto_create_organizations,
       };
       try {
         const user = await loginFromProvider(info.userMapping, opts);

@@ -66,9 +66,10 @@ export const handleProviderLogin = async (logger: AuthenticationProviderLogger, 
       info.userMapping,
       {
         providerGroups: info.groupsMapping.groups,
-        providerOrganizations: info.organizationsMapping.organizations,
         autoCreateGroup: info.groupsMapping.autoCreateGroup,
         preventDefaultGroups: info.groupsMapping.preventDefaultGroups,
+        providerOrganizations: info.organizationsMapping.organizations,
+        autoCreateOrganization: info.organizationsMapping.autoCreateOrganization,
       },
     );
     addUserLoginCount();

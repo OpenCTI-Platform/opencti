@@ -110,6 +110,7 @@ import { getSettings } from './settings';
 import passport from 'passport';
 import { LOCAL_STRATEGY_IDENTIFIER, PROVIDERS } from '../modules/authenticationProvider/providers-configuration';
 import { HEADER_PROVIDER } from '../modules/authenticationProvider/providers';
+import { addOrganization } from '../modules/organization/organization-domain';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -1296,9 +1297,10 @@ export const userDeleteOrganizationRelation = async (context, user, userId, toId
 };
 
 export const loginFromProvider = async (userInfo, opts = {}) => {
-  const { providerGroups = [], providerOrganizations = [], autoCreateGroup = false, preventDefaultGroups = false } = opts;
+  const { providerGroups = [], providerOrganizations = [], preventDefaultGroups = false } = opts;
+  const { autoCreateGroup = false, autoCreateOrganization = false } = opts;
   const context = executionContext('login_provider');
-  // region test the groups existence and eventually auto create groups
+  // region test the groups / organization existence and eventually auto create
   if (providerGroups.length > 0) {
     const providerGroupsIds = providerGroups.map((groupName) => generateStandardId(ENTITY_TYPE_GROUP, { name: groupName }));
     const groupsFilters = {
@@ -1306,8 +1308,8 @@ export const loginFromProvider = async (userInfo, opts = {}) => {
       filters: [{ key: 'standard_id', values: providerGroupsIds }],
       filterGroups: [],
     };
-    const foundGroups = await findGroups(context, SYSTEM_USER, { filters: groupsFilters });
-    const foundGroupsNames = foundGroups.edges.map((group) => group.node.name);
+    const foundGroups = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_GROUP], { filters: groupsFilters });
+    const foundGroupsNames = foundGroups.map((group) => group.name);
     const newGroupsToCreate = [];
     providerGroups.forEach((groupName) => {
       if (!foundGroupsNames.includes(groupName)) {
@@ -1319,6 +1321,27 @@ export const loginFromProvider = async (userInfo, opts = {}) => {
       }
     });
     await Promise.all(newGroupsToCreate);
+  }
+  if (providerOrganizations.length > 0) {
+    const providerOrganizationIds = providerOrganizations.map((groupName) => generateStandardId(ENTITY_TYPE_IDENTITY_ORGANIZATION, { name: groupName }));
+    const organizationsFilters = {
+      mode: 'and',
+      filters: [{ key: 'standard_id', values: providerOrganizationIds }],
+      filterGroups: [],
+    };
+    const foundOrganizations = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_IDENTITY_ORGANIZATION], { filters: organizationsFilters });
+    const foundOrganizationsNames = foundOrganizations.map((group) => group.name);
+    const newOrganizationsToCreate = [];
+    providerOrganizations.forEach((organizationName) => {
+      if (!foundOrganizationsNames.includes(organizationName)) {
+        if (!autoCreateOrganization) {
+          throw ForbiddenAccess('[SSO] Can\'t login. The user has groups that don\'t exist and auto_create_group = false.');
+        } else {
+          newOrganizationsToCreate.push(addOrganization(context, SYSTEM_USER, { name: organizationName }));
+        }
+      }
+    });
+    await Promise.all(newOrganizationsToCreate);
   }
   // endregion
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
