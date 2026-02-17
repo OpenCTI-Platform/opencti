@@ -39,6 +39,20 @@ describe('mappings-utils', () => {
       expect(result).toBe('bar-suffix');
     });
 
+    it('should resolve function can be called many times', async () => {
+      const obj1 = { foo: (arg: string) => `bar-${arg}` };
+      const obj2 = { foo: (arg: string) => `foo-${arg}` };
+      const resolver = resolvePath(['foo', 'suffix']);
+      const result1_1 = await resolver(obj1);
+      expect(result1_1).toBe('bar-suffix');
+      const result1_2 = await resolver(obj1);
+      expect(result1_2).toBe('bar-suffix');
+      const result2_1 = await resolver(obj2);
+      expect(result2_1).toBe('foo-suffix');
+      const result2_2 = await resolver(obj2);
+      expect(result2_2).toBe('foo-suffix');
+    });
+
     it('should resolve nested function with arguments', async () => {
       // Logic: obj.foo('arg1').bar
       const obj = {

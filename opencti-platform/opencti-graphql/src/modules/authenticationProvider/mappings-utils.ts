@@ -11,13 +11,13 @@ export const resolvePath = ([name, ...rest]: string[]) => async <T>(obj: unknown
 
   const isFunction = typeof value === 'function';
   const functionHasArgs = isFunction && value.length > 0;
-  const [argValue] = functionHasArgs ? rest.splice(0, 1) : [];
+  const [remaining, argValue] = functionHasArgs ? [rest.slice(1), rest[0]] : [rest];
   const resolvedValue = isFunction ? await value(argValue) : value;
-  if (rest.length === 0) {
+  if (remaining.length === 0) {
     return resolvedValue;
   }
 
-  return resolvePath(rest)(resolvedValue);
+  return resolvePath(remaining)(resolvedValue);
 };
 
 export const resolveDotPath = (path: string) => resolvePath(path.split('.'));
@@ -36,8 +36,10 @@ export const createUserMapper = (
   const firstnameExpr = firstname_expr ? resolveExpr(firstname_expr) : () => undefined;
   const lastnameExpr = lastname_expr ? resolveExpr(lastname_expr) : () => undefined;
   return async (obj: unknown) => {
+    const s = await emailExpr(obj);
+    console.log('createUserMapper', { email_expr, name_expr, firstname_expr, lastname_expr, obj, s });
     return {
-      email: firstElement(await emailExpr(obj))?.trim(),
+      email: firstElement(s)?.trim(),
       name: firstElement(await nameExpr(obj))?.trim(),
       firstname: firstElement(await firstnameExpr(obj))?.trim(),
       lastname: firstElement(await lastnameExpr(obj))?.trim(),
@@ -94,6 +96,9 @@ export const createMapper = (
 
   return async (userContext: unknown, groupContext = userContext, organizationContext = userContext): Promise<ProviderAuthInfo> => {
     const userMapping = await userMapper(userContext);
+
+    console.log('######## userMapping', { userMapping });
+
     const groups = await groupsMapper(groupContext);
     const organizations = await organizationsMapper(organizationContext);
     return {
