@@ -12,9 +12,13 @@ type DraftWorkspace implements InternalObject & BasicObject {
     metrics:[Metric]
     # DraftWorkspace
     name: String!
+    createdBy: Identity
+    description: String
     created_at: DateTime!
     creators: [Creator!]
     entity_id: String
+    objectAssignee: [Assignee!]
+    objectParticipant: [Participant!]
     objectsCount: DraftObjectsCount!
     draft_status: DraftStatus!
     processingCount: Int!
@@ -106,7 +110,11 @@ type Query {
 
 input DraftWorkspaceAddInput {
     name: String!
+    createdBy: String
+    description: String
     entity_id: String
+    objectAssignee: [String]
+    objectParticipant: [String]
     authorized_members: [MemberAccessInput!]
 }
 

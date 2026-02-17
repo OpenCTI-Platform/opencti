@@ -1,13 +1,13 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
-import AuthorizedMembersField, { AuthorizedMembersFieldValue } from '@components/common/form/AuthorizedMembersField';
-import { DraftsLinesPaginationQuery$variables } from '@components/drafts/__generated__/DraftsLinesPaginationQuery.graphql';
 import DialogActions from '@mui/material/DialogActions';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { DraftsLinesPaginationQuery$variables } from '@components/drafts/__generated__/DraftsLinesPaginationQuery.graphql';
+import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
 import * as Yup from 'yup';
 import { useFormatter } from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
@@ -17,6 +17,14 @@ import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import useAuth from '../../../../../utils/hooks/useAuth';
 import { insertNode } from '../../../../../utils/store';
 import { DraftWorkspaceDialogCreationMutation, DraftWorkspaceDialogCreationMutation$variables } from './__generated__/DraftWorkspaceDialogCreationMutation.graphql';
+import MarkdownField from '../../../../../components/fields/MarkdownField';
+import ObjectAssigneeField from '@components/common/form/ObjectAssigneeField';
+import ObjectParticipantField from '@components/common/form/ObjectParticipantField';
+import CreatedByField from '@components/common/form/CreatedByField';
+import useHelper from '../../../../../utils/hooks/useHelper';
+import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../../utils/hooks/useEntitySettings';
+import { DraftAddInput, DRAFTWORKSPACE_TYPE } from '@components/drafts/DraftCreation';
+import useDefaultValues from '../../../../../utils/hooks/useDefaultValues';
 
 const draftWorkspaceDialogCreationMutation = graphql`
   mutation DraftWorkspaceDialogCreationMutation($input: DraftWorkspaceAddInput!) {
@@ -35,19 +43,16 @@ interface DraftWorkspaceCreationProps {
   paginationOptions: DraftsLinesPaginationQuery$variables;
 }
 
-interface DraftAddInput {
-  name: string;
-  authorizedMembers?: AuthorizedMembersFieldValue;
-}
-
 const DraftWorkspaceDialogCreation: FunctionComponent<DraftWorkspaceCreationProps> = ({
   openCreate,
   handleCloseCreate,
   entityId,
   paginationOptions,
 }) => {
+  const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
   const { me: owner, settings } = useAuth();
+  const { mandatoryAttributes } = useIsMandatoryAttribute(DRAFTWORKSPACE_TYPE);
   const showAllMembersLine = !settings.platform_organization?.id;
   const [commit] = useApiMutation<DraftWorkspaceDialogCreationMutation>(
     draftWorkspaceDialogCreationMutation,
@@ -61,17 +66,30 @@ const DraftWorkspaceDialogCreation: FunctionComponent<DraftWorkspaceCreationProp
     'draftWorkspaceAdd',
   );
 
-  const draftValidation = Yup.object().shape({
-    name: Yup.string().trim().required(t_i18n('This field is required')),
-  });
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().trim().min(2, t_i18n('Name must be at least 2 characters')),
+    description: Yup.string().nullable(),
+    objectAssignee: Yup.array().nullable(),
+    objectParticipant: Yup.array().nullable(),
+    createdBy: Yup.object().nullable(),
+    authorized_members: Yup.array().nullable(),
+  }, mandatoryAttributes);
+  const draftWorkspaceValidator = useDynamicSchemaCreationValidation(
+    mandatoryAttributes,
+    basicShape,
+  );
 
   const onSubmit: FormikConfig<DraftAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
     const input: DraftWorkspaceDialogCreationMutation$variables['input'] = {
       name: values.name,
       entity_id: entityId,
-      authorized_members: !values.authorizedMembers
+      description: values.description,
+      objectAssignee: values.objectAssignee.map(({ value }) => value),
+      objectParticipant: values.objectParticipant.map(({ value }) => value),
+      createdBy: values.createdBy?.value,
+      authorized_members: !values.authorized_members
         ? null
-        : values.authorizedMembers
+        : values.authorized_members
             .filter((v) => v.accessRight !== 'none')
             .map((member) => ({
               id: member.value,
@@ -99,15 +117,24 @@ const DraftWorkspaceDialogCreation: FunctionComponent<DraftWorkspaceCreationProp
     });
   };
 
+  const initialValues = useDefaultValues<DraftAddInput>(DRAFTWORKSPACE_TYPE, {
+    name: '',
+    description: '',
+    objectAssignee: [],
+    objectParticipant: [],
+    createdBy: undefined,
+    authorized_members: undefined,
+  });
+
   return (
     <Formik<DraftAddInput>
       enableReinitialize={true}
-      initialValues={{ name: '' }}
-      validationSchema={draftValidation}
+      initialValues={initialValues}
+      validationSchema={draftWorkspaceValidator}
       onSubmit={onSubmit}
       onReset={handleCloseCreate}
     >
-      {({ submitForm, handleReset, isSubmitting }) => (
+      {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
         <Form>
           <Dialog
             open={!!openCreate}
@@ -121,8 +148,39 @@ const DraftWorkspaceDialogCreation: FunctionComponent<DraftWorkspaceCreationProp
               label={t_i18n('Name')}
               fullWidth
             />
+            {isFeatureEnable('DRAFT_METADATA') && (
+              <>
+                <Field
+                  component={MarkdownField}
+                  name="description"
+                  label={t_i18n('Description')}
+                  required={mandatoryAttributes.includes('description')}
+                  fullWidth={true}
+                  multiline={true}
+                  rows="4"
+                  style={fieldSpacingContainerStyle}
+                  askAi={true}
+                />
+                <ObjectAssigneeField
+                  name="objectAssignee"
+                  style={fieldSpacingContainerStyle}
+                  required={mandatoryAttributes.includes('objectAssignee')}
+                />
+                <ObjectParticipantField
+                  name="objectParticipant"
+                  style={fieldSpacingContainerStyle}
+                  required={mandatoryAttributes.includes('objectParticipant')}
+                />
+                <CreatedByField
+                  name="createdBy"
+                  required={mandatoryAttributes.includes('createdBy')}
+                  style={fieldSpacingContainerStyle}
+                  setFieldValue={setFieldValue}
+                />
+              </>
+            )}
             <Field
-              name="authorizedMembers"
+              name="authorized_members"
               component={AuthorizedMembersField}
               owner={owner}
               showAllMembersLine={showAllMembersLine}
@@ -132,7 +190,6 @@ const DraftWorkspaceDialogCreation: FunctionComponent<DraftWorkspaceCreationProp
               applyAccesses
               style={fieldSpacingContainerStyle}
             />
-
             <DialogActions>
               <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Cancel')}

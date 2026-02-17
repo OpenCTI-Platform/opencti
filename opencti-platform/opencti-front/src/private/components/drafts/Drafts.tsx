@@ -24,17 +24,36 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { DraftsLines_data$data } from './__generated__/DraftsLines_data.graphql';
 import { DraftsLinesPaginationQuery, DraftsLinesPaginationQuery$variables } from './__generated__/DraftsLinesPaginationQuery.graphql';
 import DraftPopover from './DraftPopover';
+import useHelper from '../../../utils/hooks/useHelper';
 
 const DraftLineFragment = graphql`
     fragment Drafts_node on DraftWorkspace {
         id
         entity_type
         name
+      description
+      createdBy {
+        ... on Identity {
+          id
+          name
+          entity_type
+        }
+      }
         creators {
           id
           name
         }
         created_at
+      objectAssignee {
+        id
+        name
+        entity_type
+      }
+      objectParticipant {
+        id
+        name
+        entity_type
+      }
         draft_status
         validationWork {
             received_time
@@ -124,6 +143,7 @@ interface DraftsProps {
 }
 
 const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenCreate, emptyStateMessage }) => {
+  const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const draftColor = getDraftModeColor(theme);
@@ -171,7 +191,7 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
     setNumberOfElements: storageHelpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<DraftsLinesPaginationQuery>;
 
-  const dataColumns: DataTableProps['dataColumns'] = {
+  const dataColumnsWithoutMetadata: DataTableProps['dataColumns'] = {
     name: {
       percentWidth: 50,
       isSortable: true,
@@ -182,6 +202,64 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
     },
     created_at: {
       percentWidth: 15,
+      isSortable: true,
+    },
+    draft_status: {
+      id: 'draft_status',
+      label: 'Status',
+      percentWidth: 10,
+      isSortable: true,
+      render: ({ draft_status }) => (
+        <Chip
+          variant="outlined"
+          label={draft_status}
+          style={{
+            fontSize: 12,
+            lineHeight: '12px',
+            height: 20,
+            float: 'left',
+            textTransform: 'uppercase',
+            borderRadius: 4,
+            width: 90,
+            color: draft_status === 'open' ? draftColor : validatedDraftColor,
+            borderColor: draft_status === 'open' ? draftColor : validatedDraftColor,
+            backgroundColor: hexToRGB(draft_status === 'open' ? draftColor : validatedDraftColor),
+          }}
+        />
+      ),
+    },
+    draft_validation_progress: {
+      id: 'draft_validation_progress',
+      label: 'Validation progress',
+      percentWidth: 10,
+      isSortable: false,
+      render: ({ validationWork }) => defaultRender(computeValidationProgress(validationWork)),
+    },
+  };
+
+  const dataColumns: DataTableProps['dataColumns'] = {
+    name: {
+      percentWidth: 28,
+      isSortable: true,
+    },
+    creator: {
+      percentWidth: 10,
+      isSortable: true,
+    },
+    created_at: {
+      percentWidth: 12,
+      isSortable: true,
+    },
+    createdBy: {
+      percentWidth: 10,
+      isSortable: true,
+    },
+    objectParticipant: {
+      percentWidth: 10,
+      isSortable: true,
+    },
+    objectAssignee: {
+      percentWidth: 10,
       isSortable: true,
     },
     draft_status: {
@@ -230,7 +308,7 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
       {queryRef && (
         <>
           <DataTable
-            dataColumns={dataColumns}
+            dataColumns={isFeatureEnable('DRAFT_METADATA') ? dataColumns : dataColumnsWithoutMetadata}
             resolvePath={(data: DraftsLines_data$data) => (data.draftWorkspaces?.edges ?? []).map((n) => n?.node)}
             storageKey={LOCAL_STORAGE_KEY}
             initialValues={initialValues}

@@ -14807,9 +14807,13 @@ type DraftWorkspace implements InternalObject & BasicObject {
   parent_types: [String!]!
   metrics: [Metric]
   name: String!
+  createdBy: Identity
+  description: String
   created_at: DateTime!
   creators: [Creator!]
   entity_id: String
+  objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   objectsCount: DraftObjectsCount!
   draft_status: DraftStatus!
   processingCount: Int!
@@ -14848,7 +14852,11 @@ type DraftWorkspaceEdge {
 
 input DraftWorkspaceAddInput {
   name: String!
+  createdBy: String
+  description: String
   entity_id: String
+  objectAssignee: [String]
+  objectParticipant: [String]
   authorized_members: [MemberAccessInput!]
 }
 

@@ -16,7 +16,9 @@ import {
 } from './draftWorkspace-domain';
 import { findById as findWorkById, worksForDraft } from '../../domain/work';
 import { getAuthorizedMembers } from '../../utils/authorizedMembers';
-import { loadCreators } from '../../database/members';
+import { loadAssignees, loadCreators, loadParticipants } from '../../database/members';
+import { loadThroughDenormalized } from '../../resolvers/stix';
+import { INPUT_CREATED_BY } from '../../schema/general';
 
 const draftWorkspaceResolvers: Resolvers = {
   Query: {
@@ -43,6 +45,9 @@ const draftWorkspaceResolvers: Resolvers = {
     validationWork: (draft, _, context) => (draft.validation_work_id ? findWorkById(context, context.user, draft.validation_work_id) as any : null),
     authorizedMembers: (workspace, _, context) => getAuthorizedMembers(context, context.user, workspace),
     currentUserAccessRight: (workspace, _, context) => getCurrentUserAccessRight(context, context.user, workspace),
+    objectParticipant: async (workspace, _, context) => loadParticipants(context, context.user, workspace),
+    objectAssignee: async (workspace, _, context) => loadAssignees(context, context.user, workspace),
+    createdBy: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_CREATED_BY),
   },
   Mutation: {
     draftWorkspaceAdd: (_, { input }, context) => {

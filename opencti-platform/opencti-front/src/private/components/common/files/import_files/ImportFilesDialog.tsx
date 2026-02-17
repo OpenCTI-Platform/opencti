@@ -1,10 +1,12 @@
 import { ImportFilesProvider, importFilesQuery, InitialValues, useImportFilesContext } from '@components/common/files/import_files/ImportFilesContext';
-import ImportFilesFormSelector from '@components/common/files/import_files/ImportFilesFormSelector';
-import ImportFilesFormView from '@components/common/files/import_files/ImportFilesFormView';
 import ImportFilesOptions from '@components/common/files/import_files/ImportFilesOptions';
 import ImportFilesStepper from '@components/common/files/import_files/ImportFilesStepper';
-import ImportFilesToggleMode from '@components/common/files/import_files/ImportFilesToggleMode';
 import ImportFilesUploadProgress from '@components/common/files/import_files/ImportFilesUploadProgress';
+import ImportFilesToggleMode from '@components/common/files/import_files/ImportFilesToggleMode';
+import ImportFilesFormSelector from '@components/common/files/import_files/ImportFilesFormSelector';
+import ImportFilesFormView from '@components/common/files/import_files/ImportFilesFormView';
+import { DraftAddInput, draftCreationMutation, DRAFTWORKSPACE_TYPE } from '@components/drafts/DraftCreation';
+import { DraftCreationMutation, DraftCreationMutation$data } from '@components/drafts/__generated__/DraftCreationMutation.graphql';
 import ImportFilesUploader from '@components/common/files/import_files/ImportFilesUploader';
 import { ImportFilesContextQuery } from '@components/common/files/import_files/__generated__/ImportFilesContextQuery.graphql';
 import {
@@ -17,8 +19,6 @@ import {
 } from '@components/common/files/import_files/__generated__/ImportFilesDialogGlobalMutation.graphql';
 import { AssociatedEntityOption } from '@components/common/form/AssociatedEntityField';
 import { AuthorizedMembersFieldValue } from '@components/common/form/AuthorizedMembersField';
-import { draftCreationMutation } from '@components/drafts/DraftCreation';
-import { DraftCreationMutation, DraftCreationMutation$data } from '@components/drafts/__generated__/DraftCreationMutation.graphql';
 import { Box, DialogActions } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import { FormikConfig, FormikErrors, useFormik } from 'formik';
@@ -41,6 +41,8 @@ import useBulkCommit from '../../../../../utils/hooks/useBulkCommit';
 import useDraftContext from '../../../../../utils/hooks/useDraftContext';
 import { KNOWLEDGE_KNASKIMPORT } from '../../../../../utils/hooks/useGranted';
 import { hasCustomColor } from '../../../../../utils/theme';
+import { useIsMandatoryAttribute } from '../../../../../utils/hooks/useEntitySettings';
+import useDefaultValues from '../../../../../utils/hooks/useDefaultValues';
 import useSwitchDraft from '../../../drafts/useSwitchDraft';
 
 export const CSV_MAPPER_NAME = '[FILE] CSV Mapper import';
@@ -116,11 +118,16 @@ export type OptionsFormValues = {
   associatedEntity: AssociatedEntityOption | null;
   validationMode?: 'draft' | 'workbench';
   name: string;
+  description: string;
+  objectAssignee: FieldOption[];
+  objectParticipant: FieldOption[];
+  createdBy: FieldOption | undefined;
   authorizedMembers?: AuthorizedMembersFieldValue;
 };
 
 const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
   const { t_i18n } = useFormatter();
+  const { mandatoryAttributes } = useIsMandatoryAttribute(DRAFTWORKSPACE_TYPE);
 
   const theme = useTheme<Theme>();
 
@@ -337,13 +344,21 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
     }
   };
 
+  const draftDefaultValues = useDefaultValues<DraftAddInput>(DRAFTWORKSPACE_TYPE, {
+    name: '',
+    description: '',
+    objectAssignee: [],
+    objectParticipant: [],
+    createdBy: undefined,
+  });
+
   const optionsContext = useFormik<OptionsFormValues>({
     enableReinitialize: true,
     initialValues: {
       fileMarkings: [] as FieldOption[],
       associatedEntity: entity ? { value: entity.id, label: entity.name || entity.id, type: entity.entity_type } : null,
       validationMode: importMode === 'manual' ? 'draft' : undefined,
-      name: '',
+      ...draftDefaultValues,
     },
     onSubmit,
   });
@@ -362,7 +377,16 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
   }, [files, importMode, selectedFormId]);
 
   const isValidImport = useMemo(() => {
-    return (optionsContext.values.validationMode === 'draft' && optionsContext.values.name.length > 0) || draftId || optionsContext.values.validationMode === 'workbench' || importMode === 'auto';
+    const { values } = optionsContext;
+    const isValidDraft = mandatoryAttributes.every((key) => {
+      if (!(key in values)) return false;
+      else if (key === 'name') return values.name.length > 0;
+      else if (key === 'description') return values.description.length > 0;
+      else if (key === 'objectAssignee') return values.objectAssignee.length > 0;
+      else if (key === 'objectParticipant') return values.objectParticipant.length > 0;
+      else if (key === 'createdBy') return values.createdBy;
+    });
+    return (values.validationMode === 'draft' && isValidDraft) || draftId || values.validationMode === 'workbench' || importMode === 'auto';
   }, [optionsContext.values, importMode]);
 
   const renderActions = useMemo(() => {
