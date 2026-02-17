@@ -13,7 +13,7 @@ import { getSupportedContractsByImage } from '../modules/catalog/catalog-domain'
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { getEntitiesMapFromCache } from './cache';
 import { SYSTEM_USER } from '../utils/access';
-import { logApp } from '../config/conf';
+import { booleanConf, logApp } from '../config/conf';
 import { ConnectorPriorityGroup } from '../generated/graphql';
 import { injectProxyConfiguration } from '../config/proxy-config';
 
@@ -163,6 +163,7 @@ export const connectorsForWorker = async (context, user) => {
     });
   }
   // Expose playbooks
+  const playbookRealtimePriority = booleanConf('playbook_manager:realtime_priority', false);
   const playbooks = await fullEntitiesList(context, user, [ENTITY_TYPE_PLAYBOOK]);
   for (let i = 0; i < playbooks.length; i += 1) {
     const playbook = playbooks[i];
@@ -171,6 +172,7 @@ export const connectorsForWorker = async (context, user) => {
       name: `Playbook ${playbook.internal_id} queue`,
       connector_scope: [],
       config: connectorConfig(playbook.internal_id),
+      connector_priority_group: playbookRealtimePriority ? ConnectorPriorityGroup.Realtime : ConnectorPriorityGroup.Default,
       active: true,
     });
   }
