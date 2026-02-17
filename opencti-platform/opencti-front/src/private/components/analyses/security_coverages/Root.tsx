@@ -96,7 +96,7 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
   const [displayExternalLink, setDisplayExternalLink] = useState(false);
   const hasExternalUri = isNotEmptyField(securityCoverage?.external_uri);
   const paddingRight = getPaddingRight(location.pathname, securityCoverageId, '/dashboard/analyses/security_coverages');
-	const isContent = location.pathname.includes('content');
+  const isContent = location.pathname.includes('content');
 
   return (
     <>
@@ -162,26 +162,33 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
                 label={t_i18n('History')}
               />
             </Tabs>
-						{!isContent && (<><Button
-							disabled={!hasExternalUri}
-							style={{marginBottom: 8}}
-							color="primary"
-							startIcon={(
-								<img
-									style={{width: 20}}
-									src={fileUri(theme.palette.mode === 'dark' ? oaevDark : oaevLight)}
-									alt="OAEV"/>
-							)}
-							variant="outlined"
-							onClick={() => setDisplayExternalLink(true)}
-							title={hasExternalUri ? securityCoverage.external_uri : undefined} // tooltip on hover
-						>
-							{hasExternalUri ? `${t_i18n('Go to OpenAEV')}` : `${t_i18n('Provisioning OpenAEV')}`}
-						</Button><ExternalLinkPopover
-							externalLink={hasExternalUri ? securityCoverage.external_uri : undefined}
-							displayExternalLink={displayExternalLink}
-							setDisplayExternalLink={setDisplayExternalLink}/></>)}
-            </Box>
+            {!isContent && (
+              <>
+                <Button
+                  disabled={!hasExternalUri}
+                  style={{ marginBottom: 8 }}
+                  color="primary"
+                  startIcon={(
+                    <img
+                      style={{ width: 20 }}
+                      src={fileUri(theme.palette.mode === 'dark' ? oaevDark : oaevLight)}
+                      alt="OAEV"
+                    />
+                  )}
+                  variant="outlined"
+                  onClick={() => setDisplayExternalLink(true)}
+                  title={hasExternalUri ? securityCoverage.external_uri : undefined}
+                >
+                  {hasExternalUri ? `${t_i18n('Go to OpenAEV')}` : `${t_i18n('Provisioning OpenAEV')}`}
+                </Button>
+                <ExternalLinkPopover
+                  externalLink={hasExternalUri ? securityCoverage.external_uri : undefined}
+                  displayExternalLink={displayExternalLink}
+                  setDisplayExternalLink={setDisplayExternalLink}
+                />
+              </>
+            )}
+          </Box>
           <Routes>
             <Route
               path="/"
